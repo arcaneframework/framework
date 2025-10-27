@@ -195,6 +195,7 @@ clear()
   m_amr_patch_cell_groups.clear();
   m_amr_patches_pointer.clear();
   m_amr_patches.clear();
+  m_index_new_patches = 0;
   _createGroundPatch();
 }
 
@@ -232,25 +233,23 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosition& patch_position)
+removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
 {
-  // Pas de foreach : _splitPatch() ajoute des patchs.
   // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
   // i = 1 car on ne peut pas déraffjner le patch ground.
-  Integer nb_patchs = m_amr_patches_pointer.size();
+  const Integer nb_patchs = m_amr_patches_pointer.size();
   for (Integer i = 1; i < nb_patchs; ++i) {
     ICartesianMeshPatch* patch = m_amr_patches_pointer[i];
-    m_cmesh->mesh()->traceMng()->info() << "I : " << i
-                                        << " -- Compare Patch (min : " << patch->position().minPoint()
-                                        << ", max : " << patch->position().maxPoint()
-                                        << ", level : " << patch->position().level()
-                                        << ") and Zone (min : " << patch_position.minPoint()
-                                        << ", max : " << patch_position.maxPoint()
-                                        << ", level : " << patch_position.level() << ")";
+    // m_cmesh->traceMng()->info() << "I : " << i
+    //                                     << " -- Compare Patch (min : " << patch->position().minPoint()
+    //                                     << ", max : " << patch->position().maxPoint()
+    //                                     << ", level : " << patch->position().level()
+    //                                     << ") and Zone (min : " << zone_to_delete.minPoint()
+    //                                     << ", max : " << zone_to_delete.maxPoint()
+    //                                     << ", level : " << zone_to_delete.level() << ")";
 
-    if (_isPatchInContact(patch->position(), patch_position)) {
-      //m_amr_patch_cell_groups[i - 1].removeItems(cells_local_id); // TODO : toujours utile ? Le patch sera supprimé.
-      _splitPatch(i, patch_position);
+    if (_isPatchInContact(patch->position(), zone_to_delete)) {
+      _splitPatch(i, zone_to_delete);
     }
   }
 }
@@ -262,6 +261,12 @@ void CartesianPatchGroup::
 applyPatchEdit(bool remove_empty_patches)
 {
   m_cmesh->mesh()->traceMng()->info() << "applyPatchEdit() -- Remove nb patch : " << m_patches_to_delete.size();
+
+  std::sort(m_patches_to_delete.begin(), m_patches_to_delete.end(),
+            [](const Integer a, const Integer b) {
+              return a < b;
+            });
+
   _removeMultiplePatches(m_patches_to_delete);
   m_patches_to_delete.clear();
 
@@ -287,32 +292,33 @@ applyPatchEdit(bool remove_empty_patches)
 void CartesianPatchGroup::
 updateLevelsBeforeAddGroundPatch()
 {
-  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
-    for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
-      Integer level = patch->position().level();
-      // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
-      if (level == 0) {
-        Int64x3 max_point = patch->position().maxPoint();
-        if (m_cmesh->mesh()->dimension() == 2) {
-          patch->position().setMaxPoint({
-          numbering->offsetLevelToLevel(max_point.x, level, level - 1),
-          numbering->offsetLevelToLevel(max_point.y, level, level - 1),
-          1,
-          });
-        }
-        else {
-          patch->position().setMaxPoint({
-          numbering->offsetLevelToLevel(max_point.x, level, level - 1),
-          numbering->offsetLevelToLevel(max_point.y, level, level - 1),
-          numbering->offsetLevelToLevel(max_point.z, level, level - 1),
-          });
-        }
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    return;
+  }
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
+    Integer level = patch->position().level();
+    // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
+    if (level == 0) {
+      Int64x3 max_point = patch->position().maxPoint();
+      if (m_cmesh->mesh()->dimension() == 2) {
+        patch->position().setMaxPoint({
+        numbering->offsetLevelToLevel(max_point.x, level, level - 1),
+        numbering->offsetLevelToLevel(max_point.y, level, level - 1),
+        1,
+        });
       }
-      // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
       else {
-        patch->position().setLevel(level + 1);
+        patch->position().setMaxPoint({
+        numbering->offsetLevelToLevel(max_point.x, level, level - 1),
+        numbering->offsetLevelToLevel(max_point.y, level, level - 1),
+        numbering->offsetLevelToLevel(max_point.z, level, level - 1),
+        });
       }
+    }
+    // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
+    else {
+      patch->position().setLevel(level + 1);
     }
   }
 }
@@ -324,6 +330,88 @@ Integer CartesianPatchGroup::
 nextIndexForNewPatch()
 {
   return m_index_new_patches;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+mergePatches()
+{
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    return;
+  }
+  // m_cmesh->traceMng()->info() << "Global fusion";
+  UniqueArray<std::pair<Integer, Int64>> index_n_nb_cells;
+  {
+    Integer index = 0;
+    for (auto patch : m_amr_patches_pointer) {
+      index_n_nb_cells.add({ index++, patch->position().nbCells() });
+    }
+  }
+
+  // Algo de fusion.
+  // D'abord, on trie les patchs du plus petit nb de mailles au plus grand nb de mailles (optionnel).
+  // Ensuite, pour chaque patch, on regarde si l'on peut le fusionner avec un autre.
+  // Si on arrive à faire une fusion, on recommence l'algo jusqu'à ne plus pouvoir fusionner.
+  bool fusion = true;
+  while (fusion) {
+    fusion = false;
+
+    std::sort(index_n_nb_cells.begin(), index_n_nb_cells.end(),
+              [](const std::pair<Integer, Int64>& a, const std::pair<Integer, Int64>& b) {
+                return a.second < b.second;
+              });
+
+    for (Integer p0 = 0; p0 < index_n_nb_cells.size(); ++p0) {
+      auto [index_p0, nb_cells_p0] = index_n_nb_cells[p0];
+
+      AMRPatchPosition& patch_fusion_0 = m_amr_patches_pointer[index_p0]->position();
+      if (patch_fusion_0.isNull())
+        continue;
+
+      // Si une fusion a déjà eu lieu, on doit alors regarder les patchs avant "p0"
+      // (vu qu'il y en a au moins un qui a été modifié).
+      // (une "optimisation" pourrait être de récupérer la position du premier
+      // patch fusionné mais bon, moins lisible + pas beaucoup de patchs).
+      Integer p1 = (fusion ? 0 : p0 + 1);
+      for (; p1 < m_amr_patches_pointer.size(); ++p1) {
+        if (p1 == p0)
+          continue;
+        auto [index_p1, nb_cells_p1] = index_n_nb_cells[p1];
+
+        AMRPatchPosition& patch_fusion_1 = m_amr_patches_pointer[index_p1]->position();
+
+        if (patch_fusion_1.isNull())
+          continue;
+
+        // m_cmesh->traceMng()->info() << "\tCheck fusion"
+        //                                     << " -- 0 Min point : " << patch_fusion_0.minPoint()
+        //                                     << " -- 0 Max point : " << patch_fusion_0.maxPoint()
+        //                                     << " -- 0 Level : " << patch_fusion_0.level()
+        //                                     << " -- 1 Min point : " << patch_fusion_1.minPoint()
+        //                                     << " -- 1 Max point : " << patch_fusion_1.maxPoint()
+        //                                     << " -- 1 Level : " << patch_fusion_1.level();
+
+        if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
+          // m_cmesh->traceMng()->info() << "Fusion OK";
+          patch_fusion_0.fusion(patch_fusion_1);
+          patch_fusion_1.setLevel(-2); // Devient null.
+          index_n_nb_cells[p0].second = patch_fusion_0.nbCells();
+
+          UniqueArray<Int32> local_ids;
+          cells(index_p1).view().fillLocalIds(local_ids);
+          cells(index_p0).addItems(local_ids, false);
+
+          m_cmesh->traceMng()->info() << "Remove patch : " << index_p1;
+          removePatch(index_p1);
+
+          fusion = true;
+          break;
+        }
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,6 +439,7 @@ _removeOnePatch(Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Le tableau doit être trié.
 void CartesianPatchGroup::
 _removeMultiplePatches(ConstArrayView<Integer> indexes)
 {
@@ -399,16 +488,15 @@ _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPositio
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Il est nécessaire que le patch source et le patch part_to_remove soient
+// en contact pour que cette méthode fonctionne.
 void CartesianPatchGroup::
 _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 {
-  // Il est nécessaire que le patch source et le patch part_to_remove soient
-  // en contact pour que cette méthode fonctionne.
-
-  m_cmesh->mesh()->traceMng()->info() << "Coarse Zone"
-                                      << " -- Min point : " << part_to_remove.minPoint()
-                                      << " -- Max point : " << part_to_remove.maxPoint()
-                                      << " -- Level : " << part_to_remove.level();
+  m_cmesh->traceMng()->info() << "Coarse Zone"
+                              << " -- Min point : " << part_to_remove.minPoint()
+                              << " -- Max point : " << part_to_remove.maxPoint()
+                              << " -- Level : " << part_to_remove.level();
 
   // p1 est le bout de patch qu'il faut retirer de p0.
   // On a donc uniquement quatre cas à traiter (sachant que p0 et p1 sont
@@ -596,8 +684,8 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     if (m_cmesh->mesh()->dimension() == 2) {
       min_point_of_patch_to_exclude.z = 0;
     }
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
-    m_cmesh->mesh()->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
+    m_cmesh->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
+    m_cmesh->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
 
     // On met à null le patch représentant le bout de patch à retirer.
     for (AMRPatchPosition& new_patch : new_patch_out) {
@@ -638,15 +726,15 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
           if (patch_fusion_1.isNull())
             continue;
 
-          m_cmesh->mesh()->traceMng()->info() << "\tCheck fusion"
-                                              << " -- 0 Min point : " << patch_fusion_0.minPoint()
-                                              << " -- 0 Max point : " << patch_fusion_0.maxPoint()
-                                              << " -- 0 Level : " << patch_fusion_0.level()
-                                              << " -- 1 Min point : " << patch_fusion_1.minPoint()
-                                              << " -- 1 Max point : " << patch_fusion_1.maxPoint()
-                                              << " -- 1 Level : " << patch_fusion_1.level();
+          // m_cmesh->traceMng()->info() << "\tCheck fusion"
+          //                                     << " -- 0 Min point : " << patch_fusion_0.minPoint()
+          //                                     << " -- 0 Max point : " << patch_fusion_0.maxPoint()
+          //                                     << " -- 0 Level : " << patch_fusion_0.level()
+          //                                     << " -- 1 Min point : " << patch_fusion_1.minPoint()
+          //                                     << " -- 1 Max point : " << patch_fusion_1.maxPoint()
+          //                                     << " -- 1 Level : " << patch_fusion_1.level();
           if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
-            m_cmesh->mesh()->traceMng()->info() << "Fusion OK";
+            // m_cmesh->traceMng()->info() << "Fusion OK";
             patch_fusion_0.fusion(patch_fusion_1);
             patch_fusion_1.setLevel(-2); // Devient null.
             fusion = true;
@@ -660,7 +748,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     Integer d_nb_patch_final = 0;
     for (const auto& new_patch : new_patch_out) {
       if (!new_patch.isNull()) {
-        // m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
+        // m_cmesh->traceMng()->info() << "\tNew cut patch"
         //                                     << " -- Min point : " << new_patch.minPoint()
         //                                     << " -- Max point : " << new_patch.maxPoint()
         //                                     << " -- Level : " << new_patch.level();
@@ -668,7 +756,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         d_nb_patch_final++;
       }
     }
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
+    m_cmesh->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
   }
 
   removePatch(index_patch);

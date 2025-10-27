@@ -96,7 +96,6 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
     bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
     bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !m_is_3d;
     if (is_inside_x && is_inside_y && is_inside_z) {
-      mesh->mesh()->traceMng()->info() << "CellUID : " << cell.uniqueId() << " -- Level : " << cell.level();
       if (level == -1)
         level = cell.level();
       else if (level != cell.level())
