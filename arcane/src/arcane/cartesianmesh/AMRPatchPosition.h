@@ -44,6 +44,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   bool isIn(Int64 x, Int64 y, Int64 z) const;
 
   Int64 nbCells() const;
+  std::pair<AMRPatchPosition, AMRPatchPosition> cut(Int64 cut_point, Integer dim) const;
   bool canBeFusion(const AMRPatchPosition& other_patch) const;
   void fusion(const AMRPatchPosition& other_patch);
   bool isNull() const;

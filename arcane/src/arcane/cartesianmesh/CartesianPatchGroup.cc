@@ -410,7 +410,30 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
                                       << " -- Max point : " << part_to_remove.maxPoint()
                                       << " -- Level : " << part_to_remove.level();
 
-  auto cut_point_p0 = [](Int64 p0_min, Int64 p0_max, Int64 p1_min, Int64 p1_max) -> std::pair<Int64, Int64> {
+  // p1 est le bout de patch qu'il faut retirer de p0.
+  // On a donc uniquement quatre cas à traiter (sachant que p0 et p1 sont
+  // forcément en contact en x et/ou y et/ou z).
+  //
+  // Cas 1 :
+  // p0   |-----|
+  // p1 |---------|
+  // r = {-1, -1}
+  //
+  // Cas 2 :
+  // p0   |-----|
+  // p1       |-----|
+  // r = {p1_min, -1}
+  //
+  // Cas 3 :
+  // p0   |-----|
+  // p1 |-----|
+  // r = {-1, p1_max}
+  //
+  // Cas 4 :
+  // p0   |-----|
+  // p1    |---|
+  // r = {p1_min, p1_max}
+  auto cut_points_p0 = [](Int64 p0_min, Int64 p0_max, Int64 p1_min, Int64 p1_max) -> std::pair<Int64, Int64> {
     std::pair<Int64, Int64> to_return{ -1, -1 };
     if (p1_min > p0_min && p1_min < p0_max) {
       to_return.first = p1_min;
@@ -421,254 +444,164 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     return to_return;
   };
 
-  auto cut_patch = [](const AMRPatchPosition& patch, Int64 cut_point, Integer dim) -> std::pair<AMRPatchPosition, AMRPatchPosition> {
-    auto patch_max_cut = patch.maxPoint();
-    auto patch_min_cut = patch.minPoint();
-
-    if (dim == MD_DirX) {
-      patch_max_cut.x = cut_point;
-      patch_min_cut.x = cut_point;
-    }
-    else if (dim == MD_DirY) {
-      patch_max_cut.y = cut_point;
-      patch_min_cut.y = cut_point;
-    }
-    else {
-      patch_max_cut.z = cut_point;
-      patch_min_cut.z = cut_point;
-    }
-
-    AMRPatchPosition p0;
-    p0.setLevel(patch.level());
-    p0.setMinPoint(patch.minPoint());
-    p0.setMaxPoint(patch_max_cut);
-
-    AMRPatchPosition p1;
-    p1.setLevel(patch.level());
-    p1.setMinPoint(patch_min_cut);
-    p1.setMaxPoint(patch.maxPoint());
-
-    return { p0, p1 };
-  };
-
   ICartesianMeshPatch* patch = m_amr_patches_pointer[index_patch];
   AMRPatchPosition patch_position = patch->position();
 
-  UniqueArray<AMRPatchPosition> new_patch_x;
-  UniqueArray<AMRPatchPosition> new_patch_y;
+  UniqueArray<AMRPatchPosition> new_patch_out;
 
-  Int64 patch_to_exclude_x = -1;
-  Int64 patch_to_exclude_y = -1;
+  Int64x3 min_point_of_patch_to_exclude(-1, -1, -1);
 
+  // Partie découpe du patch autour de la zone à exclure.
   {
-    std::pair<Int64, Int64> cut_point_x = cut_point_p0(patch_position.minPoint().x, patch_position.maxPoint().x, part_to_remove.minPoint().x, part_to_remove.maxPoint().x);
+    UniqueArray<AMRPatchPosition> new_patch_in;
 
-    // p0   |-----|
-    // p1 |---------|
-    if (cut_point_x.first == -1 && cut_point_x.second == -1) {
-      patch_to_exclude_x = patch_position.minPoint().x;
-      new_patch_x.add(patch_position);
-    }
-    // p0   |-----|
-    // p1       |-----|
-    else if (cut_point_x.second == -1) {
-      patch_to_exclude_x = cut_point_x.first;
-      auto new_patch = cut_patch(patch_position, cut_point_x.first, MD_DirX);
-      new_patch_x.add(new_patch.first);
-      new_patch_x.add(new_patch.second);
-    }
-    // p0   |-----|
-    // p1 |-----|
-    else if (cut_point_x.first == -1) {
-      patch_to_exclude_x = patch_position.minPoint().x;
-      auto new_patch = cut_patch(patch_position, cut_point_x.second, MD_DirX);
-      new_patch_x.add(new_patch.first);
-      new_patch_x.add(new_patch.second);
-    }
-    // p0   |-----|
-    // p1    |---|
-    else {
-      patch_to_exclude_x = cut_point_x.first;
-      auto new_patch_0 = cut_patch(patch_position, cut_point_x.first, MD_DirX);
-      new_patch_x.add(new_patch_0.first);
-      auto new_patch_1 = cut_patch(new_patch_0.second, cut_point_x.second, MD_DirX);
-      new_patch_x.add(new_patch_1.first);
-      new_patch_x.add(new_patch_1.second);
-    }
-  }
-  {
-    std::pair<Int64, Int64> cut_point_y = cut_point_p0(patch_position.minPoint().y, patch_position.maxPoint().y, part_to_remove.minPoint().y, part_to_remove.maxPoint().y);
+    // On coupe le patch en x.
+    {
+      auto cut_point_x = cut_points_p0(patch_position.minPoint().x, patch_position.maxPoint().x, part_to_remove.minPoint().x, part_to_remove.maxPoint().x);
 
-    // p0   |-----|
-    // p1 |---------|
-    if (cut_point_y.first == -1 && cut_point_y.second == -1) {
-      for (const auto& patch_x : new_patch_x) {
-        patch_to_exclude_y = patch_x.minPoint().y;
-        new_patch_y.add(patch_x);
+      // p0   |-----|
+      // p1 |---------|
+      if (cut_point_x.first == -1 && cut_point_x.second == -1) {
+        min_point_of_patch_to_exclude.x = patch_position.minPoint().x;
+        new_patch_out.add(patch_position);
       }
-    }
-    // p0   |-----|
-    // p1       |-----|
-    else if (cut_point_y.second == -1) {
-      patch_to_exclude_y = cut_point_y.first;
-      for (const auto& patch_x : new_patch_x) {
-        auto new_patch = cut_patch(patch_x, cut_point_y.first, MD_DirY);
-        new_patch_y.add(new_patch.first);
-        new_patch_y.add(new_patch.second);
+      // p0   |-----|
+      // p1       |-----|
+      else if (cut_point_x.second == -1) {
+        min_point_of_patch_to_exclude.x = cut_point_x.first;
+        auto [fst, snd] = patch_position.cut(cut_point_x.first, MD_DirX);
+        new_patch_out.add(fst);
+        new_patch_out.add(snd);
       }
-    }
-    // p0   |-----|
-    // p1 |-----|
-    else if (cut_point_y.first == -1) {
-      for (const auto& patch_x : new_patch_x) {
-        patch_to_exclude_y = patch_x.minPoint().y;
-        auto new_patch = cut_patch(patch_x, cut_point_y.second, MD_DirY);
-        new_patch_y.add(new_patch.first);
-        new_patch_y.add(new_patch.second);
+      // p0   |-----|
+      // p1 |-----|
+      else if (cut_point_x.first == -1) {
+        min_point_of_patch_to_exclude.x = patch_position.minPoint().x;
+        auto [fst, snd] = patch_position.cut(cut_point_x.second, MD_DirX);
+        new_patch_out.add(fst);
+        new_patch_out.add(snd);
       }
-    }
-    // p0   |-----|
-    // p1    |---|
-    else {
-      patch_to_exclude_y = cut_point_y.first;
-      for (const auto& patch_x : new_patch_x) {
-        auto new_patch_0 = cut_patch(patch_x, cut_point_y.first, MD_DirY);
-        new_patch_y.add(new_patch_0.first);
-        auto new_patch_1 = cut_patch(new_patch_0.second, cut_point_y.second, MD_DirY);
-        new_patch_y.add(new_patch_1.first);
-        new_patch_y.add(new_patch_1.second);
-      }
-    }
-  }
-
-  if (m_cmesh->mesh()->dimension() == 2) {
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d before fusion : " << new_patch_y.size();
-
-    for (AMRPatchPosition& new_patch : new_patch_y) {
-      if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y) {
-        new_patch.setLevel(-2); // Devient null.
-      }
-    }
-
-    // Algo de fusion.
-    // D'abord, on trie les patchs du plus petit nb de mailles au plus grand nb de mailles (optionnel).
-    // Ensuite, pour chaque patch, on regarde si l'on peut le fusionner avec un autre.
-    // Si on arrive à faire une fusion, on recommence l'algo jusqu'à ne plus pouvoir fusionner.
-    bool fusion = true;
-    while (fusion) {
-      fusion = false;
-
-      std::sort(new_patch_y.begin(), new_patch_y.end(),
-                [](const AMRPatchPosition& a, const AMRPatchPosition& b) {
-                  return a.nbCells() < b.nbCells();
-                });
-
-      for (Integer p0 = 0; p0 < new_patch_y.size(); ++p0) {
-        AMRPatchPosition& patch_fusion_0 = new_patch_y[p0];
-        if (patch_fusion_0.isNull())
-          continue;
-
-        // Si une fusion a déjà eu lieu, on doit alors regarder les patchs avant "p0"
-        // (vu qu'il y en a au moins un qui a été modifié).
-        // (une "optimisation" pourrait être de récupérer la position du premier
-        // patch fusionné mais bon, moins lisible + pas beaucoup de patchs).
-        Integer p1 = (fusion ? 0 : p0 + 1);
-        for (; p1 < new_patch_y.size(); ++p1) {
-          if (p1 == p0)
-            continue;
-
-          AMRPatchPosition& patch_fusion_1 = new_patch_y[p1];
-
-          if (patch_fusion_1.isNull())
-            continue;
-
-          m_cmesh->mesh()->traceMng()->info() << "\tCheck fusion"
-                                              << " -- 0 Min point : " << patch_fusion_0.minPoint()
-                                              << " -- 0 Max point : " << patch_fusion_0.maxPoint()
-                                              << " -- 0 Level : " << patch_fusion_0.level()
-                                              << " -- 1 Min point : " << patch_fusion_1.minPoint()
-                                              << " -- 1 Max point : " << patch_fusion_1.maxPoint()
-                                              << " -- 1 Level : " << patch_fusion_1.level();
-          if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
-            m_cmesh->mesh()->traceMng()->info() << "Fusion OK";
-            patch_fusion_0.fusion(patch_fusion_1);
-            patch_fusion_1.setLevel(-2); // Devient null.
-            fusion = true;
-            break;
-          }
-        }
-      }
-    }
-
-    Integer d_nb_patch_final = 0;
-    for (const auto& new_patch : new_patch_y) {
-      m_cmesh->mesh()->traceMng()->info() << "patch_to_exclude_x : " << patch_to_exclude_x << " -- patch_to_exclude_y : " << patch_to_exclude_y;
-      if (new_patch.isNull()) {
-        m_cmesh->mesh()->traceMng()->info() << "\tExclude cut patch"
-                                            << " -- Min point : " << new_patch.minPoint()
-                                            << " -- Max point : " << new_patch.maxPoint()
-                                            << " -- Level : " << new_patch.level();
-      }
+      // p0   |-----|
+      // p1    |---|
       else {
-        m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
-                                            << " -- Min point : " << new_patch.minPoint()
-                                            << " -- Max point : " << new_patch.maxPoint()
-                                            << " -- Level : " << new_patch.level();
-        _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
-        d_nb_patch_final++;
+        min_point_of_patch_to_exclude.x = cut_point_x.first;
+        auto [fst, snd_thr] = patch_position.cut(cut_point_x.first, MD_DirX);
+        new_patch_out.add(fst);
+        auto [snd, thr] = snd_thr.cut(cut_point_x.second, MD_DirX);
+        new_patch_out.add(snd);
+        new_patch_out.add(thr);
       }
     }
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d after fusion : " << d_nb_patch_final;
+
+    // On coupe le patch en y.
+    {
+      std::swap(new_patch_out, new_patch_in);
+
+      auto cut_point_y = cut_points_p0(patch_position.minPoint().y, patch_position.maxPoint().y, part_to_remove.minPoint().y, part_to_remove.maxPoint().y);
+
+      // p0   |-----|
+      // p1 |---------|
+      if (cut_point_y.first == -1 && cut_point_y.second == -1) {
+        for (const AMRPatchPosition& patch_x : new_patch_in) {
+          min_point_of_patch_to_exclude.y = patch_x.minPoint().y;
+          new_patch_out.add(patch_x);
+        }
+      }
+      // p0   |-----|
+      // p1       |-----|
+      else if (cut_point_y.second == -1) {
+        min_point_of_patch_to_exclude.y = cut_point_y.first;
+        for (const AMRPatchPosition& patch_x : new_patch_in) {
+          auto [fst, snd] = patch_x.cut(cut_point_y.first, MD_DirY);
+          new_patch_out.add(fst);
+          new_patch_out.add(snd);
+        }
+      }
+      // p0   |-----|
+      // p1 |-----|
+      else if (cut_point_y.first == -1) {
+        for (const AMRPatchPosition& patch_x : new_patch_in) {
+          min_point_of_patch_to_exclude.y = patch_x.minPoint().y;
+          auto [fst, snd] = patch_x.cut(cut_point_y.second, MD_DirY);
+          new_patch_out.add(fst);
+          new_patch_out.add(snd);
+        }
+      }
+      // p0   |-----|
+      // p1    |---|
+      else {
+        min_point_of_patch_to_exclude.y = cut_point_y.first;
+        for (const AMRPatchPosition& patch_x : new_patch_in) {
+          auto [fst, snd_thr] = patch_x.cut(cut_point_y.first, MD_DirY);
+          new_patch_out.add(fst);
+          auto [snd, thr] = snd_thr.cut(cut_point_y.second, MD_DirY);
+          new_patch_out.add(snd);
+          new_patch_out.add(thr);
+        }
+      }
+    }
+
+    // On coupe le patch en z.
+    if (m_cmesh->mesh()->dimension() == 3) {
+      std::swap(new_patch_out, new_patch_in);
+      new_patch_out.clear();
+
+      std::pair<Int64, Int64> cut_point_z = cut_points_p0(patch_position.minPoint().z, patch_position.maxPoint().z, part_to_remove.minPoint().z, part_to_remove.maxPoint().z);
+
+      // p0   |-----|
+      // p1 |---------|
+      if (cut_point_z.first == -1 && cut_point_z.second == -1) {
+        for (const AMRPatchPosition& patch_y : new_patch_in) {
+          min_point_of_patch_to_exclude.z = patch_y.minPoint().z;
+          new_patch_out.add(patch_y);
+        }
+      }
+      // p0   |-----|
+      // p1       |-----|
+      else if (cut_point_z.second == -1) {
+        for (const AMRPatchPosition& patch_y : new_patch_in) {
+          min_point_of_patch_to_exclude.z = cut_point_z.first;
+          auto [fst, snd] = patch_y.cut(cut_point_z.first, MD_DirZ);
+          new_patch_out.add(fst);
+          new_patch_out.add(snd);
+        }
+      }
+      // p0   |-----|
+      // p1 |-----|
+      else if (cut_point_z.first == -1) {
+        for (const AMRPatchPosition& patch_y : new_patch_in) {
+          min_point_of_patch_to_exclude.z = patch_y.minPoint().z;
+          auto [fst, snd] = patch_y.cut(cut_point_z.second, MD_DirZ);
+          new_patch_out.add(fst);
+          new_patch_out.add(snd);
+        }
+      }
+      // p0   |-----|
+      // p1    |---|
+      else {
+        for (const AMRPatchPosition& patch_y : new_patch_in) {
+          min_point_of_patch_to_exclude.z = cut_point_z.first;
+          auto [fst, snd_thr] = patch_y.cut(cut_point_z.first, MD_DirZ);
+          new_patch_out.add(fst);
+          auto [snd, thr] = snd_thr.cut(cut_point_z.second, MD_DirZ);
+          new_patch_out.add(snd);
+          new_patch_out.add(thr);
+        }
+      }
+    }
   }
-  else if (m_cmesh->mesh()->dimension() == 3) {
-    Int64 patch_to_exclude_z = -1;
-    UniqueArray<AMRPatchPosition> new_patch_z;
-    std::pair<Int64, Int64> cut_point_z = cut_point_p0(patch_position.minPoint().z, patch_position.maxPoint().z, part_to_remove.minPoint().z, part_to_remove.maxPoint().z);
 
-    // p0   |-----|
-    // p1 |---------|
-    if (cut_point_z.first == -1 && cut_point_z.second == -1) {
-      for (const auto& patch_y : new_patch_y) {
-        patch_to_exclude_z = patch_y.minPoint().z;
-        new_patch_z.add(patch_y);
-      }
+  // Partie fusion et ajout.
+  {
+    if (m_cmesh->mesh()->dimension() == 2) {
+      min_point_of_patch_to_exclude.z = 0;
     }
-    // p0   |-----|
-    // p1       |-----|
-    else if (cut_point_z.second == -1) {
-      for (const auto& patch_y : new_patch_y) {
-        patch_to_exclude_z = cut_point_z.first;
-        auto [fst, snd] = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
-        new_patch_z.add(fst);
-        new_patch_z.add(snd);
-      }
-    }
-    // p0   |-----|
-    // p1 |-----|
-    else if (cut_point_z.first == -1) {
-      for (const auto& patch_y : new_patch_y) {
-        patch_to_exclude_z = patch_y.minPoint().z;
-        auto [fst, snd] = cut_patch(patch_y, cut_point_z.second, MD_DirZ);
-        new_patch_z.add(fst);
-        new_patch_z.add(snd);
-      }
-    }
-    // p0   |-----|
-    // p1    |---|
-    else {
-      for (const auto& patch_y : new_patch_y) {
-        patch_to_exclude_z = cut_point_z.first;
-        auto [fst, snd_thr] = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
-        new_patch_z.add(fst);
-        auto [snd, thr] = cut_patch(snd_thr, cut_point_z.second, MD_DirZ);
-        new_patch_z.add(snd);
-        new_patch_z.add(thr);
-      }
-    }
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
+    m_cmesh->mesh()->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
 
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d before fusion : " << new_patch_z.size();
-    for (AMRPatchPosition& new_patch : new_patch_z) {
-      if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y && new_patch.minPoint().z == patch_to_exclude_z) {
+    // On met à null le patch représentant le bout de patch à retirer.
+    for (AMRPatchPosition& new_patch : new_patch_out) {
+      if (new_patch.minPoint() == min_point_of_patch_to_exclude) {
         new_patch.setLevel(-2); // Devient null.
       }
     }
@@ -681,13 +614,13 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     while (fusion) {
       fusion = false;
 
-      std::sort(new_patch_z.begin(), new_patch_z.end(),
+      std::sort(new_patch_out.begin(), new_patch_out.end(),
                 [](const AMRPatchPosition& a, const AMRPatchPosition& b) {
                   return a.nbCells() < b.nbCells();
                 });
 
-      for (Integer p0 = 0; p0 < new_patch_z.size(); ++p0) {
-        AMRPatchPosition& patch_fusion_0 = new_patch_z[p0];
+      for (Integer p0 = 0; p0 < new_patch_out.size(); ++p0) {
+        AMRPatchPosition& patch_fusion_0 = new_patch_out[p0];
         if (patch_fusion_0.isNull())
           continue;
 
@@ -696,11 +629,11 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         // (une "optimisation" pourrait être de récupérer la position du premier
         // patch fusionné mais bon, moins lisible + pas beaucoup de patchs).
         Integer p1 = (fusion ? 0 : p0 + 1);
-        for (; p1 < new_patch_z.size(); ++p1) {
+        for (; p1 < new_patch_out.size(); ++p1) {
           if (p1 == p0)
             continue;
 
-          AMRPatchPosition& patch_fusion_1 = new_patch_z[p1];
+          AMRPatchPosition& patch_fusion_1 = new_patch_out[p1];
 
           if (patch_fusion_1.isNull())
             continue;
@@ -722,14 +655,20 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         }
       }
     }
+
+    // On ajoute les nouveaux patchs dans la liste des patchs.
     Integer d_nb_patch_final = 0;
-    for (const auto& new_patch : new_patch_z) {
+    for (const auto& new_patch : new_patch_out) {
       if (!new_patch.isNull()) {
+        // m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
+        //                                     << " -- Min point : " << new_patch.minPoint()
+        //                                     << " -- Max point : " << new_patch.maxPoint()
+        //                                     << " -- Level : " << new_patch.level();
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
         d_nb_patch_final++;
       }
     }
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d after fusion : " << d_nb_patch_final;
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
   }
 
   removePatch(index_patch);
