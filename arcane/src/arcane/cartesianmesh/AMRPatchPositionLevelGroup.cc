@@ -5,17 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPosition.h                                        (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Vector3.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/AMRPatchPositionLevelGroup.h"
+
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,42 +24,47 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
+AMRPatchPositionLevelGroup::
+AMRPatchPositionLevelGroup(Integer max_level)
+: m_max_level(max_level)
+, m_patches(max_level+1)
 {
- public:
-  AMRPatchPosition();
-  ~AMRPatchPosition();
- public:
 
-  Integer level() const;
-  void setLevel(Integer level);
+}
 
-  Int64x3 minPoint() const;
-  void setMinPoint(Int64x3 min_point);
-  Int64x3 maxPoint() const;
-  void setMaxPoint(Int64x3 max_point);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  bool isIn(Int64 x, Int64 y, Int64 z) const;
+AMRPatchPositionLevelGroup::
+~AMRPatchPositionLevelGroup()
+= default;
 
-  Int64 nbCells() const;
-  std::pair<AMRPatchPosition, AMRPatchPosition> cut(Int64 cut_point, Integer dim) const;
-  bool canBeFusion(const AMRPatchPosition& other_patch) const;
-  void fusion(const AMRPatchPosition& other_patch);
-  bool isNull() const;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  Int64x3 length() const;
-  Int64x3 minWithMargin(Integer level) const;
-  Int64x3 maxWithMargin(Integer level) const;
-  Int64x3 min(Integer level) const;
-  Int64x3 max(Integer level) const;
-  bool isIn(Integer x, Integer y) const;
-  bool isInWithMargin(Integer level, Integer x, Integer y) const;
+Integer AMRPatchPositionLevelGroup::
+maxLevel()
+{
+  return m_max_level;
+}
 
- private:
-  Integer m_level;
-  Int64x3 m_min_point;
-  Int64x3 m_max_point;
-};
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<AMRPatchPosition> AMRPatchPositionLevelGroup::
+patches(Integer level)
+{
+  return m_patches[level];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRPatchPositionLevelGroup::
+addPatch(AMRPatchPosition patch)
+{
+  m_patches[patch.level()].add(patch);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,6 +73,3 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  
-
