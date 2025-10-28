@@ -15,11 +15,13 @@
 #include "CartesianMeshNumberingMng.h"
 
 #include "arcane/utils/Vector2.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/core/Properties.h"
 
 /*---------------------------------------------------------------------------*/
@@ -45,28 +47,26 @@ CartesianMeshNumberingMng(IMesh* mesh)
   const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
 
   Int64ConstArrayView global_nb_cells_by_direction = m_generation_info->globalNbCells();
-  m_nb_cell.x = global_nb_cells_by_direction[MD_DirX];
-  m_nb_cell.y = global_nb_cells_by_direction[MD_DirY];
-  m_nb_cell.z = ((m_dimension == 2) ? 1 : global_nb_cells_by_direction[MD_DirZ]);
+  m_nb_cell_ground.x = global_nb_cells_by_direction[MD_DirX];
+  m_nb_cell_ground.y = global_nb_cells_by_direction[MD_DirY];
+  m_nb_cell_ground.z = ((m_dimension == 2) ? 1 : global_nb_cells_by_direction[MD_DirZ]);
 
-  if (m_nb_cell.x <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirX] (should be >0)", m_nb_cell.x);
-  if (m_nb_cell.y <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", m_nb_cell.y);
-  if (m_nb_cell.z <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", m_nb_cell.z);
-
-  m_p_to_l_level.add(0);
+  if (m_nb_cell_ground.x <= 0)
+    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirX] (should be >0)", m_nb_cell_ground.x);
+  if (m_nb_cell_ground.y <= 0)
+    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", m_nb_cell_ground.y);
+  if (m_nb_cell_ground.z <= 0)
+    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", m_nb_cell_ground.z);
 
   if (m_dimension == 2) {
-    m_latest_cell_uid = m_nb_cell.x * m_nb_cell.y;
-    m_latest_node_uid = (m_nb_cell.x + 1) * (m_nb_cell.y + 1);
-    m_latest_face_uid = (m_nb_cell.x * m_nb_cell.y) * 2 + m_nb_cell.x * 2 + m_nb_cell.y;
+    m_latest_cell_uid = m_nb_cell_ground.x * m_nb_cell_ground.y;
+    m_latest_node_uid = (m_nb_cell_ground.x + 1) * (m_nb_cell_ground.y + 1);
+    m_latest_face_uid = (m_nb_cell_ground.x * m_nb_cell_ground.y) * 2 + m_nb_cell_ground.x * 2 + m_nb_cell_ground.y;
   }
   else {
-    m_latest_cell_uid = m_nb_cell.x * m_nb_cell.y * m_nb_cell.z;
-    m_latest_node_uid = (m_nb_cell.x + 1) * (m_nb_cell.y + 1) * (m_nb_cell.z + 1);
-    m_latest_face_uid = (m_nb_cell.z + 1) * m_nb_cell.x * m_nb_cell.y + (m_nb_cell.x + 1) * m_nb_cell.y * m_nb_cell.z + (m_nb_cell.y + 1) * m_nb_cell.z * m_nb_cell.x;
+    m_latest_cell_uid = m_nb_cell_ground.x * m_nb_cell_ground.y * m_nb_cell_ground.z;
+    m_latest_node_uid = (m_nb_cell_ground.x + 1) * (m_nb_cell_ground.y + 1) * (m_nb_cell_ground.z + 1);
+    m_latest_face_uid = (m_nb_cell_ground.z + 1) * m_nb_cell_ground.x * m_nb_cell_ground.y + (m_nb_cell_ground.x + 1) * m_nb_cell_ground.y * m_nb_cell_ground.z + (m_nb_cell_ground.y + 1) * m_nb_cell_ground.z * m_nb_cell_ground.x;
   }
 
   m_first_cell_uid_level.add(0);
@@ -111,9 +111,7 @@ _saveInfosInProperties()
   m_properties->set("FirstNodeUIDByLevel", m_first_node_uid_level);
   m_properties->set("FirstFaceUIDByLevel", m_first_face_uid_level);
 
-  m_properties->set("PositionToLevel", m_p_to_l_level); // Tableau à supprimer.
-
-  m_properties->set("OriginalGroundLevel", m_ori_level);
+  m_properties->set("OriginalGroundLevelForConverting", m_ori_level);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -130,34 +128,104 @@ _recreateFromDump()
   m_properties->get("FirstNodeUIDByLevel", m_first_node_uid_level);
   m_properties->get("FirstFaceUIDByLevel", m_first_face_uid_level);
 
-  m_properties->get("PositionToLevel", m_p_to_l_level);
+  m_properties->get("OriginalGroundLevelForConverting", m_ori_level);
+  if (m_ori_level == -1) {
+    m_converting_numbering_face = false;
+    m_face_ori_numbering_to_new.clear();
+    m_face_new_numbering_to_ori.clear();
+  }
 
-  m_nb_cell = { globalNbCellsX(0), globalNbCellsY(0), globalNbCellsZ(0) };
-
-  m_properties->get("OriginalGroundLevel", m_ori_level);
+  m_nb_cell_ground = { globalNbCellsX(0), globalNbCellsY(0), globalNbCellsZ(0) };
 
   m_max_level = m_first_cell_uid_level.size() - 1;
 
-  m_latest_cell_uid = m_first_cell_uid_level[m_max_level] + nbCellInLevel(m_max_level);
-  m_latest_node_uid = m_first_node_uid_level[m_max_level] + nbNodeInLevel(m_max_level);
-  m_latest_face_uid = m_first_face_uid_level[m_max_level] + nbFaceInLevel(m_max_level);
+  {
+    Integer pos = 0;
+    Int64 max = 0;
+    Integer iter = 0;
+    for (const Int64 elem : m_first_cell_uid_level) {
+      if (elem > max) {
+        max = elem;
+        pos = iter;
+      }
+      iter++;
+    }
+    m_latest_cell_uid = m_first_cell_uid_level[pos] + nbCellInLevel(pos);
+    m_latest_node_uid = m_first_node_uid_level[pos] + nbNodeInLevel(pos);
+    m_latest_face_uid = m_first_face_uid_level[pos] + nbFaceInLevel(pos);
+  }
+}
 
-  // À activer lorsqu'on retirera m_p_to_l_level.
-  // {
-  //   Integer pos = 0;
-  //   Int64 max = 0;
-  //   Integer iter = 0;
-  //   for (const Int64 elem : m_first_cell_uid_level) {
-  //     if (elem > max) {
-  //       max = elem;
-  //       pos = iter;
-  //     }
-  //     iter++;
-  //   }
-  //   m_latest_cell_uid = m_first_cell_uid_level[pos] + nbCellInLevel(pos);
-  //   m_latest_node_uid = m_first_node_uid_level[pos] + nbNodeInLevel(pos);
-  //   m_latest_face_uid = m_first_face_uid_level[pos] + nbFaceInLevel(pos);
-  // }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+renumberingFacesLevel0FromOriginalArcaneNumbering()
+{
+  if (!m_converting_numbering_face)
+    return;
+
+  UniqueArray<Int64> face_uid(nbFaceByCell());
+  ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(m_ori_level)) {
+    cellFaceUniqueIds(face_uid, m_ori_level, icell->uniqueId());
+    for (Integer i = 0; i < nbFaceByCell(); ++i) {
+      // debug() << "Face Ori <-> New -- Ori : " << icell->face(i).uniqueId() << " -- New : " << face_uid[i];
+      icell->face(i).mutableItemBase().setUniqueId(face_uid[i]);
+    }
+  }
+  m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
+  m_mesh->checkValidMesh();
+
+  m_converting_numbering_face = false;
+  m_ori_level = -1;
+  m_face_ori_numbering_to_new.clear();
+  m_face_new_numbering_to_ori.clear();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+printStatus()
+{
+  ITraceMng* tm = m_mesh->traceMng();
+  Trace::Setter _(tm, "CartesianMeshNumberingMng");
+
+  tm->info() << "CartesianMeshNumberingMng status :";
+
+  // tm->info() << "FirstCellUIDByLevel : " << m_first_cell_uid_level;
+  // tm->info() << "FirstNodeUIDByLevel : " << m_first_node_uid_level;
+  // tm->info() << "FirstFaceUIDByLevel : " << m_first_face_uid_level;
+
+  tm->info() << "LatestCellUID : " << m_latest_cell_uid;
+  tm->info() << "LatestNodeUID : " << m_latest_node_uid;
+  tm->info() << "LatestFaceUID : " << m_latest_face_uid;
+
+  tm->info() << "MinLevel : " << m_min_level;
+  tm->info() << "MaxLevel : " << m_max_level;
+
+  tm->info() << "GroundLevelNbCells : " << m_nb_cell_ground;
+
+  if (m_ori_level == -1) {
+    tm->info() << "Ground Level is renumbered";
+  }
+  else {
+    tm->info() << "Ground Level is not renumbered -- OriginalGroundLevel : " << m_ori_level;
+  }
+
+  for (Integer i = m_min_level; i <= m_max_level; ++i) {
+    tm->info() << "Level " << i << " : ";
+    tm->info() << "\tUID Cells : [" << firstCellUniqueId(i) << ", " << (firstCellUniqueId(i) + nbCellInLevel(i)) << "[";
+    tm->info() << "\tUID Nodes : [" << firstNodeUniqueId(i) << ", " << (firstNodeUniqueId(i) + nbNodeInLevel(i)) << "[";
+    tm->info() << "\tUID Faces : [" << firstFaceUniqueId(i) << ", " << (firstFaceUniqueId(i) + nbFaceInLevel(i)) << "[";
+  }
+
+  const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+
+  Int64ConstArrayView global_nb_cells_by_direction = m_generation_info->globalNbCells();
+  tm->info() << "global_nb_cells_by_direction.x : " << global_nb_cells_by_direction[MD_DirX];
+  tm->info() << "global_nb_cells_by_direction.y : " << global_nb_cells_by_direction[MD_DirY];
+  tm->info() << "global_nb_cells_by_direction.z : " << global_nb_cells_by_direction[MD_DirZ];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,18 +238,19 @@ prepareLevel(Int32 level)
     return;
   if (level == m_max_level + 1) {
     m_max_level++;
+    m_first_cell_uid_level.add(m_latest_cell_uid);
+    m_first_node_uid_level.add(m_latest_node_uid);
+    m_first_face_uid_level.add(m_latest_face_uid);
   }
   else if (level == m_min_level - 1) {
     m_min_level--;
+    _pushFront(m_first_cell_uid_level, m_latest_cell_uid);
+    _pushFront(m_first_node_uid_level, m_latest_node_uid);
+    _pushFront(m_first_face_uid_level, m_latest_face_uid);
   }
   else {
     ARCANE_FATAL("Level error : {0}", level);
   }
-  m_p_to_l_level.add(level);
-
-  m_first_cell_uid_level.add(m_latest_cell_uid);
-  m_first_node_uid_level.add(m_latest_node_uid);
-  m_first_face_uid_level.add(m_latest_face_uid);
 
   m_latest_cell_uid += nbCellInLevel(level);
   m_latest_node_uid += nbNodeInLevel(level);
@@ -194,7 +263,7 @@ prepareLevel(Int32 level)
 void CartesianMeshNumberingMng::
 updateFirstLevel()
 {
-  Int32 nb_levels_to_add = -m_min_level;
+  const Int32 nb_levels_to_add = -m_min_level;
   m_ori_level += nb_levels_to_add;
 
   if (nb_levels_to_add == 0) {
@@ -204,11 +273,8 @@ updateFirstLevel()
   m_max_level += nb_levels_to_add;
   m_min_level += nb_levels_to_add;
 
-  for (Int32& i : m_p_to_l_level) {
-    i += nb_levels_to_add;
-  }
-
-  m_nb_cell /= (m_pattern * nb_levels_to_add);
+  const Integer to_div = m_pattern * nb_levels_to_add;
+  m_nb_cell_ground /= to_div;
 
   // ----------
   // CartesianMeshCoarsening2::_recomputeMeshGenerationInfo()
@@ -219,15 +285,15 @@ updateFirstLevel()
 
   {
     ConstArrayView<Int64> v = cmgi->ownCellOffsets();
-    cmgi->setOwnCellOffsets(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+    cmgi->setOwnCellOffsets(v[0] / to_div, v[1] / to_div, v[2] / to_div);
   }
   {
     ConstArrayView<Int64> v = cmgi->globalNbCells();
-    cmgi->setGlobalNbCells(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+    cmgi->setGlobalNbCells(v[0] / to_div, v[1] / to_div, v[2] / to_div);
   }
   {
     ConstArrayView<Int32> v = cmgi->ownNbCells();
-    cmgi->setOwnNbCells(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+    cmgi->setOwnNbCells(v[0] / to_div, v[1] / to_div, v[2] / to_div);
   }
   cmgi->setFirstOwnCellUniqueId(firstCellUniqueId(0));
   // CartesianMeshCoarsening2::_recomputeMeshGenerationInfo()
@@ -238,45 +304,27 @@ updateFirstLevel()
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-firstCellUniqueId(Integer level)
+firstCellUniqueId(Integer level) const
 {
-  auto pos = m_p_to_l_level.span().findFirst(level);
-  if (pos.has_value()) {
-    return m_first_cell_uid_level[pos.value()];
-  }
-  else {
-    ARCANE_FATAL("Bad level : {0}", level);
-  }
+  return m_first_cell_uid_level[level - m_min_level];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-firstNodeUniqueId(Integer level)
+firstNodeUniqueId(Integer level) const
 {
-  auto pos = m_p_to_l_level.span().findFirst(level);
-  if (pos.has_value()) {
-    return m_first_node_uid_level[pos.value()];
-  }
-  else {
-    ARCANE_FATAL("Bad level : {0}", level);
-  }
+  return m_first_node_uid_level[level - m_min_level];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-firstFaceUniqueId(Integer level)
+firstFaceUniqueId(Integer level) const
 {
-  auto pos = m_p_to_l_level.span().findFirst(level);
-  if (pos.has_value()) {
-    return m_first_face_uid_level[pos.value()];
-  }
-  else {
-    ARCANE_FATAL("Bad level : {0}", level);
-  }
+  return m_first_face_uid_level[level - m_min_level];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -285,7 +333,7 @@ firstFaceUniqueId(Integer level)
 Int64 CartesianMeshNumberingMng::
 globalNbCellsX(Integer level) const
 {
-  return static_cast<Int64>(static_cast<Real>(m_nb_cell.x) * std::pow(m_pattern, level));
+  return static_cast<Int64>(static_cast<Real>(m_nb_cell_ground.x) * std::pow(m_pattern, level));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -294,7 +342,7 @@ globalNbCellsX(Integer level) const
 Int64 CartesianMeshNumberingMng::
 globalNbCellsY(Integer level) const
 {
-  return static_cast<Int64>(static_cast<Real>(m_nb_cell.y) * std::pow(m_pattern, level));
+  return static_cast<Int64>(static_cast<Real>(m_nb_cell_ground.y) * std::pow(m_pattern, level));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -303,7 +351,7 @@ globalNbCellsY(Integer level) const
 Int64 CartesianMeshNumberingMng::
 globalNbCellsZ(Integer level) const
 {
-  return static_cast<Int64>(static_cast<Real>(m_nb_cell.z) * std::pow(m_pattern, level));
+  return static_cast<Int64>(static_cast<Real>(m_nb_cell_ground.z) * std::pow(m_pattern, level));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -447,14 +495,17 @@ pattern() const
 Int32 CartesianMeshNumberingMng::
 cellLevel(Int64 uid) const
 {
-  Integer pos = 0;
+  Integer pos = -1;
+  Int64 max = 0;
 
-  while (pos < m_first_cell_uid_level.size() && m_first_cell_uid_level[pos] <= uid) {
-    pos++;
+  for (Integer i = m_min_level; i <= m_max_level; ++i) {
+    const Int64 first_uid = firstCellUniqueId(i);
+    if (first_uid <= uid && first_uid > max) {
+      pos = i;
+      max = first_uid;
+    }
   }
-  pos--;
-
-  return m_p_to_l_level[pos];
+  return pos;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -463,14 +514,17 @@ cellLevel(Int64 uid) const
 Int32 CartesianMeshNumberingMng::
 nodeLevel(Int64 uid) const
 {
-  Integer pos = 0;
+  Integer pos = -1;
+  Int64 max = 0;
 
-  while (pos < m_first_node_uid_level.size() && m_first_node_uid_level[pos] <= uid) {
-    pos++;
+  for (Integer i = m_min_level; i <= m_max_level; ++i) {
+    const Int64 first_uid = firstNodeUniqueId(i);
+    if (first_uid <= uid && first_uid > max) {
+      pos = i;
+      max = first_uid;
+    }
   }
-  pos--;
-
-  return m_p_to_l_level[pos];
+  return pos;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -479,14 +533,17 @@ nodeLevel(Int64 uid) const
 Int32 CartesianMeshNumberingMng::
 faceLevel(Int64 uid) const
 {
-  Integer pos = 0;
+  Integer pos = -1;
+  Int64 max = 0;
 
-  while (pos < m_first_face_uid_level.size() && m_first_face_uid_level[pos] <= uid) {
-    pos++;
+  for (Integer i = m_min_level; i <= m_max_level; ++i) {
+    const Int64 first_uid = firstFaceUniqueId(i);
+    if (first_uid <= uid && first_uid > max) {
+      pos = i;
+      max = first_uid;
+    }
   }
-  pos--;
-
-  return m_p_to_l_level[pos];
+  return pos;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -766,7 +823,7 @@ faceUniqueIdToCoordX(Int64 uid, Integer level)
 
     uid -= first_face_uid;
 
-    Int64x3 three_parts_numbering = face3DNumberingThreeParts(level);
+    Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
 
     // Prenons la vue des faces en grille cartésienne d'un maillage 2x2x2 :
     //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
@@ -896,7 +953,7 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
 
     uid -= first_face_uid;
 
-    Int64x3 three_parts_numbering = face3DNumberingThreeParts(level);
+    Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
 
     // Prenons la vue des faces en grille cartésienne d'un maillage 2x2x2 :
     //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
@@ -1002,7 +1059,7 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
 
   uid -= first_face_uid;
 
-  Int64x3 three_parts_numbering = face3DNumberingThreeParts(level);
+  Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
 
   // Prenons la vue des faces en grille cartésienne d'un maillage 2x2x2 :
   //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
@@ -1149,7 +1206,7 @@ faceUniqueId(Integer level, Int64x3 face_coord)
   const Int64 nb_cell_x = globalNbCellsX(level);
   const Int64 nb_cell_y = globalNbCellsY(level);
 
-  Int64x3 three_parts_numbering = face3DNumberingThreeParts(level);
+  Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
   Int64 uid = firstFaceUniqueId(level);
 
   // Prenons la vue des faces en grille cartésienne d'un maillage 2x2x2 :
@@ -2149,7 +2206,7 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
     Int64 child_x = child_index_in_parent % m_pattern;
     Int64 child_y = child_index_in_parent / m_pattern;
 
-    Int64x3 three_parts_numbering = face3DNumberingThreeParts(level);
+    Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
 
     if (uid < three_parts_numbering.x) {
       first_child_coord_x += child_x * 2;
@@ -2186,10 +2243,23 @@ childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent)
 /*---------------------------------------------------------------------------*/
 
 Int64x3 CartesianMeshNumberingMng::
-face3DNumberingThreeParts(Integer level) const
+_face3DNumberingThreeParts(Integer level) const
 {
   const Int64x3 nb_cell(globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level));
   return { (nb_cell.z + 1) * nb_cell.x * nb_cell.y, (nb_cell.x + 1) * nb_cell.y * nb_cell.z, (nb_cell.y + 1) * nb_cell.z * nb_cell.x };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+_pushFront(UniqueArray<Int64>& array, const Int64 elem)
+{
+  array.resize(array.size() + 1);
+  array.back() = elem;
+  for (Integer i = array.size() - 2; i >= 0; --i) {
+    std::swap(array[i], array[i + 1]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
