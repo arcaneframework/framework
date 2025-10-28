@@ -50,12 +50,16 @@ class CartesianMeshNumberingMng
   void _saveInfosInProperties() override;
   void _recreateFromDump() override;
 
+  void renumberingFacesLevel0FromOriginalArcaneNumbering() override;
+
+  void printStatus() override;
+
   void prepareLevel(Int32 level) override;
   void updateFirstLevel() override;
 
-  Int64 firstCellUniqueId(Integer level) override;
-  Int64 firstNodeUniqueId(Integer level) override;
-  Int64 firstFaceUniqueId(Integer level) override;
+  Int64 firstCellUniqueId(Integer level) const override;
+  Int64 firstNodeUniqueId(Integer level) const override;
+  Int64 firstFaceUniqueId(Integer level) const override;
 
   Int64 globalNbCellsX(Integer level) const override;
   Int64 globalNbCellsY(Integer level) const override;
@@ -171,7 +175,9 @@ class CartesianMeshNumberingMng
    * \param level Le niveau de la numérotation.
    * \return Le nombre de faces {xy, yz, zx}.
    */
-  Int64x3 face3DNumberingThreeParts(Integer level) const;
+  Int64x3 _face3DNumberingThreeParts(Integer level) const;
+
+  static void _pushFront(UniqueArray<Int64>& array, Int64 elem);
 
  private:
 
@@ -195,7 +201,7 @@ class CartesianMeshNumberingMng
   Int64 m_latest_face_uid;
   UniqueArray<Int64> m_first_face_uid_level;
 
-  Int64x3 m_nb_cell;
+  Int64x3 m_nb_cell_ground;
 
   // Partie conversion numérotation d'origine <-> nouvelle numérotation (face).
   bool m_converting_numbering_face;
