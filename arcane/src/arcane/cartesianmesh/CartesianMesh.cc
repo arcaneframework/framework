@@ -279,6 +279,8 @@ CartesianMeshImpl(IMesh* mesh)
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.initCartesianMeshNumberingMng();
     m_internal_api.initCartesianMeshAMRPatchMng();
+    // TODO : Voir où mettre la renumérotation.
+    //m_internal_api.cartesianMeshNumberingMng()->renumberingFacesLevel0FromOriginalArcaneNumbering();
   }
   m_all_items_direction_info = m_patch_group.groundPatch();
 }

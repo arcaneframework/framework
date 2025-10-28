@@ -73,6 +73,7 @@
       <position>2.0 2.0 0.0</position>
       <length>2.0 2.0 2.0</length>
     </refinement-3d>
+    <merge-patches>false</merge-patches>
     <expected-number-of-cells-in-patchs>8 8 8 8 8 8 8 8 8</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>bfa069f213eef90d389efa5c3ca0745d</nodes-uid-hash>
     <faces-uid-hash>5b12ac3a6d9ed116b024074cdef808c6</faces-uid-hash>

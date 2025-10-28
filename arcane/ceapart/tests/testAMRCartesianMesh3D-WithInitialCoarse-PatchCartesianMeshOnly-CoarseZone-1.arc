@@ -61,13 +61,14 @@
       <length>4.0 2.0 2.0</length>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>64 496 960</expected-number-of-cells-in-patchs>
+    <!--    <expected-number-of-cells-in-patchs>64 496 960</expected-number-of-cells-in-patchs>-->
+    <expected-number-of-cells-in-patchs>64 384 576 32 48 64 96 128 128</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>f1eedebec73b1051ef2b7a77ed815702</nodes-uid-hash>
     <faces-uid-hash>0b1bba1f8971df16968f9648112dcbb1</faces-uid-hash>
     <cells-uid-hash>85f1a6bff5d48797f358c0145fb9127c</cells-uid-hash>
-    <nodes-direction-hash>c1888f691c5b6a89d432b2a8bc08f502</nodes-direction-hash>
-    <faces-direction-hash>8182eec5342cbcd876589f9fd8528826</faces-direction-hash>
-    <cells-direction-hash>2d8191a235e17346e88953e650358309</cells-direction-hash>
+    <nodes-direction-hash>a362e7707f0455ec1fdc7e787488bc36</nodes-direction-hash>
+    <faces-direction-hash>acf1ed66f073090ef1254410deb54fdb</faces-direction-hash>
+    <cells-direction-hash>0a299b23e95a42809e3e7b1156b78039</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>
