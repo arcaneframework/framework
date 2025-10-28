@@ -193,6 +193,8 @@ class CartesianMeshImpl
   void coarseZone3D(Real3 position, Real3 length) override;
   void coarseZone(const AMRZonePosition& position) override;
 
+  void refine() override;
+
   Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
 
   void mergePatches() override;
@@ -333,6 +335,7 @@ _saveInfosInProperties()
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.cartesianMeshNumberingMng()->_saveInfosInProperties();
+    m_internal_api.cartesianMeshNumberingMng()->printStatus();
   }
 }
 
@@ -744,6 +747,17 @@ coarseZone(const AMRZonePosition& position)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void CartesianMeshImpl::
+refine()
+{
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_patch_group.refine();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer CartesianMeshImpl::
 reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 {
@@ -1081,6 +1095,10 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
                  face_method);
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
+
+  if (face_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Face renumbering is not compatible with this type of AMR");
+  }
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();

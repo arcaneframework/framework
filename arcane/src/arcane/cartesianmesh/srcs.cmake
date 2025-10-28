@@ -51,4 +51,10 @@ set(ARCANE_SOURCES
   AMRZonePosition.h
   AMRPatchPosition.h
   AMRPatchPosition.cc
+  AMRPatchPositionLevelGroup.h
+  AMRPatchPositionLevelGroup.cc
+  AMRPatchPositionSignature.h
+  AMRPatchPositionSignature.cc
+  AMRPatchPositionSignatureCut.h
+  AMRPatchPositionSignatureCut.cc
 )

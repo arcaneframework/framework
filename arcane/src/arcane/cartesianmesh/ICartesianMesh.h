@@ -233,6 +233,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    */
   virtual void coarseZone(const AMRZonePosition& position) = 0;
 
+  virtual void refine() = 0;
+
   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
    * de mailles fantômes sur un niveau de raffinement défini.

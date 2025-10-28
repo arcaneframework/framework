@@ -66,6 +66,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void mergePatches();
 
+  void refine();
+
  private:
 
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
@@ -77,6 +79,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
   void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
+  void _addPatch(const AMRPatchPosition& new_patch_position);
 
  private:
 

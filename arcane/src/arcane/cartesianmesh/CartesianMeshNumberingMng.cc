@@ -274,7 +274,14 @@ updateFirstLevel()
   m_min_level += nb_levels_to_add;
 
   const Integer to_div = m_pattern * nb_levels_to_add;
-  m_nb_cell_ground /= to_div;
+  if (m_dimension == 2) {
+    m_nb_cell_ground.x /= to_div;
+    m_nb_cell_ground.y /= to_div;
+    // z reste à 1.
+  }
+  else {
+    m_nb_cell_ground /= to_div;
+  }
 
   // ----------
   // CartesianMeshCoarsening2::_recomputeMeshGenerationInfo()
