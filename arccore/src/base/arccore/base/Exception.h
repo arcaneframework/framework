@@ -32,28 +32,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \ingroup Core
  * \brief Classe de base d'une exception.
  *
- * \ingroup Core
- Les exceptions sont gérées par le mécanisme <tt>try</tt> et <tt>catch</tt>
- du C++. Toutes les exceptions lancées dans le code <strong>doivent</strong>
- dériver de cette classe.
-
- Une exception peut-être collective. Cela signifie qu'elle sera lancée
- par tous les processeurs. Il est possible dans ce cas de n'afficher qu'une
- seule fois le message et éventuellement d'arrêter proprement l'exécution.
+ * Les exceptions sont gérées par le mécanisme <tt>try</tt> et <tt>catch</tt>
+ * du C++. Toutes les exceptions lancées dans le code <strong>doivent</strong>
+ * dériver de cette classe.
+ *
+ * Une exception peut être collective. Cela signifie qu'elle sera lancée
+ * par tous les processeurs. Il est possible dans ce cas de n'afficher qu'une
+ * seule fois le message et éventuellement d'arrêter proprement l'exécution.
  */
 class ARCCORE_BASE_EXPORT Exception
 : public std::exception
 {
- private:
+ public:
 
-  /*!
-   * \internal
-   *
-   * Cette méthode est privée pour interdire d'affecter une exception.
-   */
-  const Exception& operator=(const Exception&); //PURE
+  Exception& operator=(const Exception&) = delete; //PURE
 
  public:
 
@@ -64,19 +59,19 @@ class ARCCORE_BASE_EXPORT Exception
   Exception(const String& name,const String& where);
   /*!
    * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * envoyée depuis la fonction \a awhere.
    */
-  Exception(const String& name,const TraceInfo& where);
+  Exception(const String& name, const TraceInfo& where);
+  /*!
+   * Construit une exception de nom \a name,
+   * envoyée depuis la fonction \a awhere et avec le message \a message.
+   */
+  Exception(const String& name, const String& awhere, const String& message);
   /*!
    * Construit une exception de nom \a name,
    * envoyée depuis la fonction \a where et avec le message \a message.
    */
-  Exception(const String& name,const String& where,const String& message);
-  /*!
-   * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
-   */
-  Exception(const String& name,const TraceInfo& trace,const String& message);
+  Exception(const String& name, const TraceInfo& trace, const String& message);
   /*!
    * Construit une exception de nom \a name et
    * envoyée depuis la fonction \a where.
@@ -101,6 +96,7 @@ class ARCCORE_BASE_EXPORT Exception
             const String& message,const StackTrace& stack_trace);
   //! Constructeur par copie.
   Exception(const Exception&);
+
   //! Libère les ressources
   ~Exception() ARCCORE_NOEXCEPT override;
 
@@ -111,7 +107,7 @@ class ARCCORE_BASE_EXPORT Exception
   //! Vrai s'il s'agit d'une erreur collective (concerne tous les processeurs)
   bool isCollective() const { return m_is_collective; }
 
-  //! Positionne l'état collective de l'expression
+  //! Positionne l'état collectif de l'expression
   void setCollective(bool v) { m_is_collective = v; }
 
   //! Positionne les infos supplémentaires
@@ -129,8 +125,6 @@ class ARCCORE_BASE_EXPORT Exception
   //! Indique si des exceptions sont en cours
   static bool hasPendingException();
 
-  static void staticInit();
-
   //! Message de l'exception
   const String& message() const { return m_message; }
 
@@ -140,9 +134,19 @@ class ARCCORE_BASE_EXPORT Exception
   //! Nom de l'exception
   const String& name() const { return m_name; }
 
+  //! Opérateur d'écriture
+  friend ARCCORE_BASE_EXPORT std::ostream&
+  operator<<(std::ostream& o, const Exception& ex);
+
+ public:
+
+  //! \internal
+  static void staticInit();
+
  protected:
-  
-  /*! \brief Explique la cause de l'exception dans le flot \a o.
+
+  /*!
+   * \brief Explique la cause de l'exception dans le flot \a o.
    *
    * Cette méthode permet d'ajouter des informations supplémentaires
    * au message d'exception.
@@ -162,7 +166,7 @@ class ARCCORE_BASE_EXPORT Exception
   StackTrace m_stack_trace;
   String m_message;
   String m_additional_info;
-  bool m_is_collective;
+  bool m_is_collective = false;
 
   void _setStackTrace();
   void _setWhere(const TraceInfo& where);
@@ -172,12 +176,6 @@ class ARCCORE_BASE_EXPORT Exception
 
   static std::atomic<Int32> m_nb_pending_exception;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCCORE_BASE_EXPORT std::ostream&
-operator<<(std::ostream& o,const Exception& ex);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
