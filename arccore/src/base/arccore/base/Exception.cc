@@ -39,15 +39,15 @@ std::atomic<Int32> Exception::m_nb_pending_exception;
 
 namespace
 {
-// Si vrai, affiche les informations de l'exception dans les appels aux
-// constructeur. Cela permet d'avoir le message dans le cas où une exception
-// lève une autre exception (ce qui appelle directement std::terminate et on
-// ne peut pas la récupérer.
-bool global_explain_in_constructor = false;
-// Si vrai, se met en pause dans le constructeur pour attendre de brancher
-// un débugger
-bool global_pause_in_constructor = false;
-}
+  // Si vrai, affiche les informations de l'exception dans les appels aux
+  // constructeurs. Cela permet d'avoir le message dans le cas où une exception
+  // lève une autre exception (ce qui appelle directement std::terminate et on
+  // ne peut pas la récupérer).
+  bool global_explain_in_constructor = false;
+  // Si vrai, se met en pause dans le constructeur pour attendre de brancher
+  // un débugger
+  bool global_pause_in_constructor = false;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,6 @@ Exception::
 Exception(const String& aname,const String& awhere)
 : m_name(aname)
 , m_where(awhere)
-, m_is_collective(false)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
@@ -89,7 +88,6 @@ Exception(const String& aname,const String& awhere,const String& amessage)
 : m_name(aname)
 , m_where(awhere)
 , m_message(amessage)
-, m_is_collective(false)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
@@ -105,7 +103,6 @@ Exception(const String& aname,const String& awhere,
 : m_name(aname)
 , m_where(awhere)
 , m_stack_trace(stack_trace)
-, m_is_collective(false)
 {
   ++m_nb_pending_exception;
   _checkExplainAndPause();
@@ -121,7 +118,6 @@ Exception(const String& aname,const String& awhere,
 , m_where(awhere)
 , m_stack_trace(stack_trace)
 , m_message(amessage)
-, m_is_collective(false)
 {
   ++m_nb_pending_exception;
   _checkExplainAndPause();
@@ -133,7 +129,6 @@ Exception(const String& aname,const String& awhere,
 Exception::
 Exception(const String& aname,const TraceInfo& awhere)
 : m_name(aname)
-, m_is_collective(false)
 {
   ++m_nb_pending_exception;
   _setWhere(awhere);
