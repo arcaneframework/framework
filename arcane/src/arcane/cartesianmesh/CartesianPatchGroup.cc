@@ -12,6 +12,9 @@
 
 #include "arcane/cartesianmesh/CartesianPatchGroup.h"
 
+#include "AMRPatchPositionLevelGroup.h"
+#include "AMRPatchPositionSignature.h"
+#include "AMRPatchPositionSignatureCut.h"
 #include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 #include "arcane/utils/ITraceMng.h"
@@ -24,6 +27,7 @@
 
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
+#include "arccore/base/StringBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -418,6 +422,219 @@ mergePatches()
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
+refine()
+{
+  Integer min_level = 0;
+  Integer max_level = -1;
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+    if (icell->hasFlags(ItemFlags::II_Refine)) {
+      Integer level = icell->level();
+      if (level > max_level)
+        max_level = level;
+    }
+  }
+  max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, max_level);
+
+  m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << max_level;
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+
+  AMRPatchPositionLevelGroup all_patches(max_level);
+
+  for (Integer level = max_level; level >= min_level; --level) {
+    if (level != max_level) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+        if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
+          Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+          Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+          Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+          for (auto patch : all_patches.patches(level)) {
+            if (patch.isInWithMargin(level, pos_x, pos_y, pos_z)) {
+              icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
+            }
+          }
+        }
+      }
+      m_cmesh->traceMng()->info() << "All patch level+1 with margin (can be overlap) : ";
+      for (auto& elem : all_patches.patches(level + 1)) {
+        m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.minWithMargin(level) << " -- max = " << elem.maxWithMargin(level);
+      }
+    }
+
+    AMRPatchPosition all_level;
+    all_level.setLevel(level);
+    all_level.setMinPoint({ 0, 0, 0 });
+    all_level.setMaxPoint({ static_cast<Integer>(numbering->globalNbCellsX(level)), static_cast<Integer>(numbering->globalNbCellsY(level)), static_cast<Integer>(numbering->globalNbCellsZ(level)) });
+
+    AMRPatchPositionSignature sig(all_level, m_cmesh, &all_patches);
+    UniqueArray<AMRPatchPositionSignature> sig_array;
+    sig_array.add(sig);
+
+    AMRPatchPositionSignatureCut::cut(sig_array);
+
+    for (const auto& elem : sig_array) {
+      all_patches.addPatch(elem.patch());
+    }
+
+    Real global_efficacity = 0;
+    m_cmesh->traceMng()->info() << "All patch : ";
+    for (auto& elem : sig_array) {
+      m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.patch().minPoint() << " -- max = " << elem.patch().maxPoint() << " -- Efficacité : " << elem.efficacity();
+      global_efficacity += elem.efficacity();
+    }
+    global_efficacity /= sig_array.size();
+    m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
+
+    StringBuilder str = "";
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+      if (icell->level() != level)
+        continue;
+      Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+      Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+      Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+      Integer patch = -1;
+      for (Integer i = 0; i < sig_array.size(); ++i) {
+        const AMRPatchPositionSignature& elem = sig_array[i];
+        if (elem.isIn(pos_x, pos_y, pos_z)) {
+          if (patch != -1) {
+            ARCANE_FATAL("ABCDEFG -- old : {0} -- new : {1}", patch, i);
+          }
+          patch = i;
+        }
+      }
+      if (patch == -1 && icell->hasFlags(ItemFlags::II_Refine)) {
+        ARCANE_FATAL("Bad Patch");
+      }
+
+      if (pos_x == 0) {
+        str += "\n";
+      }
+      if (patch != -1) {
+        str += "[";
+        if (patch < 10) {
+          str += " ";
+        }
+        str += patch;
+        str += "]";
+      }
+      else {
+        str += "[..]";
+      }
+    }
+    m_cmesh->traceMng()->info() << str;
+  }
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+
+  {
+    constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine |
+                                                     ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
+                                                     ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive);
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+      icell->mutableItemBase().removeFlags(flags_to_remove);
+    }
+  }
+
+  for (Integer i = 1; i < m_amr_patches.size(); ++i) {
+    _removeOnePatch(i);
+  }
+  applyPatchEdit(false);
+
+  for (Integer level = min_level; level <= max_level; ++level) {
+
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+      if (!icell->hasHChildren()) {
+        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        for (const AMRPatchPosition& patch : all_patches.patches(level)) {
+          if (patch.isIn(pos_x, pos_y, pos_z)) {
+            icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+          }
+        }
+      }
+    }
+
+    Integer nb_cell_x = numbering->globalNbCellsX(level);
+
+    StringBuilder str = "Level ";
+    str += level;
+    str += "\n";
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level)) {
+      if (icell->uniqueId().asInt32() % nb_cell_x == 0) {
+        str += "\n";
+      }
+      if (icell->hasFlags(ItemFlags::II_Refine)) {
+        str += "[++]";
+      }
+      else {
+        str += "[..]";
+      }
+    }
+    m_cmesh->traceMng()->info() << str;
+
+    amr->refine();
+
+    for (const AMRPatchPosition& patch : all_patches.patches(level)) {
+      _addPatch(patch.patchUp());
+    }
+  }
+
+  for (Integer level = max_level; level > min_level; --level) {
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+      Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+      Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+      Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+      bool is_in = false;
+      for (auto patch : all_patches.patches(level)) {
+        if (patch.isInWithMarginEven(level, pos_x, pos_y, pos_z)) {
+          is_in = true;
+          break;
+        }
+      }
+      if (!is_in) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+      }
+    }
+
+    Integer nb_cell_x = numbering->globalNbCellsX(level);
+
+    StringBuilder str = "Level ";
+    str += level;
+    str += "\n";
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level)) {
+      if (icell->uniqueId().asInt32() % nb_cell_x == 0) {
+        str += "\n";
+      }
+      if (icell->hasFlags(ItemFlags::II_Coarsen)) {
+        str += "[--]";
+      }
+      else {
+        str += "[..]";
+      }
+    }
+    m_cmesh->traceMng()->info() << str;
+
+    amr->coarsen(true);
+  }
+  m_cmesh->computeDirections();
+
+  m_cmesh->traceMng()->info() << "NbPatch : " << m_cmesh->patches().size();
+
+  for (Integer i = 0; i < m_cmesh->patches().size(); ++i) {
+    auto patch = m_cmesh->amrPatch(i);
+    m_cmesh->traceMng()->info() << "Patch #" << i;
+    m_cmesh->traceMng()->info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
+    m_cmesh->traceMng()->info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
+    m_cmesh->traceMng()->info() << "\tLevel : " << patch.patchInterface()->position().level();
+    m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
 _addPatchInstance(Ref<CartesianMeshPatch> v)
 {
   m_amr_patches.add(v);
@@ -771,8 +988,6 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
   if (parent_patch_cell_group.null())
     ARCANE_FATAL("Null cell group");
 
-  // TODO : Le nextIndexForNewPatch() actuel ne fonctionnera pas si on s'amuse à créer, détruire et recréer des patchs !
-  // TODO : Attribut que l'on incrémente de 1 lors de la création d'un patch.
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
   Integer index = nextIndexForNewPatch();
   String parent_group_name = String("CartesianMeshPatchParentCells") + index;
@@ -796,6 +1011,43 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
       cells_local_id.add(icell.localId());
     }
   }
+
+  CellGroup parent_cells = cell_family->createGroup(parent_group_name, cells_local_id, true);
+  m_amr_patch_cell_groups.add(parent_cells);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_addPatch(const AMRPatchPosition& new_patch_position)
+{
+  UniqueArray<Int32> cells_local_id;
+
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(new_patch_position.level())) {
+    Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
+    Int64 pos_y = numbering->cellUniqueIdToCoordY(*icell);
+    Int64 pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+    if (new_patch_position.isIn(pos_x, pos_y, pos_z)) {
+      cells_local_id.add(icell.localId());
+    }
+  }
+
+  if (cells_local_id.empty()) {
+    return;
+  }
+
+  IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
+  Integer index = nextIndexForNewPatch();
+  String parent_group_name = String("CartesianMeshPatchParentCells") + index;
+
+  auto* cdi = new CartesianMeshPatch(m_cmesh, index + 1);
+  cdi->position().setLevel(new_patch_position.level());
+  cdi->position().setMinPoint(new_patch_position.minPoint());
+  cdi->position().setMaxPoint(new_patch_position.maxPoint());
+
+  _addPatchInstance(makeRef(cdi));
 
   CellGroup parent_cells = cell_family->createGroup(parent_group_name, cells_local_id, true);
   m_amr_patch_cell_groups.add(parent_cells);

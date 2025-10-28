@@ -5,17 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPosition.h                                        (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
+#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
+#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Vector3.h"
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
+#include "arcane/utils/Vector3.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,49 +29,21 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
+class AMRPatchPositionLevelGroup
 {
  public:
-  AMRPatchPosition();
-  ~AMRPatchPosition();
+  AMRPatchPositionLevelGroup(Integer max_level);
+  ~AMRPatchPositionLevelGroup();
+
  public:
 
-  Integer level() const;
-  void setLevel(Integer level);
-
-  Int64x3 minPoint() const;
-  void setMinPoint(Int64x3 min_point);
-  Int64x3 maxPoint() const;
-  void setMaxPoint(Int64x3 max_point);
-
-  bool isIn(Int64 x, Int64 y, Int64 z) const;
-
-  Int64 nbCells() const;
-  std::pair<AMRPatchPosition, AMRPatchPosition> cut(Int64 cut_point, Integer dim) const;
-  bool canBeFusion(const AMRPatchPosition& other_patch) const;
-  void fusion(const AMRPatchPosition& other_patch);
-  bool isNull() const;
-
-  AMRPatchPosition patchUp() const;
-
-  Int64x3 length() const;
-
-  Int64x3 min(Integer level) const;
-  Int64x3 minWithMargin(Integer level) const;
-  Int64x3 minWithMarginEven(Integer level) const;
-
-  Int64x3 max(Integer level) const;
-  Int64x3 maxWithMargin(Integer level) const;
-  Int64x3 maxWithMarginEven(Integer level) const;
-
-  bool isIn(Integer x, Integer y, Integer z) const;
-  bool isInWithMargin(Integer level, Integer x, Integer y, Integer z) const;
-  bool isInWithMarginEven(Integer level, Integer x, Integer y, Integer z) const;
+  Integer maxLevel();
+  ConstArrayView<AMRPatchPosition> patches(Integer level);
+  void addPatch(AMRPatchPosition patch);
 
  private:
-  Integer m_level;
-  Int64x3 m_min_point;
-  Int64x3 m_max_point;
+  Integer m_max_level;
+  UniqueArray<UniqueArray<AMRPatchPosition>> m_patches;
 };
 
 /*---------------------------------------------------------------------------*/
