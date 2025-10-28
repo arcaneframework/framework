@@ -31,6 +31,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Interface de gestionnaire de numérotation pour maillage cartesian.
+ *
+ * Dans ces gestionnaires, on considère que l'on a un intervalle d'uniqueids
+ * attribué à chaque niveau du maillage.
+ *
+ * \warning Le maillage ne doit pas être renuméroté si une implémentation de
+ * cette interface est utilisée (ou alors, il ne faut plus l'utiliser après
+ * renumérotation (attention aux protections/reprises)).
+ */
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 {
  public:
@@ -42,6 +52,23 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual void _build() = 0;
   virtual void _saveInfosInProperties() = 0;
   virtual void _recreateFromDump() = 0;
+
+  /*!
+   * \brief Méthode permettant de renuméroter les faces du niveau 0.
+   *
+   * Cela permet de ne plus faire de conversions de uniqueIds lors de
+   * certaines opérations sur les faces et donc de libérer les structures
+   * faisant la correspondance entre les deux numérotations.
+   *
+   * Ces structures n'étant pas partagées entre sous-domaines, renuméroter
+   * permet de repartitionner le maillage sans problème.
+   */
+  virtual void renumberingFacesLevel0FromOriginalArcaneNumbering() = 0;
+
+  /*!
+   * \brief Méthode permettant de décrire l'état de l'objet.
+   */
+  virtual void printStatus() = 0;
 
   /*!
    * \brief Méthode permettant de préparer un nouveau niveau.
@@ -75,7 +102,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le premier uid des mailles du niveau.
    */
-  virtual Int64 firstCellUniqueId(Integer level) = 0;
+  virtual Int64 firstCellUniqueId(Integer level) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le premier unique id utilisé par les noeuds d'un niveau.
@@ -85,7 +112,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le premier uid des noeuds du niveau.
    */
-  virtual Int64 firstNodeUniqueId(Integer level) = 0;
+  virtual Int64 firstNodeUniqueId(Integer level) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le premier unique id utilisé par les faces d'un niveau.
@@ -95,7 +122,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le premier uid des faces du niveau.
    */
-  virtual Int64 firstFaceUniqueId(Integer level) = 0;
+  virtual Int64 firstFaceUniqueId(Integer level) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de mailles global en X d'un niveau.

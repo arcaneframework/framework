@@ -132,7 +132,7 @@ addPatch(CellGroup cell_group)
     {
       Int64 nb_cells_patch = (max[MD_DirX] - min[MD_DirX]) * (max[MD_DirY] - min[MD_DirY]) * (max[MD_DirZ] - min[MD_DirZ]);
       if (nb_cells != nb_cells_patch) {
-        ARCANE_FATAL("Not regular patch");
+        ARCANE_FATAL("Not regular patch -- NbCellsInGroup : {0} -- NbCellsInPatch : {1}", nb_cells, nb_cells_patch);
       }
     }
 
