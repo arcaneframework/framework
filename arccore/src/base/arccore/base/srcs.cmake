@@ -17,9 +17,12 @@ set(SOURCES
   ArrayLayout.h
   ArgumentException.cc
   ArgumentException.h
+  BadCastException.h
+  BadCastException.cc
   BuiltInDataTypeContainer.h
   BFloat16.h
   CheckedPointer.h
+  CheckedConvert.h
   Convert.h
   Convert.cc
   CStringUtils.h

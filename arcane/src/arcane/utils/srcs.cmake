@@ -18,7 +18,6 @@ set(ARCANE_SOURCES
   BasicDataType.h
   BadAlignmentException.cc
   BadAlignmentException.h
-  BadCastException.cc
   BadCastException.h
   BFloat16.h
   Collection.cc
