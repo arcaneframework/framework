@@ -20,6 +20,8 @@ set(SOURCES
   BuiltInDataTypeContainer.h
   BFloat16.h
   CheckedPointer.h
+  Convert.h
+  Convert.cc
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h
@@ -102,6 +104,7 @@ set(SOURCES
   Functor.h
   Functor.cc
 
+  internal/ConvertInternal.h
   internal/StringImpl.h
   internal/DependencyInjection.h
   internal/ProfilingInternal.h

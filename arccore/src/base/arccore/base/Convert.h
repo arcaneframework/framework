@@ -5,56 +5,50 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueConvertInternal.h                                      (C) 2000-2025 */
+/* Convert.h                                                   (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
+#ifndef ARCCORE_BASE_CONVERT_H
+#define ARCCORE_BASE_CONVERT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/ValueConvert.h"
+#include "arccore/base/StringView.h"
 
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Convert::Impl
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename T> inline bool
-builtInGetArrayValueFromStream(Array<T>& v, std::istream& sbuf)
+/*!
+ * \brief Encapsule un std::istream pour un StringView.
+ *
+ * Actuellement (C++20) std::istringstream utilise en
+ * entrée un std::string ce qui nécessite une instance de ce type
+ * et donc une allocation potentielle. Cette classe sert à éviter
+ * cela en utilisant directement la mémoire pointée par l'instance
+ * de StringView passé dans le constructeur. Cette dernière doit
+ * rester valide durant toute l'ulisation de cette classe.
+ */
+class ARCCORE_BASE_EXPORT StringViewInputStream
+: private std::streambuf
 {
-  T read_val = T();
-  if (!sbuf.eof())
-    sbuf >> ws;
-  while (!sbuf.eof()) {
-    sbuf >> read_val;
-    if (sbuf.fail() || sbuf.bad())
-      return true;
-    v.add(read_val);
-    sbuf >> ws;
-  }
-  return false;
-}
+ public:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  explicit StringViewInputStream(StringView v);
 
-template <typename T> inline bool
-builtInGetArrayValue(Array<T>& v, StringView s)
-{
-  impl::StringViewInputStream svis(s);
-  std::istream& sbuf = svis.stream();
-  return builtInGetArrayValueFromStream(v, sbuf);
-}
+ public:
+
+  std::istream& stream() { return m_stream; }
+
+ private:
+
+  StringView m_view;
+  std::istream m_stream;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
