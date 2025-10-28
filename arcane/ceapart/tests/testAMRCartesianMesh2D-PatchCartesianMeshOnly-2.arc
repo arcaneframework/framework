@@ -56,6 +56,7 @@
       <position>2.0 0.0</position>
       <length>2.0 2.0</length>
     </refinement-2d>
+    <merge-patches>false</merge-patches>
     <expected-number-of-cells-in-patchs>4 4 4 4 4</expected-number-of-cells-in-patchs>
     <expected-number-of-ghost-cells-in-patchs>12 12 12 12 12</expected-number-of-ghost-cells-in-patchs>
     <nodes-uid-hash>c162b8092f50639d0e8d83ef6439043e</nodes-uid-hash>
