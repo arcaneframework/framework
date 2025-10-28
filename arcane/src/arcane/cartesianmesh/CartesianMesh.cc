@@ -344,6 +344,7 @@ recreateFromDump()
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.cartesianMeshNumberingMng()->_recreateFromDump();
+    m_internal_api.cartesianMeshNumberingMng()->printStatus();
   }
 
   // Sauve le numéro de version pour être sur que c'est OK en reprise
