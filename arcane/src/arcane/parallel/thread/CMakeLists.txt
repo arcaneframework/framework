@@ -1,4 +1,4 @@
-set(PKGS Glib TBB)
+﻿set(PKGS Glib TBB)
 arcane_find_package(TBB)
 
 include(srcs.cmake)
@@ -16,23 +16,15 @@ if(TBB_VERSION)
     message(STATUS "[arcane_thread] Using OneTBB 2021+ implementation")
     set(ARCANE_HAS_ONETBB TRUE)
   else()
-    message(STATUS "[arcane_thread] Using Legacy (2018-2020) TBB implementation")
+    message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} is too old. Version 2021+ is required."
+    "Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command")
   endif()
 elseif(TBB_FOUND)
-  # Il faut une version récente de TBB (2018+).
-  # Pour cela, on regarde si le fichier 'tbb_stddef.h' existe car ce dernier a été
-  # ajouté à partir de la version 2018. De plus, il contient des macros permettant de
-  # savoir quelle version de TBB on utilise.
-  find_path(_TBB_STDDEF_HEADER NAMES tbb/tbb_stddef.h PATHS ${TBB_INCLUDE_DIRS})
-  if (_TBB_STDDEF_HEADER)
-    message(STATUS "[arcane_thread] Adding TBB implementation")
-    set(ARCANE_HAS_TBBIMPL TRUE)
-  else()
-    message(FATAL_ERROR
-      "[arcane_thread] Your version of TBB is too old (need version 2018 or superior)"
-      "To disable TBB, pass the flag -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE to 'cmake' command"
-      )
-  endif()
+  message(FATAL_ERROR
+    "[arcane_thread] Can not find TBB_VERSION. This is probably because your TBB version is too old."
+    "Version 2021+ is required."
+    "Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command"
+  )
 endif()
 
 # Si les TBB sont disponibles, indique qu'on a le support des tâches
@@ -57,3 +49,10 @@ arcane_add_arccon_packages(arcane_thread PRIVATE ${PKGS})
 target_link_libraries(arcane_thread PUBLIC arcane_impl arcane_core arcane_utils)
 
 arcane_register_library(arcane_thread)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
