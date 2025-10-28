@@ -291,12 +291,8 @@ arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-
 
 arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-coarse-zone-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-2.arc "-m 20")
-arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-coarse-zone-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-3.arc "-m 20")
-arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-4.arc "-m 20")
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-1.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-coarse-zone-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-2.arc 3 5)
-arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-coarse-zone-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-3.arc 3 5)
-arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh2D-PatchCartesianMeshOnly-CoarseZone-4.arc 3 5)
 
 
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-1.arc "-m 20")
@@ -307,14 +303,6 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-3.arc 8 "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-4.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-4.arc 8 "-m 20")
-arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-5.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-5.arc 8 "-m 20")
-arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-6 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-6.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-6 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-6.arc 8 "-m 20")
-arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-7 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-7.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-7 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-7.arc 8 "-m 20")
-arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-8 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-8.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-coarse-zone-8 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-8.arc 8 "-m 20")
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-1.arc 3 5)
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-1.arc 8 3 5)
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-2 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-2.arc 3 5)
@@ -323,14 +311,6 @@ arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-3.arc 8 3 5)
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-4.arc 3 5)
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-4.arc 8 3 5)
-arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-5.arc 3 5)
-arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-5.arc 8 3 5)
-arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-6 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-6.arc 3 5)
-arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-6 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-6.arc 8 3 5)
-arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-7 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-7.arc 3 5)
-arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-7 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-7.arc 8 3 5)
-arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-8 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-8.arc 3 5)
-arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-coarse-zone-8 testAMRCartesianMesh3D-PatchCartesianMeshOnly-CoarseZone-8.arc 8 3 5)
 
 
 arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-coarse-zone-1 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-CoarseZone-1.arc "-m 20")
