@@ -15,8 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArccoreGlobal.h"
-
-#include <iosfwd>
+#include "arccore/common/CommonGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,38 +122,10 @@ enum class eHostDeviceMemoryLocation : int8_t
 extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
 operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Liste des ressources mémoire disponibles.
- */
-enum class eMemoryResource
-{
-  //! Valeur inconnue ou non initialisée
-  Unknown = 0,
-  //! Alloue sur l'hôte.
-  Host,
-  //! Alloue sur l'hôte.
-  HostPinned,
-  //! Alloue sur le device
-  Device,
-  //! Alloue en utilisant la mémoire unifiée.
-  UnifiedMemory
-};
-
-//! Nombre de valeurs valides pour eMemoryResource
-static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
 
 //! Typedef pour la version Arcane historique (avec 2's')
 // TODO: A rendre obsolète (juin 2025)
 using eMemoryRessource = Arcane::eMemoryResource;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

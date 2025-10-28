@@ -25,6 +25,7 @@ target_link_libraries(arcane_utils PUBLIC
   Arccore::arccore_trace
   Arccore::arccore_concurrency
   Arccore::arccore_collections
+  Arccore::arccore_common
   Arccore::arccore_base
   )
 arcane_add_arccon_packages(arcane_utils PUBLIC Glib)

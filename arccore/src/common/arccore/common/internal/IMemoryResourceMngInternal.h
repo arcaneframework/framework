@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryCopier.h                                             (C) 2000-2024 */
+/* IMemoryResourceMngInternal.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface pour les copies mémoire.                                        */
+/* Partie interne à Arcane de 'IMemoryResourceMng'.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
-#define ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
+#ifndef ARCCORE_COMMON_INTERNAL_IMEMORYRESOURCEMNGINTERNAL_H
+#define ARCCORE_COMMON_INTERNAL_IMEMORYRESOURCEMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arccore/common/internal/IMemoryCopier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,32 +25,37 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface pour les copies mémoire avec support des accélérateurs.
+ * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
  */
-class ARCANE_UTILS_EXPORT IMemoryCopier
+class ARCCORE_COMMON_EXPORT IMemoryResourceMngInternal
 {
  public:
 
-  virtual ~IMemoryCopier() = default;
+  virtual ~IMemoryResourceMngInternal() = default;
 
  public:
 
-  /*!
-   * \brief Copie les données de \a from vers \a to avec la queue \a queue.
-   *
-   * \a queue peut-être nul.
-   */
-  virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem,
-                    const RunQueue* queue) = 0;
+  virtual void copy(ConstMemoryView from, eMemoryResource from_mem,
+                    MutableMemoryView to, eMemoryResource to_mem, const RunQueue* queue) = 0;
+
+ public:
+
+  //! Positionne l'allocateur pour la ressource \a r
+  virtual void setAllocator(eMemoryResource r, IMemoryAllocator* allocator) = 0;
+
+  //! Positionne l'instance gérant les copies.
+  virtual void setCopier(IMemoryCopier* copier) = 0;
+
+  //! Indique si un accélérateur est disponible.
+  virtual void setIsAccelerator(bool v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

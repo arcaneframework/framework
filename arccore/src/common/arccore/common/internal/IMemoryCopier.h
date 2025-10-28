@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CollectionsGlobal.cc                                        (C) 2000-2025 */
+/* IMemoryCopier.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Collections' de 'Arccore'.         */
+/* Interface pour les copies mémoire.                                        */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_COMMON_INTERNAL_IMEMORYCOPIER_H
+#define ARCCORE_COMMON_INTERNAL_IMEMORYCOPIER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/collections/CollectionsGlobal.h"
-
-#include <iostream>
+#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/base/MemoryView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,38 +25,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace
+/*!
+ * \brief Interface pour les copies mémoire avec support des accélérateurs.
+ */
+class ARCCORE_COMMON_EXPORT IMemoryCopier
 {
-  const char* _toName(eHostDeviceMemoryLocation v)
-  {
-    switch (v) {
-    case eHostDeviceMemoryLocation::Unknown:
-      return "Unknown";
-    case eHostDeviceMemoryLocation::Device:
-      return "Device";
-    case eHostDeviceMemoryLocation::Host:
-      return "Host";
-    case eHostDeviceMemoryLocation::ManagedMemoryDevice:
-      return "ManagedMemoryDevice";
-    case eHostDeviceMemoryLocation::ManagedMemoryHost:
-      return "ManagedMemoryHost";
-    }
-    return "Invalid";
-  }
-} // namespace
+ public:
 
-extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
-{
-  o << _toName(v);
-  return o;
-}
+  virtual ~IMemoryCopier() = default;
+
+ public:
+
+  /*!
+   * \brief Copie les données de \a from vers \a to avec la queue \a queue.
+   *
+   * \a queue peut-être nul.
+   */
+  virtual void copy(ConstMemoryView from, eMemoryResource from_mem,
+                    MutableMemoryView to, eMemoryResource to_mem,
+                    const RunQueue* queue) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

@@ -241,6 +241,7 @@ set(namespace "Arccore::")
 # ----------------------------------------------------------------------------
 
 arccore_add_component_directory(base)
+arccore_add_component_directory(common)
 arccore_add_component_directory(collections)
 arccore_add_component_directory(concurrency)
 arccore_add_component_directory(trace)

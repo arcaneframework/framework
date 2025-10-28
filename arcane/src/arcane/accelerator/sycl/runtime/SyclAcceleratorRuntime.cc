@@ -14,13 +14,15 @@
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
 #include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/NotSupportedException.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/NotImplementedException.h"
+
+#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
+
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -454,7 +456,7 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& i
   Arcane::Accelerator::impl::setSYCLRunQueueRuntime(&global_sycl_runtime);
   MemoryUtils::setAcceleratorHostMemoryAllocator(getSyclMemoryAllocator());
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
-  IMemoryRessourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
+  IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());

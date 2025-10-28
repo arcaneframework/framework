@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtils.cc                                              (C) 2000-2024 */
+/* MemoryUtils.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/MemoryResourceMng.h"
 

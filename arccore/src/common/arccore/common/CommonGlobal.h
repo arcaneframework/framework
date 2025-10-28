@@ -5,74 +5,80 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtilsInternal.h                                       (C) 2000-2025 */
+/* CommonGlobal.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires de gestion mémoire internes à Arcane.               */
+/* Définitions globales de la composante 'Common' de 'Arccore'.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYUTILSINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_MEMORYUTILSINTERNAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
-
+#ifndef ARCCORE_COMMON_COMMONGLOBAL_H
+#define ARCCORE_COMMON_COMMONGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::MemoryUtils
+#include "arccore/base/ArccoreGlobal.h"
+
+#include <iosfwd>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPONENT_arccore_common)
+#define ARCCORE_COMMON_EXPORT ARCCORE_EXPORT
+#define ARCCORE_COMMON_EXTERN_TPL
+#else
+#define ARCCORE_COMMON_EXPORT ARCCORE_IMPORT
+#define ARCCORE_COMMON_EXTERN_TPL extern
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Positionne le gestionnaire de ressource mémoire pour les données.
- *
- * Le gestionnaire doit rester valide durant toute l'exécution du programme.
- *
- * Retourne l'ancien gestionnaire.
- */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-setDataMemoryResourceMng(IMemoryRessourceMng* mng);
+
+class IMemoryResourceMngInternal;
+class IMemoryResourceMng;
+class IMemoryCopier;
+
+class IMemoryAllocator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire de ressource mémoire pour les données.
- *
- * Il est garanti que l'alignement est au moins celui retourné par
- * AlignedMemoryAllocator::Simd().
+ * \brief Liste des ressources mémoire disponibles.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-getDataMemoryResourceMng();
+enum class eMemoryResource
+{
+  //! Valeur inconnue ou non initialisée
+  Unknown = 0,
+  //! Alloue sur l'hôte.
+  Host,
+  //! Alloue sur l'hôte.
+  HostPinned,
+  //! Alloue sur le device
+  Device,
+  //! Alloue en utilisant la mémoire unifiée.
+  UnifiedMemory
+};
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Positionne l'allocateur spécifique pour les accélérateurs.
- *
- * Retourne l'ancien allocateur utilisé. L'allocateur spécifié doit rester
- * valide durant toute la durée de vie de l'application.
- */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
-setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Positionne la ressource mémoire utilisée pour l'allocateur
- * mémoire des données.
- *
- * \sa getDefaultDataMemoryResource();
- */
-extern "C++" ARCANE_UTILS_EXPORT void
-setDefaultDataMemoryResource(eMemoryResource mem_resource);
+//! Nombre de valeurs valides pour eMemoryResource
+static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::MemoryUtils
+extern "C++" ARCCORE_COMMON_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  
+

@@ -5,13 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CollectionsGlobal.cc                                        (C) 2000-2025 */
+/* CommonGlobal.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Collections' de 'Arccore'.         */
+/* Définitions globales de la composante 'Common' de 'Arccore'.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/collections/CollectionsGlobal.h"
+#include "arccore/common/CommonGlobal.h"
+
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
+#include "arccore/common/IMemoryResourceMng.h"
 
 #include <iostream>
 
@@ -21,31 +24,32 @@
 namespace Arcane
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace
 {
-  const char* _toName(eHostDeviceMemoryLocation v)
+  const char* _toName(eMemoryResource r)
   {
-    switch (v) {
-    case eHostDeviceMemoryLocation::Unknown:
+    switch (r) {
+    case eMemoryResource::Unknown:
       return "Unknown";
-    case eHostDeviceMemoryLocation::Device:
-      return "Device";
-    case eHostDeviceMemoryLocation::Host:
+    case eMemoryResource::Host:
       return "Host";
-    case eHostDeviceMemoryLocation::ManagedMemoryDevice:
-      return "ManagedMemoryDevice";
-    case eHostDeviceMemoryLocation::ManagedMemoryHost:
-      return "ManagedMemoryHost";
+    case eMemoryResource::HostPinned:
+      return "HostPinned";
+    case eMemoryResource::Device:
+      return "Device";
+    case eMemoryResource::UnifiedMemory:
+      return "UnifiedMemory";
     }
     return "Invalid";
   }
+
 } // namespace
 
-extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_COMMON_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryResource v)
 {
   o << _toName(v);
   return o;
@@ -54,7 +58,7 @@ operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

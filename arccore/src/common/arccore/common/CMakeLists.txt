@@ -1,10 +1,10 @@
 ﻿include(srcs.cmake)
 
-arccore_add_component_library(collections
+arccore_add_component_library(common
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_collections PUBLIC arccore_common arccore_base)
+target_link_libraries(arccore_common PUBLIC arccore_base)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
