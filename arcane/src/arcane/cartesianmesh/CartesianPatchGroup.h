@@ -66,6 +66,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void mergePatches();
 
+  void refine();
+
  private:
 
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
