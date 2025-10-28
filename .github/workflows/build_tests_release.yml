@@ -43,7 +43,9 @@ jobs:
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U24_G14'
