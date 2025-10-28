@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMngInternal.h                               (C) 2000-2024 */
+/* IMemoryResourceMng.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de 'IMemoryRessourceMng'.                         */
+/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
+#ifndef ARCCORE_COMMON_IMEMORYRESOURCEMNG_H
+#define ARCCORE_COMMON_IMEMORYRESOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/IMemoryCopier.h"
+#include "arccore/common/CommonGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,29 +25,37 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
+ * \internal
+ * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
  */
-class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
+class ARCCORE_COMMON_EXPORT IMemoryResourceMng
 {
  public:
 
-  virtual ~IMemoryRessourceMngInternal() = default;
+  virtual ~IMemoryResourceMng() = default;
 
  public:
 
-  virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue) = 0;
+  /*!
+   * \brief Allocateur mémoire pour la ressource \a r.
+   *
+   * Lève une exception si aucun allocateur pour la ressource \a v existe.
+   */
+  virtual IMemoryAllocator* getAllocator(eMemoryResource r) = 0;
+
+  /*!
+   * \brief Allocateur mémoire pour la ressource \a r.
+   *
+   * Si aucun allocateur pour la ressoruce \a v existe, lève une
+   * exception si \a throw_if_not_found est vrai ou retourne \a nullptr
+   * si \a throw_if_not_found est faux.
+   */
+  virtual IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) = 0;
 
  public:
 
-  //! Positionne l'allocateur pour la ressource \a r
-  virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
-
-  //! Positionne l'instance gérant les copies.
-  virtual void setCopier(IMemoryCopier* copier) = 0;
-
-  //! Indique si un accélérateur est disponible.
-  virtual void setIsAccelerator(bool v) = 0;
+  //! Interface interne
+  virtual IMemoryResourceMngInternal* _internal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

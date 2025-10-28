@@ -14,8 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
-#include "arcane/utils/MemoryView.h"
+#include "arcane/utils/ArcaneGlobal.h"
+
+#include "arccore/base/MemoryView.h"
 
 #include "arccore/collections/MemoryAllocationArgs.h"
 
@@ -31,7 +32,7 @@ namespace Arcane::MemoryUtils
  * \brief Ressource mémoire utilisée par l'allocateur par défaut pour les données.
  *
  * Par défaut, si un runtime accélérateur est initialisé, la ressource
- * associé est eMemoryResource::UnifiedMemory. Sinon, il s'agit de
+ * associée est eMemoryResource::UnifiedMemory. Sinon, il s'agit de
  * eMemoryResource::Host.
  *
  * \sa getDefaultDataAllocator();

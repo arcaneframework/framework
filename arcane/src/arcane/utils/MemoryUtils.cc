@@ -17,7 +17,7 @@
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/MemoryResourceMng.h"
 

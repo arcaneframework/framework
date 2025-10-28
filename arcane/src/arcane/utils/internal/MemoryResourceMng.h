@@ -5,18 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryRessourceMng.h                                        (C) 2000-2024 */
+/* MemoryResourceMng.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
-#define ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
+#ifndef ARCANE_UTILS_INTERNAL_MEMORYRESOURCEMNG_H
+#define ARCANE_UTILS_INTERNAL_MEMORYRESOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/IMemoryRessourceMng.h"
-#include "arcane/utils/FixedArray.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+#include "arcane/utils/ArcaneGlobal.h"
+
+#include "arccore/base/FixedArray.h"
+
+#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
 
 #include <memory>
 #include <array>
@@ -34,7 +37,7 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT MemoryResourceMng
 : public IMemoryResourceMng
-, public IMemoryRessourceMngInternal
+, public IMemoryResourceMngInternal
 {
  public:
 
@@ -59,7 +62,7 @@ class ARCANE_UTILS_EXPORT MemoryResourceMng
  public:
 
   //! Interface interne
-  IMemoryRessourceMngInternal* _internal() override { return this; }
+  IMemoryResourceMngInternal* _internal() override { return this; }
 
  public:
 
@@ -68,7 +71,7 @@ class ARCANE_UTILS_EXPORT MemoryResourceMng
 
  private:
 
-  FixedArray<IMemoryAllocator*, Arccore::ARCCORE_NB_MEMORY_RESOURCE> m_allocators;
+  FixedArray<IMemoryAllocator*, ARCCORE_NB_MEMORY_RESOURCE> m_allocators;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
   bool m_is_accelerator = false;
