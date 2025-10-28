@@ -35,7 +35,7 @@
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
-#include "arcane/utils/internal/ValueConvertInternal.h"
+#include "arccore/base/internal/ConvertInternal.h"
 
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IApplication.h"
@@ -730,7 +730,7 @@ arcaneInitialize()
     // Regarde si on souhaite utiliser l'ancien mécanisme (avant la 3.15)
     // pour convertir les chaînes de caractères en types numériques
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_BUILTINVALUECONVERT", true))
-      impl::arcaneSetIsValueConvertUseFromChars(v.value()==0);
+      Convert::Impl::ConvertPolicy::setUseFromChars(v.value()==0);
 
     // Crée le singleton gestionnaire des types
     ItemTypeMng::_singleton();
