@@ -5,18 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.cc                                               (C) 2000-2025 */
+/* MemoryUtils.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Vues constantes ou modifiables sur une zone mémoire.                      */
+/* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryView.h"
+#include "arccore/common/MemoryUtils.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/internal/SpecificMemoryCopyList.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/common/internal/SpecificMemoryCopyList.h"
 
+// Pour std::memmove
 #include <cstring>
 
 // TODO: ajouter statistiques sur les tailles de 'datatype' utilisées.
@@ -59,7 +59,7 @@ namespace
   impl::ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
   {
     if (queue && !default_global_copy_list)
-      ARCANE_FATAL("No instance of copier is available for RunQueue");
+      ARCCORE_FATAL("No instance of copier is available for RunQueue");
     if (default_global_copy_list && queue)
       return default_global_copy_list;
     return &global_copy_list;
@@ -96,12 +96,12 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
     return;
   Int64 destination_size = b_destination.size();
   if (source_size > destination_size)
-    ARCANE_FATAL("Destination is too small source_size={0} destination_size={1}",
+    ARCCORE_FATAL("Destination is too small source_size={0} destination_size={1}",
                  source_size, destination_size);
   auto* destination_data = b_destination.data();
   auto* source_data = b_source.data();
-  ARCANE_CHECK_POINTER(destination_data);
-  ARCANE_CHECK_POINTER(source_data);
+  ARCCORE_CHECK_POINTER(destination_data);
+  ARCCORE_CHECK_POINTER(source_data);
   std::memmove(destination_data, source_data, source_size);
 }
 
@@ -263,10 +263,10 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT void
-arcanePrintSpecificMemoryStats()
+extern "C++" ARCCORE_COMMON_EXPORT void
+arccorePrintSpecificMemoryStats()
 {
-  if (arcaneIsCheck()) {
+  if (arccoreIsCheck()) {
     // N'affiche que pour les tests
     //global_copy_list.printStats();
   }

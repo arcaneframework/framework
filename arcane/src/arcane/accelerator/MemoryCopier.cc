@@ -16,7 +16,7 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/internal/SpecificMemoryCopyList.h"
+#include "arccore/common/internal/SpecificMemoryCopyList.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"

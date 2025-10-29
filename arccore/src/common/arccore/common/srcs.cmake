@@ -4,11 +4,13 @@ set(SOURCES
   CommonGlobal.h
   CommonGlobal.cc
   IMemoryAllocator.h
-  MemoryAllocator.cc
   IMemoryResourceMng.h
+  MemoryAllocator.cc
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
+  MemoryUtils.cc
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/SpecificMemoryCopyList.h
 )
