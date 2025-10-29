@@ -17,6 +17,7 @@ set(SOURCES
   ArrayLayout.h
   ArgumentException.cc
   ArgumentException.h
+  AutoRef2.h
   BadCastException.h
   BadCastException.cc
   BuiltInDataTypeContainer.h
