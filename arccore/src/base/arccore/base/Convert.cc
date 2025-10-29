@@ -12,7 +12,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/internal/ConvertInternal.h"
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Convert.h"
+#include "arccore/base/String.h"
+#include "arccore/base/PlatformUtils.h"
 
 #include <charconv>
 
@@ -197,7 +200,128 @@ _getDoubleValueWithFromChars(double& v, StringView s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool StringViewToIntegral::
+getValue(double& v, StringView s)
+{
+  if (Convert::Impl::ConvertPolicy::isUseFromChars()) {
+    s = Convert::Impl::_removeLeadingSpaces(s);
+    Int64 p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValueWithFromChars(v, s);
+    return (p == (-1) || (p != s.size()));
+  }
+
+  const char* ptr = _stringViewData(s);
+#ifdef WIN32
+  if (s == "infinity" || s == "inf") {
+    v = std::numeric_limits<double>::infinity();
+    return false;
+  }
+#endif
+  char* ptr2 = nullptr;
+  v = ::strtod(ptr, &ptr2);
+  return (ptr2 != (ptr + s.length()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool StringViewToIntegral::
+getValue(long& v, StringView s)
+{
+  const char* ptr = _stringViewData(s);
+  char* ptr2 = 0;
+  v = ::strtol(ptr, &ptr2, 0);
+  return (ptr2 != (ptr + s.length()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool StringViewToIntegral::
+getValue(int& v, StringView s)
+{
+  long z = 0;
+  bool is_bad = getValue(z, s);
+  if (!is_bad)
+    // TODO: Faire une vérification de la validité avant le cast
+    v = static_cast<int>(z);
+  return is_bad;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool StringViewToIntegral::
+getValue(long long& v, StringView s)
+{
+  const char* ptr = _stringViewData(s);
+  char* ptr2 = 0;
+  v = ::strtoll(ptr, &ptr2, 0);
+  return (ptr2 != (ptr + s.length()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Convert::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Convert
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  const char* _typeName(Int32)
+  {
+    return "Int32";
+  }
+  const char* _typeName(Int64)
+  {
+    return "Int64";
+  }
+  const char* _typeName(Real)
+  {
+    return "Real";
+  }
+} // namespace
+
+template <typename T> std::optional<T>
+ScalarType<T>::tryParse(StringView s)
+{
+  T v;
+  if (s.empty())
+    return std::nullopt;
+  bool is_bad = Impl::StringViewToIntegral::getValue(v, s);
+  if (is_bad)
+    return std::nullopt;
+  return v;
+}
+
+template <typename T> std::optional<T>
+ScalarType<T>::tryParseFromEnvironment(StringView s, bool throw_if_invalid)
+{
+  String env_value = Platform::getEnvironmentVariable(s);
+  if (env_value.null())
+    return std::nullopt;
+  auto v = tryParse(env_value);
+  if (!v && throw_if_invalid)
+    ARCCORE_FATAL("Invalid value '{0}' for environment variable {1}. Can not convert to type '{2}'",
+                  env_value, s, _typeName(T{}));
+  return v;
+}
+
+template class ScalarType<Int32>;
+template class ScalarType<Int64>;
+template class ScalarType<Real>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Convert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

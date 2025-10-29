@@ -17,6 +17,7 @@
 #include "arccore/base/StringView.h"
 
 #include <iostream>
+#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -163,6 +164,56 @@ toReal(unsigned long long r)
   return static_cast<Real>(r);
 #endif
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe template pour convertir un type.
+ *
+ * Actuellement cela est uniquement disponible via une spécialisation
+ * pour les types 'Int32', 'Int64' et 'Real3'.
+ */
+template <typename T>
+class Type;
+
+template <typename T>
+class ScalarType
+{
+ public:
+
+  //! Convertit \a s en le type \a T
+  ARCCORE_BASE_EXPORT static std::optional<T> tryParse(StringView s);
+
+  /*!
+   * \brief Convertit \a s en le type \a T.
+   *
+   * Si \a s.empty() est vrai, alors retourne \a default_value.
+   */
+  static std::optional<T>
+  tryParseIfNotEmpty(StringView s, const T& default_value)
+  {
+    return (s.empty()) ? default_value : tryParse(s);
+  }
+
+  /*!
+   * \brief Convertit la valeur de la variable d'environnement \a s en le type \a T.
+   *
+   * Si platform::getEnvironmentVariable(s) est nul, return std::nullopt.
+   * Sinon, retourne cette valeur convertie en le type \a T. Si la conversion
+   * n'est pas possible, retourne std::nullopt si \a throw_if_invalid vaut \a false ou
+   * lève une exception s'il vaut \a true.
+   */
+  ARCCORE_BASE_EXPORT static std::optional<T>
+  tryParseFromEnvironment(StringView s, bool throw_if_invalid);
+};
+
+//! Spécialisation pour les types scalaires
+template <> class Type<Int64> : public ScalarType<Int64>
+{};
+template <> class Type<Int32> : public ScalarType<Int32>
+{};
+template <> class Type<Real> : public ScalarType<Real>
+{};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
