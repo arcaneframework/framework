@@ -182,8 +182,8 @@ createGlibDynamicLibraryLoader();
 extern "C++" ARCANE_IMPL_EXPORT ICodeService*
 createArcaneCodeService(IApplication* app);
 
-extern "C++" ARCANE_UTILS_EXPORT void
-arcanePrintSpecificMemoryStats();
+extern "C++" ARCCORE_COMMON_EXPORT void
+arccorePrintSpecificMemoryStats();
 
 std::atomic<Int32> ArcaneMain::m_nb_arcane_init(0);
 std::atomic<Int32> ArcaneMain::m_is_init_done(0);
@@ -769,7 +769,7 @@ arcaneFinalize()
         platform::setDynamicLibraryLoader(nullptr);
       }
     }
-    arcanePrintSpecificMemoryStats();
+    arccorePrintSpecificMemoryStats();
     arcaneExitCheckMemory();
     platform::platformTerminate();
     dom::DOMImplementation::terminate();

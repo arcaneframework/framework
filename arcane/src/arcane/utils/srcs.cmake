@@ -78,7 +78,6 @@ set(ARCANE_SOURCES
   MemoryAllocator.h
   MemoryPool.cc
   MemoryView.h
-  MemoryView.cc
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
@@ -341,7 +340,6 @@ set(ARCANE_SOURCES
   internal/ParameterOption.h
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h
-  internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h

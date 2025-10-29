@@ -573,7 +573,7 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 extern "C++" ARCCORE_BASE_EXPORT void
 _doAssert(const char*,const char*,const char*,int);
 template<typename T> inline T*
-_checkPointer(T* t,const char* file,const char* func,int line)
+_checkPointer(const T* t,const char* file,const char* func,int line)
 {
   if (!t){
     _doAssert("ARCCORE_ASSERT",file,func,line);
@@ -656,6 +656,20 @@ arccoreThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text
  */
 inline void*
 arccoreThrowIfNull(void* ptr,const char* ptr_name,const char* text)
+{
+  if (!ptr)
+    arccoreThrowNullPointerError(ptr_name,text);
+  return ptr;
+}
+
+/*!
+ * \brief Vérifie qu'un pointeur n'est pas nul.
+ *
+ * Si le pointeur est nul, appelle arccoreThrowNullPointerError().
+ * Sinon, retourne le pointeur.
+ */
+inline const void*
+arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 {
   if (!ptr)
     arccoreThrowNullPointerError(ptr_name,text);
