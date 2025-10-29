@@ -1,8 +1,15 @@
 set(SOURCES
+  AbstractArray.h
   AllocatedMemoryInfo.h
+  AlignedMemoryAllocator.h
   ArrayDebugInfo.h
+  Array.h
+  ArrayMetaData.h
+  ArrayTraits.h
+  Array.cc
   CommonGlobal.h
   CommonGlobal.cc
+  DefaultMemoryAllocator.h
   IMemoryAllocator.h
   IMemoryResourceMng.h
   MemoryAllocator.cc
@@ -10,6 +17,8 @@ set(SOURCES
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
   MemoryUtils.cc
+  SmallArray.h
+  SmallArray.cc
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
   internal/SpecificMemoryCopyList.h

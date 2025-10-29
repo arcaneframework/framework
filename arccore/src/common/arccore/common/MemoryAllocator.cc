@@ -16,7 +16,8 @@
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/common/IMemoryAllocator.h"
+#include "arccore/common/DefaultMemoryAllocator.h"
+#include "arccore/common/AlignedMemoryAllocator.h"
 #include "arccore/common/AllocatedMemoryInfo.h"
 
 #include <cstdlib>

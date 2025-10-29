@@ -14,8 +14,8 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/collections/Array.h"
-#include "arccore/collections/IMemoryAllocator.h"
+#include "arccore/common/Array.h"
+#include "arccore/common/DefaultMemoryAllocator.h"
 
 #include <algorithm>
 #include <iostream>
@@ -48,7 +48,7 @@ class BadAllocException
 IMemoryAllocator* ArrayMetaData::
 _defaultAllocator()
 {
-  return &DefaultMemoryAllocator3::shared_null_instance;
+  return &DefaultMemoryAllocator::shared_null_instance;
 }
 
 /*---------------------------------------------------------------------------*/

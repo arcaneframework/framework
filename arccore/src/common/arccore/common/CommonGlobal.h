@@ -40,6 +40,16 @@ class RunQueue;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Pour l'instant on doit laisser ArrayTraits dans le namespace Arccore
+// pour des raisons de compatibilité avec la macro ARCCORE_DEFINE_ARRAY_PODTYPE
+namespace Arccore
+{
+template <typename DataType> class ArrayTraits;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 using Arcane::Accelerator::RunQueue;
@@ -60,6 +70,14 @@ class PrintableMemoryAllocator;
 class AlignedMemoryAllocator;
 class DefaultMemoryAllocator;
 
+class ArrayImplBase;
+class ArrayMetaData;
+template <typename DataType> class ArrayImplT;
+template <typename DataType> class Array;
+template <typename DataType> class AbstractArray;
+template <typename DataType> class UniqueArray;
+template <typename DataType> class SharedArray;
+using Arccore::ArrayTraits;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -139,7 +139,6 @@ set(ARCANE_SOURCES
   SignalException.h
   Simd.cc
   Simd.h
-  SmallArray.cc
   SmallArray.h
   TestLogger.h
   TestLogger.cc

@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/SmallArray.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/common/SmallArray.h"
+#include "arccore/base/FatalErrorException.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -39,7 +39,7 @@ _allocateMemory(Int64 new_size)
     std::cout << "ALLOCATE: use malloc s=" << new_size << "\n";
   void* ptr = std::malloc(new_size);
   if (!ptr)
-    ARCANE_FATAL("Can not allocated memory for size '{0}'", new_size);
+    ARCCORE_FATAL("Can not allocated memory for size '{0}'", new_size);
   return ptr;
 }
 
