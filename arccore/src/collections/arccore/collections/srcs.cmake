@@ -1,6 +1,5 @@
 set(SOURCES
   Array.h
-  Array.cc
   Array2.h
   Array2.cc
   ArrayTraits.h

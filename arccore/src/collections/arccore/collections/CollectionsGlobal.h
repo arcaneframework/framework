@@ -31,26 +31,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour l'instant on doit laisser ArrayTraits dans le namespace Arccore
-// pour des raisons de compatibilité avec la macro ARCCORE_DEFINE_ARRAY_PODTYPE
-namespace Arccore
-{
-template <typename DataType> class ArrayTraits;
-}
-
 namespace Arcane
 {
-class ArrayImplBase;
-class ArrayMetaData;
-template <typename DataType> class ArrayImplT;
-template <typename DataType> class Array;
-template <typename DataType> class AbstractArray;
-template <typename DataType> class UniqueArray;
-template <typename DataType> class SharedArray;
 template <typename DataType> class Array2;
 template <typename DataType> class UniqueArray2;
 template <typename DataType> class SharedArray2;
-using Arccore::ArrayTraits;
 
 // Les trois types suivants sont conservés pour compatibilité avec l'existant.
 // Il faudra les rendre optionnels mi-2025 et les supprimer en 2026
@@ -64,52 +49,9 @@ using DefaultMemoryAllocator3 = DefaultMemoryAllocator;
 
 namespace Arcane
 {
-
 //! Typedef pour la version Arcane historique (avec 2's')
 // TODO: A rendre obsolète (juin 2025)
 using eMemoryRessource = Arcane::eMemoryResource;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Informations sur une zone mémoire allouée.
- */
-class AllocatedMemoryInfo
-{
- public:
-
-  AllocatedMemoryInfo() = default;
-  explicit AllocatedMemoryInfo(void* base_address)
-  : m_base_address(base_address)
-  {}
-  AllocatedMemoryInfo(void* base_address, Int64 size)
-  : m_base_address(base_address)
-  , m_size(size)
-  , m_capacity(size)
-  {}
-  AllocatedMemoryInfo(void* base_address, Int64 size, Int64 capacity)
-  : m_base_address(base_address)
-  , m_size(size)
-  , m_capacity(capacity)
-  {}
-
-  //! Adresse du début de la zone allouée.
-  void* baseAddress() const { return m_base_address; }
-  //! Taille en octets de la zone mémoire utilisée. (-1) si inconnue
-  Int64 size() const { return m_size; }
-  //! Taille en octets de la zone mémoire allouée. (-1) si inconnue
-  Int64 capacity() const { return m_capacity; }
-
- public:
-
-  void* m_base_address = nullptr;
-  Int64 m_size = -1;
-  Int64 m_capacity = -1;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

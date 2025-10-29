@@ -1,6 +1,11 @@
 set(SOURCES
+  AbstractArray.h
   AllocatedMemoryInfo.h
   ArrayDebugInfo.h
+  Array.h
+  ArrayMetaData.h
+  ArrayTraits.h
+  Array.cc
   CommonGlobal.h
   CommonGlobal.cc
   IMemoryAllocator.h
