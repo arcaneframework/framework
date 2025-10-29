@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/collections/MemoryAllocationOptions.h"
-#include "arccore/collections/MemoryAllocationArgs.h"
-#include "arccore/collections/ArrayDebugInfo.h"
+#include "arccore/common/MemoryAllocationOptions.h"
+#include "arccore/common/MemoryAllocationArgs.h"
+#include "arccore/common/ArrayDebugInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

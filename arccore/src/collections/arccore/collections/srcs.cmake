@@ -10,8 +10,6 @@ set(SOURCES
   IMemoryAllocator.h
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
-  MemoryAllocationOptions.cc
-  MemoryAllocator.cc
   StringVector.h
   StringVector.cc
 )

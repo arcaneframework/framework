@@ -5,15 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CollectionsGlobal.cc                                        (C) 2000-2025 */
+/* ArrayDebugInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Collections' de 'Arccore'.         */
+/* Informations de debug pour les classes tableaux.                          */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_COMMON_ARRAYDEBUGINFO_H
+#define ARCCORE_COMMON_ARRAYDEBUGINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/collections/CollectionsGlobal.h"
+#include "arccore/common/CommonGlobal.h"
 
-#include <iostream>
+#include "arccore/base/String.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,11 +28,46 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations de debug pour les classes tableaux.
+ *
+ * Cette classe utilise un compteur de référence. Toutes les instances
+ * doivent donc être allouée dynamiquement.
+ */
+class ARCCORE_COMMON_EXPORT ArrayDebugInfo
+{
+ public:
+
+  ArrayDebugInfo() = default;
+
+ private:
+
+  ~ArrayDebugInfo() = default;
+
+ public:
+
+  void addReference() { ++m_nb_ref; }
+  void removeReference()
+  {
+    Int32 n = --m_nb_ref;
+    if (n == 0)
+      delete this;
+  }
+  void setName(const String& name) { m_name = name; }
+  const String& name() const { return m_name; }
+
+ private:
+
+  std::atomic<Int32> m_nb_ref = 0;
+  String m_name;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

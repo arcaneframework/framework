@@ -32,8 +32,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator
+{
+class RunQueue;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
+using Arcane::Accelerator::RunQueue;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +52,59 @@ class IMemoryResourceMng;
 class IMemoryCopier;
 
 class IMemoryAllocator;
+class AllocatedMemoryInfo;
+class ArrayDebugInfo;
+class MemoryAllocationArgs;
+class MemoryAllocationOptions;
+class PrintableMemoryAllocator;
+class AlignedMemoryAllocator;
+class DefaultMemoryAllocator;
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Indices sur la localisation mémoire attendue
+enum class eMemoryLocationHint : int8_t
+{
+  //! Aucune indice
+  None = 0,
+  //! Indique que la donnée sera plutôt utilisée sur accélérateur
+  MainlyDevice = 1,
+  //! Indique que la donnée sera plutôt utilisée sur CPU
+  MainlyHost = 2,
+  /*!
+   * \brief Indique que la donnée sera utilisée à la fois sur accélérateur et
+   * sur CPU et qu'elle ne sera pas souvent modifiée.
+   */
+  HostAndDeviceMostlyRead = 3
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Localisation physique d'une adresse mémoire.
+ *
+ * Pour les valeurs ManagedMemoryDevice et ManagedMemoryHost il s'agit d'une
+ * indication car il n'y a pas de moyen simple de savoir où se trouve
+ * réellement la mémoire.
+ */
+enum class eHostDeviceMemoryLocation : int8_t
+{
+  //! Localisation inconnue
+  Unknown = 0,
+  //! La mémoire est sur accélérateur
+  Device = 1,
+  //! La mémoire est sur l'hôte.
+  Host = 2,
+  //! La mémoire est de la mémoire managée sur accélérateur
+  ManagedMemoryDevice = 3,
+  //! La mémoire est de la mémoire managée sur l'hôte.
+  ManagedMemoryHost = 4,
+};
+
+extern "C++" ARCCORE_COMMON_EXPORT std::ostream&
+operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

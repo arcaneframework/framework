@@ -1,7 +1,14 @@
 set(SOURCES
+  AllocatedMemoryInfo.h
+  ArrayDebugInfo.h
   CommonGlobal.h
   CommonGlobal.cc
+  IMemoryAllocator.h
+  MemoryAllocator.cc
   IMemoryResourceMng.h
+  MemoryAllocationArgs.h
+  MemoryAllocationOptions.h
+  MemoryAllocationOptions.cc
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
 )
