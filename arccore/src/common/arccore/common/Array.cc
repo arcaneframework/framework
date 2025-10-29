@@ -15,7 +15,7 @@
 #include "arccore/base/TraceInfo.h"
 
 #include "arccore/common/Array.h"
-#include "arccore/common/IMemoryAllocator.h"
+#include "arccore/common/DefaultMemoryAllocator.h"
 
 #include <algorithm>
 #include <iostream>

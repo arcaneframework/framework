@@ -1,6 +1,7 @@
 set(SOURCES
   AbstractArray.h
   AllocatedMemoryInfo.h
+  AlignedMemoryAllocator.h
   ArrayDebugInfo.h
   Array.h
   ArrayMetaData.h
@@ -8,6 +9,7 @@ set(SOURCES
   Array.cc
   CommonGlobal.h
   CommonGlobal.cc
+  DefaultMemoryAllocator.h
   IMemoryAllocator.h
   IMemoryResourceMng.h
   MemoryAllocator.cc

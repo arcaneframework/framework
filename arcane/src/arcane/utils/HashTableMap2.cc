@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/HashTableMap2.h"
+#include "arccore/common/DefaultMemoryAllocator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -20,7 +21,7 @@ namespace Arcane
 {
 namespace
 {
-Arccore::DefaultMemoryAllocator3 global_default_allocator;
+Arccore::DefaultMemoryAllocator global_default_allocator;
 }
 
 IMemoryAllocator* impl::HashTableMap2Base::

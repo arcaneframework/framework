@@ -10,7 +10,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arccore/collections/IMemoryAllocator.h"
+#include "arccore/common/AllocatedMemoryInfo.h"
+#include "arccore/common/IMemoryAllocator.h"
 
 // Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
 // emhash8::HashMap for C++14/17
