@@ -16,7 +16,8 @@
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/collections/IMemoryAllocator.h"
+#include "arccore/common/IMemoryAllocator.h"
+#include "arccore/common/AllocatedMemoryInfo.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -141,7 +142,7 @@ CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllocatedMemoryInfo AlignedMemoryAllocator3::
+AllocatedMemoryInfo AlignedMemoryAllocator::
 allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size)
 {
 #if defined(ARCCORE_USE_POSIX_MEMALIGN)
@@ -162,7 +163,7 @@ allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllocatedMemoryInfo AlignedMemoryAllocator3::
+AllocatedMemoryInfo AlignedMemoryAllocator::
 reallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
 #if defined(ARCCORE_USE_POSIX_MEMALIGN)
@@ -238,7 +239,7 @@ adjustMemoryCapacity(size_t wanted_capacity, size_t element_size, size_t alignme
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 AlignedMemoryAllocator3::
+Int64 AlignedMemoryAllocator::
 adjustedCapacity([[maybe_unused]] MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
 {
   return adjustMemoryCapacity(wanted_capacity, element_size, m_alignment);
