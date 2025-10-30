@@ -71,9 +71,6 @@ class ARCCORE_BASE_EXPORT ConvertPolicy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe pour convertir une 'StringView' en 'double'.
  */
@@ -83,6 +80,24 @@ class ARCCORE_BASE_EXPORT StringViewToDoubleConverter
 
   static Int64 _getDoubleValueWithFromChars(double& v, StringView s);
   static Int64 _getDoubleValue(double& v, StringView s);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour convertir une 'StringView' en un type intégral.
+ *
+ * Les méthode getValue() sont similaires dans leur sémantique aux
+ * functions builtInGetValue() de Arcane.
+ */
+class ARCCORE_BASE_EXPORT StringViewToIntegral
+{
+ public:
+
+  static bool getValue(double& v, StringView s);
+  static bool getValue(int& v, StringView s);
+  static bool getValue(long& v, StringView s);
+  static bool getValue(long long& v, StringView s);
 };
 
 /*---------------------------------------------------------------------------*/
