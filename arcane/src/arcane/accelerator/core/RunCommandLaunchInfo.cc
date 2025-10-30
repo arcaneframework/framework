@@ -13,7 +13,10 @@
 
 #include "arcane/accelerator/core/RunCommandLaunchInfo.h"
 
-#include "arcane/utils/CheckedConvert.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/CheckedConvert.h"
+
+#include "arccore/concurrency/TaskFactory.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"

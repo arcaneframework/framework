@@ -11,11 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/MemoryView.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/NotImplementedException.h"
+#include "arccore/base/MemoryView.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/FatalErrorException.h"
+
+#include "arccore/common/MemoryUtils.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
@@ -24,8 +25,6 @@
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/NativeStream.h"
-
-#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

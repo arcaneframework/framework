@@ -13,7 +13,7 @@
 
 #include "arcane/accelerator/core/RunQueueEvent.h"
 
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/FatalErrorException.h"
 
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Runner.h"

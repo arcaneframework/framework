@@ -16,7 +16,7 @@
 
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 
-#include "arcane/utils/Array.h"
+#include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

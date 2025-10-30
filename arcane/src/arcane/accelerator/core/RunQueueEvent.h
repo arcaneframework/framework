@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/AutoRef.h"
+#include "arccore/base/Ref.h"
+#include "arccore/base/AutoRef2.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 
@@ -28,7 +28,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Evènement pour une file d'exécution.
+ * \brief Évènement pour une file d'exécution.
  *
  * Cette classe a une sémantique par référence.
  *

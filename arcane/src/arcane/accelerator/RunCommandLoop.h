@@ -14,6 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Pour compatibilité avec l'existant
+#include "arcane/utils/ConcurrencyUtils.h"
+
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/KernelLauncher.h"
 
@@ -56,7 +59,7 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N, Int32> bounds,
     arcaneSequentialFor(bounds, func, other_args...);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelFor(bounds, launch_info.loopRunInfo(), func, other_args...);
+    arccoreParallelFor(bounds, launch_info.loopRunInfo(), func, other_args...);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);

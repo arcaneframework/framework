@@ -14,7 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ConcurrencyUtils.h"
+#include "arccore/base/Profiling.h"
+#include "arccore/concurrency/ForLoopRunInfo.h"
 
 #include "arcane/accelerator/core/KernelLaunchArgs.h"
 
