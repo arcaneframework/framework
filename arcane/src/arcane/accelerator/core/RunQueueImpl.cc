@@ -13,8 +13,8 @@
 
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/SmallArray.h"
+#include "arccore/common/MemoryUtils.h"
+#include "arccore/common/SmallArray.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"

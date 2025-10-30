@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryTracer.cc                                             (C) 2000-2024 */
+/* MemoryTracer.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Utilitaires pour tracer les accès mémoire entre l'accélérateur et l'hôte. */
 /*---------------------------------------------------------------------------*/
@@ -13,11 +13,12 @@
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/ArrayView.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/IMemoryAllocator.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/ArrayView.h"
+#include "arccore/base/String.h"
+
+#include "arccore/common/AllocatedMemoryInfo.h"
+#include "arccore/common/IMemoryAllocator.h"
 
 #include <map>
 

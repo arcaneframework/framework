@@ -14,8 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/MemoryRessource.h"
+#include "arccore/base/Ref.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 

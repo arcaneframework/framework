@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UniqueArray.h"
+#include "arccore/collections/Array.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 #include "arcane/accelerator/core/Runner.h"

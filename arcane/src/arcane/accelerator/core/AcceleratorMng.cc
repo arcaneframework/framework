@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMng.cc                                           (C) 2000-2024 */
+/* AcceleratorMng.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation de 'IAcceleratorMng'                                       */
 /*---------------------------------------------------------------------------*/
@@ -13,14 +13,15 @@
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
-#include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/ScopedPtr.h"
+#include "arccore/trace/TraceAccessor.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/Ref.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,7 +74,7 @@ class AcceleratorMng
 
  private:
 
-  ScopedPtrT<Runner> m_default_runner_ref;
+  std::unique_ptr<Runner> m_default_runner_ref;
   Runner m_default_runner;
   Ref<RunQueue> m_default_queue_ref;
   RunQueue m_default_queue;
@@ -92,7 +93,7 @@ initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
   arcaneInitializeRunner(m_default_runner,traceMng(),runtime_info);
   m_has_init = true;
 
-  m_default_runner_ref = new Runner(m_default_runner);
+  m_default_runner_ref = std::make_unique<Runner>(m_default_runner);
   m_default_queue_ref = makeQueueRef(m_default_runner);
   m_default_queue = *m_default_queue_ref.get();
 }

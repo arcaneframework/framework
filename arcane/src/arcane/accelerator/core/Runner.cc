@@ -16,10 +16,9 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/ArgumentException.h"
-
-#include "arcane/utils/MemoryView.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/Profiling.h"
+#include "arccore/base/MemoryView.h"
+#include "arccore/base/Profiling.h"
+#include "arccore/base/Convert.h"
 #include "arccore/base/internal/ProfilingInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"

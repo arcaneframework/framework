@@ -16,7 +16,7 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include "arcane/utils/MemoryView.h"
+#include "arccore/base/MemoryView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

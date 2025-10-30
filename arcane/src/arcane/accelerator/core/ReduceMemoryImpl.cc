@@ -13,9 +13,10 @@
 
 #include "arcane/accelerator/core/internal/ReduceMemoryImpl.h"
 
-#include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/MemoryUtils.h"
+#include "arccore/base/CheckedConvert.h"
+#include "arccore/base/PlatformUtils.h"
+
+#include "arccore/common/MemoryUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
