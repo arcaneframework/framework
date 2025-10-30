@@ -96,22 +96,39 @@ jobs:
 
         config:
           - type: 'Check'
-            excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
         mpi:
           - implementation: 'OMPI'
           - implementation: 'MPICH'
 
+        runner:
+          - runner_tag: 'm-1'
+            runner_name: 'M1'
+            excluded_tests: ''
+            excluded_tests_with_labels: ''
+            ctest_parallel_jobs: '-j12'
+
+          - runner_tag: 'ubuntu-latest'
+            runner_name: 'GH'
+            excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
+            excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_parallel_jobs: '-j4'
+
         exclude:
+          # Certains packages ne sont pas compilés avec MPICH dans les images Full.
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
+          # Il n'y a pas CUDA dans les images Minimal.
           - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
           # Ce test est fait par build_tests_required.
           - { image: { short: 'U24_C21' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
+          # Les tests Full sont fait par les runners M1.
+          - { version: { short: 'F' }, runner: { runner_tag: 'ubuntu-latest' } }
+          # Les tests Minimal sont fait par les runners GH.
+          - { version: { short: 'M' }, runner: { runner_tag: 'm-1' } }
 
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
+    name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
@@ -129,6 +146,7 @@ jobs:
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
+      runner_tag: ${{ matrix.runner.runner_tag }}

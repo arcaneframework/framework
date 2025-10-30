@@ -32,8 +32,6 @@ jobs:
 
         config:
           - type: 'Check'
-            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[3-9]thread|[1-9][0-9]+thread).*$'
-            excluded_tests_with_labels: 'LARGE_HYBRID'
             ctest_args: '--timeout 1200'
 
         mpi:
@@ -42,6 +40,8 @@ jobs:
         runner:
           - runner_tag: 'm-1'
             runner_name: 'M1'
+            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[3-9]thread|[1-9][0-9]+thread).*$'
+            excluded_tests_with_labels: 'LARGE_HYBRID'
             ctest_parallel_jobs: '-j12'
 
     name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
