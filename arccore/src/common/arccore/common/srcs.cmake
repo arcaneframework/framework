@@ -16,6 +16,7 @@ set(SOURCES
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
+  MemoryUtils.h
   MemoryUtils.cc
   SmallArray.h
   SmallArray.cc
