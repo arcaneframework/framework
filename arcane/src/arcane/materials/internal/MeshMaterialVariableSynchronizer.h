@@ -17,7 +17,6 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
-#include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/materials/MatVarIndex.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"

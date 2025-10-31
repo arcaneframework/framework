@@ -16,7 +16,6 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/MemoryRessource.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/IParallelMng.h"
