@@ -72,7 +72,11 @@ enum class eMeshCellDimensionKind
 {
   //! Les mailles ont la même dimension que le maillage
   MonoDimension,
-  //! Les mailles ont la même dimension que le maillage ou une dimension inférieure
+  /*!
+   * \brief Les mailles ont la même dimension que le maillage ou une dimension inférieure.
+   *
+   ** \warning Ce mode est expérimental.
+   */
   MultiDimension,
   /*!
    * \brief Maillage non manifold.
@@ -80,6 +84,8 @@ enum class eMeshCellDimensionKind
    * Le maillage est MultiDimension et non manifold.
    * Dans ce cas, si le maillage est 3D, les mailles 2D ont des arêtes (Edge)
    * au lieu des faces (Face).
+   *
+   * \warning Ce mode est expérimental.
    */
   NonManifold
 };
@@ -92,7 +98,8 @@ operator<<(std::ostream& o, eMeshCellDimensionKind r);
 /*!
  * \brief Caractéristiques d'un maillage.
  *
- * Pour l'instant les caractéristiques sont:
+ * Pour l'instant les caractéristiques sont :
+ *
  * - la structure du maillage (eMeshStructure)
  * - le type d'AMR
  * - la gestion de la dimension des mailles (eMeshDimensionKind). Cette dernière
@@ -107,7 +114,9 @@ class ARCANE_CORE_EXPORT MeshKind
   eMeshStructure meshStructure() const { return m_structure; }
   eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
   eMeshCellDimensionKind meshDimensionKind() const { return m_dimension_kind; }
+  //! Vrai si la structure du maillage est eMeshCellDimensionKind::NonManifold
   bool isNonManifold() const { return m_dimension_kind == eMeshCellDimensionKind::NonManifold; }
+  //! Vrai si la structure du maillage est eMeshCellDimensionKind::MonoDimension
   bool isMonoDimension() const { return m_dimension_kind == eMeshCellDimensionKind::MonoDimension; }
   void setMeshStructure(eMeshStructure v) { m_structure = v; }
   void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }

@@ -15,8 +15,7 @@
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/CheckedConvert.h"
-
-#include "arccore/concurrency/TaskFactory.h"
+#include "arccore/base/ConcurrencyBase.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
@@ -143,7 +142,7 @@ computeParallelLoopOptions() const
   if (use_dynamic_compute && opt.grainSize() == 0) {
     Int32 nb_thread = opt.maxThread();
     if (nb_thread <= 0)
-      nb_thread = TaskFactory::nbAllowedThread();
+      nb_thread = ConcurrencyBase::maxAllowedThread();
     if (nb_thread <= 0)
       nb_thread = 1;
     Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 2.0));

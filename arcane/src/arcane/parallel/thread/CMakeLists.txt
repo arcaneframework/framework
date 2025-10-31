@@ -16,8 +16,8 @@ if(TBB_VERSION)
     message(STATUS "[arcane_thread] Using OneTBB 2021+ implementation")
     set(ARCANE_HAS_ONETBB TRUE)
   else()
-    message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} is too old. Version 2021+ is required."
-    "Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command")
+    message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} of TBB is too old. Version 2020+ is required."
+    " Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command")
   endif()
 elseif(TBB_FOUND)
   message(FATAL_ERROR

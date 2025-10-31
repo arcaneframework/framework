@@ -1,30 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AdiProjectionModule.cc                                      (C) 2000-2023 */
+/* AdiProjectionModule.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Module de test d'une projection sur maillage cartésien.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/MeshAreaAccessor.h"
+#include "arcane/core/MeshArea.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-
-#include "arcane/MeshAreaAccessor.h"
-#include "arcane/MeshArea.h"
-#include "arcane/ISubDomain.h"
-
-#include "arcane/IMesh.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
@@ -39,7 +37,6 @@
 
 namespace Arcane
 {
-namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -291,8 +288,8 @@ evolvePrimalUpwindedVariables(Integer direction)
     // Pour maille gauche/maille droite.
     DirCell cc(cdm.cell(*current_cell));
 
-    Cell::Index right_cell = cc.next();
-    Cell::Index left_cell = cc.previous();
+    CellLocalId right_cell = cc.next();
+    CellLocalId left_cell = cc.previous();
     //Cell::Index right_cell = right_cell_c;
     //Cell::Index left_cell = left_cell_c;
 
@@ -388,7 +385,7 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
     Cell right_cell_c = cc.next();
     Cell left_cell_c = cc.previous();
 
-    Cell::Index current_cell = *i_current_cell;
+    CellLocalId current_cell = *i_current_cell;
     Cell right_cell = right_cell_c;
     Cell left_cell = left_cell_c;
 
@@ -642,7 +639,7 @@ cartesianHydroStartInit()
   // Création des infos de connectivités directionnelles (= cartésiennes).
   IMesh* mesh = defaultMesh();
 
-  m_cartesian_mesh = arcaneCreateCartesianMesh(mesh);
+  m_cartesian_mesh = ICartesianMesh::getReference(mesh, true);
   m_cartesian_mesh->computeDirections();
 
   // Initialise l'énergie interne en supposant qu'on a un gaz parfait.

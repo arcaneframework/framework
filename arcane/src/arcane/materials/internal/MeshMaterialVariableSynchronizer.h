@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2024 */
+/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2025 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,6 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
-#include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/materials/MatVarIndex.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"

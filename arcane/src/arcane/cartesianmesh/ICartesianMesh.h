@@ -278,7 +278,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal.
+ * Cette méthode est reservée à Arcane.
+ * Utiliser ICartesianMesh::getReference() pour créer une instance.
+ */
 extern "C++" ARCANE_CARTESIANMESH_EXPORT ICartesianMesh*
 arcaneCreateCartesianMesh(IMesh* mesh);
 

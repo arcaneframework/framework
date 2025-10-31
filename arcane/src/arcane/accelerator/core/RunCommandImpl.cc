@@ -18,8 +18,7 @@
 #include "arccore/base/ForLoopTraceInfo.h"
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/Convert.h"
-
-#include "arccore/concurrency/TaskFactory.h"
+#include "arccore/base/ConcurrencyBase.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -220,7 +219,7 @@ _reset()
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
   m_use_profiling = ProfilingRegistry::hasProfiling();
-  m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
+  m_parallel_loop_options = ConcurrencyBase::defaultParallelLoopOptions();
   m_begin_time = 0;
   m_loop_one_exec_stat.reset();
   m_loop_one_exec_stat_ptr = nullptr;

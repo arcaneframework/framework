@@ -65,22 +65,7 @@ StringViewInputStream(StringView v)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(double& v, StringView s)
 {
-  if (Convert::Impl::ConvertPolicy::isUseFromChars()) {
-    s = Convert::Impl::_removeLeadingSpaces(s);
-    Int64 p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValueWithFromChars(v, s);
-    return (p == (-1) || (p != s.size()));
-  }
-
-  const char* ptr = _stringViewData(s);
-#ifdef WIN32
-  if (s == "infinity" || s == "inf") {
-    v = std::numeric_limits<double>::infinity();
-    return false;
-  }
-#endif
-  char* ptr2 = nullptr;
-  v = ::strtod(ptr, &ptr2);
-  return (ptr2 != (ptr + s.length()));
+  return Convert::Impl::StringViewToIntegral::getValue(v,s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -128,19 +113,13 @@ builtInGetValue(float& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long& v, StringView s)
 {
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtol(ptr, &ptr2, 0);
-  return (ptr2 != (ptr + s.length()));
+  return Convert::Impl::StringViewToIntegral::getValue(v,s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(int& v, StringView s)
 {
-  long z = 0;
-  bool r = builtInGetValue(z, s);
-  v = (int)z;
-  return r;
+  return Convert::Impl::StringViewToIntegral::getValue(v,s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -182,10 +161,7 @@ builtInGetValue(unsigned short& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long long& v, StringView s)
 {
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtoll(ptr, &ptr2, 0);
-  return (ptr2 != (ptr + s.length()));
+  return Convert::Impl::StringViewToIntegral::getValue(v,s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
