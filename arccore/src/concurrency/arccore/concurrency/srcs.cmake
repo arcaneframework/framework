@@ -5,12 +5,9 @@ set(SOURCES
   ITaskImplementation.h
   IThreadImplementation.h
   IThreadBarrier.h
-  ForLoopRunInfo.h
-  ParallelLoopOptions.h
   ParallelFor.h
   Mutex.h
   Mutex.cc
-  ParallelLoopOptions.h
   NullThreadImplementation.h
   SpinLock.h
   SpinLock.cc

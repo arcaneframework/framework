@@ -15,8 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ForLoopTraceInfo.h"
-
-#include "arccore/concurrency/ParallelLoopOptions.h"
+#include "arccore/base/ParallelLoopOptions.h"
 
 #include <optional>
 
@@ -34,7 +33,7 @@ namespace Arcane
  * Cette classe permet de gérer les informations d'exécutions communes à toutes
  * les boucles.
  */
-class ARCCORE_CONCURRENCY_EXPORT ForLoopRunInfo
+class ARCCORE_BASE_EXPORT ForLoopRunInfo
 {
  public:
 

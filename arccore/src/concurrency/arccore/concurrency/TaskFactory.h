@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Fabrique pour les tâches.                                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_BASE_TASKFACTORY_H
-#define ARCCORE_BASE_TASKFACTORY_H
+#ifndef ARCCORE_CONCURRENCY_TASKFACTORY_H
+#define ARCCORE_CONCURRENCY_TASKFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

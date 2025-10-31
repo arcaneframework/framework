@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/Profiling.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
+#include "arccore/base/ForLoopRunInfo.h"
 
 #include "arcane/accelerator/core/KernelLaunchArgs.h"
 

@@ -20,10 +20,10 @@
 #include "arccore/base/Profiling.h"
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/FixedArray.h"
+#include "arccore/base/ForLoopRunInfo.h"
 #include "arccore/base/internal/DependencyInjection.h"
 
 #include "arccore/concurrency/IThreadImplementation.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
 #include "arccore/concurrency/Task.h"
 #include "arccore/concurrency/ITaskImplementation.h"
 #include "arccore/concurrency/TaskFactory.h"

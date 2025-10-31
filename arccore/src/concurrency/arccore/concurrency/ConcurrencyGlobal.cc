@@ -22,8 +22,6 @@
 #include "arccore/concurrency/TaskFactory.h"
 #include "arccore/concurrency/ITaskImplementation.h"
 #include "arccore/concurrency/Task.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
-#include "arccore/concurrency/ParallelLoopOptions.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
