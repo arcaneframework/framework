@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ConcurrencyBase.h"
 #include "arccore/concurrency/Task.h"
 #include "arccore/concurrency/ITaskImplementation.h"
 
@@ -180,10 +181,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   //! Nombre de threads utilisés au maximum pour gérer les tâches.
-  static Int32 nbAllowedThread()
-  {
-    return m_impl->nbAllowedThread();
-  }
+  static Int32 nbAllowedThread() { return ConcurrencyBase::maxAllowedThread(); }
 
   /*!
    * \brief Indice (entre 0 et nbAllowedThread()-1) du thread exécutant la tâche actuelle.
@@ -217,16 +215,19 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
 
  public:
 
+  // TODO: rendre ces deux méthodes obsolètes et indiquer d'utiliser
+  // celles de ConcurrencyBase à la place.
+
   //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
-    m_default_loop_options = v;
+    ConcurrencyBase::setDefaultParallelLoopOptions(v);
   }
 
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
-    return m_default_loop_options;
+    return ConcurrencyBase::defaultParallelLoopOptions();
   }
 
  public:
@@ -300,7 +301,6 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
 
   static ITaskImplementation* m_impl;
   static Int32 m_verbose_level;
-  static ParallelLoopOptions m_default_loop_options;
 };
 
 /*---------------------------------------------------------------------------*/

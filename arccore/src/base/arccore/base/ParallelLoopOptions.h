@@ -91,7 +91,7 @@ class ARCCORE_BASE_EXPORT ParallelLoopOptions
    * \brief Positionne le nombre maximal de threads autorisé.
    *
    * Si \a v vaut 0 ou 1, l'exécution sera séquentielle.
-   * Si \a v est supérieur à TaskFactory::nbAllowedThread(), c'est
+   * Si \a v est supérieur à ConcurrencyBase::maxAllowedThread(), c'est
    * cette dernière valeur qui sera utilisée.
    */
   void setMaxThread(Integer v)

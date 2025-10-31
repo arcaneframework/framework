@@ -26,6 +26,8 @@ set(SOURCES
   CheckedConvert.h
   Convert.h
   Convert.cc
+  ConcurrencyBase.h
+  ConcurrencyBase.cc
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h

@@ -456,8 +456,6 @@ class TBBTaskImplementation
     return m_is_active;
   }
 
-  Int32 nbAllowedThread() const final;
-
   Int32 currentTaskThreadIndex() const final
   {
     return (nbAllowedThread() <= 1) ? 0 : _currentTaskTreadIndex();
@@ -542,7 +540,7 @@ class TBBTaskImplementation::Impl
 
  private:
 
-  Int32 m_nb_allowed_thread;
+  Int32 m_nb_allowed_thread = 0;
 
  public:
 
@@ -622,6 +620,8 @@ class TBBTaskImplementation::Impl
   tbb::concurrent_set<std::thread::id> m_constructed_thread_map;
   void _init()
   {
+    ConcurrencyBase::_setMaxAllowedThread(m_nb_allowed_thread);
+
     if (TaskFactory::verboseLevel() >= 1) {
       std::cout << "TBB: TBBTaskImplementationInit nb_allowed_thread=" << m_nb_allowed_thread
                 << " id=" << std::this_thread::get_id()
@@ -1061,15 +1061,6 @@ void TBBTaskImplementation::
 terminate()
 {
   m_p->terminate();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 TBBTaskImplementation::
-nbAllowedThread() const
-{
-  return m_p->nbAllowedThread();
 }
 
 /*---------------------------------------------------------------------------*/

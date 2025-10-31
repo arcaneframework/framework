@@ -95,8 +95,9 @@ class ARCCORE_CONCURRENCY_EXPORT ITaskImplementation
   //! Indique si l'implémentation est active.
   virtual bool isActive() const = 0;
 
-  //! Nombre de threads utilisés au maximum pour gérer les tâches.
-  virtual Int32 nbAllowedThread() const = 0;
+  //! Nombre de threads utilisés au maximum pour gérer les tâches
+  ARCCORE_DEPRECATED_REASON("Y2025: use ConcurrencyBase::maxAllowedThread() instead")
+  Int32 nbAllowedThread() const;
 
   //! Implémentation de TaskFactory::currentTaskThreadIndex()
   virtual Int32 currentTaskThreadIndex() const = 0;
