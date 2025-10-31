@@ -17,9 +17,8 @@
 #include "arccore/base/RangeFunctor.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/ForLoopTraceInfo.h"
-
-#include "arccore/concurrency/ParallelLoopOptions.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
+#include "arccore/base/ParallelLoopOptions.h"
+#include "arccore/base/ForLoopRunInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

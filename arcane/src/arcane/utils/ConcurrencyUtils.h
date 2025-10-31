@@ -20,7 +20,7 @@
 #include "arccore/concurrency/TaskFactory.h"
 #include "arccore/concurrency/ITaskImplementation.h"
 #include "arccore/concurrency/Task.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
+#include "arccore/base/ForLoopRunInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

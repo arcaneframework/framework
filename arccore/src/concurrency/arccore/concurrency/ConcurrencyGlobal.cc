@@ -22,8 +22,6 @@
 #include "arccore/concurrency/TaskFactory.h"
 #include "arccore/concurrency/ITaskImplementation.h"
 #include "arccore/concurrency/Task.h"
-#include "arccore/concurrency/ForLoopRunInfo.h"
-#include "arccore/concurrency/ParallelLoopOptions.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
@@ -123,6 +121,14 @@ void IThreadImplementation::
 _deprecatedUnlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
 {
   unlockSpinLock(spin_lock_addr, scoped_spin_lock_addr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 ITaskImplementation::nbAllowedThread() const
+{
+  return ConcurrencyBase::maxAllowedThread();
 }
 
 /*---------------------------------------------------------------------------*/

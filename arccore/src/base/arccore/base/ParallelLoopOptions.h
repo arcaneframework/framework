@@ -9,12 +9,12 @@
 /*                                                                           */
 /* Options de configuration pour les boucles parallèles en multi-thread.     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_CONCURRENCY_PARALLELLOOPOPTIONS_H
-#define ARCCORE_CONCURRENCY_PARALLELLOOPOPTIONS_H
+#ifndef ARCCORE_BASE_PARALLELLOOPOPTIONS_H
+#define ARCCORE_BASE_PARALLELLOOPOPTIONS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/concurrency/ConcurrencyGlobal.h"
+#include "arccore/base/ArccoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ namespace Arcane
  * Cette classe permet de spécifier des paramètres d'exécution d'une
  * boucle parallèle.
  */
-class ARCCORE_CONCURRENCY_EXPORT ParallelLoopOptions
+class ARCCORE_BASE_EXPORT ParallelLoopOptions
 {
  private:
 
@@ -91,7 +91,7 @@ class ARCCORE_CONCURRENCY_EXPORT ParallelLoopOptions
    * \brief Positionne le nombre maximal de threads autorisé.
    *
    * Si \a v vaut 0 ou 1, l'exécution sera séquentielle.
-   * Si \a v est supérieur à TaskFactory::nbAllowedThread(), c'est
+   * Si \a v est supérieur à ConcurrencyBase::maxAllowedThread(), c'est
    * cette dernière valeur qui sera utilisée.
    */
   void setMaxThread(Integer v)

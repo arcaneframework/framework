@@ -88,6 +88,8 @@ class ForLoopRange;
 template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
 template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
 class ForLoopOneExecStat;
+class ForLoopRunInfo;
+class ParallelLoopOptions;
 
 class TraceInfo;
 class StackTrace;

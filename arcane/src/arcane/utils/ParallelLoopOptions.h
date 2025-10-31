@@ -1,2 +1,2 @@
 ﻿#include "arcane/utils/UtilsTypes.h"
-#include "arccore/concurrency/ParallelLoopOptions.h"
+#include "arccore/base/ParallelLoopOptions.h"

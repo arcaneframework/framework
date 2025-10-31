@@ -27,6 +27,8 @@
 #include "arccore/base/Int128.h"
 #include "arccore/base/IRangeFunctor.h"
 #include "arccore/base/CheckedConvert.h"
+#include "arccore/base/ForLoopRunInfo.h"
+#include "arccore/base/ParallelLoopOptions.h"
 
 #include <iostream>
 #include <cstring>

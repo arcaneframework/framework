@@ -26,6 +26,8 @@ set(SOURCES
   CheckedConvert.h
   Convert.h
   Convert.cc
+  ConcurrencyBase.h
+  ConcurrencyBase.cc
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h
@@ -47,6 +49,7 @@ set(SOURCES
   Float128.h
   FloatConversion.h
   FixedArray.h
+  ForLoopRunInfo.h
   ForLoopRanges.h
   ForLoopTraceInfo.h
   ForLoopTraceInfo.cc
@@ -76,6 +79,7 @@ set(SOURCES
   Observer.cc
   Observable.h
   Observable.cc
+  ParallelLoopOptions.h
   PlatformUtils.h
   PlatformUtils.cc
   Profiling.h

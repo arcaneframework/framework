@@ -17,8 +17,7 @@
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/Profiling.h"
 #include "arccore/base/String.h"
-
-#include "arccore/concurrency/ParallelLoopOptions.h"
+#include "arccore/base/ParallelLoopOptions.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 

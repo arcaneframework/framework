@@ -151,10 +151,6 @@ class NullTaskImplementation
   {
     return false;
   }
-  Int32 nbAllowedThread() const override
-  {
-    return 1;
-  }
   Int32 currentTaskThreadIndex() const override
   {
     return 0;
@@ -176,7 +172,6 @@ class NullTaskImplementation
 NullTaskImplementation NullTaskImplementation::singleton;
 ITaskImplementation* TaskFactory::m_impl = &NullTaskImplementation::singleton;
 Int32 TaskFactory::m_verbose_level = 0;
-ParallelLoopOptions TaskFactory::m_default_loop_options;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
