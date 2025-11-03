@@ -686,7 +686,7 @@ class SharedArray
   //!Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
   SharedArray(IMemoryAllocator* allocator, Span<const T> rhs)
   {
-    this->_initFromAllocator(allocator, 0);
+    this->_initFromAllocator(MemoryAllocationOptions(allocator), 0);
     this->_initFromSpan(rhs);
     this->_checkValidSharedArray();
   }
@@ -869,11 +869,18 @@ class SharedArray
  * est donc préférable dans tout les cas que l'allocateur spécifique utilisé
  * reste valide durant toute la durée de l'application.
  *
- * Si le type est un type Plain Object Data (POD) alors les données ne sont
- * pas initialisées en cas de réallocation. La classe template ArrayTraits
- * permet de spécifier si un type est POD suivant la valeur données par
- * le type ArrayTraits<T>::IsPODType qui peut être FalseType ou TrueType.
+ * \note Si le type est un type Plain Object Data (POD) alors les données
+ * ne sont pas initialisées en cas d'allocation ou de réallocation. La classe
+ * template ArrayTraits permet de spécifier si un type est POD suivant
+ * la valeur données par le type ArrayTraits<T>::IsPODType qui peut être
+ * FalseType ou TrueType. La macro ARCCORE_DEFINE_ARRAY_PODTYPE() permet de
+ * définir un tel type.
  * Sauf spécialisation, seuls les types de base du C++ sont POD.
+ *
+ * \warning Si `ArrayTraits<T>::IsPODType` vaut `false`, les opérations
+ * de redimensionnement ou de copie ont toujours lieu sur l'hôte. Il faut donc
+ * que la mémoire retournée par l'allocateur (allocator()) soit accessible
+ * sur l'hôte.
  */
 template <typename T>
 class UniqueArray
@@ -967,7 +974,7 @@ class UniqueArray
   explicit UniqueArray(IMemoryAllocator* allocator)
   : Array<T>()
   {
-    this->_initFromAllocator(allocator, 0);
+    this->_initFromAllocator(MemoryAllocationOptions(allocator), 0);
   }
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit UniqueArray(MemoryAllocationOptions allocate_options)
@@ -981,11 +988,14 @@ class UniqueArray
    *
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   *
+   * \warning L'initialisation a lieu sur l'hôte et la mémoire retournée
+   * par l'allocateur doit donc être accessible sur l'hôte.
    */
   UniqueArray(IMemoryAllocator* allocator, Int64 asize)
   : Array<T>()
   {
-    this->_initFromAllocator(allocator, asize);
+    this->_initFromAllocator(MemoryAllocationOptions(allocator), asize);
     this->_resize(asize);
   }
   /*!
@@ -994,6 +1004,9 @@ class UniqueArray
    *
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   *
+   * \warning L'initialisation a lieu sur l'hôte et la mémoire retournée
+   * par l'allocateur doit donc être accessible sur l'hôte.
    */
   UniqueArray(MemoryAllocationOptions allocate_options, Int64 asize)
   : Array<T>()
@@ -1001,13 +1014,23 @@ class UniqueArray
     this->_initFromAllocator(allocate_options, asize);
     this->_resize(asize);
   }
-  //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+  /*!
+   * \brief Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+   *
+   * \warning La recopie a lieu sur l'hôte et la mémoire retournée
+   * par l'allocateur doit donc être accessible sur l'hôte.
+   */
   UniqueArray(IMemoryAllocator* allocator, Span<const T> rhs)
   {
-    this->_initFromAllocator(allocator, 0);
+    this->_initFromAllocator(MemoryAllocationOptions(allocator), 0);
     this->_initFromSpan(rhs);
   }
-  //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+  /*!
+   * \brief Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+   *
+   * \warning La recopie a lieu sur l'hôte et la mémoire retournée
+   * par l'allocateur doit donc être accessible sur l'hôte.
+   */
   UniqueArray(MemoryAllocationOptions allocate_options, Span<const T> rhs)
   {
     this->_initFromAllocator(allocate_options, 0);
@@ -1080,6 +1103,9 @@ class UniqueArray
 
   /*!
    * \brief Échange les valeurs de l'instance avec celles de \a rhs.
+   *
+   * L'échange comprend aussi l'allocateur (allocator()) associé
+   * et les éventuelles informations de débug.
    *
    * L'échange se fait en temps constant et sans réallocation.
    */
