@@ -214,41 +214,23 @@ isNull() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+AMRPatchPosition AMRPatchPosition::
+patchUp() const
+{
+  AMRPatchPosition p;
+  p.setLevel(m_level + 1);
+  p.setMinPoint(m_min_point * 2);
+  p.setMaxPoint(m_max_point * 2);
+  return p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int64x3 AMRPatchPosition::
 length() const
 {
   return m_max_point - m_min_point;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-minWithMargin(Integer level) const
-{
-  if (level == m_level) {
-    return m_min_point - 1;
-  }
-  if (level == m_level - 1) {
-    return (m_min_point - 1) / 2;
-  }
-  ARCANE_FATAL("Pas utile");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-maxWithMargin(Integer level) const
-{
-  if (level == m_level) {
-    return m_max_point + 1;
-  }
-  if (level == m_level - 1) {
-    Int64x3 max = m_max_point + 1;
-    return { static_cast<Int32>(std::ceil(max.x / 2.)), static_cast<Int32>(std::ceil(max.y / 2.)), static_cast<Int32>(std::ceil(max.z / 2.)) };
-  }
-  ARCANE_FATAL("Pas utile");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -279,6 +261,44 @@ min(Integer level) const
 /*---------------------------------------------------------------------------*/
 
 Int64x3 AMRPatchPosition::
+minWithMargin(Integer level) const
+{
+  if (level == m_level) {
+    return m_min_point - 1;
+  }
+  if (level == m_level - 1) {
+    return (m_min_point - 1) / 2;
+  }
+  ARCANE_FATAL("Pas utile");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64x3 AMRPatchPosition::
+minWithMarginEven(Integer level) const
+{
+  if (level == m_level) {
+    Int64x3 with_margin = m_min_point - 1;
+    with_margin.x -= with_margin.x % 2;
+    with_margin.y -= with_margin.y % 2;
+    with_margin.z -= with_margin.z % 2;
+    return with_margin;
+  }
+  if (level == m_level - 1) {
+    Int64x3 with_margin = (m_min_point - 1) / 2;
+    with_margin.x -= with_margin.x % 2;
+    with_margin.y -= with_margin.y % 2;
+    with_margin.z -= with_margin.z % 2;
+    return with_margin;
+  }
+  ARCANE_FATAL("Pas utile");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64x3 AMRPatchPosition::
 max(Integer level) const
 {
   if (level == m_level) {
@@ -301,21 +321,72 @@ max(Integer level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool AMRPatchPosition::
-isIn(Integer x, Integer y) const
+Int64x3 AMRPatchPosition::
+maxWithMargin(Integer level) const
 {
-  return x >= m_min_point.x && x < m_max_point.x && y >= m_min_point.y && y < m_max_point.y;
+  if (level == m_level) {
+    return m_max_point + 1;
+  }
+  if (level == m_level - 1) {
+    Int64x3 max = m_max_point + 1;
+    return { static_cast<Int32>(std::ceil(max.x / 2.)), static_cast<Int32>(std::ceil(max.y / 2.)), static_cast<Int32>(std::ceil(max.z / 2.)) };
+  }
+  ARCANE_FATAL("Pas utile");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64x3 AMRPatchPosition::
+maxWithMarginEven(Integer level) const
+{
+  if (level == m_level) {
+    Int64x3 with_margin = m_max_point + 1;
+    with_margin.x += with_margin.x % 2;
+    with_margin.y += with_margin.y % 2;
+    with_margin.z += with_margin.z % 2;
+    return with_margin;
+  }
+  if (level == m_level - 1) {
+    Int64x3 max = m_max_point + 1;
+    Int64x3 with_margin = { static_cast<Int32>(std::ceil(max.x / 2.)), static_cast<Int32>(std::ceil(max.y / 2.)), static_cast<Int32>(std::ceil(max.z / 2.)) };
+    with_margin.x += with_margin.x % 2;
+    with_margin.y += with_margin.y % 2;
+    with_margin.z += with_margin.z % 2;
+    return with_margin;
+  }
+  ARCANE_FATAL("Pas utile");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithMargin(Integer level, Integer x, Integer y) const
+isIn(Integer x, Integer y, Integer z) const
+{
+  return x >= m_min_point.x && x < m_max_point.x && y >= m_min_point.y && y < m_max_point.y && z >= m_min_point.z && z < m_max_point.z;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool AMRPatchPosition::
+isInWithMargin(Integer level, Integer x, Integer y, Integer z) const
 {
   Int64x3 level_min = minWithMargin(level);
   Int64x3 level_max = maxWithMargin(level);
-  return x >= level_min.x && x < level_max.x && y >= level_min.y && y < level_max.y;
+  return x >= level_min.x && x < level_max.x && y >= level_min.y && y < level_max.y && z >= level_min.z && z < level_max.z;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool AMRPatchPosition::
+isInWithMarginEven(Integer level, Integer x, Integer y, Integer z) const
+{
+  Int64x3 level_min = minWithMarginEven(level);
+  Int64x3 level_max = maxWithMarginEven(level);
+  return x >= level_min.x && x < level_max.x && y >= level_min.y && y < level_max.y && z >= level_min.z && z < level_max.z;
 }
 
 /*---------------------------------------------------------------------------*/

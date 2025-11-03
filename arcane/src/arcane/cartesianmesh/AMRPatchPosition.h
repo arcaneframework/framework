@@ -49,13 +49,21 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   void fusion(const AMRPatchPosition& other_patch);
   bool isNull() const;
 
+  AMRPatchPosition patchUp() const;
+
   Int64x3 length() const;
-  Int64x3 minWithMargin(Integer level) const;
-  Int64x3 maxWithMargin(Integer level) const;
+
   Int64x3 min(Integer level) const;
+  Int64x3 minWithMargin(Integer level) const;
+  Int64x3 minWithMarginEven(Integer level) const;
+
   Int64x3 max(Integer level) const;
-  bool isIn(Integer x, Integer y) const;
-  bool isInWithMargin(Integer level, Integer x, Integer y) const;
+  Int64x3 maxWithMargin(Integer level) const;
+  Int64x3 maxWithMarginEven(Integer level) const;
+
+  bool isIn(Integer x, Integer y, Integer z) const;
+  bool isInWithMargin(Integer level, Integer x, Integer y, Integer z) const;
+  bool isInWithMarginEven(Integer level, Integer x, Integer y, Integer z) const;
 
  private:
   Integer m_level;

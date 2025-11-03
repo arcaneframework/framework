@@ -65,6 +65,7 @@ AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatc
 , m_is_computed(false)
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
+, m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
 , m_all_patches(all_patches)
 {}
 
@@ -80,6 +81,7 @@ AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatc
 , m_is_computed(false)
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
+, m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
 , m_all_patches(all_patches)
 {}
 
@@ -107,9 +109,6 @@ compress()
         break;
       }
     }
-    if (reduce_x_min == m_sig_x.size()) {
-      ARCANE_FATAL("aaa");
-    }
   }
   Integer reduce_y_min = 0;
   if (m_sig_y[0] == 0) {
@@ -118,8 +117,13 @@ compress()
         break;
       }
     }
-    if (reduce_y_min == m_sig_y.size()) {
-      ARCANE_FATAL("bbb");
+  }
+  Integer reduce_z_min = 0;
+  if (m_sig_z[0] == 0) {
+    for (; reduce_z_min < m_sig_z.size(); ++reduce_z_min) {
+      if (m_sig_z[reduce_z_min] != 0) {
+        break;
+      }
     }
   }
 
@@ -130,9 +134,6 @@ compress()
         break;
       }
     }
-    if (reduce_x_max < reduce_x_min) {
-      ARCANE_FATAL("ccc");
-    }
   }
   Integer reduce_y_max = m_sig_y.size()-1;
   if (m_sig_y[reduce_y_max] == 0) {
@@ -141,12 +142,20 @@ compress()
         break;
       }
     }
-    if (reduce_y_max < reduce_y_min) {
-      ARCANE_FATAL("ddd");
+  }
+  Integer reduce_z_max = m_sig_z.size() - 1;
+  if (m_sig_z[reduce_z_max] == 0) {
+    for (; reduce_z_max >= 0; --reduce_z_max) {
+      if (m_sig_z[reduce_z_max] != 0) {
+        break;
+      }
     }
   }
 
   if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size()-1) {
+    if (reduce_x_max < reduce_x_min) {
+      ARCANE_FATAL("Bad patch X : no refine cell");
+    }
     reduce_x_max++;
     UniqueArray tmp = m_sig_x.subView(reduce_x_min, reduce_x_max - reduce_x_min);
     m_sig_x = tmp;
@@ -158,6 +167,9 @@ compress()
     m_patch.setMaxPoint(patch_max);
   }
   if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size()-1) {
+    if (reduce_y_max < reduce_y_min) {
+      ARCANE_FATAL("Bad patch Y : no refine cell");
+    }
     reduce_y_max++;
     UniqueArray tmp = m_sig_y.subView(reduce_y_min, reduce_y_max - reduce_y_min);
     m_sig_y = tmp;
@@ -165,6 +177,20 @@ compress()
     Int64x3 patch_max = m_patch.maxPoint();
     patch_min.y += reduce_y_min;
     patch_max.y = patch_min.y + (reduce_y_max - reduce_y_min);
+    m_patch.setMinPoint(patch_min);
+    m_patch.setMaxPoint(patch_max);
+  }
+  if (m_mesh->mesh()->dimension() == 3 && (reduce_z_min != 0 || reduce_z_max != m_sig_z.size() - 1)) {
+    if (reduce_z_max < reduce_z_min) {
+      ARCANE_FATAL("Bad patch Z : no refine cell");
+    }
+    reduce_z_max++;
+    UniqueArray tmp = m_sig_z.subView(reduce_z_min, reduce_z_max - reduce_z_min);
+    m_sig_z = tmp;
+    Int64x3 patch_min = m_patch.minPoint();
+    Int64x3 patch_max = m_patch.maxPoint();
+    patch_min.z += reduce_z_min;
+    patch_max.z = patch_min.z + (reduce_z_max - reduce_z_min);
     m_patch.setMinPoint(patch_min);
     m_patch.setMaxPoint(patch_max);
   }
@@ -178,6 +204,7 @@ fillSig()
 {
   m_sig_x.fill(0);
   m_sig_y.fill(0);
+  m_sig_z.fill(0);
   ENUMERATE_ (Cell, icell, m_mesh->mesh()->ownLevelCells(m_patch.level())) {
     if (!icell->hasFlags(ItemFlags::II_Refine)) {
       continue;
@@ -185,13 +212,18 @@ fillSig()
 
     Integer pos_x = m_numbering->cellUniqueIdToCoordX(*icell);
     Integer pos_y = m_numbering->cellUniqueIdToCoordY(*icell);
+    Integer pos_z = m_numbering->cellUniqueIdToCoordZ(*icell);
 
-    if (pos_x < m_patch.minPoint().x || pos_x >= m_patch.maxPoint().x || pos_y < m_patch.minPoint().y || pos_y >= m_patch.maxPoint().y ) {
+    if (
+    pos_x < m_patch.minPoint().x || pos_x >= m_patch.maxPoint().x ||
+    pos_y < m_patch.minPoint().y || pos_y >= m_patch.maxPoint().y ||
+    pos_z < m_patch.minPoint().z || pos_z >= m_patch.maxPoint().z) {
       continue;
     }
     m_have_cells = true;
     m_sig_x[pos_x - m_patch.minPoint().x]++;
     m_sig_y[pos_y - m_patch.minPoint().y]++;
+    m_sig_z[pos_z - m_patch.minPoint().z]++;
   }
 
   if (m_all_patches->maxLevel() > m_patch.level()) {
@@ -205,16 +237,20 @@ fillSig()
     Integer begin = my_proc * base + std::min(my_proc, reste);
     Integer end = begin + size;
 
-    for (Integer j = 0; j < m_sig_y.size(); ++j) {
-      Integer pos_y = min.y + j;
-      for (Integer i = begin; i < end; ++i) {
-        Integer pos_x = min.x + i;
-        for (auto elem : m_all_patches->patches(m_patch.level()+1)) {
-          if (elem.isInWithMargin(m_patch.level(), pos_x, pos_y)) {
-            m_have_cells = true;
-            m_sig_x[i]++;
-            m_sig_y[j]++;
-            break;
+    for (Integer k = 0; k < m_sig_z.size(); ++k) {
+      Integer pos_z = min.z + k;
+      for (Integer j = 0; j < m_sig_y.size(); ++j) {
+        Integer pos_y = min.y + j;
+        for (Integer i = begin; i < end; ++i) {
+          Integer pos_x = min.x + i;
+          for (auto elem : m_all_patches->patches(m_patch.level() + 1)) {
+            if (elem.isInWithMargin(m_patch.level(), pos_x, pos_y, pos_z)) {
+              m_have_cells = true;
+              m_sig_x[i]++;
+              m_sig_y[j]++;
+              m_sig_z[k]++;
+              break;
+            }
           }
         }
       }
@@ -223,6 +259,7 @@ fillSig()
 
   m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
   m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
+  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
 }
 
@@ -235,7 +272,7 @@ isValid() const
   if (m_is_null) {
     return false;
   }
-  if (m_sig_x.size() < MIN_SIZE || m_sig_y.size() < MIN_SIZE) {
+  if (m_sig_x.size() < MIN_SIZE || m_sig_y.size() < MIN_SIZE || (m_mesh->mesh()->dimension() == 3 && m_sig_z.size() < MIN_SIZE)) {
     return false;
   }
   return true;
@@ -249,14 +286,14 @@ canBeCut() const
 {
   m_mesh->traceMng()->info() << "canBeCut() -- m_sig_x.size : " << m_sig_x.size()
   << " -- m_sig_y.size : " << m_sig_y.size()
-  << " -- min = " << m_patch.minPoint()
-  << " -- max = " << m_patch.maxPoint()
-  << " -- length = " << m_patch.length()
-  << " -- isValid : " << isValid()
-  << " -- efficacity : " << efficacity() << " / " << TARGET_EFFICACITY
-  << " -- m_nb_cut : " << m_nb_cut << " / " << MAX_NB_CUT
-  << " -- m_stop_cut : " << m_stop_cut
-;
+                             << " -- m_sig_z.size : " << m_sig_z.size()
+                             << " -- min = " << m_patch.minPoint()
+                             << " -- max = " << m_patch.maxPoint()
+                             << " -- length = " << m_patch.length()
+                             << " -- isValid : " << isValid()
+                             << " -- efficacity : " << efficacity() << " / " << TARGET_EFFICACITY
+                             << " -- m_nb_cut : " << m_nb_cut << " / " << MAX_NB_CUT
+                             << " -- m_stop_cut : " << m_stop_cut;
 
   if (!isValid()) {
     return false;
@@ -285,7 +322,7 @@ compute()
   fillSig();
   //m_mesh->traceMng()->info() << "Compute() -- Signature : x = " << m_sig_x << " -- y = " << m_sig_y ;
   compress();
-  m_mesh->traceMng()->info() << "Compute() -- Compress : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- x = " << m_sig_x << " -- y = " << m_sig_y ;
+  m_mesh->traceMng()->info() << "Compute() -- Compress : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- x = " << m_sig_x << " -- y = " << m_sig_y << " -- z = " << m_sig_z;
   m_mesh->traceMng()->info() << "Compute() -- Patch computed :       min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- length = " << m_patch.length();
 
   m_is_computed = true;
@@ -306,7 +343,7 @@ efficacity() const
     sum += elem;
   }
 
-  Real eff = static_cast<Real>(sum) / (m_sig_x.size() * m_sig_y.size());
+  Real eff = static_cast<Real>(sum) / (m_sig_x.size() * m_sig_y.size() * m_sig_z.size());
 
   if constexpr (TARGET_SIZE == -1 || TARGET_SIZE_WEIGHT_IN_EFFICACITY == 0) {
     return eff;
@@ -322,14 +359,27 @@ efficacity() const
   }
 
   if (m_sig_y.size() <= TARGET_SIZE) {
-    eff_xy = (eff_xy + (static_cast<Real>(m_sig_y.size()) / TARGET_SIZE)) / 2;
+    eff_xy += static_cast<Real>(m_sig_y.size()) / TARGET_SIZE;
   }
-  else if (m_sig_y.size() < TARGET_SIZE*2) {
-    Real size_y = math::abs(m_sig_y.size() - TARGET_SIZE*2);
-    eff_xy = (eff_xy + (size_y / TARGET_SIZE)) / 2;
+  else if (m_sig_y.size() < TARGET_SIZE * 2) {
+    Real size_y = math::abs(m_sig_y.size() - TARGET_SIZE * 2);
+    eff_xy += size_y / TARGET_SIZE;
+  }
+
+  if (m_mesh->mesh()->dimension() == 2) {
+    eff_xy /= 2;
   }
   else {
-    eff_xy /= 2;
+    if (m_sig_z.size() <= TARGET_SIZE) {
+      eff_xy = (eff_xy + (static_cast<Real>(m_sig_z.size()) / TARGET_SIZE)) / 3;
+    }
+    else if (m_sig_z.size() < TARGET_SIZE * 2) {
+      Real size_z = math::abs(m_sig_z.size() - TARGET_SIZE * 2);
+      eff_xy = (eff_xy + (size_z / TARGET_SIZE)) / 3;
+    }
+    else {
+      eff_xy /= 3;
+    }
   }
   eff_xy *= TARGET_SIZE_WEIGHT_IN_EFFICACITY;
 
@@ -350,17 +400,21 @@ cut(Integer dim, Integer cut_point) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPositionSignature::
-isIn(Integer x, Integer y) const
+isIn(Integer x, Integer y, Integer z) const
 {
-    return m_patch.isIn(x, y);
+  return m_patch.isIn(x, y, z);
 }
 ConstArrayView<Integer> AMRPatchPositionSignature::sigX() const
 {
   return m_sig_x;
 }
-ConstArrayView<Integer> AMRPatchPositionSignature::sigY()const
+ConstArrayView<Integer> AMRPatchPositionSignature::sigY() const
 {
   return m_sig_y;
+}
+ConstArrayView<Integer> AMRPatchPositionSignature::sigZ() const
+{
+  return m_sig_z;
 }
 AMRPatchPosition AMRPatchPositionSignature::patch() const
 {

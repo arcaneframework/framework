@@ -47,10 +47,11 @@ class AMRPatchPositionSignature
   void compute();
   Real efficacity() const;
   std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, Integer cut_point) const;
-  bool isIn(Integer x, Integer y) const;
+  bool isIn(Integer x, Integer y, Integer z) const;
 
   ConstArrayView<Integer> sigX()const;
   ConstArrayView<Integer> sigY()const;
+  ConstArrayView<Integer> sigZ() const;
   AMRPatchPosition patch()const;
   ICartesianMesh* mesh() const;
   bool stopCut()const;
@@ -74,6 +75,7 @@ class AMRPatchPositionSignature
 
   UniqueArray<Integer> m_sig_x;
   UniqueArray<Integer> m_sig_y;
+  UniqueArray<Integer> m_sig_z;
 
   AMRPatchPositionLevelGroup* m_all_patches;
 };
