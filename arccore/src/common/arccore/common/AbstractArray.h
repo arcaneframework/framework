@@ -250,17 +250,6 @@ class AbstractArray
   }
 
   /*!
-   * \brief Construit un tableau avec un allocateur spécifique \a a.
-   *
-   * \sa _initFromAllocator(MemoryAllocationOptions o,Int64 acapacity);
-   */
-  // TODO A supprimer. Utiliser la surcharge avec MemoryAllocationOptions à la place.
-  void _initFromAllocator(IMemoryAllocator* a, Int64 acapacity)
-  {
-    _initFromAllocator(MemoryAllocationOptions(a), acapacity);
-  }
-
-  /*!
    * \brief Construit un vecteur vide avec un allocateur spécifique \a a.
    *
    * Si \a acapacity n'est pas nul, la mémoire est allouée pour
