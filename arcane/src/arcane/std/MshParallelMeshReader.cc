@@ -703,6 +703,7 @@ _readNodesOneEntity(MshNodeBlock& node_block)
     // Conserve les informations de ma partie
     if (my_rank == dest_rank) {
       m_mesh_allocate_info.nodes_unique_id.addRange(nodes_uids);
+      node_block.nb_node = nodes_uids.size();
     }
   }
 
@@ -1282,6 +1283,9 @@ _allocateGroups()
       ArrayView<Int64> block_uids = nodes_uids.subView(block.index_in_allocation_info, block.nb_node);
       MshPhysicalName physical_name = m_mesh_info->findPhysicalName(block.entity_dim, block.entity_tag);
       String group_name = physical_name.name();
+      info(4) << "NodeBlock name=" << group_name << " index=" << block.index
+              << " index_in_allocation=" << block.index_in_allocation_info
+              << " nb_node=" << block.nb_node;
       // Si on a des infos de périodicité, on crée toujours les groupes de noeuds correspondants
       // aux blocs, car ils peuvent être référencés par les infos de périodicité.
       // Dans ce cas, on génère un nom de groupe.
