@@ -47,6 +47,7 @@ jobs:
     name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    secrets: inherit
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
@@ -60,8 +61,8 @@ jobs:
       ccache_debug_mode: false
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
-      excluded_tests: ${{ matrix.config.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
+      excluded_tests: ${{ matrix.runner.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.runner.excluded_tests_with_labels }}
       ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
