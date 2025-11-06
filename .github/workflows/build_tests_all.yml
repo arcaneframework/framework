@@ -19,7 +19,9 @@ jobs:
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U22_C16'
@@ -29,7 +31,9 @@ jobs:
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U24_G14'
@@ -136,30 +140,36 @@ jobs:
 
         config:
           - type: 'Release'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
           - type: 'Debug'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
         mpi:
           - implementation: 'OMPI'
           - implementation: 'MPICH'
 
+        runner:
+          - runner_tag: 'ubuntu-latest'
+            runner_name: 'GH'
+            excluded_tests: ''
+            excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_parallel_jobs: '-j4'
+
         exclude:
+          # Certains packages ne sont pas compilés avec MPICH dans les images Full.
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
+          # Il n'y a pas CUDA ni ROCm dans les images Minimal.
           - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
           - { version: { short: 'M' }, image: { short: 'U24_C19_CU130' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_RC643' } }
           - { version: { short: 'M' }, image: { short: 'U24_C19_RC643' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          # Pas possible de compiler Arcane avec AdaptiveCpp en Debug.
           - { config: { type: 'Debug' }, image: { short: 'U24_ACPP' } }
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
+    name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
@@ -174,8 +184,9 @@ jobs:
       verbose: true
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
-      excluded_tests: ${{ matrix.config.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      excluded_tests: ${{ matrix.runner.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.runner.excluded_tests_with_labels }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
+      runner_tag: ${{ matrix.runner.runner_tag }}
