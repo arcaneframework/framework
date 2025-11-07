@@ -48,6 +48,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   friend impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
   friend class ViewBuildInfo;
+  template<typename T> friend class RunCommandLocalMemory;
 
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -132,6 +133,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   impl::NativeStream _internalNativeStream() const;
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
+  void _addSharedMemory(Int32 size);
+  Int32 _sharedMemory() const;
 
  private:
 

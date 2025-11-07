@@ -499,12 +499,12 @@ doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remai
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
-
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < items.size()) {
     body(items[i], remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 #endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
@@ -525,10 +525,11 @@ class DoMatContainerSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
