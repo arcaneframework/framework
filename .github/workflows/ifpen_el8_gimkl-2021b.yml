@@ -41,7 +41,7 @@ jobs:
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: localhost/ifpen-arcenv-gimkl-2021b-el8:latest
+      image: ifpen-arcenv-gimkl-2021b-el8:latest
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -142,7 +142,7 @@ jobs:
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: localhost/ifpen-arcenv-gimkl-2021b-el8:latest
+      image: ifpen-arcenv-gimkl-2021b-el8:latest
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
