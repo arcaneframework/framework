@@ -38,10 +38,10 @@ jobs:
 
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el8
+      image: localhost/ifpen-arcenv-gimkl-2021b-el8:latest
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -114,19 +114,6 @@ jobs:
         shell: bash
         run: cmake --install ${{ env.BUILD_DIR }}
 
-      - name: Copy external libraries
-        id: copy-external-libraries
-        if: |
-          (success() || failure()) &&
-          steps.install.outcome == 'success'
-        shell: bash
-        run: |
-          cd ${{ env.BUILD_DIR }}
-          echo '--'
-          cat /scripts/copyextlib_github.sh
-          echo '--'
-          bash /scripts/copyextlib_github.sh
-
       - name: Tar build artifact
         shell: bash
         run: tar czf build-artifact.tar.gz ${{ env.BUILD_DIR }}
@@ -152,10 +139,10 @@ jobs:
     name: test
     needs:
       - build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b-rt:el8
+      image: localhost/ifpen-arcenv-gimkl-2021b-el8:latest
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
