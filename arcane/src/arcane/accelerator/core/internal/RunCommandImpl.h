@@ -116,7 +116,7 @@ class RunCommandImpl
   const bool m_use_accelerator = false;
 
   /*!
-  * \brief Indique si on autorise à utiliser plusieurs fois la même commande.
+   * \brief Indique si on autorise à utiliser plusieurs fois la même commande.
    *
    * Normalement cela est interdit mais avant novembre 2024, il n'y avait pas
    * de mécanisme pour détecter cela. On peut donc temporairement autoriser
@@ -129,6 +129,9 @@ class RunCommandImpl
 
   //! Indique si on peut remettre la commande dans le pool associé à la RunQueue.
   bool m_may_be_put_in_pool = false;
+
+  //! Taille de la mémoire partagée à allouer
+  Int32 m_shared_memory_size = 0;
 
  private:
 

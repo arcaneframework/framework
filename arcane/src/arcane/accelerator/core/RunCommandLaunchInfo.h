@@ -110,6 +110,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
 
  private:
 
+  Int32 _sharedMemorySize() const;
   KernelLaunchArgs _threadBlockInfo(const void* func, Int32 shared_memory_size) const;
   NativeStream _internalNativeStream();
   void _doEndKernelLaunch();

@@ -75,21 +75,37 @@ class KernelRemainingArgsHelper
 {
  public:
 
-  //! Applique les fonctors des arguments additionnels.
+  //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
-  applyRemainingArgs(Int32 index, RemainingArgs&... remaining_args)
+  applyRemainingArgsAtBegin(Int32 index, RemainingArgs&... remaining_args)
   {
     // Applique les réductions
-    (remaining_args._internalExecWorkItem(index), ...);
+    (remaining_args._internalExecWorkItemAtBegin(index), ...);
+  }
+
+  //! Applique les fonctors des arguments additionnels en fin de kernel
+  template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
+  applyRemainingArgsAtEnd(Int32 index, RemainingArgs&... remaining_args)
+  {
+    // Applique les réductions
+    (remaining_args._internalExecWorkItemAtEnd(index), ...);
   }
 
 #if defined(ARCANE_COMPILING_SYCL)
-  //! Applique les fonctors des arguments additionnels.
+  //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
-  applyRemainingArgs(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
+  applyRemainingArgsAtBegin(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
   {
     // Applique les réductions
-    (remaining_args._internalExecWorkItem(x), ...);
+    (remaining_args._internalExecWorkItemAtBegin(x), ...);
+  }
+
+  //! Applique les fonctors des arguments additionnels en fin de kernel
+  template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
+  applyRemainingArgsAtEnd(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
+  {
+    // Applique les réductions
+    (remaining_args._internalExecWorkItemAtEnd(x), ...);
   }
 #endif
 };
@@ -153,11 +169,13 @@ doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... r
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < ids.size()) {
     LocalIdType lid(ids[i]);
     body(BuilderType::create(i, lid), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -168,10 +186,12 @@ doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < vsize) {
     body(i, remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -182,10 +202,12 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < bounds.nbElement()) {
     body(bounds.getIndices(i), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,10 +232,11 @@ class DoDirectSYCLLambdaArrayBounds
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
     if (i < bounds.nbElement()) {
       body(bounds.getIndices(i), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {
@@ -241,11 +264,12 @@ class DoIndirectSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
     if (i < ids.size()) {
       LocalIdType lid(ids[i]);
       body(BuilderType::create(i, lid), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
@@ -314,7 +338,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  Int32 wanted_shared_memory = 0;
+  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
   auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
   // TODO: utiliser cudaLaunchKernel() à la place.
@@ -342,7 +366,7 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_HIP)
-  Int32 wanted_shared_memory = 0;
+  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
   auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
   hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, args, func, other_args...);

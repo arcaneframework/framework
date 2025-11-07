@@ -539,14 +539,16 @@ class HostDeviceReducer2
   }
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-  ARCCORE_HOST_DEVICE void _internalExecWorkItem(Int32)
+  ARCCORE_HOST_DEVICE void _internalExecWorkItemAtEnd(Int32)
   {
     this->_finalize();
   };
+  ARCCORE_HOST_DEVICE void _internalExecWorkItemAtBegin(Int32){}
 #endif
 
 #if defined(ARCANE_COMPILING_SYCL)
-  void _internalExecWorkItem(sycl::nd_item<1> id)
+  void _internalExecWorkItemAtBegin(sycl::nd_item<1>){}
+  void _internalExecWorkItemAtEnd(sycl::nd_item<1> id)
   {
     unsigned int* atomic_counter_ptr = m_grid_memory_info.m_grid_device_count;
     const Int32 local_id = static_cast<Int32>(id.get_local_id(0));
