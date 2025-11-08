@@ -116,6 +116,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   void _doEndKernelLaunch();
   KernelLaunchArgs _computeKernelLaunchArgs() const;
 
+  // Pour test uniquement avec CUDA
+  bool _isUseCooperativeLaunch() const;
+  bool _isUseCudaLaunchKernel() const;
+
  private:
 
   void _computeLoopRunInfo();

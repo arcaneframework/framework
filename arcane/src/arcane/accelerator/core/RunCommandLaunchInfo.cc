@@ -180,7 +180,10 @@ _computeLoopRunInfo()
 KernelLaunchArgs RunCommandLaunchInfo::
 _threadBlockInfo(const void* func, Int32 shared_memory_size) const
 {
-  return m_queue_impl->_internalRuntime()->computeKernalLaunchArgs(m_kernel_launch_args, func, totalLoopSize(), shared_memory_size);
+  IRunnerRuntime* r = m_queue_impl->_internalRuntime();
+
+  return r->computeKernalLaunchArgs(m_kernel_launch_args, func,
+                                    totalLoopSize(), shared_memory_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +202,25 @@ Int32 RunCommandLaunchInfo::
 _sharedMemorySize() const
 {
   return m_command._sharedMemory();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunCommandLaunchInfo::
+_isUseCooperativeLaunch() const
+{
+  // Indique si on utilise cudaLaunchCooperativeKernel()
+  return false;
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunCommandLaunchInfo::
+_isUseCudaLaunchKernel() const
+{
+  // Indique si on utilise cudaLaunchKernel() au lieu de kernel<<<...>>>.
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/

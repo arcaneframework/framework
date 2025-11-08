@@ -321,6 +321,22 @@ class InvalidKernelClass
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_CUDA)
+template <typename... KernelArgs> inline void
+_applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
+                         cudaStream_t& s, Int32 shared_memory,
+                         const void* kernel_ptr, KernelArgs... args)
+{
+  void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+  if (is_cooperative)
+    cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+  else
+    cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Fonction générique pour exécuter un kernel CUDA.
  *
@@ -331,18 +347,24 @@ class InvalidKernelClass
  * TODO: Tester si Lambda est bien une fonction, le SFINAE étant peu lisible :
  * typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr
  * attendons les concepts c++20 (requires)
- * 
  */
 template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
 _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
-  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
+  Int32 shared_memory = launch_info._sharedMemorySize();
+  const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
+  auto tbi = launch_info._threadBlockInfo(kernel_ptr, shared_memory);
   cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
-  // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s>>>(args, func, other_args...);
+  bool is_cooperative = launch_info._isUseCooperativeLaunch();
+  bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
+  if (use_cuda_launch || is_cooperative)
+    _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, args, func, other_args...);
+  else {
+    // TODO: utiliser cudaLaunchKernel() à la place.
+    kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(args, func, other_args...);
+  }
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -350,7 +372,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
   ARCANE_UNUSED(args);
   ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
