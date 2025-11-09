@@ -24,7 +24,7 @@ env:
   CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
   # CMake
-  CM_BUILD_OPTS: "-j4"
+  CM_BUILD_OPTS: "-j16"
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
@@ -114,65 +114,11 @@ jobs:
         shell: bash
         run: cmake --install ${{ env.BUILD_DIR }}
 
-      - name: Tar build artifact
-        shell: bash
-        run: tar czf build-artifact.tar.gz ${{ env.BUILD_DIR }}
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifact
-          path: build-artifact.tar.gz
-          retention-days: 1
-
-      - name: Save cache
-        id: save-cache
+      - name: Test
+        id: test
         if: |
           (success() || failure()) &&
           steps.build.outcome == 'success'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
-
-  test:
-    name: test
-    needs:
-      - build
-    runs-on: [self-hosted, m-1]
-    timeout-minutes: 120
-    container:
-      image: ghcr.io/arcaneframework/ifpen-arcenv-gimkl-2021b-el8:latest
-      #options: --user root  # Avoid to match github UID in container.
-    strategy:
-      fail-fast: false
-
-    steps:
-
-      - name: Checkout
-        id: checkout
-        if: |
-          (success() || failure())
-        uses: actions/checkout@v5
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifact
-
-      - name: Untar build artifact
-        shell: bash
-        run: tar xf build-artifact.tar.gz -C /
-
-      - name: Remove build artifact tar
-        shell: bash
-        run: rm -f build-artifact.tar.gz
-
-      - name: Test
-        id: test
         shell: bash
         run: |
            export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
@@ -190,3 +136,13 @@ jobs:
           name: test-artifact
           path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
+
+      - name: Save cache
+        id: save-cache
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
