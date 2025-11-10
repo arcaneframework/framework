@@ -208,41 +208,42 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds) \
-  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::IndexType iter_name)
+  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...) \
-  A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<N> iter_name)
+  A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<N> iter_name)
 
-//! Boucle sur accélérateur
+//! Boucle 2D sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<2> iter_name)
 
-//! Boucle sur accélérateur
+//! Boucle 3D sur accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1, x2, x3) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<3> iter_name)
 
-//! Boucle sur accélérateur
+//! Boucle 4D sur accélérateur
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<4> iter_name)
 
 /*!
- * \brief Boucle sur accélérateur avec arguments supplémentaires pour les réductions.
+ * \brief Boucle 1D sur accélérateur avec arguments supplémentaires.
  *
- * Cette macro permet d'ajouter des arguments
- * pour chaque valeur à réduire. Les arguments doivent être des instances des
- * classes Arcane::Accelerator::ReducerSum2, Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2.
+ * Cette macro permet d'ajouter des arguments. Ces arguments peuvent être
+ * des valeurs à réduire (telles que les classes Arcane::Accelerator::ReducerSum2,
+ * Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2) ou des données
+ * en mémoire locale (via la classe Arcane::Accelerator::RunCommandLocalMemory).
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1) __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*!
  * \brief Boucle sur accélérateur pour exécution avec un seul thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(1) __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 
 /*---------------------------------------------------------------------------*/
