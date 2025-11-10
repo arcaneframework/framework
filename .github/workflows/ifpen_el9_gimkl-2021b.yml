@@ -14,10 +14,13 @@ on:
 
 env:
   # Framework directories
-  BUILD_DIR: /__w/framework/framework/build
-  INSTALL_DIR: /__w/framework/framework/install
-  SOURCE_DIR: /__w/framework/framework/source
-  EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
+  #BUILD_DIR: /__w/framework/framework/build
+  #INSTALL_DIR: /__w/framework/framework/install
+  #SOURCE_DIR: /__w/framework/framework/source
+  #EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
+  BUILD_DIR: /tmp/build
+  INSTALL_DIR: /tmp/install
+  SOURCE_DIR: /tmp/source
   # ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
