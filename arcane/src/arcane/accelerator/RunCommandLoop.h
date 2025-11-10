@@ -17,7 +17,7 @@
 // Pour compatibilité avec l'existant
 #include "arcane/utils/ConcurrencyUtils.h"
 
-#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/KernelLauncher.h"
 
 /*---------------------------------------------------------------------------*/
@@ -31,9 +31,15 @@ namespace Arcane::Accelerator::impl
 /*!
  * \brief Applique la lambda \a func sur une boucle \a bounds.
  *
- * \a N est la dimension de la boucle (actuellement 1, 2, 3 ou 4). La lambda
- * \a func est appliqué à la commande \a command. Les arguments supplémentaires
- * sont des fonctor supplémentaires (comme les réductions).
+ * La lambda \a func est appliqué à la commande \a command.
+ * \a bound est le type de la boucle. Les types supportés sont:
+ *
+ * - SimpleForLoopRanges
+ * - ComplexForLoopRanges
+ *
+ * Les arguments supplémentaires \a other_args sont utilisés pour supporter
+ * des fonctionnalités telles que les réductions (ReducerSum2, ReducerMax2, ...)
+ * ou la gestion de la mémoire locale (via RunCommandLocalMemory).
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
@@ -69,7 +75,38 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour conserver les arguments d'une RunCommand.
+ *
+ * `LoopBoundType` est le type de la boucle. Par exemple, ce peut être
+ * une SimpleForLoopRanges ou une ComplexForLoopRanges.
+ */
+template <typename LoopBoundType, typename... RemainingArgs>
+class ArrayBoundRunCommand
+{
+ public:
 
+  ArrayBoundRunCommand(RunCommand& command, const LoopBoundType& bounds)
+  : m_command(command)
+  , m_bounds(bounds)
+  {
+  }
+  ArrayBoundRunCommand(RunCommand& command, const LoopBoundType& bounds, const std::tuple<RemainingArgs...>& args)
+  : m_command(command)
+  , m_bounds(bounds)
+  , m_remaining_args(args)
+  {
+  }
+  RunCommand& m_command;
+  LoopBoundType m_bounds;
+  std::tuple<RemainingArgs...> m_remaining_args;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour gérer les paramètres supplémentaires des commandes.
+ */
 template <typename LoopBoundType, typename... RemainingArgs>
 class ExtendedArrayBoundLoop
 {
@@ -89,6 +126,28 @@ makeExtendedArrayBoundLoop(const LoopBoundType& bounds, RemainingArgs... args)
 -> ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>
 {
   return ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>(bounds, args...);
+}
+
+template <typename LoopBoundType, typename... RemainingArgs> auto
+makeExtendedLoop(const LoopBoundType& bounds, RemainingArgs... args)
+-> ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>
+{
+  return ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>(bounds, args...);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds.
+ *
+ * \a other_args contient les éventuels arguments supplémentaires passés à
+ * la lambda.
+ */
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+runExtended(RunCommand& command, LoopBoundType bounds,
+            const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
+{
+  std::apply([&](auto... vs) { _applyGenericLoop(command, bounds, func, vs...); }, other_args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -131,79 +190,49 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds.
- *
- * \a other_args contient les éventuels arguments supplémentaires passés à
- * la lambda.
- */
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
-runExtended(RunCommand& command, LoopBoundType bounds,
-            const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
-{
-  std::apply([&](auto... vs) { impl::_applyGenericLoop(command, bounds, func, vs...); }, other_args);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe pour conserver les arguments d'une RunCommand.
- *
- * `LoopBoundType` est le type de la boucle. Par exemple, ce peut être
- * une SimpleForLoopRanges ou une ComplexForLoopRanges.
- */
-template <typename LoopBoundType, typename... RemainingArgs>
-class ArrayBoundRunCommand
-{
- public:
-
-  ArrayBoundRunCommand(RunCommand& command, const LoopBoundType& bounds)
-  : m_command(command)
-  , m_bounds(bounds)
-  {
-  }
-  ArrayBoundRunCommand(RunCommand& command, const LoopBoundType& bounds, const std::tuple<RemainingArgs...>& args)
-  : m_command(command)
-  , m_bounds(bounds)
-  , m_remaining_args(args)
-  {
-  }
-  RunCommand& m_command;
-  LoopBoundType m_bounds;
-  std::tuple<RemainingArgs...> m_remaining_args;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
--> ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
+  -> impl::ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
 {
   return { command, bounds };
 }
 
 template <typename LoopBoundType, typename... RemainingArgs> auto
 operator<<(RunCommand& command, const impl::ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>& ex_loop)
--> ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>
+  -> impl::ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>
 {
   return { command, ex_loop.m_bounds, ex_loop.m_remaining_args };
 }
 
-template <int N> ArrayBoundRunCommand<SimpleForLoopRanges<N>>
+template <int N> impl::ArrayBoundRunCommand<SimpleForLoopRanges<N>>
 operator<<(RunCommand& command, const SimpleForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
-template <int N> ArrayBoundRunCommand<ComplexForLoopRanges<N>>
+template <int N> impl::ArrayBoundRunCommand<ComplexForLoopRanges<N>>
 operator<<(RunCommand& command, const ComplexForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
-void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& nr, const Lambda& f)
+inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& nr, const Lambda& f)
 {
   if constexpr (sizeof...(RemainingArgs) > 0) {
     runExtended(nr.m_command, nr.m_bounds, f, nr.m_remaining_args);
@@ -222,8 +251,9 @@ void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& nr, cons
 /*---------------------------------------------------------------------------*/
 
 //! Boucle sur accélérateur
-#define RUNCOMMAND_LOOP(iter_name, bounds) \
-  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name)
+#define RUNCOMMAND_LOOP(iter_name, bounds, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...) \
