@@ -40,7 +40,7 @@ env:
 jobs:
 
   build:
-    name: build
+    name: build and test
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
@@ -124,7 +124,7 @@ jobs:
           steps.build.outcome == 'success'
         shell: bash
         run: |
-           # Force use intel-mpi 2021.16 (works only for root)
+           # Force using intel-mpi 2021.16
            mv ${EBROOTIMPI} ${EBROOTIMPI}.old
            cp -ai /opt/intel-mpi ${EBROOTIMPI}
            ln -s /opt/intel-mpi ${EBROOTIMPI}
