@@ -89,7 +89,8 @@ class SimpleForLoopRanges
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
   using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'ArrayIndexType' instead") = ArrayIndexType;
+  using LoopIndexType = ArrayIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -129,7 +130,8 @@ class ComplexForLoopRanges
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
   using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'ArrayIndexType' instead") = ArrayIndexType;
+  using LoopIndexType = ArrayIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
 
  public:
 
