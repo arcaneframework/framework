@@ -124,8 +124,15 @@ jobs:
           steps.build.outcome == 'success'
         shell: bash
         run: |
+           # Force use intel-mpi 2021.16 (works only for root)
+           mv ${EBROOTIMPI} ${EBROOTIMPI}.old
+           cp -ai /opt/intel-mpi ${EBROOTIMPI}
+           ln -s /opt/intel-mpi ${EBROOTIMPI}
+           ln -s latest ${EBROOTIMPI}/mpi/2021.4.0
+           # Check intel-mpi version 
            which mpiexec
            mpiexec --version
+           # Run test
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
       - name: Upload test artifact
