@@ -200,6 +200,38 @@ requires(std::convertible_to<ValueType, DataType>)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute atomiquement à la vue \a view avec la valeur \a value.
+ *
+ * \retval l'ancienne valeur avant ajout.
+ */
+template <AcceleratorAtomicConcept DataType, typename ValueType>
+ARCCORE_HOST_DEVICE inline DataType
+doAtomicAdd(const DataViewGetterSetter<DataType>& view, ValueType value)
+requires(std::convertible_to<ValueType, DataType>)
+{
+  DataType v = value;
+  return impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(view, v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute atomiquement la valeur à l'adresse \a ptr avec la valeur \a value.
+ *
+ * \retval l'ancienne valeur avant ajout.
+ */
+template <AcceleratorAtomicConcept DataType, typename ValueType>
+ARCCORE_HOST_DEVICE inline DataType
+doAtomicAdd(DataType* ptr, ValueType value)
+requires(std::convertible_to<ValueType, DataType>)
+{
+  DataType v = value;
+  return impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(ptr, v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
 

@@ -50,4 +50,5 @@ set( ARCANE_SOURCES
   VariableViews.cc
   Views.h
   ViewsCommon.h
+  WorkGroupLoopRange.h
 )

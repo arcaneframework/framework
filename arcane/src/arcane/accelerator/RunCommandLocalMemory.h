@@ -62,6 +62,9 @@ class RunCommandLocalMemory
     return { m_ptr, m_size };
   }
 
+ public:
+
+  // TODO: rendre privé
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
   ARCCORE_DEVICE void _internalExecWorkItemAtBegin(Int32)
   {
@@ -76,7 +79,14 @@ class RunCommandLocalMemory
   void _internalExecWorkItemAtEnd(sycl::nd_item<1>) {}
 #endif
 
-  void _internalReduceHost() {}
+  void _internalHostExecWorkItemAtBegin()
+  {
+    m_ptr = new T[m_size];
+  }
+  void _internalHostExecWorkItemAtEnd()
+  {
+    delete m_ptr;
+  }
 
  private:
 
