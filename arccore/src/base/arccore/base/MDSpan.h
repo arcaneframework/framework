@@ -54,6 +54,7 @@ class MDSpan
   using ExtentsType = Extents;
   using LayoutPolicyType = LayoutPolicy;
   using MDIndexType = typename Extents::MDIndexType;
+  using LoopIndexType = MDIndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
   using DynamicDimsType = typename Extents::DynamicDimsType;
   using RemovedFirstExtentsType = typename Extents::RemovedFirstExtentsType;
