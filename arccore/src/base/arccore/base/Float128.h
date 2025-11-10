@@ -16,11 +16,14 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
-// Tous les compilateurs Linux supportés par Arccore ont le type '__float128'
+// Tous les compilateurs Linux supportés par Arccore ont le type '__float128',
 #if defined(ARCCORE_OS_LINUX)
+// Il semble que AdaptiveCPP 2510 ne supporte pas le '__float128'.
+#  if defined(__x86_64__) && (!defined(__ACPP__))
+#    define ARCCORE_HAS_NATIVE_FLOAT128
 // Sur certaines plateformes (par exemple ARM64 Grace), le type 'float128'
 // correspond à un type pré-défini (en général 'long double')
-#  if !defined(__HAVE_DISTINCT_FLOAT128)
+#  elif !defined(__HAVE_DISTINCT_FLOAT128)
 #    define ARCCORE_HAS_NATIVE_FLOAT128
 #  endif
 #endif
