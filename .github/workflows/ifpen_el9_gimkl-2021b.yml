@@ -20,7 +20,7 @@ env:
   #EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
   BUILD_DIR: /tmp/build
   INSTALL_DIR: /tmp/install
-  SOURCE_DIR: /tmp/source
+  SOURCE_DIR: /__w/framework/framework/source
   # ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
