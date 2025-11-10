@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ void _doReduce2()
     ReducerSum2<Int64> reducer_sum(command);
     ReducerMax2<Int64> reducer_max(command);
     ReducerMin2<Int64> reducer_min(command);
-    command << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(nb_iter),
+    command << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::SimpleForLoopRanges<1,Int32>(nb_iter),
                                                                        reducer_sum, reducer_max, reducer_min)
             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter, ReducerSum2<Int64> & reducer_sum, ReducerMax2<Int64> & reducer_max,
                                        ReducerMin2<Int64> & reducer_min) {

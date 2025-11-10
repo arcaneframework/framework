@@ -35,8 +35,8 @@ namespace Arcane::Accelerator::impl
  * \a func est appliqué à la commande \a command. Les arguments supplémentaires
  * sont des fonctor supplémentaires (comme les réductions).
  */
-template <int N, template <int T, typename> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
-_applyGenericLoop(RunCommand& command, LoopBoundType<N, Int32> bounds,
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+_applyGenericLoop(RunCommand& command, LoopBoundType bounds,
                   const Lambda& func, const RemainingArgs&... other_args)
 {
   Int64 vsize = bounds.nbElement();
@@ -47,13 +47,13 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N, Int32> bounds,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arcaneSequentialFor(bounds, func, other_args...);
@@ -84,11 +84,11 @@ class ExtendedArrayBoundLoop
   std::tuple<RemainingArgs...> m_remaining_args;
 };
 
-template <typename ExtentType, typename... RemainingArgs> auto
-makeExtendedArrayBoundLoop(const ArrayBounds<ExtentType>& bounds, RemainingArgs... args)
--> ExtendedArrayBoundLoop<ArrayBounds<ExtentType>, RemainingArgs...>
+template <typename LoopBoundType, typename... RemainingArgs> auto
+makeExtendedArrayBoundLoop(const LoopBoundType& bounds, RemainingArgs... args)
+-> ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>
 {
-  return ExtendedArrayBoundLoop<ArrayBounds<ExtentType>, RemainingArgs...>(bounds, args...);
+  return ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>(bounds, args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,9 +129,16 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
   impl::_applyGenericLoop(command, bounds, func);
 }
 
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template <int N, template <int T, typename> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
-runExtended(RunCommand& command, LoopBoundType<N, Int32> bounds,
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds.
+ *
+ * \a other_args contient les éventuels arguments supplémentaires passés à
+ * la lambda.
+ */
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+runExtended(RunCommand& command, LoopBoundType bounds,
             const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
 {
   std::apply([&](auto... vs) { impl::_applyGenericLoop(command, bounds, func, vs...); }, other_args);
@@ -139,8 +146,13 @@ runExtended(RunCommand& command, LoopBoundType<N, Int32> bounds,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template <int N, typename LoopBoundType, typename... RemainingArgs>
+/*!
+ * \brief Classe pour conserver les arguments d'une RunCommand.
+ *
+ * `LoopBoundType` est le type de la boucle. Par exemple, ce peut être
+ * une SimpleForLoopRanges ou une ComplexForLoopRanges.
+ */
+template <typename LoopBoundType, typename... RemainingArgs>
 class ArrayBoundRunCommand
 {
  public:
@@ -161,34 +173,37 @@ class ArrayBoundRunCommand
   std::tuple<RemainingArgs...> m_remaining_args;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
--> ArrayBoundRunCommand<ExtentType::rank(), SimpleForLoopRanges<ExtentType::rank(), Int32>>
+-> ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
 {
   return { command, bounds };
 }
 
-template <typename ExtentType, typename... RemainingArgs> auto
-operator<<(RunCommand& command, const impl::ExtendedArrayBoundLoop<ExtentType, RemainingArgs...>& ex_loop)
--> ArrayBoundRunCommand<1, SimpleForLoopRanges<1, Int32>, RemainingArgs...>
+template <typename LoopBoundType, typename... RemainingArgs> auto
+operator<<(RunCommand& command, const impl::ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>& ex_loop)
+-> ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>
 {
   return { command, ex_loop.m_bounds, ex_loop.m_remaining_args };
 }
 
-template <int N> ArrayBoundRunCommand<N, SimpleForLoopRanges<N>>
+template <int N> ArrayBoundRunCommand<SimpleForLoopRanges<N>>
 operator<<(RunCommand& command, const SimpleForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
-template <int N> ArrayBoundRunCommand<N, ComplexForLoopRanges<N>>
+template <int N> ArrayBoundRunCommand<ComplexForLoopRanges<N>>
 operator<<(RunCommand& command, const ComplexForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
-template <int N, template <int, typename> class ForLoopBoundType, typename Lambda, typename... RemainingArgs>
-void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArgs...>&& nr, const Lambda& f)
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
+void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& nr, const Lambda& f)
 {
   if constexpr (sizeof...(RemainingArgs) > 0) {
     runExtended(nr.m_command, nr.m_bounds, f, nr.m_remaining_args);
@@ -235,14 +250,14 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
  * en mémoire locale (via la classe Arcane::Accelerator::RunCommandLocalMemory).
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1) __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*!
  * \brief Boucle sur accélérateur pour exécution avec un seul thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(1) __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 
