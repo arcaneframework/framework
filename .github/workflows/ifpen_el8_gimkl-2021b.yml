@@ -14,10 +14,13 @@ on:
 
 env:
   # Framework directories
-  BUILD_DIR: /__w/framework/framework/build
-  INSTALL_DIR: /__w/framework/framework/install
+  #BUILD_DIR: /__w/framework/framework/build
+  #INSTALL_DIR: /__w/framework/framework/install
+  #SOURCE_DIR: /__w/framework/framework/source
+  #EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
+  BUILD_DIR: /tmp/build
+  INSTALL_DIR: /tmp/install
   SOURCE_DIR: /__w/framework/framework/source
-  EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
   # ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
@@ -37,12 +40,12 @@ env:
 jobs:
 
   build:
-    name: build
+    name: build and test
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/ifpen-arcenv-gimkl-2021b-el8:latest
-      #options: --user root  # Avoid to match github UID in container.
+      options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
 
@@ -121,9 +124,15 @@ jobs:
           steps.build.outcome == 'success'
         shell: bash
         run: |
-           export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
+           # Force using intel-mpi 2021.16
+           mv ${EBROOTIMPI} ${EBROOTIMPI}.old
+           cp -ai /opt/intel-mpi ${EBROOTIMPI}
+           ln -s /opt/intel-mpi ${EBROOTIMPI}
+           ln -s latest ${EBROOTIMPI}/mpi/2021.4.0
+           # Check intel-mpi version 
            which mpiexec
            mpiexec --version
+           # Run test
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
       - name: Upload test artifact
