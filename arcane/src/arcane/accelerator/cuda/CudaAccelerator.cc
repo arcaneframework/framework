@@ -39,17 +39,6 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Liste des flags pour le pool mémoire à activer
-enum class MemoryPoolFlags
-{
-  UVM = 1,
-  Device = 2,
-  HostPinned = 4
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void arcaneCheckCudaErrors(const TraceInfo& ti, cudaError_t e)
 {
   if (e != cudaSuccess)
@@ -170,14 +159,24 @@ class BlockAllocatorWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
+ * \brief Classe de base d'un allocateur spécifique pour accélérateur.
  */
-class CommonMemoryAllocatorBase
+class AcceleratorMemoryAllocatorBase
 : public AlignedMemoryAllocator
 {
  public:
 
   using BaseClass = AlignedMemoryAllocator;
+
+ public:
+
+  //! Liste des flags pour le pool mémoire à activer
+  enum class MemoryPoolFlags
+  {
+    UVM = 1,
+    Device = 2,
+    HostPinned = 4
+  };
 
  public:
 
@@ -187,11 +186,12 @@ class CommonMemoryAllocatorBase
    public:
 
     virtual void doMemoryCopy(void* destination, const void* source, Int64 size) = 0;
+    virtual eMemoryResource memoryResource() const = 0;
   };
 
  public:
 
-  CommonMemoryAllocatorBase(const String& allocator_name, IUnderlyingAllocator* underlying_allocator)
+  AcceleratorMemoryAllocatorBase(const String& allocator_name, IUnderlyingAllocator* underlying_allocator)
   : AlignedMemoryAllocator3(128)
   , m_direct_sub_allocator(underlying_allocator)
   , m_memory_pool(m_direct_sub_allocator.get(), allocator_name)
@@ -287,6 +287,7 @@ class CommonMemoryAllocatorBase
     wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
     return m_block_wrapper.adjustedCapacity(wanted_capacity, element_size);
   }
+  eMemoryResource memoryResource() const final { return m_direct_sub_allocator->memoryResource(); }
 
  protected:
 
@@ -387,37 +388,108 @@ class ConcreteAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename ConcreteAllocatorType>
 class UnderlyingAllocator
-: public CommonMemoryAllocatorBase::IUnderlyingAllocator
+: public AcceleratorMemoryAllocatorBase::IUnderlyingAllocator
 {
  public:
 
-  explicit UnderlyingAllocator(ConcreteAllocator* concrete_allocator)
-  : m_concrete_allocator(concrete_allocator)
-  {
-  }
+  UnderlyingAllocator() = default;
 
  public:
 
-  void* allocateMemory(size_t size) override
+  void* allocateMemory(size_t size) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_CUDA(m_concrete_allocator->_allocate(&out, size));
+    ARCANE_CHECK_CUDA(m_concrete_allocator._allocate(&out, size));
     return out;
   }
-  void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
+  void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
   {
-    ARCANE_CHECK_CUDA_NOTHROW(m_concrete_allocator->_deallocate(ptr));
+    ARCANE_CHECK_CUDA_NOTHROW(m_concrete_allocator._deallocate(ptr));
   }
 
-  void doMemoryCopy(void* destination, const void* source, Int64 size) override
+  void doMemoryCopy(void* destination, const void* source, Int64 size) final
   {
     ARCANE_CHECK_CUDA(cudaMemcpy(destination, source, size, cudaMemcpyDefault));
   }
 
+  eMemoryResource memoryResource() const final
+  {
+    return m_concrete_allocator.memoryResource();
+  }
+
  public:
 
-  std::unique_ptr<ConcreteAllocator> m_concrete_allocator;
+  ConcreteAllocatorType m_concrete_allocator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  UnifiedMemoryConcreteAllocator()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+      m_use_ats = v.value();
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MEMORY_HINT_ON_DEVICE", true))
+      m_use_hint_as_mainly_device = (v.value() != 0);
+  }
+
+  cudaError_t _deallocate(void* ptr) final
+  {
+    if (m_use_ats) {
+      ::free(ptr);
+      return cudaSuccess;
+    }
+    //std::cout << "CUDA_MANAGED_FREE ptr=" << ptr << "\n";
+    return ::cudaFree(ptr);
+  }
+
+  cudaError_t _allocate(void** ptr, size_t new_size) final
+  {
+    if (m_use_ats) {
+      *ptr = ::aligned_alloc(128, new_size);
+    }
+    else {
+      auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+      //std::cout << "CUDA_MANAGED_MALLOC ptr=" << (*ptr) << " size=" << new_size << "\n";
+      //if (new_size < 4000)
+      //std::cout << "STACK=" << platform::getStackTrace() << "\n";
+
+      if (r != cudaSuccess)
+        return r;
+
+      // Si demandé, indique qu'on préfère allouer sur le GPU.
+      // NOTE: Dans ce cas, on récupère le device actuel pour positionner la localisation
+      // préférée. Dans le cas où on utilise MemoryPool, cette allocation ne sera effectuée
+      // qu'une seule fois. Si le device par défaut pour un thread change au cours du calcul
+      // il y aura une incohérence. Pour éviter cela, on pourrait faire un cudaMemAdvise()
+      // pour chaque allocation (via _applyHint()) mais ces opérations sont assez couteuses
+      // et s'il y a beaucoup d'allocation il peut en résulter une perte de performance.
+      if (m_use_hint_as_mainly_device) {
+        int device_id = 0;
+        void* p = *ptr;
+        cudaGetDevice(&device_id);
+        ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, _getMemoryLocation(device_id)));
+        ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, _getMemoryLocation(cudaCpuDeviceId)));
+      }
+    }
+
+    return cudaSuccess;
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::UnifiedMemory; }
+
+ public:
+
+  bool m_use_ats = false;
+  //! Si vrai, par défaut on considère toutes les allocations comme eMemoryLocationHint::MainlyDevice
+  bool m_use_hint_as_mainly_device = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -430,77 +502,13 @@ class UnderlyingAllocator
  * de la taille d'une page.
  */
 class UnifiedMemoryCudaMemoryAllocator
-: public CommonMemoryAllocatorBase
+: public AcceleratorMemoryAllocatorBase
 {
  public:
-
-  class Allocator
-  : public ConcreteAllocator
-  {
-   public:
-
-    Allocator()
-    {
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
-        m_use_ats = v.value();
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MEMORY_HINT_ON_DEVICE", true))
-        m_use_hint_as_mainly_device = (v.value() != 0);
-    }
-
-    cudaError_t _deallocate(void* ptr) final
-    {
-      if (m_use_ats) {
-        ::free(ptr);
-        return cudaSuccess;
-      }
-      //std::cout << "CUDA_MANAGED_FREE ptr=" << ptr << "\n";
-      return ::cudaFree(ptr);
-    }
-
-    cudaError_t _allocate(void** ptr, size_t new_size) final
-    {
-      if (m_use_ats) {
-        *ptr = ::aligned_alloc(128, new_size);
-      }
-      else {
-        auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-        //std::cout << "CUDA_MANAGED_MALLOC ptr=" << (*ptr) << " size=" << new_size << "\n";
-        //if (new_size < 4000)
-        //std::cout << "STACK=" << platform::getStackTrace() << "\n";
-
-        if (r != cudaSuccess)
-          return r;
-
-        // Si demandé, indique qu'on préfère allouer sur le GPU.
-        // NOTE: Dans ce cas, on récupère le device actuel pour positionner la localisation
-        // préférée. Dans le cas où on utilise MemoryPool, cette allocation ne sera effectuée
-        // qu'une seule fois. Si le device par défaut pour un thread change au cours du calcul
-        // il y aura une incohérence. Pour éviter cela, on pourrait faire un cudaMemAdvise()
-        // pour chaque allocation (via _applyHint()) mais ces opérations sont assez couteuses
-        // et s'il y a beaucoup d'allocation il peut en résulter une perte de performance.
-        if (m_use_hint_as_mainly_device) {
-          int device_id = 0;
-          void* p = *ptr;
-          cudaGetDevice(&device_id);
-          ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, _getMemoryLocation(device_id)));
-          ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, _getMemoryLocation(cudaCpuDeviceId)));
-        }
-      }
-
-      return cudaSuccess;
-    }
-
-   public:
-
-    bool m_use_ats = false;
-    //! Si vrai, par défaut on considère toutes les allocations comme eMemoryLocationHint::MainlyDevice
-    bool m_use_hint_as_mainly_device = false;
-  };
-
  public:
 
   UnifiedMemoryCudaMemoryAllocator()
-  : CommonMemoryAllocatorBase("UnifiedMemoryCudaMemory", new UnderlyingAllocator(new Allocator()))
+  : AcceleratorMemoryAllocatorBase("UnifiedMemoryCudaMemory", new UnderlyingAllocator<UnifiedMemoryConcreteAllocator>())
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_TRACE", true))
       _setTraceLevel(v.value());
@@ -521,7 +529,6 @@ class UnifiedMemoryCudaMemoryAllocator
     if (p && s > 0)
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
-  eMemoryResource memoryResource() const override { return eMemoryResource::UnifiedMemory; }
 
  protected:
 
@@ -568,30 +575,33 @@ class UnifiedMemoryCudaMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HostPinnedCudaMemoryAllocator
-: public CommonMemoryAllocatorBase
+class HostPinnedConcreteAllocator
+: public ConcreteAllocator
 {
  public:
 
-  class Allocator
-  : public ConcreteAllocator
+  cudaError_t _allocate(void** ptr, size_t new_size) final
   {
-   public:
+    return ::cudaMallocHost(ptr, new_size);
+  }
+  cudaError_t _deallocate(void* ptr) final
+  {
+    return ::cudaFreeHost(ptr);
+  }
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::HostPinned; }
+};
 
-    cudaError_t _allocate(void** ptr, size_t new_size) final
-    {
-      return ::cudaMallocHost(ptr, new_size);
-    }
-    cudaError_t _deallocate(void* ptr) final
-    {
-      return ::cudaFreeHost(ptr);
-    }
-  };
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
+class HostPinnedCudaMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+ public:
  public:
 
   HostPinnedCudaMemoryAllocator()
-  : CommonMemoryAllocatorBase("HostPinnedCudaMemory", new UnderlyingAllocator(new Allocator()))
+  : AcceleratorMemoryAllocatorBase("HostPinnedCudaMemory", new UnderlyingAllocator<HostPinnedConcreteAllocator>())
   {
   }
 
@@ -601,60 +611,63 @@ class HostPinnedCudaMemoryAllocator
   {
     _doInitializeHostPinned();
   }
+};
 
-  eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  DeviceConcreteAllocator()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+      m_use_ats = v.value();
+  }
+
+  cudaError_t _allocate(void** ptr, size_t new_size) final
+  {
+    if (m_use_ats) {
+      // FIXME: it does not work on WIN32
+      *ptr = std::aligned_alloc(128, new_size);
+      if (*ptr)
+        return cudaSuccess;
+      return cudaErrorMemoryAllocation;
+    }
+    cudaError_t r = ::cudaMalloc(ptr, new_size);
+    //std::cout << "ALLOCATE_DEVICE ptr=" << (*ptr) << " size=" << new_size << " r=" << (int)r << "\n";
+    return r;
+  }
+  cudaError_t _deallocate(void* ptr) final
+  {
+    if (m_use_ats) {
+      std::free(ptr);
+      return cudaSuccess;
+    }
+    //std::cout << "FREE_DEVICE ptr=" << ptr << "\n";
+    return ::cudaFree(ptr);
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::Device; }
+
+ private:
+
+  bool m_use_ats = false;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class DeviceCudaMemoryAllocator
-: public CommonMemoryAllocatorBase
+: public AcceleratorMemoryAllocatorBase
 {
-
-  class Allocator
-  : public ConcreteAllocator
-  {
-   public:
-
-    Allocator()
-    {
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
-        m_use_ats = v.value();
-    }
-
-    cudaError_t _allocate(void** ptr, size_t new_size) final
-    {
-      if (m_use_ats) {
-        // FIXME: it does not work on WIN32
-        *ptr = std::aligned_alloc(128, new_size);
-        if (*ptr)
-          return cudaSuccess;
-        return cudaErrorMemoryAllocation;
-      }
-      cudaError_t r = ::cudaMalloc(ptr, new_size);
-      //std::cout << "ALLOCATE_DEVICE ptr=" << (*ptr) << " size=" << new_size << " r=" << (int)r << "\n";
-      return r;
-    }
-    cudaError_t _deallocate(void* ptr) final
-    {
-      if (m_use_ats) {
-        std::free(ptr);
-        return cudaSuccess;
-      }
-      //std::cout << "FREE_DEVICE ptr=" << ptr << "\n";
-      return ::cudaFree(ptr);
-    }
-
-   private:
-
-    bool m_use_ats = false;
-  };
 
  public:
 
   DeviceCudaMemoryAllocator()
-  : CommonMemoryAllocatorBase("DeviceCudaMemoryAllocator", new UnderlyingAllocator(new Allocator()))
+  : AcceleratorMemoryAllocatorBase("DeviceCudaMemoryAllocator", new UnderlyingAllocator<DeviceConcreteAllocator>())
   {
   }
 
@@ -664,7 +677,6 @@ class DeviceCudaMemoryAllocator
   {
     void _doInitializeDevice();
   }
-  eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/
