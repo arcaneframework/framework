@@ -155,5 +155,4 @@ jobs:
         run: |
            ls -l /__w/framework/framework
            rm -rf ${{ env.SOURCE_DIR }}
-           rm -rf /__w/framework/framework/ccache /__w/framework/framework/source
            ls -l /__w/framework/framework
