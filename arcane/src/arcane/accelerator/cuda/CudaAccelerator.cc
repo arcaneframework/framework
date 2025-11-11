@@ -133,7 +133,7 @@ class BlockAllocatorWrapper
     return wanted_capacity;
   }
 
-  void doAllocate(void* ptr, [[maybe_unused]] size_t new_size)
+  void notifyDoAllocate(void* ptr)
   {
     ++m_nb_allocate;
     if (m_do_block_allocate) {
@@ -172,72 +172,34 @@ class BlockAllocatorWrapper
 /*!
  * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
-class CudaMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator3
+class CommonMemoryAllocatorBase
+: public AlignedMemoryAllocator
 {
  public:
 
-  using BaseClass = Arccore::AlignedMemoryAllocator3;
+  using BaseClass = AlignedMemoryAllocator;
 
  public:
 
-  class ConcreteAllocator
-  {
-   public:
-
-    virtual ~ConcreteAllocator() = default;
-
-   public:
-
-    virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
-    virtual cudaError_t _deallocate(void* ptr) = 0;
-  };
-
-  class UnderlyingAllocator
+  class IUnderlyingAllocator
   : public IMemoryPoolAllocator
   {
    public:
 
-    explicit UnderlyingAllocator(CudaMemoryAllocatorBase* v)
-    : m_base(v)
-    {
-    }
-
-   public:
-
-    void* allocateMemory(size_t size) override
-    {
-      void* out = nullptr;
-      ARCANE_CHECK_CUDA(m_base->m_concrete_allocator->_allocate(&out, size));
-      m_base->m_block_wrapper.doAllocate(out, size);
-      return out;
-    }
-    void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
-    {
-      ARCANE_CHECK_CUDA_NOTHROW(m_base->m_concrete_allocator->_deallocate(ptr));
-    }
-
-   public:
-
-    CudaMemoryAllocatorBase* m_base = nullptr;
+    virtual void doMemoryCopy(void* destination, const void* source, Int64 size) = 0;
   };
 
  public:
 
-  CudaMemoryAllocatorBase(const String& allocator_name, ConcreteAllocator* concrete_allocator)
+  CommonMemoryAllocatorBase(const String& allocator_name, IUnderlyingAllocator* underlying_allocator)
   : AlignedMemoryAllocator3(128)
-  , m_concrete_allocator(concrete_allocator)
-  , m_direct_sub_allocator(this)
-  , m_memory_pool(&m_direct_sub_allocator, allocator_name)
-  , m_sub_allocator(&m_direct_sub_allocator)
+  , m_direct_sub_allocator(underlying_allocator)
+  , m_memory_pool(m_direct_sub_allocator.get(), allocator_name)
+  , m_sub_allocator(m_direct_sub_allocator.get())
   , m_allocator_name(allocator_name)
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_PRINT_LEVEL", true))
       m_print_level = v.value();
-  }
-
-  ~CudaMemoryAllocatorBase()
-  {
   }
 
  public:
@@ -268,9 +230,10 @@ class CudaMemoryAllocatorBase
   AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) final
   {
     void* out = m_sub_allocator->allocateMemory(new_size);
+    m_block_wrapper.notifyDoAllocate(out);
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128) != 0)
-      ARCANE_FATAL("Bad alignment for CUDA allocator: offset={0}", (a % 128));
+      ARCANE_FATAL("Bad alignment for Accelerator allocator: offset={0}", (a % 128));
     m_tracer.traceAllocate(out, new_size, args);
     _applyHint(out, new_size, args);
     return { out, new_size };
@@ -302,7 +265,7 @@ class CudaMemoryAllocatorBase
       _removeHint(current_info.baseAddress(), current_size, args);
     AllocatedMemoryInfo a = allocate(args, new_size);
     // TODO: supprimer les Hint après le deallocate car la zone mémoire peut être réutilisée.
-    ARCANE_CHECK_CUDA(cudaMemcpy(a.baseAddress(), current_info.baseAddress(), current_size, cudaMemcpyDefault));
+    m_direct_sub_allocator->doMemoryCopy(a.baseAddress(), current_info.baseAddress(), current_size);
     deallocate(args, current_info);
     return a;
   }
@@ -335,8 +298,7 @@ class CudaMemoryAllocatorBase
  private:
 
   impl::MemoryTracerWrapper m_tracer;
-  std::unique_ptr<ConcreteAllocator> m_concrete_allocator;
-  UnderlyingAllocator m_direct_sub_allocator;
+  std::unique_ptr<IUnderlyingAllocator> m_direct_sub_allocator;
   MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;
   bool m_use_memory_pool = false;
@@ -344,19 +306,56 @@ class CudaMemoryAllocatorBase
   std::atomic<Int32> m_nb_reallocate = 0;
   std::atomic<Int64> m_reallocate_size = 0;
   Int32 m_print_level = 0;
-
- protected:
-
   BlockAllocatorWrapper m_block_wrapper;
 
  protected:
 
+  //! Initialisation pour la mémoire UVM
+  void _doInitializeUVM()
+  {
+    bool do_page_allocate = true;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
+      do_page_allocate = (v.value() != 0);
+    Int64 page_size = platform::getPageSize();
+    m_block_wrapper.initialize(page_size, do_page_allocate);
+
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::UVM)) != 0;
+    _setUseMemoryPool(use_memory_pool);
+  }
+
+  //! Initialisation pour la mémoire HostPinned
+  void _doInitializeHostPinned()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::HostPinned)) != 0;
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
+  }
+
+  //! Initialisation pour la mémoire Device
+  void _doInitializeDevice()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::Device)) != 0;
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
+  }
+
+ protected:
+
   void _setTraceLevel(Int32 v) { m_tracer.setTraceLevel(v); }
+
+ private:
+
   // IMPORTANT: doit être appelé avant toute allocation et ne plus être modifié ensuite.
   void _setUseMemoryPool(bool is_used)
   {
     IMemoryPoolAllocator* mem_pool = &m_memory_pool;
-    IMemoryPoolAllocator* direct = &m_direct_sub_allocator;
+    IMemoryPoolAllocator* direct = m_direct_sub_allocator.get();
     m_sub_allocator = (is_used) ? mem_pool : direct;
     m_use_memory_pool = is_used;
     if (is_used) {
@@ -372,6 +371,57 @@ class CudaMemoryAllocatorBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ConcreteAllocator
+{
+ public:
+
+  virtual ~ConcreteAllocator() = default;
+
+ public:
+
+  virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual cudaError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnderlyingAllocator
+: public CommonMemoryAllocatorBase::IUnderlyingAllocator
+{
+ public:
+
+  explicit UnderlyingAllocator(ConcreteAllocator* concrete_allocator)
+  : m_concrete_allocator(concrete_allocator)
+  {
+  }
+
+ public:
+
+  void* allocateMemory(size_t size) override
+  {
+    void* out = nullptr;
+    ARCANE_CHECK_CUDA(m_concrete_allocator->_allocate(&out, size));
+    return out;
+  }
+  void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
+  {
+    ARCANE_CHECK_CUDA_NOTHROW(m_concrete_allocator->_deallocate(ptr));
+  }
+
+  void doMemoryCopy(void* destination, const void* source, Int64 size) override
+  {
+    ARCANE_CHECK_CUDA(cudaMemcpy(destination, source, size, cudaMemcpyDefault));
+  }
+
+ public:
+
+  std::unique_ptr<ConcreteAllocator> m_concrete_allocator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Allocateur pour la mémoire unifiée.
  *
@@ -380,7 +430,7 @@ class CudaMemoryAllocatorBase
  * de la taille d'une page.
  */
 class UnifiedMemoryCudaMemoryAllocator
-: public CudaMemoryAllocatorBase
+: public CommonMemoryAllocatorBase
 {
  public:
 
@@ -450,7 +500,7 @@ class UnifiedMemoryCudaMemoryAllocator
  public:
 
   UnifiedMemoryCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("UnifiedMemoryCudaMemory", new Allocator())
+  : CommonMemoryAllocatorBase("UnifiedMemoryCudaMemory", new UnderlyingAllocator(new Allocator()))
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_TRACE", true))
       _setTraceLevel(v.value());
@@ -458,16 +508,7 @@ class UnifiedMemoryCudaMemoryAllocator
 
   void initialize()
   {
-    bool do_page_allocate = true;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
-      do_page_allocate = (v.value() != 0);
-    Int64 page_size = platform::getPageSize();
-    m_block_wrapper.initialize(page_size, do_page_allocate);
-
-    bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
-      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::UVM)) != 0;
-    _setUseMemoryPool(use_memory_pool);
+    _doInitializeUVM();
   }
 
  public:
@@ -528,7 +569,7 @@ class UnifiedMemoryCudaMemoryAllocator
 /*---------------------------------------------------------------------------*/
 
 class HostPinnedCudaMemoryAllocator
-: public CudaMemoryAllocatorBase
+: public CommonMemoryAllocatorBase
 {
  public:
 
@@ -550,7 +591,7 @@ class HostPinnedCudaMemoryAllocator
  public:
 
   HostPinnedCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("HostPinnedCudaMemory", new Allocator())
+  : CommonMemoryAllocatorBase("HostPinnedCudaMemory", new UnderlyingAllocator(new Allocator()))
   {
   }
 
@@ -558,12 +599,9 @@ class HostPinnedCudaMemoryAllocator
 
   void initialize()
   {
-    bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
-      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::HostPinned)) != 0;
-    _setUseMemoryPool(use_memory_pool);
-    m_block_wrapper.initialize(128, use_memory_pool);
+    _doInitializeHostPinned();
   }
+
   eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
 };
 
@@ -571,7 +609,7 @@ class HostPinnedCudaMemoryAllocator
 /*---------------------------------------------------------------------------*/
 
 class DeviceCudaMemoryAllocator
-: public CudaMemoryAllocatorBase
+: public CommonMemoryAllocatorBase
 {
 
   class Allocator
@@ -616,7 +654,7 @@ class DeviceCudaMemoryAllocator
  public:
 
   DeviceCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("DeviceCudaMemoryAllocator", new Allocator())
+  : CommonMemoryAllocatorBase("DeviceCudaMemoryAllocator", new UnderlyingAllocator(new Allocator()))
   {
   }
 
@@ -624,11 +662,7 @@ class DeviceCudaMemoryAllocator
 
   void initialize()
   {
-    bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
-      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::Device)) != 0;
-    _setUseMemoryPool(use_memory_pool);
-    m_block_wrapper.initialize(128, use_memory_pool);
+    void _doInitializeDevice();
   }
   eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
