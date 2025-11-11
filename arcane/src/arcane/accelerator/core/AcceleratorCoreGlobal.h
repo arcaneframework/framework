@@ -64,7 +64,6 @@ enum class eMemoryAdvice;
 
 namespace impl
 {
-  class KernelLaunchArgs;
   class RuntimeStaticInfo;
   class IRunnerRuntime;
   // typedef pour compatibilité avec anciennes versions (octobre 2022)
@@ -75,14 +74,19 @@ namespace impl
   class ReduceMemoryImpl;
   class RunQueueImpl;
   class IRunQueueEventImpl;
-  class RunCommandLaunchInfo;
   class RunnerImpl;
   class RunQueueImplStack;
+} // namespace impl
+
+namespace Impl
+{
+  class KernelLaunchArgs;
+  class RunCommandLaunchInfo;
   class NativeStream;
   class CudaUtils;
   class HipUtils;
   class SyclUtils;
-} // namespace impl
+} // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

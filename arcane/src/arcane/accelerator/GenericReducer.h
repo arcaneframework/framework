@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericReducer.h                                            (C) 2000-2024 */
+/* GenericReducer.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -125,14 +125,14 @@ class GenericReducerIf
     RunQueue& queue = s.m_queue;
     RunCommand command = makeCommand(queue);
     command << trace_info;
-    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    Impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
     eExecutionPolicy exec_policy = queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
@@ -149,7 +149,7 @@ class GenericReducerIf
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,

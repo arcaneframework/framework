@@ -505,9 +505,9 @@ template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer2
 : public HostDeviceReducerBase<DataType, ReduceFunctor>
 {
-  friend impl::KernelRemainingArgsHelper;
-  friend ::Arcane::impl::HostReducerHelper;
-
+  friend Impl::KernelRemainingArgsHelper;
+  friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
+ 
  public:
 
   using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
@@ -533,7 +533,8 @@ class HostDeviceReducer2
   // Note: les méthodes _internalReduce...() sont
   // internes à Arcane.
 
-  void _internalReduceHost()
+  void _internalHostExecWorkItemAtBegin(){}
+  void _internalHostExecWorkItemAtEnd()
   {
     this->_finalize();
   }

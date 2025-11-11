@@ -19,25 +19,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
-{
-/*!
- * \brief Classe pour appliquer la finalisation des réductions.
- */
-class HostReducerHelper
-{
- public:
-
-  //! Applique les fonctors des arguments additionnels.
-  template <typename... ReducerArgs> static inline void
-  applyReducerArgs(ReducerArgs&... reducer_args)
-  {
-    // Applique les réductions
-    (reducer_args._internalReduceHost(), ...);
-  }
-};
-}
-
 namespace Arcane
 {
 
@@ -56,7 +37,7 @@ class ForLoopRange
   , m_size(size)
   {}
   //! Créé un interval entre *[0,size[*
-  ForLoopRange(Int32 size)
+  explicit(false) ForLoopRange(Int32 size)
   : m_lower_bound(0)
   , m_size(size)
   {}
@@ -88,7 +69,7 @@ class SimpleForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = ArrayBoundsType::MDIndexType;
   using LoopIndexType = ArrayIndexType;
   using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
 
@@ -97,13 +78,13 @@ class SimpleForLoopRanges
   explicit SimpleForLoopRanges(std::array<Int32, N> b)
   : m_bounds(b)
   {}
-  SimpleForLoopRanges(ArrayBoundsType b)
+  explicit(false) SimpleForLoopRanges(ArrayBoundsType b)
   : m_bounds(b)
   {}
 
  public:
 
-  template <Int32 I> constexpr Int32 lowerBound() const { return 0; }
+  template <Int32 I> static constexpr Int32 lowerBound() { return 0; }
   template <Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
   template <Int32 I> constexpr Int32 extent() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
@@ -129,7 +110,7 @@ class ComplexForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = ArrayBoundsType::MDIndexType;
   using LoopIndexType = ArrayIndexType;
   using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
 
@@ -139,7 +120,7 @@ class ComplexForLoopRanges
   : m_lower_bounds(lower.asStdArray())
   , m_extents(extents)
   {}
-  ComplexForLoopRanges(const SimpleForLoopRanges<N>& bounds)
+  explicit(false) ComplexForLoopRanges(const SimpleForLoopRanges<N>& bounds)
   : m_extents(bounds.m_bounds)
   {}
 
@@ -170,37 +151,37 @@ inline SimpleForLoopRanges<1>
 makeLoopRanges(Int32 n1)
 {
   using BoundsType = SimpleForLoopRanges<1>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   return BoundsType(ArrayExtentType(n1));
 }
 
-//! Créé un intervalle d'itération [0,n1[,[0,n2[
+//! Créé un intervalle d'itération [0,n1[, [0,n2[
 inline SimpleForLoopRanges<2>
 makeLoopRanges(Int32 n1, Int32 n2)
 {
   using BoundsType = SimpleForLoopRanges<2>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   return BoundsType(ArrayExtentType(n1, n2));
 }
 
-//! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[
+//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[
 inline SimpleForLoopRanges<3>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3)
 {
   using BoundsType = SimpleForLoopRanges<3>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   return BoundsType(ArrayExtentType(n1, n2, n3));
 }
 
-//! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[,[0,n4[
+//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[, [0,n4[
 inline SimpleForLoopRanges<4>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
 {
   using BoundsType = SimpleForLoopRanges<4>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   return BoundsType(ArrayExtentType(n1, n2, n3, n4));
 }
@@ -210,7 +191,7 @@ inline ComplexForLoopRanges<1>
 makeLoopRanges(ForLoopRange n1)
 {
   using BoundsType = ComplexForLoopRanges<1>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   BoundsType lower_bounds(ArrayExtentType(n1.lowerBound()));
   BoundsType sizes(ArrayExtentType(n1.size()));
@@ -222,7 +203,7 @@ inline ComplexForLoopRanges<2>
 makeLoopRanges(ForLoopRange n1, ForLoopRange n2)
 {
   using BoundsType = ComplexForLoopRanges<2>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(), n2.lowerBound()));
   BoundsType sizes(ArrayExtentType(n1.size(), n2.size()));
@@ -234,7 +215,7 @@ inline ComplexForLoopRanges<3>
 makeLoopRanges(ForLoopRange n1, ForLoopRange n2, ForLoopRange n3)
 {
   using BoundsType = ComplexForLoopRanges<3>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(), n2.lowerBound(), n3.lowerBound()));
   BoundsType sizes(ArrayExtentType(n1.size(), n2.size(), n3.size()));
@@ -246,54 +227,11 @@ inline ComplexForLoopRanges<4>
 makeLoopRanges(ForLoopRange n1, ForLoopRange n2, ForLoopRange n3, ForLoopRange n4)
 {
   using BoundsType = ComplexForLoopRanges<4>::ArrayBoundsType;
-  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+  using ArrayExtentType = BoundsType::ArrayExtentType;
 
   BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(), n2.lowerBound(), n3.lowerBound(), n4.lowerBound()));
   BoundsType sizes(ArrayExtentType(n1.size(), n2.size(), n3.size(), n4.size()));
   return { lower_bounds, sizes };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-//! Applique le fonctor \a func sur une boucle 1D.
-template <typename IndexType, template <int T, typename> class LoopBoundType,
-          typename Lambda, typename... ReducerArgs>
-inline void
-arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, ReducerArgs... reducer_args)
-{
-  for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
-    func(MDIndex<1>(i0), reducer_args...);
-  ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
-}
-
-//! Applique le fonctor \a func sur une boucle 2D.
-template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
-arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
-{
-  for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
-    for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
-      func(MDIndex<2>(i0, i1));
-}
-
-//! Applique le fonctor \a func sur une boucle 3D.
-template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
-arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
-{
-  for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
-    for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
-      for (Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2)
-        func(MDIndex<3>(i0, i1, i2));
-}
-
-//! Applique le fonctor \a func sur une boucle 4D.
-template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> inline void
-arccoreSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
-{
-  for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
-    for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
-      for (Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2)
-        for (Int32 i3 = bounds.template lowerBound<3>(); i3 < bounds.template upperBound<3>(); ++i3)
-          func(MDIndex<4>(i0, i1, i2, i3));
 }
 
 /*---------------------------------------------------------------------------*/

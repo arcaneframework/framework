@@ -77,7 +77,7 @@ class GenericSorterMergeSort
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(nullptr, temp_storage_size,
                                                              input_iter, output_iter, nb_item,
@@ -92,7 +92,7 @@ class GenericSorterMergeSort
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_HIP(rocprim::merge_sort(nullptr, temp_storage_size, input_iter, output_iter,
                                            nb_item, compare_lambda, stream));

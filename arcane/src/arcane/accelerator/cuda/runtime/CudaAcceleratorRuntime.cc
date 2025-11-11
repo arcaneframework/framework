@@ -60,7 +60,7 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
-using impl::KernelLaunchArgs;
+using Impl::KernelLaunchArgs;
 
 namespace
 {
@@ -220,9 +220,9 @@ class CudaRunQueueStream
     if (!args.isAsync())
       barrier();
   }
-  impl::NativeStream nativeStream() override
+  Impl::NativeStream nativeStream() override
   {
-    return impl::NativeStream(&m_cuda_stream);
+    return Impl::NativeStream(&m_cuda_stream);
   }
 
  public:

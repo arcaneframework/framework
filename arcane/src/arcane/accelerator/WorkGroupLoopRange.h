@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arccore/common/SequentialFor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -138,41 +139,6 @@ class WorkGroupLoopRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class WorkGroupRemainingArgsHandler
-{
- public:
-
-  //! Applique les fonctors des arguments additionnels au début de l'itération
-  template <typename... ReducerArgs> static inline void
-  applyRemainingArgsAtBegin(ReducerArgs&... reducer_args)
-  {
-    (WorkGroupRemainingArgsHandler::_doOneAtBegin(reducer_args), ...);
-  }
-
-  //! Applique les fonctors des arguments additionnels à la fin de l'itération
-  template <typename... ReducerArgs> static inline void
-  applyRemainingArgsAtEnd(ReducerArgs&... reducer_args)
-  {
-    (WorkGroupRemainingArgsHandler::_doOneAtEnd(reducer_args), ...);
-  }
-
- private:
-
-  template <typename OneArg> static inline void _doOneAtBegin(OneArg& one_arg)
-  {
-    if constexpr (requires { one_arg._internalHostExecWorkItemAtBegin(); })
-      one_arg._internalHostExecWorkItemAtBegin();
-  }
-  template <typename OneArg> static inline void _doOneAtEnd(OneArg& one_arg)
-  {
-    if constexpr (requires { one_arg._internalHostExecWorkItemAtEnd(); })
-      one_arg._internalHostExecWorkItemAtEnd();
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
@@ -185,11 +151,11 @@ template <typename Lambda, typename... ReducerArgs>
 inline void
 arcaneSequentialFor(Impl::WorkGroupLoopRange bounds, const Lambda& func, ReducerArgs... reducer_args)
 {
-  Impl::WorkGroupRemainingArgsHandler::applyRemainingArgsAtBegin(reducer_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(reducer_args...);
   Int32 group_size = bounds.groupSize();
   for (Int32 i0 = 0, n = bounds.totalSize(); i0 < n; ++i0)
     func(Impl::WorkGroupLoopIndex(i0, group_size), reducer_args...);
-  Impl::WorkGroupRemainingArgsHandler::applyRemainingArgsAtEnd(reducer_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(reducer_args...);
 }
 
 //! Applique le fonctor \a func sur une boucle parallèle

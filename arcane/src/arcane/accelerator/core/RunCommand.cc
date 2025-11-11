@@ -141,7 +141,7 @@ operator<<(RunCommand& command, const TraceInfo& trace_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::NativeStream RunCommand::
+Impl::NativeStream RunCommand::
 _internalNativeStream() const
 {
   return m_p->internalStream()->nativeStream();

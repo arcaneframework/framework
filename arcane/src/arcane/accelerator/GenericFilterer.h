@@ -285,13 +285,13 @@ class GenericFilteringIf
     exec_policy = queue.executionPolicy();
     RunCommand command = makeCommand(queue);
     command << trace_info;
-    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    Impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_out_ptr = nullptr;
       if constexpr (InPlace)
@@ -321,7 +321,7 @@ class GenericFilteringIf
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
       int* nb_out_ptr = nullptr;
       // NOTE: il n'y a pas de version spécifique de 'select' en-place.
       // A priori il est possible que \a input_iter et \a output_iter
