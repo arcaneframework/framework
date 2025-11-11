@@ -1,6 +1,7 @@
 set( ARCANE_SOURCES
   AcceleratorCoreGlobal.h
   AcceleratorCore.cc
+  AcceleratorMemoryAllocatorBase.cc
   AcceleratorRuntimeInitialisationInfo.cc
   AcceleratorRuntimeInitialisationInfo.h
   IAcceleratorMng.h
@@ -39,6 +40,7 @@ set( ARCANE_SOURCES
   RunQueuePool.cc
   RunQueueRuntime.cc
   ViewBuildInfo.h
+  internal/AcceleratorMemoryAllocatorBase.h
   internal/IRunnerRuntime.h
   internal/AcceleratorCoreGlobalInternal.h
   internal/IRunQueueStream.h
