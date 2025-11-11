@@ -18,14 +18,15 @@ env:
   #INSTALL_DIR: /__w/framework/framework/install
   #SOURCE_DIR: /__w/framework/framework/source
   #EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
-  BUILD_DIR: /tmp/build
-  INSTALL_DIR: /tmp/install
-  SOURCE_DIR: /__w/framework/framework/source
+  BUILD_DIR: /tmp/framewok-build
+  INSTALL_DIR: /tmp/framework-install
+  SOURCE_DIR: "/__w/framework/framework/source-${{ github.run_id }}"
   # ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
-  CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
+  #CCACHE_DIR: '/__w/framework/framework/ccache'
+  CCACHE_DIR: '/tmp/framework-ccache'
   # CMake
   CM_BUILD_OPTS: "-j16"
   CM_BUILD_TYPE: Release
@@ -101,14 +102,6 @@ jobs:
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
 
-      - name: Clean
-        id: clean
-        if: |
-          (success() || failure()) &&
-          steps.build.outcome == 'success'
-        shell: bash
-        run: find ${{ env.BUILD_DIR }} -type f -name '*.o' -exec rm -f '{}' \;
-
       - name: Install
         id: install
         if: |
@@ -135,16 +128,16 @@ jobs:
            # Run test
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      - name: Upload test artifact
-        id: upload-test-artifact
-        uses: actions/upload-artifact@v4
-        if: |
-          (success() || failure()) &&
-          steps.test.outcome == 'failure'
-        with:
-          name: test-artifact
-          path: ${{ env.BUILD_DIR }}/Testing
-          retention-days: 1
+      #- name: Upload test artifact
+      #  id: upload-test-artifact
+      #  uses: actions/upload-artifact@v4
+      #  if: |
+      #    (success() || failure()) &&
+      #    steps.test.outcome == 'failure'
+      #  with:
+      #    name: test-artifact
+      #    path: ${{ env.BUILD_DIR }}/Testing
+      #    retention-days: 1
 
       - name: Save cache
         id: save-cache
@@ -155,3 +148,10 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
+
+      - name: Clean
+        id: clean
+        if: always()
+        run: |
+           rm -rf ${{ env.SOURCE_DIR }}
+           ls -l /__w/framework/framework
