@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericScanner.h                                            (C) 2000-2024 */
+/* GenericScanner.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Algorithme de 'scan' pour les accélérateurs.                              */
 /*---------------------------------------------------------------------------*/
@@ -57,14 +57,14 @@ class ScannerImpl
   {
     RunCommand command = makeCommand(m_queue);
     command << trace_info;
-    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    Impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
     eExecutionPolicy exec_policy = m_queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(&m_queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(&m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
       if constexpr (IsExclusive)
         ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(nullptr, temp_storage_size,
@@ -85,7 +85,7 @@ class ScannerImpl
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(&m_queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(&m_queue);
       if constexpr (IsExclusive)
         ARCANE_CHECK_HIP(rocprim::exclusive_scan(nullptr, temp_storage_size, input_data, output_data,
                                                  init_value, nb_item, op, stream));

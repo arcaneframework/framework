@@ -48,18 +48,18 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
   Int64 vsize = bounds.nbElement();
   if (vsize == 0)
     return;
-  impl::RunCommandLaunchInfo launch_info(command, vsize);
+  Impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(Impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arcaneSequentialFor(bounds, func, other_args...);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ScanImpl.h                                                  (C) 2000-2024 */
+/* ScanImpl.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation spécifique de l'opération de scan pour les accélérateurs.  */
 /*---------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ class SyclScanner
   void doScan(RunQueue& rq, SmallSpan<const DataType> input, SmallSpan<DataType> output, DataType init_value)
   {
     DataType identity = Operator::defaultValue();
-    sycl::queue q = impl::SyclUtils::toNativeStream(&rq);
+    sycl::queue q = Impl::SyclUtils::toNativeStream(&rq);
     // Contient l'application partielle de Operator pour chaque bloc de thread
     NumArray<DataType, MDDim1> tmp;
     // Contient l'application partielle de Operator cumulée avec les blocs précédents

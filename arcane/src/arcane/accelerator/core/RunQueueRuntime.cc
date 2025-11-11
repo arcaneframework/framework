@@ -40,7 +40,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 {
  public:
 
-  HostRunQueueStream(IRunnerRuntime* runtime)
+  explicit HostRunQueueStream(IRunnerRuntime* runtime)
   : m_runtime(runtime)
   {}
 
@@ -54,7 +54,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
     MemoryUtils::copyHost(args.destination(), args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
-  NativeStream nativeStream() override { return {}; }
+  Impl::NativeStream nativeStream() override { return {}; }
   bool _barrierNoException() override { return false; }
 
  private:

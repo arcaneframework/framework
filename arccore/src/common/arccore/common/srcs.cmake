@@ -10,6 +10,7 @@ set(SOURCES
   CommonGlobal.h
   CommonGlobal.cc
   DefaultMemoryAllocator.h
+  HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
   IMemoryResourceMng.h
   MemoryAllocator.cc
@@ -18,6 +19,7 @@ set(SOURCES
   MemoryAllocationOptions.cc
   MemoryUtils.h
   MemoryUtils.cc
+  SequentialFor.h
   SmallArray.h
   SmallArray.cc
   internal/IMemoryResourceMngInternal.h

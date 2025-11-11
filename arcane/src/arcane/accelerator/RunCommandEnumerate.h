@@ -236,19 +236,20 @@ class RunCommandItemEnumeratorTraitsT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename TraitsType, typename ContainerType, typename Lambda, typename... ReducerArgs>
-void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& func, ReducerArgs... reducer_args)
+template <typename TraitsType, typename ContainerType, typename Lambda, typename... RemainingArgs>
+void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& func, RemainingArgs... remaining_args)
 {
-  using ItemType = typename TraitsType::ItemType;
-  using BuilderType = typename TraitsType::BuilderType;
-  using LocalIdType = typename BuilderType::ValueType;
-  auto privatizer = privatize(func);
+  using ItemType = TraitsType::ItemType;
+  using BuilderType = TraitsType::BuilderType;
+  using LocalIdType = BuilderType::ValueType;
+  auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
 
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   ENUMERATE_NO_TRACE_ (ItemType, iitem, sub_items) {
-    body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), reducer_args...);
+    body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), remaining_args...);
   }
-  ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -265,19 +266,19 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   if (vsize == 0)
     return;
   using ItemType = typename TraitsType::ItemType;
-  impl::RunCommandLaunchInfo launch_info(command, vsize);
+  Impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();
   SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, ids, reducer_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(Impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::Sequential:
     impl::_doItemsLambda<TraitsType>(0, items.paddedView(), func, reducer_args...);

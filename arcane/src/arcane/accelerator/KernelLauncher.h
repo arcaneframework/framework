@@ -28,43 +28,26 @@
 #if defined(ARCANE_COMPILING_CUDA)
 #define ARCANE_KERNEL_CUDA_FUNC(a) a
 #else
-#define ARCANE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#define ARCANE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
 #endif
 
 #if defined(ARCANE_COMPILING_HIP)
 #define ARCANE_KERNEL_HIP_FUNC(a) a
 #else
-#define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
 #endif
 
 #if defined(ARCANE_COMPILING_SYCL)
 #define ARCANE_KERNEL_SYCL_FUNC(a) a
 #else
-#define ARCANE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::impl::InvalidKernelClass
+#define ARCANE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::Impl::InvalidKernelClass
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
-
-template <typename T>
-struct Privatizer
-{
-  using value_type = T;
-  using reference_type = value_type&;
-  value_type m_private_copy;
-
-  ARCCORE_HOST_DEVICE Privatizer(const T& o) : m_private_copy{o} {}
-  ARCCORE_HOST_DEVICE reference_type privateCopy() { return m_private_copy; }
-};
-
-template <typename T>
-ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
-{
-  return Privatizer<T>{item};
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,6 +92,28 @@ class KernelRemainingArgsHelper
   }
 #endif
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T>
+struct Privatizer
+{
+  using value_type = T;
+  using reference_type = value_type&;
+  value_type m_private_copy;
+
+  ARCCORE_HOST_DEVICE Privatizer(const T& o)
+  : m_private_copy{ o }
+  {}
+  ARCCORE_HOST_DEVICE reference_type privateCopy() { return m_private_copy; }
+};
+
+template <typename T>
+ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
+{
+  return Privatizer<T>{ item };
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -349,7 +354,7 @@ _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
  * attendons les concepts c++20 (requires)
  */
 template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+_applyKernelCUDA(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
@@ -372,7 +377,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
   ARCANE_UNUSED(args);
   ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
-} // namespace Arcane::Accelerator::impl
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -384,7 +389,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
  * \param args arguments de la fonction lambda
  */
 template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+_applyKernelHIP(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_HIP)
@@ -411,7 +416,7 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
  * \param args arguments de la fonction lambda
  */
 template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
-void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
                       const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... remaining_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)

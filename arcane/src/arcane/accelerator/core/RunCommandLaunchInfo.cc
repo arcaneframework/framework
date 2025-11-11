@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -180,7 +180,7 @@ _computeLoopRunInfo()
 KernelLaunchArgs RunCommandLaunchInfo::
 _threadBlockInfo(const void* func, Int32 shared_memory_size) const
 {
-  IRunnerRuntime* r = m_queue_impl->_internalRuntime();
+  impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
 
   return r->computeKernalLaunchArgs(m_kernel_launch_args, func,
                                     totalLoopSize(), shared_memory_size);

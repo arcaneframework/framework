@@ -97,9 +97,9 @@ class SyclRunQueueStream
     if (!args.isAsync())
       this->barrier();
   }
-  impl::NativeStream nativeStream() override
+  Impl::NativeStream nativeStream() override
   {
-    return impl::NativeStream(m_sycl_stream.get());
+    return Impl::NativeStream(m_sycl_stream.get());
   }
 
   void _setSyclLastCommandEvent([[maybe_unused]] void* sycl_event_ptr) override

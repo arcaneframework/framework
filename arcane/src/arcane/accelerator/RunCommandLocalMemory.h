@@ -18,6 +18,8 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 
+#include <iostream>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +51,9 @@ namespace Arcane::Accelerator
 template <typename T>
 class RunCommandLocalMemory
 {
+  friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
+  friend Impl::KernelRemainingArgsHelper;
+
  public:
 
   RunCommandLocalMemory(RunCommand& command, Int32 size)
@@ -62,9 +67,8 @@ class RunCommandLocalMemory
     return { m_ptr, m_size };
   }
 
- public:
+ private:
 
-  // TODO: rendre privé
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
   ARCCORE_DEVICE void _internalExecWorkItemAtBegin(Int32)
   {
