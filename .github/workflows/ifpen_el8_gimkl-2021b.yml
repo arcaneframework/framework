@@ -153,6 +153,5 @@ jobs:
         id: clean
         if: always()
         run: |
-           ls -l /__w/framework/framework
            rm -rf ${{ env.SOURCE_DIR }}
            ls -l /__w/framework/framework
