@@ -89,7 +89,7 @@ class RunCommandLocalMemory
   }
   void _internalHostExecWorkItemAtEnd()
   {
-    delete m_ptr;
+    delete[] m_ptr;
   }
 
  private:
