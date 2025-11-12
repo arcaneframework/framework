@@ -34,9 +34,9 @@ env:
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # OpenMPI
-  OMPI_MCA_rmaps_base_oversubscribe : true
+  OMPI_MCA_rmaps_base_oversubscribe: true
   # To remove test output directory to reduce disk usage
-  ARCANE_TEST_CLEANUP_AFTER_RUN : 1
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
 
