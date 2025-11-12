@@ -208,16 +208,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  // void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
-  // void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
-  // Ref<MpiAllInOneMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
-  // {
-  //   return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
-  // }
+  MpiMachineMemoryWindowBaseInternalCreator* windowCreator(MPI_Comm comm_machine);
 
-  MpiMachineMemoryWindowBaseInternalCreator* windowCreator();
-
- private:
+private:
 
   IStat* m_stat = nullptr;
   MpiLock* m_mpi_lock = nullptr;
@@ -226,9 +219,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank = A_PROC_NULL_RANK;
   int m_comm_size = 0;
-  MPI_Comm m_machine_communicator; //!< Communicateur MPI sur le noeud de calcul
-  int m_machine_comm_rank = A_PROC_NULL_RANK;
-  int m_machine_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
@@ -247,10 +237,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   // de temporairement garder un mode compatible.
   bool m_is_allow_null_rank_for_any_source = true;
 
-  MpiMachineMemoryWindowBaseInternalCreator* m_window_creator;
+  Ref<MpiMachineMemoryWindowBaseInternalCreator> m_window_creator;
 
- private:
-  
+private:
+
   void _trace(const char* function);
   void _addRequest(MPI_Request request);
   void _removeRequest(MPI_Request request);
