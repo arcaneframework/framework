@@ -91,7 +91,7 @@ arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 /*---------------------------------------------------------------------------*/
 
 MpiParallelMngBuildInfo::
-MpiParallelMngBuildInfo(MPI_Comm comm)
+MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm)
 : is_parallel(false)
 , comm_rank(MessagePassing::A_NULL_RANK)
 , comm_nb_rank(0)
@@ -100,6 +100,7 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
 , timer_mng(nullptr)
 , thread_mng(nullptr)
 , mpi_comm(comm)
+, mpi_machine_comm(machine_comm)
 , is_mpi_comm_owned(true)
 , mpi_lock(nullptr)
 {
@@ -359,12 +360,12 @@ class MpiParallelMng::Impl
 
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(sizeof_segment, sizeof_type));
+    return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createWindow(sizeof_segment, sizeof_type));
   }
 
   Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(m_parallel_mng->adapter()->windowCreator()->createDynamicWindow(sizeof_segment, sizeof_type));
+    return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createDynamicWindow(sizeof_segment, sizeof_type));
   }
 
  private:
@@ -391,6 +392,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_comm_size(bi.commSize())
 , m_stat(bi.stat)
 , m_communicator(bi.mpiComm())
+, m_machine_communicator(bi.mpiMachineComm())
 , m_is_communicator_owned(bi.is_mpi_comm_owned)
 , m_mpi_lock(bi.mpi_lock)
 , m_non_blocking_collective(nullptr)
@@ -415,6 +417,7 @@ MpiParallelMng::
   if (m_is_communicator_owned){
     MpiLock::Section ls(m_mpi_lock);
     MPI_Comm_free(&m_communicator);
+    MPI_Comm_free(&m_machine_communicator);
   }
   delete m_replication;
   delete m_io_mng;
@@ -846,7 +849,10 @@ _createSubParallelMng(MPI_Comm sub_communicator)
   int sub_rank = -1;
   MPI_Comm_rank(sub_communicator,&sub_rank);
 
-  MpiParallelMngBuildInfo bi(sub_communicator);
+  MPI_Comm sub_machine_communicator = MPI_COMM_NULL;
+  MPI_Comm_split_type(sub_communicator, MPI_COMM_TYPE_SHARED, sub_rank, MPI_INFO_NULL, &sub_machine_communicator);
+
+  MpiParallelMngBuildInfo bi(sub_communicator, sub_machine_communicator);
   bi.is_parallel = isParallel();
   bi.stat = m_stat;
   bi.timer_mng = m_timer_mng;

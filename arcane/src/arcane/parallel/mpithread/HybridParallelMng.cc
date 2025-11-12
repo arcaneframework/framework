@@ -667,6 +667,15 @@ communicator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MP::Communicator HybridParallelMng::
+machineCommunicator() const
+{
+  return m_mpi_parallel_mng->machineCommunicator();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 PointToPointMessageInfo HybridParallelMng::
 buildMessage(const PointToPointMessageInfo& message)
 {
@@ -825,7 +834,8 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
     // Suppose qu'on à le même nombre de rangs MPI qu'avant donc on utilise
     // le communicateur MPI qu'on a déjà.
     MP::Communicator c = communicator();
-    builder = m_sub_builder_factory->_createParallelMngBuilder(new_local_nb_rank,c);
+    MP::Communicator mc = machineCommunicator();
+    builder = m_sub_builder_factory->_createParallelMngBuilder(new_local_nb_rank, c, mc);
     // Positionne le builder pour tout le monde
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }

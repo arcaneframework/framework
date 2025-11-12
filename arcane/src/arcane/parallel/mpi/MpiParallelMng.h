@@ -43,11 +43,12 @@ class ArcaneMpiSerializeMessageList;
 struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 {
  public:
-  MpiParallelMngBuildInfo(MPI_Comm comm);
- public:
+  MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm);
+public:
   Int32 commRank() const { return comm_rank; }
   Int32 commSize() const { return comm_nb_rank; }
   MPI_Comm mpiComm() const { return mpi_comm; }
+  MPI_Comm mpiMachineComm() const { return mpi_machine_comm; }
   Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
   Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
  public:
@@ -63,7 +64,8 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
   IParallelMng* world_parallel_mng = nullptr;
  private:
   MPI_Comm mpi_comm;
- public:
+  MPI_Comm mpi_machine_comm;
+public:
   bool is_mpi_comm_owned;
   MpiLock* mpi_lock = nullptr;
  private:
@@ -144,6 +146,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   
   MpiAdapter* adapter() { return m_adapter; }
   Communicator communicator() const override { return Communicator(m_communicator); }
+  Communicator machineCommunicator() const override { return Communicator(m_machine_communicator); }
 
   MpiLock* mpiLock() const { return m_mpi_lock; }
 
@@ -194,6 +197,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   bool m_is_initialized = false; //!< \a true si déjà initialisé
   Parallel::IStat* m_stat = nullptr;
   MPI_Comm m_communicator = MPI_COMM_NULL;
+  MPI_Comm m_machine_communicator = MPI_COMM_NULL;
   bool m_is_communicator_owned = false;
   MpiLock* m_mpi_lock = nullptr;
   IParallelNonBlockingCollective* m_non_blocking_collective = nullptr;

@@ -66,7 +66,8 @@ class HybridParallelMngContainer
 {
  public:
   HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
-                             MP::Communicator mpi_comm, IParallelMngContainerFactory* factory,
+                             MP::Communicator mpi_comm, MP::Communicator mpi_machine_comm,
+                             IParallelMngContainerFactory* factory,
                              Parallel::IStat* stat,MpiLock* mpi_lock);
   ~HybridParallelMngContainer() override;
 
@@ -93,10 +94,14 @@ class HybridParallelMngContainer
   HybridMachineMemoryWindowBaseInternalCreator* m_window_creator = nullptr;
 
  private:
+
   MPI_Comm m_mpi_communicator; //!< Communicateur MPI
   Int32 m_mpi_comm_rank = -1; //!< Numéro du processeur actuel
   Int32 m_mpi_comm_size = -1; //!< Nombre de processeurs
+  MPI_Comm m_mpi_machine_communicator; //!< Communicateur MPI
+
  private:
+
   void _setMPICommunicator();
 };
 
@@ -105,7 +110,8 @@ class HybridParallelMngContainer
 
 HybridParallelMngContainer::
 HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
-                           MP::Communicator mpi_comm, IParallelMngContainerFactory* factory,
+                           MP::Communicator mpi_comm, MP::Communicator mpi_machine_comm,
+                           IParallelMngContainerFactory* factory,
                            Parallel::IStat* stat,MpiLock* mpi_lock)
 : m_application(app)
 , m_stat(stat)
@@ -115,6 +121,7 @@ HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
 , m_parallel_mng_list(new UniqueArray<HybridParallelMng*>())
 , m_sub_builder_factory(factory)
 , m_mpi_communicator(mpi_comm)
+, m_mpi_machine_communicator(mpi_machine_comm)
 {
   _setMPICommunicator();
 }
@@ -196,7 +203,7 @@ _createParallelMng(Int32 local_rank,ITraceMng* tm)
   bool is_parallel = nb_process > 1;
 
   // Le communicateur passé en argument reste notre propriété.
-  MpiParallelMngBuildInfo bi(m_mpi_communicator);
+  MpiParallelMngBuildInfo bi(m_mpi_communicator, m_mpi_machine_communicator);
   bi.is_parallel = is_parallel;
   bi.stat = m_stat;
   bi.trace_mng = tm;
@@ -250,9 +257,11 @@ class HybridParallelMngContainerFactory
   : AbstractService(sbi), m_application(sbi.application()){}
  public:
   Ref<IParallelMngContainer>
-  _createParallelMngBuilder(Int32 nb_rank,MP::Communicator mpi_communicator) override
+  _createParallelMngBuilder(Int32 nb_rank, MP::Communicator mpi_communicator,
+                            MP::Communicator mpi_machine_communicator) override
   {
-    auto x = new HybridParallelMngContainer(m_application,nb_rank,mpi_communicator,
+    auto x = new HybridParallelMngContainer(m_application, nb_rank, mpi_communicator,
+                                            mpi_machine_communicator,
                                             this,m_stat,m_mpi_lock);
     x->build();
     return makeRef<IParallelMngContainer>(x);
@@ -307,8 +316,6 @@ class HybridParallelSuperMng
 
  public:
 
- public:
-
   HybridParallelMngContainer* m_container = nullptr;
   Ref<IParallelMngContainerFactory> m_builder_factory;
   Ref<IParallelMngContainer> m_main_builder;
@@ -319,6 +326,7 @@ class HybridParallelSuperMng
   Int32 m_mpi_comm_size = -1; //!< Nombre de processeurs
   MPI_Comm m_mpi_communicator;
   MP::Communicator m_communicator;
+  MP::Communicator m_machine_communicator;
   Int32 m_local_nb_rank = A_NULL_RANK;
   MpiLock* m_mpi_lock;
   MpiAdapter* m_mpi_adapter;
@@ -359,6 +367,7 @@ HybridParallelSuperMng::
   MPI_Barrier(m_mpi_communicator);
   MPI_Comm_free(&m_mpi_communicator);
   m_mpi_communicator = MPI_COMM_NULL;
+  MPI_Comm_free(static_cast<MPI_Comm*>(m_machine_communicator.communicatorAddress()));
   arcaneFinalizeMPI();
 }
 
@@ -437,6 +446,13 @@ build()
 
   m_mpi_comm_rank = rank;
   m_mpi_comm_size = size;
+
+  // On ne se sert que du comm du thread 0.
+  MPI_Comm mpi_machine_communicator = MPI_COMM_NULL;
+  MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, m_mpi_comm_rank, MPI_INFO_NULL, &mpi_machine_communicator);
+
+  m_machine_communicator = Communicator(mpi_machine_communicator);
+
   IApplication* app = m_application;
 
   m_error_handler.registerHandler(m_mpi_communicator);
@@ -476,8 +492,8 @@ build()
   ARCANE_CHECK_POINTER(true_builder);
   true_builder->m_stat = m_stat;
   true_builder->m_mpi_lock = m_mpi_lock;
-  
-  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n,m_communicator);
+
+  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n, m_communicator, m_machine_communicator);
   m_main_builder = x;
   m_container = dynamic_cast<HybridParallelMngContainer*>(x.get());
   ARCANE_CHECK_POINTER(m_container);
