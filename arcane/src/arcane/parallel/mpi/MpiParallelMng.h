@@ -44,7 +44,7 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 {
  public:
   MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm);
-public:
+ public:
   Int32 commRank() const { return comm_rank; }
   Int32 commSize() const { return comm_nb_rank; }
   MPI_Comm mpiComm() const { return mpi_comm; }
@@ -65,7 +65,7 @@ public:
  private:
   MPI_Comm mpi_comm;
   MPI_Comm mpi_machine_comm;
-public:
+ public:
   bool is_mpi_comm_owned;
   MpiLock* mpi_lock = nullptr;
  private:
