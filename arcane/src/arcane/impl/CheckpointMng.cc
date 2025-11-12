@@ -574,7 +574,7 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
   auto pbf = sf.createReference(message_passing_service,SB_AllowNull);
   if (!pbf)
     ARCANE_FATAL("Can not find service '{0}' implementing IParallelMngContainerFactory",message_passing_service);
-  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(1,pm2->communicator()));
+  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(1, pm2->communicator(), pm2->machineCommunicator()));
 
   for( Int32 i : ranks_to_read ){
     info() << "Reading Part sub_domain index=" << i;

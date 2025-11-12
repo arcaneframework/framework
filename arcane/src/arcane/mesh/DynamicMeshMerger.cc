@@ -330,7 +330,8 @@ mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
   if (!pbf)
     ARCANE_FATAL("Can not find service '{0}' implementing IParallelMngContainerFactory",message_passing_service);
   Parallel::Communicator comm = m_mesh->parallelMng()->communicator();
-  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(nb_local_rank,comm));
+  Parallel::Communicator machine_comm = m_mesh->parallelMng()->machineCommunicator();
+  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(nb_local_rank, comm, machine_comm));
 
   IApplication* app = am->application();
   UniqueArray<LauncherThreadInfo> launch_infos(nb_local_rank);
