@@ -77,6 +77,15 @@ jobs:
             dotnet_version : "8.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,160'
+          - os: 'windows-2025'
+            base_os: windows
+            full_name: 'windows-2025-cxx20-debug-intelmpi'
+            package_name: 'windows-2022-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2025
+            dotnet_version : "10.0.x"
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug'
+            ctest_specific_args : '-I 1,160'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
