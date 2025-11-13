@@ -182,8 +182,9 @@ class SharedMemoryParallelMngContainerFactory
   SharedMemoryParallelMngContainerFactory(const ServiceBuildInfo& sbi)
   : AbstractService(sbi), m_application(sbi.application()){}
  public:
-  Ref<IParallelMngContainer> _createParallelMngBuilder(Int32 nb_rank,MP::Communicator comm) override
+  Ref<IParallelMngContainer> _createParallelMngBuilder(Int32 nb_rank, MP::Communicator comm, MP::Communicator machine_comm) override
   {
+    ARCANE_UNUSED(machine_comm);
     auto x = new SharedMemoryParallelMngContainer(m_application,nb_rank,comm,this);
     x->build();
     return makeRef<IParallelMngContainer>(x);
@@ -267,7 +268,7 @@ build()
   ServiceBuilder<IParallelMngContainerFactory> sb(m_application);
   String service_name = "SharedMemoryParallelMngContainerFactory";
   m_builder_factory = sb.createReference(service_name);
-  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n,communicator());
+  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n, communicator(), communicator());
   m_main_builder = x;
   m_container = dynamic_cast<SharedMemoryParallelMngContainer*>(x.get());
   ARCANE_CHECK_POINTER(m_container);

@@ -502,7 +502,7 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   barrier();
   // Le rang 0 créé le builder
   if (m_rank==0){
-    builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank,m_mpi_communicator);
+    builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank, m_mpi_communicator, m_mpi_communicator);
     // Positionne le builder pour tout le monde
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }

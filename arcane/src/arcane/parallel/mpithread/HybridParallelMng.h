@@ -83,6 +83,7 @@ class HybridParallelMng
   Int32 commSize() const override { return m_global_nb_rank; }
   void* getMPICommunicator() override;
   MP::Communicator communicator() const override;
+  MP::Communicator machineCommunicator() const override;
   bool isThreadImplementation() const override { return true; }
   bool isHybridImplementation() const override { return true; }
   ITraceMng* traceMng() const override { return m_trace; }
