@@ -244,7 +244,7 @@ class CartesianMeshImpl
                              NodeGroup all_nodes);
   void _applyRefine(const AMRZonePosition &position);
   void _applyCoarse(const AMRZonePosition& zone_position);
-  void _addPatch(const CellGroup& parent_cells);
+  void _addPatch(ConstArrayView<Int32> parent_cells);
   void _saveInfosInProperties();
 
   std::tuple<CellGroup, NodeGroup>
@@ -333,6 +333,13 @@ _saveInfosInProperties()
   }
   m_properties->set("PatchGroupNames",patch_group_names);
 
+  // TODO : Trouver une autre façon de gérer ça.
+  //        Dans le cas d'une protection reprise, le tableau m_available_index
+  //        ne peut pas être correctement recalculé à cause des éléments après
+  //        le "index max" des "index actif". Ces éléments "en trop" ne
+  //        peuvent pas être retrouvés sans plus d'infos.
+  m_properties->set("PatchGroupNamesAvailable", m_patch_group.availableGroupIndex());
+
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.cartesianMeshNumberingMng()->_saveInfosInProperties();
     m_internal_api.cartesianMeshNumberingMng()->printStatus();
@@ -365,12 +372,15 @@ recreateFromDump()
   m_patch_group.clear();
   m_all_items_direction_info = m_patch_group.groundPatch();
   IItemFamily* cell_family = m_mesh->cellFamily();
-  for( const String& x : patch_group_names ){
+  for (const String& x : patch_group_names) {
     CellGroup group = cell_family->findGroup(x);
     if (group.null())
       ARCANE_FATAL("Can not find cell group '{0}'",x);
-    m_patch_group.addPatch(group);
+    m_patch_group.addPatchAfterRestore(group);
   }
+  UniqueArray<Int32> available_index;
+  m_properties->get("PatchGroupNamesAvailable", available_index);
+  m_patch_group.rebuildAvailableGroupIndex(available_index);
 
   computeDirections();
 }
@@ -931,12 +941,7 @@ void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
   m_patch_group.updateLevelsBeforeAddGroundPatch();
-
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  Integer index = m_patch_group.nextIndexForNewPatch();
-  String parent_group_name = String("CartesianMeshPatchParentCells")+index;
-  CellGroup parent_cells = cell_family->createGroup(parent_group_name,parent_cells_local_id,true);
-  _addPatch(parent_cells);
+  _addPatch(parent_cells_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -945,24 +950,22 @@ _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
  * \brief Créé un patch avec tous les enfants du groupe \a parent_cells.
  */
 void CartesianMeshImpl::
-_addPatch(const CellGroup& parent_cells)
+_addPatch(ConstArrayView<Int32> parent_cells)
 {
-  Integer index = m_patch_group.nextIndexForNewPatch();
-  info() << "Add patch index : " << index;
   // Créé le groupe contenant les mailles AMR
   // Il s'agit des mailles filles de \a parent_cells
-  String children_group_name = String("CartesianMeshPatchCells")+index;
+
   UniqueArray<Int32> children_local_id;
-  ENUMERATE_(Cell,icell,parent_cells){
-    Cell c = *icell;
-    for(Integer k=0; k<c.nbHChildren(); ++k ){
+  CellInfoListView cells(m_mesh->cellFamily());
+  for (Int32 cell_local_id : parent_cells) {
+    Cell c = cells[cell_local_id];
+    for (Integer k = 0; k < c.nbHChildren(); ++k) {
       Cell child = c.hChild(k);
       children_local_id.add(child.localId());
     }
   }
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  CellGroup children_cells = cell_family->createGroup(children_group_name, children_local_id, true);
-  m_patch_group.addPatch(children_cells);
+
+  m_patch_group.addPatch(children_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -974,12 +977,8 @@ _applyRefine(const AMRZonePosition& position)
   UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(mesh(), cells_local_id);
 
-  IItemFamily* cell_family = m_mesh->cellFamily();
   Integer nb_cell = cells_local_id.size();
   info(4) << "Local_NbCellToRefine = " << nb_cell;
-  Integer index = m_patch_group.nextIndexForNewPatch();
-  String parent_group_name = String("CartesianMeshPatchParentCells")+index;
-  CellGroup parent_cells = cell_family->createGroup(parent_group_name,cells_local_id,true);
 
   IParallelMng* pm = m_mesh->parallelMng();
   Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum,nb_cell);
@@ -1009,7 +1008,7 @@ _applyRefine(const AMRZonePosition& position)
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();
   }
-  _addPatch(parent_cells);
+  _addPatch(cells_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
