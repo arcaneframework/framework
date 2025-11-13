@@ -125,7 +125,7 @@ _executeTest1()
     out_array.fillHost(0);
     auto out_span = viewInOut(command, out_array);
     Accelerator::Impl::WorkGroupLoopRange loop_range(loop_size);
-    command << RUNCOMMAND_LOOP (work_group, loop_range, local_data)
+    command << RUNCOMMAND_LAUNCH (work_group, loop_range, local_data)
     {
       auto s = local_data.span();
       auto work_item0 = work_group.item0();

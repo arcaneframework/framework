@@ -62,7 +62,6 @@ class KernelRemainingArgsHelper
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
   applyRemainingArgsAtBegin(Int32 index, RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
     (remaining_args._internalExecWorkItemAtBegin(index), ...);
   }
 
@@ -70,26 +69,45 @@ class KernelRemainingArgsHelper
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
   applyRemainingArgsAtEnd(Int32 index, RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
     (remaining_args._internalExecWorkItemAtEnd(index), ...);
   }
 
 #if defined(ARCANE_COMPILING_SYCL)
   //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
-  applyRemainingArgsAtBegin(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
+  applyRemainingArgsAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                            RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
-    (remaining_args._internalExecWorkItemAtBegin(x), ...);
+    (_doOneArgAtBegin(x, shm_view, remaining_args), ...);
   }
 
   //! Applique les fonctors des arguments additionnels en fin de kernel
-  template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
-  applyRemainingArgsAtEnd(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
+  template <typename... RemainingArgs> static inline void
+  applyRemainingArgsAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                          RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
-    (remaining_args._internalExecWorkItemAtEnd(x), ...);
+    (_doOneArgAtEnd(x, shm_view, remaining_args), ...);
   }
+
+ private:
+
+  template <typename OneArg> static void
+  _doOneArgAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  {
+    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
+      one_arg._internalExecWorkItemAtBegin(x, shm_memory);
+    else
+      one_arg._internalExecWorkItemAtBegin(x);
+  }
+  template <typename OneArg> static void
+  _doOneArgAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  {
+    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
+      one_arg._internalExecWorkItemAtEnd(x, shm_memory);
+    else
+      one_arg._internalExecWorkItemAtEnd(x);
+  }
+
 #endif
 };
 
@@ -231,17 +249,22 @@ class DoDirectSYCLLambdaArrayBounds
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
+                  LoopBoundType bounds, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
-
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i), remaining_args...);
+      // Si possible, on passe \a x en argument
+      if constexpr (requires { bounds.getIndices(x); })
+        body(bounds.getIndices(x), remaining_args...);
+      else
+        body(bounds.getIndices(i), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {
@@ -261,7 +284,9 @@ class DoIndirectSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
+                  SmallSpan<const Int32> ids, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
     using BuilderType = TraitsType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
@@ -269,12 +294,12 @@ class DoIndirectSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
     if (i < ids.size()) {
       LocalIdType lid(ids[i]);
       body(BuilderType::create(i, lid), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
@@ -427,7 +452,17 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
     Int32 b = tbi.nbBlockPerGrid();
     Int32 t = tbi.nbThreadPerBlock();
     sycl::nd_range<1> loop_size(b * t, t);
-    event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
+    Int32 wanted_shared_memory = launch_info._sharedMemorySize();
+    // TODO: regarder s'il y a un coût à utiliser à chaque fois
+    // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
+    event = s.submit([&](sycl::handler& cgh) {
+      sycl::local_accessor<std::byte> shm_acc(sycl::range<1>(wanted_shared_memory), cgh);
+      cgh.parallel_for(loop_size, [=](sycl::nd_item<1> i) {
+        std::byte* shm_ptr = shm_acc.get_multi_ptr<sycl::access::decorated::no>().get();
+        kernel(i, SmallSpan<std::byte>(shm_ptr, wanted_shared_memory), args, func, remaining_args...);
+      });
+    });
+    //event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();
@@ -446,7 +481,7 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

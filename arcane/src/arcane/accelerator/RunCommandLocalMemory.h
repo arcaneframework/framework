@@ -78,9 +78,11 @@ class RunCommandLocalMemory
 #endif
 
 #if defined(ARCANE_COMPILING_SYCL)
-  // NOT YET SUPPORTED
-  void _internalExecWorkItemAtBegin(sycl::nd_item<1>){}
-  void _internalExecWorkItemAtEnd(sycl::nd_item<1>) {}
+  void _internalExecWorkItemAtBegin(sycl::nd_item<1>, SmallSpan<std::byte> shm_view)
+  {
+    m_ptr = reinterpret_cast<T*>(shm_view.data());
+  }
+  void _internalExecWorkItemAtEnd(sycl::nd_item<1>, SmallSpan<std::byte>) {}
 #endif
 
   void _internalHostExecWorkItemAtBegin()
