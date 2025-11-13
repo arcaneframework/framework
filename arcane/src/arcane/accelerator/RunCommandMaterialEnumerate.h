@@ -519,17 +519,19 @@ class DoMatContainerSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                  ContainerType items, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
     auto privatizer = Impl::privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, remaining_args...);
+    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shm_view, remaining_args...);
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, remaining_args...);
+    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shm_view, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
