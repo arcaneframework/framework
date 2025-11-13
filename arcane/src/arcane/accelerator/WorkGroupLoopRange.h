@@ -32,6 +32,7 @@
 namespace Arcane::Accelerator::Impl
 {
 class WorkGroupLoopRange;
+class WorkGroupLoopIndex;
 
 class T0
 {
@@ -45,16 +46,16 @@ class T0
 /*!
  * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
  */
-class WorkGroupLoopIndex
+class HostWorkItemBlock
 {
- public:
+  //friend WorkGroupLoopRange;
+  friend WorkGroupLoopIndex;
 
-  //! Constructeur pour le device (la taille du groupe est dans blockIdx.x)
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex(Int32 index)
-  : m_index(index)
-  {}
+ private:
+
+  //{}
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex(Int32 index, Int32 group_index, Int32 group_size)
+  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 index, Int32 group_index, Int32 group_size)
   : m_index(index)
   , m_group_size(group_size)
   , m_group_index(group_index)
@@ -174,20 +175,22 @@ class DeviceWorkItemBlock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class WorkGroupLoopIndex2
+class WorkGroupLoopIndex
 {
- public:
+  friend WorkGroupLoopRange;
+  template <typename Lambda, typename... RemainingArgs>
+  friend void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args);
 
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex2(Int32 loop_index, Int32 group_index, Int32 group_size)
+ private:
+
+  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex(Int32 loop_index, Int32 group_index, Int32 group_size)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
   {}
 
- private:
-
   // Ce constructeur n'est utilisé que sur le device
-  explicit ARCCORE_HOST_DEVICE WorkGroupLoopIndex2()
+  explicit ARCCORE_HOST_DEVICE WorkGroupLoopIndex()
   {
 #if defined(ARCCORE_DEVICE_CODE)
     m_loop_index = blockDim.x * blockIdx.x + threadIdx.x;
@@ -214,9 +217,9 @@ class WorkGroupLoopIndex2
     return item0();
   }
 #else
-  WorkGroupLoopIndex item(Int32 index) const
+  HostWorkItemBlock item(Int32 index) const
   {
-    return WorkGroupLoopIndex(m_loop_index + index, m_group_index, m_group_size);
+    return HostWorkItemBlock(m_loop_index + index, m_group_index, m_group_size);
   }
 #endif
 
@@ -227,9 +230,9 @@ class WorkGroupLoopIndex2
     return DeviceWorkItemBlock(blockDim.x * blockIdx.x + threadIdx.x);
   }
 #else
-  WorkGroupLoopIndex item0() const
+  HostWorkItemBlock item0() const
   {
-    return WorkGroupLoopIndex(m_loop_index, m_group_index, m_group_size);
+    return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size);
   }
 #endif
 
@@ -242,7 +245,26 @@ class WorkGroupLoopIndex2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
+ * Implémentation pour SYCL.
+ *
+ * L'équivalent de \a cooperative_groups::thread_group() avec SYCL
+ * est le \a sycl::nd_item<1>. Il est plus compliqué à utiliser pour deux
+ * raisons:
+ *
+ * - il n'y a pas dans SYCL un équivalent de
+ * \a cooperative_groups::this_thread_block(). Il faut utiliser la valeur
+ * de \a sycl::nb_item<1> passé en argument du noyau de calcul.
+ * - il n'y a pas de constructeurs par défaut pour \a sycl::nb_item<1>.
+ *
+ * Pour contourner ces deux problèmes, on utilise un type spécifique pour
+ * gérer les noyaux en SYCL. Heureusement, il est possible d'utiliser les
+ * lambda template avec SYCL. On utilise donc deux types pour gérer
+ * les noyaux selon qu'on s'exécute sur le device SYCL ou sur l'hôte.
+ *
+ * TODO: regarder si avec la macro SYCL_DEVICE_ONLY il n'est pas possible
+ * d'avoir le même type comportant des champs différents
+ */
 #if defined(ARCANE_COMPILING_SYCL)
 
 /*!
@@ -260,7 +282,7 @@ class SyclDeviceWorkItemBlock
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int32 operator()() const { return m_index; }
+  constexpr Int32 operator()() const { return m_index; }
 
   /*!
    * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
@@ -288,6 +310,9 @@ class SyclDeviceWorkItemBlock
   Int32 m_index = 0;
   sycl::nd_item<1> m_thread_block;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class SyclWorkGroupLoopIndex
 {
@@ -339,7 +364,7 @@ class WorkGroupLoopRange
  public:
 
   //! Type de l'index de la boucle
-  using LoopIndexType = WorkGroupLoopIndex2;
+  using LoopIndexType = WorkGroupLoopIndex;
 
  public:
 
@@ -353,11 +378,12 @@ class WorkGroupLoopRange
   constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_total_size; }
   constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
 
-  constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex2 getIndices(Int32 x) const
+  constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex getIndices(Int32 x) const
   {
     // TODO: supprimer la division
-    return WorkGroupLoopIndex2(x, x / m_group_size, m_group_size);
+    return WorkGroupLoopIndex(x, x / m_group_size, m_group_size);
   }
+
 #if defined(ARCANE_COMPILING_SYCL)
   SyclWorkGroupLoopIndex getIndices(sycl::nd_item<1> id) const
   {
@@ -373,36 +399,31 @@ class WorkGroupLoopRange
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator::Impl
-
-namespace Arcane::Accelerator
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 //! Applique le fonctor \a func sur une boucle séqentielle.
-template <typename Lambda, typename... ReducerArgs>
-inline void
-arcaneSequentialFor(Impl::WorkGroupLoopRange bounds, const Lambda& func, ReducerArgs... reducer_args)
+template <typename Lambda, typename... RemainingArgs>
+void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(reducer_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   const Int32 group_size = bounds.groupSize();
   const Int32 total_size = bounds.totalSize();
   // TODO: gérer si total_size n'est pas un multiple de group_size
   const Int32 nb_group = total_size / group_size;
   Int32 loop_index = 0;
   for (Int32 i = 0; i < nb_group; ++i) {
-    //#if defined(ARCANE_COMPILING_SYCL)
-    //func(Impl::SyclWorkGroupLoopIndex(loop_index, i, group_size), reducer_args...);
-    //#else
-    func(Impl::WorkGroupLoopIndex2(loop_index, i, group_size), reducer_args...);
-    //#endif
+    func(WorkGroupLoopIndex(loop_index, i, group_size), remaining_args...);
     loop_index += group_size;
   }
 
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(reducer_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
+namespace Arcane::Accelerator
+{
 
 //! Applique le fonctor \a func sur une boucle parallèle
 template <typename Lambda, typename... ReducerArgs>
