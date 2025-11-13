@@ -399,7 +399,7 @@ build()
   const CommandLineArguments& cmd_line_args = app_info.commandLineArguments();
   argc = cmd_line_args.commandLineArgc();
   argv = cmd_line_args.commandLineArgv();
-  
+
   bool need_serialize = false;
 
   // Essaie avec MPI_THREAD_MULTIPLE
@@ -447,10 +447,8 @@ build()
   m_mpi_comm_rank = rank;
   m_mpi_comm_size = size;
 
-  // On ne se sert que du comm du thread 0.
   MPI_Comm mpi_machine_communicator = MPI_COMM_NULL;
   MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, m_mpi_comm_rank, MPI_INFO_NULL, &mpi_machine_communicator);
-
   m_machine_communicator = Communicator(mpi_machine_communicator);
 
   IApplication* app = m_application;
