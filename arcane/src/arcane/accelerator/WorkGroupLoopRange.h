@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 #include "arccore/common/SequentialFor.h"
 
 #if defined(ARCANE_COMPILING_CUDA)
@@ -29,6 +31,7 @@
 
 namespace Arcane::Accelerator::Impl
 {
+class WorkGroupLoopRange;
 
 class T0
 {
@@ -124,7 +127,7 @@ class WorkGroupLoopIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
+ * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour un device CUDA ou ROCM.
  */
 class DeviceWorkItemBlock
 {
@@ -239,6 +242,90 @@ class WorkGroupLoopIndex2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+/*!
+ * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
+ */
+class SyclDeviceWorkItemBlock
+{
+ public:
+
+  explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> n)
+  : m_index(static_cast<Int32>(n.get_group(0) * n.get_local_range(0) + n.get_local_id(0)))
+  , m_thread_block(n)
+  {
+  }
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE Int32 operator()() const { return m_index; }
+
+  /*!
+   * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
+   */
+  Int32 groupRank() const { return static_cast<Int32>(m_thread_block.get_group(0)); }
+
+  /*!
+   * \brief Nombre de WorkItem dans un WorkGroup.
+   */
+  Int32 groupSize() { return static_cast<Int32>(m_thread_block.get_local_range(0)); }
+
+  /*!
+   * \brief Rang du WorkItem dans son WorkGroup.
+   */
+  Int32 rankInGroup() const { return static_cast<Int32>(m_thread_block.get_local_id(0)); }
+
+  void sync() { m_thread_block.barrier(); }
+
+  T0 x() const { return {}; }
+
+  constexpr bool isDevice() const { return true; }
+
+ private:
+
+  Int32 m_index = 0;
+  sycl::nd_item<1> m_thread_block;
+};
+
+class SyclWorkGroupLoopIndex
+{
+  friend WorkGroupLoopRange;
+
+ private:
+
+  // Ce constructeur n'est utilisé que sur le device
+  explicit SyclWorkGroupLoopIndex(sycl::nd_item<1> n)
+  : m_nd_item(n)
+  {
+  }
+
+ public:
+
+  constexpr Int32 nbItem() { return 1; }
+
+  SyclDeviceWorkItemBlock item([[maybe_unused]] Int32 index) const
+  {
+    // N'est valide que pour index==0
+    return item0();
+  }
+
+  SyclDeviceWorkItemBlock item0() const
+  {
+    // N'est valide que pour index==0
+    return SyclDeviceWorkItemBlock(m_nd_item);
+  }
+
+ private:
+
+  sycl::nd_item<1> m_nd_item;
+};
+
+#endif // ARCANE_COMPILING_SYCL
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
@@ -271,6 +358,12 @@ class WorkGroupLoopRange
     // TODO: supprimer la division
     return WorkGroupLoopIndex2(x, x / m_group_size, m_group_size);
   }
+#if defined(ARCANE_COMPILING_SYCL)
+  SyclWorkGroupLoopIndex getIndices(sycl::nd_item<1> id) const
+  {
+    return SyclWorkGroupLoopIndex(id);
+  }
+#endif
 
  private:
 
@@ -300,7 +393,11 @@ arcaneSequentialFor(Impl::WorkGroupLoopRange bounds, const Lambda& func, Reducer
   const Int32 nb_group = total_size / group_size;
   Int32 loop_index = 0;
   for (Int32 i = 0; i < nb_group; ++i) {
+    //#if defined(ARCANE_COMPILING_SYCL)
+    //func(Impl::SyclWorkGroupLoopIndex(loop_index, i, group_size), reducer_args...);
+    //#else
     func(Impl::WorkGroupLoopIndex2(loop_index, i, group_size), reducer_args...);
+    //#endif
     loop_index += group_size;
   }
 
@@ -322,6 +419,24 @@ arccoreParallelFor(Impl::WorkGroupLoopRange bounds,
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Pour Sycl, le type de l'itérateur ne peut pas être le même sur l'hôte et
+// le device car il faut un 'sycl::nd_item' et il n'est pas possible d'en
+// construire un (pas de constructeur par défaut). On utilise donc
+// une lambda template et le type de l'itérateur est un paramètre template
+#if defined(ARCANE_COMPILING_SYCL)
+#define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(auto iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+#else
+//! Macro pour lancer une commande avec le support du parallélisme hiérarchique
+#define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -255,11 +255,14 @@ class DoDirectSYCLLambdaArrayBounds
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
-
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i), remaining_args...);
+      // Si possible, on passe \a x en argument
+      if constexpr (requires { bounds.getIndices(x); })
+        body(bounds.getIndices(x), remaining_args...);
+      else
+        body(bounds.getIndices(i), remaining_args...);
     }
     KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
   }
