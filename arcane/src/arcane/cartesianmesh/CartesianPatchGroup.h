@@ -40,7 +40,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   Ref<CartesianMeshPatch> groundPatch();
 
-  void addPatch(CellGroup cell_group);
+  void addPatch(ConstArrayView<Int32> cells_local_id);
+  Integer addPatchAfterRestore(CellGroup cell_group);
+  void addPatch(CellGroup cell_group, Integer group_index);
 
   Integer nbPatch() const;
 
@@ -62,18 +64,23 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void updateLevelsBeforeAddGroundPatch();
 
-  Integer nextIndexForNewPatch();
-
   void mergePatches();
 
   void refine();
 
+  void rebuildAvailableGroupIndex(ConstArrayView<Integer> available_group_index);
+
+  ConstArrayView<Int32> availableGroupIndex();
+
  private:
+
+  Integer _nextIndexForNewPatch();
 
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
 
   void _removeOnePatch(Integer index);
   void _removeMultiplePatches(ConstArrayView<Integer> indexes);
+  void _removeAllPatches();
   void _createGroundPatch();
 
   bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
@@ -89,6 +96,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   ICartesianMesh* m_cmesh;
   UniqueArray<Integer> m_patches_to_delete;
   Int32 m_index_new_patches;
+  UniqueArray<Integer> m_available_group_index;
 };
 
 /*---------------------------------------------------------------------------*/

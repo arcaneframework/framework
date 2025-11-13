@@ -34,6 +34,7 @@ CartesianMeshPatch::
 CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
 : TraceAccessor(cmesh->traceMng())
 , m_mesh(cmesh)
+, m_amr_patch_index(patch_index)
 {
   Integer nb_dir = cmesh->mesh()->dimension();
   for( Integer i=0; i<nb_dir; ++i ){

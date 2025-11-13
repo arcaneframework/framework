@@ -30,11 +30,11 @@ namespace Arcane
 
 namespace
 {
-  constexpr Integer MIN_SIZE = 4;
+  constexpr Integer MIN_SIZE = 1;
   constexpr Integer TARGET_SIZE = 8;
-  constexpr Real TARGET_SIZE_WEIGHT_IN_EFFICACITY = 0.5;
-  constexpr Integer MAX_NB_CUT = 5;
-  constexpr Real TARGET_EFFICACITY = 0.90;
+  constexpr Real TARGET_SIZE_WEIGHT_IN_EFFICACITY = 1;
+  constexpr Integer MAX_NB_CUT = 6;
+  constexpr Real TARGET_EFFICACITY = 1.0;
 } // namespace
 
 /*---------------------------------------------------------------------------*/

@@ -48,7 +48,7 @@ namespace Arcane
 
 CartesianPatchGroup::CartesianPatchGroup(ICartesianMesh* cmesh)
 : m_cmesh(cmesh)
-, m_index_new_patches(0)
+, m_index_new_patches(1)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -65,20 +65,59 @@ groundPatch()
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-addPatch(CellGroup cell_group)
+addPatch(ConstArrayView<Int32> cells_local_id)
+{
+  Integer index = _nextIndexForNewPatch();
+  String children_group_name = String("CartesianMeshPatchCells") + index;
+  IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
+  CellGroup children_cells = cell_family->createGroup(children_group_name, cells_local_id, true);
+  addPatch(children_cells, index);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Il faut appeler rebuildAvailableIndex() après les appels à cette méthode.
+Integer CartesianPatchGroup::
+addPatchAfterRestore(CellGroup cell_group)
+{
+  const String& name = cell_group.name();
+  Integer group_index = -1;
+  if (name.startsWith("CartesianMeshPatchCells")) {
+    String index_str = name.substring(23);
+    group_index = std::stoi(index_str.localstr());
+  }
+  // Ancien checkpoint.
+  else if (name.startsWith("CartesianMeshPatchParentCells")) {
+    String index_str = name.substring(29);
+    group_index = std::stoi(index_str.localstr());
+  }
+  else {
+    ARCANE_FATAL("Invalid group");
+  }
+
+  addPatch(cell_group, group_index);
+  return group_index;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+addPatch(CellGroup cell_group, Integer group_index)
 {
   _createGroundPatch();
   if (cell_group.null())
     ARCANE_FATAL("Null cell group");
-  Integer index = nextIndexForNewPatch();
-  auto* cdi = new CartesianMeshPatch(m_cmesh, index);
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
   m_amr_patch_cell_groups.add(cell_group);
   _addPatchInstance(makeRef(cdi));
-  m_cmesh->traceMng()->info() << "m_amr_patch_cell_groups : " << m_amr_patch_cell_groups.size()
+  m_cmesh->traceMng()->info() << "addPatch()"
+                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups.size()
                               << " -- m_amr_patches : " << m_amr_patches.size()
                               << " -- m_amr_patches_pointer : " << m_amr_patches_pointer.size()
-                              << " -- index : " << index - 1
-                              << " -- cell_group name : " << m_amr_patch_cell_groups[index - 1].name(); // m_index_new_patches commence par 1, pas le tableau m_amr_patch_cell_groups
+                              << " -- group_index : " << group_index
+                              << " -- cell_group name : " << m_amr_patch_cell_groups.back().name();
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
     auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
@@ -199,7 +238,7 @@ clear()
   m_amr_patch_cell_groups.clear();
   m_amr_patches_pointer.clear();
   m_amr_patches.clear();
-  m_index_new_patches = 0;
+  m_index_new_patches = 1;
   _createGroundPatch();
 }
 
@@ -331,9 +370,14 @@ updateLevelsBeforeAddGroundPatch()
 /*---------------------------------------------------------------------------*/
 
 Integer CartesianPatchGroup::
-nextIndexForNewPatch()
+_nextIndexForNewPatch()
 {
-  return m_index_new_patches;
+  if (!m_available_group_index.empty()) {
+    const Integer elem = m_available_group_index.back();
+    m_available_group_index.popBack();
+    return elem;
+  }
+  return m_index_new_patches++;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -535,9 +579,10 @@ refine()
     }
   }
 
-  for (Integer i = 1; i < m_amr_patches.size(); ++i) {
-    _removeOnePatch(i);
-  }
+  // for (Integer i = 1; i < m_amr_patches.size(); ++i) {
+  //   _removeOnePatch(i);
+  // }
+  _removeAllPatches();
   applyPatchEdit(false);
 
   for (Integer level = min_level; level <= max_level; ++level) {
@@ -619,6 +664,13 @@ refine()
   }
   m_cmesh->computeDirections();
 
+  {
+    constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine);
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+      icell->mutableItemBase().removeFlags(flags_to_remove);
+    }
+  }
+
   m_cmesh->traceMng()->info() << "NbPatch : " << m_cmesh->patches().size();
 
   for (Integer i = 0; i < m_cmesh->patches().size(); ++i) {
@@ -635,11 +687,28 @@ refine()
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
+rebuildAvailableGroupIndex(ConstArrayView<Integer> available_group_index)
+{
+  m_available_group_index = available_group_index;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> CartesianPatchGroup::
+availableGroupIndex()
+{
+  return m_available_group_index;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
 _addPatchInstance(Ref<CartesianMeshPatch> v)
 {
   m_amr_patches.add(v);
   m_amr_patches_pointer.add(v.get());
-  m_index_new_patches++;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -648,6 +717,10 @@ _addPatchInstance(Ref<CartesianMeshPatch> v)
 void CartesianPatchGroup::
 _removeOnePatch(Integer index)
 {
+  m_available_group_index.add(m_amr_patches[index]->index());
+  m_cmesh->traceMng()->info() << "_removeOnePatch() -- Save group_index : " << m_available_group_index.back();
+
+  m_amr_patch_cell_groups[index - 1].clear();
   m_amr_patch_cell_groups.remove(index - 1);
   m_amr_patches_pointer.remove(index);
   m_amr_patches.remove(index);
@@ -665,6 +738,25 @@ _removeMultiplePatches(ConstArrayView<Integer> indexes)
     _removeOnePatch(index - count);
     count++;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_removeAllPatches()
+{
+  Ref<CartesianMeshPatch> ground_patch = m_amr_patches.front();
+
+  m_amr_patch_cell_groups.clear();
+  m_amr_patches_pointer.clear();
+  m_amr_patches.clear();
+  m_available_group_index.clear();
+  m_patches_to_delete.clear();
+  m_index_new_patches = 1;
+
+  m_amr_patches.add(ground_patch);
+  m_amr_patches_pointer.add(ground_patch.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -989,10 +1081,10 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
     ARCANE_FATAL("Null cell group");
 
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
-  Integer index = nextIndexForNewPatch();
-  String parent_group_name = String("CartesianMeshPatchParentCells") + index;
+  Integer group_index = _nextIndexForNewPatch();
+  String patch_group_name = String("CartesianMeshPatchCells") + group_index;
 
-  auto* cdi = new CartesianMeshPatch(m_cmesh, index + 1);
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
 
   _addPatchInstance(makeRef(cdi));
 
@@ -1012,8 +1104,14 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
     }
   }
 
-  CellGroup parent_cells = cell_family->createGroup(parent_group_name, cells_local_id, true);
+  CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
   m_amr_patch_cell_groups.add(parent_cells);
+
+  m_cmesh->traceMng()->info() << "_addCutPatch()"
+                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups.size()
+                              << " -- m_amr_patches : " << m_amr_patches.size()
+                              << " -- group_index : " << group_index
+                              << " -- cell_group name : " << m_amr_patch_cell_groups.back().name();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1039,18 +1137,24 @@ _addPatch(const AMRPatchPosition& new_patch_position)
   }
 
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
-  Integer index = nextIndexForNewPatch();
-  String parent_group_name = String("CartesianMeshPatchParentCells") + index;
+  Integer group_index = _nextIndexForNewPatch();
+  String patch_group_name = String("CartesianMeshPatchCells") + group_index;
 
-  auto* cdi = new CartesianMeshPatch(m_cmesh, index + 1);
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
   cdi->position().setLevel(new_patch_position.level());
   cdi->position().setMinPoint(new_patch_position.minPoint());
   cdi->position().setMaxPoint(new_patch_position.maxPoint());
 
   _addPatchInstance(makeRef(cdi));
 
-  CellGroup parent_cells = cell_family->createGroup(parent_group_name, cells_local_id, true);
+  CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
   m_amr_patch_cell_groups.add(parent_cells);
+
+  m_cmesh->traceMng()->info() << "_addPatch()"
+                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups.size()
+                              << " -- m_amr_patches : " << m_amr_patches.size()
+                              << " -- group_index : " << group_index
+                              << " -- cell_group name : " << m_amr_patch_cell_groups.back().name();
 }
 
 /*---------------------------------------------------------------------------*/
