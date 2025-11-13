@@ -140,10 +140,10 @@ class ARCANE_CORE_EXPORT IParallelMng
    * S'il est valide, il est possible de récupérer sa valeur via un cast:
    * \code
    * IParallelMng* pm = ...;
-   * MPI_Comm c = static_cast<MPI_Comm>(pm->communicator());
+   * MPI_Comm mc = static_cast<MPI_Comm>(pm->machineCommunicator());
    * \endcode
    */
-  virtual Parallel::Communicator machineCommunicator() const =0;
+  virtual Parallel::Communicator machineCommunicator() const { return {}; }
 
   /*!
    * \brief Indique si l'implémentation utilise les threads.
