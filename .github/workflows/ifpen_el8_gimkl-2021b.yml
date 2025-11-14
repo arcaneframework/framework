@@ -138,7 +138,7 @@ jobs:
           name: test-artifact
           path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
-          include-hidden-files: true
+          include-hidden-files: false
 
       - name: Save cache
         id: save-cache
@@ -155,7 +155,4 @@ jobs:
         if: always()
         run: |
            rm -rf ${{ env.SOURCE_DIR }}
-           rm -rf /__w/framework/framework/build-artifact.tar.gz
-           rm -rf /__w/framework/framework/ccache
-           rm -rf /__w/framework/framework/source
            ls -l /__w/framework/framework
