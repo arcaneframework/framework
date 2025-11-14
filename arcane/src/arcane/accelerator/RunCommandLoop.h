@@ -39,7 +39,7 @@ namespace Arcane::Accelerator::impl
  *
  * Les arguments supplémentaires \a other_args sont utilisés pour supporter
  * des fonctionnalités telles que les réductions (ReducerSum2, ReducerMax2, ...)
- * ou la gestion de la mémoire locale (via RunCommandLocalMemory).
+ * ou la gestion de la mémoire locale (via LocalMemory).
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 _applyGenericLoop(RunCommand& command, LoopBoundType bounds,

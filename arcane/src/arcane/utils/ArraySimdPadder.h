@@ -32,6 +32,24 @@ class ArraySimdPadder
  public:
 
   /*!
+   * \brief Calcule la taille nécessaire pour être un multiple de \a PaddingSize.
+   *
+   * \a SizeType peut être un Int32 ou un Int64
+   */
+  template <int PaddingSize, typename SizeType> ARCCORE_HOST_DEVICE inline static SizeType
+  getSizeWithSpecificPadding(SizeType size)
+  {
+    if (size <= 0)
+      return 0;
+    SizeType modulo = size % PaddingSize;
+    if (modulo == 0)
+      return size;
+    // TODO: vérifier débordement.
+    SizeType padding_size = ((size / PaddingSize) + 1) * PaddingSize;
+    return padding_size;
+  }
+
+  /*!
    * \brief Calcule la taille nécessaire pour être un multiple de SIMD_PADDING_SIZE.
    *
    * \a SizeType peut être un Int32 ou un Int64
@@ -39,14 +57,7 @@ class ArraySimdPadder
   template <typename SizeType> ARCCORE_HOST_DEVICE inline static SizeType
   getSizeWithPadding(SizeType size)
   {
-    if (size <= 0)
-      return 0;
-    SizeType modulo = size % SIMD_PADDING_SIZE;
-    if (modulo == 0)
-      return size;
-    // TODO: vérifier débordement.
-    SizeType padding_size = ((size / SIMD_PADDING_SIZE) + 1) * SIMD_PADDING_SIZE;
-    return padding_size;
+    return getSizeWithSpecificPadding<SIMD_PADDING_SIZE>(size);
   }
 
   template <typename DataType>

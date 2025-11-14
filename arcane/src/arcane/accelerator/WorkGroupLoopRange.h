@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
+namespace Arcane::Accelerator
 {
 class WorkGroupLoopRange;
 class WorkGroupLoopIndex;
@@ -44,16 +44,14 @@ class T0
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
+ * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour l'hôte.
  */
 class HostWorkItemBlock
 {
-  //friend WorkGroupLoopRange;
   friend WorkGroupLoopIndex;
 
  private:
 
-  //{}
   //! Constructeur pour l'hôte
   explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 index, Int32 group_index, Int32 group_size)
   : m_index(index)
@@ -63,57 +61,24 @@ class HostWorkItemBlock
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int32 operator()() const { return m_index; }
+  constexpr Int32 operator()() const { return m_index; }
 
   /*!
    * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 groupRank() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return blockIdx.x;
-#else
-    return m_group_index;
-#endif
-  }
+  constexpr Int32 groupRank() const { return m_group_index; }
   /*!
    * \brief Nombre de WorkItem dans un WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 groupSize() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return blockDim.x;
-#else
-    return m_group_size;
-#endif
-  }
+  constexpr Int32 groupSize() const { return m_group_size; }
   /*!
    * \brief Rang du WorkItem dans son WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 rankInGroup() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return threadIdx.x;
-#else
-    return m_index % m_group_size;
-#endif
-  }
+  constexpr Int32 rankInGroup() const { return m_index % m_group_size; }
 
-  Int32 hostGroupIndex() const { return m_group_index; }
-  Int32 hostGroupSize() const { return m_group_size; }
-
-#if defined(ARCCORE_DEVICE_CODE)
-  __device__ T0 x() const { return {}; }
-#else
   int x() const { return 0; }
-#endif
 
-#if defined(ARCCORE_DEVICE_CODE)
-  constexpr __device__ bool isDevice() const { return true; }
-#else
-  //TODO: gérer SYCL
   constexpr bool isDevice() const { return false; }
-#endif
 
   void sync() {}
 
@@ -124,7 +89,11 @@ class HostWorkItemBlock
   Int32 m_group_index = 0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -192,7 +161,7 @@ class WorkGroupLoopIndex
   // Ce constructeur n'est utilisé que sur le device
   explicit ARCCORE_HOST_DEVICE WorkGroupLoopIndex()
   {
-#if defined(ARCCORE_DEVICE_CODE)
+#if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
     m_loop_index = blockDim.x * blockIdx.x + threadIdx.x;
     m_group_index = blockIdx.x;
     m_group_size = blockDim.x;
@@ -313,7 +282,9 @@ class SyclDeviceWorkItemBlock
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Index dans un WorkGroup pour le back-end Sycl.
+ */
 class SyclWorkGroupLoopIndex
 {
   friend WorkGroupLoopRange;
@@ -351,15 +322,29 @@ class SyclWorkGroupLoopIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
  *
  * L'intervalle d'itération est décomposé en \a N WorkGroup contenant chacun \a P WorkItem.
+ *
+ * \note Sur accélérateur, La valeur de \a P est dépendante de l'architecture
+ * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
+ * et être un multiple de 32.
  */
-class WorkGroupLoopRange
+class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 {
  public:
 
@@ -368,16 +353,19 @@ class WorkGroupLoopRange
 
  public:
 
-  explicit WorkGroupLoopRange(Int32 total_size)
-  : m_total_size(total_size)
-  {}
+  //! Créé un intervalle d'itération pour la command \a command pour \a nb_group de taille \a block_size
+  WorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
 
  public:
 
   constexpr ARCCORE_HOST_DEVICE Int32 totalSize() const { return m_total_size; }
   constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_total_size; }
   constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbGroup() const { return m_nb_group; }
 
+ public:
+
+  //TODO rendre privé
   constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex getIndices(Int32 x) const
   {
     // TODO: supprimer la division
@@ -385,6 +373,7 @@ class WorkGroupLoopRange
   }
 
 #if defined(ARCANE_COMPILING_SYCL)
+  //TODO rendre privé
   SyclWorkGroupLoopIndex getIndices(sycl::nd_item<1> id) const
   {
     return SyclWorkGroupLoopIndex(id);
@@ -394,20 +383,19 @@ class WorkGroupLoopRange
  private:
 
   Int32 m_total_size = 0;
-  Int32 m_group_size = 256;
+  Int32 m_nb_group = 0;
+  Int32 m_group_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! Applique le fonctor \a func sur une boucle séqentielle.
-template <typename Lambda, typename... RemainingArgs>
-void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
+template <typename Lambda, typename... RemainingArgs> void
+arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
   ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   const Int32 group_size = bounds.groupSize();
-  const Int32 total_size = bounds.totalSize();
-  // TODO: gérer si total_size n'est pas un multiple de group_size
-  const Int32 nb_group = total_size / group_size;
+  const Int32 nb_group = bounds.nbGroup();
   Int32 loop_index = 0;
   for (Int32 i = 0; i < nb_group; ++i) {
     func(WorkGroupLoopIndex(loop_index, i, group_size), remaining_args...);
@@ -420,20 +408,14 @@ void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, Remainin
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::Impl
-
-namespace Arcane::Accelerator
-{
-
 //! Applique le fonctor \a func sur une boucle parallèle
-template <typename Lambda, typename... ReducerArgs>
-inline void
-arccoreParallelFor(Impl::WorkGroupLoopRange bounds,
+template <typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(WorkGroupLoopRange bounds,
                    [[maybe_unused]] const ForLoopRunInfo& run_info,
-                   const Lambda& func, ReducerArgs... reducer_args)
+                   const Lambda& func, RemainingArgs... remaining_args)
 {
   // Pour l'instant on ne fait que du séquentiel.
-  arcaneSequentialFor(bounds, func, reducer_args...);
+  arcaneSequentialFor(bounds, func, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/

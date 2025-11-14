@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLocalMemory.h                                     (C) 2000-2025 */
+/* LocalMemory.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Mémoire locale à une RunCommand.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_RUNCOMMANDLOCALMEMORY_H
-#define ARCANE_ACCELERATOR_RUNCOMMANDLOCALMEMORY_H
+#ifndef ARCANE_ACCELERATOR_LOCALMEMORY_H
+#define ARCANE_ACCELERATOR_LOCALMEMORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 
-#include <iostream>
+#include "arccore/base/Span.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@ inline __device__ std::byte* _getAcceleratorSharedMemory()
   return reinterpret_cast<std::byte*>(shared_memory_ptr);
 }
 #endif
+
 } // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
@@ -48,23 +49,36 @@ namespace Arcane::Accelerator
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
  */
-template <typename T>
-class RunCommandLocalMemory
+template <typename T, Int32 Extent>
+class LocalMemory
 {
   friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
   friend Impl::KernelRemainingArgsHelper;
 
  public:
 
-  RunCommandLocalMemory(RunCommand& command, Int32 size)
+  static_assert(std::is_trivially_copyable_v<T>, "type T is not trivially copiable");
+
+ public:
+
+  using SpanType = SmallSpan<T, Extent>;
+
+ public:
+
+  LocalMemory(RunCommand& command, Int32 size)
   : m_size(size)
   {
-    command._addSharedMemory(static_cast<Int32>(sizeof(T) * size));
+    _addShareMemory(command);
   }
 
-  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> span()
+  LocalMemory(RunCommand& command) requires(Extent != DynExtent)
   {
-    return { m_ptr, m_size };
+    _addShareMemory(command);
+  }
+
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T, Extent> span()
+  {
+    return { m_ptr, m_size.size() };
   }
 
  private:
@@ -72,7 +86,8 @@ class RunCommandLocalMemory
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
   ARCCORE_DEVICE void _internalExecWorkItemAtBegin(Int32)
   {
-    m_ptr = reinterpret_cast<T*>(Impl::_getAcceleratorSharedMemory());
+    std::byte* begin = Impl::_getAcceleratorSharedMemory() + m_offset;
+    m_ptr = reinterpret_cast<T*>(begin);
   }
   ARCCORE_DEVICE void _internalExecWorkItemAtEnd(Int32){};
 #endif
@@ -80,14 +95,15 @@ class RunCommandLocalMemory
 #if defined(ARCANE_COMPILING_SYCL)
   void _internalExecWorkItemAtBegin(sycl::nd_item<1>, SmallSpan<std::byte> shm_view)
   {
-    m_ptr = reinterpret_cast<T*>(shm_view.data());
+    std::byte* begin = shm_view.ptrAt(m_offset);
+    m_ptr = reinterpret_cast<T*>(begin);
   }
   void _internalExecWorkItemAtEnd(sycl::nd_item<1>, SmallSpan<std::byte>) {}
 #endif
 
   void _internalHostExecWorkItemAtBegin()
   {
-    m_ptr = new T[m_size];
+    m_ptr = new T[m_size.size()];
   }
   void _internalHostExecWorkItemAtEnd()
   {
@@ -97,7 +113,18 @@ class RunCommandLocalMemory
  private:
 
   T* m_ptr = nullptr;
-  Int32 m_size = 0;
+  // TODO: l'offset n'est utilisé on pourrait supprimer l'offset en le passant
+  //! Offset depuis le début de la mémoire __shared__
+  Int32 m_offset = 0;
+  //! Nombre d'éléments du tableau
+  [[no_unique_address]] ::Arcane::Impl::ExtentStorage<Int32, Extent> m_size;
+
+ protected:
+
+  void _addShareMemory(RunCommand& command)
+  {
+    m_offset = command._addSharedMemory(static_cast<Int32>(sizeof(T) * m_size.size()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
