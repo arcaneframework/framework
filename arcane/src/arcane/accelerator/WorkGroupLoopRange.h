@@ -44,11 +44,10 @@ class T0
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
+ * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour l'hôte.
  */
 class HostWorkItemBlock
 {
-  //friend WorkGroupLoopRange;
   friend WorkGroupLoopIndex;
 
  private:
@@ -330,8 +329,12 @@ class SyclWorkGroupLoopIndex
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
  *
  * L'intervalle d'itération est décomposé en \a N WorkGroup contenant chacun \a P WorkItem.
+ *
+ * \note Sur accélérateur, La valeur de \a P est dépendante de l'architecture
+ * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
+ * et être un multiple de 32.
  */
-class WorkGroupLoopRange
+class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 {
  public:
 
@@ -340,16 +343,19 @@ class WorkGroupLoopRange
 
  public:
 
-  explicit WorkGroupLoopRange(Int32 total_size)
-  : m_total_size(total_size)
-  {}
+  //! Créé un interval d'itération pour \a nb_group de taille \a block_size
+  WorkGroupLoopRange(Int32 nb_group, Int32 block_size);
 
  public:
 
   constexpr ARCCORE_HOST_DEVICE Int32 totalSize() const { return m_total_size; }
   constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_total_size; }
   constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbGroup() const { return m_nb_group; }
 
+ public:
+
+  //TODO rendre privé
   constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex getIndices(Int32 x) const
   {
     // TODO: supprimer la division
@@ -357,6 +363,7 @@ class WorkGroupLoopRange
   }
 
 #if defined(ARCANE_COMPILING_SYCL)
+  //TODO rendre privé
   SyclWorkGroupLoopIndex getIndices(sycl::nd_item<1> id) const
   {
     return SyclWorkGroupLoopIndex(id);
@@ -366,7 +373,8 @@ class WorkGroupLoopRange
  private:
 
   Int32 m_total_size = 0;
-  Int32 m_group_size = 256;
+  Int32 m_nb_group = 0;
+  Int32 m_group_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -377,9 +385,7 @@ void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, Remainin
 {
   ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   const Int32 group_size = bounds.groupSize();
-  const Int32 total_size = bounds.totalSize();
-  // TODO: gérer si total_size n'est pas un multiple de group_size
-  const Int32 nb_group = total_size / group_size;
+  const Int32 nb_group = bounds.nbGroup();
   Int32 loop_index = 0;
   for (Int32 i = 0; i < nb_group; ++i) {
     func(WorkGroupLoopIndex(loop_index, i, group_size), remaining_args...);
@@ -398,14 +404,14 @@ namespace Arcane::Accelerator
 {
 
 //! Applique le fonctor \a func sur une boucle parallèle
-template <typename Lambda, typename... ReducerArgs>
+template <typename Lambda, typename... RemainingArgs>
 inline void
 arccoreParallelFor(Impl::WorkGroupLoopRange bounds,
                    [[maybe_unused]] const ForLoopRunInfo& run_info,
-                   const Lambda& func, ReducerArgs... reducer_args)
+                   const Lambda& func, RemainingArgs... remaining_args)
 {
   // Pour l'instant on ne fait que du séquentiel.
-  arcaneSequentialFor(bounds, func, reducer_args...);
+  arcaneSequentialFor(bounds, func, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
