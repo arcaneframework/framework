@@ -13,6 +13,8 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 
+#include "arcane/utils/ArraySimdPadder.h"
+
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/NativeStream.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
@@ -226,10 +228,12 @@ _internalCommandExecStat()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void RunCommand::
+Int32 RunCommand::
 _addSharedMemory(Int32 size)
 {
-  m_p->m_shared_memory_size += size;
+  Int32 current_size = m_p->m_shared_memory_size;
+  m_p->m_shared_memory_size += ArraySimdPadder::getSizeWithSpecificPadding<16>(size);
+  return current_size;
 }
 
 /*---------------------------------------------------------------------------*/

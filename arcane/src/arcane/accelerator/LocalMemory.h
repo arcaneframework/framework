@@ -32,6 +32,7 @@ inline __device__ std::byte* _getAcceleratorSharedMemory()
   return reinterpret_cast<std::byte*>(shared_memory_ptr);
 }
 #endif
+
 } // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
@@ -56,6 +57,10 @@ class LocalMemory
 
  public:
 
+  static_assert(std::is_trivially_copyable_v<T>, "type T is not trivially copiable");
+
+ public:
+
   using SpanType = SmallSpan<T, Extent>;
 
  public:
@@ -63,7 +68,12 @@ class LocalMemory
   LocalMemory(RunCommand& command, Int32 size)
   : m_size(size)
   {
-    command._addSharedMemory(static_cast<Int32>(sizeof(T) * size));
+    _addShareMemory(command);
+  }
+
+  LocalMemory(RunCommand& command) requires(Extent != DynExtent)
+  {
+    _addShareMemory(command);
   }
 
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, Extent> span()
@@ -76,7 +86,8 @@ class LocalMemory
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
   ARCCORE_DEVICE void _internalExecWorkItemAtBegin(Int32)
   {
-    m_ptr = reinterpret_cast<T*>(Impl::_getAcceleratorSharedMemory());
+    std::byte* begin = Impl::_getAcceleratorSharedMemory() + m_offset;
+    m_ptr = reinterpret_cast<T*>(begin);
   }
   ARCCORE_DEVICE void _internalExecWorkItemAtEnd(Int32){};
 #endif
@@ -84,7 +95,8 @@ class LocalMemory
 #if defined(ARCANE_COMPILING_SYCL)
   void _internalExecWorkItemAtBegin(sycl::nd_item<1>, SmallSpan<std::byte> shm_view)
   {
-    m_ptr = reinterpret_cast<T*>(shm_view.data());
+    std::byte* begin = shm_view.ptrAt(m_offset);
+    m_ptr = reinterpret_cast<T*>(begin);
   }
   void _internalExecWorkItemAtEnd(sycl::nd_item<1>, SmallSpan<std::byte>) {}
 #endif
@@ -101,8 +113,18 @@ class LocalMemory
  private:
 
   T* m_ptr = nullptr;
+  // TODO: l'offset n'est utilisé on pourrait supprimer l'offset en le passant
+  //! Offset depuis le début de la mémoire __shared__
+  Int32 m_offset = 0;
   //! Nombre d'éléments du tableau
   [[no_unique_address]] ::Arcane::Impl::ExtentStorage<Int32, Extent> m_size;
+
+ protected:
+
+  void _addShareMemory(RunCommand& command)
+  {
+    m_offset = command._addSharedMemory(static_cast<Int32>(sizeof(T) * m_size.size()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -119,19 +119,22 @@ _executeTest1()
     Int32 loop_size = 1024 * 1024;
     info() << "DO_LOOP2 LocalMemory size=" << loop_size;
     auto command = makeCommand(queue);
-    ax::LocalMemory<Int32> local_data(command, 50);
+    ax::LocalMemory<Int64,33> local_data_int64(command, 50);
+    ax::LocalMemory<Int32> local_data_int32(command, 50);
     const Int32 out_array_size = loop_size / 256;
-    NumArray<Int32, MDDim1> out_array(out_array_size);
+    NumArray<Int64, MDDim1> out_array(out_array_size);
     out_array.fillHost(0);
     auto out_span = viewInOut(command, out_array);
     Accelerator::Impl::WorkGroupLoopRange loop_range(loop_size);
-    command << RUNCOMMAND_LAUNCH (work_group, loop_range, local_data)
+    command << RUNCOMMAND_LAUNCH (work_group, loop_range, local_data_int32, local_data_int64)
     {
-      auto s = local_data.span();
+      auto local_span_int32 = local_data_int32.span();
+      auto local_span_int64 = local_data_int64.span();
       auto work_item0 = work_group.item0();
-      if (work_item0.rankInGroup() == 0)
-        for (int j = 0; j < 50; ++j)
-          s[j] = 0;
+      if (work_item0.rankInGroup() == 0) {
+        local_span_int32.fill(0);
+        local_span_int64.fill(0);
+      }
 
       work_item0.sync();
 
@@ -139,13 +142,14 @@ _executeTest1()
       for (Int32 g = 0; g < work_group.nbItem(); ++g) {
         auto work_item = work_group.item(g);
         Int32 i = work_item();
-        ax::doAtomicAdd(&s[i % 50], 1);
+        ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
+        ax::doAtomicAdd(&local_span_int32[i % local_span_int64.size()], 10);
         if constexpr (work_item.isDevice()) {
           // Pour tester le 'constexpr' uniquement sur le device
           auto xy = work_item.x();
           int xy2 = xy;
           if (work_item.rankInGroup() == 0)
-            ax::doAtomicAdd(&s[0], xy2);
+            ax::doAtomicAdd(&local_span_int32[0], xy2);
         }
       }
 
@@ -154,16 +158,19 @@ _executeTest1()
       // Recopie le tableau partagé dans le tableau de sortie.
       if (work_item0.rankInGroup() == 0) {
         Int32 group_index = work_item0.groupRank();
-        for (int j = 0; j < 50; ++j)
-          out_span[group_index] += s[j];
+        for (Int32 s : local_span_int32)
+          out_span[group_index] += s;
+        for (Int64 s : local_span_int64)
+          out_span[group_index] += s;
       }
     };
 
     bool is_accelerator = queue.isAcceleratorPolicy();
     for (Int32 i = 0, n = out_array_size; i < n; ++i) {
-      Int32 out_value = out_span[i];
+      Int64 out_value = out_span[i];
+      const Int32 base_value = 256 + 256*10;
       // Sur accélérateur on ajoute 2 car il y a un ajout dans le 'constexpr' de la lambda
-      Int32 expected_value = (is_accelerator) ? 258 : 256;
+      Int64 expected_value = (is_accelerator) ? (base_value+2) : base_value;
       if (i < 10)
         info() << "DO_LOOP2 LocalMemory out[" << i << "]=" << out_value;
       if (out_value != expected_value)

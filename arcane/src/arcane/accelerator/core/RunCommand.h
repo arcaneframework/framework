@@ -133,7 +133,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   Impl::NativeStream _internalNativeStream() const;
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
-  void _addSharedMemory(Int32 size);
+  Int32 _addSharedMemory(Int32 size);
   Int32 _sharedMemory() const;
 
  private:

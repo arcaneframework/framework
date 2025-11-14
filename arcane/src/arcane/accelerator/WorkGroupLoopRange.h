@@ -53,7 +53,6 @@ class HostWorkItemBlock
 
  private:
 
-  //{}
   //! Constructeur pour l'hôte
   explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 index, Int32 group_index, Int32 group_size)
   : m_index(index)
@@ -63,57 +62,24 @@ class HostWorkItemBlock
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int32 operator()() const { return m_index; }
+  constexpr Int32 operator()() const { return m_index; }
 
   /*!
    * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 groupRank() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return blockIdx.x;
-#else
-    return m_group_index;
-#endif
-  }
+  constexpr Int32 groupRank() const { return m_group_index; }
   /*!
    * \brief Nombre de WorkItem dans un WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 groupSize() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return blockDim.x;
-#else
-    return m_group_size;
-#endif
-  }
+  constexpr Int32 groupSize() const { return m_group_size; }
   /*!
    * \brief Rang du WorkItem dans son WorkGroup.
    */
-  ARCCORE_HOST_DEVICE Int32 rankInGroup() const
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return threadIdx.x;
-#else
-    return m_index % m_group_size;
-#endif
-  }
+  constexpr Int32 rankInGroup() const { return m_index % m_group_size; }
 
-  Int32 hostGroupIndex() const { return m_group_index; }
-  Int32 hostGroupSize() const { return m_group_size; }
-
-#if defined(ARCCORE_DEVICE_CODE)
-  __device__ T0 x() const { return {}; }
-#else
   int x() const { return 0; }
-#endif
 
-#if defined(ARCCORE_DEVICE_CODE)
-  constexpr __device__ bool isDevice() const { return true; }
-#else
-  //TODO: gérer SYCL
   constexpr bool isDevice() const { return false; }
-#endif
 
   void sync() {}
 
@@ -124,7 +90,11 @@ class HostWorkItemBlock
   Int32 m_group_index = 0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -192,7 +162,7 @@ class WorkGroupLoopIndex
   // Ce constructeur n'est utilisé que sur le device
   explicit ARCCORE_HOST_DEVICE WorkGroupLoopIndex()
   {
-#if defined(ARCCORE_DEVICE_CODE)
+#if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
     m_loop_index = blockDim.x * blockIdx.x + threadIdx.x;
     m_group_index = blockIdx.x;
     m_group_size = blockDim.x;
@@ -313,7 +283,9 @@ class SyclDeviceWorkItemBlock
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Index dans un WorkGroup pour le back-end Sycl.
+ */
 class SyclWorkGroupLoopIndex
 {
   friend WorkGroupLoopRange;
