@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
+namespace Arcane::Accelerator
 {
 class WorkGroupLoopRange;
 class WorkGroupLoopIndex;
@@ -322,8 +322,18 @@ class SyclWorkGroupLoopIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
@@ -343,8 +353,8 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 
  public:
 
-  //! Créé un interval d'itération pour \a nb_group de taille \a block_size
-  WorkGroupLoopRange(Int32 nb_group, Int32 block_size);
+  //! Créé un intervalle d'itération pour la command \a command pour \a nb_group de taille \a block_size
+  WorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
 
  public:
 
@@ -380,8 +390,8 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! Applique le fonctor \a func sur une boucle séqentielle.
-template <typename Lambda, typename... RemainingArgs>
-void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
+template <typename Lambda, typename... RemainingArgs> void
+arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
   ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   const Int32 group_size = bounds.groupSize();
@@ -398,15 +408,9 @@ void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, Remainin
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::Impl
-
-namespace Arcane::Accelerator
-{
-
 //! Applique le fonctor \a func sur une boucle parallèle
-template <typename Lambda, typename... RemainingArgs>
-inline void
-arccoreParallelFor(Impl::WorkGroupLoopRange bounds,
+template <typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(WorkGroupLoopRange bounds,
                    [[maybe_unused]] const ForLoopRunInfo& run_info,
                    const Lambda& func, RemainingArgs... remaining_args)
 {

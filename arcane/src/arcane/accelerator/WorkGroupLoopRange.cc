@@ -16,23 +16,26 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 WorkGroupLoopRange::
-WorkGroupLoopRange(Int32 nb_group, Int32 block_size)
+WorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size)
 : m_total_size(nb_group * block_size)
 , m_nb_group(nb_group)
 , m_group_size(block_size)
-{}
+{
+  // TODO: vérifier que la valeur ne sera pas surchargée par la suite.
+  command.addNbThreadPerBlock(block_size);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::Impl
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

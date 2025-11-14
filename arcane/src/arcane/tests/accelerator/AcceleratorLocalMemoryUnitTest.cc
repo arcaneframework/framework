@@ -134,14 +134,13 @@ _doTest(Int32 block_size, Int32 nb_block)
   auto command = makeCommand(m_queue);
   ax::LocalMemory<Int64, 33> local_data_int64(command, 33);
   ax::LocalMemory<Int32> local_data_int32(command, 50);
-  command.addNbThreadPerBlock(block_size);
   const Int32 out_array_size = nb_block;
 
   NumArray<Int64, MDDim1> out_array(out_array_size);
   out_array.fillHost(0);
   auto out_span = viewInOut(command, out_array);
 
-  Accelerator::Impl::WorkGroupLoopRange loop_range(nb_block, block_size);
+  ax::WorkGroupLoopRange loop_range(command, nb_block, block_size);
 
   command << RUNCOMMAND_LAUNCH(work_group, loop_range, local_data_int32, local_data_int64)
   {
