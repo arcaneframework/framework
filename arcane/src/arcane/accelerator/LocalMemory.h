@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLocalMemory.h                                     (C) 2000-2025 */
+/* LocalMemory.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Mémoire locale à une RunCommand.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_RUNCOMMANDLOCALMEMORY_H
-#define ARCANE_ACCELERATOR_RUNCOMMANDLOCALMEMORY_H
+#ifndef ARCANE_ACCELERATOR_LOCALMEMORY_H
+#define ARCANE_ACCELERATOR_LOCALMEMORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,14 +49,14 @@ namespace Arcane::Accelerator
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
  */
 template <typename T>
-class RunCommandLocalMemory
+class LocalMemory
 {
   friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
   friend Impl::KernelRemainingArgsHelper;
 
  public:
 
-  RunCommandLocalMemory(RunCommand& command, Int32 size)
+  LocalMemory(RunCommand& command, Int32 size)
   : m_size(size)
   {
     command._addSharedMemory(static_cast<Int32>(sizeof(T) * size));

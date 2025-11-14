@@ -23,7 +23,7 @@
 
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/NumArrayViews.h"
-#include "arcane/accelerator/RunCommandLocalMemory.h"
+#include "arcane/accelerator/LocalMemory.h"
 #include "arcane/accelerator/Atomic.h"
 #include "arcane/accelerator/WorkGroupLoopRange.h"
 
@@ -119,7 +119,7 @@ _executeTest1()
     Int32 loop_size = 1024 * 1024;
     info() << "DO_LOOP2 LocalMemory size=" << loop_size;
     auto command = makeCommand(queue);
-    ax::RunCommandLocalMemory<Int32> local_data(command, 50);
+    ax::LocalMemory<Int32> local_data(command, 50);
     const Int32 out_array_size = loop_size / 256;
     NumArray<Int32, MDDim1> out_array(out_array_size);
     out_array.fillHost(0);
