@@ -51,12 +51,12 @@ PETScSolverConfigSuperLUService::configure(
   checkError("Get preconditioner", KSPGetPC(ksp, &pc));
   checkError("Preconditioner set type", PCSetType(pc, PCLU));
 
-  if (isParallel())
+  //if (isParallel())
     checkError("Set superlu_dist solver package",
         PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU_DIST));
-  else
-    checkError(
-        "Set superlu solver package", PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
+    //else
+    //checkError(
+    //"Set superlu solver package", PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
 
   KSPSetUp(ksp);
 }

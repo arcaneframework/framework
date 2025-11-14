@@ -48,12 +48,12 @@ PETScPrecConfigSuperLUService::configure(
   alien_debug([&] { cout() << "configure PETSc superlu preconditioner"; });
   checkError("Set preconditioner", PCSetType(pc, PCLU));
 
-  if (m_is_parallel)
+  //  if (m_is_parallel)
     checkError("Set superlu_dist solver package",
         PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU_DIST));
-  else
-    checkError(
-        "Set superlu solver package", PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
+    //else
+    //checkError(
+    //    "Set superlu solver package", PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
 
   // checkError("Set fill factor",  PCFactorSetUpMatSolverPackage(pc));
   double fill_factor = options()->fillFactor();
