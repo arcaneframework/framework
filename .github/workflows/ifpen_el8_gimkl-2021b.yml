@@ -36,7 +36,7 @@ env:
   # For intel MPI to fix errors appearing in July 2023
   I_MPI_SHM_LMT: shm
   # To remove test output directory to reduce disk usage
-  ARCANE_TEST_CLEANUP_AFTER_RUN : 1
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
 
