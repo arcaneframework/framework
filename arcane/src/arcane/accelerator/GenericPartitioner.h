@@ -149,7 +149,7 @@ class GenericPartitionerIf
         };
       }
       auto tmp_select_lambda = [=](Int32 i) { return tmp_select[i]; };
-      sycl::queue sycl_queue = impl::SyclUtils::toNativeStream(queue);
+      sycl::queue sycl_queue = Impl::SyclUtils::toNativeStream(queue);
       auto policy = oneapi::dpl::execution::make_device_policy(sycl_queue);
       auto output_after = oneapi::dpl::stable_partition(policy, tmp_output.begin(), tmp_output.end(), select_lambda);
       queue.barrier();
