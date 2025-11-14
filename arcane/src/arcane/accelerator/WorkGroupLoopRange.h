@@ -70,11 +70,19 @@ class WorkItem
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ *
+ * Contraitement à l'exécution sur accélérateur ou un seul WorkItem est
+ * actif, l'hôte doit gérer un ensemble de WorkItem.
+ *
+ * Pour l'hôte, un bloc de WorkItem correspond toujours à l'ensemble
+ * des WorkItem d'un groupe du WorkGroupLoopRange associé. Cela signifie
+ * que nbActiveItem()==WorkGroupLoopRange::groupSize() (sauf pour le dernier
+ * élément de l'itération si le nombre total d'élément n'est pas un multiple
+ * de la taille d'un groupe).
  */
 class HostWorkItemBlock
 {
-  //friend WorkGroupLoopIndex;
   friend WorkGroupLoopContext;
   friend SyclDeviceWorkItemBlock;
   friend DeviceWorkItemBlock;
@@ -90,27 +98,21 @@ class HostWorkItemBlock
 
  public:
 
-  constexpr Int32 operator()() const { return m_loop_index; }
-
-  /*!
-   * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
-   */
+  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
   constexpr Int32 groupRank() const { return m_group_index; }
-  /*!
-   * \brief Nombre de WorkItem dans un WorkGroup.
-   */
+
+  //! Nombre de WorkItem dans un WorkGroup.
   constexpr Int32 groupSize() const { return m_group_size; }
-  /*!
-   * \brief Rang du WorkItem actif dans son WorkGroup.
-   */
-  constexpr Int32 activeWorkItemRankInGroup() const { return m_loop_index % m_group_size; }
+
+  //! Rang du WorkItem actif dans son WorkGroup.
+  constexpr Int32 activeWorkItemRankInGroup() const { return 0; }
 
   static constexpr bool isDevice() { return false; }
 
   void sync() {}
 
-  constexpr Int32 nbItem() const { return m_group_size; }
-  WorkItem item(Int32 index) const
+  constexpr Int32 nbActiveItem() const { return m_group_size; }
+  WorkItem activeItem(Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_group_size);
     return WorkItem(m_loop_index);
@@ -168,8 +170,8 @@ class DeviceWorkItemBlock
 
   constexpr __device__ bool isDevice() const { return true; }
 
-  constexpr __device__ Int32 nbItem() const { return 1; }
-  __device__ WorkItem item(Int32 index)
+  constexpr __device__ Int32 nbActiveItem() const { return 1; }
+  __device__ WorkItem activeItem(Int32 index)
   {
     // Seulement valide pour index==0
     ARCANE_CHECK_AT(index, 1);
@@ -188,6 +190,8 @@ class DeviceWorkItemBlock
  * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
  *
  * Cette classe est utilisée pour l'hôte et pour CUDA et ROCM/HIP.
+ * La méthode block() est différente sur accélérateur et sur l'hôte ce qui
+ * permet de particulariser le traitement de la commande.
  */
 class WorkGroupLoopContext
 {
@@ -197,7 +201,8 @@ class WorkGroupLoopContext
 
  private:
 
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size)
+  //! Ce constructeur est utilisé dans l'implémentation hôte.
+  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
@@ -205,7 +210,7 @@ class WorkGroupLoopContext
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext() {}
+  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext() {}
 
  public:
 
@@ -268,15 +273,15 @@ class SyclDeviceWorkItemBlock
   //! Nombre de WorkItem dans un WorkGroup.
   Int32 groupSize() { return static_cast<Int32>(m_nd_item.get_local_range(0)); }
 
-  //! Rang du WorkItem actif dans son WorkGroup.
+  //! Rang du WorkItem actif dans le WorkGroup.
   Int32 activeWorkItemRankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
 
   void sync() { m_nd_item.barrier(); }
 
   constexpr bool isDevice() const { return true; }
 
-  constexpr Int32 nbItem() const { return 1; }
-  WorkItem item(Int32 index)
+  constexpr Int32 nbActiveItem() const { return 1; }
+  WorkItem activeItem(Int32 index)
   {
     // Seulement valide pour index==0
     ARCANE_CHECK_AT(index, 1);

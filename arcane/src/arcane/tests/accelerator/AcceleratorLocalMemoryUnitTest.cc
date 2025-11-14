@@ -160,8 +160,8 @@ _doTest(Int32 block_size, Int32 nb_block)
 
     // Sur accélérateur, nbItem() vaut toujours 1.
     // Traite chaque WorkItem qui va ajouter des valeurs à la mémoire partagée.
-    for (Int32 g = 0; g < work_group.nbItem(); ++g) {
-      auto work_item = work_group.item(g);
+    for (Int32 g = 0; g < work_group.nbActiveItem(); ++g) {
+      auto work_item = work_group.activeItem(g);
       Int32 i = work_item.linearIndex();
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int32[i % local_span_int64.size()], 10);
