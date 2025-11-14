@@ -164,9 +164,7 @@ add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)
 add_subdirectory(modules/composyx)
-if(NOT MSVC_TOOLSET_VERSION GREATER_EQUAL 143) # no visual 2022 but OK with previous versions
-  add_subdirectory(modules/ifpen_solvers)
-endif()
+add_subdirectory(modules/ifpen_solvers)
 add_subdirectory(modules/arcane_tools)
 add_subdirectory(modules/interface_c)
 
