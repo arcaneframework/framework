@@ -18,7 +18,7 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 
-#include <iostream>
+#include "arccore/base/Span.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,11 +48,15 @@ namespace Arcane::Accelerator
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
  */
-template <typename T>
+template <typename T, Int32 Extent>
 class LocalMemory
 {
   friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
   friend Impl::KernelRemainingArgsHelper;
+
+ public:
+
+  using SpanType = SmallSpan<T, Extent>;
 
  public:
 
@@ -62,9 +66,9 @@ class LocalMemory
     command._addSharedMemory(static_cast<Int32>(sizeof(T) * size));
   }
 
-  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> span()
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T, Extent> span()
   {
-    return { m_ptr, m_size };
+    return { m_ptr, m_size.size() };
   }
 
  private:
@@ -87,7 +91,7 @@ class LocalMemory
 
   void _internalHostExecWorkItemAtBegin()
   {
-    m_ptr = new T[m_size];
+    m_ptr = new T[m_size.size()];
   }
   void _internalHostExecWorkItemAtEnd()
   {
@@ -97,7 +101,8 @@ class LocalMemory
  private:
 
   T* m_ptr = nullptr;
-  Int32 m_size = 0;
+  //! Nombre d'éléments du tableau
+  [[no_unique_address]] ::Arcane::Impl::ExtentStorage<Int32, Extent> m_size;
 };
 
 /*---------------------------------------------------------------------------*/

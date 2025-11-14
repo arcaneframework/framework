@@ -48,7 +48,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   friend Impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
   friend class ViewBuildInfo;
-  template<typename T> friend class LocalMemory;
+  template<typename T, Int32 Extent> friend class LocalMemory;
 
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
