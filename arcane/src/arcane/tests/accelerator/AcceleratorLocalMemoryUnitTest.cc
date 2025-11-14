@@ -142,38 +142,44 @@ _doTest(Int32 block_size, Int32 nb_block)
 
   ax::WorkGroupLoopRange loop_range(command, nb_block, block_size);
 
-  command << RUNCOMMAND_LAUNCH(work_group, loop_range, local_data_int32, local_data_int64)
+  command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
   {
+    auto work_group = work_group_context.block();
     auto local_span_int32 = local_data_int32.span();
     auto local_span_int64 = local_data_int64.span();
-    auto work_item0 = work_group.item0();
-    if (work_item0.rankInGroup() == 0) {
+
+    // Le WorkItem 0 du groupe initialise la mémoire partagée
+    const bool is_rank0 = (work_group.activeWorkItemRankInGroup() == 0);
+    if (is_rank0) {
       local_span_int32.fill(0);
       local_span_int64.fill(0);
     }
 
-    work_item0.sync();
+    // S'assure que tous les WorkItem du bloc attendent l'initialisation
+    work_group.sync();
 
     // Sur accélérateur, nbItem() vaut toujours 1.
+    // Traite chaque WorkItem qui va ajouter des valeurs à la mémoire partagée.
     for (Int32 g = 0; g < work_group.nbItem(); ++g) {
       auto work_item = work_group.item(g);
-      Int32 i = work_item();
+      Int32 i = work_item.linearIndex();
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int32[i % local_span_int64.size()], 10);
-      if constexpr (work_item.isDevice()) {
-        // Pour tester le 'constexpr' uniquement sur le device
-        auto xy = work_item.x();
-        int xy2 = xy;
-        if (work_item.rankInGroup() == 0)
-          ax::doAtomicAdd(&local_span_int32[0], xy2);
-      }
     }
 
-    work_item0.sync();
+    // Pour tester le 'constexpr' uniquement sur le device
+    if constexpr (work_group.isDevice()) {
+      if (is_rank0)
+        ax::doAtomicAdd(&local_span_int32[0], 2);
+    }
 
-    // Recopie le tableau partagé dans le tableau de sortie.
-    if (work_item0.rankInGroup() == 0) {
-      Int32 group_index = work_item0.groupRank();
+    // S'assure que tous les WorkItem ont terminé l'ajout atomique.
+    work_group.sync();
+
+    // Le WorkItem 0 recopie le tableau partagé dans le tableau de sortie
+    // à l'indice correspondant à son groupe.
+    if (is_rank0) {
+      Int32 group_index = work_group.groupRank();
       for (Int32 s : local_span_int32)
         out_span[group_index] += s;
       for (Int64 s : local_span_int64)
