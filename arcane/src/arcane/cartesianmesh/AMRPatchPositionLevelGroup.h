@@ -40,6 +40,8 @@ class AMRPatchPositionLevelGroup
   Integer maxLevel();
   ConstArrayView<AMRPatchPosition> patches(Integer level);
   void addPatch(AMRPatchPosition patch);
+  void fusionPatches(Integer level);
+  static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
 
  private:
   Integer m_max_level;
