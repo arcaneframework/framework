@@ -136,7 +136,8 @@ jobs:
           steps.test.outcome == 'failure'
         with:
           name: test-artifact
-          path: ${{ env.BUILD_DIR }}/Testing
+          #path: ${{ env.BUILD_DIR }}/Testing
+          path: ${{ env.SOURCE_DIR }}
           retention-days: 1
           include-hidden-files: false
 
