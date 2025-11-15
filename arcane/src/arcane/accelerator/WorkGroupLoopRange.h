@@ -32,59 +32,95 @@
 namespace Arcane::Accelerator
 {
 class WorkGroupLoopRange;
-class WorkGroupLoopIndex;
+class WorkGroupLoopContext;
+class HostWorkItemBlock;
+class SyclDeviceWorkItemBlock;
+class DeviceWorkItemBlock;
+class SyclWorkGroupLoopContext;
 
-class T0
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Représente un WorkItem dans le parallélisme hiérarchique.
+ */
+class WorkItem
 {
+  friend WorkGroupLoopContext;
+  friend SyclDeviceWorkItemBlock;
+  friend DeviceWorkItemBlock;
+  friend HostWorkItemBlock;
+
+ private:
+
+  //! Constructeur pour l'hôte
+  explicit constexpr ARCCORE_HOST_DEVICE WorkItem(Int32 loop_index)
+  : m_loop_index(loop_index)
+  {}
+
  public:
 
-  constexpr operator int() const { return 2; }
+  //! Index linéaire entre 0 et WorkGroupLoopRange::nbElement()
+  constexpr Int32 linearIndex() const { return m_loop_index; }
+
+ private:
+
+  Int32 m_loop_index = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ *
+ * Contraitement à l'exécution sur accélérateur ou un seul WorkItem est
+ * actif, l'hôte doit gérer un ensemble de WorkItem.
+ *
+ * Pour l'hôte, un bloc de WorkItem correspond toujours à l'ensemble
+ * des WorkItem d'un groupe du WorkGroupLoopRange associé. Cela signifie
+ * que nbActiveItem()==WorkGroupLoopRange::groupSize() (sauf pour le dernier
+ * élément de l'itération si le nombre total d'élément n'est pas un multiple
+ * de la taille d'un groupe).
  */
 class HostWorkItemBlock
 {
-  friend WorkGroupLoopIndex;
+  friend WorkGroupLoopContext;
+  friend SyclDeviceWorkItemBlock;
+  friend DeviceWorkItemBlock;
 
  private:
 
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 index, Int32 group_index, Int32 group_size)
-  : m_index(index)
+  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index, Int32 group_size)
+  : m_loop_index(loop_index)
   , m_group_size(group_size)
   , m_group_index(group_index)
   {}
 
  public:
 
-  constexpr Int32 operator()() const { return m_index; }
-
-  /*!
-   * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
-   */
+  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
   constexpr Int32 groupRank() const { return m_group_index; }
-  /*!
-   * \brief Nombre de WorkItem dans un WorkGroup.
-   */
+
+  //! Nombre de WorkItem dans un WorkGroup.
   constexpr Int32 groupSize() const { return m_group_size; }
-  /*!
-   * \brief Rang du WorkItem dans son WorkGroup.
-   */
-  constexpr Int32 rankInGroup() const { return m_index % m_group_size; }
 
-  int x() const { return 0; }
+  //! Rang du WorkItem actif dans son WorkGroup.
+  constexpr Int32 activeWorkItemRankInGroup() const { return 0; }
 
-  constexpr bool isDevice() const { return false; }
+  static constexpr bool isDevice() { return false; }
 
   void sync() {}
 
+  constexpr Int32 nbActiveItem() const { return m_group_size; }
+  WorkItem activeItem(Int32 index) const
+  {
+    ARCANE_CHECK_AT(index, m_group_size);
+    return WorkItem(m_loop_index);
+  }
+
  private:
 
-  Int32 m_index = 0;
+  Int32 m_loop_index = 0;
   Int32 m_group_size = 0;
   Int32 m_group_index = 0;
 };
@@ -97,21 +133,25 @@ class HostWorkItemBlock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange pour un device CUDA ou ROCM.
+ * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour un device CUDA ou ROCM.
  */
 class DeviceWorkItemBlock
 {
- public:
+  friend WorkGroupLoopContext;
 
-  //! Constructeur pour le device (la taille du groupe est dans blockIdx.x)
-  explicit __device__ DeviceWorkItemBlock(Int32 index)
-  : m_index(index)
-  , m_thread_block(cooperative_groups::this_thread_block())
+ private:
+
+  /*!
+   * \brief Constructeur pour le device (la taille du groupe est dans blockIdx.x).
+   *
+   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
+   * récupéré via cooperative_groups::this_thread_block()
+   */
+  explicit __device__ DeviceWorkItemBlock()
+  : m_thread_block(cooperative_groups::this_thread_block())
   {}
 
  public:
-
-  constexpr ARCCORE_HOST_DEVICE Int32 operator()() const { return m_index; }
 
   /*!
    * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
@@ -123,28 +163,37 @@ class DeviceWorkItemBlock
    */
   __device__ Int32 groupSize() { return m_thread_block.group_dim().x; }
 
-  /*!
-   * \brief Rang du WorkItem dans son WorkGroup.
-   */
-  __device__ Int32 rankInGroup() const { return m_thread_block.thread_index().x; }
+  //! Rang du WorkItem actif dans son WorkGroup.
+  __device__ Int32 activeWorkItemRankInGroup() const { return m_thread_block.thread_index().x; }
 
   __device__ void sync() { m_thread_block.sync(); }
 
-  __device__ T0 x() const { return {}; }
-
   constexpr __device__ bool isDevice() const { return true; }
+
+  constexpr __device__ Int32 nbActiveItem() const { return 1; }
+  __device__ WorkItem activeItem(Int32 index)
+  {
+    // Seulement valide pour index==0
+    ARCANE_CHECK_AT(index, 1);
+    return WorkItem(blockDim.x * blockIdx.x + threadIdx.x);
+  }
 
  private:
 
-  Int32 m_index = 0;
   cooperative_groups::thread_block m_thread_block;
 };
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class WorkGroupLoopIndex
+/*!
+ * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
+ *
+ * Cette classe est utilisée pour l'hôte et pour CUDA et ROCM/HIP.
+ * La méthode block() est différente sur accélérateur et sur l'hôte ce qui
+ * permet de particulariser le traitement de la commande.
+ */
+class WorkGroupLoopContext
 {
   friend WorkGroupLoopRange;
   template <typename Lambda, typename... RemainingArgs>
@@ -152,57 +201,23 @@ class WorkGroupLoopIndex
 
  private:
 
-  explicit constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex(Int32 loop_index, Int32 group_index, Int32 group_size)
+  //! Ce constructeur est utilisé dans l'implémentation hôte.
+  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
   {}
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit ARCCORE_HOST_DEVICE WorkGroupLoopIndex()
-  {
-#if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
-    m_loop_index = blockDim.x * blockIdx.x + threadIdx.x;
-    m_group_index = blockIdx.x;
-    m_group_size = blockDim.x;
-#endif
-  }
+  // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
+  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext() {}
 
  public:
 
-  constexpr Int32 nbItem()
-  {
-#if defined(ARCCORE_DEVICE_CODE)
-    return 1;
-#else
-    return m_group_size;
-#endif
-  }
-
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
-  __device__ DeviceWorkItemBlock item([[maybe_unused]] Int32 index) const
-  {
-    // N'est valide que pour index==0
-    return item0();
-  }
+  __device__ DeviceWorkItemBlock block() const { return DeviceWorkItemBlock(); }
 #else
-  HostWorkItemBlock item(Int32 index) const
-  {
-    return HostWorkItemBlock(m_loop_index + index, m_group_index, m_group_size);
-  }
-#endif
-
-#if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
-  __device__ DeviceWorkItemBlock item0() const
-  {
-    // N'est valide que pour index==0
-    return DeviceWorkItemBlock(blockDim.x * blockIdx.x + threadIdx.x);
-  }
-#else
-  HostWorkItemBlock item0() const
-  {
-    return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size);
-  }
+  HostWorkItemBlock block() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size); }
 #endif
 
  private:
@@ -237,80 +252,40 @@ class WorkGroupLoopIndex
 #if defined(ARCANE_COMPILING_SYCL)
 
 /*!
- * \brief Index d'un WorkItem dans un WorkGroupLoopRange.
+ * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour un device Sycl.
  */
 class SyclDeviceWorkItemBlock
 {
- public:
+  friend SyclWorkGroupLoopContext;
+
+ private:
 
   explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> n)
-  : m_index(static_cast<Int32>(n.get_group(0) * n.get_local_range(0) + n.get_local_id(0)))
-  , m_thread_block(n)
-  {
-  }
-
- public:
-
-  constexpr Int32 operator()() const { return m_index; }
-
-  /*!
-   * \brief Rang du groupe du WorkItem dans la liste des WorkGroup.
-   */
-  Int32 groupRank() const { return static_cast<Int32>(m_thread_block.get_group(0)); }
-
-  /*!
-   * \brief Nombre de WorkItem dans un WorkGroup.
-   */
-  Int32 groupSize() { return static_cast<Int32>(m_thread_block.get_local_range(0)); }
-
-  /*!
-   * \brief Rang du WorkItem dans son WorkGroup.
-   */
-  Int32 rankInGroup() const { return static_cast<Int32>(m_thread_block.get_local_id(0)); }
-
-  void sync() { m_thread_block.barrier(); }
-
-  T0 x() const { return {}; }
-
-  constexpr bool isDevice() const { return true; }
-
- private:
-
-  Int32 m_index = 0;
-  sycl::nd_item<1> m_thread_block;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Index dans un WorkGroup pour le back-end Sycl.
- */
-class SyclWorkGroupLoopIndex
-{
-  friend WorkGroupLoopRange;
-
- private:
-
-  // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopIndex(sycl::nd_item<1> n)
   : m_nd_item(n)
   {
   }
 
  public:
 
-  constexpr Int32 nbItem() { return 1; }
+  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
+  Int32 groupRank() const { return static_cast<Int32>(m_nd_item.get_group(0)); }
 
-  SyclDeviceWorkItemBlock item([[maybe_unused]] Int32 index) const
-  {
-    // N'est valide que pour index==0
-    return item0();
-  }
+  //! Nombre de WorkItem dans un WorkGroup.
+  Int32 groupSize() { return static_cast<Int32>(m_nd_item.get_local_range(0)); }
 
-  SyclDeviceWorkItemBlock item0() const
+  //! Rang du WorkItem actif dans le WorkGroup.
+  Int32 activeWorkItemRankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
+
+  void sync() { m_nd_item.barrier(); }
+
+  constexpr bool isDevice() const { return true; }
+
+  constexpr Int32 nbActiveItem() const { return 1; }
+  WorkItem activeItem(Int32 index)
   {
-    // N'est valide que pour index==0
-    return SyclDeviceWorkItemBlock(m_nd_item);
+    // Seulement valide pour index==0
+    ARCANE_CHECK_AT(index, 1);
+    return WorkItem(static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0)));
   }
 
  private:
@@ -318,18 +293,35 @@ class SyclWorkGroupLoopIndex
   sycl::nd_item<1> m_nd_item;
 };
 
-#endif // ARCANE_COMPILING_SYCL
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
+/*!
+ * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
+ *
+ * Cette classe est utilisée pour l'implémentation Sycl.
+ */
+class SyclWorkGroupLoopContext
 {
+  friend WorkGroupLoopRange;
+
+ private:
+
+  // Ce constructeur n'est utilisé que sur le device
+  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> n)
+  : m_nd_item(n)
+  {
+  }
+
+ public:
+
+  SyclDeviceWorkItemBlock block() const { return SyclDeviceWorkItemBlock(m_nd_item); }
+
+ private:
+
+  sycl::nd_item<1> m_nd_item;
+};
+
+#endif // ARCANE_COMPILING_SYCL
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -349,34 +341,35 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
  public:
 
   //! Type de l'index de la boucle
-  using LoopIndexType = WorkGroupLoopIndex;
+  using LoopIndexType = WorkGroupLoopContext;
 
  public:
 
+  //TODO: Faire une méthode makeWorkGroupLoopRange()
   //! Créé un intervalle d'itération pour la command \a command pour \a nb_group de taille \a block_size
   WorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int32 totalSize() const { return m_total_size; }
+  //! Nombre d'éléments à traiter
   constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_total_size; }
+  //! Taille d'un groupe
   constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
+  //! Nombre de groupes
   constexpr ARCCORE_HOST_DEVICE Int32 nbGroup() const { return m_nb_group; }
 
  public:
 
-  //TODO rendre privé
-  constexpr ARCCORE_HOST_DEVICE WorkGroupLoopIndex getIndices(Int32 x) const
-  {
-    // TODO: supprimer la division
-    return WorkGroupLoopIndex(x, x / m_group_size, m_group_size);
-  }
+  //TODO rendre privé ou mettre en externe
+#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+  constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext getIndices(Int32) const { return WorkGroupLoopContext(); }
+#endif
 
 #if defined(ARCANE_COMPILING_SYCL)
-  //TODO rendre privé
-  SyclWorkGroupLoopIndex getIndices(sycl::nd_item<1> id) const
+  //TODO rendre privé ou mettre en externe
+  SyclWorkGroupLoopContext getIndices(sycl::nd_item<1> id) const
   {
-    return SyclWorkGroupLoopIndex(id);
+    return SyclWorkGroupLoopContext(id);
   }
 #endif
 
@@ -398,7 +391,7 @@ arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs
   const Int32 nb_group = bounds.nbGroup();
   Int32 loop_index = 0;
   for (Int32 i = 0; i < nb_group; ++i) {
-    func(WorkGroupLoopIndex(loop_index, i, group_size), remaining_args...);
+    func(WorkGroupLoopContext(loop_index, i, group_size), remaining_args...);
     loop_index += group_size;
   }
 

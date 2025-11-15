@@ -14,8 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
-
 #include "arcane/accelerator/core/RunCommand.h"
 
 #include "arccore/base/Span.h"
@@ -71,7 +69,7 @@ class LocalMemory
     _addShareMemory(command);
   }
 
-  LocalMemory(RunCommand& command) requires(Extent != DynExtent)
+  explicit LocalMemory(RunCommand& command) requires(Extent != DynExtent)
   {
     _addShareMemory(command);
   }
