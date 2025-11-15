@@ -1,8 +1,6 @@
 name: IFPEN el9 foss/2025b
 
 on:
-  push:
-    branches: [ 2280-ifpen-ci-cd-update-ifpen-workflows-to-use-our-private-runner ]
   #push:
   #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   #pull_request:
