@@ -138,7 +138,7 @@ jobs:
           name: test-artifact
           path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
-          include-hidden-files: false
+          include-hidden-files: true
 
       - name: Save cache
         id: save-cache
