@@ -142,6 +142,14 @@ _doTest(Int32 block_size, Int32 nb_block)
 
   ax::WorkGroupLoopRange loop_range(command, nb_block, block_size);
 
+  // En multi-thread, sélectionne la taille de grain pour être sur
+  // d'utiliser plusieurs threads.
+  if (m_queue.executionPolicy() == ax::eExecutionPolicy::Thread) {
+    ParallelLoopOptions loop_options;
+    loop_options.setGrainSize(nb_block / 4);
+    command.setParallelLoopOptions(loop_options);
+  }
+
   command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
   {
     auto work_group = work_group_context.block();
