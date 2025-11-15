@@ -1,6 +1,8 @@
-name: IFPEN ubu2404 foss/2024a
+name: IFPEN ubu2404 foss/2025b
 
 on:
+  push:
+    branches: [ 2280-ifpen-ci-cd-update-ifpen-workflows-to-use-our-private-runner ]
   #push:
   #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   #pull_request:
@@ -46,7 +48,7 @@ jobs:
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2024a-ubuntu2404:latest
+      image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2025b-ubuntu2404:latest
       options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -65,8 +67,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ifpen-ubu2404-foss-2024a-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ifpen-ubu2404-foss-2024a-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-ubu2404-foss-2025b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-ubu2404-foss-2025b-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 

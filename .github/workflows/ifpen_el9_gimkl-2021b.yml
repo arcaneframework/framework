@@ -36,7 +36,7 @@ env:
   # For intel MPI to fix errors appearing in July 2023
   I_MPI_SHM_LMT: shm
   # To remove test output directory to reduce disk usage
-  ARCANE_TEST_CLEANUP_AFTER_RUN : 1
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
 
@@ -128,16 +128,17 @@ jobs:
            # Run test
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      #- name: Upload test artifact
-      #  id: upload-test-artifact
-      #  uses: actions/upload-artifact@v4
-      #  if: |
-      #    (success() || failure()) &&
-      #    steps.test.outcome == 'failure'
-      #  with:
-      #    name: test-artifact
-      #    path: ${{ env.BUILD_DIR }}/Testing
-      #    retention-days: 1
+      - name: Upload test artifact
+        id: upload-test-artifact
+        uses: actions/upload-artifact@v4
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
+        with:
+          name: test-artifact
+          path: ${{ env.BUILD_DIR }}/Testing
+          retention-days: 1
+          include-hidden-files: true
 
       - name: Save cache
         id: save-cache

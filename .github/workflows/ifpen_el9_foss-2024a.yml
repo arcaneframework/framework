@@ -119,16 +119,17 @@ jobs:
         shell: bash
         run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      #- name: Upload test artifact
-      #  id: upload-test-artifact
-      #  uses: actions/upload-artifact@v4
-      #  if: |
-      #    (success() || failure()) &&
-      #    steps.test.outcome == 'failure'
-      #  with:
-      #    name: test-artifact
-      #    path: ${{ env.BUILD_DIR }}/Testing
-      #    retention-days: 1
+      - name: Upload test artifact
+        id: upload-test-artifact
+        uses: actions/upload-artifact@v4
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
+        with:
+          name: test-artifact
+          path: ${{ env.BUILD_DIR }}/Testing
+          retention-days: 1
+          include-hidden-files: true
 
       - name: Save cache
         id: save-cache
