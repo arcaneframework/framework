@@ -17,6 +17,8 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
+#include "arcane/core/Concurrency.h"
+
 #include "arccore/common/SequentialFor.h"
 
 #if defined(ARCANE_COMPILING_CUDA)
@@ -31,6 +33,11 @@
 
 namespace Arcane::Accelerator
 {
+namespace Impl
+{
+  class WorkGroupSequentialForHelper;
+} // namespace Impl
+
 class WorkGroupLoopRange;
 class WorkGroupLoopContext;
 class HostWorkItemBlock;
@@ -195,9 +202,9 @@ class DeviceWorkItemBlock
  */
 class WorkGroupLoopContext
 {
+  // Pour accéder aux constructeurs
   friend WorkGroupLoopRange;
-  template <typename Lambda, typename... RemainingArgs>
-  friend void arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args);
+  friend Impl::WorkGroupSequentialForHelper;
 
  private:
 
@@ -380,22 +387,49 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
   Int32 m_group_size = 0;
 };
 
+} // namespace Arcane::Accelerator
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Impl
+{
+
+//! Classe pour exécuter en séquentiel sur l'hôte une partie de la boucle.
+class WorkGroupSequentialForHelper
+{
+ public:
+
+  //! Applique le fonctor \a func sur une boucle séqentielle.
+  template <typename Lambda, typename... RemainingArgs> static void
+  apply(Int32 begin_index, Int32 nb_loop, WorkGroupLoopRange bounds,
+        const Lambda& func, RemainingArgs... remaining_args)
+  {
+    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+    const Int32 group_size = bounds.groupSize();
+    Int32 loop_index = begin_index * group_size;
+    for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
+      func(WorkGroupLoopContext(loop_index, i, group_size), remaining_args...);
+      loop_index += group_size;
+    }
+
+    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  }
+};
+
+} // namespace Arcane::Accelerator::Impl
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Applique le fonctor \a func sur une boucle séqentielle.
 template <typename Lambda, typename... RemainingArgs> void
-arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs... remaining_args)
+arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
 {
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
-  const Int32 group_size = bounds.groupSize();
-  const Int32 nb_group = bounds.nbGroup();
-  Int32 loop_index = 0;
-  for (Int32 i = 0; i < nb_group; ++i) {
-    func(WorkGroupLoopContext(loop_index, i, group_size), remaining_args...);
-    loop_index += group_size;
-  }
-
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -403,12 +437,13 @@ arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, RemainingArgs
 
 //! Applique le fonctor \a func sur une boucle parallèle
 template <typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(WorkGroupLoopRange bounds,
-                   [[maybe_unused]] const ForLoopRunInfo& run_info,
-                   const Lambda& func, RemainingArgs... remaining_args)
+arccoreParallelFor(WorkGroupLoopRange bounds, ForLoopRunInfo run_info,
+                   const Lambda& func, const RemainingArgs&... remaining_args)
 {
-  // Pour l'instant on ne fait que du séquentiel.
-  arcaneSequentialFor(bounds, func, remaining_args...);
+  auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
+    Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
+  };
+  arcaneParallelFor(0, bounds.nbGroup(), run_info, sub_func);
 }
 
 /*---------------------------------------------------------------------------*/
