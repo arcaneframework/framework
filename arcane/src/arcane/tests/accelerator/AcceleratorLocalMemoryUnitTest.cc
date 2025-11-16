@@ -140,7 +140,7 @@ _doTest(Int32 block_size, Int32 nb_block_or_total_nb_element)
   if (block_size > 0)
     loop_range = ax::makeWorkGroupLoopRange(command, nb_block_or_total_nb_element, block_size);
   else {
-    loop_range = ax::makeWorkGroupLoopRange(command, nb_block_or_total_nb_element);
+    loop_range = ax::makeWorkGroupLoopRange(command, nb_block_or_total_nb_element, 0, 0);
     block_size = loop_range.groupSize();
   }
   const Int32 nb_block = loop_range.nbGroup();

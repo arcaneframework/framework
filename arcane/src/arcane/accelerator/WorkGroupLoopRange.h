@@ -299,9 +299,9 @@ class SyclDeviceWorkItemBlock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
+ * \brief Contexte d'exécution d'une WorkGroupLoopRange pour Sycl.
  *
- * Cette classe est utilisée pour l'implémentation Sycl.
+ * Cette classe est utilisée uniquement pour la polique d'exécution eAcceleratorPolicy::SYCL.
  */
 class SyclWorkGroupLoopContext
 {
@@ -331,13 +331,14 @@ class SyclWorkGroupLoopContext
 /*!
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
+ * \warning API en cours de définition. Ne pas utiliser en dehors de %Arcane.
  *
- * L'intervalle d'itération est décomposé en \a N WorkGroup contenant chacun \a P WorkItem.
+ * L'intervalle d'itération contient nbElement() et est décomposé en
+ * \a nbGroup() WorkGroup contenant chacun \a groupSize() WorkItem.
  *
  * La création de ces instances se fait via les méthodes makeWorkGroupLoopRange().
  *
- * \note Sur accélérateur, La valeur de \a P est dépendante de l'architecture
+ * \note Sur accélérateur, La valeur de \a groupSize() est dépendante de l'architecture
  * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
  * et être un multiple de 32.
  */
@@ -346,9 +347,9 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
  private:
 
   friend ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
-  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
+  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
   friend ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
-  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element);
+  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
 
  public:
 
@@ -363,23 +364,23 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
   /*!
    * \brief Créé un intervalle d'itération pour la commande \a command.
    *
-   * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a block_size.
+   * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a group_size.
    * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
    */
-  WorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 block_size);
+  WorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size);
 
  public:
 
   //! Nombre d'éléments à traiter
-  constexpr ARCCORE_HOST_DEVICE Int32 nbElement() const { return m_total_size; }
+  constexpr Int32 nbElement() const { return m_total_size; }
   //! Taille d'un groupe
-  constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
+  constexpr Int32 groupSize() const { return m_group_size; }
   //! Nombre de groupes
-  constexpr ARCCORE_HOST_DEVICE Int32 nbGroup() const { return m_nb_group; }
+  constexpr Int32 nbGroup() const { return m_nb_group; }
   //! Nombre d'éléments du dernier groupe
-  constexpr ARCCORE_HOST_DEVICE Int32 lastGroupSize() const { return m_last_group_size; }
+  constexpr Int32 lastGroupSize() const { return m_last_group_size; }
   //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr ARCCORE_HOST_DEVICE Int32 nbActiveItem(Int32 i) const
+  constexpr Int32 nbActiveItem(Int32 i) const
   {
     return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
   }
