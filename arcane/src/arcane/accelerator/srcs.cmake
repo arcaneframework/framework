@@ -29,6 +29,9 @@ set( ARCANE_SOURCES
   RunCommand.h
   RunCommandEnumerate.h
   RunCommandLaunchInfo.h
+  RunCommandLaunch.h
+  RunCommandLaunch.cc
+  RunCommandLaunchImpl.h
   RunCommandLoop.h
   RunCommandMaterialEnumerate.cc
   RunCommandMaterialEnumerate.h
