@@ -25,7 +25,7 @@
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/LocalMemory.h"
 #include "arcane/accelerator/Atomic.h"
-#include "arcane/accelerator/WorkGroupLoopRange.h"
+#include "arcane/accelerator/RunCommandLaunch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
