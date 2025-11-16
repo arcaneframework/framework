@@ -97,10 +97,11 @@ class HostWorkItemBlock
  private:
 
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index, Int32 group_size)
+  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_group_size(group_size)
   , m_group_index(group_index)
+  , m_nb_active_item(nb_active_item)
   {}
 
  public:
@@ -118,10 +119,10 @@ class HostWorkItemBlock
 
   void sync() {}
 
-  constexpr Int32 nbActiveItem() const { return m_group_size; }
+  constexpr Int32 nbActiveItem() const { return m_nb_active_item; }
   WorkItem activeItem(Int32 index) const
   {
-    ARCANE_CHECK_AT(index, m_group_size);
+    ARCANE_CHECK_AT(index, m_nb_active_item);
     return WorkItem(m_loop_index);
   }
 
@@ -130,6 +131,7 @@ class HostWorkItemBlock
   Int32 m_loop_index = 0;
   Int32 m_group_size = 0;
   Int32 m_group_index = 0;
+  Int32 m_nb_active_item = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -209,11 +211,13 @@ class WorkGroupLoopContext
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size)
+  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
-  {}
+  , m_nb_active_item(nb_active_item)
+  {
+  }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
@@ -224,7 +228,7 @@ class WorkGroupLoopContext
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
   __device__ DeviceWorkItemBlock block() const { return DeviceWorkItemBlock(); }
 #else
-  HostWorkItemBlock block() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size); }
+  HostWorkItemBlock block() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
 
  private:
@@ -232,6 +236,7 @@ class WorkGroupLoopContext
   Int32 m_loop_index = 0;
   Int32 m_group_index = 0;
   Int32 m_group_size = 0;
+  Int32 m_nb_active_item = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -339,31 +344,54 @@ class SyclWorkGroupLoopContext
  *
  * L'intervalle d'itération est décomposé en \a N WorkGroup contenant chacun \a P WorkItem.
  *
+ * La création de ces instances se fait via les méthodes makeWorkGroupLoopRange().
+ *
  * \note Sur accélérateur, La valeur de \a P est dépendante de l'architecture
  * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
  * et être un multiple de 32.
  */
 class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 {
+ private:
+
+  friend ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
+  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
+  friend ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
+  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element);
+
  public:
 
-  //! Type de l'index de la boucle
   using LoopIndexType = WorkGroupLoopContext;
 
  public:
 
-  //TODO: Faire une méthode makeWorkGroupLoopRange()
-  //! Créé un intervalle d'itération pour la command \a command pour \a nb_group de taille \a block_size
-  WorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
+  WorkGroupLoopRange() = default;
+
+ private:
+
+  /*!
+   * \brief Créé un intervalle d'itération pour la commande \a command.
+   *
+   * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a block_size.
+   * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
+   */
+  WorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 block_size);
 
  public:
 
   //! Nombre d'éléments à traiter
-  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_total_size; }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbElement() const { return m_total_size; }
   //! Taille d'un groupe
   constexpr ARCCORE_HOST_DEVICE Int32 groupSize() const { return m_group_size; }
   //! Nombre de groupes
   constexpr ARCCORE_HOST_DEVICE Int32 nbGroup() const { return m_nb_group; }
+  //! Nombre d'éléments du dernier groupe
+  constexpr ARCCORE_HOST_DEVICE Int32 lastGroupSize() const { return m_last_group_size; }
+  //! Nombre d'éléments actifs pour le i-ème groupe
+  constexpr ARCCORE_HOST_DEVICE Int32 nbActiveItem(Int32 i) const
+  {
+    return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
+  }
 
  public:
 
@@ -385,7 +413,22 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
   Int32 m_total_size = 0;
   Int32 m_nb_group = 0;
   Int32 m_group_size = 0;
+  Int32 m_last_group_size = 0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Créé un intervalle d'itération pour la commande \a command pour \a nb_group de taille \a block_size
+extern "C++" ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
+makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 block_size);
+
+//! Créé un intervalle d'itération pour la commande \a command pour \a nb_element
+extern "C++" ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
+makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
 
@@ -409,7 +452,11 @@ class WorkGroupSequentialForHelper
     const Int32 group_size = bounds.groupSize();
     Int32 loop_index = begin_index * group_size;
     for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
-      func(WorkGroupLoopContext(loop_index, i, group_size), remaining_args...);
+      // Pour la dernière itération de la boucle, le nombre d'éléments actifs peut-être
+      // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
+      // un multiple de \a group_size.
+      Int32 nb_active = bounds.nbActiveItem(i);
+      func(WorkGroupLoopContext(loop_index, i, group_size, nb_active), remaining_args...);
       loop_index += group_size;
     }
 

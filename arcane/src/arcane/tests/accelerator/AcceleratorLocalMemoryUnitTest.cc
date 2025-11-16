@@ -60,7 +60,7 @@ class AcceleratorLocalMemoryUnitTest
  public:
 
   void _executeTest1();
-  void _doTest(Int32 block_size, Int32 nb_block);
+  void _doTest(Int32 block_size, Int32 nb_block_or_total_nb_element);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,18 +106,26 @@ executeTest()
 void AcceleratorLocalMemoryUnitTest::
 _executeTest1()
 {
+  // Tests avec un nombre de bloc et une taille d'un bloc.
   _doTest(32, 149);
   _doTest(32 * 4, 137);
   _doTest(32 * 9, 275);
   _doTest(512, 311);
   _doTest(1024, 957);
+
+  // Tests avec un nombre d'éléments qui n'est pas un multiple de la taille d'un bloc.
+  _doTest(0, 1023);
+  _doTest(0, 1023 * 1023);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Si \a block_size==0, alors nb_block_or_total_nb_element est le
+// nombre total d'éléments. Sinon il s'agit du nombre de bloc.
+
 void AcceleratorLocalMemoryUnitTest::
-_doTest(Int32 block_size, Int32 nb_block)
+_doTest(Int32 block_size, Int32 nb_block_or_total_nb_element)
 {
   // Test simple du parallélisme hiérarchique et de l'utilisation
   // de la mémoire locale.
@@ -126,12 +134,23 @@ _doTest(Int32 block_size, Int32 nb_block)
   // en mémoire partagé. Le dernier WorkItem du groupe recopie
   // ensuite ce tableau en mémoire globale.
 
+  auto command = makeCommand(m_queue);
+
+  ax::WorkGroupLoopRange loop_range;
+  if (block_size > 0)
+    loop_range = ax::makeWorkGroupLoopRange(command, nb_block_or_total_nb_element, block_size);
+  else {
+    loop_range = ax::makeWorkGroupLoopRange(command, nb_block_or_total_nb_element);
+    block_size = loop_range.groupSize();
+  }
+  const Int32 nb_block = loop_range.nbGroup();
   // NOTE: sur accélérateur, la taille d'un WorkGroup doit être
   // un multiple de 32 et inférieur au nombre maximum de thread d'un bloc
   // (en général 1024).
-  info() << "DO_LOOP2 LocalMemory nb_block=" << nb_block << " block_size=" << block_size;
+  info() << "DO_LOOP2 LocalMemory nb_block=" << nb_block
+         << " block_size=" << block_size
+         << " total_nb_element=" << loop_range.nbElement();
 
-  auto command = makeCommand(m_queue);
   ax::LocalMemory<Int64, 33> local_data_int64(command, 33);
   ax::LocalMemory<Int32> local_data_int32(command, 50);
   const Int32 out_array_size = nb_block;
@@ -139,8 +158,6 @@ _doTest(Int32 block_size, Int32 nb_block)
   NumArray<Int64, MDDim1> out_array(out_array_size);
   out_array.fillHost(0);
   auto out_span = viewInOut(command, out_array);
-
-  ax::WorkGroupLoopRange loop_range(command, nb_block, block_size);
 
   // En multi-thread, sélectionne la taille de grain pour être sur
   // d'utiliser plusieurs threads.
@@ -197,8 +214,10 @@ _doTest(Int32 block_size, Int32 nb_block)
 
   bool is_accelerator = m_queue.isAcceleratorPolicy();
   for (Int32 i = 0, n = out_array_size; i < n; ++i) {
+    // Pour le dernier bloc, le nombre d'éléments actif n'est pas forcément block_size
+    Int32 nb_active_item = loop_range.nbActiveItem(i);
     Int64 out_value = out_span[i];
-    const Int32 base_value = block_size + block_size * 10;
+    const Int32 base_value = nb_active_item + nb_active_item * 10;
     // Sur accélérateur on ajoute 2 car il y a un ajout dans le 'constexpr' de la lambda
     Int64 expected_value = (is_accelerator) ? (base_value + 2) : base_value;
     if (i < 10)
