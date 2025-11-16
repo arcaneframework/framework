@@ -35,7 +35,7 @@ namespace Impl
 
 class WorkGroupLoopRange;
 class WorkGroupLoopContext;
-class HostWorkItemBlock;
+class HostWorkItemGroup;
 class SyclDeviceWorkItemBlock;
 class DeviceWorkItemBlock;
 class SyclWorkGroupLoopContext;
@@ -50,7 +50,7 @@ class WorkItem
   friend WorkGroupLoopContext;
   friend SyclDeviceWorkItemBlock;
   friend DeviceWorkItemBlock;
-  friend HostWorkItemBlock;
+  friend HostWorkItemGroup;
 
  private:
 
@@ -72,7 +72,7 @@ class WorkItem
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ * \brief Gère un groupe de WorkItem dans un WorkGroupLoopRange pour l'hôte.
  *
  * Contraitement à l'exécution sur accélérateur ou un seul WorkItem est
  * actif, l'hôte doit gérer un ensemble de WorkItem.
@@ -83,7 +83,7 @@ class WorkItem
  * élément de l'itération si le nombre total d'élément n'est pas un multiple
  * de la taille d'un groupe).
  */
-class HostWorkItemBlock
+class HostWorkItemGroup
 {
   friend WorkGroupLoopContext;
   friend SyclDeviceWorkItemBlock;
@@ -92,7 +92,7 @@ class HostWorkItemBlock
  private:
 
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
+  explicit constexpr ARCCORE_HOST_DEVICE HostWorkItemGroup(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_group_size(group_size)
   , m_group_index(group_index)
@@ -110,11 +110,16 @@ class HostWorkItemBlock
   //! Rang du WorkItem actif dans son WorkGroup.
   constexpr Int32 activeWorkItemRankInGroup() const { return 0; }
 
+  //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return false; }
 
-  void sync() {}
+  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  void barrier() {}
 
+  //! Nombre de \a WorkItem à gérer dans l'itération
   constexpr Int32 nbActiveItem() const { return m_nb_active_item; }
+
+  //! Récupère le \a index-ème \a WorkItem à gérer
   WorkItem activeItem(Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_nb_active_item);
@@ -166,11 +171,16 @@ class DeviceWorkItemBlock
   //! Rang du WorkItem actif dans son WorkGroup.
   __device__ Int32 activeWorkItemRankInGroup() const { return m_thread_block.thread_index().x; }
 
-  __device__ void sync() { m_thread_block.sync(); }
+  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  __device__ void barrier() { m_thread_block.sync(); }
 
-  constexpr __device__ bool isDevice() const { return true; }
+  //! Indique si on s'exécute sur un accélérateur
+  static constexpr __device__ bool isDevice() { return true; }
 
+  //! Nombre de \a WorkItem à gérer dans l'itération
   constexpr __device__ Int32 nbActiveItem() const { return 1; }
+
+  //! Récupère le \a index-ème \a WorkItem à gérer
   __device__ WorkItem activeItem(Int32 index)
   {
     // Seulement valide pour index==0
@@ -189,8 +199,9 @@ class DeviceWorkItemBlock
 /*!
  * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
  *
- * Cette classe est utilisée pour l'hôte et pour CUDA et ROCM/HIP.
- * La méthode block() est différente sur accélérateur et sur l'hôte ce qui
+ * Cette classe est utilisée pour l'hôte (séquentiel et multi-thread) et
+ * pour CUDA et ROCM/HIP.
+ * La méthode group() est différente sur accélérateur et sur l'hôte ce qui
  * permet de particulariser le traitement de la commande.
  */
 class WorkGroupLoopContext
@@ -217,9 +228,11 @@ class WorkGroupLoopContext
  public:
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCANE_COMPILING_SYCL)
-  __device__ DeviceWorkItemBlock block() const { return DeviceWorkItemBlock(); }
+  //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
+  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(); }
 #else
-  HostWorkItemBlock block() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
+  //! Groupe courant
+  HostWorkItemGroup group() const { return HostWorkItemGroup(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
 
  private:
@@ -279,11 +292,16 @@ class SyclDeviceWorkItemBlock
   //! Rang du WorkItem actif dans le WorkGroup.
   Int32 activeWorkItemRankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
 
-  void sync() { m_nd_item.barrier(); }
+  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  void barrier() { m_nd_item.barrier(); }
 
-  constexpr bool isDevice() const { return true; }
+  //! Indique si on s'exécute sur un accélérateur
+  static constexpr bool isDevice() { return true; }
 
+  //! Nombre de \a WorkItem à gérer dans l'itération
   constexpr Int32 nbActiveItem() const { return 1; }
+
+  //! Récupère le \a index-ème \a WorkItem à gérer
   WorkItem activeItem(Int32 index)
   {
     // Seulement valide pour index==0
@@ -317,7 +335,8 @@ class SyclWorkGroupLoopContext
 
  public:
 
-  SyclDeviceWorkItemBlock block() const { return SyclDeviceWorkItemBlock(m_nd_item); }
+  //! Groupe courant
+  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item); }
 
  private:
 
