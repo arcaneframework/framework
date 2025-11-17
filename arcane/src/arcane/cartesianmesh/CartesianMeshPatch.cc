@@ -73,6 +73,14 @@ cells()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+CellGroup CartesianMeshPatch::ownCells()
+{
+  return cellDirection(MD_DirX).innerCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*
  * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
  * pour chaque direction.

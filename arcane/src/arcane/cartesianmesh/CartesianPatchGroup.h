@@ -18,17 +18,35 @@
 #include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/core/ItemGroupComputeFunctor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ICartesianMeshNumberingMng;
 
 class CartesianMeshPatch;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class OverlapItemGroupComputeFunctor
+: public ItemGroupComputeFunctor
+{
+ public:
+
+  OverlapItemGroupComputeFunctor(Ref<ICartesianMeshNumberingMng> numbering, const AMRPatchPosition& patch_position);
+  ~OverlapItemGroupComputeFunctor();
+
+  void executeFunctor() override;
+
+ private:
+
+  Ref<ICartesianMeshNumberingMng> m_numbering;
+  AMRPatchPosition m_patch_position;
+};
 
 class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 {
@@ -51,6 +69,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   CartesianMeshPatchListView patchListView() const;
 
   CellGroup cells(Integer index);
+  CellGroup ownCells(Integer index);
 
   void clear();
 
@@ -83,6 +102,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void _removeAllPatches();
   void _createGroundPatch();
 
+  void _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
+
   bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
   void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
@@ -91,6 +112,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
  private:
 
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
+  UniqueArray<CellGroup> m_amr_patch_cell_groups_own;
   UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;
