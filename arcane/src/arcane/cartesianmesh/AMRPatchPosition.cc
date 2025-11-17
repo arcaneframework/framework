@@ -31,8 +31,20 @@ namespace Arcane
 AMRPatchPosition::
 AMRPatchPosition()
 : m_level(-2)
+, m_overlap_layer_size(0)
 {
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AMRPatchPosition::
+AMRPatchPosition(const AMRPatchPosition& src)
+: m_level(src.level())
+, m_min_point(src.minPoint())
+, m_max_point(src.maxPoint())
+, m_overlap_layer_size(src.overlapLayerSize())
+{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -99,6 +111,42 @@ setMaxPoint(Int64x3 max_point)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Integer AMRPatchPosition::
+overlapLayerSize() const
+{
+  return m_overlap_layer_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRPatchPosition::
+setOverlapLayerSize(Integer layer_size)
+{
+  m_overlap_layer_size = layer_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64x3 AMRPatchPosition::
+minPointWithOverlap() const
+{
+  return m_min_point - m_overlap_layer_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64x3 AMRPatchPosition::
+maxPointWithOverlap() const
+{
+  return m_max_point + m_overlap_layer_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool AMRPatchPosition::
 isIn(Int64 x, Int64 y, Int64 z) const
 {
@@ -136,15 +184,11 @@ cut(Int64 cut_point, Integer dim) const
     patch_min_cut.z = cut_point;
   }
 
-  AMRPatchPosition p0;
-  p0.setLevel(m_level);
-  p0.setMinPoint(m_min_point);
+  AMRPatchPosition p0(*this);
   p0.setMaxPoint(patch_max_cut);
 
-  AMRPatchPosition p1;
-  p1.setLevel(m_level);
+  AMRPatchPosition p1(*this);
   p1.setMinPoint(patch_min_cut);
-  p1.setMaxPoint(m_max_point);
 
   return { p0, p1 };
 }
@@ -215,12 +259,18 @@ isNull() const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchUp() const
+patchUp(Integer dim) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level + 1);
   p.setMinPoint(m_min_point * 2);
-  p.setMaxPoint(m_max_point * 2);
+  if (dim == 2) {
+    p.setMaxPoint({ m_max_point.x * 2, m_max_point.y * 2, 1 });
+  }
+  else {
+    p.setMaxPoint(m_max_point * 2);
+  }
+  p.setOverlapLayerSize(m_overlap_layer_size * 2);
   return p;
 }
 
@@ -236,131 +286,6 @@ length() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64x3 AMRPatchPosition::
-min(Integer level) const
-{
-  if (level == m_level) {
-    return m_min_point;
-  }
-  if (level == m_level + 1) {
-    return m_min_point * 2;
-  }
-  if (level == m_level - 1) {
-    return m_min_point / 2;
-  }
-  if (level < m_level) {
-    Int32 dif = static_cast<Int32>(math::pow(2., static_cast<Real>(m_level - level)));
-    return m_min_point / dif;
-  }
-
-  Int32 dif = static_cast<Int32>(math::pow(2., static_cast<Real>(level - m_level)));
-  return m_min_point * dif;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-minWithMargin(Integer level) const
-{
-  if (level == m_level) {
-    return m_min_point - 1;
-  }
-  if (level == m_level - 1) {
-    return (m_min_point - 1) / 2;
-  }
-  ARCANE_FATAL("Pas utile");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-minWithMarginEven(Integer level) const
-{
-  if (level == m_level) {
-    Int64x3 with_margin = m_min_point - 1;
-    with_margin.x -= with_margin.x % 2;
-    with_margin.y -= with_margin.y % 2;
-    with_margin.z -= with_margin.z % 2;
-    return with_margin;
-  }
-  if (level == m_level - 1) {
-    Int64x3 with_margin = (m_min_point - 1) / 2;
-    with_margin.x -= with_margin.x % 2;
-    with_margin.y -= with_margin.y % 2;
-    with_margin.z -= with_margin.z % 2;
-    return with_margin;
-  }
-  ARCANE_FATAL("Pas utile");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-max(Integer level) const
-{
-  if (level == m_level) {
-    return m_max_point;
-  }
-  if (level == m_level + 1) {
-    return m_max_point * 2;
-  }
-  if (level == m_level - 1) {
-    return { static_cast<Int64>(std::ceil(m_max_point.x / 2.)), static_cast<Int64>(std::ceil(m_max_point.y / 2.)), static_cast<Int64>(std::ceil(m_max_point.z / 2.)) };
-  }
-  if (level < m_level) {
-    Int64 dif = static_cast<Int64>(math::pow(2., static_cast<Real>(level - m_level)));
-    return { static_cast<Int64>(std::ceil(m_max_point.x / dif)), static_cast<Int64>(std::ceil(m_max_point.y / dif)), static_cast<Int64>(std::ceil(m_max_point.z / dif)) };
-  }
-  Int64 dif = static_cast<Int64>(math::pow(2., static_cast<Real>(level - m_level)));
-  return m_max_point * dif;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-maxWithMargin(Integer level) const
-{
-  if (level == m_level) {
-    return m_max_point + 1;
-  }
-  if (level == m_level - 1) {
-    Int64x3 max = m_max_point + 1;
-    return { static_cast<Int32>(std::ceil(max.x / 2.)), static_cast<Int32>(std::ceil(max.y / 2.)), static_cast<Int32>(std::ceil(max.z / 2.)) };
-  }
-  ARCANE_FATAL("Pas utile");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64x3 AMRPatchPosition::
-maxWithMarginEven(Integer level) const
-{
-  if (level == m_level) {
-    Int64x3 with_margin = m_max_point + 1;
-    with_margin.x += with_margin.x % 2;
-    with_margin.y += with_margin.y % 2;
-    with_margin.z += with_margin.z % 2;
-    return with_margin;
-  }
-  if (level == m_level - 1) {
-    Int64x3 max = m_max_point + 1;
-    Int64x3 with_margin = { static_cast<Int32>(std::ceil(max.x / 2.)), static_cast<Int32>(std::ceil(max.y / 2.)), static_cast<Int32>(std::ceil(max.z / 2.)) };
-    with_margin.x += with_margin.x % 2;
-    with_margin.y += with_margin.y % 2;
-    with_margin.z += with_margin.z % 2;
-    return with_margin;
-  }
-  ARCANE_FATAL("Pas utile");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 bool AMRPatchPosition::
 isIn(Integer x, Integer y, Integer z) const
 {
@@ -371,22 +296,22 @@ isIn(Integer x, Integer y, Integer z) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithMargin(Integer level, Integer x, Integer y, Integer z) const
+isInWithOverlap(Integer x, Integer y, Integer z) const
 {
-  Int64x3 level_min = minWithMargin(level);
-  Int64x3 level_max = maxWithMargin(level);
-  return x >= level_min.x && x < level_max.x && y >= level_min.y && y < level_max.y && z >= level_min.z && z < level_max.z;
+  const Int64x3 min_point = minPointWithOverlap();
+  const Int64x3 max_point = maxPointWithOverlap();
+  return x >= min_point.x && x < max_point.x && y >= min_point.y && y < max_point.y && z >= min_point.z && z < max_point.z;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithMarginEven(Integer level, Integer x, Integer y, Integer z) const
+isInWithOverlap(Integer x, Integer y, Integer z, Integer overlap) const
 {
-  Int64x3 level_min = minWithMarginEven(level);
-  Int64x3 level_max = maxWithMarginEven(level);
-  return x >= level_min.x && x < level_max.x && y >= level_min.y && y < level_max.y && z >= level_min.z && z < level_max.z;
+  const Int64x3 min_point = m_min_point - overlap;
+  const Int64x3 max_point = m_max_point + overlap;
+  return x >= min_point.x && x < max_point.x && y >= min_point.y && y < max_point.y && z >= min_point.z && z < max_point.z;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -104,19 +104,34 @@ _internalResizeInfos(Int32 new_size)
 /*---------------------------------------------------------------------------*/
 
 void CellDirectionMng::
-_internalComputeInnerAndOuterItems(const ItemGroup& items)
+_internalComputeInnerAndOuterItems(const ItemGroup& items, const ItemGroup& own_items)
 {
   Int32UniqueArray inner_lids;
   Int32UniqueArray outer_lids;
   IItemFamily* family = items.itemFamily();
   ENUMERATE_ITEM(iitem,items){
     Int32 lid = iitem.itemLocalId();
-    Int32 i1 = m_infos_view[lid].m_next_lid;
-    Int32 i2 = m_infos_view[lid].m_previous_lid;
-    if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
-      outer_lids.add(lid);
-    else
-      inner_lids.add(lid);
+    // Int32 i1 = m_infos_view[lid].m_next_lid;
+    // Int32 i2 = m_infos_view[lid].m_previous_lid;
+    // bool b1 = m_infos_view[lid].m_next_own;
+    // bool b2 = m_infos_view[lid].m_previous_own;
+    // if (i1 == NULL_ITEM_LOCAL_ID || i2 == NULL_ITEM_LOCAL_ID || !b1 || !b2)
+    // if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
+    outer_lids.add(lid);
+    // else
+    //   inner_lids.add(lid);
+  }
+  ENUMERATE_ITEM (iitem, own_items) {
+    Int32 lid = iitem.itemLocalId();
+    // Int32 i1 = m_infos_view[lid].m_next_lid;
+    // Int32 i2 = m_infos_view[lid].m_previous_lid;
+    // bool b1 = m_infos_view[lid].m_next_own;
+    // bool b2 = m_infos_view[lid].m_previous_own;
+    // if (i1 == NULL_ITEM_LOCAL_ID || i2 == NULL_ITEM_LOCAL_ID || !b1 || !b2)
+    // if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
+    //   outer_lids.add(lid);
+    // else
+    inner_lids.add(lid);
   }
   int dir = (int)m_direction;
   String base_group_name = String("Direction")+dir;

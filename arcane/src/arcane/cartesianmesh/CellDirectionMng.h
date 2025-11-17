@@ -565,7 +565,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * \brief Usage interne à Arcane. Calcul les entités internes et externes.
    * Suppose que init() a été appelé.
    */
-  void _internalComputeInnerAndOuterItems(const ItemGroup& items);
+  void _internalComputeInnerAndOuterItems(const ItemGroup& items, const ItemGroup& own_items);
 
   /*!
    * \internal

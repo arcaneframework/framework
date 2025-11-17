@@ -238,13 +238,13 @@ fillSig()
     Integer end = begin + size;
 
     for (Integer k = 0; k < m_sig_z.size(); ++k) {
-      Integer pos_z = min.z + k;
+      Integer pos_z = m_numbering->offsetLevelToLevel(min.z + k, m_patch.level(), m_patch.level() + 1);
       for (Integer j = 0; j < m_sig_y.size(); ++j) {
-        Integer pos_y = min.y + j;
+        Integer pos_y = m_numbering->offsetLevelToLevel(min.y + j, m_patch.level(), m_patch.level() + 1);
         for (Integer i = begin; i < end; ++i) {
-          Integer pos_x = min.x + i;
+          Integer pos_x = m_numbering->offsetLevelToLevel(min.x + i, m_patch.level(), m_patch.level() + 1);
           for (auto elem : m_all_patches->patches(m_patch.level() + 1)) {
-            if (elem.isInWithMargin(m_patch.level(), pos_x, pos_y, pos_z)) {
+            if (elem.isIn(pos_x, pos_y, pos_z)) {
               m_have_cells = true;
               m_sig_x[i]++;
               m_sig_y[j]++;
