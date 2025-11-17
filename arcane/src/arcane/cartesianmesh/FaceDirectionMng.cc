@@ -202,12 +202,12 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     Cell back_cell = face.backCell();
 
     // Vérifie que les mailles sont dans notre patch.
-    if (!front_cell.null())
-      if (patch_cells_set.find(front_cell.localId())==patch_cells_set.end())
-        front_cell = Cell();
-    if (!back_cell.null())
-      if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
-        back_cell = Cell();
+    // if (!front_cell.null())
+    //   if (patch_cells_set.find(front_cell.localId())==patch_cells_set.end())
+    //     front_cell = Cell();
+    // if (!back_cell.null())
+    //   if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
+    //     back_cell = Cell();
 
     bool is_inverse = false;
     if (!front_cell.null()){

@@ -183,6 +183,25 @@ addPatch(CellGroup cell_group, Integer group_index)
     cdi->position().setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
     cdi->position().setLevel(level_r);
   }
+  else {
+    Integer level = -1;
+    ENUMERATE_ (Cell, icell, cell_group) {
+      if (level == -1) {
+        level = icell->level();
+      }
+      if (level != icell->level()) {
+        ARCANE_FATAL("Level pb -- Zone with cells to different levels -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, icell->level(), icell->uniqueId());
+      }
+    }
+
+    Integer level_r = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
+
+    if (level != -1 && level != level_r) {
+      ARCANE_FATAL("Bad level reduced");
+    }
+
+    cdi->position().setLevel(level_r);
+  }
   m_cmesh->traceMng()->info() << "Min Point : " << cdi->position().minPoint();
   m_cmesh->traceMng()->info() << "Max Point : " << cdi->position().maxPoint();
   m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
@@ -621,19 +640,29 @@ refine()
 
     amr->refine();
 
+    // // Pour debug, forcer le else de la methode addPatch(AV<Int32>).
+    // UniqueArray<Int32> d_cell_ids;
+    // ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level + 1)) {
+    //   d_cell_ids.add(icell.localId());
+    // }
+    // addPatch(d_cell_ids);
+
     for (const AMRPatchPosition& patch : all_patches.patches(level)) {
       _addPatch(patch.patchUp());
     }
   }
 
-  for (Integer level = max_level; level > min_level; --level) {
+  m_cmesh->traceMng()->info() << "max_level : " << max_level << " -- min_level : " << min_level;
+
+  for (Integer level = max_level + 1; level > min_level; --level) {
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
       Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
       Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
       Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
       bool is_in = false;
-      for (auto patch : all_patches.patches(level)) {
-        if (patch.isInWithMarginEven(level, pos_x, pos_y, pos_z)) {
+      for (const AMRPatchPosition& patch : all_patches.patches(level - 1)) {
+        // if (patch.isInWithMarginEven(level, pos_x, pos_y, pos_z)) {
+        if (patch.patchUp().isIn(pos_x, pos_y, pos_z)) {
           is_in = true;
           break;
         }
@@ -643,12 +672,12 @@ refine()
       }
     }
 
-    Integer nb_cell_x = numbering->globalNbCellsX(level);
+    Integer nb_cell_x = numbering->globalNbCellsX(level - 1);
 
     StringBuilder str = "Level ";
     str += level;
     str += "\n";
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level)) {
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level - 1)) {
       if (icell->uniqueId().asInt32() % nb_cell_x == 0) {
         str += "\n";
       }
@@ -681,6 +710,7 @@ refine()
     m_cmesh->traceMng()->info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
     m_cmesh->traceMng()->info() << "\tLevel : " << patch.patchInterface()->position().level();
     m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
+    m_cmesh->traceMng()->info() << "\tIndex : " << patch.patchInterface()->index();
   }
 }
 
