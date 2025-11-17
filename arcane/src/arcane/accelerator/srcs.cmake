@@ -15,6 +15,7 @@ set( ARCANE_SOURCES
   GenericScanner.h
   GenericSorter.h
   IReduceMemoryImpl.h
+  LocalMemory.h
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
@@ -28,6 +29,9 @@ set( ARCANE_SOURCES
   RunCommand.h
   RunCommandEnumerate.h
   RunCommandLaunchInfo.h
+  RunCommandLaunch.h
+  RunCommandLaunch.cc
+  RunCommandLaunchImpl.h
   RunCommandLoop.h
   RunCommandMaterialEnumerate.cc
   RunCommandMaterialEnumerate.h
@@ -49,4 +53,6 @@ set( ARCANE_SOURCES
   VariableViews.cc
   Views.h
   ViewsCommon.h
+  WorkGroupLoopRange.h
+  WorkGroupLoopRange.cc
 )

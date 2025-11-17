@@ -1,17 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2024 */
+/* RunCommand.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/core/RunCommand.h"
+
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/NativeStream.h"
@@ -141,7 +143,7 @@ operator<<(RunCommand& command, const TraceInfo& trace_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::NativeStream RunCommand::
+Impl::NativeStream RunCommand::
 _internalNativeStream() const
 {
   return m_p->internalStream()->nativeStream();
@@ -221,6 +223,26 @@ ForLoopOneExecStat* RunCommand::
 _internalCommandExecStat()
 {
   return m_p->m_loop_one_exec_stat_ptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 RunCommand::
+_addSharedMemory(Int32 size)
+{
+  Int32 current_size = m_p->m_shared_memory_size;
+  m_p->m_shared_memory_size += ArraySimdPadder::getSizeWithSpecificPadding<16>(size);
+  return current_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 RunCommand::
+_sharedMemory() const
+{
+  return m_p->m_shared_memory_size;
 }
 
 /*---------------------------------------------------------------------------*/

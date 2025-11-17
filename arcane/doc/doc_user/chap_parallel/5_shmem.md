@@ -130,25 +130,27 @@ plusieurs fois un segment :
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_11
 
-Cette méthode va réserver un espace de `20` `Integer` pour tous les sous-domaines (cette valeur peut être différente
-pour chaque sous-domaine) (si un sous-domaine ne veut pas réserver plus d'espace, il peut appeler
+Dans ce bout de code, on va réserver un espace de `20` `Integer` pour tous les sous-domaines. Cette valeur peut être
+différente pour chaque sous-domaine (si un sous-domaine ne veut pas réserver plus d'espace, il peut appeler
 Arcane::DynamicMachineMemoryWindow::reserve()).
 
 \note Avec cette méthode, on ne peut pas réserver moins d'espace que déjà réservé (appeler `reserve(0)` n'a aucun
 effet). Pour réduire l'espace réservé, la méthode Arcane::DynamicMachineMemoryWindow::shrink() est disponible.
 
-\warning Comme pour les Arcane::UniqueArray, la méthode Arcane::DynamicMachineMemoryWindow::reserve(Arcane::Int64
+\warning Comme pour les UniqueArray, la méthode Arcane::DynamicMachineMemoryWindow::reserve(Arcane::Int64
 new_capacity) n'a pas la même fonction que la méthode Arcane::DynamicMachineMemoryWindow::resize(Arcane::Int64
 new_nb_elem). La première réserve uniquement l'espace mémoire mais cet espace reste inaccessible sans `add()` ou sans
 `resize()`. La seconde change le nombre d'éléments du segment et appelle `reserve()` si nécessaire.
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_12
 
-Ce `resize()` va augmenter le nombre d'éléments de tous les segments sauf du sous-domaine qui avait fait les `add()`.
-Ce sous-domaine va passer de 15 éléments à 12 (comme pour `reserve()`, chaque sous-domaine peut mettre la valeur qu'il
-veut).
+Dans notre exemple, `resize()` va augmenter le nombre d'éléments de tous les segments sauf du sous-domaine qui avait
+fait les `add()` précédemment (qui possède 15 éléments, contre 5 pour les autres).
+Ce sous-domaine va passer de 15 éléments à 12.
 
-Il est aussi possible d'ajouter des éléments dans le segment d'un autre sous-domaine avec la méthode
+Comme pour la méthode `reserve()`, chaque sous-domaine peut mettre la valeur qu'il veut.
+
+Il est aussi possible d'ajouter des éléments dans le segment d'un autre sous-domaine avec la méthode collective
 Arcane::DynamicMachineMemoryWindow::addToAnotherSegment(Arcane::Int32 rank, Arcane::Span<const Type> elem).
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_13
@@ -156,13 +158,13 @@ Arcane::DynamicMachineMemoryWindow::addToAnotherSegment(Arcane::Int32 rank, Arca
 
 \warning Il est impossible de mélanger les appels à `add()` et à `addToAnotherSegment()`. Si un sous-domaine appelle
 la méthode `addToAnotherSegment()`, tous les sous-domaines devront appeler collectivement `addToAnotherSegment()` (avec
-ou sans paramètres) et pas `add()`.
+ou sans paramètres) et non `add()`.
 
 Le fonctionnement est presque identique à la méthode `add()` mais avec un paramètre en plus pour désigner le rang du
 sous-domaine possédant le segment à modifier.
 
-\warning Deux sous-domaines ne peuvent pas ajouter d'éléments dans un même segment (en une fois) : pas de problème
-d'ordre d'écriture.
+\warning Deux sous-domaines ne peuvent pas ajouter d'éléments dans un même segment (en une fois) (ce qui permet d'éviter
+les problèmes de concurrences).
 ```c
 // Pas possible :
 if (my_rank == 0){

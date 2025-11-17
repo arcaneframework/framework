@@ -412,8 +412,8 @@ _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
     ReducerMax2<DataType> reducer_max(command);
 
     auto in_t1 = viewIn(command, t1);
-
-    command << RUNCOMMAND_LOOP1(iter, n1, reducer_sum, reducer_max, reducer_min)
+    SimpleForLoopRanges<1> range(n1);
+    command << RUNCOMMAND_LOOP(iter, range, reducer_sum, reducer_max, reducer_min)
     {
       DataType v = in_t1(iter);
       reducer_sum.combine(v);

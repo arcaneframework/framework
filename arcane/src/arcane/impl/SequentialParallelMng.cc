@@ -564,6 +564,7 @@ class SequentialParallelMng
   Int32 commSize() const override { return 1; }
   void* getMPICommunicator() override { return m_communicator.communicatorAddress(); }
   Parallel::Communicator communicator() const override { return m_communicator; }
+  Parallel::Communicator machineCommunicator() const override { return m_communicator; }
   bool isThreadImplementation() const override { return false; }
   bool isHybridImplementation() const override { return false; }
   void setBaseObject(IBase* m);
@@ -1077,9 +1078,10 @@ class SequentialParallelMngContainerFactory
   : AbstractService(sbi), m_application(sbi.application()){}
  public:
   Ref<IParallelMngContainer>
-  _createParallelMngBuilder(Int32 nb_rank,Parallel::Communicator comm) override
+  _createParallelMngBuilder(Int32 nb_rank, Parallel::Communicator comm, Parallel::Communicator machine_comm) override
   {
     ARCANE_UNUSED(nb_rank);
+    ARCANE_UNUSED(machine_comm);
     auto x = new SequentialParallelMngBuilder(m_application,comm);
     x->build();
     return makeRef<IParallelMngContainer>(x);

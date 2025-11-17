@@ -45,9 +45,10 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 {
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
-  friend impl::RunCommandLaunchInfo;
+  friend Impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
   friend class ViewBuildInfo;
+  template<typename T, Int32 Extent> friend class LocalMemory;
 
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -129,9 +130,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
   //! \internal
   impl::RunQueueImpl* _internalQueueImpl() const;
-  impl::NativeStream _internalNativeStream() const;
+  Impl::NativeStream _internalNativeStream() const;
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
+  Int32 _addSharedMemory(Int32 size);
+  Int32 _sharedMemory() const;
 
  private:
 

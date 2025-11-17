@@ -1,63 +1,40 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KernelLaunchArgs.h                                          (C) 2000-2025 */
+/* WorkGroupLoopRange.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Arguments pour lancer un kernel.                                          */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
-#define ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
+/* Boucle pour le parallélisme hiérarchique.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/accelerator/WorkGroupLoopRange.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Arguments pour lancer un kernel.
- */
-class ARCANE_ACCELERATOR_CORE_EXPORT KernelLaunchArgs
+
+WorkGroupLoopRange::
+WorkGroupLoopRange(Int32 total_size, Int32 nb_group, Int32 block_size)
+: m_total_size(total_size)
+, m_nb_group(nb_group)
+, m_group_size(block_size)
 {
-  friend RunCommandLaunchInfo;
-
- public:
-
-  KernelLaunchArgs() = default;
-  KernelLaunchArgs(Int32 nb_block_per_grid, Int32 nb_thread_per_block)
-  : m_nb_block_per_grid(nb_block_per_grid)
-  , m_nb_thread_per_block(nb_thread_per_block)
-  {
-  }
-
- public:
-
-  int nbBlockPerGrid() const { return m_nb_block_per_grid; }
-  int nbThreadPerBlock() const { return m_nb_thread_per_block; }
-
- private:
-
-  int m_nb_block_per_grid = 0;
-  int m_nb_thread_per_block = 0;
-};
+  m_last_group_size = (total_size - (block_size * (nb_group - 1)));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  

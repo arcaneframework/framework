@@ -35,9 +35,11 @@ class ArrayBoundsBase
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::getIndices;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
   using MDIndexType = typename BaseClass::MDIndexType;
+  using LoopIndexType = typename BaseClass::LoopIndexType;
   using ArrayExtentType = Arcane::ArrayExtents<Extents>;
+
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
 
  public:
 

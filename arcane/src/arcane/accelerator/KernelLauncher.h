@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KernelLauncher.h                                            (C) 2000-2024 */
+/* KernelLauncher.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Gestion du lancement des noyaux de calcul sur accélérateur.               */
 /*---------------------------------------------------------------------------*/
@@ -28,43 +28,26 @@
 #if defined(ARCANE_COMPILING_CUDA)
 #define ARCANE_KERNEL_CUDA_FUNC(a) a
 #else
-#define ARCANE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#define ARCANE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
 #endif
 
 #if defined(ARCANE_COMPILING_HIP)
 #define ARCANE_KERNEL_HIP_FUNC(a) a
 #else
-#define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
 #endif
 
 #if defined(ARCANE_COMPILING_SYCL)
 #define ARCANE_KERNEL_SYCL_FUNC(a) a
 #else
-#define ARCANE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::impl::InvalidKernelClass
+#define ARCANE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::Impl::InvalidKernelClass
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
-
-template <typename T>
-struct Privatizer
-{
-  using value_type = T;
-  using reference_type = value_type&;
-  value_type m_private_copy;
-
-  ARCCORE_HOST_DEVICE Privatizer(const T& o) : m_private_copy{o} {}
-  ARCCORE_HOST_DEVICE reference_type privateCopy() { return m_private_copy; }
-};
-
-template <typename T>
-ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
-{
-  return Privatizer<T>{item};
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,24 +58,80 @@ class KernelRemainingArgsHelper
 {
  public:
 
-  //! Applique les fonctors des arguments additionnels.
+  //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
-  applyRemainingArgs(Int32 index, RemainingArgs&... remaining_args)
+  applyRemainingArgsAtBegin(Int32 index, RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
-    (remaining_args._internalExecWorkItem(index), ...);
+    (remaining_args._internalExecWorkItemAtBegin(index), ...);
+  }
+
+  //! Applique les fonctors des arguments additionnels en fin de kernel
+  template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
+  applyRemainingArgsAtEnd(Int32 index, RemainingArgs&... remaining_args)
+  {
+    (remaining_args._internalExecWorkItemAtEnd(index), ...);
   }
 
 #if defined(ARCANE_COMPILING_SYCL)
-  //! Applique les fonctors des arguments additionnels.
+  //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
-  applyRemainingArgs(sycl::nd_item<1> x, RemainingArgs&... remaining_args)
+  applyRemainingArgsAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                            RemainingArgs&... remaining_args)
   {
-    // Applique les réductions
-    (remaining_args._internalExecWorkItem(x), ...);
+    (_doOneArgAtBegin(x, shm_view, remaining_args), ...);
   }
+
+  //! Applique les fonctors des arguments additionnels en fin de kernel
+  template <typename... RemainingArgs> static inline void
+  applyRemainingArgsAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                          RemainingArgs&... remaining_args)
+  {
+    (_doOneArgAtEnd(x, shm_view, remaining_args), ...);
+  }
+
+ private:
+
+  template <typename OneArg> static void
+  _doOneArgAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  {
+    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
+      one_arg._internalExecWorkItemAtBegin(x, shm_memory);
+    else
+      one_arg._internalExecWorkItemAtBegin(x);
+  }
+  template <typename OneArg> static void
+  _doOneArgAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  {
+    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
+      one_arg._internalExecWorkItemAtEnd(x, shm_memory);
+    else
+      one_arg._internalExecWorkItemAtEnd(x);
+  }
+
 #endif
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T>
+struct Privatizer
+{
+  using value_type = T;
+  using reference_type = value_type&;
+  value_type m_private_copy;
+
+  ARCCORE_HOST_DEVICE Privatizer(const T& o)
+  : m_private_copy{ o }
+  {}
+  ARCCORE_HOST_DEVICE reference_type privateCopy() { return m_private_copy; }
+};
+
+template <typename T>
+ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
+{
+  return Privatizer<T>{ item };
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -153,11 +192,13 @@ doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... r
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < ids.size()) {
     LocalIdType lid(ids[i]);
     body(BuilderType::create(i, lid), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -168,10 +209,12 @@ doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < vsize) {
     body(i, remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -182,10 +225,12 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < bounds.nbElement()) {
     body(bounds.getIndices(i), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -204,16 +249,22 @@ class DoDirectSYCLLambdaArrayBounds
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
+                  LoopBoundType bounds, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
-
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i), remaining_args...);
+      // Si possible, on passe \a x en argument
+      if constexpr (requires { bounds.getIndices(x); })
+        body(bounds.getIndices(x), remaining_args...);
+      else
+        body(bounds.getIndices(i), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {
@@ -233,7 +284,9 @@ class DoIndirectSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
+                  SmallSpan<const Int32> ids, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
     using BuilderType = TraitsType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
@@ -241,11 +294,12 @@ class DoIndirectSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
     if (i < ids.size()) {
       LocalIdType lid(ids[i]);
       body(BuilderType::create(i, lid), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
@@ -297,6 +351,22 @@ class InvalidKernelClass
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_CUDA)
+template <typename... KernelArgs> inline void
+_applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
+                         cudaStream_t& s, Int32 shared_memory,
+                         const void* kernel_ptr, KernelArgs... args)
+{
+  void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+  if (is_cooperative)
+    cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+  else
+    cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Fonction générique pour exécuter un kernel CUDA.
  *
@@ -307,18 +377,24 @@ class InvalidKernelClass
  * TODO: Tester si Lambda est bien une fonction, le SFINAE étant peu lisible :
  * typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr
  * attendons les concepts c++20 (requires)
- * 
  */
 template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+_applyKernelCUDA(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  Int32 wanted_shared_memory = 0;
-  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
+  Int32 shared_memory = launch_info._sharedMemorySize();
+  const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
+  auto tbi = launch_info._threadBlockInfo(kernel_ptr, shared_memory);
   cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
-  // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s>>>(args, func, other_args...);
+  bool is_cooperative = launch_info._isUseCooperativeLaunch();
+  bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
+  if (use_cuda_launch || is_cooperative)
+    _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, args, func, other_args...);
+  else {
+    // TODO: utiliser cudaLaunchKernel() à la place.
+    kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(args, func, other_args...);
+  }
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -338,11 +414,11 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
  * \param args arguments de la fonction lambda
  */
 template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+_applyKernelHIP(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_HIP)
-  Int32 wanted_shared_memory = 0;
+  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
   auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
   hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, args, func, other_args...);
@@ -365,7 +441,7 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
  * \param args arguments de la fonction lambda
  */
 template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
-void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
                       const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... remaining_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
@@ -376,7 +452,17 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
     Int32 b = tbi.nbBlockPerGrid();
     Int32 t = tbi.nbThreadPerBlock();
     sycl::nd_range<1> loop_size(b * t, t);
-    event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
+    Int32 wanted_shared_memory = launch_info._sharedMemorySize();
+    // TODO: regarder s'il y a un coût à utiliser à chaque fois
+    // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
+    event = s.submit([&](sycl::handler& cgh) {
+      sycl::local_accessor<std::byte> shm_acc(sycl::range<1>(wanted_shared_memory), cgh);
+      cgh.parallel_for(loop_size, [=](sycl::nd_item<1> i) {
+        std::byte* shm_ptr = shm_acc.get_multi_ptr<sycl::access::decorated::no>().get();
+        kernel(i, SmallSpan<std::byte>(shm_ptr, wanted_shared_memory), args, func, remaining_args...);
+      });
+    });
+    //event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();
@@ -395,7 +481,7 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

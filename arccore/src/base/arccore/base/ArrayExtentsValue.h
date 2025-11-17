@@ -80,8 +80,9 @@ class ArrayExtentsValue<IndexType_, X0>
   using ExtentsType = ExtentsV<IndexType_, X0>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   using MDIndexType = MDIndex<1>;
+  using LoopIndexType = MDIndex<1>;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<1>;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
 
   ArrayExtentsValue() = default;
 
@@ -161,9 +162,10 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1>;
   using MDIndexType = MDIndex<2>;
+  using LoopIndexType = MDIndex<2>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<2>;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -260,9 +262,10 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
   using MDIndexType = MDIndex<3>;
+  using LoopIndexType = MDIndex<3>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<3>;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -373,9 +376,10 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
   using MDIndexType = MDIndex<4>;
+  using LoopIndexType = MDIndex<4>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<4>;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
 
  public:
 

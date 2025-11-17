@@ -358,6 +358,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
   using Layout = typename LayoutType::Layout1Type;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using MDIndexType = typename BaseClass::MDIndexType;
+  using LoopIndexType = typename BaseClass::LoopIndexType;
 
   using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
 

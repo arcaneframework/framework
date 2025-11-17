@@ -44,6 +44,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorSorterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorMathUnitTest.cc
+  accelerator/AcceleratorLocalMemoryUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
@@ -1037,6 +1038,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
 
   arcane_add_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
   arcane_add_accelerator_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
+
+  arcane_add_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
+  arcane_add_test_sequential_task(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
 endif()
 
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)

@@ -28,6 +28,7 @@
 #include "arccore/base/IRangeFunctor.h"
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/ForLoopRunInfo.h"
+#include "arccore/base/ForLoopRanges.h"
 #include "arccore/base/ParallelLoopOptions.h"
 
 #include <iostream>

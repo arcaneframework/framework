@@ -93,6 +93,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   Int32 commSize() const override { return m_nb_rank; }
   void* getMPICommunicator() override { return m_mpi_communicator.communicatorAddress(); }
   MP::Communicator communicator() const override { return m_mpi_communicator; }
+  MP::Communicator machineCommunicator() const override { return m_mpi_communicator; }
   bool isThreadImplementation() const override { return true; }
   bool isHybridImplementation() const override { return false; }
   ITraceMng* traceMng() const override { return m_trace.get(); }

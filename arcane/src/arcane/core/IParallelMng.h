@@ -123,13 +123,27 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * Le communicateur n'est valide que si on utilise MPI. Il est possible
    * de tester la validité en appelant la méthode Communicator::isValid().
-   * S'il est valid, il est possible de récupérer sa valide via un cast:
+   * S'il est valide, il est possible de récupérer sa valeur via un cast:
    * \code
    * IParallelMng* pm = ...;
    * MPI_Comm c = static_cast<MPI_Comm>(pm->communicator());
    * \endcode
    */
   virtual Parallel::Communicator communicator() const =0;
+
+  /**
+   * \brief Communicateur MPI issus du communicateur \a communicator()
+   * réunissant tous les processus du noeud de calcul.
+   *
+   * Le communicateur n'est valide que si on utilise MPI. Il est possible
+   * de tester la validité en appelant la méthode Communicator::isValid().
+   * S'il est valide, il est possible de récupérer sa valeur via un cast:
+   * \code
+   * IParallelMng* pm = ...;
+   * MPI_Comm mc = static_cast<MPI_Comm>(pm->machineCommunicator());
+   * \endcode
+   */
+  virtual Parallel::Communicator machineCommunicator() const { return {}; }
 
   /*!
    * \brief Indique si l'implémentation utilise les threads.
@@ -1270,11 +1284,17 @@ class ARCANE_CORE_EXPORT IParallelMngContainerFactory
    * \brief Créé un conteneur pour \a nb_local_rank rangs locaux et
    * avec comme communicateur \a communicator.
    *
-   * Le communicateur MPI peut être nul en mode séquentiel ou mémoire partagé.
+   * Le communicateur MPI \a communicator peut être nul en mode séquentiel ou
+   * mémoire partagé.
    * Le nombre de rangs locaux vaut 1 en mode séquentiel ou en mode MPI pure.
+   *
+   * Le second communicateur \a machine_communicator est utile qu'en mode
+   * hydride.
+   * Dans les autres modes, il peut être nul.
    */
   virtual Ref<IParallelMngContainer>
-  _createParallelMngBuilder(Int32 nb_local_rank,Parallel::Communicator communicator) =0;
+  _createParallelMngBuilder(Int32 nb_local_rank, Parallel::Communicator communicator,
+                            Parallel::Communicator machine_communicator) =0;
 };
 
 /*---------------------------------------------------------------------------*/

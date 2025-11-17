@@ -497,14 +497,14 @@ class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 template <typename ContainerType, typename Lambda, typename... RemainingArgs> __global__ void
 doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remaining_args)
 {
-  auto privatizer = privatize(func);
+  auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
-
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
   if (i < items.size()) {
     body(items[i], remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
+  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
 #endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
@@ -519,21 +519,24 @@ class DoMatContainerSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, RemainingArgs... remaining_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+                  ContainerType items, Lambda func,
+                  RemainingArgs... remaining_args) const
   {
-    auto privatizer = privatize(func);
+    auto privatizer = Impl::privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
+    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shm_view, remaining_args...);
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
+    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shm_view, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
   {
-    auto privatizer = privatize(func);
+    auto privatizer = Impl::privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x);
@@ -552,14 +555,15 @@ template <typename ContainerType, typename Lambda, typename... RemainingArgs>
 void _doConstituentItemsLambda(Int32 base_index, Int32 size, ContainerType items,
                                const Lambda& func, RemainingArgs... remaining_args)
 {
-  auto privatizer = privatize(func);
+  auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
 
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
   Int32 last_value = base_index + size;
   for (Int32 i = base_index; i < last_value; ++i) {
     body(items[i], remaining_args...);
   }
-  ::Arcane::impl::HostReducerHelper::applyReducerArgs(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -631,7 +635,7 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
   if (vsize == 0)
     return;
 
-  RunCommandLaunchInfo launch_info(command, vsize);
+  Impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();
   switch (exec_policy) {

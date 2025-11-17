@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonUtils.cc                                              (C) 2000-2024 */
+/* CommonUtils.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions/Classes utilitaires communes à tout les runtimes.               */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -136,14 +136,25 @@ toNativeStream(const RunQueue& queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // namespace Arcane::Accelerator::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DeviceStorageBase::
 _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, const RunQueue& queue)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  cudaStream_t stream = CudaUtils::toNativeStream(queue);
+  cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
   ARCANE_CHECK_CUDA(::cudaMemcpyAsync(destination.data(), source.data(), source.size(), cudaMemcpyDeviceToHost, stream));
 #elif defined(ARCANE_COMPILING_HIP)
-  hipStream_t stream = HipUtils::toNativeStream(queue);
+  hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
   ARCANE_CHECK_HIP(::hipMemcpyAsync(destination.data(), source.data(), source.size(), hipMemcpyDefault, stream));
 #else
   ARCANE_UNUSED(destination);

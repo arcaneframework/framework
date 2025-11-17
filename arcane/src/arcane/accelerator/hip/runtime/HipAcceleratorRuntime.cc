@@ -124,9 +124,9 @@ class HipRunQueueStream
     if (!args.isAsync())
       barrier();
   }
-  impl::NativeStream nativeStream() override
+  Impl::NativeStream nativeStream() override
   {
-    return impl::NativeStream(&m_hip_stream);
+    return Impl::NativeStream(&m_hip_stream);
   }
 
  public:

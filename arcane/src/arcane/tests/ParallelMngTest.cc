@@ -1267,6 +1267,8 @@ _testMachineMemoryWindow()
         break;
       }
     }
+    // Remarque : ici, pos_in_machine_ranks correspond au rang du processus
+    // dans le communicateur MPI "machine".
     {
       UniqueArray<Integer> buf;
       if (pos_in_machine_ranks == 0) {
@@ -1296,6 +1298,7 @@ _testMachineMemoryWindow()
     // On efface les éléments déjà présents dans les segments.
     window.resize(0);
 
+    // Si l'on n'a pas de voisins, on ajoute rien.
     if (voisin == -1) {
       window.addToAnotherSegment();
     }

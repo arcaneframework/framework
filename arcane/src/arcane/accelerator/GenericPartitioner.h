@@ -84,13 +84,13 @@ class GenericPartitionerIf
     eExecutionPolicy exec_policy = queue.executionPolicy();
     RunCommand command = makeCommand(queue);
     command << trace_info;
-    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    Impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_list1_ptr = nullptr;
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
@@ -109,7 +109,7 @@ class GenericPartitionerIf
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
       int* nb_list1_ptr = nullptr;
       ARCANE_CHECK_HIP(rocprim::partition(nullptr, temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
@@ -149,7 +149,7 @@ class GenericPartitionerIf
         };
       }
       auto tmp_select_lambda = [=](Int32 i) { return tmp_select[i]; };
-      sycl::queue sycl_queue = impl::SyclUtils::toNativeStream(queue);
+      sycl::queue sycl_queue = Impl::SyclUtils::toNativeStream(queue);
       auto policy = oneapi::dpl::execution::make_device_policy(sycl_queue);
       auto output_after = oneapi::dpl::stable_partition(policy, tmp_output.begin(), tmp_output.end(), select_lambda);
       queue.barrier();
@@ -231,13 +231,13 @@ class GenericPartitionerIf
     eExecutionPolicy exec_policy = queue.executionPolicy();
     RunCommand command = makeCommand(queue);
     command << trace_info;
-    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    Impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_list1_ptr = nullptr;
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
@@ -258,7 +258,7 @@ class GenericPartitionerIf
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
       int* nb_list1_ptr = nullptr;
       using namespace rocprim;
       ARCANE_CHECK_HIP(::rocprim::partition_three_way(nullptr, temp_storage_size, input_iter, first_output_iter,

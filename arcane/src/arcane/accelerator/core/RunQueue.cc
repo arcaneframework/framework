@@ -213,7 +213,7 @@ _internalImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::NativeStream RunQueue::
+Impl::NativeStream RunQueue::
 _internalNativeStream() const
 {
   if (m_p)

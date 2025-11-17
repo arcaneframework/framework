@@ -5,59 +5,68 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KernelLaunchArgs.h                                          (C) 2000-2025 */
+/* HostKernelRemainingArgsHelper.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Arguments pour lancer un kernel.                                          */
+/* Classe pour exécuter une méthode en début et fin de noyau.                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
-#define ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
+#ifndef ARCCORE_COMMON_HOSTKERNELREMAININGARGSHELPER_H
+#define ARCCORE_COMMON_HOSTKERNELREMAININGARGSHELPER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
+#include "arccore/common/CommonGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Arguments pour lancer un kernel.
+ * \brief Classe pour appliquer des méthodes des arguments additionnels
+ * en début et fin de kernel.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT KernelLaunchArgs
+class HostKernelRemainingArgsHelper
 {
-  friend RunCommandLaunchInfo;
-
  public:
 
-  KernelLaunchArgs() = default;
-  KernelLaunchArgs(Int32 nb_block_per_grid, Int32 nb_thread_per_block)
-  : m_nb_block_per_grid(nb_block_per_grid)
-  , m_nb_thread_per_block(nb_thread_per_block)
+  //! Applique les functors des arguments additionnels au début de l'itération.
+  template <typename... RemainingArgs> static void
+  applyRemainingArgsAtBegin(RemainingArgs&... remaining_args)
   {
+    (_doOneAtBegin(remaining_args), ...);
   }
 
- public:
-
-  int nbBlockPerGrid() const { return m_nb_block_per_grid; }
-  int nbThreadPerBlock() const { return m_nb_thread_per_block; }
+  //! Applique les functors des arguments additionnels à la fin de l'itération.
+  template <typename... RemainingArgs> static void
+  applyRemainingArgsAtEnd(RemainingArgs&... remaining_args)
+  {
+    (_doOneAtEnd(remaining_args), ...);
+  }
 
  private:
 
-  int m_nb_block_per_grid = 0;
-  int m_nb_thread_per_block = 0;
+  template <typename OneArg> static void _doOneAtBegin(OneArg& one_arg)
+  {
+    //if constexpr (requires { one_arg._internalHostExecWorkItemAtBegin(); })
+    one_arg._internalHostExecWorkItemAtBegin();
+  }
+  template <typename OneArg> static void _doOneAtEnd(OneArg& one_arg)
+  {
+    //if constexpr (requires { one_arg._internalHostExecWorkItemAtEnd(); })
+    one_arg._internalHostExecWorkItemAtEnd();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

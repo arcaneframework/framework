@@ -61,7 +61,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
-    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
+    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
     if (m_machine_ranks.empty()) {
       _buildMachineRanksArray(mpi_window_creator);
     }
@@ -121,7 +121,7 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
-    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
+    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
     if (m_machine_ranks.empty()) {
       _buildMachineRanksArray(mpi_window_creator);
     }
