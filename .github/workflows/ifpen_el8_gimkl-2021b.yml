@@ -118,8 +118,8 @@ jobs:
         shell: bash
         run: |
            # Force using intel-mpi 2021.16
+           chmod -R u+w ${EBROOTIMPI}
            mv ${EBROOTIMPI} ${EBROOTIMPI}.old
-           cp -ai /opt/intel-mpi ${EBROOTIMPI}
            ln -s /opt/intel-mpi ${EBROOTIMPI}
            ln -s latest ${EBROOTIMPI}/mpi/2021.4.0
            # Check intel-mpi version
