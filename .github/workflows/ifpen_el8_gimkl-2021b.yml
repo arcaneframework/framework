@@ -130,8 +130,7 @@ jobs:
 
       - name: Upload test artifact
         id: upload-test-artifact
-        #uses: actions/upload-artifact@v4
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: |
           (success() || failure()) &&
           steps.test.outcome == 'failure'
