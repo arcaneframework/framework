@@ -128,7 +128,15 @@ jobs:
            # Run test
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      - name: Upload test artifact
+      - name: Archive test results
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
+        run: |
+          cd "${{ env.BUILD_DIR }}"
+          tar -czf /tmp/test-results.tar.gz ${{ env.BUILD_DIR }}/Testing
+
+      - name: Upload test results
         id: upload-test-artifact
         uses: actions/upload-artifact@v4
         if: |
@@ -136,8 +144,7 @@ jobs:
           steps.test.outcome == 'failure'
         with:
           name: test-artifact
-          path: ${{ env.BUILD_DIR }}/Testing
-          retention-days: 1
+          path: /tmp/test-results.tar.gz
           include-hidden-files: true
 
       - name: Save cache
