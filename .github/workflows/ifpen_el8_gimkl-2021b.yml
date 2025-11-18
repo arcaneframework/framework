@@ -157,13 +157,48 @@ jobs:
 #           rm -rf ${{ env.SOURCE_DIR }}
 #           ls -l /__w/framework/framework
 
-      - name: Upload artifact manually
+##      - name: Upload artifact manually
+##        env:
+##          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+##        run: |
+##          echo "OK" > /tmp/OK.txt
+##          tar czf /tmp/test-results.tar.gz /tmp/OK.txt
+##          curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+##               -H "Content-Type: application/gzip" \
+##               --data-binary @/tmp/test-results.tar.gz \
+##               "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts"
+##
+      - name: Create and upload tar.gz artifact manually
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "OK" > /tmp/OK.txt
-          tar czf /tmp/test-results.tar.gz /tmp/OK.txt
-          curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-               -H "Content-Type: application/gzip" \
-               --data-binary @/tmp/test-results.tar.gz \
-               "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts"
+          set -e
+      
+          # 1️⃣ Créer un fichier de test
+          mkdir -p /tmp/artifact-test
+          echo "OK" > /tmp/artifact-test/OK.txt
+      
+          # 2️⃣ Créer un tar.gz contenant ce fichier
+          ARTIFACT_NAME="test-results"
+          TAR_FILE="/tmp/${ARTIFACT_NAME}.tar.gz"
+          tar -czf "$TAR_FILE" -C /tmp artifact-test
+      
+          # 3️⃣ Obtenir la taille du fichier
+          FILE_SIZE=$(stat -c%s "$TAR_FILE")
+      
+          # 4️⃣ Créer l'artifact via l'API GitHub
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts" \
+            -d "{\"name\":\"$ARTIFACT_NAME\",\"size\":$FILE_SIZE}")
+      
+          # 5️⃣ Récupérer l'upload_url
+          UPLOAD_URL=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin)['upload_url'].replace('{?name,label}',''))")
+      
+          # 6️⃣ Upload du fichier via multipart/form-data
+          curl -X PUT \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -F "file=@$TAR_FILE" \
+            "$UPLOAD_URL?name=$(basename $TAR_FILE)"
+
