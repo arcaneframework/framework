@@ -18,17 +18,35 @@
 #include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/core/ItemGroupComputeFunctor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ICartesianMeshNumberingMng;
 
 class CartesianMeshPatch;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class OverlapItemGroupComputeFunctor
+: public ItemGroupComputeFunctor
+{
+ public:
+
+  OverlapItemGroupComputeFunctor(Ref<ICartesianMeshNumberingMng> numbering, const AMRPatchPosition& patch_position);
+  ~OverlapItemGroupComputeFunctor();
+
+  void executeFunctor() override;
+
+ private:
+
+  Ref<ICartesianMeshNumberingMng> m_numbering;
+  AMRPatchPosition m_patch_position;
+};
 
 class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 {
@@ -51,6 +69,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   CartesianMeshPatchListView patchListView() const;
 
   CellGroup cells(Integer index);
+  CellGroup ownCells(Integer index);
 
   void clear();
 

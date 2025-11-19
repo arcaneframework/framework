@@ -201,6 +201,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     Cell front_cell = face.frontCell();
     Cell back_cell = face.backCell();
 
+    bool front = true;
+    bool back = true;
+
     // Vérifie que les mailles sont dans notre patch.
     // if (!front_cell.null())
     //   if (patch_cells_set.find(front_cell.localId())==patch_cells_set.end())
@@ -208,6 +211,13 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     // if (!back_cell.null())
     //   if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
     //     back_cell = Cell();
+    // Vérifie que les mailles sont dans notre patch.
+    if (!front_cell.null())
+      if (patch_cells_set.find(front_cell.localId()) == patch_cells_set.end())
+        front = false;
+    if (!back_cell.null())
+      if (patch_cells_set.find(back_cell.localId()) == patch_cells_set.end())
+        back = false;
 
     bool is_inverse = false;
     if (!front_cell.null()){
@@ -257,9 +267,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
       }
     }
     if (is_inverse)
-      m_infos_view[face_lid] = ItemDirectionInfo(back_cell,front_cell);
+      m_infos_view[face_lid] = ItemDirectionInfo(back_cell, front_cell, back, front);
     else
-      m_infos_view[face_lid] = ItemDirectionInfo(front_cell,back_cell);
+      m_infos_view[face_lid] = ItemDirectionInfo(front_cell, back_cell, front, back);
   }
 }
 

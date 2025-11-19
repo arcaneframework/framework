@@ -29,8 +29,12 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 {
  public:
+
   AMRPatchPosition();
+  AMRPatchPosition(const AMRPatchPosition& src);
+
   ~AMRPatchPosition();
+
  public:
 
   Integer level() const;
@@ -40,6 +44,12 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   void setMinPoint(Int64x3 min_point);
   Int64x3 maxPoint() const;
   void setMaxPoint(Int64x3 max_point);
+
+  Integer overlapLayerSize() const;
+  void setOverlapLayerSize(Integer layer_size);
+
+  Int64x3 minPointWithOverlap() const;
+  Int64x3 maxPointWithOverlap() const;
 
   bool isIn(Int64 x, Int64 y, Int64 z) const;
 
@@ -53,22 +63,16 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 
   Int64x3 length() const;
 
-  Int64x3 min(Integer level) const;
-  Int64x3 minWithMargin(Integer level) const;
-  Int64x3 minWithMarginEven(Integer level) const;
-
-  Int64x3 max(Integer level) const;
-  Int64x3 maxWithMargin(Integer level) const;
-  Int64x3 maxWithMarginEven(Integer level) const;
-
   bool isIn(Integer x, Integer y, Integer z) const;
-  bool isInWithMargin(Integer level, Integer x, Integer y, Integer z) const;
-  bool isInWithMarginEven(Integer level, Integer x, Integer y, Integer z) const;
+  bool isInWithOverlap(Integer x, Integer y, Integer z) const;
+  bool isInWithOverlap(Integer x, Integer y, Integer z, Integer overlap) const;
 
  private:
+
   Integer m_level;
   Int64x3 m_min_point;
   Int64x3 m_max_point;
+  Integer m_overlap_layer_size;
 };
 
 /*---------------------------------------------------------------------------*/

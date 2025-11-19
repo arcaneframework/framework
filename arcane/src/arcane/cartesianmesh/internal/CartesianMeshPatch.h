@@ -50,6 +50,7 @@ class CartesianMeshPatch
   ~CartesianMeshPatch() override;
  public:
   CellGroup cells() override;
+  CellGroup ownCells() override;
   Integer index() override
   {
     return m_amr_patch_index;
