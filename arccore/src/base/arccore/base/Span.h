@@ -104,6 +104,7 @@ class ExtentStorage
  public:
 
   explicit constexpr ExtentStorage(SizeType) noexcept {}
+  ExtentStorage() = default;
 
  public:
 
@@ -201,6 +202,8 @@ class SpanImpl
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
 
+  static constexpr bool is_dynamic = (Extent == DynExtent);
+
  public:
 
   //! Construit une vue vide.
@@ -234,6 +237,11 @@ class SpanImpl
   constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X, N>& from)
   : m_ptr(from.data())
   , m_size(ArraySizeChecker<SizeType>::check(from.size()))
+  {}
+
+  //! Construit une vue depuis un pointeur avec une taille fixe
+  explicit constexpr ARCCORE_HOST_DEVICE SpanImpl(T* ptr) requires(!is_dynamic)
+  : m_ptr(ptr)
   {}
 
   //! Opérateur de recopie
@@ -619,6 +627,7 @@ class Span
   using pointer = typename BaseClass::pointer;
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
+  static constexpr bool is_dynamic = (Extent == DynExtent);
 
  public:
 
@@ -662,6 +671,11 @@ class Span
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE Span(std::array<X, N>& from) noexcept
   : BaseClass(from.data(), from.size())
+  {}
+
+  //! Construit une vue depuis un pointeur avec une taille fixe
+  explicit constexpr ARCCORE_HOST_DEVICE Span(T* ptr) requires(!is_dynamic)
+  : BaseClass(ptr)
   {}
 
   //! Opérateur de recopie
@@ -781,6 +795,7 @@ class SmallSpan
   using pointer = typename BaseClass::pointer;
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
+  static constexpr bool is_dynamic = (Extent == DynExtent);
 
  public:
 
@@ -818,6 +833,11 @@ class SmallSpan
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X, N>& from)
   : BaseClass(from)
+  {}
+
+  //! Construit une vue depuis un pointeur avec une taille fixe
+  explicit constexpr ARCCORE_HOST_DEVICE SmallSpan(T* ptr) requires(!is_dynamic)
+  : BaseClass(ptr)
   {}
 
   //! Opérateur de recopie
