@@ -94,6 +94,13 @@ class DynamicExtentStorage
   SizeType m_size;
 };
 
+class ARCCORE_BASE_EXPORT ExtentStorageBase
+{
+ public:
+
+  static void _throwBadSize [[noreturn]] (Int64 wanted_size, Int64 expected_size);
+};
+
 //! Spécialisation pour le nombre d'éléments connu à la compilation
 template <typename SizeType, SizeType FixedExtent>
 class ExtentStorage
@@ -103,7 +110,13 @@ class ExtentStorage
 
  public:
 
-  explicit constexpr ExtentStorage(SizeType) noexcept {}
+  explicit constexpr ExtentStorage([[maybe_unused]] SizeType s) noexcept
+  {
+#if defined(ARCCORE_CHECK)
+    if (s != FixedExtent)
+      ExtentStorageBase::_throwBadSize(s, FixedExtent);
+#endif
+  }
   ExtentStorage() = default;
 
  public:
