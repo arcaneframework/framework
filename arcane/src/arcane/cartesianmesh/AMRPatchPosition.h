@@ -59,7 +59,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   void fusion(const AMRPatchPosition& other_patch);
   bool isNull() const;
 
-  AMRPatchPosition patchUp() const;
+  AMRPatchPosition patchUp(Integer dim) const;
 
   Int64x3 length() const;
 

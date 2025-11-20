@@ -51,10 +51,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
 
   //! entité après l'entité courante dans la direction
   ItemLocalId m_next_lid;
-  bool m_next_own = true;
   //! entité avant l'entité courante dans la direction
   ItemLocalId m_previous_lid;
-  bool m_previous_own = true;
 };
 
 /*---------------------------------------------------------------------------*/

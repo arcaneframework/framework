@@ -140,16 +140,30 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   FaceGroup all_faces = face_family->createGroup(String("AllFaces")+base_group_name,Int32ConstArrayView(),true);
   all_faces.setItems(faces_lid,true);
 
+  UniqueArray<Int32> inner_cells_lid;
+  cell_dm.innerCells().view().fillLocalIds(inner_cells_lid);
+
   UniqueArray<Int32> inner_lids;
   UniqueArray<Int32> outer_lids;
-  ENUMERATE_FACE(iitem,all_faces){
-    Int32 lid = iitem.itemLocalId();
-    Face face = *iitem;
+  ENUMERATE_ (Face, iface, all_faces) {
+    Int32 lid = iface.itemLocalId();
+    Face face = *iface;
     // TODO: ne pas utiser nbCell() mais faire cela via le std::set utilisé précédemment
-    if (face.nbCell()==1)
+    if (face.nbCell() == 1) {
       outer_lids.add(lid);
-    else
-      inner_lids.add(lid);
+    }
+    else {
+      bool c0_inner_cell = inner_cells_lid.contains(face.cell(0).localId());
+      bool c1_inner_cell = inner_cells_lid.contains(face.cell(1).localId());
+      // Si au moins une des mailles est interne, alors la face est interne.
+      // TODO : Gérer les faces communes.
+      if (c0_inner_cell || c1_inner_cell) {
+        inner_lids.add(lid);
+      }
+      else {
+        outer_lids.add(lid);
+      }
+    }
   }
   m_p->m_inner_all_items = face_family->createGroup(String("AllInner")+base_group_name,inner_lids,true);
   m_p->m_outer_all_items = face_family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
@@ -201,9 +215,6 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     Cell front_cell = face.frontCell();
     Cell back_cell = face.backCell();
 
-    bool front = true;
-    bool back = true;
-
     // Vérifie que les mailles sont dans notre patch.
     // if (!front_cell.null())
     //   if (patch_cells_set.find(front_cell.localId())==patch_cells_set.end())
@@ -211,13 +222,6 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     // if (!back_cell.null())
     //   if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
     //     back_cell = Cell();
-    // Vérifie que les mailles sont dans notre patch.
-    if (!front_cell.null())
-      if (patch_cells_set.find(front_cell.localId()) == patch_cells_set.end())
-        front = false;
-    if (!back_cell.null())
-      if (patch_cells_set.find(back_cell.localId()) == patch_cells_set.end())
-        back = false;
 
     bool is_inverse = false;
     if (!front_cell.null()){
@@ -267,9 +271,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
       }
     }
     if (is_inverse)
-      m_infos_view[face_lid] = ItemDirectionInfo(back_cell, front_cell, back, front);
+      m_infos_view[face_lid] = ItemDirectionInfo(back_cell, front_cell);
     else
-      m_infos_view[face_lid] = ItemDirectionInfo(front_cell, back_cell, front, back);
+      m_infos_view[face_lid] = ItemDirectionInfo(front_cell, back_cell);
   }
 }
 

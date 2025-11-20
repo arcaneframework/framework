@@ -259,12 +259,17 @@ isNull() const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchUp() const
+patchUp(Integer dim) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level + 1);
   p.setMinPoint(m_min_point * 2);
-  p.setMaxPoint(m_max_point * 2);
+  if (dim == 2) {
+    p.setMaxPoint({ m_max_point.x * 2, m_max_point.y * 2, 1 });
+  }
+  else {
+    p.setMaxPoint(m_max_point * 2);
+  }
   p.setOverlapLayerSize(m_overlap_layer_size * 2);
   return p;
 }
