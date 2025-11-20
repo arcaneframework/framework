@@ -759,7 +759,12 @@ TEST(Span,FixedValue)
   Span<Int64, 12> fixed_list(vlist);
   Int32 sub_view_size = 5;
   Span<Int64> sub_view1 = fixed_list.subspan(0, sub_view_size);
-  ASSERT_EQ(sub_view1.size(),sub_view_size);
+  ASSERT_EQ(sub_view1.size(), sub_view_size);
+
+  Span<Int64,12> fixed_span_only_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_ptr.data(),vlist.data());
+  Span<const Int64,12> fixed_span_only_const_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_const_ptr.data(),vlist.data());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -14,6 +14,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/ArgumentException.h"
 #include "arccore/base/TraceInfo.h"
+#include "arccore/base/FatalErrorException.h"
 
 // On n'utilise pas directement ces fichiers mais on les inclus pour tester
 // la compilation. Lorsque les tests seront en place on pourra supprimer
@@ -71,6 +72,15 @@ binaryRead(std::istream& istr,const Span<std::byte>& bytes)
 {
   auto* ptr = reinterpret_cast<char*>(bytes.data());
   istr.read(ptr,bytes.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Impl::ExtentStorageBase::
+_throwBadSize(Int64 wanted_size, Int64 expected_size)
+{
+  ARCCORE_FATAL("Bad size value for fixed extent size={0} expected={1}", wanted_size, expected_size);
 }
 
 /*---------------------------------------------------------------------------*/
