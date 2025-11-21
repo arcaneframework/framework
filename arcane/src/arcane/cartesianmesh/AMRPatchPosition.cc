@@ -277,6 +277,25 @@ patchUp(Integer dim) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+AMRPatchPosition AMRPatchPosition::
+patchDown(Integer dim) const
+{
+  AMRPatchPosition p;
+  p.setLevel(m_level - 1);
+  p.setMinPoint(m_min_point / 2);
+  if (dim == 2) {
+    p.setMaxPoint({ static_cast<Int64>(std::ceil(m_max_point.x / 2.)), static_cast<Int64>(std::ceil(m_max_point.y / 2.)), 1 });
+  }
+  else {
+    p.setMaxPoint({ static_cast<Int64>(std::ceil(m_max_point.x / 2.)), static_cast<Int64>(std::ceil(m_max_point.y / 2.)), static_cast<Int64>(std::ceil(m_max_point.z / 2.)) });
+  }
+  p.setOverlapLayerSize((m_overlap_layer_size / 2) + 1);
+  return p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int64x3 AMRPatchPosition::
 length() const
 {
@@ -312,6 +331,18 @@ isInWithOverlap(Integer x, Integer y, Integer z, Integer overlap) const
   const Int64x3 min_point = m_min_point - overlap;
   const Int64x3 max_point = m_max_point + overlap;
   return x >= min_point.x && x < max_point.x && y >= min_point.y && y < max_point.y && z >= min_point.z && z < max_point.z;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool AMRPatchPosition::
+haveIntersection(const AMRPatchPosition& other) const
+{
+  return (
+  (other.maxPoint().x > minPoint().x && maxPoint().x > other.minPoint().x) &&
+  (other.maxPoint().y > minPoint().y && maxPoint().y > other.minPoint().y) &&
+  (other.maxPoint().z > minPoint().z && maxPoint().z > other.minPoint().z));
 }
 
 /*---------------------------------------------------------------------------*/
