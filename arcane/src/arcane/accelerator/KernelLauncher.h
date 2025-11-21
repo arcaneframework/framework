@@ -138,49 +138,6 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
-template <typename BuilderType, typename Lambda> __global__ void
-doIndirectGPULambda(SmallSpan<const Int32> ids, Lambda func)
-{
-  using LocalIdType = BuilderType::ValueType;
-
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < ids.size()) {
-    LocalIdType lid(ids[i]);
-    //if (i<10)
-    //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(BuilderType::create(i, lid));
-  }
-}
-
-template <typename ItemType, typename Lambda> __global__ void
-doDirectGPULambda(Int32 vsize, Lambda func)
-{
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < vsize) {
-    //if (i<10)
-    //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(i);
-  }
-}
-
-template <typename LoopBoundType, typename Lambda> __global__ void
-doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
-{
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i));
-  }
-}
-
 template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
 doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
 {
@@ -217,22 +174,6 @@ doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
   KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
 }
 
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
-{
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
-  if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i), remaining_args...);
-  }
-  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -242,41 +183,6 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_SYCL)
-
-//! Boucle N-dimension sans indirection
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
-class DoDirectSYCLLambdaArrayBounds
-{
- public:
-
-  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
-                  LoopBoundType bounds, Lambda func,
-                  RemainingArgs... remaining_args) const
-  {
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-    Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
-    if (i < bounds.nbElement()) {
-      // Si possible, on passe \a x en argument
-      if constexpr (requires { bounds.getIndices(x); })
-        body(bounds.getIndices(x), remaining_args...);
-      else
-        body(bounds.getIndices(i), remaining_args...);
-    }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
-  }
-  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
-  {
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x);
-    if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i));
-    }
-  }
-};
 
 //! Boucle 1D avec indirection
 template <typename TraitsType, typename Lambda, typename... RemainingArgs>

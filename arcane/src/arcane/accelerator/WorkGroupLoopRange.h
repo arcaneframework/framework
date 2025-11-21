@@ -209,6 +209,7 @@ class WorkGroupLoopContext
   // Pour accéder aux constructeurs
   friend WorkGroupLoopRange;
   friend Impl::WorkGroupSequentialForHelper;
+  friend constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext arcaneGetLoopIndexCudaHip(const WorkGroupLoopRange& loop_range, Int32 i);
 
  private:
 
@@ -324,6 +325,8 @@ class SyclDeviceWorkItemBlock
 class SyclWorkGroupLoopContext
 {
   friend WorkGroupLoopRange;
+  friend SyclWorkGroupLoopContext arcaneGetLoopIndexSycl(const WorkGroupLoopRange& loop_range,
+                                                         sycl::nd_item<1> id);
 
  private:
 
@@ -404,21 +407,6 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
     return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
   }
 
- public:
-
-  //TODO rendre privé ou mettre en externe
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-  constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext getIndices(Int32) const { return WorkGroupLoopContext(); }
-#endif
-
-#if defined(ARCANE_COMPILING_SYCL)
-  //TODO rendre privé ou mettre en externe
-  SyclWorkGroupLoopContext getIndices(sycl::nd_item<1> id) const
-  {
-    return SyclWorkGroupLoopContext(id);
-  }
-#endif
-
  private:
 
   Int32 m_total_size = 0;
@@ -426,6 +414,29 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
   Int32 m_group_size = 0;
   Int32 m_last_group_size = 0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+inline constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext
+arcaneGetLoopIndexCudaHip([[maybe_unused]] const WorkGroupLoopRange& loop_range,
+                          [[maybe_unused]] Int32 i)
+{
+  return WorkGroupLoopContext();
+}
+#endif
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+inline SyclWorkGroupLoopContext
+arcaneGetLoopIndexSycl([[maybe_unused]] const WorkGroupLoopRange& loop_range,
+                       sycl::nd_item<1> id)
+{
+  return SyclWorkGroupLoopContext(id);
+}
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
