@@ -556,25 +556,33 @@ refine()
   Integer dimension = m_cmesh->mesh()->dimension();
   Integer nb_overlap_cells = 1;
   Integer min_level = 0;
-  Integer max_level = -1;
+  Integer future_max_level = -1; // Désigne le niveau max qui aura des enfants, donc le futur level max +1.
+  Integer old_max_level = -1; // Mais s'il reste des mailles à des niveaux plus haut, il faut les retirer.
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
 
-  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+  amr->_syncFlagCell();
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+    Integer level = icell->level();
     if (icell->hasFlags(ItemFlags::II_Refine)) {
-      Integer level = icell->level();
-      if (level > max_level)
-        max_level = level;
+      if (level > future_max_level)
+        future_max_level = level;
     }
+    if (level > old_max_level)
+      old_max_level = level;
   }
-  max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, max_level);
+  future_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, future_max_level);
+  old_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, old_max_level);
 
-  m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << max_level;
+  m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
 
-  AMRPatchPositionLevelGroup all_patches(max_level);
+  AMRPatchPositionLevelGroup all_patches(future_max_level);
 
-  for (Integer level = max_level; level >= min_level; --level) {
-    if (level != max_level) {
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+  for (Integer level = future_max_level; level >= min_level; --level) {
+    m_cmesh->traceMng()->info() << "Refine Level " << level << " with " << nb_overlap_cells << " layers of overlap cells";
+    if (level != future_max_level) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
           Integer pos_x = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoordX(*icell), level, level + 1);
           Integer pos_y = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoordY(*icell), level, level + 1);
@@ -621,49 +629,59 @@ refine()
     }
     global_efficacity /= sig_array.size();
     m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
-
-    StringBuilder str = "";
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
-      if (icell->level() != level)
-        continue;
-      Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-      Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-      Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
-      Integer patch = -1;
-      for (Integer i = 0; i < sig_array.size(); ++i) {
-        const AMRPatchPositionSignature& elem = sig_array[i];
-        if (elem.isIn(pos_x, pos_y, pos_z)) {
-          if (patch != -1) {
-            ARCANE_FATAL("ABCDEFG -- old : {0} -- new : {1}", patch, i);
+    {
+      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
+      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+        if (icell->level() != level)
+          continue;
+        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        Integer patch = -1;
+        for (Integer i = 0; i < sig_array.size(); ++i) {
+          const AMRPatchPositionSignature& elem = sig_array[i];
+          if (elem.patch().isInWithOverlap(pos_x, pos_y, pos_z)) {
+            patch = -2;
           }
-          patch = i;
+          if (elem.isIn(pos_x, pos_y, pos_z)) {
+            if (patch >= 0) {
+              ARCANE_FATAL("ABCDEFG -- old : {0} -- new : {1}", patch, i);
+            }
+            patch = i;
+          }
         }
-      }
-      if (patch == -1 && icell->hasFlags(ItemFlags::II_Refine)) {
-        ARCANE_FATAL("Bad Patch");
+        if (patch == -1 && icell->hasFlags(ItemFlags::II_Refine)) {
+          ARCANE_FATAL("Bad Patch");
+        }
+        av_out(pos_y, pos_x) = patch;
       }
 
-      if (pos_x == 0) {
+      StringBuilder str = "";
+      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
         str += "\n";
-      }
-      if (patch != -1) {
-        str += "[";
-        if (patch < 10) {
-          str += " ";
+        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
+          Integer c = av_out(i, j);
+          if (c >= 0) {
+            str += "[";
+            if (c < 10)
+              str += " ";
+            str += c;
+            str += "]";
+          }
+          else if (c == -2) {
+            str += "[RE]";
+          }
+          else
+            str += "[  ]";
         }
-        str += patch;
-        str += "]";
       }
-      else {
-        str += "[  ]";
-      }
+      m_cmesh->traceMng()->info() << str;
     }
-    m_cmesh->traceMng()->info() << str;
 
     ////////////
   }
 
-  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
 
   {
     constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine |
@@ -680,7 +698,7 @@ refine()
   _removeAllPatches();
   applyPatchEdit(false);
 
-  for (Integer level = min_level; level <= max_level; ++level) {
+  for (Integer level = min_level; level <= future_max_level; ++level) {
     all_patches.fusionPatches(level);
 
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
@@ -696,23 +714,39 @@ refine()
       }
     }
 
-    Integer nb_cell_x = numbering->globalNbCellsX(level);
+    {
+      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
+      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        if (icell->hasHChildren()) {
+          av_out(pos_y, pos_x) = 0;
+        }
+        if (icell->hasFlags(ItemFlags::II_Refine)) {
+          av_out(pos_y, pos_x) = 1;
+        }
+        if (icell->hasHChildren() && icell->hasFlags(ItemFlags::II_Refine)) {
+          ARCANE_FATAL("Bad refine cell");
+        }
+      }
 
-    StringBuilder str = "Level ";
-    str += level;
-    str += "\n";
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level)) {
-      if (icell->uniqueId().asInt32() % nb_cell_x == 0) {
+      StringBuilder str = "";
+      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
         str += "\n";
+        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
+          Integer c = av_out(i, j);
+          if (c == 1)
+            str += "[++]";
+          else if (c == 0)
+            str += "[XX]";
+          else
+            str += "[  ]";
+        }
       }
-      if (icell->hasFlags(ItemFlags::II_Refine)) {
-        str += "[++]";
-      }
-      else {
-        str += "[  ]";
-      }
+      m_cmesh->traceMng()->info() << str;
     }
-    m_cmesh->traceMng()->info() << str;
 
     amr->refine();
 
@@ -728,9 +762,27 @@ refine()
     }
   }
 
-  m_cmesh->traceMng()->info() << "max_level : " << max_level << " -- min_level : " << min_level;
+  m_cmesh->traceMng()->info() << "max_level : " << future_max_level << " -- min_level : " << min_level;
 
-  for (Integer level = max_level + 1; level > min_level; --level) {
+  // On retire les mailles qui n'auront plus de parent.
+  // Exemple :
+  // À l'itération précédente, on a mis des flags II_Refine sur des mailles de niveau 0 et 1,
+  // le niveau max était 2.
+  // Alors, dans cette itération, old_max_level = 2.
+  // À cette itération, on a mis des flags II_Refine uniquement sur des mailles de niveau 0.
+  // Alors, future_max_level = 0.
+  //
+  // On doit retirer toutes les mailles de niveau 2 pour éviter les mailles orphelines.
+  {
+    for (Integer level = old_max_level; level > future_max_level + 1; --level) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+      }
+      amr->coarsen(true);
+    }
+  }
+
+  for (Integer level = future_max_level + 1; level > min_level; --level) {
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
       Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
       Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
@@ -748,28 +800,38 @@ refine()
       }
     }
 
-    Integer nb_cell_x = numbering->globalNbCellsX(level - 1);
+    {
+      UniqueArray<Integer> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
+      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level - 1)) {
+        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
+        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
+        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        if (icell->hasHChildren()) {
+          if (icell->hChild(0).hasFlags(ItemFlags::II_Coarsen)) {
+            av_out(pos_y, pos_x) = 1;
+          }
+          else {
+            av_out(pos_y, pos_x) = 0;
+          }
+        }
+      }
 
-    StringBuilder str = "Level ";
-    str += level;
-    str += "\n";
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level - 1)) {
-      if (icell->uniqueId().asInt32() % nb_cell_x == 0) {
+      StringBuilder str = "";
+      for (Integer i = 0; i < numbering->globalNbCellsX(level - 1); ++i) {
         str += "\n";
-      }
-      if (icell->hasHChildren()) {
-        if (icell->hChild(0).hasFlags(ItemFlags::II_Coarsen)) {
-          str += "[--]";
+        for (Integer j = 0; j < numbering->globalNbCellsY(level - 1); ++j) {
+          Integer c = av_out(i, j);
+          if (c == 1)
+            str += "[--]";
+          else if (c == 0)
+            str += "[XX]";
+          else
+            str += "[  ]";
         }
-        else {
-          str += "[XX]";
-        }
       }
-      else {
-        str += "[  ]";
-      }
+      m_cmesh->traceMng()->info() << str;
     }
-    m_cmesh->traceMng()->info() << str;
 
     amr->coarsen(true);
   }
@@ -921,6 +983,9 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 
   ENUMERATE_ (Cell, icell, cell_group) {
     Cell cell = *icell;
+    if (!cell.isOwn()) {
+      continue;
+    }
 
     Int64 pos_x = numbering->cellUniqueIdToCoordX(cell);
     Int64 pos_y = numbering->cellUniqueIdToCoordY(cell);
@@ -1237,10 +1302,6 @@ _addPatch(const AMRPatchPosition& new_patch_position)
     if (new_patch_position.isInWithOverlap(pos_x, pos_y, pos_z)) {
       cells_local_id.add(icell.localId());
     }
-  }
-
-  if (cells_local_id.empty()) {
-    return;
   }
 
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();

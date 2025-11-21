@@ -226,40 +226,54 @@ fillSig()
     m_sig_z[pos_z - m_patch.minPoint().z]++;
   }
 
+  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
+  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
+  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
+
   if (m_all_patches->maxLevel() > m_patch.level()) {
-    Int64x3 min = m_patch.minPoint();
-    Integer nb_proc = m_mesh->mesh()->parallelMng()->commSize();
-    Integer my_proc = m_mesh->mesh()->parallelMng()->commRank();
 
-    Integer base = m_sig_x.size() / nb_proc;
-    Integer reste = m_sig_x.size() % nb_proc;
-    Integer size = base + (my_proc < reste ? 1 : 0);
-    Integer begin = my_proc * base + std::min(my_proc, reste);
-    Integer end = begin + size;
+    // Pour que la signature soit valide, il ne faut pas que les patchs de m_all_patches
+    // s'intersectent entre eux (pour un même niveau).
+    for (const auto& elem : m_all_patches->patches(m_patch.level() + 1)) {
+      AMRPatchPosition patch_down = elem.patchDown(m_mesh->mesh()->dimension());
+      if (!m_patch.haveIntersection(patch_down)) {
+        continue;
+      }
 
-    for (Integer k = 0; k < m_sig_z.size(); ++k) {
-      Integer pos_z = m_numbering->offsetLevelToLevel(min.z + k, m_patch.level(), m_patch.level() + 1);
-      for (Integer j = 0; j < m_sig_y.size(); ++j) {
-        Integer pos_y = m_numbering->offsetLevelToLevel(min.y + j, m_patch.level(), m_patch.level() + 1);
-        for (Integer i = begin; i < end; ++i) {
-          Integer pos_x = m_numbering->offsetLevelToLevel(min.x + i, m_patch.level(), m_patch.level() + 1);
-          for (auto elem : m_all_patches->patches(m_patch.level() + 1)) {
-            if (elem.isIn(pos_x, pos_y, pos_z)) {
-              m_have_cells = true;
-              m_sig_x[i]++;
-              m_sig_y[j]++;
-              m_sig_z[k]++;
-              break;
-            }
+      Int64x3 min = patch_down.minPoint() - m_patch.minPoint();
+      Int64x3 max = patch_down.maxPoint() - m_patch.minPoint();
+
+      Int64x3 begin;
+      Int64x3 end;
+
+      begin.x = std::max(min.x, 0l);
+      end.x = std::min(max.x, m_sig_x.size() + 0l);
+
+      begin.y = std::max(min.y, 0l);
+      end.y = std::min(max.y, m_sig_y.size() + 0l);
+
+      if (m_mesh->mesh()->dimension() == 2) {
+        begin.z = 0;
+        end.z = 1;
+      }
+      else {
+        begin.z = std::max(min.z, 0l);
+        end.z = std::min(max.z, m_sig_z.size() + 0l);
+      }
+
+      for (Integer k = begin.z; k < end.z; ++k) {
+        for (Integer j = begin.y; j < end.y; ++j) {
+          for (Integer i = begin.x; i < end.x; ++i) {
+            m_sig_x[i]++;
+            m_sig_y[j]++;
+            m_sig_z[k]++;
+            m_have_cells = true;
           }
         }
       }
     }
   }
 
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
 }
 

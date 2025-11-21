@@ -48,10 +48,10 @@ class CartesianMeshAMRPatchMng
   void refine() override;
   void createSubLevel() override;
   void coarsen(bool update_parent_flag) override;
+  void _syncFlagCell() const override;
 
  private:
 
-  void _syncFlagCell() const;
   void _shareInfosOfCellsAroundPatch(ConstArrayView<Cell> patch_cells, std::unordered_map<Int64, Integer>& around_cells_uid_to_owner, std::unordered_map<Int64, Int32>& around_cells_uid_to_flags, Int32 useful_flags) const;
 
  private:
