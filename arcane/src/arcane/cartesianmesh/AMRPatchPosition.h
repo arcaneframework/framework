@@ -60,12 +60,15 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   bool isNull() const;
 
   AMRPatchPosition patchUp(Integer dim) const;
+  AMRPatchPosition patchDown(Integer dim) const;
 
   Int64x3 length() const;
 
   bool isIn(Integer x, Integer y, Integer z) const;
   bool isInWithOverlap(Integer x, Integer y, Integer z) const;
   bool isInWithOverlap(Integer x, Integer y, Integer z, Integer overlap) const;
+
+  bool haveIntersection(const AMRPatchPosition& other) const;
 
  private:
 
