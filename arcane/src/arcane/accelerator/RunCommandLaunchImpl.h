@@ -41,7 +41,7 @@ class WorkGroupSequentialForHelper
   apply(Int32 begin_index, Int32 nb_loop, WorkGroupLoopRange bounds,
         const Lambda& func, RemainingArgs... remaining_args)
   {
-    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
     const Int32 group_size = bounds.groupSize();
     Int32 loop_index = begin_index * group_size;
     for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
@@ -53,7 +53,7 @@ class WorkGroupSequentialForHelper
       loop_index += group_size;
     }
 
-    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+    ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
   }
 };
 

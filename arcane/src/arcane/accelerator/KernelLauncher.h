@@ -52,60 +52,89 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe pour appliquer la finalisation pour les arguments supplémentaires.
+ * \brief Classe pour appliquer une opération pour les arguments supplémentaires
+ * en début et en fin de noyau CUDA/HIP.
  */
-class KernelRemainingArgsHelper
+class CudaHipKernelRemainingArgsHelper
 {
  public:
 
   //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
-  applyRemainingArgsAtBegin(Int32 index, RemainingArgs&... remaining_args)
+  applyAtBegin(Int32 index, RemainingArgs&... remaining_args)
   {
-    (remaining_args._internalExecWorkItemAtBegin(index), ...);
+    (_doOneAtBegin(index, remaining_args), ...);
   }
 
   //! Applique les fonctors des arguments additionnels en fin de kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
-  applyRemainingArgsAtEnd(Int32 index, RemainingArgs&... remaining_args)
+  applyAtEnd(Int32 index, RemainingArgs&... remaining_args)
   {
-    (remaining_args._internalExecWorkItemAtEnd(index), ...);
+    (_doOneAtEnd(index, remaining_args), ...);
   }
+
+ private:
+
+  template <typename OneArg> static inline ARCCORE_DEVICE void
+  _doOneAtBegin(Int32 index, OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    HandlerType::execWorkItemAtBeginForCudaHip(one_arg, index);
+  }
+  template <typename OneArg> static inline ARCCORE_DEVICE void
+  _doOneAtEnd(Int32 index, OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    HandlerType::execWorkItemAtEndForCudaHip(one_arg, index);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour appliquer une opération pour les arguments supplémentaires
+ * en début et en fin de noyau Sycl.
+ */
+class SyclKernelRemainingArgsHelper
+{
+ public:
 
 #if defined(ARCANE_COMPILING_SYCL)
   //! Applique les fonctors des arguments additionnels en début de kernel
   template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
-  applyRemainingArgsAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
-                            RemainingArgs&... remaining_args)
+  applyAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+               RemainingArgs&... remaining_args)
   {
-    (_doOneArgAtBegin(x, shm_view, remaining_args), ...);
+    (_doOneAtBegin(x, shm_view, remaining_args), ...);
   }
 
   //! Applique les fonctors des arguments additionnels en fin de kernel
   template <typename... RemainingArgs> static inline void
-  applyRemainingArgsAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
-                          RemainingArgs&... remaining_args)
+  applyAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
+             RemainingArgs&... remaining_args)
   {
-    (_doOneArgAtEnd(x, shm_view, remaining_args), ...);
+    (_doOneAtEnd(x, shm_view, remaining_args), ...);
   }
 
  private:
 
   template <typename OneArg> static void
-  _doOneArgAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  _doOneAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
   {
-    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
-      one_arg._internalExecWorkItemAtBegin(x, shm_memory);
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    if constexpr (requires { HandlerType::execWorkItemAtBeginForSycl(one_arg, x, shm_memory); })
+      HandlerType::execWorkItemAtBeginForSycl(one_arg, x, shm_memory);
     else
-      one_arg._internalExecWorkItemAtBegin(x);
+      HandlerType::execWorkItemAtBeginForSycl(one_arg, x);
   }
   template <typename OneArg> static void
-  _doOneArgAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
+  _doOneAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_memory, OneArg& one_arg)
   {
-    if constexpr (requires { one_arg._internalExecWorkItemAtBegin(x, shm_memory); })
-      one_arg._internalExecWorkItemAtEnd(x, shm_memory);
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    if constexpr (requires { HandlerType::execWorkItemAtBeginForSycl(one_arg, x, shm_memory); })
+      HandlerType::execWorkItemAtEndForSycl(one_arg, x, shm_memory);
     else
-      one_arg._internalExecWorkItemAtEnd(x);
+      HandlerType::execWorkItemAtEndForSycl(one_arg, x);
   }
 
 #endif
@@ -136,50 +165,7 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-
-template <typename BuilderType, typename Lambda> __global__ void
-doIndirectGPULambda(SmallSpan<const Int32> ids, Lambda func)
-{
-  using LocalIdType = BuilderType::ValueType;
-
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < ids.size()) {
-    LocalIdType lid(ids[i]);
-    //if (i<10)
-    //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(BuilderType::create(i, lid));
-  }
-}
-
-template <typename ItemType, typename Lambda> __global__ void
-doDirectGPULambda(Int32 vsize, Lambda func)
-{
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < vsize) {
-    //if (i<10)
-    //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(i);
-  }
-}
-
-template <typename LoopBoundType, typename Lambda> __global__ void
-doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
-{
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i));
-  }
-}
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 
 template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
 doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
@@ -193,12 +179,12 @@ doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... r
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < ids.size()) {
     LocalIdType lid(ids[i]);
     body(BuilderType::create(i, lid), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
 template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -210,73 +196,22 @@ doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < vsize) {
     body(i, remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
-}
-
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
-{
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
-  if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i), remaining_args...);
-  }
-  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+#endif // ARCANE_COMPILING_CUDA_OR_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_SYCL)
-
-//! Boucle N-dimension sans indirection
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
-class DoDirectSYCLLambdaArrayBounds
-{
- public:
-
-  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
-                  LoopBoundType bounds, Lambda func,
-                  RemainingArgs... remaining_args) const
-  {
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-    Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
-    if (i < bounds.nbElement()) {
-      // Si possible, on passe \a x en argument
-      if constexpr (requires { bounds.getIndices(x); })
-        body(bounds.getIndices(x), remaining_args...);
-      else
-        body(bounds.getIndices(i), remaining_args...);
-    }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
-  }
-  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
-  {
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x);
-    if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i));
-    }
-  }
-};
 
 //! Boucle 1D avec indirection
 template <typename TraitsType, typename Lambda, typename... RemainingArgs>
@@ -294,12 +229,12 @@ class DoIndirectSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
+    SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
     if (i < ids.size()) {
       LocalIdType lid(ids[i]);
       body(BuilderType::create(i, lid), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
+    SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {

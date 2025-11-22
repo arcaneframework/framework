@@ -23,6 +23,125 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+
+template <int N, typename IndexType_>
+constexpr ARCCORE_HOST_DEVICE SimpleForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexCudaHip(const SimpleForLoopRanges<N, IndexType_>& bounds, Int32 i)
+{
+  return bounds.getIndices(i);
+}
+
+template <int N, typename IndexType_>
+constexpr ARCCORE_HOST_DEVICE ComplexForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexCudaHip(const ComplexForLoopRanges<N, IndexType_>& bounds, Int32 i)
+{
+  return bounds.getIndices(i);
+}
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+template <int N, typename IndexType_>
+SimpleForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexSycl(const SimpleForLoopRanges<N, IndexType_>& bounds, sycl::nd_item<1> x)
+{
+  return bounds.getIndices(static_cast<Int32>(x.get_global_id(0)));
+}
+
+template <int N, typename IndexType_>
+ComplexForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexSycl(const ComplexForLoopRanges<N, IndexType_>& bounds, sycl::nd_item<1> x)
+{
+  return bounds.getIndices(static_cast<Int32>(x.get_global_id(0)));
+}
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
+
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
+doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
+{
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+
+  using namespace Arcane::Accelerator::Impl;
+
+  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
+  if (i < bounds.nbElement()) {
+    body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+  }
+  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
+}
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+//! Boucle N-dimension sans indirection
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
+class DoDirectSYCLLambdaArrayBounds
+{
+ public:
+
+  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
+                  LoopBoundType bounds, Lambda func,
+                  RemainingArgs... remaining_args) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+    Int32 i = static_cast<Int32>(x.get_global_id(0));
+    SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
+    if (i < bounds.nbElement()) {
+      // Si possible, on passe \a x en argument
+      body(arcaneGetLoopIndexSycl(bounds, x), remaining_args...);
+    }
+    SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
+  }
+  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i < bounds.nbElement()) {
+      body(bounds.getIndices(i));
+    }
+  }
+};
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::Accelerator::impl
 {
 

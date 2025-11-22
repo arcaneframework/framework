@@ -35,14 +35,14 @@ class HostKernelRemainingArgsHelper
 
   //! Applique les functors des arguments additionnels au début de l'itération.
   template <typename... RemainingArgs> static void
-  applyRemainingArgsAtBegin(RemainingArgs&... remaining_args)
+  applyAtBegin(RemainingArgs&... remaining_args)
   {
     (_doOneAtBegin(remaining_args), ...);
   }
 
   //! Applique les functors des arguments additionnels à la fin de l'itération.
   template <typename... RemainingArgs> static void
-  applyRemainingArgsAtEnd(RemainingArgs&... remaining_args)
+  applyAtEnd(RemainingArgs&... remaining_args)
   {
     (_doOneAtEnd(remaining_args), ...);
   }
@@ -51,13 +51,13 @@ class HostKernelRemainingArgsHelper
 
   template <typename OneArg> static void _doOneAtBegin(OneArg& one_arg)
   {
-    //if constexpr (requires { one_arg._internalHostExecWorkItemAtBegin(); })
-    one_arg._internalHostExecWorkItemAtBegin();
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    HandlerType::execWorkItemAtBeginForHost(one_arg);
   }
   template <typename OneArg> static void _doOneAtEnd(OneArg& one_arg)
   {
-    //if constexpr (requires { one_arg._internalHostExecWorkItemAtEnd(); })
-    one_arg._internalHostExecWorkItemAtEnd();
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    HandlerType::execWorkItemAtEndForHost(one_arg);
   }
 };
 

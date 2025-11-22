@@ -31,6 +31,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator::Impl
+{
+class HostDeviceReducerKernelRemainingArg;
+}
+
 namespace Arcane::impl
 {
 class HostReducerHelper;
@@ -93,9 +98,9 @@ class ReduceDeviceInfo
  public:
 
   //! Valeur du thread courant à réduire.
-  DataType m_current_value;
+  DataType m_current_value = {};
   //! Valeur de l'identité pour la réduction
-  DataType m_identity;
+  DataType m_identity = {};
   //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
   DataType* m_device_final_ptr = nullptr;
   //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
@@ -505,15 +510,16 @@ template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer2
 : public HostDeviceReducerBase<DataType, ReduceFunctor>
 {
-  friend Impl::KernelRemainingArgsHelper;
-  friend ::Arcane::Impl::HostKernelRemainingArgsHelper;
- 
+  friend Impl::HostDeviceReducerKernelRemainingArg;
+
  public:
 
   using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
   using BaseClass::m_grid_memory_info;
   using BaseClass::m_host_or_device_memory_for_reduced_value;
   using BaseClass::m_local_value;
+
+  using RemainingArgHandlerType = Impl::HostDeviceReducerKernelRemainingArg;
 
  public:
 
@@ -530,25 +536,8 @@ class HostDeviceReducer2
 
  private:
 
-  // Note: les méthodes _internalReduce...() sont
-  // internes à Arcane.
-
-  void _internalHostExecWorkItemAtBegin(){}
-  void _internalHostExecWorkItemAtEnd()
-  {
-    this->_finalize();
-  }
-
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-  ARCCORE_HOST_DEVICE void _internalExecWorkItemAtEnd(Int32)
-  {
-    this->_finalize();
-  };
-  ARCCORE_HOST_DEVICE void _internalExecWorkItemAtBegin(Int32){}
-#endif
 
 #if defined(ARCANE_COMPILING_SYCL)
-  void _internalExecWorkItemAtBegin(sycl::nd_item<1>){}
   void _internalExecWorkItemAtEnd(sycl::nd_item<1> id)
   {
     unsigned int* atomic_counter_ptr = m_grid_memory_info.m_grid_device_count;
@@ -817,6 +806,56 @@ class ReducerMin2
     DataType& lv = this->m_local_value;
     lv = v < lv ? v : lv;
   }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour gérer les arguments de type HostDeviceReducer2 en
+ * début et fin d'exécution des noyaux.
+ */
+class Impl::HostDeviceReducerKernelRemainingArg
+{
+ public:
+
+  template <typename DataType, typename ReduceFunctor>
+  static void
+  execWorkItemAtBeginForHost(HostDeviceReducer2<DataType, ReduceFunctor>&)
+  {
+  }
+  template <typename DataType, typename ReduceFunctor>
+  static void
+  execWorkItemAtEndForHost(HostDeviceReducer2<DataType, ReduceFunctor>& reducer)
+  {
+    reducer._finalize();
+  }
+
+  template <typename DataType, typename ReduceFunctor>
+  static ARCCORE_DEVICE void
+  execWorkItemAtBeginForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>&, Int32)
+  {
+  }
+
+  template <typename DataType, typename ReduceFunctor>
+  static ARCCORE_DEVICE void
+  execWorkItemAtEndForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>& reducer, Int32)
+  {
+    reducer._finalize();
+  }
+
+#if defined(ARCANE_COMPILING_SYCL)
+  template <typename DataType, typename ReduceFunctor>
+  static void
+  execWorkItemAtBeginForSycl(HostDeviceReducer2<DataType, ReduceFunctor>&, sycl::nd_item<1>)
+  {
+  }
+  template <typename DataType, typename ReduceFunctor>
+  static void
+  execWorkItemAtEndForSycl(HostDeviceReducer2<DataType, ReduceFunctor>& reducer, sycl::nd_item<1> id)
+  {
+    reducer._internalExecWorkItemAtEnd(id);
+  }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

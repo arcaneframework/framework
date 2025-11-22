@@ -30,10 +30,10 @@ template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
 void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
-  Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+  Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(MDIndex<1>(i0), remaining_args...);
-  Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 //! Applique le fonctor \a func sur une boucle 2D.

@@ -245,11 +245,11 @@ void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& fun
   auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
 
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   ENUMERATE_NO_TRACE_ (ItemType, iitem, sub_items) {
     body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), remaining_args...);
   }
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
