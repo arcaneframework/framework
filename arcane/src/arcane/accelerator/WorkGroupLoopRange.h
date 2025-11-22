@@ -137,7 +137,7 @@ class HostWorkItemGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -418,7 +418,7 @@ class ARCANE_ACCELERATOR_EXPORT WorkGroupLoopRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 inline constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext
 arcaneGetLoopIndexCudaHip([[maybe_unused]] const WorkGroupLoopRange& loop_range,
                           [[maybe_unused]] Int32 i)

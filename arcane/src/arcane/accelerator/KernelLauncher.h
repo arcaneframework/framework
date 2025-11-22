@@ -165,7 +165,7 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 
 template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
 doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
@@ -206,7 +206,7 @@ doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+#endif // ARCANE_COMPILING_CUDA_OR_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

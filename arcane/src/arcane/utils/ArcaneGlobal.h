@@ -72,6 +72,10 @@
 #  endif
 #endif
 
+#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#define ARCANE_COMPILING_CUDA_OR_HIP
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // TODO: supprimer l'inclusion de <iosfwd> et les using.

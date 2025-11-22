@@ -832,15 +832,15 @@ class Impl::HostDeviceReducerKernelRemainingArg
 
   template <typename DataType, typename ReduceFunctor>
   static ARCCORE_DEVICE void
-  execWorkItemAtEndForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>& reducer, Int32)
+  execWorkItemAtBeginForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>&, Int32)
   {
-    reducer._finalize();
   }
 
   template <typename DataType, typename ReduceFunctor>
   static ARCCORE_DEVICE void
-  execWorkItemAtBeginForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>&, Int32)
+  execWorkItemAtEndForCudaHip(HostDeviceReducer2<DataType, ReduceFunctor>& reducer, Int32)
   {
+    reducer._finalize();
   }
 
 #if defined(ARCANE_COMPILING_SYCL)

@@ -23,7 +23,7 @@
 
 namespace Arcane::Accelerator::Impl
 {
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 inline __device__ std::byte* _getAcceleratorSharedMemory()
 {
   extern __shared__ Int64 shared_memory_ptr[];
@@ -126,7 +126,7 @@ class LocalMemoryKernelRemainingArg
     delete[] local_memory.m_ptr;
   }
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
   template <typename T, Int32 Extent> static ARCCORE_DEVICE void
   execWorkItemAtBeginForCudaHip(LocalMemory<T, Extent>& local_memory, Int32)
   {

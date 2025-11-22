@@ -73,7 +73,7 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 
 // On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
 doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)

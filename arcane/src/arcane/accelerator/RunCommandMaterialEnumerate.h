@@ -490,7 +490,7 @@ class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 /*
  * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
  */
@@ -507,7 +507,7 @@ doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remai
   Impl::CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
-#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+#endif // ARCANE_COMPILING_CUDA_OR_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
