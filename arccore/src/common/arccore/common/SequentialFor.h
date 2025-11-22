@@ -28,12 +28,13 @@ namespace Arcane
 //! Applique le functor \a func sur une boucle 1D.
 template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
-void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, RemainingArgs... remaining_args)
+void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func,
+                          RemainingArgs... remaining_args)
 {
-  Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+  Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(MDIndex<1>(i0), remaining_args...);
-  Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/

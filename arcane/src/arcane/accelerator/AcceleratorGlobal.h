@@ -34,6 +34,11 @@
 
 namespace Arcane::Accelerator
 {
+namespace Impl
+{
+  class CudaHipKernelRemainingArgsHelper;
+  class SyclKernelRemainingArgsHelper;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

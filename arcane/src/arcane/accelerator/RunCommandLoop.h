@@ -86,11 +86,11 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
 
   using namespace Arcane::Accelerator::Impl;
 
-  KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < bounds.nbElement()) {
     body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
   }
-  KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
+  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
 #endif
@@ -113,12 +113,12 @@ class DoDirectSYCLLambdaArrayBounds
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shared_memory, remaining_args...);
+    SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbElement()) {
       // Si possible, on passe \a x en argument
       body(arcaneGetLoopIndexSycl(bounds, x), remaining_args...);
     }
-    KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shared_memory, remaining_args...);
+    SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {

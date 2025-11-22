@@ -500,11 +500,11 @@ doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remai
   auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
+  Impl::CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < items.size()) {
     body(items[i], remaining_args...);
   }
-  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
+  Impl::CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
 #endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
@@ -527,11 +527,11 @@ class DoMatContainerSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shm_view, remaining_args...);
+    Impl::SyclKernelRemainingArgsHelper::applyAtBegin(x, shm_view, remaining_args...);
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shm_view, remaining_args...);
+    Impl::SyclKernelRemainingArgsHelper::applyAtEnd(x, shm_view, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
@@ -558,12 +558,12 @@ void _doConstituentItemsLambda(Int32 base_index, Int32 size, ContainerType items
   auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
 
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   Int32 last_value = base_index + size;
   for (Int32 i = base_index; i < last_value; ++i) {
     body(items[i], remaining_args...);
   }
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
