@@ -497,7 +497,7 @@ arccoreSetPauseOnError(bool v);
  * Les arguments de la macro sont utilisés pour formatter un message
  * d'erreur via la méthode String::format().
  *
- * \sa ARCCORE_FATA
+ * \sa ARCCORE_FATAL
  */
 #define ARCCORE_FATAL_IF(cond, ...) \
   ARCCORE_THROW_IF(cond, ::Arccore::FatalErrorException,__VA_ARGS__)

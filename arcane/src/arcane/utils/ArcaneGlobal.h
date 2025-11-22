@@ -755,22 +755,45 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
  * \brief Macro pour envoyer une exception avec formattage.
  *
  * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés formatter un message d'erreur via la
+ * la macro sont utilisés pour formatter un message d'erreur via la
  * méthode String::format().
  */
-#define ARCANE_THROW(exception_class,...)                           \
-  throw exception_class (A_FUNCINFO,Arcane::String::format(__VA_ARGS__))
+#define ARCANE_THROW(exception_class,...) \
+  ARCCORE_THROW(exception_class,__VA_ARGS__)
+
+/*!
+ * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ *
+ * \a exception_class est le type de l'exception. Les arguments suivants de
+ * la macro sont utilisés pour formatter un message d'erreur via la
+ * méthode String::format().
+ *
+ * \sa ARCANE_THROW
+ */
+#define ARCANE_THROW_IF(const, exception_class, ...)    \
+  ARCCORE_THROW_IF(const, exception_class, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Macro envoyant une exception FatalErrorException.
  *
- * Les arguments de la macro sont utilisés formatter un message
+ * Les arguments de la macro sont utilisés pour formatter un message
  * d'erreur via la méthode String::format().
  */
-#define ARCANE_FATAL(...)\
-  throw Arcane::FatalErrorException(A_FUNCINFO,Arcane::String::format(__VA_ARGS__))
+#define ARCANE_FATAL(...) \
+  ARCCORE_FATAL(__VA_ARGS__)
+
+/*!
+ * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ *
+ * Les arguments de la macro sont utilisés pour formatter un message
+ * d'erreur via la méthode String::format().
+ *
+ * \sa ARCANE_FATAL
+ */
+#define ARCANE_FATAL_IF(const, ...) \
+  ARCCORE_FATAL_IF(const, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
