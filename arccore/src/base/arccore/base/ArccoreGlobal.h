@@ -355,6 +355,17 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Macros pour l'attribut [[no_unique_address]]
+// Avec VS2022, cet attribut n'est pas pris en compte et il faut
+// utiliser [[msvc::no_unique_address]]
+#ifdef _MSC_VER
+#define ARCCORE_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define ARCCORE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Support pour l'alignement.
 // le C++11 utilise le mot clé alignas pour spécifier l'alignement.
@@ -450,22 +461,46 @@ arccoreSetPauseOnError(bool v);
  * \brief Macro pour envoyer une exception avec formattage.
  *
  * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés formatter un message d'erreur via la
+ * la macro sont utilisés pour formatter un message d'erreur via la
  * méthode String::format().
  */
-#define ARCCORE_THROW(exception_class,...)                           \
+#define ARCCORE_THROW(exception_class,...) \
   throw exception_class (A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
+
+/*!
+ * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ *
+ * \a exception_class est le type de l'exception. Les arguments suivants de
+ * la macro sont utilisés pour formatter un message d'erreur via la
+ * méthode String::format().
+ *
+ * \sa ARCCORE_THROW
+ */
+#define ARCCORE_THROW_IF(cond, exception_class, ...) \
+  if (cond) [[unlikely]] \
+    ARCCORE_THROW(exception_class,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Macro envoyant une exception FatalErrorException.
  *
- * Les arguments de la macro sont utilisés formatter un message
+ * Les arguments de la macro sont utilisés pour formatter un message
  * d'erreur via la méthode String::format().
  */
 #define ARCCORE_FATAL(...)\
-  throw Arccore::FatalErrorException(A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
+  ARCCORE_THROW(::Arccore::FatalErrorException,__VA_ARGS__)
+
+/*!
+ * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ *
+ * Les arguments de la macro sont utilisés pour formatter un message
+ * d'erreur via la méthode String::format().
+ *
+ * \sa ARCCORE_FATAL
+ */
+#define ARCCORE_FATAL_IF(cond, ...) \
+  ARCCORE_THROW_IF(cond, ::Arccore::FatalErrorException,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -112,7 +112,7 @@ class ExtentStorage
 
   explicit constexpr ExtentStorage([[maybe_unused]] SizeType s) noexcept
   {
-#if defined(ARCCORE_CHECK)
+#if defined(ARCCORE_CHECK) && !defined(ARCCORE_DEVICE_CODE)
     if (s != FixedExtent)
       ExtentStorageBase::_throwBadSize(s, FixedExtent);
 #endif
@@ -215,7 +215,7 @@ class SpanImpl
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
 
-  static constexpr bool is_dynamic = (Extent == DynExtent);
+  static constexpr bool IsDynamic = (Extent == DynExtent);
 
  public:
 
@@ -253,7 +253,7 @@ class SpanImpl
   {}
 
   //! Construit une vue depuis un pointeur avec une taille fixe
-  explicit constexpr ARCCORE_HOST_DEVICE SpanImpl(T* ptr) requires(!is_dynamic)
+  explicit constexpr ARCCORE_HOST_DEVICE SpanImpl(T* ptr) requires(!IsDynamic)
   : m_ptr(ptr)
   {}
 
@@ -604,7 +604,7 @@ class SpanImpl
 
   pointer m_ptr; //!< Pointeur sur le tableau
   //! Nombre d'éléments du tableau
-  [[no_unique_address]] ExtentStorageType m_size;
+  ARCCORE_NO_UNIQUE_ADDRESS ExtentStorageType m_size;
 
  private:
 
@@ -640,7 +640,7 @@ class Span
   using pointer = typename BaseClass::pointer;
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
-  static constexpr bool is_dynamic = (Extent == DynExtent);
+  static constexpr bool IsDynamic = (Extent == DynExtent);
 
  public:
 
@@ -687,7 +687,7 @@ class Span
   {}
 
   //! Construit une vue depuis un pointeur avec une taille fixe
-  explicit constexpr ARCCORE_HOST_DEVICE Span(T* ptr) requires(!is_dynamic)
+  explicit constexpr ARCCORE_HOST_DEVICE Span(T* ptr) requires(!IsDynamic)
   : BaseClass(ptr)
   {}
 
@@ -808,7 +808,7 @@ class SmallSpan
   using pointer = typename BaseClass::pointer;
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
-  static constexpr bool is_dynamic = (Extent == DynExtent);
+  static constexpr bool IsDynamic = (Extent == DynExtent);
 
  public:
 
@@ -849,7 +849,7 @@ class SmallSpan
   {}
 
   //! Construit une vue depuis un pointeur avec une taille fixe
-  explicit constexpr ARCCORE_HOST_DEVICE SmallSpan(T* ptr) requires(!is_dynamic)
+  explicit constexpr ARCCORE_HOST_DEVICE SmallSpan(T* ptr) requires(!IsDynamic)
   : BaseClass(ptr)
   {}
 

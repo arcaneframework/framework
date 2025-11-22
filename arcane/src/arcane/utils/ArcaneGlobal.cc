@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.cc                                             (C) 2000-2024 */
+/* ArcaneGlobal.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -151,55 +151,46 @@ arcaneThrowNullPointerError(const char* ptr_name,const char* text)
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long long size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long long size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCANE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF( (size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCANE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned int size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(int size)
 {
-  if (size>=ARCANE_INTEGER_MAX)
-    ARCANE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCANE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
+  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  return static_cast<Integer>(size);
 }
 
 /*---------------------------------------------------------------------------*/

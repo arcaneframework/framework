@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HashAlgorithm.cc                                            (C) 2000-2023 */
+/* HashAlgorithm.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un algorithme de hashage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -29,10 +29,8 @@ namespace Arcane
 void HashAlgorithmValue::
 setSize(Int32 size)
 {
-  if (size < 0)
-    ARCANE_FATAL("Invalid negative size '{0}'", size);
-  if (size > MAX_SIZE)
-    ARCANE_FATAL("Invalid size '{0}' max value is '{1}'", size, MAX_SIZE);
+  ARCANE_FATAL_IF((size < 0), "Invalid negative size '{0}'", size);
+  ARCANE_FATAL_IF((size > MAX_SIZE), "Invalid size '{0}' max value is '{1}'", size, MAX_SIZE);
   m_size = size;
 }
 
