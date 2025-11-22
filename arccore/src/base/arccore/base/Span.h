@@ -604,7 +604,7 @@ class SpanImpl
 
   pointer m_ptr; //!< Pointeur sur le tableau
   //! Nombre d'éléments du tableau
-  [[no_unique_address]] ExtentStorageType m_size;
+  ARCCORE_NO_UNIQUE_ADDRESS ExtentStorageType m_size;
 
  private:
 

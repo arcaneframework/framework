@@ -355,6 +355,17 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Macros pour l'attribut [[no_unique_address]]
+// Avec VS2022, cet attribut n'est pas pris en compte et il faut
+// utiliser [[msvc::no_unique_address]]
+#ifdef _MSC_VER
+#define ARCCORE_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define ARCCORE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Support pour l'alignement.
 // le C++11 utilise le mot clé alignas pour spécifier l'alignement.
