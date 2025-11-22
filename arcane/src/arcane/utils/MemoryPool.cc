@@ -57,12 +57,9 @@ class MemoryPool::Impl
       if (x == m_allocated_memory_map.end()) {
         ++m_nb_error;
         String str = String::format("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
-        if (m_is_throw_on_error)
-          ARCANE_FATAL(str);
-        else {
-          std::cerr << "ERROR: " << str << "\n";
-          return;
-        }
+        ARCANE_FATAL_IF(m_is_throw_on_error, str);
+        std::cerr << "ERROR: " << str << "\n";
+        return;
       }
 
       size_t allocated_size = x->second;
@@ -70,10 +67,8 @@ class MemoryPool::Impl
         ++m_nb_error;
         String str = String::format("MemoryPool '{0}': Incoherent size saved_size={1} arg_size={2}",
                                     m_name, allocated_size, size);
-        if (m_is_throw_on_error)
-          ARCANE_FATAL(str);
-        else
-          std::cerr << "ERROR: " << str << "\n";
+        ARCANE_FATAL_IF(m_is_throw_on_error, str);
+        std::cerr << "ERROR: " << str << "\n";
       }
 
       m_allocated_memory_map.erase(x);
@@ -83,10 +78,9 @@ class MemoryPool::Impl
     {
       std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
-      if (x != m_allocated_memory_map.end())
-        ARCANE_FATAL("MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
-                     m_name, ptr, size, x->second);
-
+      ARCANE_FATAL_IF((x != m_allocated_memory_map.end()),
+                      "MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
+                      m_name, ptr, size, x->second);
       m_allocated_memory_map.insert(std::make_pair(ptr, size));
     }
 
