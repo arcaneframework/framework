@@ -82,7 +82,15 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 
 # ----------------------------------------------------------------------------
 
-option(ARCCORE_USE_MPI "Whether or not MPI support is enabled" ON)
+# Avant novembre 2025, on utilisait l'option 'ARCCORE_USE_MPI'.
+# Pour être compatible avec l'existant on la prend en compte si elle est spécifiée
+if (DEFINED ARCCORE_USE_MPI AND NOT DEFINED ARCCORE_ENABLE_MPI)
+  option(ARCCORE_ENABLE_MPI "Whether or not MPI support is enabled" ${ARCCORE_USE_MPI})
+else()
+  option(ARCCORE_ENABLE_MPI "Whether or not MPI support is enabled" ON)
+  set(ARCCORE_USE_MPI "${ARCCORE_ENABLE_MPI}")
+endif()
+
 option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code coverage" OFF)
 
 # Pour l'instant c'est obligatoire d'avoir la GLIB.
@@ -247,7 +255,7 @@ arccore_add_component_directory(concurrency)
 arccore_add_component_directory(trace)
 arccore_add_component_directory(serialize)
 arccore_add_component_directory(message_passing)
-if (ARCCORE_USE_MPI)
+if (ARCCORE_ENABLE_MPI)
   arccore_add_component_directory(message_passing_mpi)
 endif()
 # ----------------------------------------------------------------------------
