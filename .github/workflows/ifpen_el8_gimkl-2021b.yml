@@ -155,4 +155,6 @@ jobs:
         if: always()
         run: |
            rm -rf ${{ env.SOURCE_DIR }}
-           ls -l /__w/framework/framework
+           ls -ls /__w
+           ls -l /__w
+           ls -l /__w/_temp
