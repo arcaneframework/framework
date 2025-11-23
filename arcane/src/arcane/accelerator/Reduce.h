@@ -321,6 +321,8 @@ class HostDeviceReducerBase
     }
   }
 
+  // Le compilateur Intel considère que cette classe n'est pas 'is_trivially_copyable'
+  // sur le device si on n'utilise pas le constructeur de copie.
 #if defined(__INTEL_LLVM_COMPILER) && defined(__SYCL_DEVICE_ONLY__)
   HostDeviceReducerBase(const HostDeviceReducerBase& rhs) = default;
 #else
