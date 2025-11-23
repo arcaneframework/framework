@@ -118,7 +118,7 @@ reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_info, Int64 ne
 
 //! Initialisation pour la mémoire UVM
 void AcceleratorMemoryAllocatorBase::
-_doInitializeUVM()
+_doInitializeUVM(bool default_use_memory_pool)
 {
   bool do_page_allocate = true;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
@@ -126,7 +126,7 @@ _doInitializeUVM()
   Int64 page_size = platform::getPageSize();
   m_block_wrapper.initialize(page_size, do_page_allocate);
 
-  bool use_memory_pool = false;
+  bool use_memory_pool = default_use_memory_pool;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
     use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::UVM)) != 0;
   _setUseMemoryPool(use_memory_pool);
@@ -134,9 +134,9 @@ _doInitializeUVM()
 
 //! Initialisation pour la mémoire HostPinned
 void AcceleratorMemoryAllocatorBase::
-_doInitializeHostPinned()
+_doInitializeHostPinned(bool default_use_memory_pool)
 {
-  bool use_memory_pool = false;
+  bool use_memory_pool = default_use_memory_pool;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
     use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::HostPinned)) != 0;
   _setUseMemoryPool(use_memory_pool);
@@ -145,9 +145,9 @@ _doInitializeHostPinned()
 
 //! Initialisation pour la mémoire Device
 void AcceleratorMemoryAllocatorBase::
-_doInitializeDevice()
+_doInitializeDevice(bool default_use_memory_pool)
 {
-  bool use_memory_pool = false;
+  bool use_memory_pool = default_use_memory_pool;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
     use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::Device)) != 0;
   _setUseMemoryPool(use_memory_pool);
