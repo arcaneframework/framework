@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAccelerator.cc                                           (C) 2000-2024 */
+/* HipAccelerator.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Backend 'HIP' pour les accélérateurs.                                     */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryAllocator.h"
+
+#include "arcane/accelerator/core/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <iostream>
 
@@ -50,101 +52,187 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe de base d'un allocateur spécifique pour 'Hip'.
- */
-class HipMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator3
+
+class ConcreteAllocator
 {
  public:
 
-  HipMemoryAllocatorBase()
-  : AlignedMemoryAllocator3(128)
-  {}
+  virtual ~ConcreteAllocator() = default;
 
-  bool hasRealloc(MemoryAllocationArgs) const override { return true; }
-  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) override
+ public:
+
+  virtual hipError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual hipError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ConcreteAllocatorType>
+class UnderlyingAllocator
+: public AcceleratorMemoryAllocatorBase::IUnderlyingAllocator
+{
+ public:
+
+  UnderlyingAllocator() = default;
+
+ public:
+
+  void* allocateMemory(size_t size) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_HIP(_allocate(&out, new_size, args));
-    Int64 a = reinterpret_cast<Int64>(out);
-    if ((a % 128) != 0)
-      ARCANE_FATAL("Bad alignment for HIP allocator: offset={0}", (a % 128));
-    return { out, new_size };
+    ARCANE_CHECK_HIP(m_concrete_allocator._allocate(&out, size));
+    return out;
   }
-  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
+  void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
   {
-    AllocatedMemoryInfo a = allocate(args, new_size);
-    ARCANE_CHECK_HIP(hipMemcpy(a.baseAddress(), current_ptr.baseAddress(), current_ptr.size(), hipMemcpyDefault));
-    deallocate(args, current_ptr);
-    return a;
-  }
-  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override
-  {
-    ARCANE_CHECK_HIP_NOTHROW(_deallocate(ptr.baseAddress(), args));
+    ARCANE_CHECK_HIP_NOTHROW(m_concrete_allocator._deallocate(ptr));
   }
 
- protected:
+  void doMemoryCopy(void* destination, const void* source, Int64 size) final
+  {
+    ARCANE_CHECK_HIP(hipMemcpy(destination, source, size, hipMemcpyDefault));
+  }
 
-  virtual hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) = 0;
-  virtual hipError_t _deallocate(void* ptr, MemoryAllocationArgs) = 0;
+  eMemoryResource memoryResource() const final
+  {
+    return m_concrete_allocator.memoryResource();
+  }
+
+ public:
+
+  ConcreteAllocatorType m_concrete_allocator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    auto r = ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
+    return r;
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::UnifiedMemory; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class UnifiedMemoryHipMemoryAllocator
-: public HipMemoryAllocatorBase
+: public AcceleratorMemoryAllocatorBase
 {
- protected:
+ public:
 
-  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
+  UnifiedMemoryHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("UnifiedMemoryHipMemory", new UnderlyingAllocator<UnifiedMemoryConcreteAllocator>())
   {
-    return ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
   }
-  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
+
+ public:
+
+  void initialize()
   {
-    return ::hipFree(ptr);
+    _doInitializeUVM();
   }
-  eMemoryResource memoryResource() const override { return eMemoryResource::UnifiedMemory; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HostPinnedConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    return ::hipHostMalloc(ptr, new_size);
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipHostFree(ptr);
+  }
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::HostPinned; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class HostPinnedHipMemoryAllocator
-: public HipMemoryAllocatorBase
+: public AcceleratorMemoryAllocatorBase
 {
- protected:
+ public:
+ public:
 
-  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
+  HostPinnedHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("HostPinnedHipMemory", new UnderlyingAllocator<HostPinnedConcreteAllocator>())
   {
-    return ::hipHostMalloc(ptr, new_size);
   }
-  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
+
+ public:
+
+  void initialize()
   {
-    return ::hipHostFree(ptr);
+    _doInitializeHostPinned();
   }
-  eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  DeviceConcreteAllocator()
+  {
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    hipError_t r = ::hipMalloc(ptr, new_size);
+    return r;
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class DeviceHipMemoryAllocator
-: public HipMemoryAllocatorBase
+: public AcceleratorMemoryAllocatorBase
 {
- protected:
 
-  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
+ public:
+
+  DeviceHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("DeviceHipMemoryAllocator", new UnderlyingAllocator<DeviceConcreteAllocator>())
   {
-    return ::hipMalloc(ptr, new_size);
   }
-  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
+
+ public:
+
+  void initialize()
   {
-    return ::hipFree(ptr);
+    _doInitializeDevice();
   }
-  eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -155,7 +243,7 @@ namespace
   UnifiedMemoryHipMemoryAllocator unified_memory_hip_memory_allocator;
   HostPinnedHipMemoryAllocator host_pinned_hip_memory_allocator;
   DeviceHipMemoryAllocator device_hip_memory_allocator;
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -187,7 +275,24 @@ getHipHostPinnedMemoryAllocator()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::accelerator::Hip
+void initializeHipMemoryAllocators()
+{
+  unified_memory_hip_memory_allocator.initialize();
+  device_hip_memory_allocator.initialize();
+  host_pinned_hip_memory_allocator.initialize();
+}
+
+void finalizeHipMemoryAllocators(ITraceMng* tm)
+{
+  unified_memory_hip_memory_allocator.finalize(tm);
+  device_hip_memory_allocator.finalize(tm);
+  host_pinned_hip_memory_allocator.finalize(tm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Hip
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

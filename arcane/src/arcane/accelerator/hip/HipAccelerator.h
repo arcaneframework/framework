@@ -66,6 +66,12 @@ getHipUnifiedMemoryAllocator();
 extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
 getHipHostPinnedMemoryAllocator();
 
+extern "C++" ARCANE_HIP_EXPORT void
+initializeHipMemoryAllocators();
+
+extern "C++" ARCANE_HIP_EXPORT void
+finalizeHipMemoryAllocators(ITraceMng* tm);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
