@@ -34,6 +34,9 @@
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
+#if defined(__ADAPTIVECPP__)
+#include <AdaptiveCpp/algorithms/algorithm.hpp>
+#endif
 #endif
 
 // A définir si on souhaite utiliser LambdaStorage

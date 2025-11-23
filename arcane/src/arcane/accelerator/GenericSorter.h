@@ -16,11 +16,16 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
+
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/RunCommandLoop.h"
+#endif
 
 #include <algorithm>
 
@@ -101,6 +106,30 @@ class GenericSorterMergeSort
 
       ARCANE_CHECK_HIP(rocprim::merge_sort(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                            nb_item, compare_lambda, stream));
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL)
+    case eExecutionPolicy::SYCL: {
+      {
+        // Copie input dans output
+        auto command = makeCommand(queue);
+        command << RUNCOMMAND_LOOP1(iter, nb_item)
+        {
+          auto [i] = iter();
+          *(output_iter + i) = *(input_iter + i);
+        };
+      }
+#if defined(ARCANE_HAS_ONEDPL)
+      sycl::queue true_queue = AcceleratorUtils::toSyclNativeStream(queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
+      oneapi::dpl::sort(policy, output_iter, output_iter + nb_item, compare_lambda);
+#elif defined(__ADAPTIVECPP__)
+      sycl::queue true_queue = AcceleratorUtils::toSyclNativeStream(queue);
+      sycl::event e = acpp::algorithms::sort(true_queue, output_iter, output_iter + nb_item, compare_lambda);
+      e.wait();
+#else
+      ARCANE_THROW(NotImplementedException, "Sort is only implemented for SYCL back-end using oneDPL or AdaptiveCpp");
+#endif
     } break;
 #endif
     case eExecutionPolicy::Thread:
