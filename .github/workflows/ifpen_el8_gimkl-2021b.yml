@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/ifpen-arcenv-gimkl-2021b-el8:latest
-      #options: --user root  # Avoid to match github UID in container.
+      options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
 
@@ -155,6 +155,4 @@ jobs:
         if: always()
         run: |
            rm -rf ${{ env.SOURCE_DIR }}
-           ls -ls /__w
-           ls -l /__w
-           ls -l /__w/_temp
+           ls -l /__w/framework/framework
