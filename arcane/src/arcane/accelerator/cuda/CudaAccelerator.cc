@@ -362,7 +362,7 @@ class DeviceCudaMemoryAllocator
 
   void initialize()
   {
-    void _doInitializeDevice();
+    _doInitializeDevice();
   }
 };
 

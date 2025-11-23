@@ -225,11 +225,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorMemoryAllocatorBase
  protected:
 
   //! Initialisation pour la mémoire UVM
-  void _doInitializeUVM();
+  void _doInitializeUVM(bool default_use_memory_pool = false);
   //! Initialisation pour la mémoire HostPinned
-  void _doInitializeHostPinned();
+  void _doInitializeHostPinned(bool default_use_memory_pool = false);
   //! Initialisation pour la mémoire Device
-  void _doInitializeDevice();
+  void _doInitializeDevice(bool default_use_memory_pool = false);
 
  protected:
 

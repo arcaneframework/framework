@@ -375,6 +375,11 @@ class HipRunnerRuntime
 #endif
   }
 
+  void finalize(ITraceMng* tm) override
+  {
+    finalizeHipMemoryAllocators(tm);
+  }
+
  public:
 
   void fillDevices(bool is_verbose);
@@ -522,6 +527,7 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   using namespace Arcane::Accelerator::Hip;
   Arcane::Accelerator::impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
+  initializeHipMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
