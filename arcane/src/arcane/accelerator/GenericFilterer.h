@@ -105,11 +105,11 @@ class SyclGenericFilteringImpl
   {
     RunQueue queue = s.m_queue;
     using DataType = std::iterator_traits<OutputIterator>::value_type;
-#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(ARCANE_HAS_ONEDPL)
     sycl::queue true_queue = AcceleratorUtils::toSyclNativeStream(queue);
     auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
     auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
-    Int32 nb_output = out_iter - output_iter;
+    Int32 nb_output = static_cast<Int32>(out_iter - output_iter);
     s.m_host_nb_out_storage[0] = nb_output;
 #else
     NumArray<Int32, MDDim1> scan_input_data(nb_item);

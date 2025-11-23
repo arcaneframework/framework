@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
@@ -122,18 +123,19 @@ class GenericPartitionerIf
       s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
+#if defined(ARCANE_HAS_ONEDPL)
       // Seulement implémenté pour DPC++.
       // Actuellement (dpc++ 2025.0), il n'y a pas l'équivalent avec SYCL de
       // la méthode de partition de cub ou rocprim.
       // Utilise la fonction 'stable_partition'. Cependant, cette fonction
       // ne supporte pas si la mémoire uniquement sur accélérateur. De plus,
       // il faut que InputIterator et OutputIterator remplissent le concept
-      // std::random_access_iterator ce qui n'est pas (notamment car il n'y a
+      // std::random_access_iterator ce qui n'est pas le cas (notamment car il n'y a
       // pas les opérateurs de copie ni de constructeur vide à cause de la lambda).
       // Pour éviter tous ces problèmes, on alloue donc des tableaux temporaires
-      // pour l'appel à 'stable_sort' et on recopie les valerus en sortie.
+      // pour l'appel à 'stable_sort' et on recopie les valeurs en sortie.
       using InputDataType = typename InputIterator::value_type;
       using DataType = typename OutputIterator::value_type;
       NumArray<DataType, MDDim1> tmp_output_numarray(nb_item);
@@ -183,8 +185,11 @@ class GenericPartitionerIf
         };
       }
       queue.barrier();
+#else // ARCANE_HAS_ONEDPL
+      ARCANE_THROW(NotImplementedException,"Partition is only implemented for SYCL back-end using oneDPL");
+#endif // ARCANE_HAS_ONEDPL
     } break;
-#endif
+#endif // ARCANE_COMPILING_SYCL
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
@@ -273,6 +278,12 @@ class GenericPartitionerIf
                                            select1_lambda, select2_lambda, stream));
       s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL)
+    case eExecutionPolicy::SYCL: {
+      ARCANE_THROW(NotImplementedException,"3-way partition is not implemented for SYCL back-end");
+    }
+    break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread

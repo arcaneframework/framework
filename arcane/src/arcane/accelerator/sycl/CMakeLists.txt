@@ -34,6 +34,20 @@ target_link_libraries(arcane_accelerator_sycl PUBLIC
 )
 target_link_options(arcane_accelerator_sycl PUBLIC "${ARCANE_CXX_SYCL_FLAGS}")
 
+# Détecte oneDPL si on utilise DPC++
+# On fait uniquement la détection et on suppose que c'est cohérent avec le
+# compilateur. Il ne faut pas ajouter la cible 'oneDPL' à 'arcane_accelerator_sycl'
+# car cela ajoute des flags de compilation (notamment liés à OpenMP) qui
+# peuvent provoquer des erreurs de compilation. En plus de cela, il peut y avoir
+# des incohérences avec la version de TBB utilisée ailleurs dans Arcane.
+if (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
+  find_package(oneDPL CONFIG)
+  message(STATUS "[Sycl] oneDPL found?=${oneDPL_FOUND} Version=${oneDPL_VERSION}")
+  if (oneDPL_FOUND)
+    target_compile_definitions(arcane_accelerator_sycl PUBLIC ARCANE_HAS_ONEDPL)
+  endif()
+endif()
+
 # ----------------------------------------------------------------------------
 
 arcane_register_library(arcane_accelerator_sycl OPTIONAL)
