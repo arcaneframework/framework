@@ -593,7 +593,11 @@ class GenericFilterer
     gf.apply<false>(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 
-  //! Nombre d'éléments en sortie.
+  /*!
+   * \brief Nombre d'éléments en sortie.
+   *
+   * \brief Cette méthode effectue une barrière avant de récupérer la valeur.
+   */
   Int32 nbOutputElement()
   {
     return _nbOutputElement();

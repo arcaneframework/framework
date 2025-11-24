@@ -55,6 +55,16 @@ class ARCANE_ACCELERATOR_EXPORT GenericSorterBase
 
   RunQueue m_queue;
   GenericDeviceStorage m_algo_storage;
+
+ protected:
+
+  void _checkBarrier()
+  {
+    // Les fonctions cub ou rocprim pour le scan sont asynchrones par défaut.
+    // Si on a une RunQueue synchrone, alors on fait une barrière.
+    if (!m_queue.isAsync())
+      m_queue.barrier();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
