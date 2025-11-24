@@ -246,6 +246,8 @@ class Scanner
     DataType* output_data = output.data();
     DataType init_value = op.defaultValue();
     scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op, TraceInfo{});
+    if (!queue->isAsync())
+      queue->barrier();
   }
 };
 
@@ -412,6 +414,7 @@ class GenericScanner
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
     impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
+    _checkBarrier();
   }
 
   template <bool IsExclusive, typename InputDataType, typename OutputDataType, typename Operator>
@@ -428,6 +431,15 @@ class GenericScanner
     auto* output_data = output.data();
     impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_item, input_data, output_data, initial_value, op, trace_info);
+    _checkBarrier();
+  }
+
+  void _checkBarrier()
+  {
+    // Les fonctions cub ou rocprim pour le scan sont asynchrones par défaut.
+    // Si on a une RunQueue synchrone, alors on fait une barrière.
+    if (!m_queue.isAsync())
+      m_queue.barrier();
   }
 
  private:
