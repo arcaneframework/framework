@@ -11,11 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/MemoryPool.h"
+#include "arccore/common/internal/MemoryPool.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ValueConvert.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/Convert.h"
+
+#include "arccore/common/Array.h"
 
 #include <unordered_map>
 #include <map>
@@ -57,7 +59,7 @@ class MemoryPool::Impl
       if (x == m_allocated_memory_map.end()) {
         ++m_nb_error;
         String str = String::format("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
-        ARCANE_FATAL_IF(m_is_throw_on_error, str);
+        ARCCORE_FATAL_IF(m_is_throw_on_error, str);
         std::cerr << "ERROR: " << str << "\n";
         return;
       }
@@ -67,7 +69,7 @@ class MemoryPool::Impl
         ++m_nb_error;
         String str = String::format("MemoryPool '{0}': Incoherent size saved_size={1} arg_size={2}",
                                     m_name, allocated_size, size);
-        ARCANE_FATAL_IF(m_is_throw_on_error, str);
+        ARCCORE_FATAL_IF(m_is_throw_on_error, str);
         std::cerr << "ERROR: " << str << "\n";
       }
 
@@ -78,7 +80,7 @@ class MemoryPool::Impl
     {
       std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
-      ARCANE_FATAL_IF((x != m_allocated_memory_map.end()),
+      ARCCORE_FATAL_IF((x != m_allocated_memory_map.end()),
                       "MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
                       m_name, ptr, size, x->second);
       m_allocated_memory_map.insert(std::make_pair(ptr, size));
@@ -317,7 +319,7 @@ void MemoryPool::Impl::
 setMaxCachedBlockSize(size_t v)
 {
   if (m_allocated_map.size() != 0 || m_free_map.size() != 0)
-    ARCANE_FATAL("Can not change maximum cached block size on non empty pool");
+    ARCCORE_FATAL("Can not change maximum cached block size on non empty pool");
   m_max_memory_size_to_pool = v;
 }
 

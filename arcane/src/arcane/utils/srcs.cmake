@@ -76,7 +76,6 @@ set(ARCANE_SOURCES
   ISO88591Transcoder.h
   MDSpan.h
   MemoryAllocator.h
-  MemoryPool.cc
   MemoryView.h
   Misc.cc
   MD5HashAlgorithm.cc
@@ -340,6 +339,5 @@ set(ARCANE_SOURCES
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h
   internal/MemoryBuffer.h
-  internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h
   )

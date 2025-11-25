@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryPool.h                                                (C) 2000-2024 */
+/* MemoryPool.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Classe pour gérer une liste de zone allouées.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYPOOL_H
-#define ARCANE_UTILS_INTERNAL_MEMORYPOOL_H
+#ifndef ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
+#define ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arccore/common/CommonGlobal.h"
 
 #include <memory>
 
@@ -35,7 +35,7 @@ namespace Arcane::impl
  * L'utilisateur de cette interface doit donc gérer la conservation de cette
  * information.
  */
-class ARCANE_UTILS_EXPORT IMemoryPoolAllocator
+class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
 {
  public:
 
@@ -60,7 +60,7 @@ class ARCANE_UTILS_EXPORT IMemoryPoolAllocator
  * L'allocateur passé en argument du constructeur doit rester valide
  * durant toute la vie de l'instance.
  */
-class ARCANE_UTILS_EXPORT MemoryPool
+class ARCCORE_COMMON_EXPORT MemoryPool
 : public IMemoryPoolAllocator
 {
   class Impl;
