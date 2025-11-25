@@ -21,8 +21,7 @@
 
 #include "arccore/common/AllocatedMemoryInfo.h"
 #include "arccore/common/AlignedMemoryAllocator.h"
-
-#include "arcane/utils/internal/MemoryPool.h"
+#include "arccore/common/internal/MemoryPool.h"
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
 

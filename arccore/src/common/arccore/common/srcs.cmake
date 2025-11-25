@@ -17,6 +17,7 @@ set(SOURCES
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
+  MemoryPool.cc
   MemoryUtils.h
   MemoryUtils.cc
   SequentialFor.h
@@ -24,5 +25,6 @@ set(SOURCES
   SmallArray.cc
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/MemoryPool.h
   internal/SpecificMemoryCopyList.h
 )
