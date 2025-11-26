@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SodStandardGroupsBuilder.cc                                 (C) 2000-2023 */
+/* SodStandardGroupsBuilder.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Création des groupes pour les cas test de tube à choc de Sod.             */
 /*---------------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ _createFaceGroup(IMesh* mesh,const String& name, Int32ConstArrayView faces_lid)
 /*---------------------------------------------------------------------------*/
 
 void SodStandardGroupsBuilder::
-generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle_height)
+generateGroups(IMesh* mesh, Real3 min_pos, Real3 max_pos, Real middle_x, Real middle_height, bool do_zg_and_zd)
 {
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   Int32 mesh_dimension = mesh->dimension();
@@ -74,16 +74,16 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
          << " middle_x=" << middle_x << " middle_height=" << middle_height;
 
   {
-    Int32UniqueArray xmin_surface_lid;
-    Int32UniqueArray xmax_surface_lid;
-    Int32UniqueArray ymin_surface_lid;
-    Int32UniqueArray ymax_surface_lid;
-    Int32UniqueArray zmin_surface_lid;
-    Int32UniqueArray zmax_surface_lid;
+    UniqueArray<Int32> xmin_surface_lid;
+    UniqueArray<Int32> xmax_surface_lid;
+    UniqueArray<Int32> ymin_surface_lid;
+    UniqueArray<Int32> ymax_surface_lid;
+    UniqueArray<Int32> zmin_surface_lid;
+    UniqueArray<Int32> zmax_surface_lid;
 
-    ENUMERATE_FACE(iface,mesh->allFaces()){
+    ENUMERATE_ (Face, iface, mesh->allFaces()) {
       Face face = *iface;
-      Integer face_local_id = face.localId();
+      Int32 face_local_id = face.localId();
       bool is_xmin = true;
       bool is_xmax = true;
       bool is_ymin = true;
@@ -135,12 +135,11 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
   }
 
   // Détermine les couches ZG et ZD
-  {
-    Int32UniqueArray zg_lid;
-    Int32UniqueArray zd_lid;
+  if (do_zg_and_zd) {
+    UniqueArray<Int32> zg_lid;
+    UniqueArray<Int32> zd_lid;
     const Real xlimit = middle_x; // Position séparant les deux zones ZG et ZD
-    ENUMERATE_CELL(icell,mesh->allCells()){
-      //Real xpos = 0.;
+    ENUMERATE_ (Cell, icell, mesh->allCells()) {
       bool is_in_zd = false;
       bool is_in_zg = false;
       const Cell& cell = *icell;
@@ -191,12 +190,12 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
   }
   
   // Détermine les groupes ZD_HAUT et ZD_BAS
-  {
+  if (do_zg_and_zd) {
     ItemGroup zdGroup = cell_family->findGroup("ZD");
     if (zdGroup.null())
-      fatal()<<"zdGroup has not been found!";
-    Int32UniqueArray zd_bas_lid;
-    Int32UniqueArray zd_haut_lid;
+      ARCANE_FATAL("Group 'ZD' has not been found!");
+    UniqueArray<Int32> zd_bas_lid;
+    UniqueArray<Int32> zd_haut_lid;
     const Real height_limit = middle_height; // Position séparant les deux zones HAUT et BAS
     ENUMERATE_CELL(icell, zdGroup){
       bool is_in_zd_bas = false;
