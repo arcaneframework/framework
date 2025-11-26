@@ -558,8 +558,11 @@ refine()
   Integer min_level = 0;
   Integer future_max_level = -1; // Désigne le niveau max qui aura des enfants, donc le futur level max +1.
   Integer old_max_level = -1; // Mais s'il reste des mailles à des niveaux plus haut, il faut les retirer.
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
 
-  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+  amr->_syncFlagCell();
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
     Integer level = icell->level();
     if (icell->hasFlags(ItemFlags::II_Refine)) {
       if (level > future_max_level)
@@ -579,7 +582,7 @@ refine()
   for (Integer level = future_max_level; level >= min_level; --level) {
     m_cmesh->traceMng()->info() << "Refine Level " << level << " with " << nb_overlap_cells << " layers of overlap cells";
     if (level != future_max_level) {
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
           Integer pos_x = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoordX(*icell), level, level + 1);
           Integer pos_y = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoordY(*icell), level, level + 1);
@@ -629,7 +632,7 @@ refine()
     {
       UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownCells()) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() != level)
           continue;
         Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
@@ -679,7 +682,6 @@ refine()
     ////////////
   }
 
-  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
 
   {
     constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine |
@@ -715,7 +717,7 @@ refine()
     {
       UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level)) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
         Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
         Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
         Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
@@ -801,7 +803,7 @@ refine()
     {
       UniqueArray<Integer> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->ownLevelCells(level - 1)) {
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level - 1)) {
         Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
         Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
         Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
@@ -981,6 +983,9 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 
   ENUMERATE_ (Cell, icell, cell_group) {
     Cell cell = *icell;
+    if (!cell.isOwn()) {
+      continue;
+    }
 
     Int64 pos_x = numbering->cellUniqueIdToCoordX(cell);
     Int64 pos_y = numbering->cellUniqueIdToCoordY(cell);
@@ -1297,10 +1302,6 @@ _addPatch(const AMRPatchPosition& new_patch_position)
     if (new_patch_position.isInWithOverlap(pos_x, pos_y, pos_z)) {
       cells_local_id.add(icell.localId());
     }
-  }
-
-  if (cells_local_id.empty()) {
-    return;
   }
 
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
