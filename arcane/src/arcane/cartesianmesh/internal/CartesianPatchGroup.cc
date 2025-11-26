@@ -10,12 +10,12 @@
 /* Gestion du groupe de patchs du maillage cartésien.                        */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/CartesianPatchGroup.h"
+#include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 
-#include "AMRPatchPositionLevelGroup.h"
-#include "AMRPatchPositionSignature.h"
-#include "AMRPatchPositionSignatureCut.h"
-#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignatureCut.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FixedArray.h"
@@ -27,64 +27,13 @@
 
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
-#include "arccore/base/StringBuilder.h"
+#include "arcane/utils/StringBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-OverlapItemGroupComputeFunctor::
-OverlapItemGroupComputeFunctor(Ref<ICartesianMeshNumberingMng> numbering, const AMRPatchPosition& patch_position)
-: m_numbering(numbering)
-, m_patch_position(patch_position)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-OverlapItemGroupComputeFunctor::
-~OverlapItemGroupComputeFunctor() = default;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void OverlapItemGroupComputeFunctor::
-executeFunctor()
-{
-  ITraceMng* trace = m_group->mesh()->traceMng();
-  ItemGroup parent(m_group->parent());
-
-  m_group->beginTransaction();
-  Int32UniqueArray items_lid;
-
-  // Ne fonctionne que pour les cells pour l'instant.
-  ENUMERATE_ITEM (iitem, parent) {
-    Cell cell = iitem->toCell();
-
-    Int64 pos_x = m_numbering->cellUniqueIdToCoordX(cell);
-    Int64 pos_y = m_numbering->cellUniqueIdToCoordY(cell);
-    Int64 pos_z = m_numbering->cellUniqueIdToCoordZ(cell);
-
-    if (m_patch_position.isIn(pos_x, pos_y, pos_z)) {
-      items_lid.add(cell.localId());
-    }
-  }
-  m_group->setItems(items_lid);
-  m_group->endTransaction();
-
-  trace->debug() << "OverlapItemGroupComputeFunctor::execute()"
-                 << " this=" << m_group
-                 << " parent_name=" << parent.name()
-                 << " name=" << m_group->name()
-                 << " parent_count=" << parent.size()
-                 << " mysize=" << m_group->size();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -97,7 +46,8 @@ executeFunctor()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartesianPatchGroup::CartesianPatchGroup(ICartesianMesh* cmesh)
+CartesianPatchGroup::
+CartesianPatchGroup(ICartesianMesh* cmesh)
 : m_cmesh(cmesh)
 , m_index_new_patches(1)
 {}
@@ -160,11 +110,11 @@ addPatch(CellGroup cell_group, Integer group_index)
   _createGroundPatch();
   if (cell_group.null())
     ARCANE_FATAL("Null cell group");
-  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
-  _addPatchInstance(makeRef(cdi));
+
+  AMRPatchPosition position;
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
     FixedArray<Int64, 6> min_n_max;
     min_n_max[0] = INT64_MAX;
     min_n_max[1] = INT64_MAX;
@@ -223,9 +173,9 @@ addPatch(CellGroup cell_group, Integer group_index)
       }
     }
 
-    cdi->position().setMinPoint({ min[MD_DirX], min[MD_DirY], min[MD_DirZ] });
-    cdi->position().setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
-    cdi->position().setLevel(level_r);
+    position.setMinPoint({ min[MD_DirX], min[MD_DirY], min[MD_DirZ] });
+    position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
+    position.setLevel(level_r);
   }
   else {
     Integer level = -1;
@@ -244,8 +194,11 @@ addPatch(CellGroup cell_group, Integer group_index)
       ARCANE_FATAL("Bad level reduced");
     }
 
-    cdi->position().setLevel(level_r);
+    position.setLevel(level_r);
   }
+
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index, position);
+  _addPatchInstance(makeRef(cdi));
   _addCellGroup(cell_group, cdi);
 
   m_cmesh->traceMng()->info() << "addPatch()"
@@ -423,21 +376,21 @@ updateLevelsBeforeAddGroundPatch()
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     return;
   }
-  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
     Integer level = patch->position().level();
     // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
     if (level == 0) {
       Int64x3 max_point = patch->position().maxPoint();
       if (m_cmesh->mesh()->dimension() == 2) {
-        patch->position().setMaxPoint({
+        patch->_internalApi()->positionRef().setMaxPoint({
         numbering->offsetLevelToLevel(max_point.x, level, level - 1),
         numbering->offsetLevelToLevel(max_point.y, level, level - 1),
         1,
         });
       }
       else {
-        patch->position().setMaxPoint({
+        patch->_internalApi()->positionRef().setMaxPoint({
         numbering->offsetLevelToLevel(max_point.x, level, level - 1),
         numbering->offsetLevelToLevel(max_point.y, level, level - 1),
         numbering->offsetLevelToLevel(max_point.z, level, level - 1),
@@ -446,7 +399,7 @@ updateLevelsBeforeAddGroundPatch()
     }
     // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
     else {
-      patch->position().setLevel(level + 1);
+      patch->_internalApi()->positionRef().setLevel(level + 1);
     }
   }
 }
@@ -499,7 +452,7 @@ mergePatches()
     for (Integer p0 = 0; p0 < index_n_nb_cells.size(); ++p0) {
       auto [index_p0, nb_cells_p0] = index_n_nb_cells[p0];
 
-      AMRPatchPosition& patch_fusion_0 = m_amr_patches_pointer[index_p0]->position();
+      AMRPatchPosition& patch_fusion_0 = m_amr_patches_pointer[index_p0]->_internalApi()->positionRef();
       if (patch_fusion_0.isNull())
         continue;
 
@@ -513,7 +466,7 @@ mergePatches()
           continue;
         auto [index_p1, nb_cells_p1] = index_n_nb_cells[p1];
 
-        AMRPatchPosition& patch_fusion_1 = m_amr_patches_pointer[index_p1]->position();
+        AMRPatchPosition& patch_fusion_1 = m_amr_patches_pointer[index_p1]->_internalApi()->positionRef();
 
         if (patch_fusion_1.isNull())
           continue;
@@ -575,7 +528,7 @@ refine()
   old_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, old_max_level);
 
   m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
-  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   AMRPatchPositionLevelGroup all_patches(future_max_level);
 
@@ -955,10 +908,10 @@ _createGroundPatch()
   _addPatchInstance(patch);
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
-    patch->position().setMinPoint({ 0, 0, 0 });
-    patch->position().setMaxPoint({ numbering->globalNbCellsX(0), numbering->globalNbCellsY(0), numbering->globalNbCellsZ(0) });
-    patch->position().setLevel(0);
+    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+    patch->_internalApi()->positionRef().setMinPoint({ 0, 0, 0 });
+    patch->_internalApi()->positionRef().setMaxPoint({ numbering->globalNbCellsX(0), numbering->globalNbCellsY(0), numbering->globalNbCellsZ(0) });
+    patch->_internalApi()->positionRef().setLevel(0);
   }
 }
 
@@ -977,7 +930,7 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
   }
 
   AMRPatchPosition patch_position = patch->position();
-  Ref<ICartesianMeshNumberingMng> numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  Ref<ICartesianMeshNumberingMngInternal> numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   UniqueArray<Int32> items_lid;
 
@@ -1258,15 +1211,12 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
   Integer group_index = _nextIndexForNewPatch();
   String patch_group_name = String("CartesianMeshPatchCells") + group_index;
 
-  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
-
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index, new_patch_position);
   _addPatchInstance(makeRef(cdi));
 
   UniqueArray<Int32> cells_local_id;
 
-  cdi->position() = new_patch_position;
-
-  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   ENUMERATE_ (Cell, icell, parent_patch_cell_group) {
     Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
     Int64 pos_y = numbering->cellUniqueIdToCoordY(*icell);
@@ -1294,7 +1244,7 @@ _addPatch(const AMRPatchPosition& new_patch_position)
 {
   UniqueArray<Int32> cells_local_id;
 
-  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(new_patch_position.level())) {
     Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
     Int64 pos_y = numbering->cellUniqueIdToCoordY(*icell);
@@ -1308,8 +1258,7 @@ _addPatch(const AMRPatchPosition& new_patch_position)
   Integer group_index = _nextIndexForNewPatch();
   String patch_group_name = String("CartesianMeshPatchCells") + group_index;
 
-  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index);
-  cdi->position() = new_patch_position;
+  auto* cdi = new CartesianMeshPatch(m_cmesh, group_index, new_patch_position);
 
   _addPatchInstance(makeRef(cdi));
   CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);

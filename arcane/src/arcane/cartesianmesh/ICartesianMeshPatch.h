@@ -27,6 +27,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ICartesianMeshPatchInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
  * \brief Interface d'un patch AMR d'un maillage cartésien.
@@ -65,7 +70,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   //! Effectue des vérifications sur la validité de l'instance.
   virtual void checkValid() const =0;
 
-  virtual AMRPatchPosition& position() = 0;
+  virtual AMRPatchPosition position() const = 0;
+
+  virtual ICartesianMeshPatchInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

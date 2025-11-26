@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
-#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
 
 #include "arcane/core/ItemTypes.h"
 
@@ -64,10 +64,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 
   // TODO
-  virtual void initCartesianMeshNumberingMng() = 0;
+  virtual void initCartesianMeshNumberingMngInternal() = 0;
 
   //TODO
-  virtual Ref<ICartesianMeshNumberingMng> cartesianMeshNumberingMng() = 0;
+  virtual Ref<ICartesianMeshNumberingMngInternal> cartesianMeshNumberingMngInternal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

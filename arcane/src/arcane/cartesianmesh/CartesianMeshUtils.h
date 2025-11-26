@@ -17,8 +17,6 @@
 #include "arcane/utils/Ref.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
-#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,19 +35,6 @@ namespace Arcane::CartesianMeshUtils
  */
 extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<CartesianMeshCoarsening2>
 createCartesianMeshCoarsening2(ICartesianMesh* cm);
-
-/*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V3?).
- * \warning Very experimental method !
- */
-extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<ICartesianMeshAMRPatchMng>
-cartesianMeshAMRPatchMng(ICartesianMesh* cm);
-
-/*!
- * TODO
- */
-extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<ICartesianMeshNumberingMng>
-cartesianMeshNumberingMng(ICartesianMesh* cm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

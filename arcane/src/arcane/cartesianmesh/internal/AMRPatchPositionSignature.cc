@@ -11,16 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRPatchPositionSignature.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
 
-#include "ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arccore/trace/ITraceMng.h"
-#include "internal/ICartesianMeshInternal.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatc
 , m_mesh(cmesh)
 , m_nb_cut(0)
 , m_stop_cut(false)
-, m_numbering(cmesh->_internalApi()->cartesianMeshNumberingMng().get())
+, m_numbering(cmesh->_internalApi()->cartesianMeshNumberingMngInternal().get())
 , m_have_cells(false)
 , m_is_computed(false)
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
@@ -76,7 +76,7 @@ AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatc
 , m_mesh(cmesh)
 , m_nb_cut(nb_cut)
 , m_stop_cut(false)
-, m_numbering(cmesh->_internalApi()->cartesianMeshNumberingMng().get())
+, m_numbering(cmesh->_internalApi()->cartesianMeshNumberingMngInternal().get())
 , m_have_cells(false)
 , m_is_computed(false)
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
