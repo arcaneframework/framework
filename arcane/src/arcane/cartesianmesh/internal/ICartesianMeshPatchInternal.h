@@ -1,20 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUtils.cc                                       (C) 2000-2024 */
+/* ICartesianMeshPatchInternal.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires associées à 'ICartesianMesh'.                       */
+/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H
+#define ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/CartesianMeshUtils.h"
-
-#include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,20 +27,25 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V2).
- * \warning Experimental method !
- */
-Ref<CartesianMeshCoarsening2> CartesianMeshUtils::
-createCartesianMeshCoarsening2(ICartesianMesh* cm)
+class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatchInternal
 {
-  return cm->_internalApi()->createCartesianMeshCoarsening2();
-}
+
+ public:
+
+  virtual ~ICartesianMeshPatchInternal() = default;
+
+ public:
+
+  virtual AMRPatchPosition& positionRef() = 0;
+  virtual void setPosition(const AMRPatchPosition& position) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

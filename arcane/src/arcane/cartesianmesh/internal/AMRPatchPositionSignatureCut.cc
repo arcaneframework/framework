@@ -11,16 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRPatchPositionSignatureCut.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignatureCut.h"
 
-#include "ICartesianMesh.h"
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/IMesh.h"
-#include "arcane/core/IParallelMng.h"
-#include "arcane/core/ItemEnumerator.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arccore/trace/ITraceMng.h"
-#include "internal/ICartesianMeshInternal.h"
+#include "arcane/utils/ITraceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

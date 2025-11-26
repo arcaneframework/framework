@@ -5,23 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignatureCut.h                                        (C) 2000-2025 */
+/* CartesianMeshAMRPatchMng.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURECUT_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURECUT_H
+/* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "AMRPatchPositionLevelGroup.h"
-#include "AMRPatchPositionSignature.h"
-#include "ICartesianMeshNumberingMng.h"
-#include "arcane/cartesianmesh/AMRPatchPosition.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
 
-#include "arcane/utils/Vector3.h"
-#include "arcane/utils/UniqueArray.h"
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/cartesianmesh/internal/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
+
+#include "arcane/utils/TraceAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,16 +32,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class AMRPatchPositionSignatureCut
+class CartesianMeshAMRPatchMng
+: public TraceAccessor
+, public ICartesianMeshAMRPatchMng
 {
  public:
-  AMRPatchPositionSignatureCut();
-  ~AMRPatchPositionSignatureCut();
+
+  explicit CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMngInternal* numbering_mng);
 
  public:
-  static Integer _cutDim(ConstArrayView<Integer> sig);
-  static std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(const AMRPatchPositionSignature& sig);
-  static void cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a);
+
+  void flagCellToRefine(Int32ConstArrayView cells_lids, bool clear_old_flags) override;
+  void flagCellToCoarsen(Int32ConstArrayView cells_lids, bool clear_old_flags) override;
+
+  void refine() override;
+  void createSubLevel() override;
+  void coarsen(bool update_parent_flag) override;
+  void _syncFlagCell() const override;
+
+ private:
+
+  void _shareInfosOfCellsAroundPatch(ConstArrayView<Cell> patch_cells, std::unordered_map<Int64, Integer>& around_cells_uid_to_owner, std::unordered_map<Int64, Int32>& around_cells_uid_to_flags, Int32 useful_flags) const;
+
+ private:
+
+  IMesh* m_mesh;
+  ICartesianMesh* m_cmesh;
+  ICartesianMeshNumberingMngInternal* m_num_mng;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,5 +69,4 @@ class AMRPatchPositionSignatureCut
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif //ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H

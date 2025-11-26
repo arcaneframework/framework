@@ -31,18 +31,29 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshPatch::
-CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
+CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index, const AMRPatchPosition& position)
 : TraceAccessor(cmesh->traceMng())
 , m_mesh(cmesh)
+, m_position(position)
 , m_amr_patch_index(patch_index)
+, m_impl(this)
 {
   Integer nb_dir = cmesh->mesh()->dimension();
-  for( Integer i=0; i<nb_dir; ++i ){
+  for (Integer i = 0; i < nb_dir; ++i) {
     eMeshDirection dir = static_cast<eMeshDirection>(i);
-    m_cell_directions[i]._internalInit(cmesh,dir,patch_index);
-    m_face_directions[i]._internalInit(cmesh,dir,patch_index);
-    m_node_directions[i]._internalInit(cmesh,dir,patch_index);
+    m_cell_directions[i]._internalInit(cmesh, dir, patch_index);
+    m_face_directions[i]._internalInit(cmesh, dir, patch_index);
+    m_node_directions[i]._internalInit(cmesh, dir, patch_index);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CartesianMeshPatch::
+CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
+: CartesianMeshPatch(cmesh, patch_index, {})
+{
 }
 
 /*---------------------------------------------------------------------------*/

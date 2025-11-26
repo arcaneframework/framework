@@ -18,8 +18,6 @@ set(ARCANE_SOURCES
   ICartesianMeshPatch.h
   CartesianPatch.h
   CartesianPatch.cc
-  CartesianPatchGroup.h
-  CartesianPatchGroup.cc
   CartesianMeshCoarsening.cc
   CartesianMeshCoarsening.h
   CartesianMeshCoarsening2.cc
@@ -28,10 +26,6 @@ set(ARCANE_SOURCES
   CartesianMeshUtils.h
   CartesianMeshUtils.cc
   CartesianMeshPatchListView.h
-  internal/CartesianMeshPatch.h
-  internal/CartesianMeshUniqueIdRenumbering.h
-  internal/CartesianMeshUniqueIdRenumbering.cc
-  internal/ICartesianMeshInternal.h
   CartesianMeshPatch.cc
 
   v2/CartesianGrid.h
@@ -40,21 +34,33 @@ set(ARCANE_SOURCES
   v2/CartesianMeshUniqueIdRenumberingV2.h
   v2/CartesianMeshUniqueIdRenumberingV2.cc
 
-  ICartesianMeshAMRPatchMng.h
-  CartesianMeshAMRPatchMng.cc
-  CartesianMeshAMRPatchMng.h
+  CartesianMeshAMRMng.cc
+  CartesianMeshAMRMng.h
 
-  ICartesianMeshNumberingMng.h
   CartesianMeshNumberingMng.cc
   CartesianMeshNumberingMng.h
   AMRZonePosition.cc
   AMRZonePosition.h
   AMRPatchPosition.h
   AMRPatchPosition.cc
-  AMRPatchPositionLevelGroup.h
-  AMRPatchPositionLevelGroup.cc
-  AMRPatchPositionSignature.h
-  AMRPatchPositionSignature.cc
-  AMRPatchPositionSignatureCut.h
-  AMRPatchPositionSignatureCut.cc
+
+  internal/AMRPatchPositionLevelGroup.h
+  internal/AMRPatchPositionLevelGroup.cc
+  internal/AMRPatchPositionSignature.h
+  internal/AMRPatchPositionSignature.cc
+  internal/AMRPatchPositionSignatureCut.h
+  internal/AMRPatchPositionSignatureCut.cc
+  internal/CartesianMeshNumberingMngInternal.cc
+  internal/CartesianMeshNumberingMngInternal.h
+  internal/CartesianMeshPatch.h
+  internal/CartesianMeshUniqueIdRenumbering.h
+  internal/CartesianMeshUniqueIdRenumbering.cc
+  internal/CartesianPatchGroup.h
+  internal/CartesianPatchGroup.cc
+  internal/ICartesianMeshInternal.h
+  internal/ICartesianMeshPatchInternal.h
+  internal/ICartesianMeshAMRPatchMng.h
+  internal/CartesianMeshAMRPatchMng.cc
+  internal/CartesianMeshAMRPatchMng.h
+  internal/ICartesianMeshNumberingMngInternal.h
 )

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/cartesianmesh/CartesianMeshAMRPatchMng.h>
+#include "arcane/cartesianmesh/internal/CartesianMeshAMRPatchMng.h"
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
@@ -40,7 +40,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshAMRPatchMng::
-CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMng* numbering_mng)
+CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMngInternal* numbering_mng)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
 , m_cmesh(cmesh)

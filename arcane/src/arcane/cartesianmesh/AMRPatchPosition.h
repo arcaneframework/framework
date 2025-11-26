@@ -31,6 +31,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
  public:
 
   AMRPatchPosition();
+  // TODO Faire operator=
   AMRPatchPosition(const AMRPatchPosition& src);
 
   ~AMRPatchPosition();

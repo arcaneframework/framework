@@ -33,7 +33,7 @@
 #include "arcane/core/MeshKind.h"
 #include "arcane/core/internal/IMeshInternal.h"
 
-#include "arcane/cartesianmesh/CartesianPatchGroup.h"
+#include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
@@ -47,8 +47,9 @@
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 
-#include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshAMRPatchMng.h"
 #include "arcane/core/IGhostLayerMng.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshNumberingMngInternal.h"
 
 #include <set>
 
@@ -99,7 +100,7 @@ class CartesianMeshImpl
     void initCartesianMeshAMRPatchMng() override
     {
       if (m_numbering_mng.isNull()) {
-        initCartesianMeshNumberingMng();
+        initCartesianMeshNumberingMngInternal();
       }
       if (m_amr_mng.isNull()) {
         m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(m_cartesian_mesh, m_numbering_mng.get()));
@@ -109,13 +110,13 @@ class CartesianMeshImpl
     {
       return m_amr_mng;
     }
-    void initCartesianMeshNumberingMng() override
+    void initCartesianMeshNumberingMngInternal() override
     {
       if (m_numbering_mng.isNull()) {
-        m_numbering_mng = makeRef(new CartesianMeshNumberingMng(m_cartesian_mesh->mesh()));
+        m_numbering_mng = makeRef(new CartesianMeshNumberingMngInternal(m_cartesian_mesh->mesh()));
       }
     }
-    Ref<ICartesianMeshNumberingMng> cartesianMeshNumberingMng() override
+    Ref<ICartesianMeshNumberingMngInternal> cartesianMeshNumberingMngInternal() override
     {
       return m_numbering_mng;
     }
@@ -124,7 +125,7 @@ class CartesianMeshImpl
 
     CartesianMeshImpl* m_cartesian_mesh = nullptr;
     Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
-    Ref<ICartesianMeshNumberingMng> m_numbering_mng;
+    Ref<ICartesianMeshNumberingMngInternal> m_numbering_mng;
   };
 
  public:
@@ -279,7 +280,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_amr_type(mesh->meshKind().meshAMRKind())
 {
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.initCartesianMeshNumberingMng();
+    m_internal_api.initCartesianMeshNumberingMngInternal();
     m_internal_api.initCartesianMeshAMRPatchMng();
     // TODO : Voir où mettre la renumérotation.
     //m_internal_api.cartesianMeshNumberingMng()->renumberingFacesLevel0FromOriginalArcaneNumbering();
@@ -295,7 +296,7 @@ build()
 {
   m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMng()->_build();
+    m_internal_api.cartesianMeshNumberingMngInternal()->_build();
   }
 }
 
@@ -341,8 +342,8 @@ _saveInfosInProperties()
   m_properties->set("PatchGroupNamesAvailable", m_patch_group.availableGroupIndex());
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMng()->_saveInfosInProperties();
-    m_internal_api.cartesianMeshNumberingMng()->printStatus();
+    m_internal_api.cartesianMeshNumberingMngInternal()->_saveInfosInProperties();
+    m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 }
 
@@ -355,8 +356,8 @@ recreateFromDump()
   info() << "Creating 'CartesianMesh' infos from dump";
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMng()->_recreateFromDump();
-    m_internal_api.cartesianMeshNumberingMng()->printStatus();
+    m_internal_api.cartesianMeshNumberingMngInternal()->_recreateFromDump();
+    m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 
   // Sauve le numéro de version pour être sur que c'est OK en reprise

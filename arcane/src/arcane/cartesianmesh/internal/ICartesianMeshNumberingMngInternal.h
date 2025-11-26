@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshNumberingMng.h                                (C) 2000-2025 */
+/* ICartesianMeshNumberingMngInternal.h                                (C) 2000-2025 */
 /*                                                                           */
 /* Interface de gestionnaire de numérotation pour maillage cartesian.        */
 /* Dans ces gestionnaires, on considère que l'on a un intervalle des         */
@@ -13,8 +13,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNG_H
-#define ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNG_H
+#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNGINTERNAL_H
+#define ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNGINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,11 +41,11 @@ namespace Arcane
  * cette interface est utilisée (ou alors, il ne faut plus l'utiliser après
  * renumérotation (attention aux protections/reprises)).
  */
-class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
+class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 {
  public:
 
-  virtual ~ICartesianMeshNumberingMng() = default;
+  virtual ~ICartesianMeshNumberingMngInternal() = default;
 
  public:
 
@@ -936,4 +936,4 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNG_H
+#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNGINTERNAL_H
