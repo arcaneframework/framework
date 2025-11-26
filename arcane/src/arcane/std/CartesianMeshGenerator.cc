@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshGenerator.cc                                   (C) 2000-2023 */
+/* CartesianMeshGenerator.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Service de génération de maillage cartésien.                              */
 /*---------------------------------------------------------------------------*/
@@ -892,7 +892,9 @@ generateMesh()
   }
   nodes_coord_var.synchronize();
 
-  if (m_build_info.m_is_generate_sod_groups){
+  // Créé les groupes correspondants aux bords du maillage
+  // Si demandé, on créé aussi les groupes pour tester un tube à choc de Sod.
+  {
     SodStandardGroupsBuilder groups_builder(traceMng());
     Real3 origin = m_build_info.m_origine;
     Real3 length(m_l.x,m_l.y,m_l.z);
@@ -901,9 +903,10 @@ generateMesh()
     // le milieu à partir de la position de la maille d'offset le milieu
     // et pas à partir des coordonnées
     // Calculer middle_x comme position du milieu
+    bool do_zg_and_zd = m_build_info.m_is_generate_sod_groups;
     Real middle_x = (origin.x + max_pos.x) / 2.0;
     Real middle_height = (origin.y + max_pos.y) / 2.0;
-    groups_builder.generateGroups(mesh,origin,origin+length,middle_x,middle_height);
+    groups_builder.generateGroups(mesh, origin, origin + length, middle_x, middle_height, do_zg_and_zd);
   }
 
   return false; // false == ok
