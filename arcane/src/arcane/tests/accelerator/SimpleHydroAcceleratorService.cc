@@ -192,7 +192,7 @@ class SimpleHydroAcceleratorService
 
   SimpleHydro::SimpleHydroModuleBase* m_module = nullptr;
   //! Indice de chaque nœud dans la maille
-  UniqueArray<Int16> m_node_index_in_cells;
+  UniqueArray<Int8> m_node_index_in_cells;
 
   Runner m_runner;
   RunQueue m_default_queue;
@@ -204,10 +204,10 @@ class SimpleHydroAcceleratorService
 
   void _computePressureForces();
   void _computePseudoViscosityForces();
+  void _computeNodeIndexInCells();
 
  private:
 
-  void _computeNodeIndexInCells();
   void _doTestInit() const;
 };
 
@@ -990,31 +990,40 @@ hydroInit()
 void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
-  info() << "ComputeNodeIndexInCells";
+  info() << "ComputeNodeIndexInCells with accelerator";
   // Un nœud est connecté au maximum à MAX_NODE_CELL mailles
-  // Calcul pour chaque nœud son index dans chacune des
+  // Calcule pour chaque nœud son index dans chacune des
   // mailles à laquelle il est connecté.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
   m_node_index_in_cells.resize(MAX_NODE_CELL*nb_node);
-  m_node_index_in_cells.fill(-1);
+
   auto node_cell_cty = m_connectivity_view.nodeCell();
   auto cell_node_cty = m_connectivity_view.cellNode();
-  ENUMERATE_NODE(inode,nodes){
-    NodeLocalId node = *inode;
-    Int32 index = 0;
+
+  auto command = makeCommand(m_default_queue);
+  auto inout_node_index_in_cells = m_node_index_in_cells.span();
+
+  command << RUNCOMMAND_ENUMERATE(Node,node,nodes)
+  {
     Int32 first_pos = node.localId() * MAX_NODE_CELL;
+
+    Int32 index = 0;
     for( CellLocalId cell : node_cell_cty.cells(node) ){
-      Int16 node_index_in_cell = 0;
+      Int8 node_index_in_cell = 0;
       for( NodeLocalId cell_node : cell_node_cty.nodes(cell) ){
         if (cell_node==node)
           break;
         ++node_index_in_cell;
       }
-      m_node_index_in_cells[first_pos + index] = node_index_in_cell;
+      inout_node_index_in_cells[first_pos + index] = node_index_in_cell;
       ++index;
     }
-  }
+
+    // Remplit avec la valeur nulle les derniers éléments
+    for( ; index<MAX_NODE_CELL; ++index )
+      inout_node_index_in_cells[first_pos + index] = -1;
+  };
 }
 
 /*---------------------------------------------------------------------------*/
