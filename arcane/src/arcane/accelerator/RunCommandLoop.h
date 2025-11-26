@@ -272,6 +272,24 @@ runExtended(RunCommand& command, LoopBoundType bounds,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+template <typename LoopBoundType, typename Lambda> void
+runGeneric(RunCommand& command, const LoopBoundType& bounds, const Lambda& func)
+{
+  impl::_applyGenericLoop(command, bounds, func);
+}
+
+// Spécialisation pour ArrayBound.
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+template <typename ExtentType, typename Lambda> void
+runGeneric(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
+{
+  impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator::impl
 
 namespace Arcane::Accelerator
@@ -280,6 +298,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: a rendre obsolète et supprimer
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template <typename ExtentType, typename Lambda> void
 run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
@@ -290,6 +309,7 @@ run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: a rendre obsolète et supprimer
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template <int N, typename Lambda> void
 run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& func)
@@ -300,6 +320,7 @@ run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& fun
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: a rendre obsolète et supprimer
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template <int N, typename Lambda> void
 run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
@@ -357,7 +378,7 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
     runExtended(nr.m_command, nr.m_bounds, f, nr.m_remaining_args);
   }
   else {
-    run(nr.m_command, nr.m_bounds, f);
+    runGeneric(nr.m_command, nr.m_bounds, f);
   }
 }
 
