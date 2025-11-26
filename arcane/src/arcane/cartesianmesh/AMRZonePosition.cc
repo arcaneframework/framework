@@ -12,7 +12,7 @@
 
 #include "arcane/cartesianmesh/AMRZonePosition.h"
 
-#include "ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/MeshKind.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
@@ -66,7 +66,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
     cellsInPatch(mesh->mesh(), cells_local_id);
     return;
   }
-  auto numbering = mesh->_internalApi()->cartesianMeshNumberingMng();
+  auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   FixedArray<Int64, 6> min_n_max;
   min_n_max[0] = INT64_MAX;

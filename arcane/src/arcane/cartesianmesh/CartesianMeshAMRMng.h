@@ -5,20 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionLevelGroup.h                                        (C) 2000-2025 */
+/* CartesianMeshAMRMng.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
+/* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRPatchPosition.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHAMRMNG_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHAMRMNG_H
 
-#include "arcane/utils/Vector3.h"
-#include "arcane/utils/UniqueArray.h"
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/utils/TraceAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,23 +29,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class AMRPatchPositionLevelGroup
+class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
 {
  public:
-  AMRPatchPositionLevelGroup(Integer max_level);
-  ~AMRPatchPositionLevelGroup();
+
+  explicit CartesianMeshAMRMng(ICartesianMesh* cmesh);
 
  public:
 
-  Integer maxLevel();
-  ConstArrayView<AMRPatchPosition> patches(Integer level);
-  void addPatch(AMRPatchPosition patch);
-  void fusionPatches(Integer level);
-  static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
+  Int32 nbPatch() const;
+  CartesianPatch amrPatch(Int32 index) const;
+  CartesianMeshPatchListView patches() const;
+
+  void refineZone(const AMRZonePosition& position) const;
+
+  void coarseZone(const AMRZonePosition& position) const;
+
+  void refine() const;
+
+  Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) const;
+
+  void mergePatches() const;
+
+  void createSubLevel() const;
 
  private:
-  Integer m_max_level;
-  UniqueArray<UniqueArray<AMRPatchPosition>> m_patches;
+
+  ICartesianMesh* m_cmesh;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -56,5 +66,4 @@ class AMRPatchPositionLevelGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif //ARCANE_CARTESIANMESH_CARTESIANMESHAMRMNG_H

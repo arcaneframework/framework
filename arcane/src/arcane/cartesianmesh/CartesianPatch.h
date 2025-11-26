@@ -111,6 +111,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
     m_patch->checkValid();
   }
 
+  AMRPatchPosition position() const
+  {
+    ARCANE_CHECK_POINTER(m_patch);
+    return m_patch->position();
+  }
+
   //! Indique si le patch est nul.
   bool isNull() const { return !m_patch; }
 

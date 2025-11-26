@@ -46,6 +46,7 @@
 #include "arcane/cartesianmesh/FaceDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
 #include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
@@ -516,16 +517,18 @@ _initAMR()
     m_cartesian_mesh->computeDirections();
 
     info() << "Doint initial coarsening";
-
-    if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-      debug() << "Coarse with specific coarser (for cartesian mesh only)";
-      Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
-      coarser->createSubLevel();
-    }
-    else {
-      Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
-      coarser->createCoarseCells();
-    }
+    //
+    // if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    //   debug() << "Coarse with specific coarser (for cartesian mesh only)";
+    //   Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
+    //   coarser->createSubLevel();
+    // }
+    // else {
+    //   Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+    //   coarser->createCoarseCells();
+    // }
+    CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+    amr_mng.createSubLevel();
 
     CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
     Int32 nb_patch = patches.size();
