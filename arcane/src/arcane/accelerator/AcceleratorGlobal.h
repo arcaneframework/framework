@@ -19,6 +19,7 @@
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include <iosfwd>
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,12 +39,24 @@ namespace Impl
 {
   class CudaHipKernelRemainingArgsHelper;
   class SyclKernelRemainingArgsHelper;
-}
+  /*!
+ * \brief Template pour savoir si un type utilisé comme boucle dans les
+ * kernels nécessite toujours sycl::nb_item comme argument.
+ *
+ * Si c'est le cas, il faut spécialiser cette template en la faisant
+ * dériver de std::true_type. C'est le cas par exemple pour WorkGroupLoopRange.
+ */
+  template <typename T>
+  class IsAlwaysUseSyclNdItem
+  : public std::false_type
+  {
+  };
+} // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T, Int32 Extent = DynExtent> class LocalMemory;
+template <typename T, Int32 Extent = DynExtent> class LocalMemory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,7 +103,7 @@ getBadPolicyMessage(eExecutionPolicy policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -110,4 +123,4 @@ getBadPolicyMessage(eExecutionPolicy policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

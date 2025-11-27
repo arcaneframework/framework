@@ -56,6 +56,20 @@ arcaneGetLoopIndexSycl(const ComplexForLoopRanges<N, IndexType_>& bounds, sycl::
   return bounds.getIndices(static_cast<Int32>(x.get_global_id(0)));
 }
 
+template <int N, typename IndexType_>
+SimpleForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexSycl(const SimpleForLoopRanges<N, IndexType_>& bounds, sycl::id<1> x)
+{
+  return bounds.getIndices(static_cast<Int32>(x));
+}
+
+template <int N, typename IndexType_>
+ComplexForLoopRanges<N, IndexType_>::LoopIndexType
+arcaneGetLoopIndexSycl(const ComplexForLoopRanges<N, IndexType_>& bounds, sycl::id<1> x)
+{
+  return bounds.getIndices(static_cast<Int32>(x));
+}
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -127,7 +141,7 @@ class DoDirectSYCLLambdaArrayBounds
 
     Int32 i = static_cast<Int32>(x);
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i));
+      body(arcaneGetLoopIndexSycl(bounds, i));
     }
   }
 };

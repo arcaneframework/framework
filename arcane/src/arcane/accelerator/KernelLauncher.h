@@ -382,7 +382,7 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
 #if defined(ARCANE_COMPILING_SYCL)
   sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
   sycl::event event;
-  if constexpr (sizeof...(RemainingArgs) > 0) {
+  if constexpr (IsAlwaysUseSyclNdItem<LambdaArgs>::value || sizeof...(RemainingArgs) > 0) {
     auto tbi = launch_info.kernelLaunchArgs();
     Int32 b = tbi.nbBlockPerGrid();
     Int32 t = tbi.nbThreadPerBlock();
