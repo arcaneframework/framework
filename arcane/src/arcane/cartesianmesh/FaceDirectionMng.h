@@ -216,6 +216,8 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
                              const VariableCellReal3& cells_center,
                              const VariableFaceReal3& faces_center);
 
+  void _internalComputeInfos(const CellDirectionMng& cell_dm);
+
   /*!
    * \internal
    * Initialise l'instance.
@@ -235,17 +237,18 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    */
   void _internalResizeInfos(Int32 new_size);
 
+  void _computeCellInfos(const CellDirectionMng& cell_dm,
+                         const VariableCellReal3& cells_center,
+                         const VariableFaceReal3& faces_center);
+  void _computeCellInfos() const;
+  bool _hasFace(Cell cell, Int32 face_local_id) const;
+
  private:
 
   SmallSpan<ItemDirectionInfo> m_infos_view;
   CellInfoListView m_cells;
   eMeshDirection m_direction;
   Impl* m_p;
-
-  void _computeCellInfos(const CellDirectionMng& cell_dm,
-                         const VariableCellReal3& cells_center,
-                         const VariableFaceReal3& faces_center);
-  bool _hasFace(Cell cell, Int32 face_local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/

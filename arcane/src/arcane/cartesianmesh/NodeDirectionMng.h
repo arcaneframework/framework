@@ -384,6 +384,8 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   void _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_nodes,
                              const VariableCellReal3& cells_center);
 
+  void _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_nodes);
+
   /*!
    * \internal
    * Initialise l'instance.
@@ -429,6 +431,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
                              const VariableCellReal3& cells_center);
+  void _computeNodeCellInfos() const;
   void _filterNodes();
 };
 

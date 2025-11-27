@@ -36,7 +36,7 @@ CartesianMeshNumberingMng(ICartesianMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-printStatus()
+printStatus() const
 {
   m_internal_api->printStatus();
 }

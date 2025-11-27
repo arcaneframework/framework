@@ -173,6 +173,7 @@ class CartesianMeshImpl
   }
 
   void computeDirections() override;
+  void computeDirectionsV2() override;
 
   void recreateFromDump() override;
 
@@ -242,6 +243,9 @@ class CartesianMeshImpl
   void _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,
                              VariableCellReal3& cells_center,
                              VariableFaceReal3& faces_center,CellGroup all_cells,
+                             NodeGroup all_nodes, CellGroup own_cells);
+  void _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir,
+                             CellGroup all_cells,
                              NodeGroup all_nodes, CellGroup own_cells);
   void _applyRefine(const AMRZonePosition &position);
   void _applyCoarse(const AMRZonePosition& zone_position);
@@ -407,6 +411,10 @@ _checkAddObservableMeshChanged()
 void CartesianMeshImpl::
 computeDirections()
 {
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    computeDirectionsV2();
+    return;
+  }
   info() << "CartesianMesh: computeDirections()";
 
   m_mesh_timestamp = mesh()->timestamp();
@@ -703,6 +711,181 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
   cell_dm._internalComputeInnerAndOuterItems(all_cells, own_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);
   node_dm._internalComputeInfos(cell_dm,all_nodes,cells_center);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+_computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup all_cells, NodeGroup all_nodes, CellGroup own_cells)
+{
+  IItemFamily* cell_family = m_mesh->cellFamily();
+  IItemFamily* face_family = m_mesh->faceFamily();
+  IItemFamily* node_family = m_mesh->nodeFamily();
+
+  Int32 max_cell_id = cell_family->maxLocalId();
+  Int32 max_face_id = face_family->maxLocalId();
+  Int32 max_node_id = node_family->maxLocalId();
+
+  CellDirectionMng& cell_dm = cdi.cellDirection(dir);
+  cell_dm._internalResizeInfos(max_cell_id);
+
+  FaceDirectionMng& face_dm = cdi.faceDirection(dir);
+  face_dm._internalResizeInfos(max_face_id);
+
+  NodeDirectionMng& node_dm = cdi.nodeDirection(dir);
+  node_dm._internalResizeInfos(max_node_id);
+
+  //TODO: attention à remettre à jour après changement de maillage.
+  info(4) << "COMPUTE DIRECTION dir=" << dir;
+
+  Int32 prev_local_face = -1;
+  Int32 next_local_face = m_local_face_direction[dir];
+  Integer mesh_dim = m_mesh->dimension();
+  // Calcul le numero local de face oppose à la face suivante.
+  if (mesh_dim == 2)
+    prev_local_face = (next_local_face + 2) % 4;
+  else if (mesh_dim == 3)
+    prev_local_face = (next_local_face + 3) % 6;
+
+  cell_dm._internalSetLocalFaceIndex(next_local_face, prev_local_face);
+
+  // Positionne pour chaque maille les faces avant et après dans la direction.
+  // On s'assure que ces entités sont dans le groupe des entités de la direction correspondante
+  std::set<Int32> cells_set;
+  ENUMERATE_CELL (icell, all_cells) {
+    cells_set.insert(icell.itemLocalId());
+  }
+
+  // Calcule les mailles devant/derrière. En cas de patch AMR, il faut que ces deux mailles
+  // soient de même niveau
+  ENUMERATE_CELL (icell, all_cells) {
+    Cell cell = *icell;
+    Int32 my_level = cell.level();
+    Face next_face = cell.face(next_local_face);
+    Cell next_cell = next_face.backCell() == cell ? next_face.frontCell() : next_face.backCell();
+    if (cells_set.find(next_cell.localId()) == cells_set.end()) {
+      if (next_cell.level() != my_level) {
+        next_cell = Cell();
+      }
+    }
+    else if (next_cell.level() != my_level) {
+      next_cell = Cell();
+    }
+
+    Face prev_face = cell.face(prev_local_face);
+    Cell prev_cell = prev_face.backCell() == cell ? prev_face.frontCell() : prev_face.backCell();
+
+    if (cells_set.find(prev_cell.localId()) == cells_set.end()) {
+      if (prev_cell.level() != my_level) {
+        prev_cell = Cell();
+      }
+    }
+    else if (prev_cell.level() != my_level) {
+      prev_cell = Cell();
+    }
+
+    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell, prev_cell);
+  }
+  cell_dm._internalComputeInnerAndOuterItems(all_cells, own_cells);
+  face_dm._internalComputeInfos(cell_dm);
+  node_dm._internalComputeInfos(cell_dm, all_nodes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+computeDirectionsV2()
+{
+  info() << "CartesianMesh: computeDirectionsV2()";
+
+  m_mesh_timestamp = mesh()->timestamp();
+  _checkAddObservableMeshChanged();
+
+  m_is_amr = m_mesh->isAmrActivated();
+
+  IItemFamily* cell_family = m_mesh->cellFamily();
+  IItemFamily* node_family = m_mesh->nodeFamily();
+
+  bool is_3d = m_mesh->dimension() == 3;
+
+  m_all_items_direction_info->_internalComputeNodeCellInformations();
+
+  info() << "Informations from IMesh properties:";
+
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+
+  info() << "GlobalNbCell = " << cmgi->globalNbCells();
+  info() << "OwnNbCell: " << cmgi->ownNbCells();
+  info() << "SubDomainOffset: " << cmgi->subDomainOffsets();
+  info() << "OwnCellOffset: " << cmgi->ownCellOffsets();
+
+  CellGroup all_cells = cell_family->allItems();
+  NodeGroup all_nodes = node_family->allItems();
+  if (m_is_amr) {
+    auto x = _buildPatchGroups(mesh()->allLevelCells(0), 0);
+    all_cells = std::get<0>(x);
+    all_nodes = std::get<1>(x);
+  }
+  Int32 next_face_x = -1;
+  Int32 next_face_y = -1;
+  Int32 next_face_z = -1;
+  if (is_3d) {
+    next_face_x = 4;
+    next_face_y = 5;
+    next_face_z = 3;
+  }
+  else {
+    next_face_x = 1;
+    next_face_y = 2;
+  }
+
+  m_local_face_direction[MD_DirX] = next_face_x;
+  _computeMeshDirection(*m_all_items_direction_info.get(), MD_DirX, all_cells, all_nodes, all_cells);
+
+  m_local_face_direction[MD_DirY] = next_face_y;
+  _computeMeshDirection(*m_all_items_direction_info.get(), MD_DirY, all_cells, all_nodes, all_cells);
+
+  if (next_face_z != -1) {
+    m_local_face_direction[MD_DirZ] = next_face_z;
+    _computeMeshDirection(*m_all_items_direction_info.get(), MD_DirZ, all_cells, all_nodes, all_cells);
+  }
+
+  // Positionne les informations par direction
+  for (Integer idir = 0, nb_dir = mesh()->dimension(); idir < nb_dir; ++idir) {
+    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
+    cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
+                                         cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
+  }
+
+  info() << "Compute cartesian connectivity";
+
+  m_permutation_storage.resize(1);
+  m_permutation_storage[0].compute();
+  m_nodes_to_cell_storage.resize(mesh()->nodeFamily()->maxLocalId());
+  m_cells_to_node_storage.resize(mesh()->cellFamily()->maxLocalId());
+  m_connectivity._setStorage(m_nodes_to_cell_storage, m_cells_to_node_storage, &m_permutation_storage[0]);
+  m_connectivity._computeInfos(this);
+
+  // Ajoute informations de connectivités pour les patchs AMR
+  // TODO: supporter plusieurs appels à cette méthode ?
+  for (Integer patch_index = 1; patch_index < m_patch_group.nbPatch(); ++patch_index) {
+    CellGroup cells = m_patch_group.cells(patch_index);
+    Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
+    info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
+    patch->_internalComputeNodeCellInformations();
+    auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
+    _computeMeshDirection(*patch.get(), MD_DirX, patch_cells, patch_nodes, m_patch_group.ownCells(patch_index));
+    _computeMeshDirection(*patch.get(), MD_DirY, patch_cells, patch_nodes, m_patch_group.ownCells(patch_index));
+    if (is_3d)
+      _computeMeshDirection(*patch.get(), MD_DirZ, patch_cells, patch_nodes, m_patch_group.ownCells(patch_index));
+  }
+
+  if (arcaneIsCheck())
+    checkValid();
+
+  _saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/

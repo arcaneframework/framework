@@ -130,14 +130,23 @@ class CartesianMeshNumberingMngInternal
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
+  void cellNodeUniqueIds(ArrayView<Int64> uid, Cell cell) override;
 
   Integer nbFaceByCell() override;
   void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
   void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
   void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
+  void cellFaceUniqueIds(ArrayView<Int64> uid, Cell cell) override;
 
+  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x3 cell_coord, Int32 level) override;
+  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x2 cell_coord, Int32 level) override;
   void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
   void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Cell cell) override;
+
+  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x3 node_coord, Int32 level) override;
+  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x2 node_coord, Int32 level) override;
+  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64 node_uid, Int32 level) override;
+  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Node node) override;
 
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
