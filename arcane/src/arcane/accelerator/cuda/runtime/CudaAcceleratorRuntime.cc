@@ -122,12 +122,17 @@ class OccupancyMap
 
     cudaFuncAttributes func_attr;
     cudaFuncGetAttributes(&func_attr, kernel_ptr);
-    const char* func_name = nullptr;
-    cudaFuncGetName(&func_name, kernel_ptr);
     m_nb_thread_per_block_map[kernel_ptr] = computed_block_size;
     std::cout << "ComputedBlockSize=" << computed_block_size << " n0=" << num_block_0 << " n1=" << num_block_1
-              << " min_grid_size=" << min_grid_size << " nb_reg=" << func_attr.numRegs
-              << " name=" << func_name << "\n";
+              << " min_grid_size=" << min_grid_size << " nb_reg=" << func_attr.numRegs;
+
+#if CUDART_VERSION >= 12040
+    // cudaFuncGetName is only available in 12.4
+    const char* func_name = nullptr;
+    cudaFuncGetName(&func_name, kernel_ptr);
+    std::cout << " name=" << func_name << "\n";
+#endif
+
     return computed_block_size;
   }
 
