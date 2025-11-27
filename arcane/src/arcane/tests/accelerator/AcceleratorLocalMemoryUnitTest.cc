@@ -207,6 +207,13 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
       Int32 i = work_item.linearIndex();
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
+#if !defined(ARCCORE_DEVICE_CODE)
+      if constexpr (!work_group.isDevice()) {
+        Int32 expected_linear_index = work_group.activeItem(0).linearIndex() + g;
+        if (i != work_group.activeItem(0).linearIndex() + g)
+          ARCANE_FATAL("Bad value for linear index i={0} expected={1}", i, expected_linear_index);
+      }
+#endif
     }
 
     // Pour tester le 'constexpr' uniquement sur le device
