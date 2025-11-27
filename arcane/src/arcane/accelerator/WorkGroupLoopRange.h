@@ -429,6 +429,17 @@ arcaneGetLoopIndexCudaHip([[maybe_unused]] const WorkGroupLoopRange& loop_range,
 
 #if defined(ARCANE_COMPILING_SYCL)
 
+namespace Impl
+{
+  // Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
+  // comme argument avec 'WorkGroupLoopRange.
+  template <>
+  class IsAlwaysUseSyclNdItem<WorkGroupLoopRange>
+  : public std::true_type
+  {
+  };
+} // namespace Impl
+
 inline SyclWorkGroupLoopContext
 arcaneGetLoopIndexSycl([[maybe_unused]] const WorkGroupLoopRange& loop_range,
                        sycl::nd_item<1> id)
