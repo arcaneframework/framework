@@ -123,7 +123,7 @@ class HostWorkItemGroup
   WorkItem activeItem(Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_nb_active_item);
-    return WorkItem(m_loop_index);
+    return WorkItem(m_loop_index + index);
   }
 
  private:
