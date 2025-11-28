@@ -188,6 +188,25 @@ addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
+void ItemTypeInfoBuilder::
+addFaceLine4(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3)
+{
+  _checkDimension(2);
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
+  buf.add(IT_Line4);
+  buf.add(4);
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(n2);
+  buf.add(n3);
+  buf.add(0); // no edge
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemTypeInfoBuilder::
 addFaceTriangle(Integer face_index, Integer n0, Integer n1, Integer n2)
 {
