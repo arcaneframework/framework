@@ -172,6 +172,11 @@ static constexpr ItemTypeId ITI_Quad9(IT_Quad9);
 //! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Hexaedron27(IT_Hexaedron27);
 
+//! Ligne d'ordre 3. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Line4(IT_Line4);
+//! Triangle d'ordre 3. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Triangle10(IT_Triangle10);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

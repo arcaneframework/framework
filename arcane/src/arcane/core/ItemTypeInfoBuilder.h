@@ -140,6 +140,9 @@ class ItemTypeInfoBuilder
   //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
   void addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2);
 
+  //! Ajoute une ligne d'ordre 3 à la liste des faces (pour les elements 2D)
+  void addFaceLine4(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3);
+
   //! Ajoute un triangle à la liste des faces
   void addFaceTriangle(Integer face_index, Integer n0, Integer n1, Integer n2);
 

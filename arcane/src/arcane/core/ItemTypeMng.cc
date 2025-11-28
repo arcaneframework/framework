@@ -183,9 +183,19 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Line3] = type;
-    type->setOrder(2, ITI_Line2);
 
     type->setInfos(this, IT_Line3, "Line3", Dimension::Dim1, 3, 0, 0);
+    type->setOrder(2, ITI_Line2);
+    type->setIsValidForCell(false);
+  }
+
+  // Line4
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Line4] = type;
+
+    type->setInfos(this, IT_Line4, "Line4", Dimension::Dim1, 4, 0, 0);
+    type->setOrder(3, ITI_Line2);
     type->setIsValidForCell(false);
   }
 
@@ -231,6 +241,25 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addFaceLine3(0, 0, 1, 3);
     type->addFaceLine3(1, 1, 2, 4);
     type->addFaceLine3(2, 2, 0, 5);
+
+    type->addEdge(0, 0, 1, 1, 2);
+    type->addEdge(1, 1, 2, 2, 0);
+    type->addEdge(2, 2, 0, 0, 1);
+  }
+
+  // Triangle10
+  {
+    // TODO: Pour l'instant comme triangle3
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Triangle10] = type;
+
+    type->setInfos(this, IT_Triangle10, "Triangle10", Dimension::Dim2, 10, 3, 3);
+    type->setOrder(3, ITI_Triangle3);
+    type->setHasCenterNode(true);
+
+    type->addFaceLine4(0, 0, 1, 3, 4);
+    type->addFaceLine4(1, 1, 2, 5, 6);
+    type->addFaceLine4(2, 2, 0, 7, 8);
 
     type->addEdge(0, 0, 1, 1, 2);
     type->addEdge(1, 1, 2, 2, 0);

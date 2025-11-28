@@ -1011,6 +1011,8 @@ _readElementsFromFile()
         else if (mesh_dimension == 2) {
           if (block.item_type == IT_Line2)
             block.item_type = ItemTypeId(IT_CellLine2);
+          else if (block.item_type == IT_Line3)
+            block.item_type = ItemTypeId(IT_CellLine3);
           else
             ARCANE_FATAL("Not supported sub dimension cell type={0} for 2D mesh", item_type_name);
         }
@@ -1309,7 +1311,6 @@ void MshParallelMeshReader::
 _addFaceGroup(const MshElementBlock& block, const String& group_name)
 {
   IParallelMng* pm = m_parallel_mng;
-  const Int32 item_nb_node = block.item_nb_node;
 
   UniqueArray<Int64> connectivities;
   for (Int32 dest_rank : m_parts_rank) {
@@ -1885,6 +1886,7 @@ _initTypes()
   _addMshTypeInfo(MSH_PYR_5, ITI_Pyramid5);
   _addMshTypeInfo(MSH_PYR_13, ITI_Pyramid13);
   _addMshTypeInfo(MSH_TRI_6, ITI_Triangle6);
+  _addMshTypeInfo(MSH_TRI_10, ITI_Triangle10);
   {
     FixedArray<Int16, 10> x({ 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 });
     _addMshTypeInfo(MSH_TET_10, ITI_Tetraedron10, x.view());
