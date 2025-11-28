@@ -14,7 +14,10 @@
 #include "arccore/common/MemoryUtils.h"
 
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/common/MemoryAllocationOptions.h"
 #include "arccore/common/internal/SpecificMemoryCopyList.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryResourceMng.h"
 
 // Pour std::memmove
 #include <cstring>
@@ -48,6 +51,14 @@ namespace Arcane
 {
 using RunQueue = Accelerator::RunQueue;
 
+namespace
+{
+  IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
+  MemoryResourceMng global_default_data_memory_resource_mng;
+  IMemoryRessourceMng* global_data_memory_resource_mng = nullptr;
+  eMemoryResource global_data_memory_resource = eMemoryResource::Host;
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,6 +83,151 @@ namespace
   }
 } // namespace
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryResource MemoryUtils::
+getDefaultDataMemoryResource()
+{
+  return global_data_memory_resource;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryResource MemoryUtils::
+getMemoryResourceFromName(const String& name)
+{
+  eMemoryResource v = eMemoryResource::Unknown;
+  if (name.null())
+    return v;
+  if (name == "Device")
+    v = eMemoryResource::Device;
+  else if (name == "Host")
+    v = eMemoryResource::Host;
+  else if (name == "HostPinned")
+    v = eMemoryResource::HostPinned;
+  else if (name == "UnifiedMemory")
+    v = eMemoryResource::UnifiedMemory;
+  else
+    ARCCORE_FATAL("Invalid name '{0}' for memory resource. Valid names are "
+                  "'Device', 'Host', 'HostPinned' or 'UnifieMemory'.",
+                  name);
+  return v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+setDefaultDataMemoryResource(eMemoryResource v)
+{
+  global_data_memory_resource = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryRessourceMng* MemoryUtils::
+setDataMemoryResourceMng(IMemoryRessourceMng* mng)
+{
+  ARCCORE_CHECK_POINTER(mng);
+  IMemoryRessourceMng* old = global_data_memory_resource_mng;
+  global_data_memory_resource_mng = mng;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryRessourceMng* MemoryUtils::
+getDataMemoryResourceMng()
+{
+  IMemoryRessourceMng* a = global_data_memory_resource_mng;
+  if (!a)
+    return &global_default_data_memory_resource_mng;
+  return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getAcceleratorHostMemoryAllocator()
+{
+  return global_accelerator_host_memory_allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
+{
+  IMemoryAllocator* old = global_accelerator_host_memory_allocator;
+  global_accelerator_host_memory_allocator = a;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCCORE_COMMON_EXPORT IMemoryAllocator* MemoryUtils::
+getDefaultDataAllocator()
+{
+  return getDataMemoryResourceMng()->getAllocator(getDefaultDataMemoryResource());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getDeviceOrHostAllocator()
+{
+  IMemoryRessourceMng* mrm = getDataMemoryResourceMng();
+  IMemoryAllocator* a = mrm->getAllocator(eMemoryResource::Device, false);
+  if (a)
+    return a;
+  return mrm->getAllocator(eMemoryResource::Host);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getDefaultDataAllocator(eMemoryLocationHint hint)
+{
+  return MemoryAllocationOptions(getDefaultDataAllocator(), hint);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getAllocatorForMostlyReadOnlyData()
+{
+  return getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getAllocator(eMemoryResource mem_resource)
+{
+  return getDataMemoryResourceMng()->getAllocator(mem_resource);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getAllocationOptions(eMemoryResource mem_resource)
+{
+  return MemoryAllocationOptions(getAllocator(mem_resource));
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,6 +237,17 @@ setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr)
   if (!default_global_copy_list) {
     default_global_copy_list = ptr;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copy(MutableMemoryView destination, eMemoryResource destination_mem,
+     ConstMemoryView source, eMemoryResource source_mem, const RunQueue* queue)
+{
+  IMemoryRessourceMng* mrm = getDataMemoryResourceMng();
+  mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,7 +264,7 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
   Int64 destination_size = b_destination.size();
   if (source_size > destination_size)
     ARCCORE_FATAL("Destination is too small source_size={0} destination_size={1}",
-                 source_size, destination_size);
+                  source_size, destination_size);
   auto* destination_data = b_destination.data();
   auto* source_data = b_source.data();
   ARCCORE_CHECK_POINTER(destination_data);

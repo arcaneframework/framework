@@ -9,12 +9,12 @@
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire internes à Arcane.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYUTILSINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_MEMORYUTILSINTERNAL_H
+#ifndef ARCCORE_COMMON_INTERNAL_MEMORYUTILSINTERNAL_H
+#define ARCCORE_COMMON_INTERNAL_MEMORYUTILSINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arccore/common/CommonGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ namespace Arcane::MemoryUtils
  *
  * Retourne l'ancien gestionnaire.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+extern "C++" ARCCORE_COMMON_EXPORT IMemoryRessourceMng*
 setDataMemoryResourceMng(IMemoryRessourceMng* mng);
 
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ setDataMemoryResourceMng(IMemoryRessourceMng* mng);
  * Il est garanti que l'alignement est au moins celui retourné par
  * AlignedMemoryAllocator::Simd().
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+extern "C++" ARCCORE_COMMON_EXPORT IMemoryRessourceMng*
 getDataMemoryResourceMng();
 
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ getDataMemoryResourceMng();
  * Retourne l'ancien allocateur utilisé. L'allocateur spécifié doit rester
  * valide durant toute la durée de vie de l'application.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+extern "C++" ARCCORE_COMMON_EXPORT IMemoryAllocator*
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
  *
  * \sa getDefaultDataMemoryResource();
  */
-extern "C++" ARCANE_UTILS_EXPORT void
+extern "C++" ARCCORE_COMMON_EXPORT void
 setDefaultDataMemoryResource(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/

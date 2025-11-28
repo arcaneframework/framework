@@ -34,7 +34,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/base/internal/ConvertInternal.h"
 
 #include "arcane/core/IMainFactory.h"

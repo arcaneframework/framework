@@ -26,7 +26,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/OStringStream.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"

@@ -26,7 +26,7 @@
 #include "arcane/utils/StringList.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arccore/base/StringUtils.h"
 

@@ -21,8 +21,7 @@
 
 #include "arccore/common/IMemoryResourceMng.h"
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
-
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"

@@ -9,12 +9,10 @@
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYRESOURCEMNG_H
-#define ARCANE_UTILS_INTERNAL_MEMORYRESOURCEMNG_H
+#ifndef ARCCORE_COMMON_INTERNAL_MEMORYRESOURCEMNG_H
+#define ARCCORE_COMMON_INTERNAL_MEMORYRESOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
 
 #include "arccore/base/FixedArray.h"
 
@@ -35,7 +33,7 @@ namespace Arcane
 /*!
  * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
  */
-class ARCANE_UTILS_EXPORT MemoryResourceMng
+class ARCCORE_COMMON_EXPORT MemoryResourceMng
 : public IMemoryResourceMng
 , public IMemoryResourceMngInternal
 {

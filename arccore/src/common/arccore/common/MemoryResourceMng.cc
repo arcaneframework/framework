@@ -11,15 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/MemoryResourceMng.h"
+#include "arccore/common/internal/MemoryResourceMng.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/MemoryView.h"
-#include "arcane/utils/MemoryAllocator.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/MemoryView.h"
+#include "arccore/common/Array.h"
+#include "arccore/common/AlignedMemoryAllocator.h"
+#include "arccore/common/MemoryUtils.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ namespace Arcane
 
 namespace
 {
-  inline bool _isHost(eMemoryRessource r)
+  inline bool _isHost(eMemoryResource r)
   {
     // Si on sait pas, considère qu'on est accessible de puis l'hôte.
     if (r == eMemoryResource::Unknown)
@@ -60,12 +60,12 @@ class DefaultHostMemoryCopier
     // est accessible depuis le CPU
 
     if (!_isHost(from_mem))
-      ARCANE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
-                   from_mem);
+      ARCCORE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
+                    from_mem);
 
     if (!_isHost(to_mem))
-      ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
-                   to_mem);
+      ARCCORE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
+                    to_mem);
 
     MemoryUtils::copyHost(to, from);
   }
@@ -83,7 +83,7 @@ MemoryResourceMng()
   // les accélérateurs seront positionnés lorsqu'on aura choisi le runtime
   // accélérateur
   IMemoryAllocator* a = AlignedMemoryAllocator::Simd();
-  setAllocator(eMemoryRessource::Host, a);
+  setAllocator(eMemoryResource::Host, a);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,8 +93,8 @@ int MemoryResourceMng::
 _checkValidResource(eMemoryResource r)
 {
   int x = (int)r;
-  if (x <= 0 || x >= Arccore::ARCCORE_NB_MEMORY_RESOURCE)
-    ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, Arccore::ARCCORE_NB_MEMORY_RESOURCE - 1);
+  if (x <= 0 || x >= ARCCORE_NB_MEMORY_RESOURCE)
+    ARCCORE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, ARCCORE_NB_MEMORY_RESOURCE - 1);
   return x;
 }
 
@@ -119,7 +119,7 @@ getAllocator(eMemoryResource r, bool throw_if_not_found)
   }
 
   if (!a && throw_if_not_found)
-    ARCANE_FATAL("Allocator for resource '{0}' is not available", r);
+    ARCCORE_FATAL("Allocator for resource '{0}' is not available", r);
 
   return a;
 }
@@ -153,7 +153,7 @@ copy(ConstMemoryView from, eMemoryResource from_mem,
   Int64 from_size = from.bytes().size();
   Int64 to_size = to.bytes().size();
   if (from_size > to_size)
-    ARCANE_FATAL("Destination copy is too small (to_size={0} from_size={1})", to_size, from_size);
+    ARCCORE_FATAL("Destination copy is too small (to_size={0} from_size={1})", to_size, from_size);
 
   m_copier->copy(from, from_mem, to, to_mem, queue);
 }

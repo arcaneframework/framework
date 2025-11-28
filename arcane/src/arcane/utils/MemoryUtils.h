@@ -27,17 +27,6 @@ namespace Arcane::MemoryUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Allocateur spécifique pour les accélérateurs.
- *
- * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
- */
-extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use getDefaultDataAllocator() instead.")
-ARCANE_UTILS_EXPORT IMemoryAllocator*
-getAcceleratorHostMemoryAllocator();
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 namespace impl
 {

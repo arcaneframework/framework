@@ -19,6 +19,7 @@ set(SOURCES
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
   MemoryPool.cc
+  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
   SequentialFor.h
@@ -28,6 +29,8 @@ set(SOURCES
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
   internal/MemoryPool.h
+  internal/MemoryResourceMng.h
+  internal/MemoryUtilsInternal.h
   internal/SpecificMemoryCopyList.h
 
   accelerator/CommonAcceleratorGlobal.h
