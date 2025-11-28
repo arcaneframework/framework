@@ -23,7 +23,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/accelerator/core/internal/AcceleratorMemoryAllocatorBase.h"
+#include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <iostream>
 

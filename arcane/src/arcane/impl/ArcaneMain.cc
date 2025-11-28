@@ -75,7 +75,7 @@
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
 #include "arcane/impl/internal/ThreadBindingMng.h"
 
-#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
 
 #include "arcane_internal_config.h"
 

@@ -13,7 +13,7 @@
 
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/Exception.h"
-#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
 
 #include <iostream>
 

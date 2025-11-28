@@ -23,6 +23,8 @@ extern "C"
 int arcaneTestSycl4();
 extern "C"
 int arcaneTestSycl5();
+extern "C"
+int arcaneTestSycl6();
 
 extern "C" ARCANE_EXPORT
 int func0()

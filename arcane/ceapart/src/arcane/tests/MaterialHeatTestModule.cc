@@ -45,7 +45,7 @@
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/internal/RunnerInternal.h"
+#include "arccore/common/accelerator/internal/RunnerInternal.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"

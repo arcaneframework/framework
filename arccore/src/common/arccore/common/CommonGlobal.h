@@ -154,6 +154,18 @@ operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille du padding pour les index dans les opérations SIMD.
+ *
+ * Afin d'avoir le même code quel que soit le mécanisme de vectorisation
+ * utilisé, cette valeur est fixe et correspond au plus grand vecteur SIMD.
+ *
+ * \sa arcanedoc_simd
+ */
+static const Integer SIMD_PADDING_SIZE = 8;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane
 

@@ -1,7 +1,5 @@
 set( ARCANE_SOURCES
   AcceleratorCoreGlobal.h
-  AcceleratorCore.cc
-  AcceleratorMemoryAllocatorBase.cc
   AcceleratorRuntimeInitialisationInfo.cc
   AcceleratorRuntimeInitialisationInfo.h
   IAcceleratorMng.h
@@ -15,41 +13,16 @@ set( ARCANE_SOURCES
   KernelLaunchArgs.h
   NativeStream.h
   Memory.h
-  Memory.cc
-  MemoryTracer.cc
   PointerAttribute.h
   ProfileRegion.h
-  ProfileRegion.cc
-  ReduceMemoryImpl.cc
   Runner.h
-  Runner.cc
   RunCommand.h
   RunCommandImpl.h
-  RunCommand.cc
-  RunCommandImpl.cc
-  RunCommandLaunchInfo.cc
   RunCommandLaunchInfo.h
   RunQueue.h
-  RunQueue.cc
   RunQueueBuildInfo.h
   RunQueueEvent.h
-  RunQueueEvent.cc
   RunQueueImpl.h
-  RunQueueImpl.cc
   RunQueuePool.h
-  RunQueuePool.cc
-  RunQueueRuntime.cc
   ViewBuildInfo.h
-  internal/AcceleratorMemoryAllocatorBase.h
-  internal/IRunnerRuntime.h
-  internal/AcceleratorCoreGlobalInternal.h
-  internal/IRunQueueStream.h
-  internal/IRunQueueEventImpl.h
-  internal/MemoryTracer.h
-  internal/RunCommandImpl.h
-  internal/RunQueueImpl.h
-  internal/ReduceMemoryImpl.h
-  internal/RegisterRuntimeInfo.h
-  internal/RunnerImpl.h
-  internal/RunnerInternal.h
 )

@@ -66,7 +66,7 @@
 #include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
 
-#include "arcane/accelerator/core/internal/RunnerInternal.h"
+#include "arccore/common/accelerator/internal/RunnerInternal.h"
 
 #include <thread>
 

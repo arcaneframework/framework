@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayViews.cc                                            (C) 2000-2024 */
+/* NumArrayViews.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des vues sur les 'NumArray' pour les accélérateurs.               */
 /*---------------------------------------------------------------------------*/
@@ -17,8 +17,8 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/internal/RunQueueImpl.h"
-#include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arccore/common/accelerator/internal/RunQueueImpl.h"
+#include "arccore/common/accelerator/internal/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

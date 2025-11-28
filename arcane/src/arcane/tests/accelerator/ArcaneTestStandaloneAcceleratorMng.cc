@@ -18,7 +18,7 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
-#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arccore/common/accelerator/internal/RunQueueImpl.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
