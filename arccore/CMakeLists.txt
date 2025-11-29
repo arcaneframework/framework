@@ -210,11 +210,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Functions.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckArccoreTypeSize.cmake)
 
 # ----------------------------------------------------------------------------
-
-configure_file(${CMAKE_CURRENT_LIST_DIR}/arccore_config.h.in ${CMAKE_BINARY_DIR}/arccore/arccore_config.h)
-install(FILES ${CMAKE_BINARY_DIR}/arccore/arccore_config.h DESTINATION include/arccore)
-
-# ----------------------------------------------------------------------------
 # Ajoute support des tests. Il faut le faire avant d'ajouter les composants
 # car ces derniers en ont besoin.
 
@@ -258,6 +253,93 @@ arccore_add_component_directory(message_passing)
 if (ARCCORE_ENABLE_MPI)
   arccore_add_component_directory(message_passing_mpi)
 endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Gestion du support des accélérateurs.
+# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
+# NOTE: (2025/11) Pour l'instant pour des raisons de compatibilité
+# on laisse les macros préfixées par ARCANE
+
+# Pour des raisons de compatibilité avec les configurations 2021, on
+# regarde d'abord si ARCANE_WANT_CUDA est défini
+if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
+  set (ARCANE_ACCELERATOR_MODE "CUDA")
+endif()
+
+# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
+# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set (ARCANE_ACCELERATOR_MODE "CUDA" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
+  set (ARCANE_ACCELERATOR_MODE "ROCM" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set (ARCANE_ACCELERATOR_MODE "ROCM" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set (ARCANE_ACCELERATOR_MODE "SYCL" )
+endif()
+
+if (DEFINED ARCANE_ACCELERATOR_MODE)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
+    set (ARCCORE_HAS_CUDA TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME cuda)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
+    set (ARCCORE_HAS_HIP TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME hip)
+    # TODO: vérifier qu'on utilise bien 'hipcc'
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCCORE_HAS_SYCL TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME sycl)
+  else()
+    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
+      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
+  endif()
+  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
+  message(STATUS "Arccore has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
+endif()
+
+# ----------------------------------------------------------------------------
+
+if (ARCANE_HAS_ACCELERATOR)
+  if (NOT ARCANE_ACCELERATOR_RUNTIME)
+    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
+  endif()
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
+    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
+    enable_language(HIP)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+
+    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    endif()
+    if (NOT CMAKE_CUDA_HOST_COMPILER)
+      set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
+    endif()
+    set(CMAKE_CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES} CACHE STRING "CMake architectures" FORCE)
+    enable_language(CUDA)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
+    # Rien à faire de spécial pour SYCL.
+  else()
+    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Génère le fichier de configuration.
+# Il faut le faire après la détection de toutes les options pour que les '#define'
+# soient bien positionnés
+configure_file(${CMAKE_CURRENT_LIST_DIR}/arccore_config.h.in ${CMAKE_BINARY_DIR}/arccore/arccore_config.h)
+install(FILES ${CMAKE_BINARY_DIR}/arccore/arccore_config.h DESTINATION include/arccore)
+
 # ----------------------------------------------------------------------------
 
 # Include module with fuction 'write_basic_package_version_file'
