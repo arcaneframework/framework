@@ -22,6 +22,9 @@
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/common/accelerator/RunQueue.h"
 
+// Pas utilisé mais nécessaire pour les exports de symboles.
+#include "arccore/common/accelerator/IAcceleratorMng.h"
+
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
