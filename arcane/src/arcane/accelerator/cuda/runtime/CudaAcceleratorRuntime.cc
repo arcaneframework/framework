@@ -90,33 +90,6 @@ _getMemoryLocation(int device_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaMemoryAllocator();
-
-//! Allocateur spécifique sur le device
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaDeviceMemoryAllocator();
-
-//! Allocateur spécifique utilisant le mémoire unifiée
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaUnifiedMemoryAllocator();
-
-//! Allocateur spécifique utilisant la mémoire punaisée
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaHostPinnedMemoryAllocator();
-
-extern "C++" ARCANE_CUDA_EXPORT void
-initializeCudaMemoryAllocators();
-
-extern "C++" ARCANE_CUDA_EXPORT void
-finalizeCudaMemoryAllocators(ITraceMng* tm);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class ConcreteAllocator
 {
  public:
@@ -436,41 +409,16 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator*
-getCudaMemoryAllocator()
-{
-  return &unified_memory_cuda_memory_allocator;
-}
-
-IMemoryAllocator*
-getCudaDeviceMemoryAllocator()
-{
-  return &device_cuda_memory_allocator;
-}
-
-IMemoryAllocator*
-getCudaUnifiedMemoryAllocator()
-{
-  return &unified_memory_cuda_memory_allocator;
-}
-
-IMemoryAllocator*
-getCudaHostPinnedMemoryAllocator()
-{
-  return &host_pinned_cuda_memory_allocator;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void initializeCudaMemoryAllocators()
+void
+initializeCudaMemoryAllocators()
 {
   unified_memory_cuda_memory_allocator.initialize();
   device_cuda_memory_allocator.initialize();
   host_pinned_cuda_memory_allocator.initialize();
 }
 
-void finalizeCudaMemoryAllocators(ITraceMng* tm)
+void
+finalizeCudaMemoryAllocators(ITraceMng* tm)
 {
   unified_memory_cuda_memory_allocator.finalize(tm);
   device_cuda_memory_allocator.finalize(tm);
@@ -480,7 +428,8 @@ void finalizeCudaMemoryAllocators(ITraceMng* tm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
+void
+arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 {
   if (e == CUDA_SUCCESS)
     return;
@@ -1091,12 +1040,12 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
-  MemoryUtils::setAcceleratorHostMemoryAllocator(getCudaUnifiedMemoryAllocator());
+  MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_cuda_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryResource::HostPinned, getCudaHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryResource::Device, getCudaDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_cuda_memory_allocator);
+  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_cuda_memory_allocator);
+  mrm->setAllocator(eMemoryResource::Device, &device_cuda_memory_allocator);
   mrm->setCopier(&global_cuda_memory_copier);
   global_cuda_runtime.fillDevices(init_info.isVerbose());
 }
