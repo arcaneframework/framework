@@ -143,7 +143,7 @@ class UnifiedMemoryHipMemoryAllocator
 
   void initialize()
   {
-    _doInitializeUVM();
+    _doInitializeUVM(true);
   }
 };
 
@@ -184,7 +184,7 @@ class HostPinnedHipMemoryAllocator
 
   void initialize()
   {
-    _doInitializeHostPinned();
+    _doInitializeHostPinned(true);
   }
 };
 
@@ -231,7 +231,7 @@ class DeviceHipMemoryAllocator
 
   void initialize()
   {
-    _doInitializeDevice();
+    _doInitializeDevice(true);
   }
 };
 

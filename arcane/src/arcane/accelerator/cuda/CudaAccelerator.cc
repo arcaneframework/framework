@@ -203,7 +203,7 @@ class UnifiedMemoryCudaMemoryAllocator
 
   void initialize()
   {
-    _doInitializeUVM();
+    _doInitializeUVM(true);
   }
 
  public:
@@ -296,7 +296,7 @@ class HostPinnedCudaMemoryAllocator
 
   void initialize()
   {
-    _doInitializeHostPinned();
+    _doInitializeHostPinned(true);
   }
 };
 
@@ -362,7 +362,7 @@ class DeviceCudaMemoryAllocator
 
   void initialize()
   {
-    _doInitializeDevice();
+    _doInitializeDevice(true);
   }
 };
 
