@@ -30,6 +30,7 @@
 #include "arccore/common/accelerator/internal/RunCommandImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
+#include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <sstream>
 
@@ -41,6 +42,218 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ConcreteAllocator
+{
+ public:
+
+  virtual ~ConcreteAllocator() = default;
+
+ public:
+
+  virtual hipError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual hipError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ConcreteAllocatorType>
+class UnderlyingAllocator
+: public AcceleratorMemoryAllocatorBase::IUnderlyingAllocator
+{
+ public:
+
+  UnderlyingAllocator() = default;
+
+ public:
+
+  void* allocateMemory(size_t size) final
+  {
+    void* out = nullptr;
+    ARCANE_CHECK_HIP(m_concrete_allocator._allocate(&out, size));
+    return out;
+  }
+  void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
+  {
+    ARCANE_CHECK_HIP_NOTHROW(m_concrete_allocator._deallocate(ptr));
+  }
+
+  void doMemoryCopy(void* destination, const void* source, Int64 size) final
+  {
+    ARCANE_CHECK_HIP(hipMemcpy(destination, source, size, hipMemcpyDefault));
+  }
+
+  eMemoryResource memoryResource() const final
+  {
+    return m_concrete_allocator.memoryResource();
+  }
+
+ public:
+
+  ConcreteAllocatorType m_concrete_allocator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    auto r = ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
+    return r;
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::UnifiedMemory; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+ public:
+
+  UnifiedMemoryHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("UnifiedMemoryHipMemory", new UnderlyingAllocator<UnifiedMemoryConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeUVM(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HostPinnedConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    return ::hipHostMalloc(ptr, new_size);
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipHostFree(ptr);
+  }
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::HostPinned; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HostPinnedHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+ public:
+ public:
+
+  HostPinnedHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("HostPinnedHipMemory", new UnderlyingAllocator<HostPinnedConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeHostPinned(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  DeviceConcreteAllocator()
+  {
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    hipError_t r = ::hipMalloc(ptr, new_size);
+    return r;
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::Device; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+
+ public:
+
+  DeviceHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("DeviceHipMemoryAllocator", new UnderlyingAllocator<DeviceConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeDevice(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  UnifiedMemoryHipMemoryAllocator unified_memory_hip_memory_allocator;
+  HostPinnedHipMemoryAllocator host_pinned_hip_memory_allocator;
+  DeviceHipMemoryAllocator device_hip_memory_allocator;
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void initializeHipMemoryAllocators()
+{
+  unified_memory_hip_memory_allocator.initialize();
+  device_hip_memory_allocator.initialize();
+  host_pinned_hip_memory_allocator.initialize();
+}
+
+void finalizeHipMemoryAllocators(ITraceMng* tm)
+{
+  unified_memory_hip_memory_allocator.finalize(tm);
+  device_hip_memory_allocator.finalize(tm);
+  host_pinned_hip_memory_allocator.finalize(tm);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -519,12 +732,12 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   initializeHipMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
-  MemoryUtils::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
+  MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_hip_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, getHipUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryResource::HostPinned, getHipHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryResource::Device, getHipDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_hip_memory_allocator);
+  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_hip_memory_allocator);
+  mrm->setAllocator(eMemoryResource::Device, &device_hip_memory_allocator);
   mrm->setCopier(&global_hip_memory_copier);
   global_hip_runtime.fillDevices(init_info.isVerbose());
 }

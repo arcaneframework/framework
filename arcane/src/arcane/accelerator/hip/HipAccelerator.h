@@ -50,27 +50,6 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
-getHipMemoryAllocator();
-
-extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
-getHipDeviceMemoryAllocator();
-
-extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
-getHipUnifiedMemoryAllocator();
-
-extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
-getHipHostPinnedMemoryAllocator();
-
-extern "C++" ARCANE_HIP_EXPORT void
-initializeHipMemoryAllocators();
-
-extern "C++" ARCANE_HIP_EXPORT void
-finalizeHipMemoryAllocators(ITraceMng* tm);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace Arcane::accelerator::Hip
 
 /*---------------------------------------------------------------------------*/

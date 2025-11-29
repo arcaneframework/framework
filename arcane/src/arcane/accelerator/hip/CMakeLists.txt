@@ -1,12 +1,11 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Backend Arcane pour HIP
-# Cette composante est interne à Arccore/Arcane
+# Backend Arcane pour ROCM/HIP
 
 set(ARCANE_SOURCES
   HipAccelerator.cc
   HipAccelerator.h
-  )
+)
 
 arcane_find_package(Hip REQUIRED)
 
