@@ -11,14 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arccore/common/accelerator/IAcceleratorMng.h"
 
 #include "arccore/trace/TraceAccessor.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Ref.h"
 
-#include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/RunQueue.h"
+#include "arccore/common/accelerator/Runner.h"
+#include "arccore/common/accelerator/RunQueue.h"
+
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
 
 #include <memory>

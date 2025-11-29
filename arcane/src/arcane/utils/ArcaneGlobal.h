@@ -689,18 +689,6 @@ arcaneCheckNull(const void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Taille du padding pour les index dans les opérations SIMD.
- *
- * Afin d'avoir le même code quel que soit le mécanisme de vectorisation
- * utilisé, cette valeur est fixe et correspond au plus grand vecteur SIMD.
- *
- * \sa arcanedoc_simd
- */
-static const Integer SIMD_PADDING_SIZE = 8;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Retourne la taille avec padding pour une taille \a size.
  *
  * La valeurs retournée est un multiple de SIMD_PADDING_SIZE et vaut:

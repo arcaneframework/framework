@@ -21,8 +21,7 @@
 
 #include "arccore/common/IMemoryResourceMng.h"
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
-
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -30,10 +29,10 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/NativeStream.h"
-#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
-#include "arcane/accelerator/core/internal/IRunQueueStream.h"
-#include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
+#include "arccore/common/accelerator/internal/IRunnerRuntime.h"
+#include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/IRunQueueStream.h"
+#include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
 
 #include <iostream>
 

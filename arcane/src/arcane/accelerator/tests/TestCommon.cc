@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

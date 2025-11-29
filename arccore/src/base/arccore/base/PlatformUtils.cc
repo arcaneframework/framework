@@ -705,6 +705,26 @@ getRealTimeNS()
   return static_cast<Int64>(y.time_since_epoch().count());
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Int64 Platform::
+getPageSize()
+{
+#if defined(ARCCORE_OS_WIN32)
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  return si.dwPageSize;
+#elif defined(ARCANE_OS_LINUX)
+  return ::sysconf(_SC_PAGESIZE);
+#else
+#warning "getPageSize() not implemented for your platform. Default is 4096"
+  Int64 page_size = 4096;
+  return page_size;
+#endif
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

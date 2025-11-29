@@ -26,7 +26,7 @@
 #include "arcane/utils/StringList.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arccore/base/StringUtils.h"
 
@@ -552,25 +552,6 @@ fillCommandLineArguments(StringList& arg_list)
   }
 #else
   ARCANE_THROW(NotImplementedException, "not implemented for this platform");
-#endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
-getPageSize()
-{
-#if defined(ARCCORE_OS_WIN32)
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  return si.dwPageSize;
-#elif defined(ARCANE_OS_LINUX)
-  return ::sysconf(_SC_PAGESIZE);
-#else
-#warning "getPageSize() not implemented for your platform. Default is 4096"
-  Int64 page_size = 4096;
-  return page_size;
 #endif
 }
 

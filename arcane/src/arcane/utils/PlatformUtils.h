@@ -350,14 +350,6 @@ fillCommandLineArguments(StringList& arg_list);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Taille des pages du système hôte en octets
- */
-extern "C++" ARCANE_UTILS_EXPORT Int64
-getPageSize();
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Récupère la pile d'appel via gdb.
  *
  * Cette méthode ne fonctionne que sous Linux et si GDB est installé. Dans

@@ -4,7 +4,7 @@ arccore_add_component_library(common
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_common PUBLIC arccore_base)
+target_link_libraries(arccore_common PUBLIC arccore_trace arccore_base)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

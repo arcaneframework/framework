@@ -20,7 +20,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryAllocator.h"
 
-#include "arcane/accelerator/core/internal/AcceleratorMemoryAllocatorBase.h"
+#include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <iostream>
 

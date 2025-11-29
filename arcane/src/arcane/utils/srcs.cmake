@@ -89,7 +89,6 @@ set(ARCANE_SOURCES
   MemoryInfo.cc
   MemoryInfo.h
   MemoryRessource.h
-  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
   Numeric.cc
@@ -333,8 +332,6 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
 
   internal/ApplicationInfoProperties.h
-  internal/MemoryResourceMng.h
-  internal/MemoryUtilsInternal.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h

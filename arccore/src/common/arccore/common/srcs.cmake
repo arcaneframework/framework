@@ -4,9 +4,10 @@ set(SOURCES
   AlignedMemoryAllocator.h
   ArrayDebugInfo.h
   Array.h
+  Array.cc
   ArrayMetaData.h
   ArrayTraits.h
-  Array.cc
+  ArraySimdPadder.h
   CommonGlobal.h
   CommonGlobal.cc
   DefaultMemoryAllocator.h
@@ -18,13 +19,69 @@ set(SOURCES
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
   MemoryPool.cc
+  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
+
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
   internal/MemoryPool.h
+  internal/MemoryResourceMng.h
+  internal/MemoryUtilsInternal.h
   internal/SpecificMemoryCopyList.h
+
+  accelerator/CommonAcceleratorGlobal.h
+  accelerator/AcceleratorCore.cc
+  accelerator/AcceleratorMemoryAllocatorBase.cc
+  accelerator/IAcceleratorMng.h
+  accelerator/DeviceId.h
+  accelerator/DeviceInfo.h
+  accelerator/DeviceInfoList.h
+  accelerator/DeviceMemoryInfo.h
+  accelerator/IReduceMemoryImpl.h
+  accelerator/IDeviceInfoList.h
+  accelerator/KernelLaunchArgs.h
+  accelerator/NativeStream.h
+  accelerator/Memory.h
+  accelerator/Memory.cc
+  accelerator/MemoryTracer.cc
+  accelerator/PointerAttribute.h
+  accelerator/ProfileRegion.h
+  accelerator/ProfileRegion.cc
+  accelerator/ReduceMemoryImpl.cc
+  accelerator/Runner.h
+  accelerator/Runner.cc
+  accelerator/RunCommand.h
+  accelerator/RunCommandImpl.h
+  accelerator/RunCommand.cc
+  accelerator/RunCommandImpl.cc
+  accelerator/RunCommandLaunchInfo.cc
+  accelerator/RunCommandLaunchInfo.h
+  accelerator/RunQueue.h
+  accelerator/RunQueue.cc
+  accelerator/RunQueueBuildInfo.h
+  accelerator/RunQueueEvent.h
+  accelerator/RunQueueEvent.cc
+  accelerator/RunQueueImpl.h
+  accelerator/RunQueueImpl.cc
+  accelerator/RunQueuePool.h
+  accelerator/RunQueuePool.cc
+  accelerator/RunQueueRuntime.cc
+  accelerator/ViewBuildInfo.h
+
+  accelerator/internal/AcceleratorMemoryAllocatorBase.h
+  accelerator/internal/IRunnerRuntime.h
+  accelerator/internal/AcceleratorCoreGlobalInternal.h
+  accelerator/internal/IRunQueueStream.h
+  accelerator/internal/IRunQueueEventImpl.h
+  accelerator/internal/MemoryTracer.h
+  accelerator/internal/RunCommandImpl.h
+  accelerator/internal/RunQueueImpl.h
+  accelerator/internal/ReduceMemoryImpl.h
+  accelerator/internal/RegisterRuntimeInfo.h
+  accelerator/internal/RunnerImpl.h
+  accelerator/internal/RunnerInternal.h
 )

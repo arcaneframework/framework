@@ -364,6 +364,14 @@ getCompilerId();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille des pages du système hôte en octets
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+getPageSize();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 }
 
@@ -408,6 +416,7 @@ using Arcane::Platform::timeToHourMinuteSecond;
 using Arcane::Platform::isDenormalized;
 using Arcane::Platform::safeStringCopy;
 using Arcane::Platform::sleep;
+using Arcane::Platform::getPageSize;
 
 using Arcane::Platform::enableFloatingException;
 using Arcane::Platform::isFloatingExceptionEnabled;
