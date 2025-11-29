@@ -267,52 +267,32 @@ if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
   set (ARCANE_ACCELERATOR_MODE "CUDA")
 endif()
 
+# Pour compatibilité avec les versions d'Arcane avant la 4.0 où
+# on utilisait ARCANE_ACCELERATOR_MODE.
+if (DEFINED ARCANE_ACCELERATOR_MODE AND NOT DEFINED ARCCORE_ACCELERATOR_MODE)
+  set(ARCCORE_ACCELERATOR_MODE "${ARCANE_ACCELERATOR_MODE}")
+endif()
+
 # Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
 # Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
-  set (ARCANE_ACCELERATOR_MODE "CUDA" )
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set (ARCCORE_ACCELERATOR_MODE "CUDA" )
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "HIP" )
+  set (ARCCORE_ACCELERATOR_MODE "ROCM" )
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set (ARCCORE_ACCELERATOR_MODE "ROCM" )
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
-  set (ARCANE_ACCELERATOR_MODE "SYCL" )
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set (ARCCORE_ACCELERATOR_MODE "SYCL" )
 endif()
 
-if (DEFINED ARCANE_ACCELERATOR_MODE)
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
+if (DEFINED ARCCORE_ACCELERATOR_MODE)
+  set(ARCANE_ACCELERATOR_MODE "${ARCCORE_ACCELERATOR_MODE}")
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDA" )
     set (ARCCORE_HAS_CUDA TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME cuda)
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-    set (ARCCORE_HAS_HIP TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME hip)
-    # TODO: vérifier qu'on utilise bien 'hipcc'
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
-    set (ARCCORE_HAS_SYCL TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME sycl)
-  else()
-    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
-  endif()
-  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
-  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
-  set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
-  message(STATUS "Arccore has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
-endif()
-
-# ----------------------------------------------------------------------------
-
-if (ARCANE_HAS_ACCELERATOR)
-  if (NOT ARCANE_ACCELERATOR_RUNTIME)
-    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
-  endif()
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
-    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
-    enable_language(HIP)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
+    set (ARCCORE_ACCELERATOR_RUNTIME cuda)
     # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
     message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
     cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
@@ -326,11 +306,30 @@ if (ARCANE_HAS_ACCELERATOR)
     endif()
     set(CMAKE_CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES} CACHE STRING "CMake architectures" FORCE)
     enable_language(CUDA)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    # Rien à faire de spécial pour SYCL.
+  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM" )
+    set (ARCCORE_HAS_HIP TRUE)
+    set (ARCCORE_ACCELERATOR_RUNTIME hip)
+    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
+    enable_language(HIP)
+  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCCORE_HAS_SYCL TRUE)
+    set (ARCCORE_ACCELERATOR_RUNTIME sycl)
   else()
-    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+    message(FATAL_ERROR "Unsupported ARCCORE_ACCELERATOR_MODE '${ARCCORE_ACCELERATOR_MODE}'."
+      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
   endif()
+
+  set (ARCCORE_ACCELERATOR_MODE ${ARCCORE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCCORE_ACCELERATOR_RUNTIME ${ARCCORE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCCORE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
+
+  # Macro pour compatibilité avec les versions où l'API accélérateur
+  # était dans Arcane (versions 3.*)
+  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
+
+  message(STATUS "Arccore has accelerator mode enabled : ${ARCCORE_ACCELERATOR_MODE}")
 endif()
 
 # ----------------------------------------------------------------------------
