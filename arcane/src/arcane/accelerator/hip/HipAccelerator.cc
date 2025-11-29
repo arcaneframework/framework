@@ -13,21 +13,19 @@
 
 #include "arcane/accelerator/hip/HipAccelerator.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/IMemoryAllocator.h"
+#include "arccore/base/TraceInfo.h"
+#include "arccore/base/NotSupportedException.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/PlatformUtils.h"
 
+#include "arccore/common/Array.h"
+#include "arccore/common/IMemoryAllocator.h"
 #include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <iostream>
 
 namespace Arcane::Accelerator::Hip
 {
-
-using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +34,7 @@ void
 arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e)
 {
   if (e!=hipSuccess){
-    ARCANE_FATAL("HIP Error trace={0} e={1} str={2}",ti,e,hipGetErrorString(e));
+    ARCCORE_FATAL("HIP Error trace={0} e={1} str={2}",ti,e,hipGetErrorString(e));
   }
 }
 
@@ -248,25 +246,25 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getHipMemoryAllocator()
 {
   return &unified_memory_hip_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getHipDeviceMemoryAllocator()
 {
   return &device_hip_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getHipUnifiedMemoryAllocator()
 {
   return &unified_memory_hip_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getHipHostPinnedMemoryAllocator()
 {
   return &host_pinned_hip_memory_allocator;

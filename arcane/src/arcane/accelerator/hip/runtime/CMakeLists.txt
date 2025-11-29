@@ -12,9 +12,12 @@ arcane_add_library(arcane_accelerator_hip_runtime
   FILES ${ARCANE_SOURCES}
   )
 
+target_link_libraries(arcane_accelerator_hip_runtime PRIVATE
+  arcane_accelerator_hip
+)
 target_link_libraries(arcane_accelerator_hip_runtime PUBLIC
-  arcane_accelerator arcane_hip_compile_flags
-  )
+  arcane_hip_compile_flags
+)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

@@ -13,50 +13,39 @@
 
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 
-#include "arccore/base/MemoryView.h"
-#include "arccore/base/PlatformUtils.h"
-#include "arccore/base/TraceInfo.h"
-#include "arccore/base/NotSupportedException.h"
+#include "arccore/base/CheckedConvert.h"
 #include "arccore/base/FatalErrorException.h"
-#include "arccore/base/NotImplementedException.h"
 
-#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/OStringStream.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/CheckedConvert.h"
-#include "arccore/common/internal/MemoryUtilsInternal.h"
-
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/KernelLaunchArgs.h"
-
+#include "arccore/common/accelerator/RunQueueBuildInfo.h"
+#include "arccore/common/accelerator/Memory.h"
+#include "arccore/common/accelerator/DeviceInfoList.h"
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/common/accelerator/DeviceMemoryInfo.h"
+#include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/IRunnerRuntime.h"
 #include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
 #include "arccore/common/accelerator/internal/RunCommandImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/PointerAttribute.h"
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/DeviceMemoryInfo.h"
-#include "arcane/accelerator/core/NativeStream.h"
 
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
-#include <iostream>
+#include <sstream>
 #include <unordered_map>
 #include <mutex>
 
 #include <cuda.h>
 
+// Pour std::memset
+#include <cstring>
+
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
 #include <nvtx3/nvToolsExt.h>
 #endif
-
-using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
@@ -85,8 +74,8 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
   if (e3 != CUDA_SUCCESS)
     error_message = "Unknown";
 
-  ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
-               ti, e, error_name, error_message);
+  ARCCORE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
+                ti, e, error_name, error_message);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -286,7 +275,7 @@ class CudaRunQueueEvent
   Int64 elapsedTime(IRunQueueEventImpl* start_event) final
   {
     // NOTE: Les évènements doivent avoir été créé avec le timer actif
-    ARCANE_CHECK_POINTER(start_event);
+    ARCCORE_CHECK_POINTER(start_event);
     auto* true_start_event = static_cast<CudaRunQueueEvent*>(start_event);
     float time_in_ms = 0.0;
 
@@ -415,7 +404,7 @@ class CudaRunnerRuntime
   {
     Int32 id = device_id.asInt32();
     if (!device_id.isAccelerator())
-      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+      ARCCORE_FATAL("Device {0} is not an accelerator device", id);
     ARCANE_CHECK_CUDA(cudaSetDevice(id));
   }
 
@@ -553,8 +542,8 @@ fillDevices(bool is_verbose)
     cudaRuntimeGetVersion(&runtime_version);
     int driver_version = 0;
     cudaDriverGetVersion(&driver_version);
-    OStringStream ostr;
-    std::ostream& o = ostr.stream();
+    std::ostringstream ostr;
+    std::ostream& o = ostr;
     o << "Device " << i << " name=" << dp.name << "\n";
     o << " Driver version = " << (driver_version / 1000) << "." << (driver_version % 1000) << "\n";
     o << " Runtime version = " << (runtime_version / 1000) << "." << (runtime_version % 1000) << "\n";
@@ -641,8 +630,8 @@ fillDevices(bool is_verbose)
 class CudaMemoryCopier
 : public IMemoryCopier
 {
-  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryResource from_mem,
+            MutableMemoryView to, [[maybe_unused]] eMemoryResource to_mem,
             const RunQueue* queue) override
   {
     if (queue) {
@@ -672,7 +661,7 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
-extern "C" ARCANE_EXPORT void
+extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
@@ -685,9 +674,9 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
   MemoryUtils::setAcceleratorHostMemoryAllocator(getCudaUnifiedMemoryAllocator());
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned, getCudaHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device, getCudaDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::HostPinned, getCudaHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::Device, getCudaDeviceMemoryAllocator());
   mrm->setCopier(&global_cuda_memory_copier);
   global_cuda_runtime.fillDevices(init_info.isVerbose());
 }

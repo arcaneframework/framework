@@ -5,21 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.h                                           (C) 2000-2025 */
+/* HipAccelerator.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Backend 'HIP' pour les accélérateurs.                                     */
+/* Backend 'ROCM/HIP' pour les accélérateurs.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HIP_HIPACCELERATOR_H
 #define ARCANE_HIP_HIPACCELERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/FatalErrorException.h"
-
-#include <iostream>
+#include "arccore/common/CommonGlobal.h"
+#include "arccore/base/BaseTypes.h"
 
 #include <hip/hip_runtime.h>
 
@@ -27,9 +23,9 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_COMPONENT_arcane_hip
-#define ARCANE_HIP_EXPORT ARCANE_EXPORT
+#define ARCANE_HIP_EXPORT ARCCORE_EXPORT
 #else
-#define ARCANE_HIP_EXPORT ARCANE_IMPORT
+#define ARCANE_HIP_EXPORT ARCCORE_IMPORT
 #endif
 
 namespace Arcane::Accelerator::Hip
@@ -54,16 +50,16 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
 getHipMemoryAllocator();
 
-extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
 getHipDeviceMemoryAllocator();
 
-extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
 getHipUnifiedMemoryAllocator();
 
-extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_HIP_EXPORT IMemoryAllocator*
 getHipHostPinnedMemoryAllocator();
 
 extern "C++" ARCANE_HIP_EXPORT void

@@ -13,34 +13,25 @@
 
 #include "arcane/accelerator/hip/HipAccelerator.h"
 
-#include "arccore/base/MemoryView.h"
-#include "arccore/base/PlatformUtils.h"
-#include "arccore/base/TraceInfo.h"
-#include "arccore/base/NotSupportedException.h"
 #include "arccore/base/FatalErrorException.h"
-#include "arccore/base/NotImplementedException.h"
 
-#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/OStringStream.h"
-#include "arccore/common/internal/MemoryUtilsInternal.h"
-
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/DeviceMemoryInfo.h"
-#include "arcane/accelerator/core/NativeStream.h"
+#include "arccore/common/accelerator/RunQueueBuildInfo.h"
+#include "arccore/common/accelerator/Memory.h"
+#include "arccore/common/accelerator/DeviceInfoList.h"
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/common/accelerator/DeviceMemoryInfo.h"
+#include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/IRunnerRuntime.h"
 #include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RunCommandImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
-#include "arccore/common/accelerator/internal/RunCommandImpl.h"
 
-#include <iostream>
+#include <sstream>
 
 #ifdef ARCANE_HAS_ROCTX
 #include <roctx.h>
@@ -185,7 +176,7 @@ class HipRunQueueEvent
   Int64 elapsedTime(IRunQueueEventImpl* from_event) final
   {
     auto* true_from_event = static_cast<HipRunQueueEvent*>(from_event);
-    ARCANE_CHECK_POINTER(true_from_event);
+    ARCCORE_CHECK_POINTER(true_from_event);
     float time_in_ms = 0.0;
     ARCANE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
     double x = time_in_ms * 1.0e6;
@@ -308,8 +299,7 @@ class HipRunnerRuntime
   void setCurrentDevice(DeviceId device_id) final
   {
     Int32 id = device_id.asInt32();
-    if (!device_id.isAccelerator())
-      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+    ARCCORE_FATAL_IF(!device_id.isAccelerator(), "Device {0} is not an accelerator device", id);
     ARCANE_CHECK_HIP(hipSetDevice(id));
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
@@ -403,8 +393,8 @@ fillDevices(bool is_verbose)
   if (is_verbose)
     omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
   for (int i = 0; i < nb_device; ++i) {
-    OStringStream ostr;
-    std::ostream& o = ostr.stream();
+    std::ostringstream ostr;
+    std::ostream& o = ostr;
 
     hipDeviceProp_t dp;
     ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
@@ -489,8 +479,8 @@ fillDevices(bool is_verbose)
 class HipMemoryCopier
 : public IMemoryCopier
 {
-  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryResource from_mem,
+            MutableMemoryView to, [[maybe_unused]] eMemoryResource to_mem,
             const RunQueue* queue) override
   {
     if (queue) {
@@ -520,7 +510,7 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
-extern "C" ARCANE_EXPORT void
+extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
@@ -532,9 +522,9 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   MemoryUtils::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getHipUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device, getHipDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, getHipUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::HostPinned, getHipHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::Device, getHipDeviceMemoryAllocator());
   mrm->setCopier(&global_hip_memory_copier);
   global_hip_runtime.fillDevices(init_info.isVerbose());
 }

@@ -14,12 +14,9 @@
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
 #include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/IMemoryAllocator.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/common/AlignedMemoryAllocator.h"
+#include "arccore/common/AllocatedMemoryInfo.h"
 
 #include <iostream>
 
@@ -46,12 +43,12 @@ namespace
  * \brief Classe de base d'un allocateur spécifique pour 'Sycl'.
  */
 class SyclMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator3
+: public AlignedMemoryAllocator
 {
  public:
 
   SyclMemoryAllocatorBase()
-  : AlignedMemoryAllocator3(128)
+  : AlignedMemoryAllocator(128)
   {}
 
   bool hasRealloc(MemoryAllocationArgs) const override { return true; }
@@ -61,10 +58,10 @@ class SyclMemoryAllocatorBase
     void* out = nullptr;
     _allocate(&out, new_size, args, q);
     if (!out)
-      ARCANE_FATAL("Can not allocate memory size={0}", new_size);
+      ARCCORE_FATAL("Can not allocate memory size={0}", new_size);
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128) != 0)
-      ARCANE_FATAL("Bad alignment for SYCL allocator: offset={0}", (a % 128));
+      ARCCORE_FATAL("Bad alignment for SYCL allocator: offset={0}", (a % 128));
     return { out, new_size };
   }
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
@@ -170,25 +167,25 @@ namespace
 namespace Arcane::Accelerator
 {
 
-Arccore::IMemoryAllocator* Sycl::
+IMemoryAllocator* Sycl::
 getSyclMemoryAllocator()
 {
   return &unified_memory_sycl_memory_allocator;
 }
 
-Arccore::IMemoryAllocator* Sycl::
+IMemoryAllocator* Sycl::
 getSyclDeviceMemoryAllocator()
 {
   return &device_sycl_memory_allocator;
 }
 
-Arccore::IMemoryAllocator* Sycl::
+IMemoryAllocator* Sycl::
 getSyclUnifiedMemoryAllocator()
 {
   return &unified_memory_sycl_memory_allocator;
 }
 
-Arccore::IMemoryAllocator* Sycl::
+IMemoryAllocator* Sycl::
 getSyclHostPinnedMemoryAllocator()
 {
   return &host_pinned_sycl_memory_allocator;

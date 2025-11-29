@@ -14,12 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/FatalErrorException.h"
-
-#include <iostream>
+#include "arccore/common/CommonGlobal.h"
+#include "arccore/base/BaseTypes.h"
 
 #include <cuda_runtime.h>
 
@@ -27,9 +23,9 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_COMPONENT_arcane_cuda
-#define ARCANE_CUDA_EXPORT ARCANE_EXPORT
+#define ARCANE_CUDA_EXPORT ARCCORE_EXPORT
 #else
-#define ARCANE_CUDA_EXPORT ARCANE_IMPORT
+#define ARCANE_CUDA_EXPORT ARCCORE_IMPORT
 #endif
 
 namespace Arcane::Accelerator::Cuda
@@ -55,19 +51,19 @@ arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
 getCudaMemoryAllocator();
 
 //! Allocateur spécifique sur le device
-extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
 getCudaDeviceMemoryAllocator();
 
 //! Allocateur spécifique utilisant le mémoire unifiée
-extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
 getCudaUnifiedMemoryAllocator();
 
 //! Allocateur spécifique utilisant la mémoire punaisée
-extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
 getCudaHostPinnedMemoryAllocator();
 
 extern "C++" ARCANE_CUDA_EXPORT void

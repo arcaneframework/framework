@@ -1,6 +1,7 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Backend Arcane pour HIP
+# Cette composante est interne à Arccore/Arcane
 
 set(ARCANE_SOURCES
   HipAccelerator.cc
@@ -26,11 +27,14 @@ arcane_add_library(arcane_accelerator_hip
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/accelerator/hip
   FILES ${ARCANE_SOURCES}
-  )
+)
+
+# Pour que le runtime associé trouve les fichiers d'en-tête de cette composante
+target_include_directories(arcane_accelerator_hip PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src>)
 
 target_link_libraries(arcane_accelerator_hip PUBLIC
-  arcane_core arcane_hip_compile_flags hip::host
-  )
+  Arccore::arccore_common arcane_hip_compile_flags hip::host
+)
 
 # ----------------------------------------------------------------------------
 

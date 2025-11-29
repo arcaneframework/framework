@@ -13,15 +13,7 @@
 
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/IMemoryAllocator.h"
-#include "arcane/utils/OStringStream.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arccore/base/Convert.h"
 
 #include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
@@ -38,8 +30,7 @@ namespace Arcane::Accelerator::Cuda
 
 void arcaneCheckCudaErrors(const TraceInfo& ti, cudaError_t e)
 {
-  if (e != cudaSuccess)
-    ARCANE_FATAL("CUDA Error trace={0} e={1} str={2}", ti, e, cudaGetErrorString(e));
+  ARCCORE_FATAL_IF((e!=cudaSuccess), "CUDA Error trace={0} e={1} str={2}", ti, e, cudaGetErrorString(e));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -379,25 +370,25 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getCudaMemoryAllocator()
 {
   return &unified_memory_cuda_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getCudaDeviceMemoryAllocator()
 {
   return &device_cuda_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getCudaUnifiedMemoryAllocator()
 {
   return &unified_memory_cuda_memory_allocator;
 }
 
-Arccore::IMemoryAllocator*
+IMemoryAllocator*
 getCudaHostPinnedMemoryAllocator()
 {
   return &host_pinned_cuda_memory_allocator;

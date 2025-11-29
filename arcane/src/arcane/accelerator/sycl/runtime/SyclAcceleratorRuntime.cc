@@ -14,32 +14,28 @@
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
 #include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
-#include "arccore/base/PlatformUtils.h"
-#include "arccore/base/NotSupportedException.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotImplementedException.h"
+#include "arccore/base/NotSupportedException.h"
 
-#include "arccore/common/IMemoryResourceMng.h"
-#include "arccore/common/internal/IMemoryResourceMngInternal.h"
 #include "arccore/common/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/IMemoryResourceMngInternal.h"
 
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/DeviceMemoryInfo.h"
-#include "arcane/accelerator/core/NativeStream.h"
+#include "arccore/common/accelerator/RunQueueBuildInfo.h"
+#include "arccore/common/accelerator/Memory.h"
+#include "arccore/common/accelerator/DeviceInfoList.h"
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/common/accelerator/DeviceMemoryInfo.h"
+#include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/IRunnerRuntime.h"
 #include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RunCommandImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
 
-#include <iostream>
-
 namespace Arcane::Accelerator::Sycl
 {
-
-using namespace Arccore;
 
 #define ARCANE_SYCL_FUNC_NOT_HANDLED \
   std::cout << "WARNING: SYCL: function not handled " << A_FUNCINFO << "\n"
@@ -124,7 +120,7 @@ class SyclRunQueueStream
           ostr << "SYCL exception: " << e.what() << "\n";
         }
       }
-      ARCANE_FATAL(ostr.str());
+      ARCCORE_FATAL(ostr.str());
     };
     return err_handler;
   }
@@ -166,7 +162,7 @@ class SyclRunQueueEvent
   // Enregistre l'événement au sein d'une RunQueue
   void recordQueue([[maybe_unused]] impl::IRunQueueStream* stream) final
   {
-    ARCANE_CHECK_POINTER(stream);
+    ARCCORE_CHECK_POINTER(stream);
     auto* rq = static_cast<SyclRunQueueStream*>(stream);
     m_sycl_event = rq->lastCommandEvent();
 #if defined(__ADAPTIVECPP__)
@@ -175,7 +171,7 @@ class SyclRunQueueEvent
 #elif defined(__INTEL_LLVM_COMPILER)
     //m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
 #else
-    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
+    ARCCORE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
   }
 
@@ -203,7 +199,7 @@ class SyclRunQueueEvent
 
   Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
-    ARCANE_CHECK_POINTER(start_event);
+    ARCCORE_CHECK_POINTER(start_event);
     // Il faut prendre l'évènement de début car on est certain qu'il contient
     // la bonne valeur de 'sycl::event'.
     sycl::event event = (static_cast<SyclRunQueueEvent*>(start_event))->m_sycl_event;
@@ -221,7 +217,7 @@ class SyclRunQueueEvent
 
   bool hasPendingWork() final
   {
-    ARCANE_THROW(NotImplementedException,"hasPendingWork()");
+    ARCCORE_THROW(NotImplementedException,"hasPendingWork()");
   }
 
  private:
@@ -401,8 +397,8 @@ fillDevicesAndSetDefaultQueue(bool is_verbose)
 class SyclMemoryCopier
 : public IMemoryCopier
 {
-  void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem,
+  void copy(ConstMemoryView from, eMemoryResource from_mem,
+            MutableMemoryView to, eMemoryResource to_mem,
             const RunQueue* queue) override;
 };
 
@@ -427,8 +423,8 @@ namespace Arcane::Accelerator::Sycl
 /*---------------------------------------------------------------------------*/
 
 void SyclMemoryCopier::
-copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-     MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+copy(ConstMemoryView from, [[maybe_unused]] eMemoryResource from_mem,
+     MutableMemoryView to, [[maybe_unused]] eMemoryResource to_mem,
      const RunQueue* queue)
 {
   if (queue) {
@@ -446,7 +442,7 @@ copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
 
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
-extern "C" ARCANE_EXPORT void
+extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
@@ -457,9 +453,9 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& i
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device, getSyclDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::HostPinned, getSyclHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::Device, getSyclDeviceMemoryAllocator());
   mrm->setCopier(&global_sycl_memory_copier);
   global_sycl_runtime.fillDevicesAndSetDefaultQueue(init_info.isVerbose());
   setSyclMemoryQueue(global_sycl_runtime.defaultQueue());
