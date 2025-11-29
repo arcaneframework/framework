@@ -49,12 +49,12 @@ class SyclRunnerRuntime;
 // Cette file est utilisée pour les allocations.
 // Elle doit donc toujours exister car on ne sait pas quand aura lieu
 // la dernière désallocation.
-std::unique_ptr<sycl::queue> global_default_queue;
+sycl::queue global_default_queue;
 namespace
 {
   sycl::queue& _defaultQueue()
   {
-    return *global_default_queue;
+    return global_default_queue;
   }
 } // namespace
 
@@ -453,6 +453,12 @@ class SyclRunnerRuntime
   sycl::queue& defaultQueue() const { return *m_default_queue; }
   sycl::device& defaultDevice() const { return *m_default_device; }
 
+  void finalize(ITraceMng*) override
+  {
+    // Supprime la queue globale utilisée pour les allocations.
+    global_default_queue = sycl::queue{};
+  }
+
  private:
 
   impl::DeviceInfoList m_device_info_list;
@@ -593,7 +599,7 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& i
   mrm->setAllocator(eMemoryResource::Device, &device_sycl_memory_allocator);
   mrm->setCopier(&global_sycl_memory_copier);
   global_sycl_runtime.fillDevicesAndSetDefaultQueue(init_info.isVerbose());
-  global_default_queue = std::make_unique<sycl::queue>(global_sycl_runtime.defaultQueue());
+  global_default_queue = global_sycl_runtime.defaultQueue();
 }
 
 /*---------------------------------------------------------------------------*/
