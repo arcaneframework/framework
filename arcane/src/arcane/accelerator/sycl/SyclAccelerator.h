@@ -33,18 +33,6 @@ namespace Arcane::Accelerator::Sycl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_SYCL_EXPORT IMemoryAllocator*
-getSyclMemoryAllocator();
-
-extern "C++" ARCANE_SYCL_EXPORT IMemoryAllocator*
-getSyclDeviceMemoryAllocator();
-
-extern "C++" ARCANE_SYCL_EXPORT IMemoryAllocator*
-getSyclUnifiedMemoryAllocator();
-
-extern "C++" ARCANE_SYCL_EXPORT IMemoryAllocator*
-getSyclHostPinnedMemoryAllocator();
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

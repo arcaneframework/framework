@@ -6,7 +6,6 @@
 set(ARCANE_SOURCES
   SyclAccelerator.cc
   SyclAccelerator.h
-  internal/SyclAcceleratorInternal.h
   )
 
 # Créé une cible interface pour propager les options de compilation
