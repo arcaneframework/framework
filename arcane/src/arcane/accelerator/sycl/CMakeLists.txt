@@ -1,11 +1,11 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Backend Arcane pour SYCL
+# Cette composante est interne à Arccore/Arcane
 
 set(ARCANE_SOURCES
   SyclAccelerator.cc
   SyclAccelerator.h
-  internal/SyclAcceleratorInternal.h
   )
 
 # Créé une cible interface pour propager les options de compilation
@@ -29,8 +29,11 @@ arcane_add_library(arcane_accelerator_sycl
 )
 target_compile_options(arcane_accelerator_sycl PRIVATE "${ARCANE_CXX_SYCL_FLAGS}")
 
+# Pour que le runtime associé trouve les fichiers d'en-tête de cette composante
+target_include_directories(arcane_accelerator_sycl PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src>)
+
 target_link_libraries(arcane_accelerator_sycl PUBLIC
-  arcane_core arcane_sycl_compile_flags
+  Arccore::arccore_common arcane_sycl_compile_flags
 )
 target_link_options(arcane_accelerator_sycl PUBLIC "${ARCANE_CXX_SYCL_FLAGS}")
 

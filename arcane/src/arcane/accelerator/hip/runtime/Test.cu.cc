@@ -235,7 +235,7 @@ extern "C" int arcaneTestHip3()
 {
   std::cout << "TEST_HIP_3\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* hip_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
+  IMemoryAllocator* hip_allocator = Arcane::MemoryUtils::getAllocator(Arcane::eMemoryResource::UnifiedMemory);
   IMemoryAllocator* hip_allocator2 = Arcane::MemoryUtils::getDefaultDataAllocator();
   if (!hip_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");

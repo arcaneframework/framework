@@ -1,6 +1,7 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Backend Arcane pour CUDA
+# Cette composante est interne à Arccore/Arcane
 
 set(ARCANE_SOURCES
   CudaAccelerator.cc
@@ -58,8 +59,14 @@ arcane_add_library(arcane_accelerator_cuda
   FILES ${ARCANE_SOURCES}
   )
 
+# Pour que le runtime associé trouve les fichiers d'en-tête de cette composante
+target_include_directories(arcane_accelerator_cuda PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src>)
+
 target_link_libraries(arcane_accelerator_cuda PUBLIC
-  arcane_core arcane_cuda_compile_flags $<BUILD_INTERFACE:arcane_cuda_build_compile_flags> CUDA::cudart
+  Arccore::arccore_common
+  arcane_cuda_compile_flags
+  $<BUILD_INTERFACE:arcane_cuda_build_compile_flags>
+  CUDA::cudart
 )
 
 # ----------------------------------------------------------------------------

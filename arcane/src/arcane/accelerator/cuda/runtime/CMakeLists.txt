@@ -15,9 +15,13 @@ arcane_add_library(arcane_accelerator_cuda_runtime
   FILES ${ARCANE_SOURCES}
   )
 
+target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE arcane_accelerator_cuda)
+
 target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
-  arcane_accelerator arcane_cuda_compile_flags CUDA::cudart CUDA::cuda_driver
-  )
+  arcane_cuda_compile_flags
+  CUDA::cudart
+  CUDA::cuda_driver
+)
 
 # ----------------------------------------------------------------------------
 

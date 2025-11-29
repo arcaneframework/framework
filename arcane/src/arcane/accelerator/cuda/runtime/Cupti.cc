@@ -13,6 +13,7 @@
 
 #include "arccore/base/Profiling.h"
 #include "arccore/base/FixedArray.h"
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/base/internal/ProfilingInternal.h"
 
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
@@ -46,8 +47,8 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUptiResult e)
   if (e3 != CUPTI_SUCCESS)
     error_message = "Unknown";
 
-  ARCANE_FATAL("CUpti Error trace={0} e={1} message={2}",
-               ti, e, error_message);
+  ARCCORE_FATAL("CUpti Error trace={0} e={1} message={2}",
+                ti, e, error_message);
 }
 
 /*---------------------------------------------------------------------------*/

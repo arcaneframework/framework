@@ -15,7 +15,8 @@ arcane_add_library(arcane_accelerator_sycl_runtime
 target_compile_options(arcane_accelerator_sycl_runtime PRIVATE ${ARCANE_CXX_SYCL_FLAGS})
 
 target_link_libraries(arcane_accelerator_sycl_runtime PUBLIC
-  arcane_accelerator arcane_sycl_compile_flags
+  arcane_accelerator_sycl
+  arcane_sycl_compile_flags
   )
 
 # ----------------------------------------------------------------------------
@@ -23,10 +24,10 @@ target_link_libraries(arcane_accelerator_sycl_runtime PUBLIC
 
 add_library(arcane_accelerator_sycl_testlib Test.sycl.cc TestCpp.cc)
 arcane_accelerator_add_source_files(Test.sycl.cc)
-target_link_libraries(arcane_accelerator_sycl_testlib PUBLIC arcane_core arcane_sycl_compile_flags)
+target_link_libraries(arcane_accelerator_sycl_testlib PUBLIC arcane_accelerator arcane_sycl_compile_flags)
 target_link_libraries(arcane_accelerator_sycl_testlib PUBLIC ${ARCANE_CXX_SYCL_FLAGS})
 add_executable(arcane_accelerator_sycl_test TestMain.cc)
-target_link_libraries(arcane_accelerator_sycl_test PUBLIC arcane_accelerator_sycl_testlib  arcane_accelerator_sycl_runtime)
+target_link_libraries(arcane_accelerator_sycl_test PUBLIC arcane_accelerator_sycl_testlib arcane_accelerator_sycl_runtime)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

@@ -13,34 +13,26 @@
 
 #include "arcane/accelerator/hip/HipAccelerator.h"
 
-#include "arccore/base/MemoryView.h"
-#include "arccore/base/PlatformUtils.h"
-#include "arccore/base/TraceInfo.h"
-#include "arccore/base/NotSupportedException.h"
 #include "arccore/base/FatalErrorException.h"
-#include "arccore/base/NotImplementedException.h"
 
-#include "arccore/common/IMemoryResourceMng.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/OStringStream.h"
-#include "arccore/common/internal/MemoryUtilsInternal.h"
-
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/DeviceMemoryInfo.h"
-#include "arcane/accelerator/core/NativeStream.h"
+#include "arccore/common/accelerator/RunQueueBuildInfo.h"
+#include "arccore/common/accelerator/Memory.h"
+#include "arccore/common/accelerator/DeviceInfoList.h"
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/common/accelerator/DeviceMemoryInfo.h"
+#include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/IRunnerRuntime.h"
 #include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
+#include "arccore/common/accelerator/internal/RunCommandImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
-#include "arccore/common/accelerator/internal/RunCommandImpl.h"
+#include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
-#include <iostream>
+#include <sstream>
 
 #ifdef ARCANE_HAS_ROCTX
 #include <roctx.h>
@@ -50,6 +42,218 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ConcreteAllocator
+{
+ public:
+
+  virtual ~ConcreteAllocator() = default;
+
+ public:
+
+  virtual hipError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual hipError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ConcreteAllocatorType>
+class UnderlyingAllocator
+: public AcceleratorMemoryAllocatorBase::IUnderlyingAllocator
+{
+ public:
+
+  UnderlyingAllocator() = default;
+
+ public:
+
+  void* allocateMemory(size_t size) final
+  {
+    void* out = nullptr;
+    ARCANE_CHECK_HIP(m_concrete_allocator._allocate(&out, size));
+    return out;
+  }
+  void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
+  {
+    ARCANE_CHECK_HIP_NOTHROW(m_concrete_allocator._deallocate(ptr));
+  }
+
+  void doMemoryCopy(void* destination, const void* source, Int64 size) final
+  {
+    ARCANE_CHECK_HIP(hipMemcpy(destination, source, size, hipMemcpyDefault));
+  }
+
+  eMemoryResource memoryResource() const final
+  {
+    return m_concrete_allocator.memoryResource();
+  }
+
+ public:
+
+  ConcreteAllocatorType m_concrete_allocator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    auto r = ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
+    return r;
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::UnifiedMemory; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+ public:
+
+  UnifiedMemoryHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("UnifiedMemoryHipMemory", new UnderlyingAllocator<UnifiedMemoryConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeUVM(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HostPinnedConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    return ::hipHostMalloc(ptr, new_size);
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipHostFree(ptr);
+  }
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::HostPinned; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HostPinnedHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+ public:
+ public:
+
+  HostPinnedHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("HostPinnedHipMemory", new UnderlyingAllocator<HostPinnedConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeHostPinned(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceConcreteAllocator
+: public ConcreteAllocator
+{
+ public:
+
+  DeviceConcreteAllocator()
+  {
+  }
+
+  hipError_t _allocate(void** ptr, size_t new_size) final
+  {
+    hipError_t r = ::hipMalloc(ptr, new_size);
+    return r;
+  }
+  hipError_t _deallocate(void* ptr) final
+  {
+    return ::hipFree(ptr);
+  }
+
+  constexpr eMemoryResource memoryResource() const { return eMemoryResource::Device; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceHipMemoryAllocator
+: public AcceleratorMemoryAllocatorBase
+{
+
+ public:
+
+  DeviceHipMemoryAllocator()
+  : AcceleratorMemoryAllocatorBase("DeviceHipMemoryAllocator", new UnderlyingAllocator<DeviceConcreteAllocator>())
+  {
+  }
+
+ public:
+
+  void initialize()
+  {
+    _doInitializeDevice(true);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  UnifiedMemoryHipMemoryAllocator unified_memory_hip_memory_allocator;
+  HostPinnedHipMemoryAllocator host_pinned_hip_memory_allocator;
+  DeviceHipMemoryAllocator device_hip_memory_allocator;
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void initializeHipMemoryAllocators()
+{
+  unified_memory_hip_memory_allocator.initialize();
+  device_hip_memory_allocator.initialize();
+  host_pinned_hip_memory_allocator.initialize();
+}
+
+void finalizeHipMemoryAllocators(ITraceMng* tm)
+{
+  unified_memory_hip_memory_allocator.finalize(tm);
+  device_hip_memory_allocator.finalize(tm);
+  host_pinned_hip_memory_allocator.finalize(tm);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -185,7 +389,7 @@ class HipRunQueueEvent
   Int64 elapsedTime(IRunQueueEventImpl* from_event) final
   {
     auto* true_from_event = static_cast<HipRunQueueEvent*>(from_event);
-    ARCANE_CHECK_POINTER(true_from_event);
+    ARCCORE_CHECK_POINTER(true_from_event);
     float time_in_ms = 0.0;
     ARCANE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
     double x = time_in_ms * 1.0e6;
@@ -308,8 +512,7 @@ class HipRunnerRuntime
   void setCurrentDevice(DeviceId device_id) final
   {
     Int32 id = device_id.asInt32();
-    if (!device_id.isAccelerator())
-      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+    ARCCORE_FATAL_IF(!device_id.isAccelerator(), "Device {0} is not an accelerator device", id);
     ARCANE_CHECK_HIP(hipSetDevice(id));
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
@@ -403,8 +606,8 @@ fillDevices(bool is_verbose)
   if (is_verbose)
     omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
   for (int i = 0; i < nb_device; ++i) {
-    OStringStream ostr;
-    std::ostream& o = ostr.stream();
+    std::ostringstream ostr;
+    std::ostream& o = ostr;
 
     hipDeviceProp_t dp;
     ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
@@ -489,8 +692,8 @@ fillDevices(bool is_verbose)
 class HipMemoryCopier
 : public IMemoryCopier
 {
-  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryResource from_mem,
+            MutableMemoryView to, [[maybe_unused]] eMemoryResource to_mem,
             const RunQueue* queue) override
   {
     if (queue) {
@@ -520,7 +723,7 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
-extern "C" ARCANE_EXPORT void
+extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
@@ -529,12 +732,12 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   initializeHipMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
-  MemoryUtils::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
+  MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_hip_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getHipUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device, getHipDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_hip_memory_allocator);
+  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_hip_memory_allocator);
+  mrm->setAllocator(eMemoryResource::Device, &device_hip_memory_allocator);
   mrm->setCopier(&global_hip_memory_copier);
   global_hip_runtime.fillDevices(init_info.isVerbose());
 }
