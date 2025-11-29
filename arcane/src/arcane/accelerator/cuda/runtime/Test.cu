@@ -242,7 +242,7 @@ int arcaneTestCuda3()
 {
   std::cout << "TEST_CUDA_3\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Cuda::getCudaMemoryAllocator();
+  IMemoryAllocator* cuda_allocator = MemoryUtils::getAllocator(Arcane::eMemoryResource::UnifiedMemory);
   IMemoryAllocator* cuda_allocator2 = MemoryUtils::getDefaultDataAllocator();
   if (!cuda_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");

@@ -51,57 +51,8 @@ arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaMemoryAllocator();
-
-//! Allocateur spécifique sur le device
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaDeviceMemoryAllocator();
-
-//! Allocateur spécifique utilisant le mémoire unifiée
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaUnifiedMemoryAllocator();
-
-//! Allocateur spécifique utilisant la mémoire punaisée
-extern "C++" ARCANE_CUDA_EXPORT IMemoryAllocator*
-getCudaHostPinnedMemoryAllocator();
-
-extern "C++" ARCANE_CUDA_EXPORT void
-initializeCudaMemoryAllocators();
-
-extern "C++" ARCANE_CUDA_EXPORT void
-finalizeCudaMemoryAllocators(ITraceMng* tm);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 13000
 #define ARCANE_USING_CUDA13_OR_GREATER
-#endif
-
-// A partir de CUDA 13, il y a un nouveau type cudaMemLocation
-// pour les méthodes telles cudeMemAdvise ou cudaMemPrefetch
-#if defined(ARCANE_USING_CUDA13_OR_GREATER)
-inline cudaMemLocation
-_getMemoryLocation(int device_id)
-{
-  cudaMemLocation mem_location;
-  mem_location.type = cudaMemLocationTypeDevice;
-  mem_location.id = device_id;
-  if (device_id == cudaCpuDeviceId)
-    mem_location.type = cudaMemLocationTypeHost;
-  else {
-    mem_location.type = cudaMemLocationTypeDevice;
-    mem_location.id = device_id;
-  }
-  return mem_location;
-}
-#else
-inline int
-_getMemoryLocation(int device_id)
-{
-  return device_id;
-}
 #endif
 
 /*---------------------------------------------------------------------------*/
