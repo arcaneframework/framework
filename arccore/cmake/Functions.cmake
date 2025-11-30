@@ -52,6 +52,14 @@ function(arccore_add_library target)
   #install(FILES ${_INSTALL_FILES} DESTINATION include/${rel_path})
   #endif()
 
+  if (ARCCORE_EXPORT_TARGET)
+    install(TARGETS ${target} EXPORT ${ARCCORE_EXPORT_TARGET}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    add_library(Arccore::${target} ALIAS ${target})
+  endif()
+
   set(_libpath ${CMAKE_BINARY_DIR}/lib)
   if (WIN32)
     set_target_properties(${target}
@@ -110,14 +118,7 @@ function(arccore_add_component_library component_name)
 
   target_compile_definitions(${_LIB_NAME} PRIVATE ARCCORE_COMPONENT_${_LIB_NAME})
   target_include_directories(${_LIB_NAME} PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/${component_name}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-  if (ARCCORE_EXPORT_TARGET)
-    install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET}
-      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-    target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
-    add_library(Arccore::${_LIB_NAME} ALIAS ${_LIB_NAME})
-  endif()
+  target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
 
   # Génère les bibliothèques dans le répertoire 'lib' du projet.
   #set_target_properties(${_LIB_NAME} PROPERTIES
