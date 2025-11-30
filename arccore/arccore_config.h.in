@@ -5,3 +5,6 @@
 #define ARCCORE_INT64_MAX @ARCCORE_INT64_MAX@
 #cmakedefine ARCCORE_DEBUG
 #cmakedefine ARCCORE_CHECK
+#cmakedefine ARCCORE_HAS_CUDA
+#cmakedefine ARCCORE_HAS_HIP
+#cmakedefine ARCCORE_HAS_SYCL

@@ -16,7 +16,7 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/internal/ProfilingInternal.h"
 
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 
 #include "arccore/common/accelerator/internal/MemoryTracer.h"
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"

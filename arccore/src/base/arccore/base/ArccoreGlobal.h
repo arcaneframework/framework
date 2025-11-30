@@ -150,6 +150,47 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #define ARCCORE_DEVICE
 #endif
 
+#if defined(ARCCORE_HAS_CUDA) && defined(__CUDACC__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de CUDA et qu'on utilise le compilateur CUDA.
+ */
+#define ARCCORE_COMPILING_CUDA
+//! \deprecated
+#define ARCANE_COMPILING_CUDA
+#endif
+#if defined(ARCCORE_HAS_HIP) && defined(__HIP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de HIP et qu'on utilise le compilateur HIP.
+ */
+#define ARCCORE_COMPILING_HIP
+//! \deprecated
+#define ARCANE_COMPILING_HIP
+#endif
+
+#if defined(ARCCORE_HAS_SYCL)
+#  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de SYCL et qu'on utilise le compilateur SYCL.
+ */
+#    define ARCCORE_COMPILING_SYCL
+//! \deprecated
+#    define ARCANE_COMPILING_SYCL
+#  endif
+#endif
+
+#if defined(ARCCORE_COMPILING_CUDA) || defined(ARCCORE_COMPILING_HIP)
+/*!
+ * \brief Macro pour indiquer qu'on compile avec le support
+ * de CUDA ou de HIP.
+ */
+#define ARCCORE_COMPILING_CUDA_OR_HIP
+//! \deprecated
+#define ARCANE_COMPILING_CUDA_OR_HIP
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

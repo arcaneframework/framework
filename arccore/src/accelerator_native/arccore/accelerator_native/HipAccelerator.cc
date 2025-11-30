@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/hip/HipAccelerator.h"
+#include "arccore/accelerator_native/HipAccelerator.h"
 
 #include "arccore/base/FatalErrorException.h"
 
