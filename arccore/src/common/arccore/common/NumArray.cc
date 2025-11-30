@@ -11,11 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NumArray.h"
+#include "arccore/common/NumArray.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/MemoryView.h"
-#include "arcane/utils/MemoryUtils.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/MemoryView.h"
+#include "arccore/common/MemoryUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ _getDefaultAllocator()
 /*---------------------------------------------------------------------------*/
 
 MemoryAllocationOptions NumArrayBaseCommon::
-_getDefaultAllocator(eMemoryRessource r)
+_getDefaultAllocator(eMemoryResource r)
 {
   return MemoryUtils::getAllocationOptions(r);
 }
@@ -45,19 +45,19 @@ _getDefaultAllocator(eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 
 void NumArrayBaseCommon::
-_checkHost(eMemoryRessource r)
+_checkHost(eMemoryResource r)
 {
-  if (r == eMemoryRessource::HostPinned || r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
+  if (r == eMemoryResource::HostPinned || r == eMemoryResource::Host || r == eMemoryResource::UnifiedMemory)
     return;
-  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory", r);
+  ARCCORE_FATAL("Invalid access from '{0}' ressource memory to host memory", r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NumArrayBaseCommon::
-_memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
-                 Span<std::byte> to, eMemoryRessource to_mem, const RunQueue* queue)
+_memoryAwareCopy(Span<const std::byte> from, eMemoryResource from_mem,
+                 Span<std::byte> to, eMemoryResource to_mem, const RunQueue* queue)
 {
   MemoryUtils::copy(MutableMemoryView(to), to_mem, ConstMemoryView(from), from_mem, queue);
 }

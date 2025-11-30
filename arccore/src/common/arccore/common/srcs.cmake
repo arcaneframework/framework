@@ -22,6 +22,9 @@ set(SOURCES
   MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
+  NumArray.h
+  NumArray.cc
+  NumArrayContainer.h
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
