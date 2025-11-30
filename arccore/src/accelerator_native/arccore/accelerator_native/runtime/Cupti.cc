@@ -19,7 +19,7 @@
 #include "arccore/accelerator_native/CudaAccelerator.h"
 
 #include "arccore/common/accelerator/internal/MemoryTracer.h"
-#include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
+#include "arccore/accelerator_native/runtime/Cupti.h"
 
 #include <iostream>
 

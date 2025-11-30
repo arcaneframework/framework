@@ -51,6 +51,25 @@ function(arccore_add_library target)
   #if (_INSTALL_FILES)
   #install(FILES ${_INSTALL_FILES} DESTINATION include/${rel_path})
   #endif()
+
+  set(_libpath ${CMAKE_BINARY_DIR}/lib)
+  if (WIN32)
+    set_target_properties(${target}
+      PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+      LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+      LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+      )
+  else()
+    set_target_properties(${target}
+      PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+      )
+  endif()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -105,25 +124,6 @@ function(arccore_add_component_library component_name)
   #  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
   #  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
   #  )
-
-  set(_libpath ${CMAKE_BINARY_DIR}/lib)
-  if (WIN32)
-    set_target_properties(${_LIB_NAME}
-      PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-      LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-      LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-      )
-  else()
-    set_target_properties(${_LIB_NAME}
-      PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY ${_libpath}
-      )
-  endif()
 
 endfunction()
 
