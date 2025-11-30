@@ -33,7 +33,7 @@
 #include "arccore/common/accelerator/internal/IRunQueueEventImpl.h"
 #include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
-#include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
+#include "arccore/accelerator_native/runtime/Cupti.h"
 
 #include <sstream>
 #include <unordered_map>

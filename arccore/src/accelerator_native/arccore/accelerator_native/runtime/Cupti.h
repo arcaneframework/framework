@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Intégration de CUPTI.                                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CUDA_RUNTIME_INTERNAL_CUPTI_H
-#define ARCANE_ACCELERATOR_CUDA_RUNTIME_INTERNAL_CUPTI_H
+#ifndef ARCCORE_ACCELERATOR_NATIVE_RUNTIME_CUPTI_H
+#define ARCCORE_ACCELERATOR_NATIVE_RUNTIME_CUPTI_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@
 
 #include "arccore/accelerator_native/CudaAccelerator.h"
 
-#ifdef ARCANE_HAS_CUDA_CUPTI
+#ifdef ARCCORE_HAS_CUDA_CUPTI
 #include <cuda.h>
 #include <cupti.h>
 #endif
@@ -47,7 +47,7 @@ class CuptiInfo
 
  public:
 
-#ifdef ARCANE_HAS_CUDA_CUPTI
+#ifdef ARCCORE_HAS_CUDA_CUPTI
   void start();
   void stop();
   void flush();
@@ -59,7 +59,7 @@ class CuptiInfo
 
  private:
 
-#ifdef ARCANE_HAS_CUDA_CUPTI
+#ifdef ARCCORE_HAS_CUDA_CUPTI
   FixedArray<CUpti_ActivityUnifiedMemoryCounterConfig, 4> config;
   CUpti_ActivityPCSamplingConfig configPC;
 #endif
