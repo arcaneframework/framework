@@ -923,88 +923,28 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
-
-# Pour des raisons de compatibilité avec les configurations 2021, on
-# regarde d'abord si ARCANE_WANT_CUDA est défini
-if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
-  set (ARCANE_ACCELERATOR_MODE "CUDA")
-endif()
-
-# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
-# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
-  set (ARCANE_ACCELERATOR_MODE "CUDA" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
-  set (ARCANE_ACCELERATOR_MODE "SYCL" )
-endif()
-
-if(DEFINED ARCANE_ACCELERATOR_MODE)
-  if (NOT ARCANE_HAS_CXX20)
-    message(FATAL_ERROR "Arcane Accelerator API requires C++20. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
-  endif()
-
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
-    set (ARCANE_WANT_CUDA TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME cuda)
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-    set (ARCANE_WANT_HIP TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME hip)
-    # TODO: vérifier qu'on utilise bien 'hipcc'
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
-    set (ARCANE_WANT_SYCL TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME sycl)
-  else()
-    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
-  endif()
-  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
-  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
-  set (ARCANE_HAS_ACCELERATOR TRUE)
-  message(STATUS "Arcane has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
-endif()
-
-# ----------------------------------------------------------------------------
+# Le choix du runtime accélérateur est maintenant dans Arccore (2025/11)
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (NOT ARCANE_ACCELERATOR_RUNTIME)
-    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
-  endif()
+  # Les macros ARCANE_WANT* sont utilisées uniquement pour spécifier
+  # le runtime utilisé dans 'arcane_core_config'. A terme il faudra
+  # utiliser ce qui est dans Arccore.
   if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
-    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
+    set (ARCANE_WANT_HIP TRUE)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
-    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
-    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
-
-    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
-    endif()
     if (NOT CMAKE_CUDA_HOST_COMPILER)
       set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
     enable_language(CUDA)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    # Rien à faire de spécial pour SYCL.
-  else()
-    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+    set (ARCANE_WANT_CUDA TRUE)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCANE_WANT_SYCL TRUE)
   endif()
-  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME})
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
-if (ARCANE_HAS_ACCELERATOR_API)
-  add_subdirectory(src/arcane/accelerator)
-endif()
+add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR)
   add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME}/runtime)

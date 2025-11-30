@@ -72,12 +72,17 @@ endfunction()
 #
 function(arccore_add_component_library component_name)
   set(options)
-  set(oneValueArgs)
+  set(oneValueArgs LIB_NAME)
   set(multiValueArgs FILES)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  if (NOT ARGS_LIB_NAME)
+    set(_LIB_NAME arccore_${component_name})
+  else()
+    set(_LIB_NAME ${ARGS_LIB_NAME})
+    message(STATUS "Adding component library '${component_name}' with library name '${_LIB_NAME}'")
+  endif()
 
-  set(_LIB_NAME arccore_${component_name})
   arccore_add_library(${_LIB_NAME}
           INPUT_PATH ${Arccore_SOURCE_DIR}/src/${component_name}
           RELATIVE_PATH arccore/${component_name}

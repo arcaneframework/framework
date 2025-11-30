@@ -28,7 +28,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 using namespace Arccore;

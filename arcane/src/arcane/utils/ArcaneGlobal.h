@@ -40,41 +40,9 @@
 
 #define ARCANE_STD std
 
-//Tag var as a voluntary unused variable.
-//Works with any compiler but might be improved by using attribute.
+// Tag var as a voluntary unused variable.
+// Works with any compiler but might be improved by using attribute.
 #define ARCANE_UNUSED(var) ARCCORE_UNUSED(var)
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_HAS_CUDA) && defined(__CUDACC__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de CUDA et qu'on utilise le compilateur CUDA.
- */
-#define ARCANE_COMPILING_CUDA
-#endif
-#if defined(ARCANE_HAS_HIP) && defined(__HIP__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de HIP et qu'on utilise le compilateur HIP.
- */
-#define ARCANE_COMPILING_HIP
-#endif
-
-#if defined(ARCANE_HAS_SYCL)
-#  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de SYCL et qu'on utilise le compilateur SYCL.
- */
-#    define ARCANE_COMPILING_SYCL
-#  endif
-#endif
-
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-#define ARCANE_COMPILING_CUDA_OR_HIP
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
