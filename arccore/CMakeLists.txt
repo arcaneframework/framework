@@ -330,6 +330,8 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
   set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
 
   message(STATUS "Arccore has accelerator mode enabled : ${ARCCORE_ACCELERATOR_MODE}")
+
+  arccore_add_component_directory(accelerator_native)
 endif()
 
 # ----------------------------------------------------------------------------

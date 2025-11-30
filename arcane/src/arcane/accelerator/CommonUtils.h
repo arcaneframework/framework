@@ -21,15 +21,15 @@
 #include "arcane/accelerator/AcceleratorUtils.h"
 
 #if defined(ARCANE_COMPILING_HIP)
-#include "arcane/accelerator/hip/HipAccelerator.h"
+#include "arccore/accelerator_native/HipAccelerator.h"
 #include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
-#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include "arccore/accelerator_native/SyclAccelerator.h"
 #if defined(ARCANE_HAS_ONEDPL)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>

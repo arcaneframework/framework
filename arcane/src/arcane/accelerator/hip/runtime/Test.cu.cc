@@ -24,7 +24,7 @@
 #include "arcane/core/Item.h"
 #include "arcane/core/MathUtils.h"
 
-#include "arcane/accelerator/hip/HipAccelerator.h"
+#include "arccore/accelerator_native/HipAccelerator.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"

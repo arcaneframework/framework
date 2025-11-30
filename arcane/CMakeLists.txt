@@ -941,7 +941,6 @@ if (ARCANE_HAS_ACCELERATOR)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
     set (ARCANE_WANT_SYCL TRUE)
   endif()
-  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME})
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)

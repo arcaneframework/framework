@@ -13,10 +13,10 @@ arcane_add_library(arcane_accelerator_hip_runtime
   )
 
 target_link_libraries(arcane_accelerator_hip_runtime PRIVATE
-  arcane_accelerator_hip
+  Arccore::arccore_accelerator_hip
 )
 target_link_libraries(arcane_accelerator_hip_runtime PUBLIC
-  arcane_hip_compile_flags
+  arccore_hip_compile_flags
 )
 
 # ----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ endif()
 
 add_library(arcane_accelerator_hip_testlib Test.cu.cc TestCpp.cc)
 set_source_files_properties(Test.cu.cc PROPERTIES LANGUAGE HIP)
-target_link_libraries(arcane_accelerator_hip_testlib PUBLIC  arcane_accelerator arcane_core arcane_hip_compile_flags)
+target_link_libraries(arcane_accelerator_hip_testlib PUBLIC arcane_accelerator arcane_core arccore_hip_compile_flags)
 
 add_executable(arcane_accelerator_hip_test TestMain.cc)
 target_link_libraries(arcane_accelerator_hip_test PUBLIC arcane_accelerator_hip_testlib arcane_accelerator_hip_runtime)

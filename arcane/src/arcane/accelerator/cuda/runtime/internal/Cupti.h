@@ -16,7 +16,7 @@
 
 #include "arccore/base/FixedArray.h"
 
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 
 #ifdef ARCANE_HAS_CUDA_CUPTI
 #include <cuda.h>
