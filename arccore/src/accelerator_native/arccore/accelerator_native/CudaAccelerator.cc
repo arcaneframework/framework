@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 #include "arccore/base/FatalErrorException.h"
 
 #include <iostream>

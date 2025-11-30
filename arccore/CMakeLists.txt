@@ -325,11 +325,13 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
 
   # Macro pour compatibilité avec les versions où l'API accélérateur
   # était dans Arcane (versions 3.*)
-  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
-  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCANE_ACCELERATOR_MODE ${ARCCORE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_ACCELERATOR_RUNTIME ${ARCCORE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
   set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
 
   message(STATUS "Arccore has accelerator mode enabled : ${ARCCORE_ACCELERATOR_MODE}")
+
+  arccore_add_component_directory(accelerator_native)
 endif()
 
 # ----------------------------------------------------------------------------

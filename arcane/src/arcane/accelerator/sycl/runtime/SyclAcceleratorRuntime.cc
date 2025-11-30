@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include "arccore/accelerator_native/SyclAccelerator.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotImplementedException.h"
