@@ -82,6 +82,16 @@ using Arccore::ArrayTraits;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename DataType>
+class DataViewSetter;
+template <typename DataType>
+class DataViewGetter;
+template <typename DataType>
+class DataViewGetterSetter;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Indices sur la localisation mémoire attendue
 enum class eMemoryLocationHint : int8_t
 {

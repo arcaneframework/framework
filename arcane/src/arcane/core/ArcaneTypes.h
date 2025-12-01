@@ -484,16 +484,6 @@ class SharedItemVariableScalarRefT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
-class DataViewSetter;
-template <typename DataType>
-class DataViewGetter;
-template <typename DataType>
-class DataViewGetterSetter;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT;
 template <typename ItemType, typename DataType, typename Extents>
