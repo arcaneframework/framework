@@ -8,7 +8,6 @@ set( ARCANE_SOURCES
   CommonCudaHipReduceImpl.h
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
-  CommonUtils.cc
   GenericFilterer.h
   GenericPartitioner.h
   GenericReducer.h

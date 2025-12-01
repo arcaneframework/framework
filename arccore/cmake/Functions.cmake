@@ -200,6 +200,31 @@ function(arccore_add_component_directory name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Indique que les fichiers passés en argument doivent être compilés avec
+# le support accélérateur correspondant.
+macro(arccore_accelerator_add_source_files)
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDA")
+    foreach(_x ${ARGN})
+      message(STATUS "Add CUDA language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
+    endforeach()
+  endif()
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM")
+    foreach(_x ${ARGN})
+      message(STATUS "Add HIP language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
+    endforeach()
+  endif()
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCL")
+    foreach(_x ${ARGN})
+      message(STATUS "Add SYCL language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES COMPILE_OPTIONS "${ARCCORE_CXX_SYCL_FLAGS}")
+    endforeach()
+  endif()
+endmacro()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil

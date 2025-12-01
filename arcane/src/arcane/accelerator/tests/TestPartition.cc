@@ -14,6 +14,8 @@
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/NumArrayViews.h"
 
+#include "arcane/utils/Exception.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

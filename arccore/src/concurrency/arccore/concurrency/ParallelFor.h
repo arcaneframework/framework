@@ -100,7 +100,7 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   auto xfunc = [&lambda_function, reducer_args...](const ComplexForLoopRanges<RankValue>& sub_bounds) {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
-    arcaneSequentialFor(sub_bounds, private_lambda, reducer_args...);
+    arccoreSequentialFor(sub_bounds, private_lambda, reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue, decltype(xfunc)> ipf(xfunc);
   TaskFactory::executeParallelFor(loop_ranges, run_info, &ipf);
@@ -134,7 +134,7 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                    const ReducerArgs&... reducer_args)
 {
   ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
-  arcaneParallelFor(complex_loop_ranges, run_info, lambda_function, reducer_args...);
+  arccoreParallelFor(complex_loop_ranges, run_info, lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -180,6 +180,21 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
   ParallelLoopOptions options;
   ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, options, lambda_function);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
+ */
+template <typename LambdaType> inline void
+arccoreParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
+                  const LambdaType& lambda_function)
+{
+  LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
+  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
+  TaskFactory::executeParallelFor(loop_info);
 }
 
 /*---------------------------------------------------------------------------*/

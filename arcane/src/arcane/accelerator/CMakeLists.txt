@@ -15,6 +15,7 @@ arcane_accelerator_add_source_files(MemoryCopier.cc CommonUtils.cc)
 target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
   arcane_accelerator_core
+  Arccore::arccore_accelerator
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_cuda>"
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_hip>"
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_sycl>"

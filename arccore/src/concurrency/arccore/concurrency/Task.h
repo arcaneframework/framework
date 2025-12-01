@@ -20,6 +20,8 @@
 #include "arccore/base/ParallelLoopOptions.h"
 #include "arccore/base/ForLoopRunInfo.h"
 
+#include "arccore/concurrency/ConcurrencyGlobal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
