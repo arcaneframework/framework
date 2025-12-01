@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/Exception.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"

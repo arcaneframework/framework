@@ -26,7 +26,7 @@
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/ScanImpl.h"
-#include "arcane/accelerator/MultiThreadAlgo.h"
+#include "arccore/accelerator/MultiThreadAlgo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

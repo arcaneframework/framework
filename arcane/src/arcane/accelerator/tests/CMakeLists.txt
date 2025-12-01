@@ -25,6 +25,7 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
 endif()
 
 target_link_libraries(arcane_accelerator.tests PRIVATE
+  Arccore::arccore_accelerator
   "$<TARGET_NAME_IF_EXISTS:arccore_accelerator_cuda_runtime>"
   "$<TARGET_NAME_IF_EXISTS:arccore_accelerator_hip_runtime>"
   "$<TARGET_NAME_IF_EXISTS:arccore_accelerator_sycl_runtime>"

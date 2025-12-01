@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
-#include "arcane/accelerator/CommonCudaHipAtomicImpl.h"
+#include "arccore/accelerator/CommonCudaHipAtomicImpl.h"
 #endif
 
 #include <atomic>

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommandLaunch.h"
+#include "arccore/accelerator/RunCommandLaunch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace
   void _setGroupSize(Accelerator::RunCommand& command, Int32 group_size)
   {
     if ((group_size % 32) != 0)
-      ARCANE_FATAL("group_size '{0}' is not a multiple of 32", group_size);
+      ARCCORE_FATAL("group_size '{0}' is not a multiple of 32", group_size);
     // TODO: vérifier que la valeur ne sera pas surchargée par la suite.
     command.addNbThreadPerBlock(group_size);
   }
@@ -57,7 +57,7 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
   // Calcule automatiquement la taille d'un groupe si l'argument vaut '0'.
   if (group_size == 0) {
     if (nb_group != 0)
-      ARCANE_FATAL("Value of argument 'nb_group' has to be '0' if 'group_size' is '0'");
+      ARCCORE_FATAL("Value of argument 'nb_group' has to be '0' if 'group_size' is '0'");
     // TODO: pour l'instant on met 256 par défaut mais il faudrait peut-être
     // mettre une valeur plus grande sur CPU.
     group_size = 256;

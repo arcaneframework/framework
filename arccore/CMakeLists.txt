@@ -338,6 +338,8 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
   arccore_add_component_directory(accelerator_native)
 endif()
 
+arccore_add_component_directory(accelerator)
+
 # ----------------------------------------------------------------------------
 # Génère le fichier de configuration.
 # Il faut le faire après la détection de toutes les options pour que les '#define'

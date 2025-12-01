@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonCudaHipAtomicImpl.h                                   (C) 2000-2024 */
+/* CommonCudaHipAtomicImpl.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation CUDA et HIP des opérations atomiques.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
-#define ARCANE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
+#ifndef ARCCORE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
+#define ARCCORE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
