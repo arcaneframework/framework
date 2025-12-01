@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataView.h                                                  (C) 2000-2023 */
+/* DataView.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Vues sur des données des variables.                                       */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -157,78 +157,75 @@ class DataViewSetter
 
  public:
 
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentX()>>
-  ARCCORE_HOST_DEVICE void setX(typename DataTypeTraitsT<X>::ComponentType value)
+  template <typename X = DataType, typename ComponentDataType = decltype(X::x)>
+  ARCCORE_HOST_DEVICE void setX(ComponentDataType value)
   {
     m_ptr->x = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentY()>>
-  ARCCORE_HOST_DEVICE void setY(typename DataTypeTraitsT<X>::ComponentType value)
+  template <typename X = DataType, typename ComponentDataType = decltype(X::y)>
+  ARCCORE_HOST_DEVICE void setY(ComponentDataType value)
   {
     m_ptr->y = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZ()>>
-  ARCCORE_HOST_DEVICE void setZ(typename DataTypeTraitsT<X>::ComponentType value)
+  template <typename X = DataType, typename ComponentDataType = decltype(X::z)>
+  ARCCORE_HOST_DEVICE void setZ(ComponentDataType value)
   {
     m_ptr->z = value;
   }
 
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXX()>>
-  ARCCORE_HOST_DEVICE void setXX(Real value)
+  ARCCORE_HOST_DEVICE void setXX(Real value) requires( requires() { DataType::x.x; } )
   {
     m_ptr->x.x = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYX()>>
-  ARCCORE_HOST_DEVICE void setYX(Real value)
+  ARCCORE_HOST_DEVICE void setYX(Real value) requires( requires() { DataType::y.x; } )
   {
     m_ptr->y.x = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZX()>>
-  ARCCORE_HOST_DEVICE void setZX(Real value)
+  ARCCORE_HOST_DEVICE void setZX(Real value) requires( requires() { DataType::z.x; } )
   {
     m_ptr->z.x = value;
   }
 
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXY()>>
-  ARCCORE_HOST_DEVICE void setXY(Real value)
+  ARCCORE_HOST_DEVICE void setXY(Real value) requires( requires() { DataType::x.y; } )
   {
     m_ptr->x.y = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYY()>>
-  ARCCORE_HOST_DEVICE void setYY(Real value)
+  ARCCORE_HOST_DEVICE void setYY(Real value) requires( requires() { DataType::y.y; } )
   {
     m_ptr->y.y = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZY()>>
-  ARCCORE_HOST_DEVICE void setZY(Real value)
+  ARCCORE_HOST_DEVICE void setZY(Real value) requires( requires() { DataType::z.y; } )
   {
     m_ptr->z.y = value;
   }
 
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXZ()>>
-  ARCCORE_HOST_DEVICE void setXZ(Real value)
+  ARCCORE_HOST_DEVICE void setXZ(Real value) requires( requires() { DataType::x.z; } )
   {
     m_ptr->x.z = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYZ()>>
-  ARCCORE_HOST_DEVICE void setYZ(Real value)
+  ARCCORE_HOST_DEVICE void setYZ(Real value) requires( requires() { DataType::y.z; } )
   {
     m_ptr->y.z = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZZ()>>
-  ARCCORE_HOST_DEVICE void setZZ(Real value)
+  ARCCORE_HOST_DEVICE void setZZ(Real value) requires( requires() { DataType::z.z; } )
   {
     m_ptr->z.z = value;
   }
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()>>
-  ARCCORE_HOST_DEVICE DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+
+  /*!
+   * \brief Applique l'opérateur operator[] sur le type.
+   *
+   * L'opération n'est valide que si X::operator[](Int32) existe.
+   */
+  template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
+  ARCCORE_HOST_DEVICE DataViewSetter<SubscriptType> operator[](Int32 index)
   {
-    return DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType>(&m_ptr->operator[](index));
+    return DataViewSetter<SubscriptType>(&m_ptr->operator[](index));
   }
 
  private:
 
-  DataType* m_ptr;
+  DataType* m_ptr = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -281,22 +278,25 @@ class DataViewGetterSetter
     return AccessorReturnType(ptr);
   }
 
-  template <typename X = DataType, typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()>>
-  ARCCORE_HOST_DEVICE DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+  //! Applique, s'il existe, l'opérateur operator[](Int32) sur le type 
+  template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<SubscriptType> operator[](Int32 index)
   {
-    return DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType>(&m_ptr->operator[](index));
+    return DataViewGetterSetter<SubscriptType>(&m_ptr->operator[](index));
   }
 
-  template <typename X = DataType> constexpr ARCCORE_HOST_DEVICE auto
-  operator()(Int32 i0) -> DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall1ReturnType>
+  //! Applique, s'il existe, l'opérateur operator()(Int32) sur le type 
+  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0))>
+  constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0)
   {
-    return DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall1ReturnType>(&m_ptr->operator()(i0));
+    return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0));
   }
 
-  template <typename X = DataType> constexpr ARCCORE_HOST_DEVICE auto
-  operator()(Int32 i0, Int32 i1) -> DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall2ReturnType>
+  //! Applique, s'il existe, l'opérateur operator()(Int32,Int32) sur le type 
+  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0,0))>
+  constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0, Int32 i1)
   {
-    return DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall2ReturnType>(&m_ptr->operator()(i0, i1));
+    return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0, i1));
   }
 
  private:
