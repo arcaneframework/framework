@@ -4,7 +4,7 @@ arccore_add_component_library(accelerator
   FILES ${SOURCES}
 )
 
-arccore_accelerator_add_source_files(CommonUtils.cc)
+arccore_accelerator_add_source_files(MemoryCopier.cc CommonUtils.cc)
 
 target_link_libraries(arccore_accelerator PUBLIC
   arccore_common

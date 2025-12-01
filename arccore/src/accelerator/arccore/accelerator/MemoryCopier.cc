@@ -11,15 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arccore/base/Ref.h"
+#include "arccore/base/FixedArray.h"
+#include "arccore/base/NotSupportedException.h"
 
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/FixedArray.h"
-#include "arcane/utils/NotSupportedException.h"
+#include "arccore/common/accelerator/RunQueue.h"
 #include "arccore/common/internal/SpecificMemoryCopyList.h"
 
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/RunCommandLoop.h"
+#include "arccore/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,11 +79,11 @@ class AcceleratorSpecificMemoryCopy
   void _copyFrom(const RunQueue* queue, SmallSpan<const Int32> indexes,
                  Span<const DataType> source, Span<DataType> destination)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
 
     Int32 nb_index = indexes.size();
     const Int64 sub_size = m_extent.v;
@@ -103,12 +102,12 @@ class AcceleratorSpecificMemoryCopy
   void _copyFrom(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
                  Span<const DataType> source)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    if (arcaneIsCheck()) {
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, source.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
+    if (arccoreIsCheck()) {
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, source.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
       // Idéalement il faudrait tester les valeurs des éléments de multi_views
       // mais si on fait cela on peut potentiellement faire des transferts
       // entre l'accélérateur et le CPU.
@@ -144,11 +143,11 @@ class AcceleratorSpecificMemoryCopy
   void _fill(const RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(eExecutionPolicy::Sequential, source.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(eExecutionPolicy::Sequential, source.data());
 
     Int32 nb_index = indexes.size();
     const Int32 sub_size = m_extent.v;
@@ -158,7 +157,7 @@ class AcceleratorSpecificMemoryCopy
     // A terme, il faudrait allouer sur le device et désallouer en fin
     // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
     if (sub_size > max_size)
-      ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
+      ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
     FixedArray<DataType, max_size> local_source;
     for (Int32 z = 0; z < sub_size; ++z)
@@ -192,12 +191,12 @@ class AcceleratorSpecificMemoryCopy
   void _fill(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
              Span<const DataType> source)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    if (arcaneIsCheck()) {
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(eExecutionPolicy::Sequential, source.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
+    if (arccoreIsCheck()) {
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(eExecutionPolicy::Sequential, source.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
       // Idéalement il faudrait tester les valeurs des éléments de multi_views
       // mais si on fait cela on peut potentiellement faire des transferts
       // entre l'accélérateur et le CPU.
@@ -212,7 +211,7 @@ class AcceleratorSpecificMemoryCopy
     // A terme, il faudrait allouer sur le device et désallouer en fin
     // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
     if (sub_size > max_size)
-      ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
+      ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
     FixedArray<DataType, max_size> local_source;
     for (Int32 z = 0; z < sub_size; ++z)
@@ -260,11 +259,11 @@ class AcceleratorSpecificMemoryCopy
   void _copyTo(const RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
+    ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
 
     Int32 nb_index = indexes.size();
     const Int64 sub_size = m_extent.v;
@@ -283,12 +282,12 @@ class AcceleratorSpecificMemoryCopy
   void _copyTo(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<const Span<const std::byte>> multi_views,
                Span<DataType> destination)
   {
-    ARCANE_CHECK_POINTER(queue);
+    ARCCORE_CHECK_POINTER(queue);
 
-    if (arcaneIsCheck()) {
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, destination.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
+    if (arccoreIsCheck()) {
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, destination.data());
+      ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
       // Idéalement il faudrait tester les valeurs des éléments de multi_views
       // mais si on fait cela on peut potentiellement faire des transferts
       // entre l'accélérateur et le CPU.

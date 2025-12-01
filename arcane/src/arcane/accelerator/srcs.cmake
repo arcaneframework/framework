@@ -16,7 +16,6 @@ set( ARCANE_SOURCES
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
-  MemoryCopier.cc
   NumArray.h
   NumArrayViews.h
   NumArrayViews.cc

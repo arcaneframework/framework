@@ -8,6 +8,7 @@ set(SOURCES
   CommonUtils.cc
   GenericReducer.h
   KernelLauncher.h
+  MemoryCopier.cc
   MultiThreadAlgo.h
   MultiThreadAlgo.cc
   Reduce.h
