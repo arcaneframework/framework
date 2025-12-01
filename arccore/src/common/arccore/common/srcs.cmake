@@ -10,6 +10,7 @@ set(SOURCES
   ArraySimdPadder.h
   CommonGlobal.h
   CommonGlobal.cc
+  DataView.h
   DefaultMemoryAllocator.h
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
