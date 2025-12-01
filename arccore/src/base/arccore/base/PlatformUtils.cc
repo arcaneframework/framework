@@ -716,7 +716,7 @@ getPageSize()
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return si.dwPageSize;
-#elif defined(ARCANE_OS_LINUX)
+#elif defined(ARCCORE_OS_LINUX)
   return ::sysconf(_SC_PAGESIZE);
 #else
 #warning "getPageSize() not implemented for your platform. Default is 4096"
