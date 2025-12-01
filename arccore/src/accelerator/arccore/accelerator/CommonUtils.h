@@ -19,17 +19,17 @@
 #include "arccore/common/accelerator/RunQueue.h"
 #include "arccore/common/Array.h"
 
-#if defined(ARCANE_COMPILING_HIP)
+#if defined(ARCCORE_COMPILING_HIP)
 #include "arccore/accelerator_native/HipAccelerator.h"
 #include <rocprim/rocprim.hpp>
 #endif
-#if defined(ARCANE_COMPILING_CUDA)
+#if defined(ARCCORE_COMPILING_CUDA)
 #include "arccore/accelerator_native/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 #include "arccore/accelerator_native/SyclAccelerator.h"
-#if defined(ARCANE_HAS_ONEDPL)
+#if defined(ARCCORE_HAS_ONEDPL)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
@@ -41,7 +41,7 @@
 #include "arccore/accelerator/AcceleratorUtils.h"
 
 // A définir si on souhaite utiliser LambdaStorage
-// #ifdef ARCANE_USE_LAMBDA_STORAGE
+// #ifdef ARCCORE_USE_LAMBDA_STORAGE
 
 #include <cstring>
 
@@ -257,7 +257,7 @@ class SumOperator
     return a + b;
   }
   static DataType defaultValue() { return {}; }
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
   static sycl::plus<DataType> syclFunctor() { return {}; }
 #endif
 };
@@ -276,7 +276,7 @@ class MinOperator
     return (a < b) ? a : b;
   }
   static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
   static sycl::minimum<DataType> syclFunctor() { return {}; }
 #endif
 };
@@ -295,7 +295,7 @@ class MaxOperator
     return (a < b) ? b : a;
   }
   static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
   static sycl::maximum<DataType> syclFunctor() { return {}; }
 #endif
 };
@@ -419,7 +419,7 @@ class SetterLambdaIterator
 
  private:
 
-#ifdef ARCANE_USE_LAMBDA_STORAGE
+#ifdef ARCCORE_USE_LAMBDA_STORAGE
   using StorageType = LambdaStorage<SetterLambda>;
 #else
   using StorageType = SetterLambda;
@@ -438,7 +438,7 @@ class SetterLambdaIterator
 
  private:
 
-#ifdef ARCANE_USE_LAMBDA_STORAGE
+#ifdef ARCCORE_USE_LAMBDA_STORAGE
   ARCCORE_HOST_DEVICE SetterLambdaIterator(const LambdaStorage<SetterLambda>& s, Int32 v)
   : m_index(v)
   , m_lambda(s)
@@ -515,8 +515,8 @@ template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataTy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_USE_LAMBDA_STORAGE
-#undef ARCANE_USE_LAMBDA_STORAGE
+#ifdef ARCCORE_USE_LAMBDA_STORAGE
+#undef ARCCORE_USE_LAMBDA_STORAGE
 #endif
 
 #endif

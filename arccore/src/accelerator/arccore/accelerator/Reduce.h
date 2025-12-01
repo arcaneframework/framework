@@ -23,7 +23,7 @@
 
 #include "arccore/accelerator/CommonUtils.h"
 
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 #include "arccore/accelerator/RunCommandLoop.h"
 #endif
 

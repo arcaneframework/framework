@@ -35,7 +35,7 @@ message(STATUS "ROCTX_LIBRARIES=${ROCTX_LIBRARIES}")
 if (ROCTX_INCLUDE AND ROCTX_LIBRARIES)
   target_link_libraries(arccore_accelerator_hip_runtime PRIVATE ${ROCTX_LIBRARIES})
   target_include_directories(arccore_accelerator_hip_runtime PRIVATE ${ROCTX_INCLUDE}/roctracer)
-  target_compile_definitions(arccore_accelerator_hip_runtime PRIVATE ARCCORE_HAS_ROCTX ARCANE_HAS_ROCTX)
+  target_compile_definitions(arccore_accelerator_hip_runtime PRIVATE ARCCORE_HAS_ROCTX)
 endif()
 
 # ----------------------------------------------------------------------------

@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation d'une RunCommand pour le parallélisme hiérarchique.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
-#define ARCANE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
+#ifndef ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
+#define ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

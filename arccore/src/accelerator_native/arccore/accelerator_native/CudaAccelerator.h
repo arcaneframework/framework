@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CUDA_CUDAACCELERATOR_H
-#define ARCANE_CUDA_CUDAACCELERATOR_H
+#ifndef ARCCORE_CUDA_CUDAACCELERATOR_H
+#define ARCCORE_CUDA_CUDAACCELERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,10 +22,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_cuda
-#define ARCANE_CUDA_EXPORT ARCCORE_EXPORT
+#ifdef ARCCORE_COMPONENT_arcane_cuda
+#define ARCCORE_CUDA_EXPORT ARCCORE_EXPORT
 #else
-#define ARCANE_CUDA_EXPORT ARCCORE_IMPORT
+#define ARCCORE_CUDA_EXPORT ARCCORE_IMPORT
 #endif
 
 namespace Arcane::Accelerator::Cuda
@@ -34,10 +34,10 @@ namespace Arcane::Accelerator::Cuda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CUDA_EXPORT void
+extern "C++" ARCCORE_CUDA_EXPORT void
 arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e);
 
-extern "C++" ARCANE_CUDA_EXPORT void
+extern "C++" ARCCORE_CUDA_EXPORT void
 arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 
 //! Vérifie \a result et lance une exception en cas d'erreur
@@ -55,6 +55,7 @@ arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 /*---------------------------------------------------------------------------*/
 
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 13000
+#define ARCCORE_USING_CUDA13_OR_GREATER
 #define ARCANE_USING_CUDA13_OR_GREATER
 #endif
 

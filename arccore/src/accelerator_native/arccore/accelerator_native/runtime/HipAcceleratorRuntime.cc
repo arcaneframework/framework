@@ -34,7 +34,7 @@
 
 #include <sstream>
 
-#ifdef ARCANE_HAS_ROCTX
+#ifdef ARCCORE_HAS_ROCTX
 #include <roctx.h>
 #endif
 
@@ -74,17 +74,17 @@ class UnderlyingAllocator
   void* allocateMemory(size_t size) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_HIP(m_concrete_allocator._allocate(&out, size));
+    ARCCORE_CHECK_HIP(m_concrete_allocator._allocate(&out, size));
     return out;
   }
   void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
   {
-    ARCANE_CHECK_HIP_NOTHROW(m_concrete_allocator._deallocate(ptr));
+    ARCCORE_CHECK_HIP_NOTHROW(m_concrete_allocator._deallocate(ptr));
   }
 
   void doMemoryCopy(void* destination, const void* source, Int64 size) final
   {
-    ARCANE_CHECK_HIP(hipMemcpy(destination, source, size, hipMemcpyDefault));
+    ARCCORE_CHECK_HIP(hipMemcpy(destination, source, size, hipMemcpyDefault));
   }
 
   eMemoryResource memoryResource() const final
@@ -267,22 +267,22 @@ class HipRunQueueStream
   : m_runtime(runtime)
   {
     if (bi.isDefault())
-      ARCANE_CHECK_HIP(hipStreamCreate(&m_hip_stream));
+      ARCCORE_CHECK_HIP(hipStreamCreate(&m_hip_stream));
     else {
       int priority = bi.priority();
-      ARCANE_CHECK_HIP(hipStreamCreateWithPriority(&m_hip_stream, hipStreamDefault, priority));
+      ARCCORE_CHECK_HIP(hipStreamCreateWithPriority(&m_hip_stream, hipStreamDefault, priority));
     }
   }
   ~HipRunQueueStream() override
   {
-    ARCANE_CHECK_HIP_NOTHROW(hipStreamDestroy(m_hip_stream));
+    ARCCORE_CHECK_HIP_NOTHROW(hipStreamDestroy(m_hip_stream));
   }
 
  public:
 
   void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
-#ifdef ARCANE_HAS_ROCTX
+#ifdef ARCCORE_HAS_ROCTX
     auto kname = c.kernelName();
     if (kname.empty())
       roctxRangePush(c.traceInfo().name());
@@ -293,14 +293,14 @@ class HipRunQueueStream
   }
   void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
-#ifdef ARCANE_HAS_ROCTX
+#ifdef ARCCORE_HAS_ROCTX
     roctxRangePop();
 #endif
     return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
-    ARCANE_CHECK_HIP(hipStreamSynchronize(m_hip_stream));
+    ARCCORE_CHECK_HIP(hipStreamSynchronize(m_hip_stream));
   }
   bool _barrierNoException() override
   {
@@ -310,7 +310,7 @@ class HipRunQueueStream
   {
     auto r = hipMemcpyAsync(args.destination().data(), args.source().data(),
                             args.source().bytes().size(), hipMemcpyDefault, m_hip_stream);
-    ARCANE_CHECK_HIP(r);
+    ARCCORE_CHECK_HIP(r);
     if (!args.isAsync())
       barrier();
   }
@@ -324,7 +324,7 @@ class HipRunQueueStream
     if (!d.isHost())
       device = d.asInt32();
     auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
-    ARCANE_CHECK_HIP(r);
+    ARCCORE_CHECK_HIP(r);
     if (!args.isAsync())
       barrier();
   }
@@ -357,13 +357,13 @@ class HipRunQueueEvent
   explicit HipRunQueueEvent(bool has_timer)
   {
     if (has_timer)
-      ARCANE_CHECK_HIP(hipEventCreate(&m_hip_event));
+      ARCCORE_CHECK_HIP(hipEventCreate(&m_hip_event));
     else
-      ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
+      ARCCORE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
   }
   ~HipRunQueueEvent() override
   {
-    ARCANE_CHECK_HIP_NOTHROW(hipEventDestroy(m_hip_event));
+    ARCCORE_CHECK_HIP_NOTHROW(hipEventDestroy(m_hip_event));
   }
 
  public:
@@ -372,18 +372,18 @@ class HipRunQueueEvent
   void recordQueue(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
-    ARCANE_CHECK_HIP(hipEventRecord(m_hip_event, rq->trueStream()));
+    ARCCORE_CHECK_HIP(hipEventRecord(m_hip_event, rq->trueStream()));
   }
 
   void wait() final
   {
-    ARCANE_CHECK_HIP(hipEventSynchronize(m_hip_event));
+    ARCCORE_CHECK_HIP(hipEventSynchronize(m_hip_event));
   }
 
   void waitForEvent(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
-    ARCANE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
+    ARCCORE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
   }
 
   Int64 elapsedTime(IRunQueueEventImpl* from_event) final
@@ -391,7 +391,7 @@ class HipRunQueueEvent
     auto* true_from_event = static_cast<HipRunQueueEvent*>(from_event);
     ARCCORE_CHECK_POINTER(true_from_event);
     float time_in_ms = 0.0;
-    ARCANE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
+    ARCCORE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
     double x = time_in_ms * 1.0e6;
     Int64 nano_time = static_cast<Int64>(x);
     return nano_time;
@@ -402,7 +402,7 @@ class HipRunQueueEvent
     hipError_t v = hipEventQuery(m_hip_event);
     if (v == hipErrorNotReady)
       return true;
-    ARCANE_CHECK_HIP(v);
+    ARCCORE_CHECK_HIP(v);
     return false;
   }
 
@@ -431,13 +431,13 @@ class HipRunnerRuntime
   }
   void notifyEndLaunchKernel() override
   {
-    ARCANE_CHECK_HIP(hipGetLastError());
+    ARCCORE_CHECK_HIP(hipGetLastError());
     if (m_is_verbose)
       std::cout << "END HIP KERNEL!\n";
   }
   void barrier() override
   {
-    ARCANE_CHECK_HIP(hipDeviceSynchronize());
+    ARCCORE_CHECK_HIP(hipDeviceSynchronize());
   }
   eExecutionPolicy executionPolicy() const override
   {
@@ -480,7 +480,7 @@ class HipRunnerRuntime
     else
       return;
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << hip_advise << " id = " << device << "\n";
-    ARCANE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
+    ARCCORE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
@@ -506,14 +506,14 @@ class HipRunnerRuntime
     }
     else
       return;
-    ARCANE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
+    ARCCORE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
   }
 
   void setCurrentDevice(DeviceId device_id) final
   {
     Int32 id = device_id.asInt32();
     ARCCORE_FATAL_IF(!device_id.isAccelerator(), "Device {0} is not an accelerator device", id);
-    ARCANE_CHECK_HIP(hipSetDevice(id));
+    ARCCORE_CHECK_HIP(hipSetDevice(id));
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
 
@@ -551,14 +551,14 @@ class HipRunnerRuntime
   {
     int d = 0;
     int wanted_d = device_id.asInt32();
-    ARCANE_CHECK_HIP(hipGetDevice(&d));
+    ARCCORE_CHECK_HIP(hipGetDevice(&d));
     if (d != wanted_d)
-      ARCANE_CHECK_HIP(hipSetDevice(wanted_d));
+      ARCCORE_CHECK_HIP(hipSetDevice(wanted_d));
     size_t free_mem = 0;
     size_t total_mem = 0;
-    ARCANE_CHECK_HIP(hipMemGetInfo(&free_mem, &total_mem));
+    ARCCORE_CHECK_HIP(hipMemGetInfo(&free_mem, &total_mem));
     if (d != wanted_d)
-      ARCANE_CHECK_HIP(hipSetDevice(d));
+      ARCCORE_CHECK_HIP(hipSetDevice(d));
     DeviceMemoryInfo dmi;
     dmi.setFreeMemory(free_mem);
     dmi.setTotalMemory(total_mem);
@@ -567,13 +567,13 @@ class HipRunnerRuntime
 
   void pushProfilerRange(const String& name, [[maybe_unused]] Int32 color) override
   {
-#ifdef ARCANE_HAS_ROCTX
+#ifdef ARCCORE_HAS_ROCTX
     roctxRangePush(name.localstr());
 #endif
   }
   void popProfilerRange() override
   {
-#ifdef ARCANE_HAS_ROCTX
+#ifdef ARCCORE_HAS_ROCTX
     roctxRangePop();
 #endif
   }
@@ -601,7 +601,7 @@ void HipRunnerRuntime::
 fillDevices(bool is_verbose)
 {
   int nb_device = 0;
-  ARCANE_CHECK_HIP(hipGetDeviceCount(&nb_device));
+  ARCCORE_CHECK_HIP(hipGetDeviceCount(&nb_device));
   std::ostream& omain = std::cout;
   if (is_verbose)
     omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
@@ -610,22 +610,22 @@ fillDevices(bool is_verbose)
     std::ostream& o = ostr;
 
     hipDeviceProp_t dp;
-    ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
+    ARCCORE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
 
     int has_managed_memory = 0;
-    ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
+    ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
 
     // Le format des versions dans HIP est:
     // HIP_VERSION  =  (HIP_VERSION_MAJOR * 10000000 + HIP_VERSION_MINOR * 100000 + HIP_VERSION_PATCH)
 
     int runtime_version = 0;
-    ARCANE_CHECK_HIP(hipRuntimeGetVersion(&runtime_version));
+    ARCCORE_CHECK_HIP(hipRuntimeGetVersion(&runtime_version));
     //runtime_version /= 10000;
     int runtime_major = runtime_version / 10000000;
     int runtime_minor = (runtime_version / 100000) % 100;
 
     int driver_version = 0;
-    ARCANE_CHECK_HIP(hipDriverGetVersion(&driver_version));
+    ARCCORE_CHECK_HIP(hipDriverGetVersion(&driver_version));
     //driver_version /= 10000;
     int driver_major = driver_version / 10000000;
     int driver_minor = (driver_version / 100000) % 100;
@@ -665,9 +665,9 @@ fillDevices(bool is_verbose)
 #endif
     {
       hipDevice_t device;
-      ARCANE_CHECK_HIP(hipDeviceGet(&device, i));
+      ARCCORE_CHECK_HIP(hipDeviceGet(&device, i));
       hipUUID device_uuid;
-      ARCANE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
+      ARCCORE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
       impl::printUUID(o, device_uuid.bytes);
       o << "\n";
@@ -703,7 +703,7 @@ class HipMemoryCopier
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.
-    ARCANE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.bytes().size(), hipMemcpyDefault));
+    ARCCORE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.bytes().size(), hipMemcpyDefault));
   }
 };
 

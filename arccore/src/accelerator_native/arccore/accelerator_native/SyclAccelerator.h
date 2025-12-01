@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Backend 'SYCL' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_SYCL_SYCLACCELERATOR_H
-#define ARCANE_ACCELERATOR_SYCL_SYCLACCELERATOR_H
+#ifndef ARCCORE_ACCELERATOR_SYCL_SYCLACCELERATOR_H
+#define ARCCORE_ACCELERATOR_SYCL_SYCLACCELERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,10 +21,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_sycl
-#define ARCANE_SYCL_EXPORT ARCCORE_EXPORT
+#ifdef ARCCORE_COMPONENT_arcane_sycl
+#define ARCCORE_SYCL_EXPORT ARCCORE_EXPORT
 #else
-#define ARCANE_SYCL_EXPORT ARCCORE_IMPORT
+#define ARCCORE_SYCL_EXPORT ARCCORE_IMPORT
 #endif
 
 namespace Arcane::Accelerator::Sycl
