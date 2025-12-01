@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/NumArrayViews.h"
+#include "arccore/accelerator/NumArrayViews.h"
 
-#include "arcane/utils/MemoryView.h"
+#include "arccore/base/MemoryView.h"
 
-#include "arcane/accelerator/core/RunCommand.h"
-#include "arcane/accelerator/core/Memory.h"
+#include "arccore/common/accelerator/RunCommand.h"
+#include "arccore/common/accelerator/Memory.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 

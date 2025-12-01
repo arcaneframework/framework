@@ -2,6 +2,7 @@ set(SOURCES
   AcceleratorGlobal.h
   AcceleratorGlobal.cc
   AcceleratorUtils.h
+  Atomic.h
   CommonCudaHipReduceImpl.h
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
@@ -18,12 +19,15 @@ set(SOURCES
   MemoryCopier.cc
   MultiThreadAlgo.h
   MultiThreadAlgo.cc
+  NumArrayViews.h
+  NumArrayViews.cc
   Reduce.h
   RunCommandLaunch.h
   RunCommandLaunch.cc
   RunCommandLaunchImpl.h
   RunCommandLoop.h
   ScanImpl.h
+  SpanViews.h
   WorkGroupLoopRange.h
   WorkGroupLoopRange.cc
 )

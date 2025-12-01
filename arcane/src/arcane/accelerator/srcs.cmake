@@ -18,7 +18,6 @@ set( ARCANE_SOURCES
   MaterialVariableViews.cc
   NumArray.h
   NumArrayViews.h
-  NumArrayViews.cc
   Reduce.h
   RunCommand.h
   RunCommandEnumerate.h
