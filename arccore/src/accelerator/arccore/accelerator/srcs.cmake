@@ -14,6 +14,7 @@ set(SOURCES
   GenericScanner.h
   GenericSorter.h
   KernelLauncher.h
+  LocalMemory.h
   MemoryCopier.cc
   MultiThreadAlgo.h
   MultiThreadAlgo.cc

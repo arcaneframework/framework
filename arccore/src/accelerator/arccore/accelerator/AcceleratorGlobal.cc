@@ -14,6 +14,7 @@
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
 // Les fichiers suivants servent à tester que tout compile bien
+#include "arccore/accelerator/LocalMemory.h"
 #include "arccore/accelerator/Reduce.h"
 #include "arccore/accelerator/GenericFilterer.h"
 #include "arccore/accelerator/GenericPartitioner.h"
