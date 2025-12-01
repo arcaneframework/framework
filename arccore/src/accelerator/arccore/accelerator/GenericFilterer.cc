@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/Filter.h"
+#include "arccore/accelerator/GenericFilterer.h"
 
-#include "arcane/utils/ValueConvert.h"
+#include "arccore/base/Convert.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ _allocate()
   if (m_queue.executionPolicy() != eExecutionPolicy::CUDA)
     m_use_direct_host_storage = false;
 
-  eMemoryRessource r = eMemoryRessource::HostPinned;
+  eMemoryResource r = eMemoryResource::HostPinned;
   if (m_host_nb_out_storage.memoryRessource() != r)
     m_host_nb_out_storage = NumArray<Int32, MDDim1>(r);
   m_host_nb_out_storage.resize(1);
@@ -97,7 +97,7 @@ void GenericFilteringBase::
 _setCalled()
 {
   if (m_is_already_called)
-    ARCANE_FATAL("apply() has already been called for this instance");
+    ARCCORE_FATAL("apply() has already been called for this instance");
   m_is_already_called = true;
 }
 

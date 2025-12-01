@@ -40,12 +40,16 @@ arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e);
 extern "C++" ARCANE_HIP_EXPORT void
 arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 
-#define ARCANE_CHECK_HIP(result) \
+//! Vérifie \a result et lance une exception en cas d'erreur
+#define ARCCORE_CHECK_HIP(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrors(A_FUNCINFO,result)
 
 //! Verifie \a result et affiche un message d'erreur en cas d'erreur.
-#define ARCANE_CHECK_HIP_NOTHROW(result) \
+#define ARCCORE_CHECK_HIP_NOTHROW(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrorsNoThrow(A_FUNCINFO,result)
+
+#define ARCANE_CHECK_HIP(result) ARCCORE_CHECK_HIP((result))
+#define ARCANE_CHECK_HIP_NOTHROW(result) ARCCORE_CHECK_HIP_NOTHROW((result))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

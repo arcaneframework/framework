@@ -6,7 +6,13 @@ set(SOURCES
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
+  GenericFilterer.h
+  GenericFilterer.cc
+  GenericPartitioner.h
+  GenericPartitioner.cc
   GenericReducer.h
+  GenericScanner.h
+  GenericSorter.h
   KernelLauncher.h
   MemoryCopier.cc
   MultiThreadAlgo.h
@@ -16,6 +22,7 @@ set(SOURCES
   RunCommandLaunch.cc
   RunCommandLaunchImpl.h
   RunCommandLoop.h
+  ScanImpl.h
   WorkGroupLoopRange.h
   WorkGroupLoopRange.cc
 )

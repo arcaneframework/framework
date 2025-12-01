@@ -41,12 +41,15 @@ extern "C++" ARCANE_CUDA_EXPORT void
 arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 
 //! Vérifie \a result et lance une exception en cas d'erreur
-#define ARCANE_CHECK_CUDA(result) \
+#define ARCCORE_CHECK_CUDA(result) \
   Arcane::Accelerator::Cuda::arcaneCheckCudaErrors(A_FUNCINFO,result)
 
 //! Verifie \a result et affiche un message d'erreur en cas d'erreur.
-#define ARCANE_CHECK_CUDA_NOTHROW(result) \
+#define ARCCORE_CHECK_CUDA_NOTHROW(result) \
   Arcane::Accelerator::Cuda::arcaneCheckCudaErrorsNoThrow(A_FUNCINFO,result)
+
+#define ARCANE_CHECK_CUDA(result) ARCCORE_CHECK_CUDA((result))
+#define ARCANE_CHECK_CUDA_NOTHROW(result) ARCCORE_CHECK_CUDA_NOTHROW((result))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
