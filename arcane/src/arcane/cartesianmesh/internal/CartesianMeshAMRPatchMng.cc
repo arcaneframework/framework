@@ -317,16 +317,16 @@ refine()
       // #arcane_order_to_around_2d
       // Note pour les maillages cartésiens 2D :
       // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 4 ici) :
-      //  1. Face entre [4, 1],
-      //  2. Face entre [4, 5],
-      //  3. Face entre [4, 7],
-      //  4. Face entre [4, 3],
+      //  0. Face entre [4, 1],
+      //  1. Face entre [4, 5],
+      //  2. Face entre [4, 7],
+      //  3. Face entre [4, 3],
       //
       // Les itérateurs sur les noeuds itèrent dans l'ordre (pour la maille 4 ici) :
-      //  1. Noeud entre [4, 0]
-      //  2. Noeud entre [4, 2]
-      //  3. Noeud entre [4, 8]
-      //  4. Noeud entre [4, 6]
+      //  0. Noeud entre [4, 0]
+      //  1. Noeud entre [4, 2]
+      //  2. Noeud entre [4, 8]
+      //  3. Noeud entre [4, 6]
 
       // Chaque chiffre désigne une maille parente et une priorité (0 étant la priorité la plus forte).
       // 4 = parent_cell ("nous")
@@ -845,22 +845,22 @@ refine()
       // #arcane_order_to_around_3d
       // Note pour les maillages cartésiens 3D :
       // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 13 ici) :
-      //  1. Face entre [13, 4],
-      //  2. Face entre [13, 12],
-      //  3. Face entre [13, 10],
-      //  4. Face entre [13, 22],
-      //  5. Face entre [13, 14],
-      //  6. Face entre [13, 16],
+      //  0. Face entre [13, 4],
+      //  1. Face entre [13, 12],
+      //  2. Face entre [13, 10],
+      //  3. Face entre [13, 22],
+      //  4. Face entre [13, 14],
+      //  5. Face entre [13, 16],
       //
       // Les itérateurs sur les noeuds itèrent dans l'ordre (pour la maille 13 ici) :
-      //  1. Noeud entre [13, 0]
-      //  2. Noeud entre [13, 2]
-      //  3. Noeud entre [13, 8]
-      //  4. Noeud entre [13, 6]
-      //  5. Noeud entre [13, 18]
-      //  6. Noeud entre [13, 20]
-      //  7. Noeud entre [13, 26]
-      //  8. Noeud entre [13, 24]
+      //  0. Noeud entre [13, 0]
+      //  1. Noeud entre [13, 2]
+      //  2. Noeud entre [13, 8]
+      //  3. Noeud entre [13, 6]
+      //  4. Noeud entre [13, 18]
+      //  5. Noeud entre [13, 20]
+      //  6. Noeud entre [13, 26]
+      //  7. Noeud entre [13, 24]
 
       // Chaque chiffre désigne une maille parente et une priorité (0 étant la priorité la plus forte).
       // 13 = parent_cell ("nous")

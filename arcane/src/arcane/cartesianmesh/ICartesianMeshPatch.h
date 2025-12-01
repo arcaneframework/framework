@@ -44,7 +44,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
 
   //! Groupe de mailles du patch
   virtual CellGroup cells() =0;
-  virtual CellGroup ownCells() = 0;
+  virtual CellGroup inPatchCells() = 0;
 
   //! TODO
   virtual Integer index() = 0;

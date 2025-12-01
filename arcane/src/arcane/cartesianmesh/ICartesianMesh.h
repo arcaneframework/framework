@@ -89,6 +89,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * - les informations de direction sont invalidées si le maillage évolue.
    */
   virtual void computeDirections() = 0;
+  virtual void computeDirectionsV2() = 0;
 
   /*!
    * \brief Recalcule les informations de cartésiennes après une reprise.
@@ -105,6 +106,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * \brief Nombre de patchs du maillage.
    *
    * Il y a toujours au moins un patch qui représente la maillage cartésien
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual Int32 nbPatch() const = 0;
 
@@ -123,11 +126,15 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Si le maillage est cartésien, il n'y a qu'un seul patch.
    *
    * L'instance retournée reste valide tant que cette instance n'est pas détruite.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual CartesianPatch amrPatch(Int32 index) const = 0;
 
   /*!
    * \brief Vue sur la liste des patchs.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual CartesianMeshPatchListView patches() const = 0;
 
@@ -142,6 +149,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * de connectivité correspondantes sont mises à jour.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
@@ -156,6 +165,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * de connectivité correspondantes sont mises à jour.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
@@ -170,6 +181,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * de connectivité correspondantes sont mises à jour.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void refinePatch(const AMRZonePosition& position) = 0;
 
@@ -190,6 +203,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * seront supprimés.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void coarseZone2D(Real2 position, Real2 length) = 0;
 
@@ -210,6 +225,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * seront supprimés.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
 
@@ -230,9 +247,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * seront supprimés.
    *
    * Cette opération est collective.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual void coarseZone(const AMRZonePosition& position) = 0;
 
+  // TODO A suppr
   virtual void refine() = 0;
 
   /*!
@@ -250,9 +270,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * appel à cette méthode. ATTENTION : Il peut être ajusté par la méthode.
    *
    * \return Le nombre de couches de mailles fantômes final.
+   *
+   * \deprecated Utiliser CartesianMeshAMRMng à la place.
    */
   virtual Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) = 0;
 
+  // TODO A suppr
   virtual void mergePatches() = 0;
 
   /*!

@@ -85,9 +85,10 @@ cells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CellGroup CartesianMeshPatch::ownCells()
+CellGroup CartesianMeshPatch::
+inPatchCells()
 {
-  return cellDirection(MD_DirX).innerCells();
+  return cellDirection(MD_DirX).inPatchCells();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -294,6 +295,58 @@ _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeRe
     _computeNodeCellInformations2D(cell0,cell0_coord,nodes_coord);
   else
     ARCANE_THROW(NotImplementedException,"this method is implemented only for 2D and 3D mesh (dim={0})",dim);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshPatch::
+_internalComputeNodeCellInformations()
+{
+  int dim = m_mesh->mesh()->dimension();
+  Int8 nodes_indirection[CellDirectionMng::MAX_NB_NODE];
+  ArrayView av_nodes_indirection(CellDirectionMng::MAX_NB_NODE, nodes_indirection);
+  // DirX (Top->Z=1 / Previous->X=0 / Next->X=1 / Right->Y=0 / Left->Y=1)
+  av_nodes_indirection.fill(-1);
+  av_nodes_indirection[CNP_NextLeft] = 2;
+  av_nodes_indirection[CNP_NextRight] = 1;
+  av_nodes_indirection[CNP_PreviousRight] = 0;
+  av_nodes_indirection[CNP_PreviousLeft] = 3;
+  if (dim == 3) {
+    av_nodes_indirection[CNP_TopNextLeft] = 6;
+    av_nodes_indirection[CNP_TopNextRight] = 5;
+    av_nodes_indirection[CNP_TopPreviousRight] = 4;
+    av_nodes_indirection[CNP_TopPreviousLeft] = 7;
+  }
+  cellDirection(MD_DirX).setNodesIndirection(av_nodes_indirection);
+
+  // DirY (Top->Z=1 / Previous->Y=0 / Next->Y=1 / Right->X=1 / Left->X=0)
+  av_nodes_indirection.fill(-1);
+  av_nodes_indirection[CNP_NextLeft] = 3;
+  av_nodes_indirection[CNP_NextRight] = 2;
+  av_nodes_indirection[CNP_PreviousRight] = 1;
+  av_nodes_indirection[CNP_PreviousLeft] = 0;
+  if (dim == 3) {
+    av_nodes_indirection[CNP_TopNextLeft] = 7;
+    av_nodes_indirection[CNP_TopNextRight] = 6;
+    av_nodes_indirection[CNP_TopPreviousRight] = 5;
+    av_nodes_indirection[CNP_TopPreviousLeft] = 4;
+  }
+  cellDirection(MD_DirY).setNodesIndirection(av_nodes_indirection);
+
+  if (dim == 3) {
+    // DirZ (Top->Y=1 / Previous->Z=0 / Next->Z=1 / Right->X=1 / Left->X=0)
+    av_nodes_indirection.fill(-1);
+    av_nodes_indirection[CNP_NextLeft] = 4;
+    av_nodes_indirection[CNP_NextRight] = 5;
+    av_nodes_indirection[CNP_PreviousRight] = 1;
+    av_nodes_indirection[CNP_PreviousLeft] = 0;
+    av_nodes_indirection[CNP_TopNextLeft] = 7;
+    av_nodes_indirection[CNP_TopNextRight] = 6;
+    av_nodes_indirection[CNP_TopPreviousRight] = 2;
+    av_nodes_indirection[CNP_TopPreviousLeft] = 3;
+    cellDirection(MD_DirZ).setNodesIndirection(av_nodes_indirection);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

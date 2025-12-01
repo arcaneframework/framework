@@ -30,11 +30,15 @@ cells()
   ARCANE_CHECK_POINTER(m_patch);
   return m_patch->cells();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CellGroup CartesianPatch::
-ownCells()
+inPatchCells()
 {
   ARCANE_CHECK_POINTER(m_patch);
-  return m_patch->ownCells();
+  return m_patch->inPatchCells();
 }
 
 /*---------------------------------------------------------------------------*/

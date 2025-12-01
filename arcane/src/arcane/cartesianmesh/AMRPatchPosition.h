@@ -52,7 +52,6 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
   Int64x3 minPointWithOverlap() const;
   Int64x3 maxPointWithOverlap() const;
 
-  bool isIn(Int64 x, Int64 y, Int64 z) const;
 
   Int64 nbCells() const;
   std::pair<AMRPatchPosition, AMRPatchPosition> cut(Int64 cut_point, Integer dim) const;

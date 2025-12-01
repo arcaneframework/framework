@@ -75,7 +75,7 @@ class CartesianMeshPatch
   ~CartesianMeshPatch() override;
  public:
   CellGroup cells() override;
-  CellGroup ownCells() override;
+  CellGroup inPatchCells() override;
   Integer index() override
   {
     return m_amr_patch_index;
@@ -124,6 +124,7 @@ class CartesianMeshPatch
  private:
 
   void _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
+  void _internalComputeNodeCellInformations();
   void _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
   void _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
 
