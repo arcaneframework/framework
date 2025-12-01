@@ -172,6 +172,9 @@ if (MSVC)
   # Indique que les fichiers ont l'encodage UTF-8
   # Sans cela, Visual Studio 2022 considère qu'ils ont l'encodage courant (current code page)
   target_compile_options(arccore_build_compile_flags INTERFACE "/utf-8")
+  # Pour pouvoir utiliser la macro '__VA_OPT__' permettant d'avoir un
+  # nombre variable d'arguments dans les macros
+  target_compile_options(arccore_build_compile_flags INTERFACE "/Zc:preprocessor")
 endif()
 
 # ----------------------------------------------------------------------------

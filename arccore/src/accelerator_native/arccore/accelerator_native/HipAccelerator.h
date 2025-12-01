@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Backend 'ROCM/HIP' pour les accélérateurs.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_HIP_HIPACCELERATOR_H
-#define ARCANE_HIP_HIPACCELERATOR_H
+#ifndef ARCCORE_HIP_HIPACCELERATOR_H
+#define ARCCORE_HIP_HIPACCELERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,10 +22,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_hip
-#define ARCANE_HIP_EXPORT ARCCORE_EXPORT
+#ifdef ARCCORE_COMPONENT_arcane_hip
+#define ARCCORE_HIP_EXPORT ARCCORE_EXPORT
 #else
-#define ARCANE_HIP_EXPORT ARCCORE_IMPORT
+#define ARCCORE_HIP_EXPORT ARCCORE_IMPORT
 #endif
 
 namespace Arcane::Accelerator::Hip
@@ -34,18 +34,22 @@ namespace Arcane::Accelerator::Hip
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_HIP_EXPORT void
+extern "C++" ARCCORE_HIP_EXPORT void
 arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e);
 
-extern "C++" ARCANE_HIP_EXPORT void
+extern "C++" ARCCORE_HIP_EXPORT void
 arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 
-#define ARCANE_CHECK_HIP(result) \
+//! Vérifie \a result et lance une exception en cas d'erreur
+#define ARCCORE_CHECK_HIP(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrors(A_FUNCINFO,result)
 
 //! Verifie \a result et affiche un message d'erreur en cas d'erreur.
-#define ARCANE_CHECK_HIP_NOTHROW(result) \
+#define ARCCORE_CHECK_HIP_NOTHROW(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrorsNoThrow(A_FUNCINFO,result)
+
+#define ARCANE_CHECK_HIP(result) ARCCORE_CHECK_HIP((result))
+#define ARCANE_CHECK_HIP_NOTHROW(result) ARCCORE_CHECK_HIP_NOTHROW((result))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

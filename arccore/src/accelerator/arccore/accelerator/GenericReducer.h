@@ -136,12 +136,12 @@ class GenericReducerIf
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
-      ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
+      ARCCORE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
                                                     nb_item, reduce_op, init_value, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
       reduced_value_ptr = s.m_device_reduce_storage.allocate();
-      ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(s.m_algo_storage.address(), temp_storage_size,
+      ARCCORE_CHECK_CUDA(::cub::DeviceReduce::Reduce(s.m_algo_storage.address(), temp_storage_size,
                                                     input_iter, reduced_value_ptr, nb_item,
                                                     reduce_op, init_value, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
@@ -153,13 +153,13 @@ class GenericReducerIf
       hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
-      ARCANE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
+      ARCCORE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                        nb_item, reduce_op, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
       reduced_value_ptr = s.m_device_reduce_storage.allocate();
 
-      ARCANE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
+      ARCCORE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                        nb_item, reduce_op, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
     } break;

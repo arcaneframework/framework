@@ -9,22 +9,20 @@
 /*                                                                           */
 /* Implémentation spécifique de l'opération de scan pour les accélérateurs.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_SCANIMPL_H
-#define ARCANE_ACCELERATOR_SCANIMPL_H
+#ifndef ARCCORE_ACCELERATOR_SCANIMPL_H
+#define ARCCORE_ACCELERATOR_SCANIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/ArrayView.h"
+#include "arccore/base/FatalErrorException.h"
 
-#include "arcane/utils/NumArray.h"
+#include "arccore/common/NumArray.h"
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/common/accelerator/RunCommandLaunchInfo.h"
 
-#include "arcane/accelerator/core/RunQueue.h"
-
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/CommonUtils.h"
-#include "arcane/accelerator/RunCommandLaunchInfo.h"
-#include "arcane/accelerator/RunCommandLoop.h"
+#include "arccore/accelerator/CommonUtils.h"
+#include "arccore/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +33,7 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 
 /*!
  * \brief Algorithme de Scan basique.

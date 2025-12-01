@@ -44,7 +44,7 @@
 // Pour std::memset
 #include <cstring>
 
-#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
 #include <nvtx3/nvToolsExt.h>
 #endif
 
@@ -64,7 +64,7 @@ namespace
 
 // A partir de CUDA 13, il y a un nouveau type cudaMemLocation
 // pour les méthodes telles cudeMemAdvise ou cudaMemPrefetch
-#if defined(ARCANE_USING_CUDA13_OR_GREATER)
+#if defined(ARCCORE_USING_CUDA13_OR_GREATER)
 inline cudaMemLocation
 _getMemoryLocation(int device_id)
 {
@@ -118,17 +118,17 @@ class UnderlyingAllocator
   void* allocateMemory(size_t size) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_CUDA(m_concrete_allocator._allocate(&out, size));
+    ARCCORE_CHECK_CUDA(m_concrete_allocator._allocate(&out, size));
     return out;
   }
   void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
   {
-    ARCANE_CHECK_CUDA_NOTHROW(m_concrete_allocator._deallocate(ptr));
+    ARCCORE_CHECK_CUDA_NOTHROW(m_concrete_allocator._deallocate(ptr));
   }
 
   void doMemoryCopy(void* destination, const void* source, Int64 size) final
   {
-    ARCANE_CHECK_CUDA(cudaMemcpy(destination, source, size, cudaMemcpyDefault));
+    ARCCORE_CHECK_CUDA(cudaMemcpy(destination, source, size, cudaMemcpyDefault));
   }
 
   eMemoryResource memoryResource() const final
@@ -192,8 +192,8 @@ class UnifiedMemoryConcreteAllocator
         int device_id = 0;
         void* p = *ptr;
         cudaGetDevice(&device_id);
-        ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, _getMemoryLocation(device_id)));
-        ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, _getMemoryLocation(cudaCpuDeviceId)));
+        ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, _getMemoryLocation(device_id)));
+        ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, _getMemoryLocation(cudaCpuDeviceId)));
       }
     }
 
@@ -264,15 +264,15 @@ class UnifiedMemoryCudaMemoryAllocator
 
     //std::cout << "SET_MEMORY_HINT name=" << args.arrayName() << " size=" << new_size << " hint=" << (int)hint << "\n";
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_memory_location));
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cpu_memory_location));
+      ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_memory_location));
+      ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cpu_memory_location));
     }
     if (hint == eMemoryLocationHint::MainlyHost) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, cpu_memory_location));
-      //ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, 0));
+      ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, cpu_memory_location));
+      //ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, 0));
     }
     if (hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, device_memory_location));
+      ARCCORE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, device_memory_location));
     }
   }
   void _removeHint(void* p, size_t size, MemoryAllocationArgs args)
@@ -281,7 +281,7 @@ class UnifiedMemoryCudaMemoryAllocator
     if (hint == eMemoryLocationHint::None)
       return;
     int device_id = 0;
-    ARCANE_CHECK_CUDA(cudaMemAdvise(p, size, cudaMemAdviseUnsetReadMostly, _getMemoryLocation(device_id)));
+    ARCCORE_CHECK_CUDA(cudaMemAdvise(p, size, cudaMemAdviseUnsetReadMostly, _getMemoryLocation(device_id)));
   }
 
  private:
@@ -512,22 +512,22 @@ class CudaRunQueueStream
   : m_runtime(runtime)
   {
     if (bi.isDefault())
-      ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+      ARCCORE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
     else {
       int priority = bi.priority();
-      ARCANE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream, cudaStreamDefault, priority));
+      ARCCORE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream, cudaStreamDefault, priority));
     }
   }
   ~CudaRunQueueStream() override
   {
-    ARCANE_CHECK_CUDA_NOTHROW(cudaStreamDestroy(m_cuda_stream));
+    ARCCORE_CHECK_CUDA_NOTHROW(cudaStreamDestroy(m_cuda_stream));
   }
 
  public:
 
   void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
-#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     auto kname = c.kernelName();
     if (kname.empty())
       nvtxRangePush(c.traceInfo().name());
@@ -538,14 +538,14 @@ class CudaRunQueueStream
   }
   void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
-#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
 #endif
     return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
-    ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
+    ARCCORE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
     if (global_cupti_flush > 0)
       global_cupti_info.flush();
   }
@@ -558,7 +558,7 @@ class CudaRunQueueStream
     auto source_bytes = args.source().bytes();
     auto r = cudaMemcpyAsync(args.destination().data(), source_bytes.data(),
                              source_bytes.size(), cudaMemcpyDefault, m_cuda_stream);
-    ARCANE_CHECK_CUDA(r);
+    ARCCORE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
   }
@@ -574,12 +574,12 @@ class CudaRunQueueStream
     //std::cout << "PREFETCH device=" << device << " host(id)=" << cudaCpuDeviceId
     //          << " size=" << args.source().size() << " data=" << src.data() << "\n";
     auto mem_location = _getMemoryLocation(device);
-#if defined(ARCANE_USING_CUDA13_OR_GREATER)
+#if defined(ARCCORE_USING_CUDA13_OR_GREATER)
     auto r = cudaMemPrefetchAsync(src.data(), src.size(), mem_location, 0, m_cuda_stream);
 #else
     auto r = cudaMemPrefetchAsync(src.data(), src.size(), mem_location, m_cuda_stream);
 #endif
-    ARCANE_CHECK_CUDA(r);
+    ARCCORE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
   }
@@ -612,13 +612,13 @@ class CudaRunQueueEvent
   explicit CudaRunQueueEvent(bool has_timer)
   {
     if (has_timer)
-      ARCANE_CHECK_CUDA(cudaEventCreate(&m_cuda_event));
+      ARCCORE_CHECK_CUDA(cudaEventCreate(&m_cuda_event));
     else
-      ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
+      ARCCORE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
   }
   ~CudaRunQueueEvent() override
   {
-    ARCANE_CHECK_CUDA_NOTHROW(cudaEventDestroy(m_cuda_event));
+    ARCCORE_CHECK_CUDA_NOTHROW(cudaEventDestroy(m_cuda_event));
   }
 
  public:
@@ -627,18 +627,18 @@ class CudaRunQueueEvent
   void recordQueue(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
-    ARCANE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
+    ARCCORE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
   }
 
   void wait() final
   {
-    ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
+    ARCCORE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
   }
 
   void waitForEvent(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
-    ARCANE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
+    ARCCORE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
   }
 
   Int64 elapsedTime(IRunQueueEventImpl* start_event) final
@@ -649,9 +649,9 @@ class CudaRunQueueEvent
     float time_in_ms = 0.0;
 
     // TODO: regarder si nécessaire
-    // ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
+    // ARCCORE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
 
-    ARCANE_CHECK_CUDA(cudaEventElapsedTime(&time_in_ms, true_start_event->m_cuda_event, m_cuda_event));
+    ARCCORE_CHECK_CUDA(cudaEventElapsedTime(&time_in_ms, true_start_event->m_cuda_event, m_cuda_event));
     double x = time_in_ms * 1.0e6;
     Int64 nano_time = static_cast<Int64>(x);
     return nano_time;
@@ -662,7 +662,7 @@ class CudaRunQueueEvent
     cudaError_t v = cudaEventQuery(m_cuda_event);
     if (v == cudaErrorNotReady)
       return true;
-    ARCANE_CHECK_CUDA(v);
+    ARCCORE_CHECK_CUDA(v);
     return false;
   }
 
@@ -691,13 +691,13 @@ class CudaRunnerRuntime
   }
   void notifyEndLaunchKernel() override
   {
-    ARCANE_CHECK_CUDA(cudaGetLastError());
+    ARCCORE_CHECK_CUDA(cudaGetLastError());
     if (m_is_verbose)
       std::cout << "END CUDA KERNEL!\n";
   }
   void barrier() override
   {
-    ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
+    ARCCORE_CHECK_CUDA(cudaDeviceSynchronize());
   }
   eExecutionPolicy executionPolicy() const override
   {
@@ -740,7 +740,7 @@ class CudaRunnerRuntime
     else
       return;
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
-    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
+    ARCCORE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
@@ -766,7 +766,7 @@ class CudaRunnerRuntime
     }
     else
       return;
-    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
+    ARCCORE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
   }
 
   void setCurrentDevice(DeviceId device_id) final
@@ -774,7 +774,7 @@ class CudaRunnerRuntime
     Int32 id = device_id.asInt32();
     if (!device_id.isAccelerator())
       ARCCORE_FATAL("Device {0} is not an accelerator device", id);
-    ARCANE_CHECK_CUDA(cudaSetDevice(id));
+    ARCCORE_CHECK_CUDA(cudaSetDevice(id));
   }
 
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
@@ -797,7 +797,7 @@ class CudaRunnerRuntime
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
     cudaPointerAttributes ca;
-    ARCANE_CHECK_CUDA(cudaPointerGetAttributes(&ca, ptr));
+    ARCCORE_CHECK_CUDA(cudaPointerGetAttributes(&ca, ptr));
     // NOTE: le type Arcane 'ePointerMemoryType' a normalememt les mêmes valeurs
     // que le type CUDA correspondant donc on peut faire un cast simple.
     auto mem_type = static_cast<ePointerMemoryType>(ca.type);
@@ -809,14 +809,14 @@ class CudaRunnerRuntime
   {
     int d = 0;
     int wanted_d = device_id.asInt32();
-    ARCANE_CHECK_CUDA(cudaGetDevice(&d));
+    ARCCORE_CHECK_CUDA(cudaGetDevice(&d));
     if (d != wanted_d)
-      ARCANE_CHECK_CUDA(cudaSetDevice(wanted_d));
+      ARCCORE_CHECK_CUDA(cudaSetDevice(wanted_d));
     size_t free_mem = 0;
     size_t total_mem = 0;
-    ARCANE_CHECK_CUDA(cudaMemGetInfo(&free_mem, &total_mem));
+    ARCCORE_CHECK_CUDA(cudaMemGetInfo(&free_mem, &total_mem));
     if (d != wanted_d)
-      ARCANE_CHECK_CUDA(cudaSetDevice(d));
+      ARCCORE_CHECK_CUDA(cudaSetDevice(d));
     DeviceMemoryInfo dmi;
     dmi.setFreeMemory(free_mem);
     dmi.setTotalMemory(total_mem);
@@ -825,7 +825,7 @@ class CudaRunnerRuntime
 
   void pushProfilerRange(const String& name, Int32 color_rgb) override
   {
-#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     if (color_rgb >= 0) {
       // NOTE: Il faudrait faire: nvtxEventAttributes_t eventAttrib = { 0 };
       // mais cela provoque pleins d'avertissement de type 'missing initializer for member'
@@ -845,7 +845,7 @@ class CudaRunnerRuntime
   }
   void popProfilerRange() override
   {
-#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
 #endif
   }
@@ -900,7 +900,7 @@ void CudaRunnerRuntime::
 fillDevices(bool is_verbose)
 {
   int nb_device = 0;
-  ARCANE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
+  ARCCORE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
   std::ostream& omain = std::cout;
   if (is_verbose)
     omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
@@ -939,7 +939,7 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
-#if !defined(ARCANE_USING_CUDA13_OR_GREATER)
+#if !defined(ARCCORE_USING_CUDA13_OR_GREATER)
     o << " clockRate = " << dp.clockRate << "\n";
     o << " deviceOverlap = " << dp.deviceOverlap << "\n";
     o << " computeMode = " << dp.computeMode << "\n";
@@ -949,14 +949,14 @@ fillDevices(bool is_verbose)
     {
       int least_val = 0;
       int greatest_val = 0;
-      ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
+      ARCCORE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
       o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
     }
     {
       CUdevice device;
-      ARCANE_CHECK_CUDA(cuDeviceGet(&device, i));
+      ARCCORE_CHECK_CUDA(cuDeviceGet(&device, i));
       CUuuid device_uuid;
-      ARCANE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
+      ARCCORE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
       impl::printUUID(o, device_uuid.bytes);
       o << "\n";
@@ -985,8 +985,8 @@ fillDevices(bool is_verbose)
     do_print_cupti = (v.value() != 0);
 
   if (global_cupti_level > 0) {
-#ifndef ARCANE_HAS_CUDA_CUPTI
-    ARCANE_FATAL("Trying to enable CUPTI but Arcane is not compiled with cupti support");
+#ifndef ARCCORE_HAS_CUDA_CUPTI
+    ARCCORE_FATAL("Trying to enable CUPTI but Arcane is not compiled with cupti support");
 #endif
     global_cupti_info.init(global_cupti_level, do_print_cupti);
     global_cupti_info.start();
@@ -1010,7 +1010,7 @@ class CudaMemoryCopier
     // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.
-    ARCANE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.bytes().size(), cudaMemcpyDefault));
+    ARCCORE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.bytes().size(), cudaMemcpyDefault));
   }
 };
 

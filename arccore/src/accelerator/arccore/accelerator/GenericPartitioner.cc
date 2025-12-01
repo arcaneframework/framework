@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/Partitioner.h"
+#include "arccore/accelerator/GenericPartitioner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ _nbParts() const
 void GenericPartitionerBase::
 _allocate()
 {
-  eMemoryRessource r = eMemoryRessource::HostPinned;
+  eMemoryResource r = eMemoryResource::HostPinned;
   if (m_host_nb_list1_storage.memoryRessource() != r)
     m_host_nb_list1_storage = NumArray<Int32, MDDim1>(r);
   // Il faut deux valeurs pour la version qui décompose la liste en trois

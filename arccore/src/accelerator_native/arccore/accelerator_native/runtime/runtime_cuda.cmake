@@ -30,7 +30,7 @@ target_link_libraries(arccore_accelerator_cuda_runtime PUBLIC
 
 if (TARGET CUDA::nvtx3)
   message(STATUS "CUDA: 'nvtx3' is available")
-  target_compile_definitions(arccore_accelerator_cuda_runtime PRIVATE ARCCORE_HAS_CUDA_NVTOOLSEXT ARCANE_HAS_CUDA_NVTOOLSEXT)
+  target_compile_definitions(arccore_accelerator_cuda_runtime PRIVATE ARCCORE_HAS_CUDA_NVTOOLSEXT)
   target_link_libraries(arccore_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
 endif()
 
@@ -39,7 +39,7 @@ endif()
 if (TARGET CUDA::cupti)
   message(STATUS "CUDA: 'cupti' is available")
   #target_sources(arccore_accelerator_cuda_runtime PRIVATE Cupti.cc)
-  target_compile_definitions(arccore_accelerator_cuda_runtime PRIVATE ARCCORE_HAS_CUDA_CUPTI ARCANE_HAS_CUDA_CUPTI)
+  target_compile_definitions(arccore_accelerator_cuda_runtime PRIVATE ARCCORE_HAS_CUDA_CUPTI)
   target_link_libraries(arccore_accelerator_cuda_runtime PRIVATE CUDA::cupti)
 endif()
 

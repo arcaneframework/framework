@@ -16,7 +16,6 @@ set( ARCANE_SOURCES
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
-  MemoryCopier.cc
   NumArray.h
   NumArrayViews.h
   NumArrayViews.cc
@@ -33,14 +32,9 @@ set( ARCANE_SOURCES
   RunQueueImpl.h
   RunQueueInternal.h
   Filter.h
-  Filterer.cc
   Partitioner.h
-  Partitioner.cc
   Scan.h
-  ScanImpl.h
-  Scan.cc
   Sort.h
-  Sort.cc
   SpanViews.h
   VariableViews.h
   VariableViews.cc

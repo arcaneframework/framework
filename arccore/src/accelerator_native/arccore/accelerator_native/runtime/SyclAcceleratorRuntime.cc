@@ -38,7 +38,7 @@
 namespace Arcane::Accelerator::Sycl
 {
 
-#define ARCANE_SYCL_FUNC_NOT_HANDLED \
+#define ARCCORE_SYCL_FUNC_NOT_HANDLED \
   std::cout << "WARNING: SYCL: function not handled " << A_FUNCINFO << "\n"
 
 class SyclRunnerRuntime;
@@ -312,7 +312,7 @@ class SyclRunQueueEvent
 
   void wait() final
   {
-    //ARCANE_SYCL_FUNC_NOT_HANDLED;
+    //ARCCORE_SYCL_FUNC_NOT_HANDLED;
     // TODO: Vérifier ce que cela signifie exactement
     m_sycl_event.wait();
   }
@@ -328,7 +328,7 @@ class SyclRunQueueEvent
     auto* rq = static_cast<SyclRunQueueStream*>(stream);
     rq->trueStream().ext_oneapi_submit_barrier(events);
 #else
-    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
+    ARCCORE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
   }
 
@@ -410,7 +410,7 @@ class SyclRunnerRuntime
 
   void setCurrentDevice([[maybe_unused]] DeviceId device_id) final
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    ARCCORE_SYCL_FUNC_NOT_HANDLED;
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
 
@@ -497,7 +497,7 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   if (bi.isDefault())
     m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   else {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    ARCCORE_SYCL_FUNC_NOT_HANDLED;
     m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   }
 }

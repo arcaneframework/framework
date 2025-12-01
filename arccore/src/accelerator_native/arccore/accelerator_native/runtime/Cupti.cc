@@ -267,13 +267,13 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
       break;
     }
     else {
-      ARCANE_CHECK_CUDA(status);
+      ARCCORE_CHECK_CUDA(status);
     }
   } while (1);
   std::cout << ostr.str();
   // report any records dropped from the queue
   size_t nb_dropped = 0;
-  ARCANE_CHECK_CUDA(cuptiActivityGetNumDroppedRecords(ctx, stream_id, &nb_dropped));
+  ARCCORE_CHECK_CUDA(cuptiActivityGetNumDroppedRecords(ctx, stream_id, &nb_dropped));
   if (nb_dropped != 0)
     std::cout << "WARNING: Dropped " << nb_dropped << " activity records\n";
 
@@ -295,7 +295,7 @@ start()
   cudaGetDevice(&device_id);
   int level = m_profiling_level;
 
-  ARCANE_CHECK_CUDA(cuptiActivityRegisterCallbacks(arcaneCuptiBufferRequested, arcaneCuptiBufferCompleted));
+  ARCCORE_CHECK_CUDA(cuptiActivityRegisterCallbacks(arcaneCuptiBufferRequested, arcaneCuptiBufferCompleted));
 
   config[0].scope = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_SCOPE_PROCESS_SINGLE_DEVICE;
   config[0].kind = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD;
@@ -317,7 +317,7 @@ start()
   config[3].deviceId = device_id;
   config[3].enable = 1;
 
-  ARCANE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config.data(), config.size()));
+  ARCCORE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config.data(), config.size()));
 
   // NOTE: un seul processus peut utiliser le sampling. Si on utilise MPI avec plusieurs
   // rangs il ne faut pas activer le sampling
@@ -327,20 +327,20 @@ start()
     configPC.samplingPeriod2 = 0;
     CUcontext cuCtx;
     cuCtxGetCurrent(&cuCtx);
-    ARCANE_CHECK_CUDA(cuptiActivityConfigurePCSampling(cuCtx, &configPC));
+    ARCCORE_CHECK_CUDA(cuptiActivityConfigurePCSampling(cuCtx, &configPC));
   }
 
   // Active les compteurs
   // CONCURRENT_KERNEL et PC_SAMPLING ne sont pas compatibles
   // Si on ajoute des compteurs ici il faut les désactiver dans stop()
   if (level >= 1)
-    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
+    ARCCORE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
   if (level == 2)
-    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+    ARCCORE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
   if (level >= 3)
-    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
+    ARCCORE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
 
-  ARCANE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
+  ARCCORE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
 
   // Mettre à la fin pour qu'en cas d'exception on considère l'initialisation
   // non effectuée.
@@ -358,14 +358,14 @@ stop()
   int level = m_profiling_level;
 
   if (level >= 1)
-    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
+    ARCCORE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
   if (level == 2)
-    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+    ARCCORE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
   if (level >= 3)
-    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
+    ARCCORE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
 
-  ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
-  ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
+  ARCCORE_CHECK_CUDA(cuptiActivityFlushAll(0));
+  ARCCORE_CHECK_CUDA(cudaDeviceSynchronize());
 
   m_is_active = false;
 }
@@ -380,7 +380,7 @@ flush()
   // une erreur.
   if (!m_is_active)
     return;
-  ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
+  ARCCORE_CHECK_CUDA(cuptiActivityFlushAll(0));
 }
 
 /*---------------------------------------------------------------------------*/

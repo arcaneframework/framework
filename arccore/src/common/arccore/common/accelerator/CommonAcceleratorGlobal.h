@@ -297,19 +297,32 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
  *
  * Lance une exception si ce n'est pas le cas.
  */
-#define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
+#define ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
   ::Arcane::Accelerator::impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
 
+#define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
+  ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_CHECK
+#if defined(ARCCORE_CHECK)
+
 //! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
-#define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)      \
-  ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))
+#define ARCCORE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr) \
+  ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))
+
+#define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr) \
+  ARCCORE_CHECK_ACCESSIBLE_POINTER((queue_or_runner_or_policy), (ptr))
+
+//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
 #else
+
 //! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+#define ARCCORE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)
+
 #define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)
+
 #endif
 
 /*---------------------------------------------------------------------------*/
