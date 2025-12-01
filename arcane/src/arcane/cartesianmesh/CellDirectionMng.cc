@@ -16,10 +16,10 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
@@ -43,6 +43,8 @@ class CellDirectionMng::Impl
 
   CellGroup m_inner_all_items;
   CellGroup m_outer_all_items;
+  CellGroup m_inpatch_all_items;
+  CellGroup m_overall_all_items;
   CellGroup m_all_items;
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Integer m_patch_index = -1;
@@ -151,10 +153,68 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items, const ItemGroup& own_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void CellDirectionMng::
+_internalComputeCellGroups(const CellGroup& all_cells, const CellGroup& in_patch_cells, const CellGroup& overall_cells)
+{
+  m_p->m_inpatch_all_items = in_patch_cells;
+  m_p->m_overall_all_items = overall_cells;
+  m_p->m_all_items = all_cells;
+
+  UniqueArray<Int32> overall_lid;
+  overall_cells.view().fillLocalIds(overall_lid);
+
+  UniqueArray<Int32> inner_lids;
+  UniqueArray<Int32> outer_lids;
+
+  ENUMERATE_ (Cell, icell, in_patch_cells) {
+    Int32 lid = icell.itemLocalId();
+    Int32 i1 = m_infos_view[lid].m_next_lid;
+    Int32 i2 = m_infos_view[lid].m_previous_lid;
+    if (i1 == NULL_ITEM_LOCAL_ID || i2 == NULL_ITEM_LOCAL_ID || overall_lid.contains(i1) || overall_lid.contains(i2))
+      outer_lids.add(lid);
+    else
+      inner_lids.add(lid);
+  }
+  int dir = (int)m_direction;
+  IItemFamily* family = all_cells.itemFamily();
+  String base_group_name = String("Direction") + dir;
+  if (m_p->m_patch_index >= 0)
+    base_group_name = base_group_name + String("AMRPatch") + m_p->m_patch_index;
+  m_p->m_inner_all_items = family->createGroup(String("AllInner") + base_group_name, inner_lids, true);
+  m_p->m_outer_all_items = family->createGroup(String("AllOuter") + base_group_name, outer_lids, true);
+  m_cells = CellInfoListView(family);
+
+  UnstructuredMeshConnectivityView mesh_connectivity;
+  mesh_connectivity.setMesh(m_p->m_cartesian_mesh->mesh());
+  m_cell_node_view = mesh_connectivity.cellNode();
+  m_cell_face_view = mesh_connectivity.cellFace();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CellGroup CellDirectionMng::
 allCells() const
 {
   return m_p->m_all_items;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup CellDirectionMng::
+overallCells() const
+{
+  return m_p->m_overall_all_items;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup CellDirectionMng::
+inPatchCells() const
+{
+  return m_p->m_inpatch_all_items;
 }
 
 /*---------------------------------------------------------------------------*/

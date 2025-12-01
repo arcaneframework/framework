@@ -43,7 +43,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
 
  public:
 
-  void printStatus();
+  void printStatus() const;
 
   Int64 firstCellUniqueId(Integer level) const;
   Int64 firstNodeUniqueId(Integer level) const;

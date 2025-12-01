@@ -333,6 +333,42 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   NodeGroup allNodes() const;
 
   /*!
+   * \brief Groupe de tous les noeuds de recouvrement dans la direction.
+   *
+   * Un noeud de recouvrement est un noeud qui possède uniquement des mailles
+   * de recouvrement autour de lui.
+   *
+   *   0   1  2  3  4
+   * ┌───┬──┬──┬──┬──┐
+   * │   │  │  │  │  │
+   * │   ├──┼──┼──┼──┤
+   * │   │  │  │  │  │
+   * └───┴──┴──┴──┴──┘
+   *
+   * 0 : level -1
+   * 1 et 2 : Mailles de recouvrements (overallCells)
+   * 3 : Mailles externes (outerCells)
+   * 4 : Mailles internes (innerCells)
+   *
+   * La couche de mailles de recouvrements désigne la couche de mailles de même
+   * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
+   * patchs.
+   */
+  NodeGroup overallNodes() const;
+
+  /*!
+   * \brief Groupe de tous les noeuds du patch dans la direction.
+   *
+   * Les noeuds du patch sont les noeuds n'ayant pas toutes ces mailles qui
+   * soient de recouvrement. TODO reformuler
+   * (`innerNodes() + outerNodes()` ou simplement `!overallNodes()`)
+   *
+   * \warning Les noeuds au bord du domaine (donc ayant que des mailles
+   * "outer") sont inclus dans ce groupe.
+   */
+  NodeGroup inPatchNodes() const;
+
+  /*!
    * \brief Groupe de tous les noeuds internes dans la direction.
    *
    * Un noeud est considéré comme interne si son noeud
@@ -344,7 +380,11 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    * \brief Groupe de tous les noeuds externes dans la direction.
    *
    * Un noeud est considéré comme externe si son noeud
-   * avant ou après est nul.
+   * avant ou après est de recouvrement ou est nul (si l'on est au bord du
+   * domaine ou s'il n'y a pas de couches de mailles de recouvrements).
+   *
+   * \note Les noeuds entre patchs ne sont pas dupliquées. Donc certains noeuds
+   * de ce groupe peuvent être aussi dans un outerNodes() d'un autre patch.
    */
   NodeGroup outerNodes() const;
 
@@ -383,6 +423,8 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    */
   void _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_nodes,
                              const VariableCellReal3& cells_center);
+
+  void _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_nodes);
 
   /*!
    * \internal
@@ -429,6 +471,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
                              const VariableCellReal3& cells_center);
+  void _computeNodeCellInfos() const;
   void _filterNodes();
 };
 

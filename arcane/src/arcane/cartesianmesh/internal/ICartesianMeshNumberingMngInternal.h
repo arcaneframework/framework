@@ -233,23 +233,31 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les noeuds.
+   *        contenant les faces.
    *
-   * En 2D, on peut avoir cette vue :
-   *      x =  0  1  2  3  4
-   *         ┌──┬──┬──┬──┬──┐
-   *  y = 0  │  │ 1│  │ 3│  │
-   *         ├──┼──┼──┼──┼──┤
-   *  y = 1  │ 5│  │ 7│  │ 9│
-   *         ├──┼──┼──┼──┼──┤
-   *  y = 2  │  │ 6│  │ 8│  │
-   *         ├──┼──┼──┼──┼──┤
-   *  y = 3  │10│  │12│  │14│
-   *         ├──┼──┼──┼──┼──┤
-   *  y = 4  │  │11│  │13│  │
-   *         └──┴──┴──┴──┴──┘
+   * En 2D, on peut avoir cette vue (pour un maillage de 2x2 mailles) :
+   *     x =  0  1  2  3  4
+   *        ┌──┬──┬──┬──┬──┐
+   * y = -1 │ 0│  │ 2│  │ 4│
+   *        ┌──┬──┬──┬──┬──┐
+   * y = 0  │  │ 1│  │ 3│  │
+   *        ├──┼──┼──┼──┼──┤
+   * y = 1  │ 5│  │ 7│  │ 9│
+   *        ├──┼──┼──┼──┼──┤
+   * y = 2  │  │ 6│  │ 8│  │
+   *        ├──┼──┼──┼──┼──┤
+   * y = 3  │10│  │12│  │14│
+   *        ├──┼──┼──┼──┼──┤
+   * y = 4  │  │11│  │13│  │
+   *        └──┴──┴──┴──┴──┘
+   * (dans cette vue, les mailles se situent aux X et Y impaires
+   * (donc ici, [1, 1], [3, 1], [1, 3] et [3, 3])).
    *
-   * Et en 3D :
+   * \note En 2D, on considère que l'on a un niveau imaginaire y=-1.
+   * \warning Afin de commencer la numérotation à 0, dans les méthodes
+   * retournant un uniqueId de face 2D, on fait FaceUID-1.
+   *
+   * Et en 3D (pour un maillage de 2x2x2 mailles) :
    *         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
    *      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
    *         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
@@ -265,6 +273,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
    *         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
    *                          │                  │                  │                  │
    *
+   * (dans cette vue, les mailles se situent aux X, Y et Z impaires
+   * (donc ici, [1, 1, 1], [3, 1, 1], [1, 3, 1], &c)).
+   *
    * \param level Le niveau.
    * \return La taille de la grille en X.
    */
@@ -272,7 +283,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les noeuds.
+   *        contenant les faces.
    *
    * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
    *
@@ -283,7 +294,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les noeuds.
+   *        contenant les faces.
    *
    * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
    *
@@ -667,6 +678,21 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
   virtual void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille.
+   *
+   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
+   * d'une maille d'Arcane.
+   *      3--2
+   * ^y   |  |
+   * |    0--1
+   * ->x
+   *
+   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
+   * \param cell La maille.
+   */
+  virtual void cellNodeUniqueIds(ArrayView<Int64> uid, Cell cell) = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer le nombre de faces dans une maille.
    *
    * \return Le nombre de faces d'une maille.
@@ -725,6 +751,49 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
   virtual void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille.
+   *
+   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
+   * d'une maille d'Arcane.
+   *      -2-
+   * ^y   3 1
+   * |    -0-
+   * ->x
+   *
+   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
+   * \param cell La maille.
+   */
+  virtual void cellFaceUniqueIds(ArrayView<Int64> uid, Cell cell) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'une maille.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 27.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell_coord La position de la maille.
+   * \param level Le niveau de la maille au centre.
+   */
+  virtual void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x3 cell_coord, Int32 level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'une maille.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 9.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell_coord La position de la maille.
+   * \param level Le niveau de la maille au centre.
+   */
+  virtual void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x2 cell_coord, Int32 level) = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
    * en paramètre.
    *
@@ -752,6 +821,63 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
    * \param cell La maille au centre.
    */
   virtual void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Cell cell) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'un noeud.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 8.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_coord La position du noeud.
+   * \param level Le niveau du noeud.
+   */
+  virtual void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x3 node_coord, Int32 level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'un noeud.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 4.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_coord La position du noeud.
+   * \param level Le niveau du noeud.
+   */
+  virtual void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x2 node_coord, Int32 level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour du noeud passée
+   * en paramètre.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 4 en 2D ou de 8 en 3D.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_uid L'uniqueId du noeud.
+   * \param level Le niveau du noeud.
+   */
+  virtual void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64 node_uid, Int32 level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour du noeud passée
+   * en paramètre.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
+   * La vue passée en paramètre doit faire une taille de 4 en 2D ou de 8 en 3D.
+   *
+   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node Le noeud.
+   */
+  virtual void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Node node) = 0;
 
   /*!
    * \brief Méthode permettant de définir les coordonnées spatiales des noeuds des mailles enfants

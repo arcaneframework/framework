@@ -54,8 +54,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   CartesianMeshPatchListView patchListView() const;
 
-  CellGroup cells(Integer index);
-  CellGroup ownCells(Integer index);
+  CellGroup allCells(Integer index);
+  CellGroup inPatchCells(Integer index);
+  CellGroup overallCells(Integer index);
 
   void clear();
 
@@ -97,8 +98,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
  private:
 
-  UniqueArray<CellGroup> m_amr_patch_cell_groups;
-  UniqueArray<CellGroup> m_amr_patch_cell_groups_own;
+  UniqueArray<CellGroup> m_amr_patch_cell_groups_all;
+  UniqueArray<CellGroup> m_amr_patch_cell_groups_inpatch;
+  UniqueArray<CellGroup> m_amr_patch_cell_groups_overall;
   UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;

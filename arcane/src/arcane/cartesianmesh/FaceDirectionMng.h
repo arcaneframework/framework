@@ -148,19 +148,59 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   FaceGroup allFaces() const;
 
   /*!
+   * \brief Groupe de toutes les faces de recouvrement dans la direction.
+   *
+   * Ce sont toutes les faces qui ont deux mailles de recouvrement autour.
+   *
+   *   0   1  2  3  4
+   * ┌───┬──┬──┬──┬──┐
+   * │   │  │  │  │  │
+   * │   ├──┼──┼──┼──┤
+   * │   │  │  │  │  │
+   * └───┴──┴──┴──┴──┘
+   *
+   * 0 : level -1
+   * 1 et 2 : Mailles de recouvrements (overallCells)
+   * 3 : Mailles externes (outerCells)
+   * 4 : Mailles internes (innerCells)
+   *
+   * La couche de mailles de recouvrements désigne la couche de mailles de même
+   * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
+   * patchs.
+   */
+  FaceGroup overallFaces() const;
+
+  /*!
+   * \brief Groupe de toutes les faces du patch dans la direction.
+   *
+   * Ce sont toutes les faces qui n'ont pas deux mailles de recouvrement.
+   * (`innerFaces() + outerFaces()` ou simplement `!overallFaces()`)
+   *
+   * \warning Les faces au bord du domaine (ayant donc une seule
+   * maille "outer") sont incluses dans ce groupe. Il ne faut donc pas supposer
+   * qu'il y a deux mailles autour de chaque face de ce groupe (pour ça, il
+   * faut rester avec le groupe innerFaces()).
+   */
+  FaceGroup inPatchFaces() const;
+
+  /*!
    * \brief Groupe de toutes les faces internes dans la direction.
    *
    * Une face est considérée comme interne si sa maille
-   * devant et derrière n'est pas nulle.
+   * devant et derrière n'est pas nulle et n'est pas une maille de
+   * recouvrement.
    */
-
   FaceGroup innerFaces() const;
 
   /*!
    * \brief Groupe de toutes les faces externes dans la direction.
    *
    * Une face est considérée comme externe si sa maille
-   * devant ou derrière est nulle.
+   * devant ou derrière est de recouvrement ou est nulle (si l'on est au bord
+   * du domaine ou s'il n'y a pas de couches de mailles de recouvrements).
+   *
+   * \note Les faces entre patchs ne sont pas dupliquées. Donc certaines faces
+   * de ce groupe peuvent être aussi dans un outerFaces() d'un autre patch.
    */
   FaceGroup outerFaces() const;
 
@@ -216,6 +256,8 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
                              const VariableCellReal3& cells_center,
                              const VariableFaceReal3& faces_center);
 
+  void _internalComputeInfos(const CellDirectionMng& cell_dm);
+
   /*!
    * \internal
    * Initialise l'instance.
@@ -235,17 +277,18 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    */
   void _internalResizeInfos(Int32 new_size);
 
+  void _computeCellInfos(const CellDirectionMng& cell_dm,
+                         const VariableCellReal3& cells_center,
+                         const VariableFaceReal3& faces_center);
+  void _computeCellInfos() const;
+  bool _hasFace(Cell cell, Int32 face_local_id) const;
+
  private:
 
   SmallSpan<ItemDirectionInfo> m_infos_view;
   CellInfoListView m_cells;
   eMeshDirection m_direction;
   Impl* m_p;
-
-  void _computeCellInfos(const CellDirectionMng& cell_dm,
-                         const VariableCellReal3& cells_center,
-                         const VariableFaceReal3& faces_center);
-  bool _hasFace(Cell cell, Int32 face_local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/

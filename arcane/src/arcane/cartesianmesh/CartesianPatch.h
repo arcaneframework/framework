@@ -53,7 +53,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 
   //! Groupe de mailles du patch
   CellGroup cells();
-  CellGroup ownCells();
+  CellGroup inPatchCells();
 
   Integer index() const;
   Integer level() const
