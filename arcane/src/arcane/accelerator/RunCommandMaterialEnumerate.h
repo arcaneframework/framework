@@ -24,6 +24,8 @@
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
+#include "arccore/common/HostKernelRemainingArgsHelper.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -640,15 +642,15 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+    _applyKernelCUDA(launch_info, ARCCORE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
                      func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+    _applyKernelHIP(launch_info, ARCCORE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
                     func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
+    _applyKernelSYCL(launch_info, ARCCORE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
                      func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
@@ -661,7 +663,7 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
                       });
     break;
   default:
-    ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
+    ARCCORE_FATAL("Invalid execution policy '{0}'", exec_policy);
   }
   launch_info.endExecute();
 }
@@ -790,7 +792,7 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 #define RUNCOMMAND_MAT_ENUMERATE(ConstituentItemNameType, iter_name, env_or_mat_container, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedConstituentItemEnumeratorLoop<ConstituentItemNameType>(env_or_mat_container __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandConstituentItemEnumeratorTraitsT<ConstituentItemNameType>::IteratorValueType iter_name \
-                                        __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+                                        __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

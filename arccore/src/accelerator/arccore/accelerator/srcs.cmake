@@ -1,6 +1,20 @@
 set(SOURCES
   AcceleratorGlobal.h
+  AcceleratorGlobal.cc
   AcceleratorUtils.h
+  CommonCudaHipReduceImpl.h
+  CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
+  GenericReducer.h
+  KernelLauncher.h
+  MultiThreadAlgo.h
+  MultiThreadAlgo.cc
+  Reduce.h
+  RunCommandLaunch.h
+  RunCommandLaunch.cc
+  RunCommandLaunchImpl.h
+  RunCommandLoop.h
+  WorkGroupLoopRange.h
+  WorkGroupLoopRange.cc
 )

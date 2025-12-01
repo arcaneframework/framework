@@ -1,24 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MultiThreadAlgo.h                                           (C) 2000-2024 */
+/* MultiThreadAlgo.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des algorithmes accélérateurs en mode multi-thread.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_MULTITHREADALGO_H
-#define ARCANE_ACCELERATOR_MULTITHREADALGO_H
+#ifndef ARCCORE_ACCELERATOR_MULTITHREADALGO_H
+#define ARCCORE_ACCELERATOR_MULTITHREADALGO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/SmallArray.h"
+#include "arccore/common/SmallArray.h"
 
-#include "arcane/core/Concurrency.h"
+#include "arccore/base/ForLoopRunInfo.h"
+#include "arccore/concurrency/ParallelFor.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arccore/accelerator/AcceleratorGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,7 +109,7 @@ class MultiThreadAlgo
     run_info.addOptions(loop_options);
 
     // Calcule les sommes partielles pour nb_block
-    Arcane::arcaneParallelFor(0, nb_block, run_info, partial_value_func);
+    Arcane::arccoreParallelFor(0, nb_block, run_info, partial_value_func);
 
     auto final_sum_func = [=](Int32 a, Int32 n) {
       for (Int32 i = 0; i < n; ++i) {
@@ -127,7 +128,7 @@ class MultiThreadAlgo
     };
 
     // Calcule les valeurs finales
-    Arcane::arcaneParallelFor(0, nb_block, run_info, final_sum_func);
+    Arcane::arccoreParallelFor(0, nb_block, run_info, final_sum_func);
   }
 
   template <bool InPlace, typename InputIterator, typename OutputIterator, typename SelectLambda>
@@ -188,7 +189,7 @@ class MultiThreadAlgo
     run_info.addOptions(loop_options);
 
     // Calcule les sommes partielles pour nb_block
-    Arcane::arcaneParallelFor(0, nb_block, run_info, partial_value_func);
+    Arcane::arccoreParallelFor(0, nb_block, run_info, partial_value_func);
 
     // Calcule le nombre de valeurs filtrées
     // Calcule aussi la valeur accumulée de partial_values
@@ -220,7 +221,7 @@ class MultiThreadAlgo
     if (InPlace)
       filter_func(0, nb_block);
     else
-      Arcane::arcaneParallelFor(0, nb_block, run_info, filter_func);
+      Arcane::arccoreParallelFor(0, nb_block, run_info, filter_func);
 
     return nb_filter;
   }

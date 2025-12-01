@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/WorkGroupLoopRange.h"
+#include "arccore/accelerator/WorkGroupLoopRange.h"
 
-#include "arcane/accelerator/RunCommandLoop.h"
+#include "arccore/accelerator/RunCommandLoop.h"
 
-#include "arcane/core/Concurrency.h"
+//#include "arcane/core/Concurrency.h"
 
 #include "arccore/common/SequentialFor.h"
 
@@ -75,7 +75,7 @@ namespace Arcane::Accelerator
  * \brief Applique le fonctor \a func sur une boucle séqentielle.
  */
 template <typename Lambda, typename... RemainingArgs> void
-arcaneSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
+arccoreSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
 {
   Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
 }
@@ -93,7 +93,7 @@ arccoreParallelFor(WorkGroupLoopRange bounds, ForLoopRunInfo run_info,
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
     Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
   };
-  arcaneParallelFor(0, bounds.nbGroup(), run_info, sub_func);
+  arccoreParallelFor(0, bounds.nbGroup(), run_info, sub_func);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -8,6 +8,7 @@ arccore_accelerator_add_source_files(CommonUtils.cc)
 
 target_link_libraries(arccore_accelerator PUBLIC
   arccore_common
+  arccore_concurrency
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_cuda>"
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_hip>"
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_sycl>"

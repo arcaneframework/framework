@@ -14,12 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommand.h"
+#include "arccore/common/accelerator/RunCommand.h"
 #include "arcane/accelerator/KernelLauncher.h"
 
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/Concurrency.h"
+
+#include "arccore/common/HostKernelRemainingArgsHelper.h"
 
 #include <concepts>
 
@@ -272,13 +274,13 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
+    _applyKernelCUDA(launch_info, ARCCORE_KERNEL_CUDA_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
+    _applyKernelHIP(launch_info, ARCCORE_KERNEL_HIP_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(Impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, ids, reducer_args...);
+    _applyKernelSYCL(launch_info, ARCCORE_KERNEL_SYCL_FUNC(Impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::Sequential:
     impl::_doItemsLambda<TraitsType>(0, items.paddedView(), func, reducer_args...);
@@ -290,7 +292,7 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
                           });
     break;
   default:
-    ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
+    ARCCORE_FATAL("Invalid execution policy '{0}'", exec_policy);
   }
   launch_info.endExecute();
 }
@@ -460,7 +462,7 @@ makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
 #define RUNCOMMAND_ENUMERATE(ItemTypeName, iter_name, item_group, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedItemEnumeratorLoop<ItemTypeName>(item_group __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name \
-                                        __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+                                        __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

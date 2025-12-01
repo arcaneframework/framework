@@ -73,17 +73,6 @@ enum class eAtomicOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
- */
-extern "C++" ARCCORE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner, ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
