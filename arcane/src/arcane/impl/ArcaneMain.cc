@@ -26,7 +26,6 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/SignalException.h"
 #include "arcane/utils/TimeoutException.h"
-#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IDynamicLibraryLoader.h"
@@ -42,27 +41,12 @@
 #include "arcane/core/IServiceLoader.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IParallelSuperMng.h"
-#include "arcane/core/IIOMng.h"
 #include "arcane/core/ISession.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/core/IRessourceMng.h"
-#include "arcane/core/IModuleMng.h"
-#include "arcane/core/IModule.h"
-#include "arcane/core/IVariableMng.h"
 #include "arcane/core/VariableRef.h"
-#include "arcane/core/ITimeLoopMng.h"
-#include "arcane/core/ITimeLoop.h"
-#include "arcane/core/Directory.h"
-#include "arcane/core/XmlNodeList.h"
-#include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/ItemTypeMng.h"
 #include "arcane/core/ServiceUtils.h"
-#include "arcane/core/ICodeService.h"
 #include "arcane/core/CaseOptions.h"
-#include "arcane/core/VariableCollection.h"
 #include "arcane/core/ItemGroupImpl.h"
-#include "arcane/core/SubDomainBuildInfo.h"
-#include "arcane/core/ICaseMng.h"
 #include "arcane/core/DotNetRuntimeInitialisationInfo.h"
 #include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
 #include "arcane/core/ApplicationBuildInfo.h"
@@ -212,7 +196,7 @@ class ArcaneMain::Impl
 {
  public:
 
-  Impl(const ApplicationInfo& infos)
+  explicit Impl(const ApplicationInfo& infos)
   : m_app_info(infos)
   , m_application_build_info(ArcaneMain::defaultApplicationBuildInfo())
   , m_dotnet_info(ArcaneMain::defaultDotNetRuntimeInitialisationInfo())
@@ -1161,7 +1145,7 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
       ARCANE_FATAL("No dynamic library available for running accelerator runtime");
 
     String os_dir(si->m_arcane_lib_path);
-    String dll_name = "arcane_accelerator_" + runtime_name + "_runtime";
+    String dll_name = "arccore_accelerator_" + runtime_name + "_runtime";
     String symbol_name = "arcaneRegisterAcceleratorRuntime" + runtime_name;
     IDynamicLibrary* dl = dll_loader->open(os_dir, dll_name);
     if (!dl)
