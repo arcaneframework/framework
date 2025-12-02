@@ -78,6 +78,12 @@ function(arccore_add_library target)
       RUNTIME_OUTPUT_DIRECTORY ${_libpath}
       )
   endif()
+  # Ajoute au RPATH celui des bibliothèques et utilise $ORIGIN
+  set_target_properties(${target}
+    PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH 1
+    BUILD_RPATH_USE_ORIGIN 1
+    )
 endfunction()
 
 # ----------------------------------------------------------------------------
