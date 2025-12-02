@@ -25,6 +25,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Les macros suivantes servent à appliquer un noyau si le backend associé
+// est disponible. Sinon, on lève une exception.
+// Ces macros sont utilisées par exemple dans RunCommandLoop.
+
 #if defined(ARCCORE_COMPILING_CUDA)
 #define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::CudaKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
@@ -287,25 +291,11 @@ class InvalidKernelClass
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCCORE_COMPILING_CUDA)
+
 //! Classe statique pour lancer les kernels CUDA.
 class CudaKernelLauncher
 {
- private:
-
-#if defined(ARCCORE_COMPILING_CUDA)
-  template <typename... KernelArgs> static inline void
-  _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
-                           cudaStream_t& s, Int32 shared_memory,
-                           const void* kernel_ptr, KernelArgs... args)
-  {
-    void* all_args[] = { (reinterpret_cast<void*>(&args))... };
-    if (is_cooperative)
-      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
-    else
-      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
-  }
-#endif
-
  public:
 
   /*!
@@ -318,9 +308,8 @@ class CudaKernelLauncher
    */
   template <typename CudaKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(const CudaKernel& kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
-        const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... other_args)
+        const LoopBoundType& bounds, const RemainingArgs&... other_args)
   {
-#if defined(ARCCORE_COMPILING_CUDA)
     const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
     auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
     Int32 shared_memory = tbi.sharedMemorySize();
@@ -332,18 +321,29 @@ class CudaKernelLauncher
     else {
       kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(bounds, func, other_args...);
     }
-#else
-    ARCCORE_UNUSED(launch_info);
-    ARCCORE_UNUSED(kernel);
-    ARCCORE_UNUSED(func);
-    ARCCORE_UNUSED(bounds);
-    ARCCORE_FATAL_NO_CUDA_COMPILATION();
-#endif
+  }
+
+ private:
+
+  template <typename... KernelArgs> static inline void
+  _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
+                           cudaStream_t& s, Int32 shared_memory,
+                           const void* kernel_ptr, KernelArgs... args)
+  {
+    void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+    if (is_cooperative)
+      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+    else
+      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
   }
 };
 
+#endif // ARCCORE_COMPILING_CUDA
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPILING_HIP)
 
 //! Classe statique pour lancer les kernels ROCM/HIP
 class HipKernelLauncher
@@ -360,26 +360,22 @@ class HipKernelLauncher
    */
   template <typename HipKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(const HipKernel& kernel, RunCommandLaunchInfo& launch_info, const Lambda& func,
-        const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... other_args)
+        const LoopBoundType& bounds, const RemainingArgs&... other_args)
   {
-#if defined(ARCCORE_COMPILING_HIP)
     const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
     auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
     Int32 wanted_shared_memory = tbi.sharedMemorySize();
     hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
     hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
-#else
-    ARCCORE_UNUSED(launch_info);
-    ARCCORE_UNUSED(kernel);
-    ARCCORE_UNUSED(func);
-    ARCCORE_UNUSED(bounds);
-    ARCCORE_FATAL_NO_HIP_COMPILATION();
-#endif
   }
 };
 
+#endif // ARCCORE_COMPILING_HIP
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPILING_SYCL)
 
 //! Classe statique pour lancer les kernels SYCL
 class SyclKernelLauncher
@@ -396,9 +392,8 @@ class SyclKernelLauncher
    */
   template <typename SyclKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(SyclKernel kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
-        const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... remaining_args)
+        const LoopBoundType& bounds, const RemainingArgs&... remaining_args)
   {
-#if defined(ARCCORE_COMPILING_SYCL)
     sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
     sycl::event event;
     if constexpr (IsAlwaysUseSyclNdItem<LoopBoundType>::value || sizeof...(RemainingArgs) > 0) {
@@ -424,15 +419,10 @@ class SyclKernelLauncher
       event = s.parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, bounds, func); });
     }
     launch_info._addSyclEvent(&event);
-#else
-    ARCCORE_UNUSED(launch_info);
-    ARCCORE_UNUSED(kernel);
-    ARCCORE_UNUSED(func);
-    ARCCORE_UNUSED(bounds);
-    ARCCORE_FATAL_NO_SYCL_COMPILATION();
-#endif
   }
 };
+
+#endif // ARCCORE_COMPILING_SYCL
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
