@@ -26,21 +26,21 @@
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_COMPILING_CUDA)
-#define ARCCORE_KERNEL_CUDA_FUNC(a) a
+#define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::CudaKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
+#define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ARCCORE_FATAL_NO_CUDA_COMPILATION()
 #endif
 
 #if defined(ARCCORE_COMPILING_HIP)
-#define ARCCORE_KERNEL_HIP_FUNC(a) a
+#define ARCCORE_KERNEL_HIP_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::HipKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
+#define ARCCORE_KERNEL_HIP_FUNC(kernel, ...) ARCCORE_FATAL_NO_HIP_COMPILATION()
 #endif
 
 #if defined(ARCCORE_COMPILING_SYCL)
-#define ARCCORE_KERNEL_SYCL_FUNC(a) a
+#define ARCCORE_KERNEL_SYCL_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::SyclKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::Impl::InvalidKernelClass
+#define ARCCORE_KERNEL_SYCL_FUNC(kernel, ...) ARCCORE_FATAL_NO_SYCL_COMPILATION()
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -270,6 +270,7 @@ void doDirectThreadLambda(Integer begin, Integer size, Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Plus utilisé
 // Fonction vide pour simuler un noyau invalide car non compilé avec
 // le compilateur adéquant. Ne devrait normalement pas être appelé.
 template <typename Lambda, typename... LambdaArgs>
@@ -277,7 +278,7 @@ inline void invalidKernel(Lambda&, const LambdaArgs&...)
 {
   ARCCORE_FATAL("Invalid kernel");
 }
-
+// Plus utilisé
 template <typename Lambda, typename... LambdaArgs>
 class InvalidKernelClass
 {
@@ -316,7 +317,7 @@ class CudaKernelLauncher
    * \param other_args autres arguments de la lambda
    */
   template <typename CudaKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
-  apply(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+  apply(const CudaKernel& kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
         const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... other_args)
   {
 #if defined(ARCCORE_COMPILING_CUDA)
@@ -358,7 +359,7 @@ class HipKernelLauncher
    * \param other_args autres arguments de la lambda
    */
   template <typename HipKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
-  apply(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+  apply(const HipKernel& kernel, RunCommandLaunchInfo& launch_info, const Lambda& func,
         const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... other_args)
   {
 #if defined(ARCCORE_COMPILING_HIP)
@@ -394,7 +395,7 @@ class SyclKernelLauncher
    * \param other_args autres arguments de la lambda
    */
   template <typename SyclKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
-  apply(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+  apply(SyclKernel kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
         const LoopBoundType& bounds, [[maybe_unused]] const RemainingArgs&... remaining_args)
   {
 #if defined(ARCCORE_COMPILING_SYCL)

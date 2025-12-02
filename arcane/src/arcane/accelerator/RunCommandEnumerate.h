@@ -274,13 +274,16 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    Impl::CudaKernelLauncher::apply(launch_info, ARCCORE_KERNEL_CUDA_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, RemainingArgs... >, func, ids, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2 < TraitsType, Lambda, RemainingArgs... >),
+                             launch_info, func, ids, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    Impl::HipKernelLauncher::apply(launch_info, ARCCORE_KERNEL_HIP_FUNC(Impl::doIndirectGPULambda2) < TraitsType, Lambda, RemainingArgs... >, func, ids, remaining_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doIndirectGPULambda2 < TraitsType, Lambda, RemainingArgs... >),
+                            launch_info, func, ids, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    Impl::SyclKernelLauncher::apply(launch_info, ARCCORE_KERNEL_SYCL_FUNC(Impl::DoIndirectSYCLLambda) < TraitsType, Lambda, RemainingArgs... > {}, func, ids, remaining_args...);
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoIndirectSYCLLambda < TraitsType, Lambda, RemainingArgs... > {}),
+                             launch_info, func, ids, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
     impl::_doItemsLambda<TraitsType>(0, items.paddedView(), func, remaining_args...);

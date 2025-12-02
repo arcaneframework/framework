@@ -188,13 +188,16 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    Impl::CudaKernelLauncher::apply(launch_info, ARCCORE_KERNEL_CUDA_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
+                             launch_info, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    Impl::HipKernelLauncher::apply(launch_info, ARCCORE_KERNEL_HIP_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
+                            launch_info, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    Impl::SyclKernelLauncher::apply(launch_info, ARCCORE_KERNEL_SYCL_FUNC(Impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoDirectSYCLLambdaArrayBounds < LoopBoundType, Lambda, RemainingArgs... > {}),
+                             launch_info, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arccoreSequentialFor(bounds, func, other_args...);

@@ -642,16 +642,16 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    Impl::CudaKernelLauncher::apply(launch_info, ARCCORE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
-                                    func, items, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
+                              launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    Impl::HipKernelLauncher::apply(launch_info, ARCCORE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
-                                   func, items, remaining_args...);
+    ARCCORE_KERNEL_HIP_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
+                            launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    Impl::SyclKernelLauncher::apply(launch_info, ARCCORE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
-                                    func, items, remaining_args...);
+    ARCCORE_KERNEL_SYCL_FUNC((impl::DoMatContainerSYCLLambda < ContainerType, Lambda, RemainingArgs... > {}),
+                             launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
     _doConstituentItemsLambda(0, vsize, items, func, remaining_args...);
