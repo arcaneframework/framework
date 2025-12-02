@@ -31,6 +31,18 @@ target_link_libraries(arcane_mpi PUBLIC arcane_impl Arccore::arccore_message_pas
 
 arcane_register_library(arcane_mpi)
 
+# Pour NCCL
+if (ARCANE_TEST_NCCL)
+  if (TARGET Arccore::arccore_accelerator_cuda)
+    arcane_find_package(NCCL)
+    if (NCCL_FOUND)
+      target_sources(arcane_mpi PRIVATE NCCLVariableSynchronizeDispatcher.cc)
+      target_link_libraries(arcane_mpi PUBLIC Arccore::arccore_accelerator_cuda)
+      arcane_add_arccon_packages(arcane_mpi PUBLIC NCCL)
+    endif()
+  endif()
+endif()
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2

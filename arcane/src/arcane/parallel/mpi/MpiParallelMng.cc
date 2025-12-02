@@ -86,6 +86,8 @@ extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
+arcaneCreateNCCLVariableSynchronizerFactory(IParallelMng* mpi_pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -271,6 +273,8 @@ class MpiParallelMngUtilsFactory
     }
     if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="5")
       m_synchronizer_version = 5;
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="6")
+      m_synchronizer_version = 6;
   }
  public:
 
@@ -320,6 +324,11 @@ class MpiParallelMngUtilsFactory
 #else
       throw NotSupportedException(A_FUNCINFO,"Synchronize implementation V5 is not supported with this version of MPI");
 #endif
+    }
+    else if (m_synchronizer_version == 6){
+      if (do_print)
+        tm->info() << "Using NCCLSynchronizer";
+      generic_factory = arcaneCreateNCCLVariableSynchronizerFactory(mpi_pm);
     }
     else{
       if (do_print)
