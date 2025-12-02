@@ -857,11 +857,11 @@ class CudaRunnerRuntime
 
   KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
                                            const void* kernel_ptr,
-                                           Int64 total_loop_size,
-                                           Int32 wanted_shared_memory) override
+                                           Int64 total_loop_size) override
   {
     if (!m_use_computed_occupancy)
       return orig_args;
+    Int32 wanted_shared_memory = orig_args.sharedMemorySize();
     if (wanted_shared_memory < 0)
       wanted_shared_memory = 0;
     // Pour l'instant, on ne fait pas de calcul si la mémoire partagée est non nulle.
@@ -872,7 +872,7 @@ class CudaRunnerRuntime
       return orig_args;
     Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
     int blocks_per_grid = CheckedConvert::toInt32(big_b);
-    return { blocks_per_grid, computed_block_size };
+    return { blocks_per_grid, computed_block_size, wanted_shared_memory };
   }
 
  public:

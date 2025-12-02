@@ -19,6 +19,7 @@
 #if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
 #include "arccore/accelerator/CommonCudaHipAtomicImpl.h"
 #endif
+#include "arccore/accelerator/AcceleratorUtils.h"
 
 #include <atomic>
 #include <concepts>

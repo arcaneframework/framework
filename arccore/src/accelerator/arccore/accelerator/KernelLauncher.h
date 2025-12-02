@@ -319,9 +319,9 @@ _applyKernelCUDA(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, La
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCCORE_COMPILING_CUDA)
-  Int32 shared_memory = launch_info._sharedMemorySize();
   const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
-  auto tbi = launch_info._threadBlockInfo(kernel_ptr, shared_memory);
+  auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
+  Int32 shared_memory = tbi.sharedMemorySize();
   cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
   bool is_cooperative = launch_info._isUseCooperativeLaunch();
   bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
@@ -354,8 +354,8 @@ _applyKernelHIP(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, cons
                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCCORE_COMPILING_HIP)
-  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
-  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
+  auto tbi = launch_info._computeKernelLaunchArgs(reinterpret_cast<const void*>(kernel));
+  Int32 wanted_shared_memory = tbi.sharedMemorySize();
   hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
   hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, args, func, other_args...);
 #else
@@ -384,11 +384,12 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
   sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
   sycl::event event;
   if constexpr (IsAlwaysUseSyclNdItem<LambdaArgs>::value || sizeof...(RemainingArgs) > 0) {
-    auto tbi = launch_info.kernelLaunchArgs();
+    //TODO: regarder comment convertir \a kernel en un functor
+    auto tbi = launch_info._computeKernelLaunchArgs(nullptr);
     Int32 b = tbi.nbBlockPerGrid();
     Int32 t = tbi.nbThreadPerBlock();
+    Int32 wanted_shared_memory = tbi.sharedMemorySize();
     sycl::nd_range<1> loop_size(b * t, t);
-    Int32 wanted_shared_memory = launch_info._sharedMemorySize();
     // TODO: regarder s'il y a un coût à utiliser à chaque fois
     // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
     event = s.submit([&](sycl::handler& cgh) {

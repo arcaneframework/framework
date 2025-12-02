@@ -76,13 +76,6 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
    */
   void endExecute();
 
-  /*!
-   * \brief Informations sur le nombre de block/thread/grille du noyau à lancer.
-   *
-   * Cette valeur n'est valide que pour si la commande est associée à un accélérateur.
-   */
-  KernelLaunchArgs kernelLaunchArgs() const { return m_kernel_launch_args; }
-
   //! Calcule et retourne les informations pour les boucles multi-thread
   ParallelLoopOptions computeParallelLoopOptions() const;
 
@@ -110,11 +103,11 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 
  private:
 
-  Int32 _sharedMemorySize() const;
-  KernelLaunchArgs _threadBlockInfo(const void* func, Int32 shared_memory_size) const;
+  //! Calcule les arguments pour lancer le noyau dont l'adresse est \a func
+  KernelLaunchArgs _computeKernelLaunchArgs(const void* func) const;
   NativeStream _internalNativeStream();
   void _doEndKernelLaunch();
-  KernelLaunchArgs _computeKernelLaunchArgs() const;
+  void _computeInitialKernelLaunchArgs();
 
   // Pour test uniquement avec CUDA
   bool _isUseCooperativeLaunch() const;

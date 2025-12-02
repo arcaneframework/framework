@@ -13,6 +13,7 @@
 
 #include "arccore/common/accelerator/RunCommandLaunchInfo.h"
 
+#include "KernelLaunchArgs.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/ConcurrencyBase.h"
@@ -41,7 +42,7 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 
   // Le calcul des informations de kernel n'est utile que sur accélérateur
   if (isAcceleratorPolicy(m_exec_policy)) {
-    m_kernel_launch_args = _computeKernelLaunchArgs();
+    _computeInitialKernelLaunchArgs();
     m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
   }
 }
@@ -115,17 +116,18 @@ _internalNativeStream()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size.
+ * \brief Calcule la valeur initiale de block/thread/grille du noyau
+ * en fonction de \a full_size.
  */
-KernelLaunchArgs RunCommandLaunchInfo::
-_computeKernelLaunchArgs() const
+void RunCommandLaunchInfo::
+_computeInitialKernelLaunchArgs()
 {
   int threads_per_block = m_command.nbThreadPerBlock();
   if (threads_per_block<=0)
     threads_per_block = 256;
   Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
-  return { blocks_per_grid, threads_per_block };
+  m_kernel_launch_args = KernelLaunchArgs(blocks_per_grid, threads_per_block, m_command._sharedMemory());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,12 +180,12 @@ _computeLoopRunInfo()
  * maximiser l'occupation.
  */
 KernelLaunchArgs RunCommandLaunchInfo::
-_threadBlockInfo(const void* func, Int32 shared_memory_size) const
+_computeKernelLaunchArgs(const void* func) const
 {
   impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
 
   return r->computeKernalLaunchArgs(m_kernel_launch_args, func,
-                                    totalLoopSize(), shared_memory_size);
+                                    totalLoopSize());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -193,15 +195,6 @@ void RunCommandLaunchInfo::
 _addSyclEvent(void* sycl_event_ptr)
 {
   m_command._internalNotifyBeginLaunchKernelSyclEvent(sycl_event_ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 RunCommandLaunchInfo::
-_sharedMemorySize() const
-{
-  return m_command._sharedMemory();
 }
 
 /*---------------------------------------------------------------------------*/

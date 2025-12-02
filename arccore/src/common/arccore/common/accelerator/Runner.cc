@@ -622,8 +622,7 @@ _fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
 Impl::KernelLaunchArgs impl::IRunnerRuntime::
 computeKernalLaunchArgs(const Impl::KernelLaunchArgs& orig_args,
                         [[maybe_unused]] const void* kernel_ptr,
-                        [[maybe_unused]] Int64 total_loop_size,
-                        [[maybe_unused]] Int32 wanted_shared_memory)
+                        [[maybe_unused]] Int64 total_loop_size)
 {
   return orig_args;
 }
