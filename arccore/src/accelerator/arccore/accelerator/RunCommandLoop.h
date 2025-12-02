@@ -188,13 +188,13 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCCORE_KERNEL_CUDA_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    Impl::CudaKernelLauncher::apply(launch_info, ARCCORE_KERNEL_CUDA_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCCORE_KERNEL_HIP_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    Impl::HipKernelLauncher::apply(launch_info, ARCCORE_KERNEL_HIP_FUNC(Impl::doDirectGPULambdaArrayBounds2) < LoopBoundType, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCCORE_KERNEL_SYCL_FUNC(Impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
+    Impl::SyclKernelLauncher::apply(launch_info, ARCCORE_KERNEL_SYCL_FUNC(Impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arccoreSequentialFor(bounds, func, other_args...);
@@ -409,7 +409,7 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...) \
@@ -437,14 +437,14 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 /*!
  * \brief Boucle sur accélérateur pour exécution avec un seul thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 
 /*---------------------------------------------------------------------------*/

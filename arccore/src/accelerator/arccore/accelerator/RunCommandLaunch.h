@@ -72,11 +72,11 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
 #if defined(ARCCORE_COMPILING_SYCL)
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(auto iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(auto iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 #else
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+             << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 #endif
 
 /*---------------------------------------------------------------------------*/

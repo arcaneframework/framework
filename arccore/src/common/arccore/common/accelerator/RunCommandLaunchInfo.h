@@ -34,16 +34,10 @@ namespace Arcane::Accelerator::Impl
  */
 class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 {
-  // Les fonctions suivantes permettent de lancer les kernels.
-  template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
-  friend void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                               const LambdaArgs& args, const ReducerArgs&... reducer_args);
-  template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
-  friend void _applyKernelCUDA(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
-                               const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
-  template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
-  friend void _applyKernelHIP(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
-                              const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
+  // Les classes suivantes permettent de lancer les kernels.
+  friend class CudaKernelLauncher;
+  friend class HipKernelLauncher;
+  friend class SyclKernelLauncher;
 
  public:
 
