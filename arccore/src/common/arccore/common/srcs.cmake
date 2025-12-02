@@ -59,7 +59,6 @@ set(SOURCES
   accelerator/Runner.h
   accelerator/Runner.cc
   accelerator/RunCommand.h
-  accelerator/RunCommandImpl.h
   accelerator/RunCommand.cc
   accelerator/RunCommandImpl.cc
   accelerator/RunCommandLaunchInfo.cc
@@ -69,7 +68,6 @@ set(SOURCES
   accelerator/RunQueueBuildInfo.h
   accelerator/RunQueueEvent.h
   accelerator/RunQueueEvent.cc
-  accelerator/RunQueueImpl.h
   accelerator/RunQueueImpl.cc
   accelerator/RunQueuePool.h
   accelerator/RunQueuePool.cc
