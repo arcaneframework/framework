@@ -5,22 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignature.h                                        (C) 2000-2025 */
+/* AMRPatchPositionSignature.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Calcul des signatures d'une position de patch.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURE_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURE_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURE_H
+#define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
-#include "arcane/cartesianmesh/AMRPatchPosition.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
-#include "arcane/utils/Vector3.h"
 #include "arcane/utils/UniqueArray.h"
+
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,12 +32,14 @@ namespace Arcane
 class AMRPatchPositionSignature
 {
  public:
+
   AMRPatchPositionSignature();
   AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches);
   AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Integer nb_cut);
   ~AMRPatchPositionSignature();
 
  public:
+
   void compress();
   void fillSig();
   bool isValid() const;
@@ -49,15 +49,14 @@ class AMRPatchPositionSignature
   std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, Integer cut_point) const;
   bool isIn(Integer x, Integer y, Integer z) const;
 
-  ConstArrayView<Integer> sigX()const;
-  ConstArrayView<Integer> sigY()const;
+  ConstArrayView<Integer> sigX() const;
+  ConstArrayView<Integer> sigY() const;
   ConstArrayView<Integer> sigZ() const;
-  AMRPatchPosition patch()const;
+  AMRPatchPosition patch() const;
   ICartesianMesh* mesh() const;
-  bool stopCut()const;
+  bool stopCut() const;
   void setStopCut(bool stop_cut);
-  bool isComputed()const;
-
+  bool isComputed() const;
 
  private:
 
@@ -87,5 +86,4 @@ class AMRPatchPositionSignature
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

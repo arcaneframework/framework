@@ -13,14 +13,11 @@
 
 #include "arcane/cartesianmesh/internal/CartesianMeshAMRPatchMng.h"
 
-#include "arcane/cartesianmesh/CellDirectionMng.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
-
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Array3View.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/Vector2.h"
+#include "arcane/utils/Vector3.h"
 
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMesh.h"
@@ -29,6 +26,12 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
+
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

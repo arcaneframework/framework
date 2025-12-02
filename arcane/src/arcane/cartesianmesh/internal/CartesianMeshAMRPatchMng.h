@@ -11,17 +11,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHAMRPATCHMNG_H
+#define ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHAMRPATCHMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/internal/ICartesianMeshAMRPatchMng.h"
-#include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 #include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/core/IMesh.h"
+
+#include "arcane/cartesianmesh/internal/ICartesianMeshAMRPatchMng.h"
+
+#include <unordered_map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

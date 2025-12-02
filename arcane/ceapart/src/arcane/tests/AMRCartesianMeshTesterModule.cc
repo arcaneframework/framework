@@ -42,6 +42,7 @@
 #include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/AMRZonePosition.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/FaceDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
@@ -511,6 +512,7 @@ _computeCenters()
 void AMRCartesianMeshTesterModule::
 _initAMR()
 {
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   // Regarde si on dé-raffine le maillage initial
   if (options()->coarseAtInit()){
     // Il faut que les directions aient été calculées avant d'appeler le dé-raffinement
@@ -527,7 +529,6 @@ _initAMR()
     //   Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
     //   coarser->createCoarseCells();
     // }
-    CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
     amr_mng.createSubLevel();
 
     CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
@@ -545,15 +546,15 @@ _initAMR()
   // à raffiner celles qui sont contenues dans le boîte englobante
   // spécifiée dans le jeu de données.
   Int32 dim = defaultMesh()->dimension();
-  if (dim==2){
-    for( const auto& x : options()->refinement2d() ){
-      m_cartesian_mesh->refinePatch({x->position(), x->length()});
+  if (dim == 2) {
+    for (const auto& x : options()->refinement2d()) {
+      amr_mng.refineZone({ x->position(), x->length() });
       m_cartesian_mesh->computeDirections();
     }
   }
-  if (dim==3){
-    for( const auto& x : options()->refinement3d() ){
-      m_cartesian_mesh->refinePatch({x->position(), x->length()});
+  if (dim == 3) {
+    for (const auto& x : options()->refinement3d()) {
+      amr_mng.refineZone({ x->position(), x->length() });
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -566,6 +567,7 @@ void AMRCartesianMeshTesterModule::
 _coarseZone()
 {
   Int32 dim = defaultMesh()->dimension();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (dim == 2) {
     //UniqueArray<Int32> cells_in_patchs;
@@ -574,7 +576,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
+      amr_mng.coarseZone({ { x->position() }, { x->length() } });
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -585,7 +587,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
+      amr_mng.coarseZone({ { x->position() }, { x->length() } });
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -597,7 +599,9 @@ _coarseZone()
 void AMRCartesianMeshTesterModule::
 _mergePatches()
 {
-  m_cartesian_mesh->mergePatches();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  amr_mng.mergePatches();
+
   m_cartesian_mesh->computeDirections();
 }
 
@@ -624,16 +628,16 @@ void AMRCartesianMeshTesterModule::
 compute()
 {
   _compute1();
-  info() << "NbPatch : " << m_cartesian_mesh->nbPatch();
-  info() << "NbPatch : " << m_cartesian_mesh->patches().size();
-
-  for (Integer i = 0; i < m_cartesian_mesh->patches().size(); ++i) {
-    auto patch = m_cartesian_mesh->amrPatch(i);
-    info() << "Patch #" << i;
-    info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
-    info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
-    info() << "\tLevel : " << patch.patchInterface()->position().level();
-  }
+  // info() << "NbPatch : " << m_cartesian_mesh->nbPatch();
+  // info() << "NbPatch : " << m_cartesian_mesh->patches().size();
+  //
+  // for (Integer i = 0; i < m_cartesian_mesh->patches().size(); ++i) {
+  //   auto patch = m_cartesian_mesh->amrPatch(i);
+  //   info() << "Patch #" << i;
+  //   info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
+  //   info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
+  //   info() << "\tLevel : " << patch.patchInterface()->position().level();
+  // }
 }
 
 /*---------------------------------------------------------------------------*/

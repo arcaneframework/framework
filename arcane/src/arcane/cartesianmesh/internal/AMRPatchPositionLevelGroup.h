@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionLevelGroup.h                                        (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Groupe de position de patch AMR réparti par niveau.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONLEVELGROUP_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
+#define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRPatchPosition.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 #include "arcane/utils/UniqueArray.h"
@@ -31,7 +30,8 @@ namespace Arcane
 class AMRPatchPositionLevelGroup
 {
  public:
-  AMRPatchPositionLevelGroup(Integer max_level);
+
+  explicit AMRPatchPositionLevelGroup(Integer max_level);
   ~AMRPatchPositionLevelGroup();
 
  public:
@@ -43,6 +43,7 @@ class AMRPatchPositionLevelGroup
   static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
 
  private:
+
   Integer m_max_level;
   UniqueArray<UniqueArray<AMRPatchPosition>> m_patches;
 };
@@ -55,5 +56,4 @@ class AMRPatchPositionLevelGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

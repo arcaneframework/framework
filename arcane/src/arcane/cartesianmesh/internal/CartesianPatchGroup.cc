@@ -12,22 +12,22 @@
 
 #include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 
-#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
-#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
-#include "arcane/cartesianmesh/internal/AMRPatchPositionSignatureCut.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
-
-#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/Vector3.h"
+#include "arcane/utils/StringBuilder.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MeshKind.h"
 
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
-#include "arcane/utils/StringBuilder.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignatureCut.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -478,9 +478,8 @@ mergePatches()
         //                                     << " -- 1 Max point : " << patch_fusion_1.maxPoint()
         //                                     << " -- 1 Level : " << patch_fusion_1.level();
 
-        if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
+        if (patch_fusion_0.fusion(patch_fusion_1)) {
           // m_cmesh->traceMng()->info() << "Fusion OK";
-          patch_fusion_0.fusion(patch_fusion_1);
           patch_fusion_1.setLevel(-2); // Devient null.
           index_n_nb_cells[p0].second = patch_fusion_0.nbCells();
 
@@ -503,7 +502,7 @@ mergePatches()
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-refine()
+refine(bool clear_refine_flag)
 {
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
@@ -639,12 +638,7 @@ refine()
 
 
   {
-    constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine |
-                                                     ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
-                                                     ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive);
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-      icell->mutableItemBase().removeFlags(flags_to_remove);
-    }
+    clearRefineRelatedFlags();
   }
 
   _removeAllPatches();
@@ -792,10 +786,12 @@ refine()
   }
   m_cmesh->computeDirections();
 
-  {
-    constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine);
+  if (clear_refine_flag) {
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-      icell->mutableItemBase().removeFlags(flags_to_remove);
+      if (icell->hasFlags(ItemFlags::II_Coarsen)) {
+        ARCANE_FATAL("Pas normal");
+      }
+      icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
     }
   }
 
@@ -810,6 +806,20 @@ refine()
   //   m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
   //   m_cmesh->traceMng()->info() << "\tIndex : " << patch.patchInterface()->index();
   // }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+clearRefineRelatedFlags() const
+{
+  constexpr ItemFlags::FlagType flags_to_remove = (ItemFlags::II_Coarsen | ItemFlags::II_Refine |
+                                                   ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
+                                                   ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive);
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+    icell->mutableItemBase().removeFlags(flags_to_remove);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1187,8 +1197,8 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     if (m_cmesh->mesh()->dimension() == 2) {
       min_point_of_patch_to_exclude.z = 0;
     }
-    m_cmesh->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
-    m_cmesh->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
+    // m_cmesh->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
+    // m_cmesh->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
 
     // On met à null le patch représentant le bout de patch à retirer.
     for (AMRPatchPosition& new_patch : new_patch_out) {
@@ -1211,7 +1221,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         d_nb_patch_final++;
       }
     }
-    m_cmesh->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
+    // m_cmesh->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
   }
 
   removePatch(index_patch);

@@ -14,10 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRPatchPosition.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/core/VariableTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
