@@ -44,6 +44,15 @@ class CartesianMeshRenumberingInfo;
 class ICartesianMeshInternal;
 class CartesianMeshPatchListView;
 class CartesianPatch;
+class AMRZonePosition;
+class AMRPatchPosition;
+class AMRPatchPositionLevelGroup;
+class AMRPatchPositionSignature;
+class AMRPatchPositionSignatureCut;
+class CartesianPatchGroup;
+class ICartesianMeshAMRPatchMng;
+class ICartesianMeshNumberingMngInternal;
+class ICartesianMeshPatchInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

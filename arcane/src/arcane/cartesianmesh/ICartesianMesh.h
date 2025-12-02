@@ -14,7 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/AMRZonePosition.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 #include "arcane/core/ArcaneTypes.h"
@@ -28,6 +27,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
  * \brief Interface d'un maillage cartésien.
@@ -89,7 +89,6 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * - les informations de direction sont invalidées si le maillage évolue.
    */
   virtual void computeDirections() = 0;
-  virtual void computeDirectionsV2() = 0;
 
   /*!
    * \brief Recalcule les informations de cartésiennes après une reprise.
@@ -127,14 +126,14 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * L'instance retournée reste valide tant que cette instance n'est pas détruite.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::amrPatch() à la place.
    */
   virtual CartesianPatch amrPatch(Int32 index) const = 0;
 
   /*!
    * \brief Vue sur la liste des patchs.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::amrPatch() à la place.
    */
   virtual CartesianMeshPatchListView patches() const = 0;
 
@@ -150,7 +149,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
    */
   virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
@@ -166,7 +165,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
@@ -182,7 +181,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
    */
   virtual void refinePatch(const AMRZonePosition& position) = 0;
 
@@ -204,7 +203,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
    */
   virtual void coarseZone2D(Real2 position, Real2 length) = 0;
 
@@ -226,7 +225,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
 
@@ -248,12 +247,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
    */
   virtual void coarseZone(const AMRZonePosition& position) = 0;
-
-  // TODO A suppr
-  virtual void refine() = 0;
 
   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
@@ -271,12 +267,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * \return Le nombre de couches de mailles fantômes final.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Utiliser CartesianMeshAMRMng::reduceNbGhostLayers() à la place.
    */
   virtual Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) = 0;
-
-  // TODO A suppr
-  virtual void mergePatches() = 0;
 
   /*!
    * \brief Renumérote les uniqueId() des entités.

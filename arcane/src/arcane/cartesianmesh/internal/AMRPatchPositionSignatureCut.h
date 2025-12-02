@@ -5,20 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignatureCut.h                                        (C) 2000-2025 */
+/* AMRPatchPositionSignatureCut.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Méthodes de découpages de patchs selon leurs signatures.                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURECUT_H
-#define ARCANE_CARTESIANMESH_AMRPATCHPOSITIONSIGNATURECUT_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
+#define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
-#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshNumberingMngInternal.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-
 #include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/

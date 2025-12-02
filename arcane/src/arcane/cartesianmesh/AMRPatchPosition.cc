@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPosition.cc                                       (C) 2000-2025 */
+/* AMRPatchPosition.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Position d'un patch AMR d'un maillage cartésien.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -209,9 +209,13 @@ canBeFusion(const AMRPatchPosition& other_patch) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AMRPatchPosition::
+bool AMRPatchPosition::
 fusion(const AMRPatchPosition& other_patch)
 {
+  if (!canBeFusion(other_patch)) {
+    return false;
+  }
+
   const Int64x3 min_point = other_patch.minPoint();
   const Int64x3 max_point = other_patch.maxPoint();
 
@@ -235,6 +239,8 @@ fusion(const AMRPatchPosition& other_patch)
   else if (m_max_point.z < max_point.z) {
     m_max_point.z = max_point.z;
   }
+
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,7 +303,7 @@ length() const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isIn(Integer x, Integer y, Integer z) const
+isIn(Int64 x, Int64 y, Int64 z) const
 {
   return x >= m_min_point.x && x < m_max_point.x && y >= m_min_point.y && y < m_max_point.y && z >= m_min_point.z && z < m_max_point.z;
 }
@@ -306,7 +312,7 @@ isIn(Integer x, Integer y, Integer z) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(Integer x, Integer y, Integer z) const
+isInWithOverlap(Int64 x, Int64 y, Int64 z) const
 {
   const Int64x3 min_point = minPointWithOverlap();
   const Int64x3 max_point = maxPointWithOverlap();
@@ -317,7 +323,7 @@ isInWithOverlap(Integer x, Integer y, Integer z) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(Integer x, Integer y, Integer z, Integer overlap) const
+isInWithOverlap(Int64 x, Int64 y, Int64 z, Integer overlap) const
 {
   const Int64x3 min_point = m_min_point - overlap;
   const Int64x3 max_point = m_max_point + overlap;

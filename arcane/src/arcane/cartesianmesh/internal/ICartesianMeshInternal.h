@@ -27,6 +27,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class CartesianPatchGroup;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Partie interne de ICartesianMesh.
@@ -63,11 +69,20 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    */
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 
-  // TODO
+  /*!
+   * \brief Méthode permettant de créer une instance de CartesianMeshNumberingMngInternal.
+   */
   virtual void initCartesianMeshNumberingMngInternal() = 0;
 
-  //TODO
+  /*!
+   * \brief Méthode permettant de récupérer l'instance de CartesianMeshNumberingMngInternal.
+   */
   virtual Ref<ICartesianMeshNumberingMngInternal> cartesianMeshNumberingMngInternal() = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le CartesianPatchGroup.
+   */
+  virtual CartesianPatchGroup& cartesianPatchGroup() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

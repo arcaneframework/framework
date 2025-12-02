@@ -5,22 +5,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignature.cc                                       (C) 2000-2025 */
+/* AMRPatchPositionSignature.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Calcul des signatures d'une position de patch.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
 
-#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Math.h"
+
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemEnumerator.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/core/ItemGroup.h"
+
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
+#include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

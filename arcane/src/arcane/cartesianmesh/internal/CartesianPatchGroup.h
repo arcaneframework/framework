@@ -14,11 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ItemTypes.h"
-#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
+#include "arcane/utils/UniqueArray.h"
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
-#include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/core/ItemGroupComputeFunctor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,7 +71,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void mergePatches();
 
-  void refine();
+  void refine(bool clear_refine_flag);
+
+  void clearRefineRelatedFlags() const;
 
   void rebuildAvailableGroupIndex(ConstArrayView<Integer> available_group_index);
 

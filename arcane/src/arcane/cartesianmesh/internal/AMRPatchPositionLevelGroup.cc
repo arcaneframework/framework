@@ -5,13 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionLevelGroup.cc                                       (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.cc                               (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Groupe de position de patch AMR réparti par niveau.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/internal/AMRPatchPositionLevelGroup.h"
+
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
+
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
@@ -117,9 +120,8 @@ fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null)
         //                                     << " -- 1 Min point : " << patch_fusion_1.minPoint()
         //                                     << " -- 1 Max point : " << patch_fusion_1.maxPoint()
         //                                     << " -- 1 Level : " << patch_fusion_1.level();
-        if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
+        if (patch_fusion_0.fusion(patch_fusion_1)) {
           // m_cmesh->traceMng()->info() << "Fusion OK";
-          patch_fusion_0.fusion(patch_fusion_1);
           patch_fusion_1.setLevel(-2); // Devient null.
           fusion = true;
           break;

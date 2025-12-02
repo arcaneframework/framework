@@ -12,13 +12,17 @@
 
 #include "arcane/cartesianmesh/AMRZonePosition.h"
 
-#include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/core/IMesh.h"
-#include "arcane/core/MeshKind.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
-#include "arcane/core/IParallelMng.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/ITraceMng.h"
+
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshKind.h"
+#include "arcane/core/IParallelMng.h"
+
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

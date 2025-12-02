@@ -5,18 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignatureCut.cc                                       (C) 2000-2025 */
+/* AMRPatchPositionSignatureCut.cc                             (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Méthodes de découpages de patchs selon leurs signatures.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/internal/AMRPatchPositionSignatureCut.h"
 
-#include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/core/IMesh.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Math.h"
+
+#include "arcane/core/IMesh.h"
+
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+
+#include "arcane/cartesianmesh/internal/AMRPatchPositionSignature.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -129,79 +133,79 @@ cut(const AMRPatchPositionSignature& sig)
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
     {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
+      // sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
 
       fst_x.compute();
       snd_x.compute();
       if (fst_x.isValid() && snd_x.isValid()) {
 
-        sig.mesh()->traceMng()->info() << "Cut() -- X.fst_x"
-                                       << " -- min = " << fst_x.patch().minPoint()
-                                       << " -- max = " << fst_x.patch().maxPoint()
-                                       << " -- efficacity : " << fst_x.efficacity();
-        sig.mesh()->traceMng()->info() << "Cut() -- X.snd_x"
-                                       << " -- min = " << snd_x.patch().minPoint()
-                                       << " -- max = " << snd_x.patch().maxPoint()
-                                       << " -- efficacity : " << snd_x.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- X.fst_x"
+        //                                << " -- min = " << fst_x.patch().minPoint()
+        //                                << " -- max = " << fst_x.patch().maxPoint()
+        //                                << " -- efficacity : " << fst_x.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- X.snd_x"
+        //                                << " -- min = " << snd_x.patch().minPoint()
+        //                                << " -- max = " << snd_x.patch().maxPoint()
+        //                                << " -- efficacity : " << snd_x.efficacity();
 
         x_efficacity = (fst_x.efficacity() + snd_x.efficacity()) / 2;
-        sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
+        // sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
       }
-      else {
-        sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
-      }
+      // else {
+      //   sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
+      // }
     }
 
     Real y_efficacity = 0;
     auto [fst_y, snd_y] = sig.cut(MD_DirY, cut_point_y);
     {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
+      // sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
 
       fst_y.compute();
       snd_y.compute();
       if (fst_y.isValid() && snd_y.isValid()) {
 
-        sig.mesh()->traceMng()->info() << "Cut() -- Y.fst_y"
-                                       << " -- min = " << fst_y.patch().minPoint()
-                                       << " -- max = " << fst_y.patch().maxPoint()
-                                       << " -- efficacity : " << fst_y.efficacity();
-        sig.mesh()->traceMng()->info() << "Cut() -- Y.snd_y"
-                                       << " -- min = " << snd_y.patch().minPoint()
-                                       << " -- max = " << snd_y.patch().maxPoint()
-                                       << " -- efficacity : " << snd_y.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Y.fst_y"
+        //                                << " -- min = " << fst_y.patch().minPoint()
+        //                                << " -- max = " << fst_y.patch().maxPoint()
+        //                                << " -- efficacity : " << fst_y.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Y.snd_y"
+        //                                << " -- min = " << snd_y.patch().minPoint()
+        //                                << " -- max = " << snd_y.patch().maxPoint()
+        //                                << " -- efficacity : " << snd_y.efficacity();
 
         y_efficacity = (fst_y.efficacity() + snd_y.efficacity()) / 2;
-        sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
+        // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
       }
-      else {
-        sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
-      }
+      // else {
+      //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
+      // }
     }
 
     Real z_efficacity = 0;
     auto [fst_z, snd_z] = sig.cut(MD_DirZ, cut_point_z);
     {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute Z -- Cut Point : " << cut_point_z;
+      // sig.mesh()->traceMng()->info() << "Cut() -- Compute Z -- Cut Point : " << cut_point_z;
 
       fst_z.compute();
       snd_z.compute();
       if (fst_z.isValid() && snd_z.isValid()) {
 
-        sig.mesh()->traceMng()->info() << "Cut() -- Z.fst_z"
-                                       << " -- min = " << fst_z.patch().minPoint()
-                                       << " -- max = " << fst_z.patch().maxPoint()
-                                       << " -- efficacity : " << fst_z.efficacity();
-        sig.mesh()->traceMng()->info() << "Cut() -- Z.snd_z"
-                                       << " -- min = " << snd_z.patch().minPoint()
-                                       << " -- max = " << snd_z.patch().maxPoint()
-                                       << " -- efficacity : " << snd_z.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Z.fst_z"
+        //                                << " -- min = " << fst_z.patch().minPoint()
+        //                                << " -- max = " << fst_z.patch().maxPoint()
+        //                                << " -- efficacity : " << fst_z.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Z.snd_z"
+        //                                << " -- min = " << snd_z.patch().minPoint()
+        //                                << " -- max = " << snd_z.patch().maxPoint()
+        //                                << " -- efficacity : " << snd_z.efficacity();
 
         z_efficacity = (fst_z.efficacity() + snd_z.efficacity()) / 2;
-        sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z : " << z_efficacity;
+        // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z : " << z_efficacity;
       }
-      else {
-        sig.mesh()->traceMng()->info() << "Cut() -- Compute Z invalid (too small) -- fst_z.length() : " << fst_z.patch().length() << " -- snd_z.length() : " << snd_z.patch().length();
-      }
+      // else {
+      //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Z invalid (too small) -- fst_z.length() : " << fst_z.patch().length() << " -- snd_z.length() : " << snd_z.patch().length();
+      // }
     }
 
     if (sig.efficacity() > x_efficacity && sig.efficacity() > y_efficacity && sig.efficacity() > z_efficacity) {
@@ -224,53 +228,53 @@ cut(const AMRPatchPositionSignature& sig)
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
     {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
+      // sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
 
       fst_x.compute();
       snd_x.compute();
       if (fst_x.isValid() && snd_x.isValid()) {
 
-        sig.mesh()->traceMng()->info() << "Cut() -- X.fst_x"
-                                       << " -- min = " << fst_x.patch().minPoint()
-                                       << " -- max = " << fst_x.patch().maxPoint()
-                                       << " -- efficacity : " << fst_x.efficacity();
-        sig.mesh()->traceMng()->info() << "Cut() -- X.snd_x"
-                                       << " -- min = " << snd_x.patch().minPoint()
-                                       << " -- max = " << snd_x.patch().maxPoint()
-                                       << " -- efficacity : " << snd_x.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- X.fst_x"
+        //                                << " -- min = " << fst_x.patch().minPoint()
+        //                                << " -- max = " << fst_x.patch().maxPoint()
+        //                                << " -- efficacity : " << fst_x.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- X.snd_x"
+        //                                << " -- min = " << snd_x.patch().minPoint()
+        //                                << " -- max = " << snd_x.patch().maxPoint()
+        //                                << " -- efficacity : " << snd_x.efficacity();
 
         x_efficacity = (fst_x.efficacity() + snd_x.efficacity()) / 2;
-        sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
+        // sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
       }
-      else {
-        sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
-      }
+      // else {
+      //   sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
+      // }
     }
 
     Real y_efficacity = 0;
     auto [fst_y, snd_y] = sig.cut(MD_DirY, cut_point_y);
     {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
+      // sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
 
       fst_y.compute();
       snd_y.compute();
       if (fst_y.isValid() && snd_y.isValid()) {
 
-        sig.mesh()->traceMng()->info() << "Cut() -- Y.fst_y"
-                                       << " -- min = " << fst_y.patch().minPoint()
-                                       << " -- max = " << fst_y.patch().maxPoint()
-                                       << " -- efficacity : " << fst_y.efficacity();
-        sig.mesh()->traceMng()->info() << "Cut() -- Y.snd_y"
-                                       << " -- min = " << snd_y.patch().minPoint()
-                                       << " -- max = " << snd_y.patch().maxPoint()
-                                       << " -- efficacity : " << snd_y.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Y.fst_y"
+        //                                << " -- min = " << fst_y.patch().minPoint()
+        //                                << " -- max = " << fst_y.patch().maxPoint()
+        //                                << " -- efficacity : " << fst_y.efficacity();
+        // sig.mesh()->traceMng()->info() << "Cut() -- Y.snd_y"
+        //                                << " -- min = " << snd_y.patch().minPoint()
+        //                                << " -- max = " << snd_y.patch().maxPoint()
+        //                                << " -- efficacity : " << snd_y.efficacity();
 
         y_efficacity = (fst_y.efficacity() + snd_y.efficacity()) / 2;
-        sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
+        // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
       }
-      else {
-        sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
-      }
+      // else {
+      //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
+      // }
     }
 
     if (sig.efficacity() > x_efficacity && sig.efficacity() > y_efficacity) {
@@ -290,20 +294,20 @@ cut(const AMRPatchPositionSignature& sig)
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
 
-    sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
+    // sig.mesh()->traceMng()->info() << "Cut() -- Compute X -- Cut Point : " << cut_point_x;
 
     fst_x.compute();
     snd_x.compute();
     if (fst_x.isValid() && snd_x.isValid()) {
 
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity X.fst_x : " << fst_x.efficacity();
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity X.snd_x : " << snd_x.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity X.fst_x : " << fst_x.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity X.snd_x : " << snd_x.efficacity();
       x_efficacity = (fst_x.efficacity() + snd_x.efficacity()) / 2;
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity X : " << x_efficacity;
     }
-    else {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
-    }
+    // else {
+    //   sig.mesh()->traceMng()->info() << "Cut() -- Compute X invalid (too small) -- fst_x.length() : " << fst_x.patch().length() << " -- snd_x.length() : " << snd_x.patch().length();
+    // }
     if (sig.efficacity() > x_efficacity) {
       return {};
     }
@@ -314,20 +318,20 @@ cut(const AMRPatchPositionSignature& sig)
     Real y_efficacity = 0;
     auto [fst_y, snd_y] = sig.cut(MD_DirY, cut_point_y);
 
-    sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
+    // sig.mesh()->traceMng()->info() << "Cut() -- Compute Y -- Cut Point : " << cut_point_y;
 
     fst_y.compute();
     snd_y.compute();
     if (fst_y.isValid() && snd_y.isValid()) {
 
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y.fst_y : " << fst_y.efficacity();
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y.snd_y : " << snd_y.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y.fst_y : " << fst_y.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y.snd_y : " << snd_y.efficacity();
       y_efficacity = (fst_y.efficacity() + snd_y.efficacity()) / 2;
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Y : " << y_efficacity;
     }
-    else {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
-    }
+    // else {
+    //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
+    // }
     if (sig.efficacity() > y_efficacity) {
       return {};
     }
@@ -337,20 +341,20 @@ cut(const AMRPatchPositionSignature& sig)
     Real z_efficacity = 0;
     auto [fst_z, snd_z] = sig.cut(MD_DirZ, cut_point_z);
 
-    sig.mesh()->traceMng()->info() << "Cut() -- Compute Z -- Cut Point : " << cut_point_z;
+    // sig.mesh()->traceMng()->info() << "Cut() -- Compute Z -- Cut Point : " << cut_point_z;
 
     fst_z.compute();
     snd_z.compute();
     if (fst_z.isValid() && snd_z.isValid()) {
 
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z.fst_z : " << fst_z.efficacity();
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z.snd_z : " << snd_z.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z.fst_z : " << fst_z.efficacity();
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z.snd_z : " << snd_z.efficacity();
       z_efficacity = (fst_z.efficacity() + snd_z.efficacity()) / 2;
-      sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z : " << z_efficacity;
+      // sig.mesh()->traceMng()->info() << "Cut() -- efficacity Z : " << z_efficacity;
     }
-    else {
-      sig.mesh()->traceMng()->info() << "Cut() -- Compute Z invalid (too small) -- fst_z.length() : " << fst_z.patch().length() << " -- snd_z.length() : " << snd_z.patch().length();
-    }
+    // else {
+    //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Z invalid (too small) -- fst_z.length() : " << fst_z.patch().length() << " -- snd_z.length() : " << snd_z.patch().length();
+    // }
     if (sig.efficacity() > z_efficacity) {
       return {};
     }
@@ -374,7 +378,7 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
 
     for (Integer i = 0; i < array_in.size(); ++i) {
       AMRPatchPositionSignature sig = array_in[i];
-      sig.mesh()->traceMng()->info() << "Cut() -- i : " << i;
+      // sig.mesh()->traceMng()->info() << "Cut() -- i : " << i;
 
       if (!sig.stopCut()) {
         if (!sig.isComputed()) {
@@ -387,21 +391,21 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
             need_cut = true;
             array_out.add(fst);
             array_out.add(snd);
-            sig.mesh()->traceMng()->info() << "First Signature :";
-            sig.mesh()->traceMng()->info() << "\tmin = " << fst.patch().minPoint() << " -- max = " << fst.patch().maxPoint() << " -- length = " << fst.patch().length();
-            sig.mesh()->traceMng()->info() << "Second Signature :";
-            sig.mesh()->traceMng()->info() << "\tmin = " << snd.patch().minPoint() << " -- max = " << snd.patch().maxPoint() << " -- length = " << snd.patch().length();
+            // sig.mesh()->traceMng()->info() << "First Signature :";
+            // sig.mesh()->traceMng()->info() << "\tmin = " << fst.patch().minPoint() << " -- max = " << fst.patch().maxPoint() << " -- length = " << fst.patch().length();
+            // sig.mesh()->traceMng()->info() << "Second Signature :";
+            // sig.mesh()->traceMng()->info() << "\tmin = " << snd.patch().minPoint() << " -- max = " << snd.patch().maxPoint() << " -- length = " << snd.patch().length();
             continue;
           }
-          sig.mesh()->traceMng()->info() << "Invalid Signature";
+          // sig.mesh()->traceMng()->info() << "Invalid Signature";
           sig.setStopCut(true);
         }
         else {
           sig.setStopCut(true);
         }
       }
-      sig.mesh()->traceMng()->info() << "No Update";
-      sig.mesh()->traceMng()->info() << "\tmin = " << sig.patch().minPoint() << " -- max = " << sig.patch().maxPoint();
+      // sig.mesh()->traceMng()->info() << "No Update";
+      // sig.mesh()->traceMng()->info() << "\tmin = " << sig.patch().minPoint() << " -- max = " << sig.patch().maxPoint();
       array_out.add(sig);
     }
     array_in.clear();

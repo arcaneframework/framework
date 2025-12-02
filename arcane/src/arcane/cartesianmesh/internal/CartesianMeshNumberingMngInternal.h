@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshNumberingMngInternal.h                                 (C) 2000-2025 */
+/* CartesianMeshNumberingMngInternal.h                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
 /* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */

@@ -5,22 +5,27 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRMng.cc                                 (C) 2000-2025 */
+/* CartesianMeshAMRMng.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
+/* Gestionnaire de l'AMR pour un maillage cartésien.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
-#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
-#include "arcane/cartesianmesh/CartesianMeshUtils.h"
-#include "arcane/cartesianmesh/CartesianPatch.h"
 
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
 
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/core/IMesh.h"
 #include "arcane/core/MeshKind.h"
+
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CartesianPatch.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
+#include "arcane/cartesianmesh/CartesianMeshUtils.h"
+
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
+#include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,8 +39,7 @@ namespace Arcane
 CartesianMeshAMRMng::
 CartesianMeshAMRMng(ICartesianMesh* cmesh)
 : m_cmesh(cmesh)
-{
-}
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,9 +90,22 @@ coarseZone(const AMRZonePosition& position) const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRMng::
-refine() const
+adaptMesh(bool clear_refine_flag) const
 {
-  m_cmesh->refine();
+  auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
+  if (amr_type == eMeshAMRKind::Cell) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+  m_cmesh->_internalApi()->cartesianPatchGroup().refine(clear_refine_flag);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+clearRefineRelatedFlags() const
+{
+  m_cmesh->_internalApi()->cartesianPatchGroup().clearRefineRelatedFlags();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +123,13 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) const
 void CartesianMeshAMRMng::
 mergePatches() const
 {
-  m_cmesh->mergePatches();
+  auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
+  if (amr_type == eMeshAMRKind::Cell) {
+    return;
+  }
+
+  m_cmesh->_internalApi()->cartesianPatchGroup().mergePatches();
+  m_cmesh->_internalApi()->cartesianPatchGroup().applyPatchEdit(false);
 }
 
 /*---------------------------------------------------------------------------*/
