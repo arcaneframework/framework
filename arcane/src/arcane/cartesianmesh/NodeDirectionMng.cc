@@ -151,34 +151,17 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
     }
   }
 
-  UniqueArray<Int32> inner_cells_lid;
-  cell_dm.innerCells().view().fillLocalIds(inner_cells_lid);
-
-  UniqueArray<Int32> inner_lids;
-  UniqueArray<Int32> outer_lids;
+  Int32UniqueArray inner_lids;
+  Int32UniqueArray outer_lids;
   IItemFamily* family = all_nodes.itemFamily();
-  ENUMERATE_ (Node, inode, all_nodes) {
-    Int32 lid = inode.itemLocalId();
+  ENUMERATE_ITEM (iitem, all_nodes) {
+    Int32 lid = iitem.itemLocalId();
     Int32 i1 = m_infos_view[lid].m_next_lid;
     Int32 i2 = m_infos_view[lid].m_previous_lid;
-    if (i1 == NULL_ITEM_LOCAL_ID || i2 == NULL_ITEM_LOCAL_ID) {
+    if (i1 == NULL_ITEM_LOCAL_ID || i2 == NULL_ITEM_LOCAL_ID)
       outer_lids.add(lid);
-    }
-    else {
-      // Si au moins une des mailles est interne, alors le noeud est interne.
-      // TODO : Gérer les noeuds communs peut-être une autre méthode plus performante.
-      bool is_outer = true;
-      for (Cell cell : inode->cells()) {
-        if (inner_cells_lid.contains(cell.localId())) {
-          inner_lids.add(lid);
-          is_outer = false;
-          break;
-        }
-      }
-      if (is_outer) {
-        outer_lids.add(lid);
-      }
-    }
+    else
+      inner_lids.add(lid);
   }
   int dir = (int)m_direction;
   String base_group_name = String("Direction")+dir;
