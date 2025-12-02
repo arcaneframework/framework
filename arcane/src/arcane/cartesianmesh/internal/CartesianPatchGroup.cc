@@ -88,11 +88,6 @@ addPatchAfterRestore(CellGroup cell_group)
     String index_str = name.substring(23);
     group_index = std::stoi(index_str.localstr());
   }
-  // Ancien checkpoint.
-  else if (name.startsWith("CartesianMeshPatchParentCells")) {
-    String index_str = name.substring(29);
-    group_index = std::stoi(index_str.localstr());
-  }
   else {
     ARCANE_FATAL("Invalid group");
   }
@@ -177,40 +172,21 @@ addPatch(CellGroup cell_group, Integer group_index)
     position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
     position.setLevel(level_r);
   }
-  else {
-    Integer level = -1;
-    ENUMERATE_ (Cell, icell, cell_group) {
-      if (level == -1) {
-        level = icell->level();
-      }
-      if (level != icell->level()) {
-        ARCANE_FATAL("Level pb -- Zone with cells to different levels -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, icell->level(), icell->uniqueId());
-      }
-    }
-
-    Integer level_r = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
-
-    if (level != -1 && level != level_r) {
-      ARCANE_FATAL("Bad level reduced");
-    }
-
-    position.setLevel(level_r);
-  }
 
   auto* cdi = new CartesianMeshPatch(m_cmesh, group_index, position);
   _addPatchInstance(makeRef(cdi));
   _addCellGroup(cell_group, cdi);
 
-  m_cmesh->traceMng()->info() << "addPatch()"
-                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
-                              << " -- m_amr_patches : " << m_amr_patches.size()
-                              << " -- m_amr_patches_pointer : " << m_amr_patches_pointer.size()
-                              << " -- group_index : " << group_index
-                              << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
-
-  m_cmesh->traceMng()->info() << "Min Point : " << cdi->position().minPoint();
-  m_cmesh->traceMng()->info() << "Max Point : " << cdi->position().maxPoint();
-  m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
+  // m_cmesh->traceMng()->info() << "addPatch()"
+  //                             << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
+  //                             << " -- m_amr_patches : " << m_amr_patches.size()
+  //                             << " -- m_amr_patches_pointer : " << m_amr_patches_pointer.size()
+  //                             << " -- group_index : " << group_index
+  //                             << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
+  //
+  // m_cmesh->traceMng()->info() << "Min Point : " << cdi->position().minPoint();
+  // m_cmesh->traceMng()->info() << "Max Point : " << cdi->position().maxPoint();
+  // m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,6 +235,9 @@ allCells(const Integer index)
 CellGroup CartesianPatchGroup::
 inPatchCells(Integer index)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
   if (index == 0) {
     ARCANE_FATAL("You cannot get cells of ground patch with this method");
   }
@@ -271,6 +250,9 @@ inPatchCells(Integer index)
 CellGroup CartesianPatchGroup::
 overallCells(Integer index)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
   if (index == 0) {
     ARCANE_FATAL("You cannot get cells of ground patch with this method");
   }
@@ -313,13 +295,10 @@ removePatch(const Integer index)
 void CartesianPatchGroup::
 removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR Cell");
+  }
   for (CellGroup cells : m_amr_patch_cell_groups_all) {
-    cells.removeItems(cells_local_id);
-  }
-  for (CellGroup cells : m_amr_patch_cell_groups_inpatch) {
-    cells.removeItems(cells_local_id);
-  }
-  for (CellGroup cells : m_amr_patch_cell_groups_overall) {
     cells.removeItems(cells_local_id);
   }
 }
@@ -330,6 +309,9 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 void CartesianPatchGroup::
 removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
   // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
   // i = 1 car on ne peut pas déraffjner le patch ground.
   const Integer nb_patchs = m_amr_patches_pointer.size();
@@ -355,7 +337,7 @@ removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
 void CartesianPatchGroup::
 applyPatchEdit(bool remove_empty_patches)
 {
-  m_cmesh->mesh()->traceMng()->info() << "applyPatchEdit() -- Remove nb patch : " << m_patches_to_delete.size();
+  // m_cmesh->mesh()->traceMng()->info() << "applyPatchEdit() -- Remove nb patch : " << m_patches_to_delete.size();
 
   std::sort(m_patches_to_delete.begin(), m_patches_to_delete.end(),
             [](const Integer a, const Integer b) {
@@ -366,7 +348,9 @@ applyPatchEdit(bool remove_empty_patches)
   m_patches_to_delete.clear();
 
   if (remove_empty_patches) {
-    // TODO : Pas vraiment compatible avec les mailles overlap.
+    if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+      ARCANE_FATAL("remove_empty_patches=true available only with AMR Cell");
+    }
     UniqueArray<Integer> size_of_patches(m_amr_patch_cell_groups_all.size());
     for (Integer i = 0; i < m_amr_patch_cell_groups_all.size(); ++i) {
       size_of_patches[i] = m_amr_patch_cell_groups_all[i].size();
@@ -504,7 +488,7 @@ mergePatches()
           allCells(index_p1).view().fillLocalIds(local_ids);
           allCells(index_p0).addItems(local_ids, false);
 
-          m_cmesh->traceMng()->info() << "Remove patch : " << index_p1;
+          // m_cmesh->traceMng()->info() << "Remove patch : " << index_p1;
           removePatch(index_p1);
 
           fusion = true;
@@ -521,6 +505,9 @@ mergePatches()
 void CartesianPatchGroup::
 refine()
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
   Integer dimension = m_cmesh->mesh()->dimension();
   Integer nb_overlap_cells = 1;
   Integer min_level = 0;
@@ -542,13 +529,13 @@ refine()
   future_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, future_max_level);
   old_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, old_max_level);
 
-  m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
+  // m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   AMRPatchPositionLevelGroup all_patches(future_max_level);
 
   for (Integer level = future_max_level; level >= min_level; --level) {
-    m_cmesh->traceMng()->info() << "Refine Level " << level << " with " << nb_overlap_cells << " layers of overlap cells";
+    // m_cmesh->traceMng()->info() << "Refine Level " << level << " with " << nb_overlap_cells << " layers of overlap cells";
     if (level != future_max_level) {
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
@@ -563,10 +550,10 @@ refine()
           }
         }
       }
-      m_cmesh->traceMng()->info() << "All patch level+1 with margin (can be overlap) : ";
-      for (auto& elem : all_patches.patches(level + 1)) {
-        m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.minPointWithOverlap() << " -- max = " << elem.maxPointWithOverlap();
-      }
+      // m_cmesh->traceMng()->info() << "All patch level+1 with margin (can be overlap) : ";
+      // for (auto& elem : all_patches.patches(level + 1)) {
+      //   m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.minPointWithOverlap() << " -- max = " << elem.maxPointWithOverlap();
+      // }
     }
 
     AMRPatchPosition all_level;
@@ -588,16 +575,16 @@ refine()
     nb_overlap_cells += 1;
 
     /////////
-
-    Real global_efficacity = 0;
-    m_cmesh->traceMng()->info() << "All patch : ";
-    for (auto& elem : sig_array) {
-      m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.patch().minPoint() << " -- max = " << elem.patch().maxPoint() << " -- Efficacité : " << elem.efficacity();
-      global_efficacity += elem.efficacity();
-    }
-    global_efficacity /= sig_array.size();
-    m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
+    /*
     {
+      Real global_efficacity = 0;
+      m_cmesh->traceMng()->info() << "All patch : ";
+      for (auto& elem : sig_array) {
+        m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.patch().minPoint() << " -- max = " << elem.patch().maxPoint() << " -- Efficacité : " << elem.efficacity();
+        global_efficacity += elem.efficacity();
+      }
+      global_efficacity /= sig_array.size();
+      m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
       UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
@@ -646,7 +633,7 @@ refine()
       }
       m_cmesh->traceMng()->info() << str;
     }
-
+    */
     ////////////
   }
 
@@ -660,9 +647,6 @@ refine()
     }
   }
 
-  // for (Integer i = 1; i < m_amr_patches.size(); ++i) {
-  //   _removeOnePatch(i);
-  // }
   _removeAllPatches();
   applyPatchEdit(false);
 
@@ -682,6 +666,7 @@ refine()
       }
     }
 
+    /*
     {
       UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
@@ -715,6 +700,7 @@ refine()
       }
       m_cmesh->traceMng()->info() << str;
     }
+    */
 
     amr->refine();
 
@@ -730,7 +716,7 @@ refine()
     }
   }
 
-  m_cmesh->traceMng()->info() << "max_level : " << future_max_level << " -- min_level : " << min_level;
+  // m_cmesh->traceMng()->info() << "max_level : " << future_max_level << " -- min_level : " << min_level;
 
   // On retire les mailles qui n'auront plus de parent.
   // Exemple :
@@ -767,7 +753,7 @@ refine()
         icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
       }
     }
-
+    /*
     {
       UniqueArray<Integer> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
       Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
@@ -800,6 +786,7 @@ refine()
       }
       m_cmesh->traceMng()->info() << str;
     }
+    */
 
     amr->coarsen(true);
   }
@@ -812,17 +799,17 @@ refine()
     }
   }
 
-  m_cmesh->traceMng()->info() << "NbPatch : " << m_cmesh->patches().size();
-
-  for (Integer i = 0; i < m_cmesh->patches().size(); ++i) {
-    auto patch = m_cmesh->amrPatch(i);
-    m_cmesh->traceMng()->info() << "Patch #" << i;
-    m_cmesh->traceMng()->info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
-    m_cmesh->traceMng()->info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
-    m_cmesh->traceMng()->info() << "\tLevel : " << patch.patchInterface()->position().level();
-    m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
-    m_cmesh->traceMng()->info() << "\tIndex : " << patch.patchInterface()->index();
-  }
+  // m_cmesh->traceMng()->info() << "NbPatch : " << m_cmesh->patches().size();
+  //
+  // for (Integer i = 0; i < m_cmesh->patches().size(); ++i) {
+  //   auto patch = m_cmesh->amrPatch(i);
+  //   m_cmesh->traceMng()->info() << "Patch #" << i;
+  //   m_cmesh->traceMng()->info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
+  //   m_cmesh->traceMng()->info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
+  //   m_cmesh->traceMng()->info() << "\tLevel : " << patch.patchInterface()->position().level();
+  //   m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
+  //   m_cmesh->traceMng()->info() << "\tIndex : " << patch.patchInterface()->index();
+  // }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -860,14 +847,17 @@ void CartesianPatchGroup::
 _removeOnePatch(Integer index)
 {
   m_available_group_index.add(m_amr_patches[index]->index());
-  m_cmesh->traceMng()->info() << "_removeOnePatch() -- Save group_index : " << m_available_group_index.back();
+  // m_cmesh->traceMng()->info() << "_removeOnePatch() -- Save group_index : " << m_available_group_index.back();
 
   m_amr_patch_cell_groups_all[index - 1].clear();
   m_amr_patch_cell_groups_all.remove(index - 1);
-  m_amr_patch_cell_groups_inpatch[index - 1].clear();
-  m_amr_patch_cell_groups_inpatch.remove(index - 1);
-  m_amr_patch_cell_groups_overall[index - 1].clear();
-  m_amr_patch_cell_groups_overall.remove(index - 1);
+
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_amr_patch_cell_groups_inpatch[index - 1].clear();
+    m_amr_patch_cell_groups_inpatch.remove(index - 1);
+    m_amr_patch_cell_groups_overall[index - 1].clear();
+    m_amr_patch_cell_groups_overall.remove(index - 1);
+  }
 
   m_amr_patches_pointer.remove(index);
   m_amr_patches.remove(index);
@@ -898,15 +888,19 @@ _removeAllPatches()
   for (CellGroup cell_group : m_amr_patch_cell_groups_all) {
     cell_group.clear();
   }
-  for (CellGroup cell_group : m_amr_patch_cell_groups_inpatch) {
-    cell_group.clear();
-  }
-  for (CellGroup cell_group : m_amr_patch_cell_groups_overall) {
-    cell_group.clear();
-  }
   m_amr_patch_cell_groups_all.clear();
-  m_amr_patch_cell_groups_inpatch.clear();
-  m_amr_patch_cell_groups_overall.clear();
+
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    for (CellGroup cell_group : m_amr_patch_cell_groups_inpatch) {
+      cell_group.clear();
+    }
+    for (CellGroup cell_group : m_amr_patch_cell_groups_overall) {
+      cell_group.clear();
+    }
+    m_amr_patch_cell_groups_inpatch.clear();
+    m_amr_patch_cell_groups_overall.clear();
+  }
+
   m_amr_patches_pointer.clear();
   m_amr_patches.clear();
   m_available_group_index.clear();
@@ -944,10 +938,10 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 {
   m_amr_patch_cell_groups_all.add(cell_group);
 
-  if (patch->position().isNull()) {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     // Patch non-régulier.
-    m_amr_patch_cell_groups_inpatch.add(cell_group);
-    m_amr_patch_cell_groups_overall.add(CellGroup());
+    // m_amr_patch_cell_groups_inpatch.add(cell_group);
+    // m_amr_patch_cell_groups_overall.add(CellGroup());
     return;
   }
 
@@ -1002,10 +996,10 @@ _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPositio
 void CartesianPatchGroup::
 _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 {
-  m_cmesh->traceMng()->info() << "Coarse Zone"
-                              << " -- Min point : " << part_to_remove.minPoint()
-                              << " -- Max point : " << part_to_remove.maxPoint()
-                              << " -- Level : " << part_to_remove.level();
+  // m_cmesh->traceMng()->info() << "Coarse Zone"
+  //                             << " -- Min point : " << part_to_remove.minPoint()
+  //                             << " -- Max point : " << part_to_remove.maxPoint()
+  //                             << " -- Level : " << part_to_remove.level();
 
   // p1 est le bout de patch qu'il faut retirer de p0.
   // On a donc uniquement quatre cas à traiter (sachant que p0 et p1 sont
@@ -1254,11 +1248,11 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
   CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
   _addCellGroup(parent_cells, cdi);
 
-  m_cmesh->traceMng()->info() << "_addCutPatch()"
-                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
-                              << " -- m_amr_patches : " << m_amr_patches.size()
-                              << " -- group_index : " << group_index
-                              << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
+  // m_cmesh->traceMng()->info() << "_addCutPatch()"
+  //                             << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
+  //                             << " -- m_amr_patches : " << m_amr_patches.size()
+  //                             << " -- group_index : " << group_index
+  //                             << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1289,11 +1283,11 @@ _addPatch(const AMRPatchPosition& new_patch_position)
   CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
   _addCellGroup(parent_cells, cdi);
 
-  m_cmesh->traceMng()->info() << "_addPatch()"
-                              << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
-                              << " -- m_amr_patches : " << m_amr_patches.size()
-                              << " -- group_index : " << group_index
-                              << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
+  // m_cmesh->traceMng()->info() << "_addPatch()"
+  //                             << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
+  //                             << " -- m_amr_patches : " << m_amr_patches.size()
+  //                             << " -- group_index : " << group_index
+  //                             << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
 }
 
 /*---------------------------------------------------------------------------*/
