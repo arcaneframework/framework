@@ -21,27 +21,30 @@
 #include "arccore/common/accelerator/RunCommandLaunchInfo.h"
 
 #include "arccore/accelerator/AcceleratorUtils.h"
-#include "arccore/accelerator/AcceleratorGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+// Les macros suivantes servent à appliquer un noyau si le backend associé
+// est disponible. Sinon, on lève une exception.
+// Ces macros sont utilisées par exemple dans RunCommandLoop.
 
 #if defined(ARCCORE_COMPILING_CUDA)
-#define ARCCORE_KERNEL_CUDA_FUNC(a) a
+#define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::CudaKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
+#define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ARCCORE_FATAL_NO_CUDA_COMPILATION()
 #endif
 
 #if defined(ARCCORE_COMPILING_HIP)
-#define ARCCORE_KERNEL_HIP_FUNC(a) a
+#define ARCCORE_KERNEL_HIP_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::HipKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::Impl::invalidKernel
+#define ARCCORE_KERNEL_HIP_FUNC(kernel, ...) ARCCORE_FATAL_NO_HIP_COMPILATION()
 #endif
 
 #if defined(ARCCORE_COMPILING_SYCL)
-#define ARCCORE_KERNEL_SYCL_FUNC(a) a
+#define ARCCORE_KERNEL_SYCL_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::SyclKernelLauncher::apply(kernel, __VA_ARGS__)
 #else
-#define ARCCORE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::Impl::InvalidKernelClass
+#define ARCCORE_KERNEL_SYCL_FUNC(kernel, ...) ARCCORE_FATAL_NO_SYCL_COMPILATION()
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -257,29 +260,30 @@ class DoIndirectSYCLLambda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Lambda>
-void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
+template <typename Lambda>
+void doDirectThreadLambda(Integer begin, Integer size, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
-  for( Int32 i=0; i<size; ++i ){
-    func(begin+i);
+  for (Int32 i = 0; i < size; ++i) {
+    func(begin + i);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Plus utilisé
 // Fonction vide pour simuler un noyau invalide car non compilé avec
 // le compilateur adéquant. Ne devrait normalement pas être appelé.
-template<typename Lambda,typename... LambdaArgs>
-inline void invalidKernel(Lambda&,const LambdaArgs&...)
+template <typename Lambda, typename... LambdaArgs>
+inline void invalidKernel(Lambda&, const LambdaArgs&...)
 {
   ARCCORE_FATAL("Invalid kernel");
 }
-
-template<typename Lambda,typename... LambdaArgs>
+// Plus utilisé
+template <typename Lambda, typename... LambdaArgs>
 class InvalidKernelClass
 {
 };
@@ -288,131 +292,137 @@ class InvalidKernelClass
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_COMPILING_CUDA)
-template <typename... KernelArgs> inline void
-_applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
-                         cudaStream_t& s, Int32 shared_memory,
-                         const void* kernel_ptr, KernelArgs... args)
-{
-  void* all_args[] = { (reinterpret_cast<void*>(&args))... };
-  if (is_cooperative)
-    cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
-  else
-    cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
-}
-#endif
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Fonction générique pour exécuter un kernel CUDA.
- *
- * \param kernel noyau CUDA
- * \param func fonction à exécuter par le noyau
- * \param args arguments de la fonction lambda
- * 
- * TODO: Tester si Lambda est bien une fonction, le SFINAE étant peu lisible :
- * typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr
- * attendons les concepts c++20 (requires)
- */
-template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelCUDA(RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
-                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
+//! Classe statique pour lancer les kernels CUDA.
+class CudaKernelLauncher
 {
-#if defined(ARCCORE_COMPILING_CUDA)
-  Int32 shared_memory = launch_info._sharedMemorySize();
-  const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
-  auto tbi = launch_info._threadBlockInfo(kernel_ptr, shared_memory);
-  cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
-  bool is_cooperative = launch_info._isUseCooperativeLaunch();
-  bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
-  if (use_cuda_launch || is_cooperative)
-    _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, args, func, other_args...);
-  else {
-    // TODO: utiliser cudaLaunchKernel() à la place.
-    kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(args, func, other_args...);
+ public:
+
+  /*!
+   * \brief Fonction générique pour exécuter un kernel CUDA.
+   *
+   * \param kernel noyau CUDA
+   * \param func fonction à exécuter par le noyau
+   * \param bounds intervalle d'itération
+   * \param other_args autres arguments de la lambda
+   */
+  template <typename CudaKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
+  apply(const CudaKernel& kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
+        const LoopBoundType& bounds, const RemainingArgs&... other_args)
+  {
+    const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
+    auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
+    Int32 shared_memory = tbi.sharedMemorySize();
+    cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
+    bool is_cooperative = launch_info._isUseCooperativeLaunch();
+    bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
+    if (use_cuda_launch || is_cooperative)
+      _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, bounds, func, other_args...);
+    else {
+      kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(bounds, func, other_args...);
+    }
   }
-#else
-  ARCCORE_UNUSED(launch_info);
-  ARCCORE_UNUSED(kernel);
-  ARCCORE_UNUSED(func);
-  ARCCORE_UNUSED(args);
-  ARCCORE_FATAL_NO_CUDA_COMPILATION();
-#endif
-}
+
+ private:
+
+  template <typename... KernelArgs> static inline void
+  _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
+                           cudaStream_t& s, Int32 shared_memory,
+                           const void* kernel_ptr, KernelArgs... args)
+  {
+    void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+    if (is_cooperative)
+      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+    else
+      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+  }
+};
+
+#endif // ARCCORE_COMPILING_CUDA
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Fonction générique pour exécuter un kernel HIP.
- *
- * \param kernel noyau HIP
- * \param func fonction à exécuter par le noyau
- * \param args arguments de la fonction lambda
- */
-template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelHIP(RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
-                const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
-{
+
 #if defined(ARCCORE_COMPILING_HIP)
-  Int32 wanted_shared_memory = launch_info._sharedMemorySize();
-  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
-  hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
-  hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, args, func, other_args...);
-#else
-  ARCCORE_UNUSED(launch_info);
-  ARCCORE_UNUSED(kernel);
-  ARCCORE_UNUSED(func);
-  ARCCORE_UNUSED(args);
-  ARCCORE_FATAL_NO_HIP_COMPILATION();
-#endif
-}
+
+//! Classe statique pour lancer les kernels ROCM/HIP
+class HipKernelLauncher
+{
+ public:
+
+  /*!
+   * \brief Fonction générique pour exécuter un kernel HIP.
+   *
+   * \param kernel noyau HIP
+   * \param func fonction à exécuter par le noyau
+   * \param bounds intervalle d'itération
+   * \param other_args autres arguments de la lambda
+   */
+  template <typename HipKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
+  apply(const HipKernel& kernel, RunCommandLaunchInfo& launch_info, const Lambda& func,
+        const LoopBoundType& bounds, const RemainingArgs&... other_args)
+  {
+    const void* kernel_ptr = reinterpret_cast<const void*>(kernel);
+    auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
+    Int32 wanted_shared_memory = tbi.sharedMemorySize();
+    hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
+    hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
+  }
+};
+
+#endif // ARCCORE_COMPILING_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Fonction générique pour exécuter un kernel SYCL.
- *
- * \param kernel noyau SYCL
- * \param func fonction à exécuter par le noyau
- * \param args arguments de la fonction lambda
- */
-template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
-void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                      const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... remaining_args)
-{
+
 #if defined(ARCCORE_COMPILING_SYCL)
-  sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
-  sycl::event event;
-  if constexpr (IsAlwaysUseSyclNdItem<LambdaArgs>::value || sizeof...(RemainingArgs) > 0) {
-    auto tbi = launch_info.kernelLaunchArgs();
-    Int32 b = tbi.nbBlockPerGrid();
-    Int32 t = tbi.nbThreadPerBlock();
-    sycl::nd_range<1> loop_size(b * t, t);
-    Int32 wanted_shared_memory = launch_info._sharedMemorySize();
-    // TODO: regarder s'il y a un coût à utiliser à chaque fois
-    // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
-    event = s.submit([&](sycl::handler& cgh) {
-      sycl::local_accessor<std::byte> shm_acc(sycl::range<1>(wanted_shared_memory), cgh);
-      cgh.parallel_for(loop_size, [=](sycl::nd_item<1> i) {
-        std::byte* shm_ptr = shm_acc.get_multi_ptr<sycl::access::decorated::no>().get();
-        kernel(i, SmallSpan<std::byte>(shm_ptr, wanted_shared_memory), args, func, remaining_args...);
+
+//! Classe statique pour lancer les kernels SYCL
+class SyclKernelLauncher
+{
+ public:
+
+  /*!
+   * \brief Fonction générique pour exécuter un kernel SYCL.
+   *
+   * \param kernel noyau SYCL
+   * \param func fonction à exécuter par le noyau
+   * \param bounds intervalle d'itération
+   * \param other_args autres arguments de la lambda
+   */
+  template <typename SyclKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
+  apply(SyclKernel kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
+        const LoopBoundType& bounds, const RemainingArgs&... remaining_args)
+  {
+    sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
+    sycl::event event;
+    if constexpr (IsAlwaysUseSyclNdItem<LoopBoundType>::value || sizeof...(RemainingArgs) > 0) {
+      //TODO: regarder comment convertir \a kernel en un functor
+      auto tbi = launch_info._computeKernelLaunchArgs(nullptr);
+      Int32 b = tbi.nbBlockPerGrid();
+      Int32 t = tbi.nbThreadPerBlock();
+      Int32 wanted_shared_memory = tbi.sharedMemorySize();
+      sycl::nd_range<1> loop_size(b * t, t);
+      // TODO: regarder s'il y a un coût à utiliser à chaque fois
+      // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
+      event = s.submit([&](sycl::handler& cgh) {
+        sycl::local_accessor<std::byte> shm_acc(sycl::range<1>(wanted_shared_memory), cgh);
+        cgh.parallel_for(loop_size, [=](sycl::nd_item<1> i) {
+          std::byte* shm_ptr = shm_acc.get_multi_ptr<sycl::access::decorated::no>().get();
+          kernel(i, SmallSpan<std::byte>(shm_ptr, wanted_shared_memory), bounds, func, remaining_args...);
+        });
       });
-    });
-    //event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
+      //event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
+    }
+    else {
+      sycl::range<1> loop_size = launch_info.totalLoopSize();
+      event = s.parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, bounds, func); });
+    }
+    launch_info._addSyclEvent(&event);
   }
-  else {
-    sycl::range<1> loop_size = launch_info.totalLoopSize();
-    event = s.parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
-  }
-  launch_info._addSyclEvent(&event);
-#else
-  ARCCORE_UNUSED(launch_info);
-  ARCCORE_UNUSED(kernel);
-  ARCCORE_UNUSED(func);
-  ARCCORE_UNUSED(args);
-  ARCCORE_FATAL_NO_SYCL_COMPILATION();
-#endif
-}
+};
+
+#endif // ARCCORE_COMPILING_SYCL
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -432,11 +442,10 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
 #define ARCCORE_MACRO_EXPAND2(...) ARCCORE_MACRO_EXPAND1(ARCCORE_MACRO_EXPAND1(ARCCORE_MACRO_EXPAND1(__VA_ARGS__)))
 #define ARCCORE_MACRO_EXPAND1(...) __VA_ARGS__
 
-#define ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER(a1, ...) \
-  , decltype(a1)& a1                                                     \
-  __VA_OPT__(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH_AGAIN ARCCORE_MACRO_PARENS(__VA_ARGS__))
+#define ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_HELPER(a1, ...) \
+  , decltype(a1)& a1 __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_AGAIN ARCCORE_MACRO_PARENS(__VA_ARGS__))
 
-#define ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH_AGAIN() ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER
+#define ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_AGAIN() ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_HELPER
 
 /*
  * \brief Macro pour générer les arguments de la lambda.
@@ -447,14 +456,13 @@ void _applyKernelSYCL(RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lamb
  *
  * Par exemple:
  * \code
- * ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(value1,value2)
+ * ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(value1,value2)
  * // Cela génère le code suivant:
  * , decltype(value1)&, decltype(value2)&
  * \encode
  */
-#define ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH(...) \
-  __VA_OPT__(ARCCORE_MACRO_EXPAND(ARCCORE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER(__VA_ARGS__)))
-
+#define ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(...) \
+  __VA_OPT__(ARCCORE_MACRO_EXPAND(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_HELPER(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

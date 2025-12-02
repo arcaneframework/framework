@@ -35,21 +35,25 @@ class ARCCORE_COMMON_EXPORT KernelLaunchArgs
  public:
 
   KernelLaunchArgs() = default;
-  KernelLaunchArgs(Int32 nb_block_per_grid, Int32 nb_thread_per_block)
+  KernelLaunchArgs(Int32 nb_block_per_grid, Int32 nb_thread_per_block,
+                   Int32 shared_memory_size)
   : m_nb_block_per_grid(nb_block_per_grid)
   , m_nb_thread_per_block(nb_thread_per_block)
+  , m_shared_memory_size(shared_memory_size)
   {
   }
 
  public:
 
-  int nbBlockPerGrid() const { return m_nb_block_per_grid; }
-  int nbThreadPerBlock() const { return m_nb_thread_per_block; }
+  Int32 nbBlockPerGrid() const { return m_nb_block_per_grid; }
+  Int32 nbThreadPerBlock() const { return m_nb_thread_per_block; }
+  Int32 sharedMemorySize() const { return m_shared_memory_size; }
 
  private:
 
-  int m_nb_block_per_grid = 0;
-  int m_nb_thread_per_block = 0;
+  Int32 m_nb_block_per_grid = 0;
+  Int32 m_nb_thread_per_block = 0;
+  Int32 m_shared_memory_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/

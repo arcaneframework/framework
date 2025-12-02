@@ -61,8 +61,7 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
   virtual void finalize(ITraceMng*) {}
   virtual Impl::KernelLaunchArgs computeKernalLaunchArgs(const Impl::KernelLaunchArgs& orig_args,
                                                          const void* kernel_ptr,
-                                                         Int64 total_loop_size,
-                                                         Int32 wanted_shared_memory);
+                                                         Int64 total_loop_size);
 
  protected:
 
