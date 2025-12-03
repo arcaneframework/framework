@@ -36,6 +36,7 @@ set(SOURCES
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
   internal/SpecificMemoryCopyList.h
+  internal/HostSpecificMemoryCopy.h
 
   accelerator/CommonAcceleratorGlobal.h
   accelerator/AcceleratorCore.cc

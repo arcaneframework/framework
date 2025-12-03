@@ -16,6 +16,7 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/common/MemoryAllocationOptions.h"
 #include "arccore/common/internal/SpecificMemoryCopyList.h"
+#include "arccore/common/internal/HostSpecificMemoryCopy.h"
 #include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/MemoryResourceMng.h"
 
@@ -33,13 +34,13 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IndexedCopyTraits
+class HostIndexedCopyTraits
 {
  public:
 
   using InterfaceType = ISpecificMemoryCopy;
-  template <typename DataType, typename Extent> using SpecificType = SpecificMemoryCopy<DataType, Extent>;
-  using RefType = SpecificMemoryCopyRef<IndexedCopyTraits>;
+  template <typename DataType, typename Extent> using SpecificType = HostSpecificMemoryCopy<DataType, Extent>;
+  using RefType = SpecificMemoryCopyRef<HostIndexedCopyTraits>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +65,7 @@ namespace
 
 namespace
 {
-  impl::SpecificMemoryCopyList<impl::IndexedCopyTraits> global_copy_list;
+  impl::SpecificMemoryCopyList<impl::HostIndexedCopyTraits> global_copy_list;
   impl::ISpecificMemoryCopyList* default_global_copy_list = nullptr;
 
   impl::ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
@@ -82,7 +83,6 @@ namespace
     return data_size1;
   }
 } // namespace
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -277,7 +277,7 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
 
 void MemoryUtils::
 copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
-                    Span<const Int32> indexes)
+                               Span<const Int32> indexes)
 {
   copyWithIndexedDestination(destination, source, indexes.smallView(), nullptr);
 }
@@ -287,7 +287,7 @@ copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView so
 
 void MemoryUtils::
 copyWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
-                SmallSpan<const Int32> indexes, RunQueue* queue)
+                           SmallSpan<const Int32> indexes, RunQueue* queue)
 {
 
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
@@ -340,7 +340,7 @@ fill(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 
 void MemoryUtils::
 copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
-                  Span<const Int32> indexes)
+                          Span<const Int32> indexes)
 {
   copyWithIndexedSource(destination, source, indexes.smallView(), nullptr);
 }
@@ -350,8 +350,8 @@ copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 void MemoryUtils::
 copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
-              SmallSpan<const Int32> indexes,
-              RunQueue* queue)
+                      SmallSpan<const Int32> indexes,
+                      RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, source.datatypeSize(), destination.datatypeSize());
 
@@ -373,7 +373,7 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 void MemoryUtils::
 copyWithIndexedDestination(MutableMultiMemoryView destination, ConstMemoryView source,
-                SmallSpan<const Int32> indexes, RunQueue* queue)
+                           SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
@@ -416,7 +416,7 @@ fill(MutableMultiMemoryView destination, ConstMemoryView source, RunQueue* queue
 
 void MemoryUtils::
 copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source,
-              SmallSpan<const Int32> indexes, RunQueue* queue)
+                      SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
@@ -442,7 +442,7 @@ arccorePrintSpecificMemoryStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
