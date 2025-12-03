@@ -19,16 +19,15 @@
 #include "arccore/common/accelerator/RunQueue.h"
 #include "arccore/common/Array.h"
 
+#include "arccore/accelerator/AcceleratorUtils.h"
+
 #if defined(ARCCORE_COMPILING_HIP)
-#include "arccore/accelerator_native/HipAccelerator.h"
 #include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCCORE_COMPILING_CUDA)
-#include "arccore/accelerator_native/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
 #if defined(ARCCORE_COMPILING_SYCL)
-#include "arccore/accelerator_native/SyclAccelerator.h"
 #if defined(ARCCORE_HAS_ONEDPL)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
@@ -37,8 +36,6 @@
 #include <AdaptiveCpp/algorithms/algorithm.hpp>
 #endif
 #endif
-
-#include "arccore/accelerator/AcceleratorUtils.h"
 
 // A définir si on souhaite utiliser LambdaStorage
 // #ifdef ARCCORE_USE_LAMBDA_STORAGE
