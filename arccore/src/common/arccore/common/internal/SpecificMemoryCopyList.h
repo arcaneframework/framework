@@ -19,6 +19,7 @@
 #include "arccore/base/FatalErrorException.h"
 
 #include <atomic>
+#include <vector>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -176,26 +177,43 @@ class SpecificMemoryCopyList
   SpecificMemoryCopyList()
   {
     m_copier.fill(nullptr);
-    m_copier[1] = &m_s1;
-    m_copier[2] = &m_s2;
-    m_copier[3] = &m_s3;
-    m_copier[4] = &m_s4;
-    m_copier[5] = &m_s5;
-    m_copier[6] = &m_s6;
-    m_copier[7] = &m_s7;
-    m_copier[8] = &m_s8;
-    m_copier[9] = &m_s9;
-    m_copier[10] = &m_s10;
 
-    m_copier[12] = &m_s12;
-    m_copier[16] = &m_s16;
-    m_copier[24] = &m_s24;
-    m_copier[32] = &m_s32;
-    m_copier[40] = &m_s40;
-    m_copier[48] = &m_s48;
-    m_copier[56] = &m_s56;
-    m_copier[64] = &m_s64;
-    m_copier[72] = &m_s72;
+    addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
+    addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
+    addCopier<SpecificType<std::byte, ExtentValue<3>>>(); // 3
+    addCopier<SpecificType<Int32, ExtentValue<1>>>(); // 4
+    addCopier<SpecificType<std::byte, ExtentValue<5>>>(); // 5
+    addCopier<SpecificType<Int16, ExtentValue<3>>>(); // 6
+    addCopier<SpecificType<std::byte, ExtentValue<7>>>(); // 7
+    addCopier<SpecificType<Int64, ExtentValue<1>>>(); // 8
+    addCopier<SpecificType<std::byte, ExtentValue<9>>>(); // 9
+    addCopier<SpecificType<Int16, ExtentValue<5>>>(); // 10
+    addCopier<SpecificType<Int32, ExtentValue<3>>>(); // 12
+
+    addCopier<SpecificType<Int64, ExtentValue<2>>>(); // 16
+    addCopier<SpecificType<Int64, ExtentValue<3>>>(); // 24
+    addCopier<SpecificType<Int64, ExtentValue<4>>>(); // 32
+    addCopier<SpecificType<Int64, ExtentValue<5>>>(); // 40
+    addCopier<SpecificType<Int64, ExtentValue<6>>>(); // 48
+    addCopier<SpecificType<Int64, ExtentValue<7>>>(); // 56
+    addCopier<SpecificType<Int64, ExtentValue<8>>>(); // 64
+    addCopier<SpecificType<Int64, ExtentValue<9>>>(); // 72
+  }
+
+  ~SpecificMemoryCopyList()
+  {
+    for (ISpecificMemoryCopy* copier : m_dynamic_copier_list)
+      delete copier;
+  }
+
+ public:
+
+  template <typename CopierType>
+  void addCopier()
+  {
+    auto* copier = new CopierType();
+    m_copier[copier->datatypeSize()] = copier;
+    m_dynamic_copier_list.push_back(copier);
   }
 
  public:
@@ -271,30 +289,11 @@ class SpecificMemoryCopyList
 
  private:
 
-  SpecificType<std::byte, ExtentValue<1>> m_s1;
-  SpecificType<Int16, ExtentValue<1>> m_s2;
-  SpecificType<std::byte, ExtentValue<3>> m_s3;
-  SpecificType<Int32, ExtentValue<1>> m_s4;
-  SpecificType<std::byte, ExtentValue<5>> m_s5;
-  SpecificType<Int16, ExtentValue<3>> m_s6;
-  SpecificType<std::byte, ExtentValue<7>> m_s7;
-  SpecificType<Int64, ExtentValue<1>> m_s8;
-  SpecificType<std::byte, ExtentValue<9>> m_s9;
-  SpecificType<Int16, ExtentValue<5>> m_s10;
-  SpecificType<Int32, ExtentValue<3>> m_s12;
-
-  SpecificType<Int64, ExtentValue<2>> m_s16;
-  SpecificType<Int64, ExtentValue<3>> m_s24;
-  SpecificType<Int64, ExtentValue<4>> m_s32;
-  SpecificType<Int64, ExtentValue<5>> m_s40;
-  SpecificType<Int64, ExtentValue<6>> m_s48;
-  SpecificType<Int64, ExtentValue<7>> m_s56;
-  SpecificType<Int64, ExtentValue<8>> m_s64;
-  SpecificType<Int64, ExtentValue<9>> m_s72;
-
   std::array<InterfaceType*, NB_COPIER> m_copier;
   std::atomic<Int32> m_nb_specialized = 0;
   std::atomic<Int32> m_nb_generic = 0;
+  //! Liste des copieurs qu'il faudra supprimer via 'delete'
+  std::vector<ISpecificMemoryCopy*> m_dynamic_copier_list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -450,14 +449,15 @@ class SpecificMemoryCopy
       const Int32 nb_dim1 = multi_views.size();
       for (Int32 zz = 0; zz < nb_dim1; ++zz) {
         Span<std::byte> orig_view_bytes = multi_views[zz];
-        Int64 nb_value = orig_view_bytes.size() / ((Int64)sizeof(DataType) * m_extent.v);
+        Int64 nb_value = orig_view_bytes.size() / ((Int64)sizeof(DataType));
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
         Span<DataType> orig_view = { orig_view_data, nb_value };
         for (Int64 i = 0; i < nb_value; i += m_extent.v) {
           // Utilise un span pour tester les débordements de tableau mais on
           // pourrait directement utiliser 'orig_view_data' pour plus de performances
-          for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+          for (Int32 z = 0, n = m_extent.v; z < n; ++z) {
             orig_view[i + z] = source[z];
+          }
         }
       }
     }
@@ -521,7 +521,12 @@ class SpecificMemoryCopy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Référence sur un copieur.
+ *
+ * Cette classe permet d'utiliser le copieur spécifique à une taille d'élément
+ * s'il est disponible. Sinon on utilise un copieur générique.
+ */
 template <typename Traits>
 class SpecificMemoryCopyRef
 {

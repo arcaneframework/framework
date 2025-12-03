@@ -30,4 +30,6 @@ set(SOURCES
   SpanViews.h
   WorkGroupLoopRange.h
   WorkGroupLoopRange.cc
+
+  internal/AcceleratorMemoryCopier.h
 )
