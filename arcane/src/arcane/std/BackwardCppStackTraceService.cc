@@ -50,6 +50,7 @@ class BackwardCppStackTraceService
   explicit BackwardCppStackTraceService(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   , m_verbose_level(2)
+  , m_human_readable(true)
   {}
 
  public:
@@ -67,6 +68,15 @@ class BackwardCppStackTraceService
       }
       m_verbose_level = v.value();
     }
+
+    // Permet d'ajouter les espaces entre les appels dans la pile d'appel et
+    // d'afficher le numéro de ligne avant le chemin du fichier source.
+    // Sinon, on affiche le chemin du fichier et le numéro de ligne de manière
+    // lisible par les debuggers/IDE (path:line).
+    // Défaut = true.
+    if (const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CALLSTACK_HUMAN_READABLE", true)) {
+      m_human_readable = (v.value() != 0);
+    }
   }
 
  public:
@@ -77,6 +87,7 @@ class BackwardCppStackTraceService
  private:
 
   Int32 m_verbose_level;
+  bool m_human_readable;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -113,10 +124,18 @@ stackTrace(int first_function)
       bool arcane_function = String(trace.object_function).startsWith("Arcane");
       if (m_verbose_level > 1 || !arcane_function) {
         auto lines = sf.get_snippet(trace.source.filename, src_line, 5);
-        message += "\n                  Line: ";
-        message += src_line;
-        message += " -- File: ";
-        message += trace.source.filename;
+        if (m_human_readable) {
+          message += "\n                  Line: ";
+          message += src_line;
+          message += " -- File: ";
+          message += trace.source.filename;
+        }
+        else {
+          message += "\n                  ";
+          message += trace.source.filename;
+          message += ":";
+          message += src_line;
+        }
         if (m_verbose_level > 3 || (m_verbose_level > 2 && !arcane_function)) {
           for (const auto& [line_num, line] : lines) {
             message += (line_num == src_line ? "\n                  >>>  " : "\n                       ");
@@ -128,7 +147,10 @@ stackTrace(int first_function)
       }
     }
 
-    message += "\n";
+    if (m_human_readable)
+      message += "\n\n";
+    else
+      message += "\n";
 
     stack_frames.addFrame(StackFrame(reinterpret_cast<intptr_t>(trace.addr)));
   }
