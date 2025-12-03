@@ -16,10 +16,14 @@
 #include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IParallelMng.h"
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/IDataSynchronizeImplementation.h"
+
+#include "arccore/common/accelerator/RunQueue.h"
+#include "arccore/accelerator/AcceleratorUtils.h"
 
 #include <nccl.h>
 
@@ -110,6 +114,9 @@ NCCLVariableSynchronizeDispatcher(Factory* f)
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
 
+  // TODO: Il faudrait vérifier qu'on a bien un GPU par rang MPI
+  // car NCCL ne supporte pas qu'il y ait plusieurs rangs sur le même GPU.
+
   ncclUniqueId my_id;
   ARCCORE_CHECK_NCCL(ncclGetUniqueId(&my_id));
   ArrayView<char> id_as_bytes(NCCL_UNIQUE_ID_BYTES, reinterpret_cast<char*>(&my_id));
@@ -131,7 +138,13 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
   tm->info() << "Doing NCCL Sync";
 
   double prepare_time = 0.0;
+  cudaStream_t stream = 0;
 
+  // Si le IParallelMng a une RunQueue Cuda, on l'utilise.
+  RunQueue pm_queue = pm->_internalApi()->queue();
+  if (pm_queue.executionPolicy() == Accelerator::eExecutionPolicy::CUDA)
+    stream = Accelerator::AcceleratorUtils::toCudaNativeStream(pm_queue);
+;
   ARCCORE_CHECK_NCCL(ncclGroupStart());
   {
     // Recopie les buffers d'envoi dans \a var_values
@@ -142,7 +155,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
       Int32 target_rank = ds_buf->targetRank(i);
       auto buf = ds_buf->receiveBuffer(i).bytes();
       if (!buf.empty()) {
-        ARCCORE_CHECK_NCCL(ncclRecv(buf.data(), buf.size(), ncclInt8, target_rank, m_nccl_communicator, 0));
+        ARCCORE_CHECK_NCCL(ncclRecv(buf.data(), buf.size(), ncclInt8, target_rank, m_nccl_communicator, stream));
       }
     }
 
@@ -151,7 +164,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
       auto buf = ds_buf->sendBuffer(i).bytes();
       Int32 target_rank = ds_buf->targetRank(i);
       if (!buf.empty()) {
-        ARCCORE_CHECK_NCCL(ncclSend(buf.data(), buf.size(), ncclInt8, target_rank, m_nccl_communicator, 0));
+        ARCCORE_CHECK_NCCL(ncclSend(buf.data(), buf.size(), ncclInt8, target_rank, m_nccl_communicator, stream));
       }
     }
   }
