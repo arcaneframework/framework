@@ -16,13 +16,14 @@
 
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
-#if defined(ARCCORE_COMPILING_HIP)
-#include <hip/hip_runtime.h>
+#if defined(ARCCORE_HAS_HIP)
+#include "arccore/accelerator_native/HipAccelerator.h"
 #endif
-#if defined(ARCCORE_COMPILING_CUDA)
+#if defined(ARCCORE_HAS_CUDA)
+#include "arccore/accelerator_native/CudaAccelerator.h"
 #endif
-#if defined(ARCCORE_COMPILING_SYCL)
-#include <sycl/sycl.hpp>
+#if defined(ARCCORE_HAS_SYCL)
+#include "arccore/accelerator_native/SyclAccelerator.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -34,7 +35,7 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPILING_CUDA)
+#if defined(ARCCORE_HAS_CUDA)
 class ARCCORE_ACCELERATOR_EXPORT CudaUtils
 {
  public:
@@ -48,7 +49,7 @@ class ARCCORE_ACCELERATOR_EXPORT CudaUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPILING_HIP)
+#if defined(ARCCORE_HAS_HIP)
 class ARCCORE_ACCELERATOR_EXPORT HipUtils
 {
  public:
@@ -62,7 +63,7 @@ class ARCCORE_ACCELERATOR_EXPORT HipUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPILING_SYCL)
+#if defined(ARCCORE_HAS_SYCL)
 class ARCCORE_ACCELERATOR_EXPORT SyclUtils
 {
  public:
@@ -87,7 +88,7 @@ namespace Arcane::Accelerator::AcceleratorUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPILING_CUDA)
+#if defined(ARCCORE_HAS_CUDA)
 /*!
  * \brief Retourne l'instance de cudaStream_t associée à \q queue.
  *
@@ -100,7 +101,7 @@ toCudaNativeStream(const RunQueue& queue)
 }
 #endif
 
-#if defined(ARCCORE_COMPILING_HIP)
+#if defined(ARCCORE_HAS_HIP)
 /*!
  * \brief Retourne l'instance de hipStream_t associée à \q queue.
  *
@@ -113,7 +114,7 @@ toHipNativeStream(const RunQueue& queue)
 }
 #endif
 
-#if defined(ARCCORE_COMPILING_SYCL)
+#if defined(ARCCORE_HAS_SYCL)
 /*!
  * \brief Retourne l'instance de hipStream_t associée à \q queue.
  *
