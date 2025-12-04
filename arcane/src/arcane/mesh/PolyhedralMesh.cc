@@ -643,7 +643,7 @@ namespace mesh
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
                               [arcane_item_family, uids_local=std::move(uids_copy), &added_items, owners_local=std::move(owners_copy)]
-                                  (Neo::ItemLidsProperty const& lids_property,
+                                  ([[maybe_unused]] Neo::ItemLidsProperty const& lids_property,
                                    Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 auto new_items_lids{added_items.new_items.localIds()};
                                 Int32ConstSpan neo_items{ new_items_lids.data(), static_cast<Int32>(new_items_lids.size()) };
