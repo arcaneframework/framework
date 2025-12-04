@@ -788,8 +788,9 @@ _computeDirectionsV2()
       _computeMeshDirectionV2(*patch.get(), MD_DirZ, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
   }
 
-  if (arcaneIsCheck())
-    checkValid();
+  // TODO : Voir pour modifier cette méthode.
+  // if (arcaneIsCheck())
+  //   checkValid();
 
   _saveInfosInProperties();
 }
@@ -834,35 +835,24 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
   // Positionne pour chaque maille les faces avant et après dans la direction.
   // On s'assure que ces entités sont dans le groupe des entités de la direction correspondante
   std::set<Int32> cells_set;
-  ENUMERATE_CELL (icell, all_cells) {
+  ENUMERATE_ (Cell, icell, all_cells) {
     cells_set.insert(icell.itemLocalId());
   }
 
   // Calcule les mailles devant/derrière. En cas de patch AMR, il faut que ces deux mailles
   // soient de même niveau
-  ENUMERATE_CELL (icell, all_cells) {
+  ENUMERATE_ (Cell, icell, all_cells) {
     Cell cell = *icell;
     Int32 my_level = cell.level();
     Face next_face = cell.face(next_local_face);
     Cell next_cell = next_face.backCell() == cell ? next_face.frontCell() : next_face.backCell();
-    if (cells_set.find(next_cell.localId()) == cells_set.end()) {
-      if (next_cell.level() != my_level) {
-        next_cell = Cell();
-      }
-    }
-    else if (next_cell.level() != my_level) {
+    if (!cells_set.contains(next_cell.localId()) || next_cell.level() != my_level) {
       next_cell = Cell();
     }
 
     Face prev_face = cell.face(prev_local_face);
     Cell prev_cell = prev_face.backCell() == cell ? prev_face.frontCell() : prev_face.backCell();
-
-    if (cells_set.find(prev_cell.localId()) == cells_set.end()) {
-      if (prev_cell.level() != my_level) {
-        prev_cell = Cell();
-      }
-    }
-    else if (prev_cell.level() != my_level) {
+    if (!cells_set.contains(prev_cell.localId()) || prev_cell.level() != my_level) {
       prev_cell = Cell();
     }
 
@@ -1227,7 +1217,6 @@ _applyCoarse(const AMRZonePosition& zone_position)
 void CartesianMeshImpl::
 checkValid() const
 {
-  //return; // TODO : Modification des outers à prendre en compte.
   info(4) << "Check valid CartesianMesh";
   Integer nb_patch = nbPatch();
   for( Integer i=0; i<nb_patch; ++i ){

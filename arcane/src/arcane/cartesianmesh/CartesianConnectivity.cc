@@ -224,7 +224,7 @@ _computeInfos2D(ICartesianMesh* cmesh)
         Node node = cell.node(i);
         Integer pos = 0;
         for (; pos < nb_node_in_cell_max; ++pos) {
-          if (cell.uniqueId() == av_nodes_in_cell[pos])
+          if (node.uniqueId() == av_nodes_in_cell[pos])
             break;
         }
         if (pos == nb_node_in_cell_max)
@@ -416,7 +416,7 @@ _computeInfos3D(ICartesianMesh* cmesh)
         Node node = cell.node(i);
         Integer pos = 0;
         for (; pos < nb_node_in_cell_max; ++pos) {
-          if (cell.uniqueId() == av_nodes_in_cell[pos])
+          if (node.uniqueId() == av_nodes_in_cell[pos])
             break;
         }
         if (pos == nb_node_in_cell_max)
