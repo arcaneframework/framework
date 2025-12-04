@@ -79,6 +79,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   ConstArrayView<Int32> availableGroupIndex();
 
+  void setOverlapLayerSizeTopLevel(Integer size_of_overlap_layer_top_level);
+  Integer overlapLayerSize(Integer level);
+
  private:
 
   Integer _nextIndexForNewPatch();
@@ -108,6 +111,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Integer> m_patches_to_delete;
   Int32 m_index_new_patches;
   UniqueArray<Integer> m_available_group_index;
+  Integer m_size_of_overlap_layer_sub_top_level;
+  Integer m_higher_level;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -513,6 +513,8 @@ void AMRCartesianMeshTesterModule::
 _initAMR()
 {
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  amr_mng.enableOverlapLayer(false);
+
   // Regarde si on dé-raffine le maillage initial
   if (options()->coarseAtInit()){
     // Il faut que les directions aient été calculées avant d'appeler le dé-raffinement
@@ -842,7 +844,7 @@ _checkDirections()
     }
 
     if (cell_hash != expected_hash)
-      ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v= {1} expected='{2}'",
+      ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v='{1}' expected='{2}'",
                    item_family->fullName(), cell_hash, expected_hash);
   };
 
