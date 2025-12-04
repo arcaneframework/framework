@@ -8,7 +8,9 @@
 /* CartesianMeshNumberingMngInternal.cc                        (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
-/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
+/* des mailles et des noeuds est assez classique, la numérotation des faces  */
+/* est expliquée (entre autres) dans les méthodes 'faceUniqueId()' et        */
+/* 'cellFaceUniqueIds()'.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,7 +68,7 @@ CartesianMeshNumberingMngInternal(IMesh* mesh)
   else {
     m_latest_cell_uid = m_nb_cell_ground.x * m_nb_cell_ground.y * m_nb_cell_ground.z;
     m_latest_node_uid = (m_nb_cell_ground.x + 1) * (m_nb_cell_ground.y + 1) * (m_nb_cell_ground.z + 1);
-    m_latest_face_uid = (m_nb_cell_ground.z + 1) * m_nb_cell_ground.x * m_nb_cell_ground.y + (m_nb_cell_ground.x + 1) * m_nb_cell_ground.y * m_nb_cell_ground.z + (m_nb_cell_ground.y + 1) * m_nb_cell_ground.z * m_nb_cell_ground.x;
+    m_latest_face_uid = (m_nb_cell_ground.x + 1) * m_nb_cell_ground.y * m_nb_cell_ground.z + (m_nb_cell_ground.y + 1) * m_nb_cell_ground.z * m_nb_cell_ground.x + (m_nb_cell_ground.z + 1) * m_nb_cell_ground.x * m_nb_cell_ground.y;
   }
 
   m_first_cell_uid_level.add(0);
@@ -484,7 +486,7 @@ nbFaceInLevel(Integer level) const
   }
 
   const Int64x3 nb_cell(globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level));
-  return (nb_cell.z + 1) * nb_cell.x * nb_cell.y + (nb_cell.x + 1) * nb_cell.y * nb_cell.z + (nb_cell.y + 1) * nb_cell.z * nb_cell.x;
+  return (nb_cell.x + 1) * nb_cell.y * nb_cell.z + (nb_cell.y + 1) * nb_cell.z * nb_cell.x + (nb_cell.z + 1) * nb_cell.x * nb_cell.y;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -858,15 +860,15 @@ faceUniqueIdToCoordX(Int64 uid, Integer level)
     //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
     //      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
     //         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
-    //  y = 0  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+    //  y = 0  │  │  │  │  │  │ │ │  │12│  │13│  │ │ │  │  │  │  │  │ │ │  │18│  │19│  │ │ │  │  │  │  │  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
+    //  y = 1  │  │24│  │25│  │ │ │ 0│  │ 1│  │ 2│ │ │  │28│  │29│  │ │ │ 6│  │ 7│  │ 8│ │ │  │32│  │33│  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 2  │  │  │  │  │  │ │ │  │26│  │27│  │ │ │  │  │  │  │  │ │ │  │32│  │33│  │ │ │  │  │  │  │  │
+    //  y = 2  │  │  │  │  │  │ │ │  │14│  │15│  │ │ │  │  │  │  │  │ │ │  │20│  │21│  │ │ │  │  │  │  │  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 3  │  │ 2│  │ 3│  │ │ │15│  │16│  │17│ │ │  │ 6│  │ 7│  │ │ │21│  │22│  │23│ │ │  │10│  │11│  │
+    //  y = 3  │  │26│  │27│  │ │ │ 3│  │ 4│  │ 5│ │ │  │30│  │31│  │ │ │ 9│  │10│  │11│ │ │  │34│  │35│  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 4  │  │  │  │  │  │ │ │  │28│  │29│  │ │ │  │  │  │  │  │ │ │  │34│  │35│  │ │ │  │  │  │  │  │
+    //  y = 4  │  │  │  │  │  │ │ │  │16│  │17│  │ │ │  │  │  │  │  │ │ │  │22│  │23│  │ │ │  │  │  │  │  │
     //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
     //                          │                  │                  │                  │
     //
@@ -874,26 +876,10 @@ faceUniqueIdToCoordX(Int64 uid, Integer level)
     // les faces ayant les uid [12, 23] et les faces ayant les uid [24, 35].
     // On récupère ces intervalles avec la méthode face3DNumberingThreeParts().
 
-    // Pour l'intervalle [0, 11], on remarque que l'origine en X est toujours 1 et que les mailles
-    // contenant une face sont sur les X impairs.
-    // Enfin, on a "nb_cell_x" faces en X.
-    if (uid < three_parts_numbering.x) {
-      //      debug() << "faceUniqueIdToCoordX (1)"
-      //              << " -- true uid : " << initial_uid
-      //              << " -- uid : " << uid
-      //              << " -- level : " << level
-      //              << " -- three_parts_numbering : " << three_parts_numbering
-      //              << " -- nb_cell_x : " << nb_cell_x
-      //              << " -- return : " << ((uid % nb_cell_x) * 2 + 1);
-
-      return (uid % nb_cell_x) * 2 + 1;
-    }
-
-    // Pour l'intervalle [12, 23], on remarque que l'origine en X est toujours 0 et que les mailles
+    // Pour l'intervalle [0, 11], on remarque que l'origine en X est toujours 0 et que les mailles
     // contenant une face sont sur les X pairs.
     // Enfin, on a "nb_face_x" faces en X.
-    else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
-      uid -= three_parts_numbering.x;
+    if (uid < three_parts_numbering.x) {
 
       //      debug() << "faceUniqueIdToCoordX (2)"
       //              << " -- true uid : " << initial_uid
@@ -906,13 +892,28 @@ faceUniqueIdToCoordX(Int64 uid, Integer level)
       return (uid % nb_face_x) * 2;
     }
 
+    // Pour l'intervalle [12, 23], on remarque que l'origine en X est toujours 1 et que les mailles
+    // contenant une face sont sur les X impairs.
+    // Enfin, on a "nb_cell_x" faces en X.
+    else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
+      uid -= three_parts_numbering.x;
+      //      debug() << "faceUniqueIdToCoordX (3)"
+      //              << " -- true uid : " << initial_uid
+      //              << " -- uid : " << uid
+      //              << " -- level : " << level
+      //              << " -- three_parts_numbering : " << three_parts_numbering
+      //              << " -- nb_cell_x : " << nb_cell_x
+      //              << " -- return : " << ((uid % nb_cell_x) * 2 + 1);
+
+      return (uid % nb_cell_x) * 2 + 1;
+    }
+
     // Pour l'intervalle [24, 35], on remarque que l'origine en X est toujours 1 et que les mailles
     // contenant une face sont sur les X impairs.
     // Enfin, on a "nb_cell_x" faces en X.
     else {
       uid -= three_parts_numbering.x + three_parts_numbering.y;
-
-      //      debug() << "faceUniqueIdToCoordX (3)"
+      //      debug() << "faceUniqueIdToCoordX (1)"
       //              << " -- true uid : " << initial_uid
       //              << " -- uid : " << uid
       //              << " -- level : " << level
@@ -988,15 +989,15 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
     //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
     //      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
     //         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
-    //  y = 0  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+    //  y = 0  │  │  │  │  │  │ │ │  │12│  │13│  │ │ │  │  │  │  │  │ │ │  │18│  │19│  │ │ │  │  │  │  │  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
+    //  y = 1  │  │24│  │25│  │ │ │ 0│  │ 1│  │ 2│ │ │  │28│  │29│  │ │ │ 6│  │ 7│  │ 8│ │ │  │32│  │33│  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 2  │  │  │  │  │  │ │ │  │26│  │27│  │ │ │  │  │  │  │  │ │ │  │32│  │33│  │ │ │  │  │  │  │  │
+    //  y = 2  │  │  │  │  │  │ │ │  │14│  │15│  │ │ │  │  │  │  │  │ │ │  │20│  │21│  │ │ │  │  │  │  │  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 3  │  │ 2│  │ 3│  │ │ │15│  │16│  │17│ │ │  │ 6│  │ 7│  │ │ │21│  │22│  │23│ │ │  │10│  │11│  │
+    //  y = 3  │  │26│  │27│  │ │ │ 3│  │ 4│  │ 5│ │ │  │30│  │31│  │ │ │ 9│  │10│  │11│ │ │  │34│  │35│  │
     //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-    //  y = 4  │  │  │  │  │  │ │ │  │28│  │29│  │ │ │  │  │  │  │  │ │ │  │34│  │35│  │ │ │  │  │  │  │  │
+    //  y = 4  │  │  │  │  │  │ │ │  │16│  │17│  │ │ │  │  │  │  │  │ │ │  │22│  │23│  │ │ │  │  │  │  │  │
     //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
     //                          │                  │                  │                  │
     //
@@ -1004,29 +1005,10 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
     // les faces ayant les uid [12, 23] et les faces ayant les uid [24, 35].
     // On récupère ces intervalles avec la méthode face3DNumberingThreeParts().
 
-    // Pour l'intervalle [0, 11], on remarque que l'origine en Y est toujours 1 et que les mailles
+    // Pour l'intervalle [0, 1], on remarque que l'origine en Y est toujours 1 et que les mailles
     // contenant une face sont sur les Y impairs.
     // Enfin, on a "nb_cell_y" faces en Y.
     if (uid < three_parts_numbering.x) {
-      uid %= nb_cell_x * nb_cell_y;
-
-      //      debug() << "faceUniqueIdToCoordY (1)"
-      //              << " -- true uid : " << initial_uid
-      //              << " -- uid : " << uid
-      //              << " -- level : " << level
-      //              << " -- three_parts_numbering : " << three_parts_numbering
-      //              << " -- nb_cell_x : " << nb_cell_x
-      //              << " -- nb_cell_y : " << nb_cell_y
-      //              << " -- return : " << ((uid / nb_cell_x) * 2 + 1);
-
-      return (uid / nb_cell_x) * 2 + 1;
-    }
-
-    // Pour l'intervalle [12, 23], on remarque que l'origine en Y est toujours 1 et que les mailles
-    // contenant une face sont sur les Y impairs.
-    // Enfin, on a "nb_cell_y" faces en Y.
-    else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
-      uid -= three_parts_numbering.x;
       uid %= nb_face_x * nb_cell_y;
 
       //      debug() << "faceUniqueIdToCoordY (2)"
@@ -1041,11 +1023,11 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
       return (uid / nb_face_x) * 2 + 1;
     }
 
-    // Pour l'intervalle [24, 35], on remarque que l'origine en Y est toujours 0 et que les mailles
+    // Pour l'intervalle [12, 23], on remarque que l'origine en Y est toujours 0 et que les mailles
     // contenant une face sont sur les Y pairs.
     // Enfin, on a "nb_face_y" faces en Y.
-    else {
-      uid -= three_parts_numbering.x + three_parts_numbering.y;
+    else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
+      uid -= three_parts_numbering.x;
       uid %= nb_cell_x * nb_face_y;
 
       //      debug() << "faceUniqueIdToCoordY (3)"
@@ -1058,6 +1040,25 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
       //              << " -- return : " << ((uid / nb_cell_x) * 2);
 
       return (uid / nb_cell_x) * 2;
+    }
+
+    // Pour l'intervalle [24, 35], on remarque que l'origine en Y est toujours 1 et que les mailles
+    // contenant une face sont sur les Y impairs.
+    // Enfin, on a "nb_cell_y" faces en Y.
+    else {
+      uid -= three_parts_numbering.x + three_parts_numbering.y;
+      uid %= nb_cell_x * nb_cell_y;
+
+      //      debug() << "faceUniqueIdToCoordY (1)"
+      //              << " -- true uid : " << initial_uid
+      //              << " -- uid : " << uid
+      //              << " -- level : " << level
+      //              << " -- three_parts_numbering : " << three_parts_numbering
+      //              << " -- nb_cell_x : " << nb_cell_x
+      //              << " -- nb_cell_y : " << nb_cell_y
+      //              << " -- return : " << ((uid / nb_cell_x) * 2 + 1);
+
+      return (uid / nb_cell_x) * 2 + 1;
     }
   }
 }
@@ -1094,15 +1095,15 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
   //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
   //      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
   //         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
-  //  y = 0  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+  //  y = 0  │  │  │  │  │  │ │ │  │12│  │13│  │ │ │  │  │  │  │  │ │ │  │18│  │19│  │ │ │  │  │  │  │  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
+  //  y = 1  │  │24│  │25│  │ │ │ 0│  │ 1│  │ 2│ │ │  │28│  │29│  │ │ │ 6│  │ 7│  │ 8│ │ │  │32│  │33│  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 2  │  │  │  │  │  │ │ │  │26│  │27│  │ │ │  │  │  │  │  │ │ │  │32│  │33│  │ │ │  │  │  │  │  │
+  //  y = 2  │  │  │  │  │  │ │ │  │14│  │15│  │ │ │  │  │  │  │  │ │ │  │20│  │21│  │ │ │  │  │  │  │  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 3  │  │ 2│  │ 3│  │ │ │15│  │16│  │17│ │ │  │ 6│  │ 7│  │ │ │21│  │22│  │23│ │ │  │10│  │11│  │
+  //  y = 3  │  │26│  │27│  │ │ │ 3│  │ 4│  │ 5│ │ │  │30│  │31│  │ │ │ 9│  │10│  │11│ │ │  │34│  │35│  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 4  │  │  │  │  │  │ │ │  │28│  │29│  │ │ │  │  │  │  │  │ │ │  │34│  │35│  │ │ │  │  │  │  │  │
+  //  y = 4  │  │  │  │  │  │ │ │  │16│  │17│  │ │ │  │  │  │  │  │ │ │  │22│  │23│  │ │ │  │  │  │  │  │
   //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
   //                          │                  │                  │                  │
   //
@@ -1110,28 +1111,10 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
   // les faces ayant les uid [12, 23] et les faces ayant les uid [24, 35].
   // On récupère ces intervalles avec la méthode face3DNumberingThreeParts().
 
-  // Pour l'intervalle [0, 11], on remarque que l'origine en Z est toujours 0 et que les mailles
-  // contenant une face sont sur les Z pairs.
-  // Enfin, on a "nb_face_z" faces en Z.
-  if (uid < three_parts_numbering.x) {
-
-    //    debug() << "faceUniqueIdToCoordZ (1)"
-    //            << " -- true uid : " << initial_uid
-    //            << " -- uid : " << uid
-    //            << " -- level : " << level
-    //            << " -- three_parts_numbering : " << three_parts_numbering
-    //            << " -- nb_cell_x : " << nb_cell_x
-    //            << " -- nb_cell_y : " << nb_cell_y
-    //            << " -- return : " << ((uid / (nb_cell_x * nb_cell_y)) * 2);
-
-    return (uid / (nb_cell_x * nb_cell_y)) * 2;
-  }
-
-  // Pour l'intervalle [12, 23], on remarque que l'origine en Z est toujours 1 et que les mailles
+  // Pour l'intervalle [0, 11], on remarque que l'origine en Z est toujours 1 et que les mailles
   // contenant une face sont sur les Z impairs.
   // Enfin, on a "nb_cell_z" faces en Z.
-  else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
-    uid -= three_parts_numbering.x;
+  if (uid < three_parts_numbering.x) {
 
     //    debug() << "faceUniqueIdToCoordZ (2)"
     //            << " -- true uid : " << initial_uid
@@ -1145,11 +1128,11 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
     return (uid / (nb_face_x * nb_cell_y)) * 2 + 1;
   }
 
-  // Pour l'intervalle [24, 35], on remarque que l'origine en Z est toujours 1 et que les mailles
+  // Pour l'intervalle [12, 23], on remarque que l'origine en Z est toujours 1 et que les mailles
   // contenant une face sont sur les Z impairs.
   // Enfin, on a "nb_cell_z" faces en Z.
-  else {
-    uid -= three_parts_numbering.x + three_parts_numbering.y;
+  else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
+    uid -= three_parts_numbering.x;
 
     //    debug() << "faceUniqueIdToCoordZ (3)"
     //            << " -- true uid : " << initial_uid
@@ -1161,6 +1144,24 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
     //            << " -- return : " << ((uid / (nb_cell_x * nb_face_y)) * 2 + 1);
 
     return (uid / (nb_cell_x * nb_face_y)) * 2 + 1;
+  }
+
+  // Pour l'intervalle [24, 35], on remarque que l'origine en Z est toujours 0 et que les mailles
+  // contenant une face sont sur les Z pairs.
+  // Enfin, on a "nb_face_z" faces en Z.
+  else {
+    uid -= three_parts_numbering.x + three_parts_numbering.y;
+
+    //    debug() << "faceUniqueIdToCoordZ (1)"
+    //            << " -- true uid : " << initial_uid
+    //            << " -- uid : " << uid
+    //            << " -- level : " << level
+    //            << " -- three_parts_numbering : " << three_parts_numbering
+    //            << " -- nb_cell_x : " << nb_cell_x
+    //            << " -- nb_cell_y : " << nb_cell_y
+    //            << " -- return : " << ((uid / (nb_cell_x * nb_cell_y)) * 2);
+
+    return (uid / (nb_cell_x * nb_cell_y)) * 2;
   }
 }
 
@@ -1242,15 +1243,15 @@ faceUniqueId(Integer level, Int64x3 face_coord)
   //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
   //      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
   //         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
-  //  y = 0  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+  //  y = 0  │  │  │  │  │  │ │ │  │12│  │13│  │ │ │  │  │  │  │  │ │ │  │18│  │19│  │ │ │  │  │  │  │  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
+  //  y = 1  │  │24│  │25│  │ │ │ 0│  │ 1│  │ 2│ │ │  │28│  │29│  │ │ │ 6│  │ 7│  │ 8│ │ │  │32│  │33│  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 2  │  │  │  │  │  │ │ │  │26│  │27│  │ │ │  │  │  │  │  │ │ │  │32│  │33│  │ │ │  │  │  │  │  │
+  //  y = 2  │  │  │  │  │  │ │ │  │14│  │15│  │ │ │  │  │  │  │  │ │ │  │20│  │21│  │ │ │  │  │  │  │  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 3  │  │ 2│  │ 3│  │ │ │15│  │16│  │17│ │ │  │ 6│  │ 7│  │ │ │21│  │22│  │23│ │ │  │10│  │11│  │
+  //  y = 3  │  │26│  │27│  │ │ │ 3│  │ 4│  │ 5│ │ │  │30│  │31│  │ │ │ 9│  │10│  │11│ │ │  │34│  │35│  │
   //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
-  //  y = 4  │  │  │  │  │  │ │ │  │28│  │29│  │ │ │  │  │  │  │  │ │ │  │34│  │35│  │ │ │  │  │  │  │  │
+  //  y = 4  │  │  │  │  │  │ │ │  │16│  │17│  │ │ │  │  │  │  │  │ │ │  │22│  │23│  │ │ │  │  │  │  │  │
   //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
   //                          │                  │                  │                  │
   //
@@ -1263,21 +1264,7 @@ faceUniqueId(Integer level, Int64x3 face_coord)
   // seule la coordonnée y est pair.
 
   // Intervalle [0, 11].
-  if (face_coord.z % 2 == 0) {
-    // Ici, on place les mailles à l'origine 0*0*0 et on les met côte-à-côte.
-    face_coord.x -= 1;
-    face_coord.y -= 1;
-
-    face_coord /= 2;
-
-    // On est, à présent et pour cet intervalle, dans une vue cartésienne de
-    // taille nb_cell_x * nb_cell_y * nb_face_z.
-    uid += face_coord.x + (face_coord.y * nb_cell_x) + (face_coord.z * nb_cell_x * nb_cell_y);
-  }
-
-  // Intervalle [12, 23].
-  else if (face_coord.x % 2 == 0) {
-    uid += three_parts_numbering.x;
+  if (face_coord.x % 2 == 0) {
 
     // Ici, on place les mailles à l'origine 0*0*0 et on les met côte-à-côte.
     face_coord.y -= 1;
@@ -1290,9 +1277,9 @@ faceUniqueId(Integer level, Int64x3 face_coord)
     uid += face_coord.x + (face_coord.y * nb_face_x) + (face_coord.z * nb_face_x * nb_cell_y);
   }
 
-  // Intervalle [24, 35].
+  // Intervalle [12, 23].
   else if (face_coord.y % 2 == 0) {
-    uid += three_parts_numbering.x + three_parts_numbering.y;
+    uid += three_parts_numbering.x;
 
     // Ici, on place les mailles à l'origine 0*0*0 et on les met côte-à-côte.
     face_coord.x -= 1;
@@ -1303,6 +1290,21 @@ faceUniqueId(Integer level, Int64x3 face_coord)
     // On est, à présent et pour cet intervalle, dans une vue cartésienne de
     // taille nb_cell_x * nb_face_y * nb_cell_z.
     uid += face_coord.x + (face_coord.y * nb_cell_x) + (face_coord.z * nb_cell_x * nb_face_y);
+  }
+
+  // Intervalle [24, 35].
+  else if (face_coord.z % 2 == 0) {
+    uid += three_parts_numbering.x + three_parts_numbering.y;
+
+    // Ici, on place les mailles à l'origine 0*0*0 et on les met côte-à-côte.
+    face_coord.x -= 1;
+    face_coord.y -= 1;
+
+    face_coord /= 2;
+
+    // On est, à présent et pour cet intervalle, dans une vue cartésienne de
+    // taille nb_cell_x * nb_cell_y * nb_face_z.
+    uid += face_coord.x + (face_coord.y * nb_cell_x) + (face_coord.z * nb_cell_x * nb_cell_y);
   }
   else {
     ARCANE_FATAL("Bizarre -- x : {0} -- y : {1} -- z : {2}", face_coord.x, face_coord.y, face_coord.z);
@@ -1452,55 +1454,54 @@ cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord)
   // Il est aussi possible de retrouver les UniqueIDs des faces
   // à l'aide de la position de la cellule et la taille du maillage.
   // De plus, l'ordre des UniqueIDs des faces d'une cellule est toujours le
-  // même (en notation localId Arcane (cell.face(i)) : 0, 3, 1, 4, 2, 5).
+  // même (en notation localId Arcane (cell.face(i)) : 1, 4, 2, 5, 0, 3).
   // Les UniqueIDs générés sont donc les mêmes quelque soit le découpage.
-  /*
-       x               z
-    ┌──►          │ ┌──►
-    │             │ │
-   y▼12   13   14 │y▼ ┌────┬────┐
-      │ 26 │ 27 │ │   │ 24 │ 25 │
-      └────┴────┘ │   0    4    8
-     15   16   17 │
-      │ 28 │ 29 │ │   │    │    │
-      └────┴────┘ │   2    6   10
-   z=0            │              x=0
-  - - - - - - - - - - - - - - - - - -
-   z=1            │              x=1
-     18   19   20 │   ┌────┬────┐
-      │ 32 │ 33 │ │   │ 30 │ 31 │
-      └────┴────┘ │   1    5    9
-     21   22   23 │
-      │ 34 │ 35 │ │   │    │    │
-      └────┴────┘ │   3    7   11
-                  │
-  */
+  //
+  // Prenons la vue des faces en grille cartésienne d'un maillage 2x2x2 :
+  //         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
+  //      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
+  //         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
+  //  y = 0  │  │  │  │  │  │ │ │  │12│  │13│  │ │ │  │  │  │  │  │ │ │  │18│  │19│  │ │ │  │  │  │  │  │
+  //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+  //  y = 1  │  │24│  │25│  │ │ │ 0│  │ 1│  │ 2│ │ │  │28│  │29│  │ │ │ 6│  │ 7│  │ 8│ │ │  │32│  │33│  │
+  //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+  //  y = 2  │  │  │  │  │  │ │ │  │14│  │15│  │ │ │  │  │  │  │  │ │ │  │20│  │21│  │ │ │  │  │  │  │  │
+  //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+  //  y = 3  │  │26│  │27│  │ │ │ 3│  │ 4│  │ 5│ │ │  │30│  │31│  │ │ │ 9│  │10│  │11│ │ │  │34│  │35│  │
+  //         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+  //  y = 4  │  │  │  │  │  │ │ │  │16│  │17│  │ │ │  │  │  │  │  │ │ │  │22│  │23│  │ │ │  │  │  │  │  │
+  //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
+  //                          │                  │                  │                  │
+  //
+  // (dans cette vue, les mailles se situent aux X, Y et Z impaires
+  // (donc ici, [1, 1, 1], [3, 1, 1], [1, 3, 1], &c)).
+  //
   // On a un cube décomposé en huit cellules (2x2x2).
   // Le schéma au-dessus représente les faces des cellules de ce cube avec
   // les uniqueIDs que l'algorithme génèrera (sans face_adder).
-  // Pour cet algo, on commence par les faces "xy".
+  // Pour cet algo, on commence par les faces "yz" (direction X).
   // On énumère d'abord en x, puis en y, puis en z.
-  // Une fois les faces "xy" numérotées, on fait les faces "yz".
+  // Une fois les faces "yz" numérotées, on fait les faces "zx" (direction Y).
   // Toujours le même ordre de numérotation.
-  // On termine avec les faces "zx", encore dans le même ordre.
+  // On termine avec les faces "xy" (direction Z), encore dans le même ordre.
   //
   // Dans l'implémentation ci-dessous, on fait la numérotation
   // maille par maille.
 
-  const Int64 total_face_xy = nb_face.z * nb_cell.x * nb_cell.y;
-  const Int64 total_face_xy_yz = total_face_xy + nb_face.x * nb_cell.y * nb_cell.z;
+  const Int64 total_face_yz = nb_face.x * nb_cell.y * nb_cell.z;
+  const Int64 total_face_yz_zx = total_face_yz + nb_face.y * nb_cell.z * nb_cell.x;
 
   const Int64 nb_cell_before_j = cell_coord.y * nb_cell.x;
 
-  uid[0] = (cell_coord.z * nb_cell.x * nb_cell.y) + nb_cell_before_j + (cell_coord.x);
+  uid[0] = (cell_coord.z * nb_cell.x * nb_cell.y) + nb_cell_before_j + cell_coord.x + total_face_yz_zx;
 
   uid[3] = uid[0] + nb_cell.x * nb_cell.y;
 
-  uid[1] = (cell_coord.z * nb_face.x * nb_cell.y) + (cell_coord.y * nb_face.x) + (cell_coord.x) + total_face_xy;
+  uid[1] = (cell_coord.z * nb_face.x * nb_cell.y) + (cell_coord.y * nb_face.x) + cell_coord.x;
 
   uid[4] = uid[1] + 1;
 
-  uid[2] = (cell_coord.z * nb_cell.x * nb_face.y) + nb_cell_before_j + (cell_coord.x) + total_face_xy_yz;
+  uid[2] = (cell_coord.z * nb_cell.x * nb_face.y) + nb_cell_before_j + cell_coord.x + total_face_yz;
 
   uid[5] = uid[2] + nb_cell.x;
 
@@ -1510,6 +1511,8 @@ cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord)
   uid[3] += first_face_uid;
   uid[4] += first_face_uid;
   uid[5] += first_face_uid;
+
+  // debug() << "Coord : " << cell_coord << " -- UIDs : " << uid;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2361,16 +2364,16 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
     Int64x3 three_parts_numbering = _face3DNumberingThreeParts(level);
 
     if (uid < three_parts_numbering.x) {
-      first_child_coord_x += child_x * 2;
-      first_child_coord_y += child_y * 2;
+      first_child_coord_y += child_x * 2;
+      first_child_coord_z += child_y * 2;
     }
     else if (uid < three_parts_numbering.x + three_parts_numbering.y) {
-      first_child_coord_y += child_x * 2;
+      first_child_coord_x += child_x * 2;
       first_child_coord_z += child_y * 2;
     }
     else {
       first_child_coord_x += child_x * 2;
-      first_child_coord_z += child_y * 2;
+      first_child_coord_y += child_y * 2;
     }
 
     if (m_converting_numbering_face && level + 1 == m_ori_level) {
@@ -2398,7 +2401,7 @@ Int64x3 CartesianMeshNumberingMngInternal::
 _face3DNumberingThreeParts(Integer level) const
 {
   const Int64x3 nb_cell(globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level));
-  return { (nb_cell.z + 1) * nb_cell.x * nb_cell.y, (nb_cell.x + 1) * nb_cell.y * nb_cell.z, (nb_cell.y + 1) * nb_cell.z * nb_cell.x };
+  return { (nb_cell.x + 1) * nb_cell.y * nb_cell.z, (nb_cell.y + 1) * nb_cell.z * nb_cell.x, (nb_cell.z + 1) * nb_cell.x * nb_cell.y };
 }
 
 /*---------------------------------------------------------------------------*/

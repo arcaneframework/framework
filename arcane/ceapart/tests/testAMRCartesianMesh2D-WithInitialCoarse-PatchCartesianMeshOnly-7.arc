@@ -50,10 +50,14 @@
     <expected-number-of-cells-in-patchs>1600 6400 484</expected-number-of-cells-in-patchs>
     <expected-number-of-ghost-cells-in-patchs>516 2064 0</expected-number-of-ghost-cells-in-patchs>
     <nodes-uid-hash>d908f0b0fb7d7b8f5191444cee921518</nodes-uid-hash>
-    <faces-uid-hash>7a55f9bbcd8ffe328455b774c619bb34</faces-uid-hash>
+    <!-- Hash avant renumérotation niveau 0. -->
+    <!--    <faces-uid-hash>7a55f9bbcd8ffe328455b774c619bb34</faces-uid-hash>-->
+    <faces-uid-hash>f2b6f769b25c76e345530e4526f17fec</faces-uid-hash>
     <cells-uid-hash>cfa32d74b8f1ba19ab55eae6e84ce87a</cells-uid-hash>
+
     <nodes-direction-hash>04f730c075fc1e636790583d4e8b8646</nodes-direction-hash>
-    <faces-direction-hash>ff5f7573b0107d492962605201ce6499</faces-direction-hash>
+    <!--    <faces-direction-hash>ff5f7573b0107d492962605201ce6499</faces-direction-hash>-->
+    <faces-direction-hash>23558cab23146443187e7ea9da0b3cb8</faces-direction-hash>
     <cells-direction-hash>bcd8f765aa2599913658588408bd995b</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
