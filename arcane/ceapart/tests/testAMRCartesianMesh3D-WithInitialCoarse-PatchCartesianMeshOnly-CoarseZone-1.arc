@@ -64,10 +64,10 @@
     <!--    <expected-number-of-cells-in-patchs>64 496 960</expected-number-of-cells-in-patchs>-->
     <expected-number-of-cells-in-patchs>64 384 576 32 48 64 96 128 128</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>f1eedebec73b1051ef2b7a77ed815702</nodes-uid-hash>
-    <faces-uid-hash>0b1bba1f8971df16968f9648112dcbb1</faces-uid-hash>
+    <faces-uid-hash>920e9a4adc1ecf1a1ed725bf5811d131</faces-uid-hash>
     <cells-uid-hash>85f1a6bff5d48797f358c0145fb9127c</cells-uid-hash>
     <nodes-direction-hash>a362e7707f0455ec1fdc7e787488bc36</nodes-direction-hash>
-    <faces-direction-hash>acf1ed66f073090ef1254410deb54fdb</faces-direction-hash>
+    <faces-direction-hash>6106b305e17b620b0c7b91d6fa0c18a6</faces-direction-hash>
     <cells-direction-hash>0a299b23e95a42809e3e7b1156b78039</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 

@@ -8,12 +8,14 @@
 /* CartesianMeshNumberingMngInternal.h                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
-/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
+/* des mailles et des noeuds est assez classique, la numérotation des faces  */
+/* est expliquée (entre autres) dans les méthodes 'faceUniqueId()' et        */
+/* 'cellFaceUniqueIds()'.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNGINTERNAL_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNGINTERNAL_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHNUMBERINGMNGINTERNAL_H
+#define ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHNUMBERINGMNGINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

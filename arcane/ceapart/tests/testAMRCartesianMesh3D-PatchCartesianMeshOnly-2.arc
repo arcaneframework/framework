@@ -79,7 +79,7 @@
     <faces-uid-hash>5b12ac3a6d9ed116b024074cdef808c6</faces-uid-hash>
     <cells-uid-hash>1ee6fc646290a97f10cef6795ac106f0</cells-uid-hash>
     <nodes-direction-hash>9b08918c51db2517dd59e9c8194708a8</nodes-direction-hash>
-    <faces-direction-hash>436913077cf6cda018aef54ca7dd456e</faces-direction-hash>
+    <faces-direction-hash>9428dabb240644fefb2e9fbf83f97c9d</faces-direction-hash>
     <cells-direction-hash>e974c5f17047b2eb7253bff0c937e99a</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
