@@ -271,7 +271,7 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   Impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();
-  SmallSpan<const Int32> ids = items.localIds();
+  [[maybe_unused]] SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
     ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2 < TraitsType, Lambda, RemainingArgs... >),

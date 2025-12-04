@@ -768,7 +768,8 @@ _createEmptyVariables(IMesh* mesh, const XmlNodeList& item_variables_node, eItem
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createEmptyGroups(IMesh* mesh, const XmlNodeList& groups_node, IItemFamily* item_family) const
+_createEmptyGroups([[maybe_unused]] IMesh* mesh, const XmlNodeList& groups_node,
+                   IItemFamily* item_family) const
 {
   for (XmlNode xnode : groups_node) {
     String name = xnode.attrValue("name");

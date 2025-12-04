@@ -30,12 +30,11 @@ namespace Arcane
 // Seulement implémenté pour les arêtes
 bool NodesOfItemReorderer::
 _reorderOrder3(ConstArrayView<Int64> nodes_uid,
-               ArrayView<Int64> sorted_nodes_uid, bool has_center_node)
+               ArrayView<Int64> sorted_nodes_uid,
+               [[maybe_unused]] bool has_center_node)
 {
   // \a true s'il faut réorienter les faces pour que leur orientation
   // soit indépendante du partitionnement du maillage initial.
-  bool need_swap_orientation = false;
-  Int32 min_node_index = 0;
 
   Int32 nb_node = nodes_uid.size();
 
