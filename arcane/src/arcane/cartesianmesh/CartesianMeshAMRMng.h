@@ -105,6 +105,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * \brief Méthode permettant d'adapter le raffinement du maillage selon les
    * mailles à raffiner.
    *
+   * \warning Méthode expérimentale.
+   *
    * Cette méthode ne peut être appelée que si le maillage est un maillage
    * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
    * (PatchCartesianMeshOnly).
@@ -115,13 +117,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * déjà).
    * Pour être sûr de n'avoir aucun flag déjà présent sur le maillage, il est
    * possible d'appeler la méthode \a clearRefineRelatedFlags().
-   * Dans le cas d'un raffinement niveau par niveau, il est possible de mettre
-   * le paramètre \a clear_refine_flag à false afin de garder les flags des
-   * niveaux inférieurs et d'éviter d'avoir à les recalculer. Pour le dernier
-   * niveau, il est recommandé de mettre le paramètre \a clear_refine_flag à
-   * true pour supprimer les flags devenu inutiles (ou d'appeler la méthode
-   * clearRefineRelatedFlags()).
-   *
+
    * Les mailles n'ayant pas de flag "II_Refine" seront déraffinées.
    *
    * Afin d'éviter les mailles orphelines, si une maille est marquée
@@ -132,18 +128,16 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * CartesianMeshAMRMng amr_mng(cmesh());
    * amr_mng.clearRefineRelatedFlags();
    * for (Integer level = 0; level < 2; ++level){
-   *   computeInLevel(level); // Va mettre des flags II_Refine sur les mailles
-   *   amr_mng.adaptMesh(false);
+   *   // Va faire ses calculs et mettre des flags II_Refine sur les mailles
+   *   // du niveau 0 jusqu'au niveau level.
+   *   computeInLevel(0, level);
+   *   amr_mng.adaptMesh();
    * }
-   * amr_mng.clearRefineRelatedFlags();
    * ```
    *
    * Cette opération est collective.
-   *
-   * \param clear_refine_flag true si l'on souhaite supprimer les flags
-   * II_Refine après adaptation.
    */
-  void adaptMesh(bool clear_refine_flag) const;
+  void adaptMesh() const;
 
   /*!
    * \brief Méthode permettant de supprimer les flags liés au raffinement de
@@ -159,7 +153,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    */
   void clearRefineRelatedFlags() const;
 
-  /*!
+  void enableOverlapLayer(bool enable) const;
+ 
+   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
    * de mailles fantômes sur un niveau de raffinement défini.
    *
