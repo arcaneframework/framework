@@ -15,6 +15,7 @@
    <nb-couches-fantomes>1</nb-couches-fantomes>
    <bibliotheque>Metis</bibliotheque>
    <nom-service-ecriture>Lima</nom-service-ecriture>
+   <patron-nom-fichier-maillage>CAS2CPU%05d</patron-nom-fichier-maillage>
   </tool>
  </execution-directe>
 </cas>
