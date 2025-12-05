@@ -216,9 +216,9 @@ fillSig()
       continue;
     }
 
-    Integer pos_x = m_numbering->cellUniqueIdToCoordX(*icell);
-    Integer pos_y = m_numbering->cellUniqueIdToCoordY(*icell);
-    Integer pos_z = m_numbering->cellUniqueIdToCoordZ(*icell);
+    const Int64 pos_x = m_numbering->cellUniqueIdToCoordX(*icell);
+    const Int64 pos_y = m_numbering->cellUniqueIdToCoordY(*icell);
+    const Int64 pos_z = m_numbering->cellUniqueIdToCoordZ(*icell);
 
     if (
     pos_x < m_patch.minPoint().x || pos_x >= m_patch.maxPoint().x ||
@@ -252,24 +252,24 @@ fillSig()
       Int64x3 begin;
       Int64x3 end;
 
-      begin.x = std::max(min.x, 0l);
-      end.x = std::min(max.x, m_sig_x.size() + 0l);
+      begin.x = std::max(min.x, static_cast<Int64>(0));
+      end.x = std::min(max.x, static_cast<Int64>(m_sig_x.size()));
 
-      begin.y = std::max(min.y, 0l);
-      end.y = std::min(max.y, m_sig_y.size() + 0l);
+      begin.y = std::max(min.y, static_cast<Int64>(0));
+      end.y = std::min(max.y, static_cast<Int64>(m_sig_y.size()));
 
       if (m_mesh->mesh()->dimension() == 2) {
         begin.z = 0;
         end.z = 1;
       }
       else {
-        begin.z = std::max(min.z, 0l);
-        end.z = std::min(max.z, m_sig_z.size() + 0l);
+        begin.z = std::max(min.z, static_cast<Int64>(0));
+        end.z = std::min(max.z, static_cast<Int64>(m_sig_z.size()));
       }
 
-      for (Integer k = begin.z; k < end.z; ++k) {
-        for (Integer j = begin.y; j < end.y; ++j) {
-          for (Integer i = begin.x; i < end.x; ++i) {
+      for (Int64 k = begin.z; k < end.z; ++k) {
+        for (Int64 j = begin.y; j < end.y; ++j) {
+          for (Int64 i = begin.x; i < end.x; ++i) {
             m_sig_x[i]++;
             m_sig_y[j]++;
             m_sig_z[k]++;
