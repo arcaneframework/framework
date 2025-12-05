@@ -1,0 +1,14 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="BasicGeometricPartitionerService" type="caseoption" type2="subdomain">
+  <userclass>User</userclass>
+  <description>
+    Service simple de partitionnement géométrique
+  </description>
+
+  <interface name="Arcane::IMeshPartitionerBase" inherited="false" />
+  <interface name="Arcane::IMeshPartitioner" inherited="false" />
+
+  <options>
+  </options>
+
+</service>
