@@ -112,6 +112,9 @@ class MDIndex<1, IndexType_>
 
   ARCCORE_HOST_DEVICE constexpr Int32 id0() const { return m_indexes[0]; }
   ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
+
+  // Pour l'index de dimension 1, on autorise la conversion vers l'index
+  ARCCORE_HOST_DEVICE constexpr operator IndexType_() const { return m_indexes[0]; }
 };
 
 /*---------------------------------------------------------------------------*/
