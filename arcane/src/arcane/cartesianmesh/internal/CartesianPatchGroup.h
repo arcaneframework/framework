@@ -16,7 +16,10 @@
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
+#include "arcane/core/ItemGroup.h"
+
 #include "arcane/utils/UniqueArray.h"
+
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
 /*---------------------------------------------------------------------------*/
