@@ -13,6 +13,7 @@
    <nb-partie-decoupees>24</nb-partie-decoupees>
    <bibliotheque>Metis</bibliotheque>
    <nom-service-ecriture>Lima</nom-service-ecriture>
+   <patron-nom-fichier-maillage>CAS1CPU%05d</patron-nom-fichier-maillage>
   </tool>
  </execution-directe>
 </cas>
