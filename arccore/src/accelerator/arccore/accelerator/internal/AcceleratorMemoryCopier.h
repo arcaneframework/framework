@@ -90,15 +90,15 @@ class AcceleratorSpecificMemoryCopy
     ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
 
     Int32 nb_index = indexes.size();
-    const Int64 sub_size = m_extent.v;
+    const auto extent = m_extent;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
-      auto [i] = iter();
-      Int64 zindex = i * sub_size;
-      Int64 zci = indexes[i] * sub_size;
-      for (Int32 z = 0; z < sub_size; ++z)
+      Int32 i = iter;
+      Int64 zindex = i * extent.size();
+      Int64 zci = indexes[i] * extent.size();
+      for (Int32 z = 0; z < extent.v; ++z)
         destination[zindex + z] = source[zci + z];
     };
   }
@@ -107,7 +107,6 @@ class AcceleratorSpecificMemoryCopy
                  Span<const DataType> source)
   {
     ARCCORE_CHECK_POINTER(queue);
-
     if (arccoreIsCheck()) {
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, source.data());
@@ -117,24 +116,22 @@ class AcceleratorSpecificMemoryCopy
       // entre l'accélérateur et le CPU.
     }
     const Int32 nb_index = indexes.size() / 2;
-    // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
-    // une erreur lors de l'exécution: error 98 : invalid device function
-    const Int32 sub_size = m_extent.v;
+    const auto extent = m_extent;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
       auto [i] = iter();
       Int32 index0 = indexes[i * 2];
-      Int32 index1 = indexes[(i * 2) + 1];
+      Int64 index1 = indexes[(i * 2) + 1];
       Span<std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
       // Utilise un span pour tester les débordements de tableau mais on
       // pourrait directement utiliser 'orig_view_data' pour plus de performances
       Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
-      Int64 zci = ((Int64)(index1)) * sub_size;
-      Int64 z_index = (Int64)i * sub_size;
-      for (Int32 z = 0, n = sub_size; z < n; ++z)
+      Int64 zci = index1 * extent.v;
+      Int64 z_index = i * extent.size();
+      for (Int32 z = 0, n = extent.v; z < n; ++z)
         orig_view[zci + z] = source[z_index + z];
     };
   }
@@ -154,30 +151,30 @@ class AcceleratorSpecificMemoryCopy
     ARCCORE_CHECK_ACCESSIBLE_POINTER(eExecutionPolicy::Sequential, source.data());
 
     Int32 nb_index = indexes.size();
-    const Int32 sub_size = m_extent.v;
+    const auto extent = m_extent;
     constexpr Int32 max_size = 24;
 
     // Pour l'instant on limite la taille de DataType en dur.
     // A terme, il faudrait allouer sur le device et désallouer en fin
     // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
-    if (sub_size > max_size)
+    if (extent.v > max_size)
       ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
-                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
+                    sizeof(DataType) * extent.v, sizeof(DataType) * max_size);
     FixedArray<DataType, max_size> local_source;
-    for (Int32 z = 0; z < sub_size; ++z)
+    for (Int32 z = 0; z < extent.v; ++z)
       local_source[z] = source[z];
-    for (Int32 z = sub_size; z < max_size; ++z)
+    for (Int32 z = extent.v; z < max_size; ++z)
       local_source[z] = {};
 
     auto command = makeCommand(queue);
     // Si \a nb_index vaut 0, on remplit tous les éléments
     if (nb_index == 0) {
-      Int32 nb_value = CheckedConvert::toInt32(destination.size() / sub_size);
+      Int32 nb_value = CheckedConvert::toInt32(destination.size() / extent.v);
       command << RUNCOMMAND_LOOP1(iter, nb_value)
       {
         auto [i] = iter();
-        Int64 zci = i * sub_size;
-        for (Int32 z = 0; z < sub_size; ++z)
+        Int64 zci = i * extent.size();
+        for (Int32 z = 0; z < extent.v; ++z)
           destination[zci + z] = local_source[z];
       };
     }
@@ -185,8 +182,8 @@ class AcceleratorSpecificMemoryCopy
       command << RUNCOMMAND_LOOP1(iter, nb_index)
       {
         auto [i] = iter();
-        Int64 zci = indexes[i] * sub_size;
-        for (Int32 z = 0; z < sub_size; ++z)
+        Int64 zci = indexes[i] * extent.size();
+        for (Int32 z = 0; z < extent.v; ++z)
           destination[zci + z] = local_source[z];
       };
     }
@@ -206,21 +203,19 @@ class AcceleratorSpecificMemoryCopy
       // entre l'accélérateur et le CPU.
     }
     const Int32 nb_index = indexes.size() / 2;
-    // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
-    // une erreur lors de l'exécution: error 98 : invalid device function
-    const Int32 sub_size = m_extent.v;
+    const auto extent = m_extent;
     constexpr Int32 max_size = 24;
 
     // Pour l'instant on limite la taille de DataType en dur.
     // A terme, il faudrait allouer sur le device et désallouer en fin
     // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
-    if (sub_size > max_size)
+    if (extent.v > max_size)
       ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
-                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
+                    sizeof(DataType) * extent.v, sizeof(DataType) * max_size);
     FixedArray<DataType, max_size> local_source;
-    for (Int32 z = 0; z < sub_size; ++z)
+    for (Int32 z = 0; z < extent.v; ++z)
       local_source[z] = source[z];
-    for (Int32 z = sub_size; z < max_size; ++z)
+    for (Int32 z = extent.v; z < max_size; ++z)
       local_source[z] = {};
 
     if (nb_index == 0) {
@@ -237,7 +232,7 @@ class AcceleratorSpecificMemoryCopy
         command << RUNCOMMAND_LOOP1(iter, nb_value)
         {
           auto [i] = iter();
-          orig_view[i] = local_source[i % sub_size];
+          orig_view[i] = local_source[i % extent.v];
         };
       }
     }
@@ -247,14 +242,14 @@ class AcceleratorSpecificMemoryCopy
       {
         auto [i] = iter();
         Int32 index0 = indexes[i * 2];
-        Int32 index1 = indexes[(i * 2) + 1];
+        Int64 index1 = indexes[(i * 2) + 1];
         Span<std::byte> orig_view_bytes = multi_views[index0];
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
         // Utilise un span pour tester les débordements de tableau mais on
         // pourrait directement utiliser 'orig_view_data' pour plus de performances
         Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
-        Int64 zci = ((Int64)(index1)) * sub_size;
-        for (Int32 z = 0, n = sub_size; z < n; ++z)
+        Int64 zci = index1 * extent.v;
+        for (Int32 z = 0, n = extent.v; z < n; ++z)
           orig_view[zci + z] = local_source[z];
       };
     }
@@ -270,15 +265,15 @@ class AcceleratorSpecificMemoryCopy
     ARCCORE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
 
     Int32 nb_index = indexes.size();
-    const Int64 sub_size = m_extent.v;
+    const auto extent = m_extent;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
       auto [i] = iter();
-      Int64 zindex = i * sub_size;
-      Int64 zci = indexes[i] * sub_size;
-      for (Int32 z = 0; z < sub_size; ++z)
+      Int64 zindex = i * extent.size();
+      Int64 zci = indexes[i] * extent.v;
+      for (Int32 z = 0; z < extent.v; ++z)
         destination[zci + z] = source[zindex + z];
     };
   }
@@ -297,24 +292,22 @@ class AcceleratorSpecificMemoryCopy
     }
 
     const Int32 nb_index = indexes.size() / 2;
-    // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
-    // une erreur lors de l'exécution: error 98 : invalid device function
-    const Int32 sub_size = m_extent.v;
+    const auto extent = m_extent;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
       auto [i] = iter();
       Int32 index0 = indexes[i * 2];
-      Int32 index1 = indexes[(i * 2) + 1];
+      Int64 index1 = indexes[(i * 2) + 1];
       Span<const std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<const DataType*>(orig_view_bytes.data());
       // Utilise un span pour tester les débordements de tableau mais on
       // pourrait directement utiliser 'orig_view_data' pour plus de performances
       Span<const DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
-      Int64 zci = ((Int64)(index1)) * sub_size;
-      Int64 z_index = (Int64)i * sub_size;
-      for (Int32 z = 0, n = sub_size; z < n; ++z)
+      Int64 zci = index1 * extent.v;
+      Int64 z_index = i * extent.size();
+      for (Int32 z = 0, n = extent.v; z < n; ++z)
         destination[z_index + z] = orig_view[zci + z];
     };
   }
