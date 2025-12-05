@@ -5,41 +5,53 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUtils.h                                        (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires associées à 'ICartesianMesh'.                       */
+/* Groupe de position de patch AMR réparti par niveau.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHUTILS_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHUTILS_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
+#define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/Ref.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
+#include "arcane/utils/UniqueArray.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Fonctions utilitaires associées à 'ICartesianMesh'.
- */
-namespace Arcane::CartesianMeshUtils
+
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V2).
- * \warning Experimental method !
- */
-extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<CartesianMeshCoarsening2>
-createCartesianMeshCoarsening2(ICartesianMesh* cm);
+class AMRPatchPositionLevelGroup
+{
+ public:
+
+  explicit AMRPatchPositionLevelGroup(Integer max_level);
+  ~AMRPatchPositionLevelGroup();
+
+ public:
+
+  Integer maxLevel();
+  ConstArrayView<AMRPatchPosition> patches(Integer level);
+  void addPatch(AMRPatchPosition patch);
+  void fusionPatches(Integer level);
+  static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
+
+ private:
+
+  Integer m_max_level;
+  UniqueArray<UniqueArray<AMRPatchPosition>> m_patches;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::CartesianMeshUtils
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

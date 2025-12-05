@@ -441,9 +441,13 @@ build()
      else if(m_amr_type == eMeshAMRKind::Patch){
        ARCANE_FATAL("Patch AMR type is not implemented.");
      }
-     else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly){
+     else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
        // L'AMR PatchCartesianMeshOnly n'est pas géré par MeshRefinement().
        // Voir dans CartesianMesh.cc.
+       // TODO : CartesianMeshAMRPatchMng en a besoin pour les mailles fantômes.
+       //        Voir pour retirer ou remplacer l'appel à la methode
+       //        updateGhostLayerFromParent().
+       m_mesh_refinement = new MeshRefinement(this);
      }
     }
   }

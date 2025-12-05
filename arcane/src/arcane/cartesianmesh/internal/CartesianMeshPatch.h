@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/internal/ICartesianMeshPatchInternal.h"
 #include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/core/ItemTypes.h"
@@ -45,22 +46,39 @@ class CartesianMeshPatch
 , public ICartesianMeshPatch
 {
   friend CartesianMeshImpl;
+
+  class Impl
+  : public ICartesianMeshPatchInternal
+  {
+   public:
+
+    explicit Impl(CartesianMeshPatch* m_patch)
+    : m_patch(m_patch)
+    {}
+    AMRPatchPosition& positionRef() override
+    {
+      return m_patch->m_position;
+    }
+    void setPosition(const AMRPatchPosition& position) override
+    {
+      m_patch->m_position = position;
+    }
+
+   private:
+
+    CartesianMeshPatch* m_patch;
+  };
+
  public:
   CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index);
+  CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index, const AMRPatchPosition& position);
   ~CartesianMeshPatch() override;
  public:
   CellGroup cells() override;
+  CellGroup inPatchCells() override;
   Integer index() override
   {
     return m_amr_patch_index;
-  }
-  Integer level() override
-  {
-    return m_level;
-  }
-  void setLevel(Integer level) override
-  {
-    m_level = level;
   }
   CellDirectionMng& cellDirection(eMeshDirection dir) override
   {
@@ -92,17 +110,33 @@ class CartesianMeshPatch
     return m_node_directions[idir];
   }
   void checkValid() const override;
+
+  AMRPatchPosition position() const override
+  {
+    return m_position;
+  }
+
+  ICartesianMeshPatchInternal* _internalApi() override
+  {
+    return &m_impl;
+  }
+
  private:
+
   void _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
+  void _internalComputeNodeCellInformations();
   void _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
   void _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
+
  private:
+
   ICartesianMesh* m_mesh;
+  AMRPatchPosition m_position;
   CellDirectionMng m_cell_directions[3];
   FaceDirectionMng m_face_directions[3];
   NodeDirectionMng m_node_directions[3];
   Integer m_amr_patch_index;
-  Integer m_level;
+  Impl m_impl;
 };
 
 /*---------------------------------------------------------------------------*/

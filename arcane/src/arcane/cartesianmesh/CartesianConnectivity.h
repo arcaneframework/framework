@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianConnectivity.h                                     (C) 2000-2023 */
+/* CartesianConnectivity.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Informations de connectivité d'un maillage cartésien.                     */
 /*---------------------------------------------------------------------------*/
@@ -221,6 +221,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
   //! Calcule les infos de connectivité.
   void _computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+  void _computeInfos(ICartesianMesh* cmesh);
   //! Positionne les tableaux contenant les infos de connectivité
   void _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node,
                    const Permutation* permutation);
@@ -265,7 +266,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
  private:
 
   void _computeInfos2D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+  void _computeInfos2D(ICartesianMesh* cmesh);
   void _computeInfos3D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+  void _computeInfos3D(ICartesianMesh* cmesh);
 };
 
 /*---------------------------------------------------------------------------*/

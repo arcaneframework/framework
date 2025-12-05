@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUtils.cc                                       (C) 2000-2024 */
+/* CartesianMeshUtils.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires associées à 'ICartesianMesh'.                       */
 /*---------------------------------------------------------------------------*/
@@ -33,16 +33,6 @@ Ref<CartesianMeshCoarsening2> CartesianMeshUtils::
 createCartesianMeshCoarsening2(ICartesianMesh* cm)
 {
   return cm->_internalApi()->createCartesianMeshCoarsening2();
-}
-
-/*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V3?).
- * \warning Very experimental method !
- */
-Ref<ICartesianMeshAMRPatchMng> CartesianMeshUtils::
-cartesianMeshAMRPatchMng(ICartesianMesh* cm)
-{
-  return cm->_internalApi()->cartesianMeshAMRPatchMng();
 }
 
 /*---------------------------------------------------------------------------*/
