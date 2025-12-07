@@ -13,6 +13,7 @@
 
 #include "arccore/accelerator/internal/AcceleratorMemoryCopier.h"
 #include "arccore/common/accelerator/CommonAcceleratorGlobal.h"
+#include "arccore/common/internal/SpecificMemoryCopyList.h"
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
 namespace Arcane::Accelerator::impl
@@ -26,7 +27,7 @@ AcceleratorSpecificMemoryCopyList AcceleratorSpecificMemoryCopyList::m_singleton
 AcceleratorSpecificMemoryCopyList::
 AcceleratorSpecificMemoryCopyList()
 {
-  Arcane::impl::ISpecificMemoryCopyList::setDefaultCopyListIfNotSet(&m_copy_list);
+  Arcane::impl::GlobalMemoryCopyList::setAcceleratorInstance(&m_copy_list);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -17,6 +17,7 @@
 #include "arccore/base/String.h"
 #include "arccore/base/ArrayExtentsValue.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/common/CommonGlobal.h"
 
 #include <atomic>
 #include <vector>
@@ -127,16 +128,6 @@ class ARCCORE_COMMON_EXPORT ISpecificMemoryCopy
  */
 class ARCCORE_COMMON_EXPORT ISpecificMemoryCopyList
 {
- public:
-
-  /*!
-   * \brief Positionne l'instance par défaut pour les copies.
-   *
-   * Cette méthode est normalement appelée par l'API accélérateur pour
-   * fournir des noyaux de copie spécifiques à chaque device.
-   */
-  static void setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr);
-
  public:
 
   virtual void copyTo(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
@@ -384,6 +375,44 @@ class SpecificMemoryCopyRef
   ISpecificMemoryCopy* m_specialized_copier = nullptr;
   SpecificType<std::byte, ExtentValue<DynExtent>> m_generic_copier;
   ISpecificMemoryCopy* m_used_copier = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe singleton contenant l'instance à utiliser pour les copies.
+ *
+ * Par défaut, l'instance est définie dans 'SpecificMemoryCopy.cc' et ne
+ * gère que les copies vers/depuis un CPU.
+ * Si un runtime accélérateur est initialisé, il peut remplacer l'instance
+ * par défaut pour gérer les copies entre CPU et accélérateur.
+ */
+class ARCCORE_COMMON_EXPORT GlobalMemoryCopyList
+{
+ private:
+
+  static ISpecificMemoryCopyList* default_global_copy_list;
+  static ISpecificMemoryCopyList* accelerator_global_copy_list;
+
+ public:
+
+  //! Retourne l'instance par défaut pour la file \a queue
+  static ISpecificMemoryCopyList* getDefault(const RunQueue* queue);
+
+  /*!
+   * \brief Positionne l'instance par défaut pour les copies
+   * lorsqu'un runtime accélérateur est activé
+   *
+   * L'instance doit rester valide pendant toute la durée du programme.
+   * 
+   * Cette méthode est normalement appelée par l'API accélérateur pour
+   * fournir des noyaux de copie spécifiques à chaque device.
+   */
+  static void setAcceleratorInstance(ISpecificMemoryCopyList* ptr);
+  static ISpecificMemoryCopyList* acceleratorInstance()
+  {
+    return accelerator_global_copy_list;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

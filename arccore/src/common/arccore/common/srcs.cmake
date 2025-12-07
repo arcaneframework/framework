@@ -29,6 +29,7 @@ set(SOURCES
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
+  SpecificMemoryCopy.cc
 
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
