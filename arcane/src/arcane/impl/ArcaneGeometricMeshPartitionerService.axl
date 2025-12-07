@@ -1,5 +1,5 @@
 <?xml version="1.0" ?><!-- -*- SGML -*- -->
-<service name="BasicGeometricPartitionerService" type="caseoption" type2="subdomain">
+<service name="ArcaneGeometricMeshPartitionerService" type="caseoption" type2="subdomain">
   <userclass>User</userclass>
   <description>
     Service simple de partitionnement géométrique

@@ -51,7 +51,7 @@ set( ARCANE_SOURCES
   InternalInfosDumper.cc
   ItemEnumeratorTracer.cc
   ItemEnumeratorTracer.h
-  BasicGeometricPartitionerService.cc
+  ArcaneGeometricMeshPartitionerService.cc
   MeshPartitionerTesterService.cc
   MainFactory.cc
   MainFactory.h
@@ -175,6 +175,6 @@ set(AXL_FILES
   ArcaneCaseMeshMasterService
   ArcaneCaseMeshService
   MeshPartitionerTesterService
-  BasicGeometricPartitionerService
+  ArcaneGeometricMeshPartitionerService
   ArcaneBasicMeshSubdividerService
 )
