@@ -168,27 +168,6 @@ class SpecificMemoryCopyList
   SpecificMemoryCopyList()
   {
     m_copier.fill(nullptr);
-
-    addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
-    addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
-    addCopier<SpecificType<std::byte, ExtentValue<3>>>(); // 3
-    addCopier<SpecificType<Int32, ExtentValue<1>>>(); // 4
-    addCopier<SpecificType<std::byte, ExtentValue<5>>>(); // 5
-    addCopier<SpecificType<Int16, ExtentValue<3>>>(); // 6
-    addCopier<SpecificType<std::byte, ExtentValue<7>>>(); // 7
-    addCopier<SpecificType<Int64, ExtentValue<1>>>(); // 8
-    addCopier<SpecificType<std::byte, ExtentValue<9>>>(); // 9
-    addCopier<SpecificType<Int16, ExtentValue<5>>>(); // 10
-    addCopier<SpecificType<Int32, ExtentValue<3>>>(); // 12
-
-    addCopier<SpecificType<Int64, ExtentValue<2>>>(); // 16
-    addCopier<SpecificType<Int64, ExtentValue<3>>>(); // 24
-    addCopier<SpecificType<Int64, ExtentValue<4>>>(); // 32
-    addCopier<SpecificType<Int64, ExtentValue<5>>>(); // 40
-    addCopier<SpecificType<Int64, ExtentValue<6>>>(); // 48
-    addCopier<SpecificType<Int64, ExtentValue<7>>>(); // 56
-    addCopier<SpecificType<Int64, ExtentValue<8>>>(); // 64
-    addCopier<SpecificType<Int64, ExtentValue<9>>>(); // 72
   }
 
   ~SpecificMemoryCopyList()

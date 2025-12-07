@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopier.cc                                             (C) 2000-2025 */
+/* MemoryCopierTpl2.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions diverses de copie mémoire.                                      */
+/* Fonctions de copie mémoire sur accélérateur.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,24 +22,18 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-AcceleratorSpecificMemoryCopyList m_singleton_instance;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AcceleratorSpecificMemoryCopyList::
-AcceleratorSpecificMemoryCopyList()
+void AcceleratorSpecificMemoryCopyList::
+addExplicitTemplate2()
 {
   using namespace Arcane::impl;
-  GlobalMemoryCopyList::setAcceleratorInstance(this);
 
-  // Pour raccourcir les temps de compilation, les instantiations
-  // explicites sont faites dans plusieurs fichiers.
-  addExplicitTemplate1();
-  addExplicitTemplate2();
+  //! Ajoute des implémentations spécifiques pour les premières tailles courantes
+  addCopier<SpecificType<Int16, ExtentValue<3>>>(); // 6
+  addCopier<SpecificType<std::byte, ExtentValue<7>>>(); // 7
+  addCopier<SpecificType<Int64, ExtentValue<1>>>(); // 8
+  addCopier<SpecificType<std::byte, ExtentValue<9>>>(); // 9
+  addCopier<SpecificType<Int16, ExtentValue<5>>>(); // 10
+  addCopier<SpecificType<Int32, ExtentValue<3>>>(); // 12
 }
 
 /*---------------------------------------------------------------------------*/

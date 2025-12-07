@@ -331,15 +331,16 @@ class AcceleratorIndexedCopyTraits
  * \brief Singleton contenant les instances des copiers sur accélérateur.
  */
 class AcceleratorSpecificMemoryCopyList
+: public Arcane::impl::SpecificMemoryCopyList<AcceleratorIndexedCopyTraits>
 {
- private:
-
-  static AcceleratorSpecificMemoryCopyList m_singleton_instance;
-
  public:
 
   AcceleratorSpecificMemoryCopyList();
-  Arcane::impl::SpecificMemoryCopyList<AcceleratorIndexedCopyTraits> m_copy_list;
+
+  void addExplicitTemplate1();
+  void addExplicitTemplate2();
+  void addExplicitTemplate3();
+  void addExplicitTemplate4();
 };
 
 /*---------------------------------------------------------------------------*/

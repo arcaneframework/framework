@@ -5,16 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopier.cc                                             (C) 2000-2025 */
+/* MemoryCopierTpl4.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions diverses de copie mémoire.                                      */
+/* Fonctions de copie mémoire sur accélérateur.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/accelerator/internal/AcceleratorMemoryCopier.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
@@ -22,24 +19,16 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-AcceleratorSpecificMemoryCopyList m_singleton_instance;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AcceleratorSpecificMemoryCopyList::
-AcceleratorSpecificMemoryCopyList()
+void AcceleratorSpecificMemoryCopyList::
+addExplicitTemplate4()
 {
   using namespace Arcane::impl;
-  GlobalMemoryCopyList::setAcceleratorInstance(this);
 
-  // Pour raccourcir les temps de compilation, les instantiations
-  // explicites sont faites dans plusieurs fichiers.
-  addExplicitTemplate1();
-  addExplicitTemplate2();
+  //! Ajoute des implémentations spécifiques pour les premières tailles courantes
+  addCopier<SpecificType<Int64, ExtentValue<6>>>(); // 48
+  addCopier<SpecificType<Int64, ExtentValue<7>>>(); // 56
+  addCopier<SpecificType<Int64, ExtentValue<8>>>(); // 64
+  addCopier<SpecificType<Int64, ExtentValue<9>>>(); // 72
 }
 
 /*---------------------------------------------------------------------------*/
