@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Opérations atomiques.                                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ATOMIC_H
-#define ARCANE_ACCELERATOR_ATOMIC_H
+#ifndef ARCCORE_ACCELERATOR_ATOMIC_H
+#define ARCCORE_ACCELERATOR_ATOMIC_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

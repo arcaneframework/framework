@@ -16,7 +16,6 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/common/MemoryAllocationOptions.h"
 #include "arccore/common/internal/SpecificMemoryCopyList.h"
-#include "arccore/common/internal/HostSpecificMemoryCopy.h"
 #include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/MemoryResourceMng.h"
 
@@ -27,26 +26,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane::impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class HostIndexedCopyTraits
-{
- public:
-
-  using InterfaceType = ISpecificMemoryCopy;
-  template <typename DataType, typename Extent> using SpecificType = HostSpecificMemoryCopy<DataType, Extent>;
-  using RefType = SpecificMemoryCopyRef<HostIndexedCopyTraits>;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::impl
 
 namespace Arcane
 {
@@ -65,16 +44,9 @@ namespace
 
 namespace
 {
-  impl::SpecificMemoryCopyList<impl::HostIndexedCopyTraits> global_copy_list;
-  impl::ISpecificMemoryCopyList* default_global_copy_list = nullptr;
-
   impl::ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
   {
-    if (queue && !default_global_copy_list)
-      ARCCORE_FATAL("No instance of copier is available for RunQueue");
-    if (default_global_copy_list && queue)
-      return default_global_copy_list;
-    return &global_copy_list;
+    return impl::GlobalMemoryCopyList::getDefault(queue);
   }
   Int32 _checkDataTypeSize(const TraceInfo& trace, Int32 data_size1, Int32 data_size2)
   {
@@ -226,17 +198,6 @@ MemoryAllocationOptions MemoryUtils::
 getAllocationOptions(eMemoryResource mem_resource)
 {
   return MemoryAllocationOptions(getAllocator(mem_resource));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void impl::ISpecificMemoryCopyList::
-setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr)
-{
-  if (!default_global_copy_list) {
-    default_global_copy_list = ptr;
-  }
 }
 
 /*---------------------------------------------------------------------------*/

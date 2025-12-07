@@ -5,16 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopier.cc                                             (C) 2000-2025 */
+/* MemoryCopierTpl1.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions diverses de copie mémoire.                                      */
+/* Fonctions de copie mémoire sur accélérateur.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/accelerator/internal/AcceleratorMemoryCopier.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
@@ -22,24 +19,17 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-AcceleratorSpecificMemoryCopyList m_singleton_instance;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AcceleratorSpecificMemoryCopyList::
-AcceleratorSpecificMemoryCopyList()
+void AcceleratorSpecificMemoryCopyList::
+addExplicitTemplate1()
 {
   using namespace Arcane::impl;
-  GlobalMemoryCopyList::setAcceleratorInstance(this);
 
-  // Pour raccourcir les temps de compilation, les instantiations
-  // explicites sont faites dans plusieurs fichiers.
-  addExplicitTemplate1();
-  addExplicitTemplate2();
+  //! Ajoute des implémentations spécifiques pour les premières tailles courantes
+  addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
+  addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
+  addCopier<SpecificType<std::byte, ExtentValue<3>>>(); // 3
+  addCopier<SpecificType<Int32, ExtentValue<1>>>(); // 4
+  addCopier<SpecificType<std::byte, ExtentValue<5>>>(); // 5
 }
 
 /*---------------------------------------------------------------------------*/

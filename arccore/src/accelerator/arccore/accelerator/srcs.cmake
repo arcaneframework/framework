@@ -1,4 +1,9 @@
 set(SOURCES
+  # On met ces fichiers en premier car ce sont les plus long à compiler
+  MemoryCopier.cc
+  MemoryCopierTpl1.cc
+  MemoryCopierTpl2.cc
+
   AcceleratorGlobal.h
   AcceleratorGlobal.cc
   AcceleratorUtils.h
@@ -16,7 +21,6 @@ set(SOURCES
   GenericSorter.h
   KernelLauncher.h
   LocalMemory.h
-  MemoryCopier.cc
   MultiThreadAlgo.h
   MultiThreadAlgo.cc
   NumArrayViews.h
