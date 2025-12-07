@@ -185,6 +185,8 @@ STRIP_FROM_PATH        = @Arcane_SOURCE_DIR@/src \
                          @Arccore_ROOT@/src/base \
                          @Arccore_ROOT@/src/message_passing \
                          @Arccore_ROOT@/src/collections \
+                         @Arccore_ROOT@/src/common \
+                         @Arccore_ROOT@/src/accelerator \
                          @Arccore_ROOT@/src/concurrency \
                          @Arccore_ROOT@/src/trace \
                          @Arccore_ROOT@/src/message_passing_mpi \
@@ -205,6 +207,8 @@ STRIP_FROM_INC_PATH    = @Arcane_SOURCE_DIR@/src \
                          @Arccore_ROOT@/src/base \
                          @Arccore_ROOT@/src/message_passing \
                          @Arccore_ROOT@/src/collections \
+                         @Arccore_ROOT@/src/common \
+                         @Arccore_ROOT@/src/accelerator \
                          @Arccore_ROOT@/src/concurrency \
                          @Arccore_ROOT@/src/trace \
                          @Arccore_ROOT@/src/message_passing_mpi \
@@ -1057,6 +1061,9 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @Arccore_ROOT@/src/base/arccore/base \
                          @Arccore_ROOT@/src/collections/arccore/collections \
                          @Arccore_ROOT@/src/concurrency/arccore/concurrency \
+                         @Arccore_ROOT@/src/common/arccore/common \
+                         @Arccore_ROOT@/src/common/arccore/common/accelerator \
+                         @Arccore_ROOT@/src/accelerator/arccore/accelerator \
                          @Arccore_ROOT@/src/trace/arccore/trace \
                          @Arccore_ROOT@/src/message_passing/arccore/message_passing \
                          @Arccore_ROOT@/src/message_passing_mpi/arccore/message_passing_mpi \
