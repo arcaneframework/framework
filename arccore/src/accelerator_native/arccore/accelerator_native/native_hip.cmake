@@ -28,7 +28,9 @@ arccore_add_component_library(accelerator_native
 )
 
 target_link_libraries(arccore_accelerator_hip PUBLIC
-  Arccore::arccore_common arccore_hip_compile_flags hip::host
+  arccore_base
+  arccore_hip_compile_flags
+  hip::host
 )
 
 # ----------------------------------------------------------------------------

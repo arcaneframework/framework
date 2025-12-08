@@ -15,9 +15,8 @@ arccore_add_library(arccore_accelerator_hip_runtime
 )
 
 target_link_libraries(arccore_accelerator_hip_runtime PRIVATE
-  Arccore::arccore_accelerator_hip
-)
-target_link_libraries(arccore_accelerator_hip_runtime PUBLIC
+  arccore_accelerator_hip
+  arccore_common
   arccore_hip_compile_flags
 )
 

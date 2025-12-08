@@ -33,7 +33,8 @@ arccore_add_component_library(accelerator_native
 target_compile_options(arccore_accelerator_sycl PRIVATE "${ARCCORE_CXX_SYCL_FLAGS}")
 
 target_link_libraries(arccore_accelerator_sycl PUBLIC
-  Arccore::arccore_common arccore_sycl_compile_flags
+  arccore_base
+  arccore_sycl_compile_flags
 )
 target_link_options(arccore_accelerator_sycl PUBLIC "${ARCCORE_CXX_SYCL_FLAGS}")
 

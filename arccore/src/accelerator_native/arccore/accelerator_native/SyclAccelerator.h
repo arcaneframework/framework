@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/common/CommonGlobal.h"
+#include "arccore/base/ArccoreGlobal.h"
 
 #include <sycl/sycl.hpp>
 
