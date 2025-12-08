@@ -7,9 +7,29 @@
 set(ACCELERATOR_FILES
   TestReduce.cc
   TestPartition_Kernel.cc
-  TestVirtualMethod.cc
-  TestVirtualMethod_Kernel.cc
 )
+
+# Regarde si on réalise les tests sur les méthodes virtuelles
+set(DO_TEST_VIRTUAL FALSE)
+# Ces tests ne sont valides que pour CUDA et HIP
+if ((ARCANE_ACCELERATOR_MODE STREQUAL "CUDA") OR (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM"))
+  set(DO_TEST_VIRTUAL TRUE)
+endif()
+# On ne teste pas les méthodes virtuelles avec CUDA/Clang car
+# cela ne semble pas fonctionner lors de l'édition de lien.
+# Il semble que CMake n'appelle par correctement Clang pour
+# qu'il fasse l'édition avec les symboles séparés.
+# de l'édition de lien), de Clang ou de CMake.
+if (CMAKE_CUDA_COMPILER_ID STREQUAL Clang)
+  set(DO_TEST_VIRTUAL FALSE)
+endif()
+message(STATUS "Check adding accelerator virtual method tests = ${DO_TEST_VIRTUAL}")
+if(DO_TEST_VIRTUAL)
+  list(APPEND ACCELERATOR_FILES
+    TestVirtualMethod.cc
+    TestVirtualMethod_Kernel.cc
+  )
+endif()
 
 arcane_add_component_test_executable(accelerator
   FILES ${SOURCE_FILES} ${ACCELERATOR_FILES}
