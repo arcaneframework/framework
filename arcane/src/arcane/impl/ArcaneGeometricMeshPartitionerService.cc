@@ -122,6 +122,8 @@ class EigenValuesAndVectorComputer
       b_next = math::multiply(matrix, b);
 
       eigenvalue = b_next.normL2();
+      if (math::isNearlyZero(eigenvalue))
+        break;
       b_next = b_next / eigenvalue;
 
       // Vérifier la convergence
@@ -285,6 +287,8 @@ _computeBarycenter(const VariableCellReal3& cells_center, CellVectorView cells)
   }
   Int64 local_nb_cell = cells.size();
   Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, local_nb_cell);
+  if (total_nb_cell == 0)
+    return Real3();
   Real3 sum_center = pm->reduce(Parallel::ReduceSum, center);
   Real3 global_center = sum_center / static_cast<Real>(total_nb_cell);
   return global_center;
@@ -328,7 +332,7 @@ _computeInertiaTensor(Real3 center, const VariableCellReal3& cells_center, CellV
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Trouve l'axe d'interie principal du maillage.
+ * \brief Trouve l'axe d'inertie principal du maillage.
  */
 Real3 ArcaneGeometricMeshPartitionerService::
 _findPrincipalAxis(Real3x3 tensor)
@@ -339,9 +343,18 @@ _findPrincipalAxis(Real3x3 tensor)
   eigen_computer.computeForMatrix(tensor);
   info() << "EigenValues  = " << eigen_computer.eigenValues();
   info() << "EigenVectors = " << eigen_computer.eigenVectors();
-  Real3 v4 = eigen_computer.eigenVectors()[0];
-  info() << "V4=" << v4;
-  return v4;
+  Real3x3 eigen_vectors = eigen_computer.eigenVectors();
+  Real3 v = eigen_vectors[0];
+  // Si le plus petit vecteur propre est nul, prend le suivant
+  // (en général cela n'arrive pa sauf si l'algorithme dans
+  // 'computeForMatrix' n'a pas convergé).
+  if (math::isNearlyZero(v.normL2())){
+    v = eigen_vectors[1];
+    if (math::isNearlyZero(v.normL2()))
+      v = eigen_vectors[2];
+  }
+  info() << "EigenVector=" << v;
+  return v;
 }
 
 /*---------------------------------------------------------------------------*/
