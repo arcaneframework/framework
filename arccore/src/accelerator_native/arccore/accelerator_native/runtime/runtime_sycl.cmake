@@ -14,10 +14,13 @@ arccore_add_library(arccore_accelerator_sycl_runtime
   FILES ${ARCCORE_SOURCES}
 )
 
-target_compile_options(arccore_accelerator_sycl_runtime PRIVATE ${ARCCORE_CXX_SYCL_FLAGS})
+target_compile_options(arccore_accelerator_sycl_runtime PRIVATE
+  ${ARCCORE_CXX_SYCL_FLAGS}
+)
 
-target_link_libraries(arccore_accelerator_sycl_runtime PUBLIC
-  Arccore::arccore_accelerator_sycl
+target_link_libraries(arccore_accelerator_sycl_runtime PRIVATE
+  arccore_common
+  arccore_accelerator_sycl
   arccore_sycl_compile_flags
 )
 

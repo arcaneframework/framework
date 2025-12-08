@@ -16,11 +16,11 @@ arccore_add_library(arccore_accelerator_cuda_runtime
   INPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/runtime
   RELATIVE_PATH .
   FILES ${ARCCORE_SOURCES}
-  )
+)
 
-target_link_libraries(arccore_accelerator_cuda_runtime PRIVATE Arccore::arccore_accelerator_cuda)
-
-target_link_libraries(arccore_accelerator_cuda_runtime PUBLIC
+target_link_libraries(arccore_accelerator_cuda_runtime PRIVATE
+  arccore_accelerator_cuda
+  arccore_common
   arccore_cuda_compile_flags
   CUDA::cudart
   CUDA::cuda_driver

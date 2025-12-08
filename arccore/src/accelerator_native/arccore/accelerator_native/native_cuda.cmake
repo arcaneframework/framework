@@ -58,7 +58,7 @@ arccore_add_component_library(accelerator_native
 )
 
 target_link_libraries(arccore_accelerator_cuda PUBLIC
-  arccore_common
+  arccore_base
   arccore_cuda_compile_flags
   $<BUILD_INTERFACE:arccore_cuda_build_compile_flags>
   CUDA::cudart
