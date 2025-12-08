@@ -294,7 +294,7 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
 
     # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
     if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+      set(CMAKE_CUDA_ARCHITECTURES 75 80)
     endif()
     if (NOT CMAKE_CUDA_HOST_COMPILER)
       set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
