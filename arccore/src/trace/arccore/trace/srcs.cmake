@@ -9,8 +9,9 @@ set(SOURCES
   TraceMessage.cc
   ITraceMng.h
   TraceMng.cc
-  ITimeMetricCollector.h
-  TimeMetric.h
   TimeMetric.cc
   StandaloneTraceMessage.h
+
+  internal/ITimeMetricCollector.h
+  internal/TimeMetric.h
 )

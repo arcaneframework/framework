@@ -55,7 +55,7 @@
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing/RequestListBase.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 #include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 #include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 

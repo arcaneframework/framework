@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Liste de messages de sérialisation.                                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSING_SERIALIZEMESSAGEMESSAGELIST_H
-#define ARCCORE_MESSAGEPASSING_SERIALIZEMESSAGEMESSAGELIST_H
+#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_SERIALIZEMESSAGEMESSAGELIST_H
+#define ARCCORE_MESSAGEPASSING_INTERNAL_SERIALIZEMESSAGEMESSAGELIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@
 
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/base/Ref.h"
-#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/internal/TimeMetric.h"
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ namespace Arcane::MessagePassing::internal
  * \brief Liste de messages de sérialisation.
  *
  * Cette classe supporte le cas où une implémentation ne supporte par les
- * messages ayant comme destionation n'importe quel rang (c'est par exemple
+ * messages ayant comme destination n'importe quel rang (c'est par exemple
  * le cas du mode hybride).
  */
 class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
