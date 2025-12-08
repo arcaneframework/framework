@@ -40,8 +40,9 @@ set(SOURCES
   Messages.cc
   Stat.h
   Stat.cc
-  SerializeMessageList.h
   SerializeMessageList.cc
+
+  internal/SerializeMessageList.h
   internal/IMachineMemoryWindowBaseInternal.h
   internal/IDynamicMachineMemoryWindowBaseInternal.h
   internal/SubRequestCompletionInfo.h

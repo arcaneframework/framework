@@ -53,7 +53,7 @@
 #include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemoryWindowBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 //#define ARCANE_TRACE_MPI
 

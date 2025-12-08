@@ -44,7 +44,7 @@
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/RequestListBase.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

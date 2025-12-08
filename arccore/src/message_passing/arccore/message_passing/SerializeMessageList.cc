@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 #include "arccore/message_passing/IRequestList.h"
 #include "arccore/message_passing/BasicSerializeMessage.h"

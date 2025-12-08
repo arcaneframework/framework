@@ -9,13 +9,13 @@
 /*                                                                           */
 /* Classes gérant les métriques temporelles.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_TRACE_TIMEMETRIC_H
-#define ARCCORE_TRACE_TIMEMETRIC_H
+#ifndef ARCCORE_TRACE_INTERNAL_TIMEMETRIC_H
+#define ARCCORE_TRACE_INTERNAL_TIMEMETRIC_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/trace/TraceGlobal.h"
-#include "arccore/trace/ITimeMetricCollector.h"
+#include "arccore/trace/internal/ITimeMetricCollector.h"
 #include "arccore/base/String.h"
 
 /*---------------------------------------------------------------------------*/
