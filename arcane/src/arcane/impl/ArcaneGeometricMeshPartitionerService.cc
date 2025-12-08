@@ -26,6 +26,8 @@
 #include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/impl/ArcaneGeometricMeshPartitionerService_axl.h"
 
+#include "arcane_internal_config.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -514,6 +516,10 @@ partitionMesh(bool initial_partition)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if ARCANE_DEFAULT_PARTITIONER == ARCANEGEOMETRICMESHPARTITIONER_DEFAULT_PARTITIONER
+ARCANE_REGISTER_SERVICE_ARCANEGEOMETRICMESHPARTITIONERSERVICE(DefaultPartitioner,
+                                                              ArcaneGeometricMeshPartitionerService);
+#endif
 ARCANE_REGISTER_SERVICE_ARCANEGEOMETRICMESHPARTITIONERSERVICE(ArcaneGeometricMeshPartitioner,
                                                               ArcaneGeometricMeshPartitionerService);
 
