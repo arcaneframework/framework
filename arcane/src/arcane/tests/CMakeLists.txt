@@ -1136,6 +1136,7 @@ arcane_add_test(mesh2_basic_geometric_partitioner testMesh-2-basic-geometric-par
 arcane_add_test_parallel(mesh2_basic_geometric_partitioner testMesh-2-basic-geometric-partitioner.arc 2)
 arcane_add_test_parallel_thread(mesh2_basic_geometric_partitioner_3d testMesh-2-basic-geometric-partitioner-3d.arc 5)
 arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d testMesh-2-basic-geometric-partitioner-3d.arc 8)
+arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d_v1 testMesh-2-basic-geometric-partitioner-3d.arc 5 "-We,GEOMETRIC_PARTITIONER_IMPL,1")
 
 # TODO: Indiquer que ces cas tests ne doivent pas être lancés simulatanément
 if(UNIX AND MPI_FOUND)
