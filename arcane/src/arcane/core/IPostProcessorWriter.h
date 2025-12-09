@@ -118,7 +118,11 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   //! Liste des variables à sauver
   virtual VariableCollection variables() = 0;
 
-  //! Positionne la liste des groupes à sortir
+  /*!
+   * \brief Positionne la liste des groupes à sortir.
+   *
+   * La collection passée en argument est clonée.
+   */
   virtual void setGroups(ItemGroupCollection groups) = 0;
 
   //! Liste des groupes à sauver
