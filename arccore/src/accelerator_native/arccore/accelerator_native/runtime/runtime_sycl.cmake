@@ -10,7 +10,6 @@ set(ARCCORE_SOURCES
 
 arccore_add_library(arccore_accelerator_sycl_runtime
   INPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/runtime
-  RELATIVE_PATH .
   FILES ${ARCCORE_SOURCES}
 )
 
