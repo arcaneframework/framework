@@ -50,13 +50,13 @@ class ItemGroupImplInternal;
  * \internal
  * \brief Implémentation d'un groupe d'entités de maillage.
 
- Un groupe est un ensemble d'entité du maillage (noeuds,faces,mailles,...)
+ Un groupe est un ensemble d'entité du maillage (noeuds, faces, mailles,...)
  de même genre.
 
  Une instance de cette classe ne doit pas s'utiliser directement, mais
  par l'intermédiaire d'une instance de ItemGroup.
 
- Une entité élément ne peut être présente qu'une seul fois.
+ Une entité élément ne peut être présente qu'une seule fois.
 
  Le développeur ne doit pas conserver directement des instances de cette
  class mais passer par un ItemGroup. Certains groupes étant déterminés
@@ -73,6 +73,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 {
  private:
 
+  friend class ItemGroupChildrenByType;
   friend ItemGroup;
   class ItemSorter;
 
@@ -465,9 +466,9 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Méthode de calcul des sous-groupes par type
   void _computeChildrenByType();
   //! Initialisation des sous-groupes par types
-  void _initChildrenByTypeV2();
+  //void _initChildrenByTypeV2();
   //! Méthode de calcul des sous-groupes par type
-  void _computeChildrenByTypeV2();
+  //void _computeChildrenByTypeV2();
   //! Invalidation des sous-groupes
   void _executeExtend(const Int32ConstArrayView * info);
   //! Invalidation des sous-groupes

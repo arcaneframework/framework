@@ -30,6 +30,58 @@ namespace Arcane
 {
 class ItemGroupImpl;
 
+/*!
+ * \brief Gestion de partition d'un groupe suivant le type de ses éléments.
+ */
+class ItemGroupChildrenByType
+{
+ public:
+
+  explicit ItemGroupChildrenByType(ItemGroupInternal* igi)
+  : m_group_internal(igi)
+  {}
+
+ public:
+
+  void clear()
+  {
+    m_children_by_type_ids.clear();
+  }
+  void applyOperation(IItemOperationByBasicType* operation);
+  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
+  void _initChildrenByTypeV2();
+  void _computeChildrenByTypeV2();
+
+ public:
+
+  //! Vrai si on utilise la version 2 de la gestion pour applyOperation().
+  bool m_use_v2_for_apply_operation = true;
+
+ public:
+
+  //! Liste des localId() par type d'entité.
+  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
+
+  /*!
+   * \brief Indique le type des entités du groupe.
+   *
+   * Si différent de IT_NullType, cela signifie que toutes
+   * les entités du groupe sont du même type et donc il n'est
+   * pas nécessaire de calculer le localId() des entités par type.
+   * On utilise dans ce cas directement le groupe en paramètre
+   * des applyOperation().
+   */
+  ItemTypeId m_unique_children_type{ IT_NullType };
+
+  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
+  Int64 m_children_by_type_ids_computed_timestamp = -1;
+
+  bool m_is_debug_apply_operation = false;
+
+  ItemGroupInternal* m_group_internal = nullptr;
+  ItemGroupImpl* m_group_impl = nullptr;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -148,7 +200,7 @@ class ItemGroupInternal
 
   void setNeedRecompute()
   {
-    // NOTE: normalement il ne faudrait mettre cette valeur à 'true' que pour
+    // NOTE: normalement, il ne faudrait mettre cette valeur à 'true' que pour
     // les groupes recalculés (qui ont un parent ou pour lequel 'm_compute_functor' n'est
     // pas nul). Cependant, cette méthode est aussi appelé sur le groupe de toutes les entités
     // et peut-être d'autres groupes.
@@ -243,10 +295,6 @@ class ItemGroupInternal
 
  public:
 
-  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
-
- private:
-
   UniqueArray<Int32> m_local_buffer{ MemoryUtils::getAllocatorForMostlyReadOnlyData() };
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
@@ -256,39 +304,15 @@ class ItemGroupInternal
   bool m_is_print_apply_simd_padding = false;
   bool m_is_print_stack_apply_simd_padding = false;
 
- private:
-
-  // TODO: Mettre cela dans une classe spécifique ce qui permettra
-  // de l'utiliser par exemple pour ItemVector
-
-  //! Gestion pour applyOperation() Version 2
-  //@{
-  bool m_use_v2_for_apply_operation = true;
-
  public:
-
-  //! Liste des localId() par type d'entité.
-  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
-
-  /*!
-   * \brief Indique le type des entités du groupe.
-   *
-   * Si différent de IT_NullType, cela signifie que toutes
-   * les entités du groupe sont du même type et donc on il n'est
-   * pas nécessaire de calculer le localId() des entités par type.
-   * On utilise dans ce cas directement le groupe en paramètre
-   * des applyOperation().
-   */
-  ItemTypeId m_unique_children_type{ IT_NullType };
-
-  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
-  Int64 m_children_by_type_ids_computed_timestamp = -1;
-
-  bool m_is_debug_apply_operation = false;
-  //@}
 
   //! Mutex pour protéger la mise à jour.
   CheckNeedUpdateMutex m_check_need_update_mutex;
+
+ public:
+
+  //! Sous-partie d'un groupe en fonction de son type
+  ItemGroupChildrenByType m_sub_parts_by_type;
 
  private:
 

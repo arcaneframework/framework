@@ -123,6 +123,7 @@ ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,const String& name)
 : m_p (new ItemGroupInternal(family,name))
 {
+  m_p->m_sub_parts_by_type.m_group_impl = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -132,6 +133,7 @@ ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 : m_p(new ItemGroupInternal(family,parent,name))
 {
+  m_p->m_sub_parts_by_type.m_group_impl = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -141,6 +143,7 @@ ItemGroupImpl::
 ItemGroupImpl()
 : m_p (new ItemGroupInternal())
 {
+  m_p->m_sub_parts_by_type.m_group_impl = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1207,47 +1210,53 @@ void ItemGroupImpl::
 applyOperation(IItemOperationByBasicType* operation)
 {
   ARCANE_ASSERT((!m_p->m_need_recompute),("Operation on invalid group"));
-  bool is_verbose = m_p->m_is_debug_apply_operation;
+  m_p->m_sub_parts_by_type.applyOperation(operation);
+}
 
-  ITraceMng* tm = m_p->mesh()->traceMng();
+void ItemGroupChildrenByType::
+applyOperation(IItemOperationByBasicType* operation)
+{
+  bool is_verbose = m_is_debug_apply_operation;
+
+  ITraceMng* tm = m_group_internal->mesh()->traceMng();
   if (is_verbose)
-    tm->info() << "applyOperation name=" << name() << " nb_item=" << size();
-  if (m_p->isUseV2ForApplyOperation()){
-    if (m_p->m_children_by_type_ids.empty()){
+    tm->info() << "applyOperation name=" << m_group_internal->name() << " nb_item=" << m_group_internal->nbItem();
+  if (isUseV2ForApplyOperation()) {
+    if (m_children_by_type_ids.empty()) {
       _initChildrenByTypeV2();
     }
-    Int64 t = m_p->timestamp();
+    Int64 t = m_group_internal->timestamp();
     if (is_verbose)
-      tm->info() << "applyOperation timestamp=" << t << " last=" << m_p->m_children_by_type_ids_computed_timestamp;
-    if (m_p->m_children_by_type_ids_computed_timestamp != t){
+      tm->info() << "applyOperation timestamp=" << t << " last=" << m_children_by_type_ids_computed_timestamp;
+    if (m_children_by_type_ids_computed_timestamp != t) {
       _computeChildrenByTypeV2();
-      m_p->m_children_by_type_ids_computed_timestamp = t;
+      m_children_by_type_ids_computed_timestamp = t;
     }
   }
-  else{
-    if (m_p->m_children_by_type.empty())
-      _initChildrenByType();
+  else {
+    if (m_group_internal->m_children_by_type.empty())
+      m_group_impl->_initChildrenByType();
   }
-  IItemFamily* family = m_p->m_item_family;
-  const bool has_only_one_type = (m_p->m_unique_children_type != IT_NullType);
+  IItemFamily* family = m_group_internal->m_item_family;
+  const bool has_only_one_type = (m_unique_children_type != IT_NullType);
   if (is_verbose)
-    tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_p->m_unique_children_type;
+    tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_unique_children_type;
   // TODO: Supprimer la macro et la remplacer par une fonction.
 
-#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE)      \
-  if (m_p->isUseV2ForApplyOperation()){\
-    Int16 type_id = IT_##ITEM_TYPE;\
-    Int32ConstArrayView sub_ids = m_p->m_children_by_type_ids[type_id]; \
-    if (has_only_one_type && type_id==m_p->m_unique_children_type)\
-      sub_ids = itemsLocalId(); \
+#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE) \
+  if (isUseV2ForApplyOperation()) { \
+    Int16 type_id = IT_##ITEM_TYPE; \
+    Int32ConstArrayView sub_ids = m_children_by_type_ids[type_id]; \
+    if (has_only_one_type && type_id == m_unique_children_type) \
+      sub_ids = m_group_impl->itemsLocalId(); \
     if (is_verbose && sub_ids.size()>0)                                   \
       tm->info() << "Type=" << (int)IT_##ITEM_TYPE << " nb=" << sub_ids.size(); \
     if (sub_ids.size()!=0){\
       operation->apply##ITEM_TYPE(family->view(sub_ids)); \
-    }\
-  }\
-  else {                                                     \
-    ItemGroup group(m_p->m_children_by_type[IT_##ITEM_TYPE]); \
+    } \
+  } \
+  else { \
+    ItemGroup group(m_group_internal->m_children_by_type[IT_##ITEM_TYPE]); \
     if (!group.empty())                                       \
       operation->apply##ITEM_TYPE(group.view());              \
   }
@@ -1404,17 +1413,17 @@ _initChildrenByType()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImpl::
+void ItemGroupChildrenByType::
 _initChildrenByTypeV2()
 {
-  bool is_verbose = m_p->m_is_debug_apply_operation;
+  bool is_verbose = m_is_debug_apply_operation;
   if (is_verbose)
-    m_p->mesh()->traceMng()->info() << "ItemGroupImpl::_initChildrenByTypeV2() name=" << name();
+    m_group_internal->mesh()->traceMng()->info() << "ItemGroupImpl::_initChildrenByTypeV2() name=" << m_group_internal->name();
 
   Int32 nb_basic_item_type= ItemTypeMng::nbBasicItemType();
-  m_p->m_children_by_type_ids.resize(nb_basic_item_type);
-  for( Integer i=0; i<nb_basic_item_type; ++i ){
-    m_p->m_children_by_type_ids[i] = UniqueArray<Int32>{MemoryUtils::getDefaultDataAllocator()};
+  m_children_by_type_ids.resize(nb_basic_item_type);
+  for (Integer i = 0; i < nb_basic_item_type; ++i) {
+    m_children_by_type_ids[i] = UniqueArray<Int32>{ MemoryUtils::getDefaultDataAllocator() };
   }
 }
 
@@ -1453,27 +1462,27 @@ _computeChildrenByType()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImpl::
+void ItemGroupChildrenByType::
 _computeChildrenByTypeV2()
 {
-  ItemGroup that_group(this);
-  Int32 nb_item = size();
-  IMesh* mesh = m_p->mesh();
+  ItemGroup that_group(m_group_impl);
+  Int32 nb_item = m_group_internal->nbItem();
+  IMesh* mesh = m_group_internal->mesh();
   ItemTypeMng* type_mng = mesh->itemTypeMng();
   ITraceMng* trace = mesh->traceMng();
-  bool is_verbose = m_p->m_is_debug_apply_operation;
+  bool is_verbose = m_is_debug_apply_operation;
   if (is_verbose)
-    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name();
+    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << m_group_internal->name();
 
   // Si le maillage est cartésien, on sait que toutes les entités ont le même type
-  if (nb_item>0 && mesh->meshKind().meshStructure()==eMeshStructure::Cartesian){
-    ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
-    m_p->m_unique_children_type = ItemTypeId{lv.typeId(m_p->itemsLocalId()[0])};
+  if (nb_item > 0 && mesh->meshKind().meshStructure() == eMeshStructure::Cartesian) {
+    ItemInfoListView lv(m_group_internal->m_item_family->itemInfoListView());
+    m_unique_children_type = ItemTypeId{ lv.typeId(m_group_internal->itemsLocalId()[0]) };
     return;
   }
 
   Int32 nb_basic_item_type = ItemTypeMng::nbBasicItemType();
-  m_p->m_unique_children_type = ItemTypeId{IT_NullType};
+  m_unique_children_type = ItemTypeId{ IT_NullType };
 
   UniqueArray<Int32> nb_items_by_type(nb_basic_item_type);
   nb_items_by_type.fill(0);
@@ -1483,31 +1492,31 @@ _computeChildrenByTypeV2()
     if (item_type<nb_basic_item_type)
       ++nb_items_by_type[item_type];
   }
-
+const String& name = m_group_internal->name();
   Int32 nb_different_type = 0;
-  for( Int32 i=0; i<nb_basic_item_type; ++i ){
-    m_p->m_children_by_type_ids[i].clear();
+for (Int32 i = 0; i < nb_basic_item_type; ++i) {
+    m_children_by_type_ids[i].clear();
     const Int32 n = nb_items_by_type[i];
-    m_p->m_children_by_type_ids[i].reserve(n);
-    if (n>0)
+    m_children_by_type_ids[i].reserve(n);
+    if (n > 0)
       ++nb_different_type;
     if (is_verbose)
-      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name
                     << " type=" << type_mng->typeName(i) << " nb=" << n;
   }
   if (is_verbose)
-    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name
                   << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
 
   // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
-  // type d'entité et on conserve juste ce type car dans ce cas on passera
+  // type d'entité et on conserve juste ce type, car dans ce cas on passera
   // directement le groupe en argument de applyOperation().
-  if (nb_item>0 && nb_different_type==1){
-    ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
-    m_p->m_unique_children_type = ItemTypeId{lv.typeId(m_p->itemsLocalId()[0])};
+  if (nb_item > 0 && nb_different_type == 1) {
+    ItemInfoListView lv(m_group_internal->m_item_family->itemInfoListView());
+    m_unique_children_type = ItemTypeId{ lv.typeId(m_group_internal->itemsLocalId()[0]) };
     if (is_verbose)
-      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
-                    << " unique_type=" << type_mng->typeName(m_p->m_unique_children_type);
+      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name
+                    << " unique_type=" << type_mng->typeName(m_unique_children_type);
     return;
   }
 
@@ -1515,11 +1524,11 @@ _computeChildrenByTypeV2()
     Item item = *iitem;
     Integer item_type = item.type();
     if (item_type<nb_basic_item_type)
-      m_p->m_children_by_type_ids[item_type].add(iitem.itemLocalId());
+      m_children_by_type_ids[item_type].add(iitem.itemLocalId());
   }
 
   for( Int32 i=0; i<nb_basic_item_type; ++i )
-    applySimdPadding(m_p->m_children_by_type_ids[i]);
+    applySimdPadding(m_children_by_type_ids[i]);
 }
 
 /*---------------------------------------------------------------------------*/
