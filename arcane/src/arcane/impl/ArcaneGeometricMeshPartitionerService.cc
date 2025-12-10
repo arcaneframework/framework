@@ -14,6 +14,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IPrimaryMesh.h"
@@ -27,6 +28,7 @@
 #include "arcane/impl/ArcaneGeometricMeshPartitionerService_axl.h"
 
 #include "arcane_internal_config.h"
+#include <limits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -487,7 +489,7 @@ _findPrincipalAxis(Real3x3 tensor)
   // Si le plus petit vecteur propre est nul, prend le suivant
   // (en général cela n'arrive pas sauf si l'algorithme dans
   // 'computeForMatrix' n'a pas convergé).
-  if (math::isNearlyZero(v.normL2())){
+  if (math::isNearlyZero(v.normL2())) {
     v = eigen_vectors[1];
     if (math::isNearlyZero(v.normL2()))
       v = eigen_vectors[2];
@@ -579,7 +581,7 @@ _partitionMeshRecursive(const VariableCellReal3& cells_center,
   // en calculant le produit scalaire entre le vecteur propre
   // et le vecteur du centre de gravité à la maille.
   // La valeur du signe indique dans quelle partie on se trouve.
-  info() << "Doing partition setting partition=" << part0_partition_index << " " << part1_partition_index;
+  info() << "Doing partition setting nb_cell=" << nb_cell << " partition=" << part0_partition_index << " " << part1_partition_index;
   ENUMERATE_ (Cell, icell, cells) {
     const Real3 cell_coord = cells_center[icell];
 
@@ -628,8 +630,9 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
 {
   Int32 part0_partition_index = partition_index;
   Int32 part1_partition_index = partition_index + 1;
+  IParallelMng* pm = mesh()->parallelMng();
   // Pour test. À supprimer par la suite
-  Int32 total_nb_cell = mesh()->parallelMng()->reduce(Parallel::ReduceSum, cells.size());
+  Int32 total_nb_cell = pm->reduce(Parallel::ReduceSum, cells.size());
   info() << "Doing partition (V2) partition_index=" << partition_index << " total_nb_cell=" << total_nb_cell;
 
   info() << "Doing partition (V2) really partition_index=" << partition_index;
@@ -648,6 +651,108 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   info() << "EigenVector=" << eigenvector;
 
   const Int32 nb_cell = cells.size();
+
+  // Calcule pour chaque élément le produit scalaire entre
+  // le vecteur propre et le vecteur reliant le centre de gravité
+  // à cet élément et le range dans \a projections
+  info() << "Doing partition (V2) nb_cell=" << nb_cell << " setting partition=" << part0_partition_index << " " << part1_partition_index;
+  UniqueArray<Real> projections(nb_cell);
+  Real min_projection = std::numeric_limits<Real>::max();
+  Real max_projection = std::numeric_limits<Real>::min();
+  ENUMERATE_ (Cell, icell, cells) {
+    const Real3 cell_coord = cells_center[icell];
+    Real projection = math::dot(cell_coord - center, eigenvector);
+    projections[icell.index()] = projection;
+    min_projection = math::min(min_projection, projection);
+    max_projection = math::max(max_projection, projection);
+  }
+
+  // Calcule globalement le min et le max de la projection.
+  min_projection = pm->reduce(Parallel::ReduceMin, min_projection);
+  max_projection = pm->reduce(Parallel::ReduceMax, max_projection);
+
+  info() << "min_projection=" << min_projection << " max_projection=" << max_projection;
+
+  // Pour tenir compte du ratio entre les deux partitions qui ne vaut pas forcément 0.5,
+  // on détermine plusieurs valeurs de projection qui vont servir à partitionner
+  // Ces valeurs testées sont dans l'intervalle [-min_projection,max_projection].
+  // On \a nb_to_test valeurs entre '-min_projection' et 0, la valeur 0.0 et \a nb_to_test
+  // entre 0 et \a max_projection. On va donc tester `(2*nb_to_test)+1` valeurs.
+
+  UniqueArray<Real> projections_to_test;
+  // TODO: rendre nb_to_test paramètrable.
+  // On pourrait aussi faire une dichomie sur les valeurs de projection
+  // pour mieux approximer l'équilibre et ne pas forcément tester trop de valeurs
+  int nb_to_test = 10;
+  const int total_nb_to_test = (2 * nb_to_test) + 1;
+  projections_to_test.resize(total_nb_to_test);
+  for (Int32 i = 0; i < nb_to_test; ++i) {
+    Real v1 = min_projection / (i + 1);
+    projections_to_test[i] = v1;
+    Real v2 = max_projection / (nb_to_test - i);
+    projections_to_test[i + 1 + nb_to_test] = v2;
+  }
+  projections_to_test[nb_to_test] = 0.0; //< Projection centrale
+  info() << "projections_to_test=" << projections_to_test;
+
+  // L'arbre binaire permet de savoir combien il faut faire de partition
+  // du côté gauche et droit. On s'en sert pour calculer un ratio
+  // idéal qu'on range dans \a expected_ratio.
+  BinaryTree::TreeNode current_tree_node = tree_nodes[partition_index];
+  Int32 nb_left_child = current_tree_node.nb_left_child;
+  Int32 nb_right_child = current_tree_node.nb_right_child;
+  // Ratio d'éléments entre les deux partie qu'on souhaite attendre
+  Real expected_ratio = 1.0;
+  if (nb_left_child != 0) {
+    Real r_nb_left_child = static_cast<Real>(nb_left_child);
+    Real r_nb_right_child = static_cast<Real>(nb_right_child);
+    expected_ratio = r_nb_left_child / (r_nb_left_child + r_nb_right_child);
+  }
+
+  // Teste toute les partitions et calcule celle dont le ratio est le
+  // plus proche du ratio souhaite. C'est celle qu'on prendra pour
+  // le partitionnement
+  Int32 wanted_projection_index = 0;
+  Real best_partition_ratio = std::numeric_limits<Real>::max();
+  for (Int32 z = 0; z < total_nb_to_test; ++z) {
+    Int32 nb_new_part0 = 0;
+    Int32 nb_new_part1 = 0;
+    const Real projection_to_test = projections_to_test[z];
+    // TODO: Mettre cette boucle en externe
+    ENUMERATE_ (Cell, icell, cells) {
+      Real projection = projections[icell.index()];
+      if (projection < projection_to_test) {
+        ++nb_new_part0;
+      }
+      else {
+        ++nb_new_part1;
+      }
+    }
+    FixedArray<Int64, 2> global_nb_parts({ nb_new_part0, nb_new_part1 });
+    // TODO: Faire une seule réduction pour tous les tests
+    pm->reduce(Parallel::ReduceSum, global_nb_parts.view());
+    Real ratio_0 = 1.0;
+    if (global_nb_parts[0] != 0) {
+      Real r_nb_part0 = static_cast<Real>(global_nb_parts[0]);
+      Real r_nb_part1 = static_cast<Real>(global_nb_parts[1]);
+      ratio_0 = r_nb_part0 / (r_nb_part0 + r_nb_part1);
+    }
+    Real diff_ratio = math::abs(expected_ratio - ratio_0);
+    info(4) << "Partition info nb_part0=" << global_nb_parts[0] << " nb_part1=" << global_nb_parts[1]
+            << " ratio_0=" << ratio_0
+            << " nb_left_child=" << nb_left_child << " nb_right_child=" << nb_right_child
+            << " expected_ratio=" << expected_ratio
+            << " diff_ratio=" << diff_ratio
+            << " best_ratio=" << best_partition_ratio;
+    if (diff_ratio < best_partition_ratio) {
+      wanted_projection_index = z;
+      best_partition_ratio = diff_ratio;
+    }
+  }
+  const Real projection_to_use = projections_to_test[wanted_projection_index];
+  info() << "Keep projection index=" << wanted_projection_index << " projection=" << projection_to_use
+         << " best_ratio=" << best_partition_ratio;
+
   UniqueArray<Int32> part0_cells;
   part0_cells.reserve(nb_cell);
   UniqueArray<Int32> part1_cells;
@@ -657,26 +762,20 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   // en calculant le produit scalaire entre le vecteur propre
   // et le vecteur du centre de gravité à la maille.
   // La valeur du signe indique dans quelle partie on se trouve.
-  info() << "Doing partition setting partition=" << part0_partition_index << " " << part1_partition_index;
+
   ENUMERATE_ (Cell, icell, cells) {
-    const Real3 cell_coord = cells_center[icell];
-
-    Real projection = 0.0;
-    projection += (cell_coord.x - center.x) * eigenvector.x;
-    projection += (cell_coord.y - center.y) * eigenvector.y;
-    projection += (cell_coord.z - center.z) * eigenvector.z;
-
-    if (projection < 0.0) {
+    Real projection = projections[icell.index()];
+    if (projection < projection_to_use) {
       part0_cells.add(icell.itemLocalId());
     }
     else {
       part1_cells.add(icell.itemLocalId());
     }
   }
+
   CellVectorView part0(cell_family, part0_cells);
   CellVectorView part1(cell_family, part1_cells);
 
-  BinaryTree::TreeNode current_tree_node = tree_nodes[partition_index];
   Int32 child_left = current_tree_node.left_child_index;
   if (child_left >= 0) {
     _partitionMeshRecursive2(tree_nodes, cells_center, part0, child_left);
