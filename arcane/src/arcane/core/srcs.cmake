@@ -324,6 +324,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemGroupComputeFunctor.h
   ItemGroupImpl.cc
   ItemGroupInternal.cc
+  ItemGroupSubPartsByType.cc
   ItemGroupObserver.h
   ItemGroupRangeIterator.cc
   ItemGroupRangeIterator.h

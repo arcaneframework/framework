@@ -13,7 +13,6 @@
 
 #include "arcane/core/internal/ItemGroupInternal.h"
 
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
@@ -26,7 +25,6 @@
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
-#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -580,21 +578,6 @@ setMemoryRessourceForItemLocalId(eMemoryRessource mem)
   VariableArrayInt32* v = m_p->m_variable_items_local_id;
   if (v)
     VariableUtils::experimentalChangeAllocator(v->variable(),mem);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemGroupSubPartsByType::
-ItemGroupSubPartsByType(ItemGroupInternal* igi)
-: m_group_internal(igi)
-{
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
-    m_use_v2_for_apply_operation = (v.value() == 2);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
-    m_is_debug_apply_operation = (v.value() > 0);
 }
 
 /*---------------------------------------------------------------------------*/
