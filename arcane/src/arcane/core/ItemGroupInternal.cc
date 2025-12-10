@@ -13,7 +13,6 @@
 
 #include "arcane/core/internal/ItemGroupInternal.h"
 
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
@@ -26,7 +25,6 @@
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
-#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +38,7 @@ namespace Arcane
 ItemGroupInternal::
 ItemGroupInternal()
 : m_internal_api(this)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -56,6 +55,7 @@ ItemGroupInternal(IItemFamily* family,const String& name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -73,6 +73,7 @@ ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -110,13 +111,6 @@ _init()
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
-
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
-    m_use_v2_for_apply_operation = (v.value()==2);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
-    m_is_debug_apply_operation = (v.value()>0);
 
   m_is_check_simd_padding = arcaneIsCheck();
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)){
@@ -192,8 +186,7 @@ resetSubGroups()
   m_outer_active_face_group = nullptr;
   m_level_cell_group.clear();
   m_own_level_cell_group.clear();
-  m_children_by_type.clear();
-  m_children_by_type_ids.clear();
+  m_sub_parts_by_type.clear();
   m_sub_groups.clear();
 }
 
