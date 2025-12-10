@@ -45,12 +45,15 @@ class ItemGroupChildrenByType
 
   void clear()
   {
+    m_children_by_type.clear();
     m_children_by_type_ids.clear();
   }
   void applyOperation(IItemOperationByBasicType* operation);
   bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
   void _initChildrenByTypeV2();
   void _computeChildrenByTypeV2();
+  void _initChildrenByType();
+  void _computeChildrenByType();
 
  public:
 
@@ -59,8 +62,20 @@ class ItemGroupChildrenByType
 
  public:
 
-  //! Liste des localId() par type d'entité.
+  /*!
+   * \brief Liste des localId() par type d'entité.
+   *
+   * Ce champ est utilisé avec la version 2.
+   */
   UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
+
+  /*!
+   * \brief Liste des fils de ce groupe par type d'entité.
+   *
+   * Ce champ est utilisé avec la version 1 qui demande
+   * de créer un groupe par sous-type.
+   */
+  UniqueArray<ItemGroupImpl*> m_children_by_type;
 
   /*!
    * \brief Indique le type des entités du groupe.
@@ -268,7 +283,6 @@ class ItemGroupInternal
   std::map<Integer, ItemGroupImpl*> m_level_cell_group; //!< Groupe des mailles de niveau
   std::map<Integer, ItemGroupImpl*> m_own_level_cell_group; //!< Groupe des mailles propres de niveau
 
-  UniqueArray<ItemGroupImpl*> m_children_by_type; //!< Liste des fils de ce groupe par type d'entité
   //@}
   std::map<String, AutoRefT<ItemGroupImpl>> m_sub_groups; //!< Ensemble de tous les sous-groupes
   bool m_need_recompute = false; //!< Vrai si le groupe doit être recalculé
@@ -282,7 +296,7 @@ class ItemGroupInternal
   Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
   // Anciennement dans DynamicMeshKindInfo
-  Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
+  UniqueArray<Int32> m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
 
   std::map<const void*, IItemGroupObserver*> m_observers; //!< Observers du groupe
   bool m_observer_need_info = false; //!< Synthése de besoin de observers en informations de transition

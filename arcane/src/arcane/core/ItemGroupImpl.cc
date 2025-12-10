@@ -1234,8 +1234,8 @@ applyOperation(IItemOperationByBasicType* operation)
     }
   }
   else {
-    if (m_group_internal->m_children_by_type.empty())
-      m_group_impl->_initChildrenByType();
+    if (m_children_by_type.empty())
+      _initChildrenByType();
   }
   IItemFamily* family = m_group_internal->m_item_family;
   const bool has_only_one_type = (m_unique_children_type != IT_NullType);
@@ -1248,7 +1248,7 @@ applyOperation(IItemOperationByBasicType* operation)
     Int16 type_id = IT_##ITEM_TYPE; \
     Int32ConstArrayView sub_ids = m_children_by_type_ids[type_id]; \
     if (has_only_one_type && type_id == m_unique_children_type) \
-      sub_ids = m_group_impl->itemsLocalId(); \
+      sub_ids = m_group_internal->itemsLocalId(); \
     if (is_verbose && sub_ids.size()>0)                                   \
       tm->info() << "Type=" << (int)IT_##ITEM_TYPE << " nb=" << sub_ids.size(); \
     if (sub_ids.size()!=0){\
@@ -1256,7 +1256,7 @@ applyOperation(IItemOperationByBasicType* operation)
     } \
   } \
   else { \
-    ItemGroup group(m_group_internal->m_children_by_type[IT_##ITEM_TYPE]); \
+    ItemGroup group(m_children_by_type[IT_##ITEM_TYPE]); \
     if (!group.empty())                                       \
       operation->apply##ITEM_TYPE(group.view());              \
   }
@@ -1394,19 +1394,20 @@ hasComputeFunctor() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImpl::
+void ItemGroupChildrenByType::
 _initChildrenByType()
 {
-  IItemFamily* family = m_p->m_item_family;
+  ItemGroupImpl* p = m_group_impl;
+  IItemFamily* family = m_group_internal->m_item_family;
   ItemTypeMng* type_mng = family->mesh()->itemTypeMng();
   Integer nb_basic_item_type= ItemTypeMng::nbBasicItemType(); //NB_BASIC_ITEM_TYPE
-  m_p->m_children_by_type.resize(nb_basic_item_type);
-  for( Integer i=0; i<nb_basic_item_type; ++i ){
+  m_children_by_type.resize(nb_basic_item_type);
+  for (Integer i = 0; i < nb_basic_item_type; ++i) {
     // String child_name(name()+i);
     String child_name(type_mng->typeName(i));
-    ItemGroupImpl* igi = createSubGroup(child_name,family,
-                                        new ItemGroupImplItemGroupComputeFunctor(this,&ItemGroupImpl::_computeChildrenByType));
-    m_p->m_children_by_type[i] = igi;
+    auto* functor = new ItemGroupImplItemGroupComputeFunctor(p, &ItemGroupImpl::_computeChildrenByType);
+    ItemGroupImpl* igi = m_group_impl->createSubGroup(child_name, family, functor);
+    m_children_by_type[i] = igi;
   }
 }
 
@@ -1433,27 +1434,36 @@ _initChildrenByTypeV2()
 void ItemGroupImpl::
 _computeChildrenByType()
 {
-  ItemGroup that_group(this);
+  m_p->m_sub_parts_by_type._computeChildrenByType();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupChildrenByType::
+_computeChildrenByType()
+{
+  ItemGroup that_group(m_group_impl);
   ITraceMng * trace = that_group.mesh()->traceMng();
-  trace->debug(Trace::High) << "ItemGroupImpl::_computeChildrenByType for " << name();
+  trace->debug(Trace::High) << "ItemGroupImpl::_computeChildrenByType for " << m_group_internal->name();
 
   Integer nb_basic_item_type = ItemTypeMng::nbBasicItemType();
 
   UniqueArray< SharedArray<Int32> > items_by_type(nb_basic_item_type);
-  for( Integer i=0; i<nb_basic_item_type; ++i ){
-    ItemGroupImpl * impl = m_p->m_children_by_type[i];
+  for (Integer i = 0; i < nb_basic_item_type; ++i) {
+    ItemGroupImpl* impl = m_children_by_type[i];
     impl->beginTransaction();
   }
 
-  ENUMERATE_ITEM(iitem,that_group){
-    const Item& item = *iitem;
+  ENUMERATE_ (Item, iitem, that_group) {
+    Item item = *iitem;
     Integer item_type = item.type();
     if (item_type<nb_basic_item_type)
       items_by_type[item_type].add(iitem.itemLocalId());
   }
 
-  for( Integer i=0; i<nb_basic_item_type; ++i ){
-    ItemGroupImpl * impl = m_p->m_children_by_type[i];
+  for (Integer i = 0; i < nb_basic_item_type; ++i) {
+    ItemGroupImpl* impl = m_children_by_type[i];
     impl->setItems(items_by_type[i]);
     impl->endTransaction();
   }

@@ -195,7 +195,6 @@ resetSubGroups()
   m_outer_active_face_group = nullptr;
   m_level_cell_group.clear();
   m_own_level_cell_group.clear();
-  m_children_by_type.clear();
   m_sub_parts_by_type.clear();
   m_sub_groups.clear();
 }
