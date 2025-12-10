@@ -30,19 +30,32 @@ namespace Arcane
 {
 class ItemGroupImpl;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion de partition d'un groupe suivant le type de ses éléments.
+ * \brief Gestion des sous-parties d'un groupe suivant le type de ses éléments.
+ *
+ * Cette classe permet de récupérer la sous-partie d'un groupe correspondante
+ * à un type basique (entité dont ItemTypeId est inférieur à NB_BASIC_ITEM_TYPE.
+ *
+ * Il existe deux implémentations de cette fonctionnalité.
+ *
+ * La première version, qui est obsolète et plus utilisé par défaut,
+ * utilise un ItemGroup par type d'entité. La seconde utilise juste un tableau
+ * de ItemLocalId pour chaque partie. De plus, si tous les éléments du groupe
+ * sont de même type (par exemple un IT_Quad4 si on utilise un maillage
+ * cartésien 2D), alors on utilise directement la liste des localId() de
+ * l'instance.
  */
-class ItemGroupChildrenByType
+class ItemGroupSubPartsByType
 {
  public:
 
-  explicit ItemGroupChildrenByType(ItemGroupInternal* igi)
-  : m_group_internal(igi)
-  {}
+  explicit ItemGroupSubPartsByType(ItemGroupInternal* igi);
 
  public:
 
+  void setImpl(ItemGroupImpl* group_impl) { m_group_impl = group_impl; }
   void clear()
   {
     m_children_by_type.clear();
@@ -50,17 +63,19 @@ class ItemGroupChildrenByType
   }
   void applyOperation(IItemOperationByBasicType* operation);
   bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
+
+  void _computeChildrenByTypeV1();
+
+ private:
+
   void _initChildrenByTypeV2();
   void _computeChildrenByTypeV2();
-  void _initChildrenByType();
-  void _computeChildrenByType();
+  void _initChildrenByTypeV1();
 
- public:
+ private:
 
   //! Vrai si on utilise la version 2 de la gestion pour applyOperation().
   bool m_use_v2_for_apply_operation = true;
-
- public:
 
   /*!
    * \brief Liste des localId() par type d'entité.
@@ -94,6 +109,8 @@ class ItemGroupChildrenByType
   bool m_is_debug_apply_operation = false;
 
   ItemGroupInternal* m_group_internal = nullptr;
+
+  //! A supprimer quand la version V1 sera supprimée
   ItemGroupImpl* m_group_impl = nullptr;
 };
 
@@ -326,7 +343,7 @@ class ItemGroupInternal
  public:
 
   //! Sous-partie d'un groupe en fonction de son type
-  ItemGroupChildrenByType m_sub_parts_by_type;
+  ItemGroupSubPartsByType m_sub_parts_by_type;
 
  private:
 

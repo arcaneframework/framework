@@ -114,13 +114,6 @@ _init()
     updateTimestamp();
   }
 
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
-    m_sub_parts_by_type.m_use_v2_for_apply_operation = (v.value() == 2);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
-    m_sub_parts_by_type.m_is_debug_apply_operation = (v.value() > 0);
-
   m_is_check_simd_padding = arcaneIsCheck();
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)){
     m_is_check_simd_padding = (v.value()>0);
@@ -587,6 +580,21 @@ setMemoryRessourceForItemLocalId(eMemoryRessource mem)
   VariableArrayInt32* v = m_p->m_variable_items_local_id;
   if (v)
     VariableUtils::experimentalChangeAllocator(v->variable(),mem);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemGroupSubPartsByType::
+ItemGroupSubPartsByType(ItemGroupInternal* igi)
+: m_group_internal(igi)
+{
+  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
+    m_use_v2_for_apply_operation = (v.value() == 2);
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
+    m_is_debug_apply_operation = (v.value() > 0);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -123,7 +123,7 @@ ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,const String& name)
 : m_p (new ItemGroupInternal(family,name))
 {
-  m_p->m_sub_parts_by_type.m_group_impl = this;
+  m_p->m_sub_parts_by_type.setImpl(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 : m_p(new ItemGroupInternal(family,parent,name))
 {
-  m_p->m_sub_parts_by_type.m_group_impl = this;
+  m_p->m_sub_parts_by_type.setImpl(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ ItemGroupImpl::
 ItemGroupImpl()
 : m_p (new ItemGroupInternal())
 {
-  m_p->m_sub_parts_by_type.m_group_impl = this;
+  m_p->m_sub_parts_by_type.setImpl(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1213,7 +1213,7 @@ applyOperation(IItemOperationByBasicType* operation)
   m_p->m_sub_parts_by_type.applyOperation(operation);
 }
 
-void ItemGroupChildrenByType::
+void ItemGroupSubPartsByType::
 applyOperation(IItemOperationByBasicType* operation)
 {
   bool is_verbose = m_is_debug_apply_operation;
@@ -1235,7 +1235,7 @@ applyOperation(IItemOperationByBasicType* operation)
   }
   else {
     if (m_children_by_type.empty())
-      _initChildrenByType();
+      _initChildrenByTypeV1();
   }
   IItemFamily* family = m_group_internal->m_item_family;
   const bool has_only_one_type = (m_unique_children_type != IT_NullType);
@@ -1394,8 +1394,8 @@ hasComputeFunctor() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupChildrenByType::
-_initChildrenByType()
+void ItemGroupSubPartsByType::
+_initChildrenByTypeV1()
 {
   ItemGroupImpl* p = m_group_impl;
   IItemFamily* family = m_group_internal->m_item_family;
@@ -1414,7 +1414,7 @@ _initChildrenByType()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupChildrenByType::
+void ItemGroupSubPartsByType::
 _initChildrenByTypeV2()
 {
   bool is_verbose = m_is_debug_apply_operation;
@@ -1434,14 +1434,14 @@ _initChildrenByTypeV2()
 void ItemGroupImpl::
 _computeChildrenByType()
 {
-  m_p->m_sub_parts_by_type._computeChildrenByType();
+  m_p->m_sub_parts_by_type._computeChildrenByTypeV1();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupChildrenByType::
-_computeChildrenByType()
+void ItemGroupSubPartsByType::
+_computeChildrenByTypeV1()
 {
   ItemGroup that_group(m_group_impl);
   ITraceMng * trace = that_group.mesh()->traceMng();
@@ -1472,7 +1472,7 @@ _computeChildrenByType()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupChildrenByType::
+void ItemGroupSubPartsByType::
 _computeChildrenByTypeV2()
 {
   ItemGroup that_group(m_group_impl);

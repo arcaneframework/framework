@@ -73,7 +73,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 {
  private:
 
-  friend class ItemGroupChildrenByType;
+  friend class ItemGroupSubPartsByType;
   friend ItemGroup;
   class ItemSorter;
 
