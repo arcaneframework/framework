@@ -62,6 +62,8 @@
 #include <iterator>
 #include <map>
 
+//#include <parmetis.h>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -794,6 +796,29 @@ class ArcaneBasicMeshSubdividerService
   void _getRefinePattern(Int16 type);
   void _execute();
   */
+
+  /*
+  bool test_recompact = true;
+  Ref<VariableNodeInt64> var = Arcane::makeRef(
+    new Arcane::VariableNodeInt64(
+    Arcane::VariableBuildInfo(mesh, "arcane_node_local_id", mesh->nodeFamily()->name()))); ;
+
+  if( test_recompact ) {
+    // * Si local id d'un noeud avant == local id nouveau alors on a pas changé l'emplacement mémoire
+    mesh->properties()->setBool("compact",true);
+    mesh->properties()->setBool("sort",true);
+    mesh->modifier()->endUpdate();
+  }
+  // On écris les localID
+  ENUMERATE_NODE(inode, mesh->allNodes() ){
+    (*var.get())[*inode] = inode.localId();
+  }
+  // Write les local id des noeuds et on voit si ça change
+
+  VariableList vl;
+  vl.add(*var.get());
+  _writeEnsight(mesh,"SubdividerWithCompact",vl);
+   */
 
   //! Génère l'ordre des faces arcane pour tout les motifs.
   void _faceOrderArcane(IPrimaryMesh* mesh);
@@ -2178,6 +2203,9 @@ void ArcaneBasicMeshSubdividerService::_checkHashNodesFacesCells(IPrimaryMesh* m
   MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(), &hash_algo, Arcane::String(), print_hash, with_ghost);
 }
 
+
+
+
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
@@ -2202,8 +2230,15 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     _refineOnce(mesh, pattern_manager);
     debug() << i << "refine done";
   }
+
   // Renumbering Node, Faces, using Cells uids
   _renumberNodesFaces(mesh);
+  // * Transform in option <without-renumber-compact>
+
+  mesh->properties()->setBool("compact",true);
+  mesh->properties()->setBool("sort",true);
+  mesh->modifier()->endUpdate();
+
   // VariableList vl;
   //_writeEnsight(mesh,"SubdividerRenumberTests",vl);
   // Debug After
