@@ -15,6 +15,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/SmallArray.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IPrimaryMesh.h"
@@ -709,6 +710,12 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     expected_ratio = r_nb_left_child / (r_nb_left_child + r_nb_right_child);
   }
 
+  // Ce tableau contiendra, sous forme ce de couple, le nombre d'éléments
+  // de chaque partition pour chaque test.
+  // global_nb_parts[i*2+p] est la valeur de la partition gauche (p==0)
+  // ou droite (p==1) pour le i-ème test.
+  SmallArray<Int64> global_nb_parts(total_nb_to_test*2);
+
   // Teste toute les partitions et calcule celle dont le ratio est le
   // plus proche du ratio souhaite. C'est celle qu'on prendra pour
   // le partitionnement
@@ -721,24 +728,29 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     // TODO: Mettre cette boucle en externe
     ENUMERATE_ (Cell, icell, cells) {
       Real projection = projections[icell.index()];
-      if (projection < projection_to_test) {
+      if (projection < projection_to_test)
         ++nb_new_part0;
-      }
-      else {
+      else
         ++nb_new_part1;
-      }
     }
-    FixedArray<Int64, 2> global_nb_parts({ nb_new_part0, nb_new_part1 });
-    // TODO: Faire une seule réduction pour tous les tests
-    pm->reduce(Parallel::ReduceSum, global_nb_parts.view());
+    global_nb_parts[0+(z*2)] = nb_new_part0;
+    global_nb_parts[1+(z*2)] = nb_new_part1;
+  }
+
+  // Fais la somme des parties sur tous les sous-domaines.
+  pm->reduce(Parallel::ReduceSum, global_nb_parts.view());
+
+  for (Int32 z = 0; z < total_nb_to_test; ++z) {
     Real ratio_0 = 1.0;
-    if (global_nb_parts[0] != 0) {
-      Real r_nb_part0 = static_cast<Real>(global_nb_parts[0]);
-      Real r_nb_part1 = static_cast<Real>(global_nb_parts[1]);
+    Int64 nb_part0 = global_nb_parts[0+(z*2)];
+    Int64 nb_part1 = global_nb_parts[1+(z*2)];
+    if (nb_part0 != 0) {
+      Real r_nb_part0 = static_cast<Real>(nb_part0);
+      Real r_nb_part1 = static_cast<Real>(nb_part1);
       ratio_0 = r_nb_part0 / (r_nb_part0 + r_nb_part1);
     }
     Real diff_ratio = math::abs(expected_ratio - ratio_0);
-    info(4) << "Partition info nb_part0=" << global_nb_parts[0] << " nb_part1=" << global_nb_parts[1]
+    info(4) << "Partition info nb_part0=" << nb_part0 << " nb_part1=" << nb_part1
             << " ratio_0=" << ratio_0
             << " nb_left_child=" << nb_left_child << " nb_right_child=" << nb_right_child
             << " expected_ratio=" << expected_ratio
@@ -749,6 +761,7 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
       best_partition_ratio = diff_ratio;
     }
   }
+
   const Real projection_to_use = projections_to_test[wanted_projection_index];
   info() << "Keep projection index=" << wanted_projection_index << " projection=" << projection_to_use
          << " best_ratio=" << best_partition_ratio;
