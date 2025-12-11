@@ -758,6 +758,7 @@ deallocate()
 void DynamicMesh::
 allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_alloc)
 {
+  ARCANE_FATAL_IF(m_is_allocated, "mesh has already been allocated (via endAllocate() or allocateCells())");
   if (mesh_nb_cell==0 && !cells_infos.empty())
     ARCANE_FATAL("Can not dynamically compute the number of cells");
 
@@ -782,9 +783,10 @@ allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_allo
 void DynamicMesh::
 endAllocate()
 {
+  ARCANE_FATAL_IF(m_is_allocated, "mesh has already been allocated (via endAllocate() or allocateCells())");
+
   Trace::Setter mci(traceMng(),_className());
-  if (m_is_allocated)
-    ARCANE_FATAL("endAllocate() has already been called");
+
   _checkDimension();    // HP: add control if endAllocate is called
   _checkConnectivity(); // without any cell allocation
 
