@@ -24,6 +24,7 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshModifier.h"
 #include "arcane/core/Properties.h"
 
 /*---------------------------------------------------------------------------*/
@@ -176,6 +177,7 @@ renumberingFacesLevel0FromOriginalArcaneNumbering()
     }
   }
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
+  m_mesh->modifier()->endUpdate();
   m_mesh->checkValidMesh();
 
   m_converting_numbering_face = false;

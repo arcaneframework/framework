@@ -1256,6 +1256,12 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
       if (new_patch.minPoint() == min_point_of_patch_to_exclude) {
         new_patch.setLevel(-2); // Devient null.
       }
+      // else {
+      //   m_cmesh->traceMng()->info() << "\tPatch before fusion"
+      //                               << " -- Min point : " << new_patch.minPoint()
+      //                               << " -- Max point : " << new_patch.maxPoint()
+      //                               << " -- Level : " << new_patch.level();
+      // }
     }
 
     AMRPatchPositionLevelGroup::fusionPatches(new_patch_out, false);

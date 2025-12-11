@@ -780,6 +780,10 @@ _computeDirectionsV2()
     CellGroup cells = m_patch_group.allCells(patch_index);
     Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
     info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
+    {
+      const AMRPatchPosition position = patch->position();
+      info() << "  position min=" << position.minPoint() << " max=" << position.maxPoint() << " level=" << position.level() << " overlapLayerSize=" << position.overlapLayerSize();
+    }
     patch->_internalComputeNodeCellInformations();
     auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
     _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);

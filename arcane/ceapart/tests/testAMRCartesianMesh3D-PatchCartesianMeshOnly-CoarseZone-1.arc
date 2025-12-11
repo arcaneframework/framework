@@ -65,13 +65,13 @@
 
 
     <!--    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>-->
-    <expected-number-of-cells-in-patchs>125 8 16 16 16 32 48 72</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>125 8 16 16 32 32 32 72</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>df3786d49d37ad67e721c927500d6fd1</nodes-uid-hash>
     <faces-uid-hash>fde2439e36a81ef94dc2fbcf88fd750d</faces-uid-hash>
     <cells-uid-hash>0e51a40d9d1a79d115f4bb5ddeefd827</cells-uid-hash>
-    <nodes-direction-hash>7b972b16de85388414d158e1d0d0f934</nodes-direction-hash>
-    <faces-direction-hash>e530a9f3b04d4794e58e53b8e0351750</faces-direction-hash>
-    <cells-direction-hash>f5756692579d9efafeade38c72812304</cells-direction-hash>
+    <nodes-direction-hash>bd965ab450f6cc7988d7bff736f536ec</nodes-direction-hash>
+    <faces-direction-hash>139391ceb7d3e9461066f7595a2a0a56</faces-direction-hash>
+    <cells-direction-hash>c7be8708a7df7446bb82c67c1e964d65</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>
