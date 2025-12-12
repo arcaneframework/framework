@@ -160,7 +160,7 @@ initializeStringConverter();
 extern "C++" ARCANE_IMPL_EXPORT IArcaneMain*
 createArcaneMainBatch(const ApplicationInfo& exe_info, IMainFactory*);
 
-extern "C++" ARCANE_IMPL_EXPORT IDynamicLibraryLoader*
+extern "C++" ARCCORE_BASE_EXPORT IDynamicLibraryLoader*
 createGlibDynamicLibraryLoader();
 
 extern "C++" ARCANE_IMPL_EXPORT ICodeService*
