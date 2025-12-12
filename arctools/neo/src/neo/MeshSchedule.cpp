@@ -20,6 +20,33 @@
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
 
+void Neo::Mesh::_filterNullItems(std::vector<Neo::utils::Int32>& connected_item_lids, std::vector<int>& nb_connected_item_per_item) {
+  auto index = 0;
+  bool has_null_item = false;
+  for (auto& nb_item : nb_connected_item_per_item) {
+    auto nb_item_copy = nb_item;
+    for (auto i = 0 ; i < nb_item_copy ; ++i){
+      if (connected_item_lids[index] == Neo::utils::NULL_ITEM_LID) {
+        --nb_item;
+        has_null_item = true;
+      }
+      ++index;
+    }
+  }
+  if (!has_null_item) return;
+  std::vector<Neo::utils::Int32> non_null_connected_items;
+  non_null_connected_items.reserve(connected_item_lids.size());
+  std::copy_if(connected_item_lids.begin(),connected_item_lids.end(),
+      std::back_inserter(non_null_connected_items),
+      [](int value){return value != Neo::utils::NULL_ITEM_LID;});
+
+  connected_item_lids = std::move(non_null_connected_items);
+  connected_item_lids.shrink_to_fit();
+}
+
+/*-----------------------------------------------------------------------------*/
+
+
 template <typename ItemRangeT>
 void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items_wrapper,
                                          Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
@@ -53,12 +80,13 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
   [connected_item_uids{ std::move(connected_item_uids) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) },
-   source_items_wrapper, &source_family, &target_family, rank(m_rank)](Neo::ItemLidsProperty const& source_family_lids_property,
+   source_items_wrapper, &source_family, &target_family, rank(m_rank),this](Neo::ItemLidsProperty const& source_family_lids_property,
                                                          Neo::ItemLidsProperty const& target_family_lids_property,
-                                                         Neo::MeshArrayPropertyT<Neo::utils::Int32>& source2target) {
+                                                         Neo::MeshArrayPropertyT<Neo::utils::Int32>& source2target) mutable {
     Neo::print(rank) << "== Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
     ItemRange const& source_items = source_items_wrapper.get();
     auto connected_item_lids = target_family_lids_property[connected_item_uids];
+    _filterNullItems(connected_item_lids, nb_connected_item_per_item);
     if (source2target.isInitializableFrom(source_items)) {
       source2target.resize(std::move(nb_connected_item_per_item));
       source2target.init(source_items, std::move(connected_item_lids));
