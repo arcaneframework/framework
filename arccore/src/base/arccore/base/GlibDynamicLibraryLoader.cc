@@ -80,10 +80,10 @@ class GlibDynamicLibraryLoader
       // Si on ne trouve pas, essaie avec l'extension '.dll' ou '.dylib' car sous
       // windows ou macos, certaines version de la GLIB prefixent automatiquement le
       // nom de la bibliothèque par 'lib' si elle ne finit pas par '.dll' ou '.dylib'.
-#ifdef ARCANE_OS_WIN32
+#ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(directory, name + ".dll");
 #endif
-#ifdef ARCANE_OS_MACOS
+#ifdef ARCCORE_OS_MACOS
       dl = _tryOpen(directory, "lib" + name + ".dylib");
 #endif
     }
@@ -94,10 +94,10 @@ class GlibDynamicLibraryLoader
     if (!dl) {
       // Si on ne trouve pas, essaie en cherchant à côté du binaire
       // et avec l'extension dll ou dylib
-#ifdef ARCANE_OS_WIN32
+#ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(".", name + ".dll");
 #endif
-#ifdef ARCANE_OS_MACOS
+#ifdef ARCCORE_OS_MACOS
       dl = _tryOpen(".", "lib" + name + ".dylib");
 #endif
     }
