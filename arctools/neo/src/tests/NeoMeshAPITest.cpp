@@ -298,6 +298,14 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
                                cell_to_dofs_connectivity_name);
   // apply
   auto end_mesh_update = mesh.applyScheduledOperations();
+
+  // Add an empty connectivity
+  auto added_dofs = future_dofs.get(end_mesh_update);
+  mesh.scheduleAddConnectivity(dof_family, added_dofs, dof_family, {}, {}, "empty_dof_to_dof_connectivity");
+  mesh.applyScheduledOperations();
+  auto empty_connectivity = mesh.getConnectivity(dof_family, dof_family, "empty_dof_to_dof_connectivity");
+  EXPECT_TRUE(empty_connectivity.isEmpty());
+
   // Add further connectivity
   auto added_nodes = future_nodes.get(end_mesh_update);
   mesh.scheduleAddConnectivity(node_family, added_nodes, cell_family,
