@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* GlibDynamicLibraryLoader.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Chargeur dynamique de bibliothèque avec Glib (utiliser gmodule).          */
+/* Chargeur dynamique de bibliothèque avec Glib (utilise gmodule).           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ArrayView.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/String.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/ArrayView.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 
 #include "gmodule.h"
 
@@ -33,18 +33,25 @@ class GlibDynamicLibraryLoader;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_IMPL_EXPORT GlibDynamicLibrary
+class GlibDynamicLibrary
 : public IDynamicLibrary
 {
  public:
-  GlibDynamicLibrary(GlibDynamicLibraryLoader* mng,GModule* gmodule)
-  : m_manager(mng), m_gmodule(gmodule){}
+
+  GlibDynamicLibrary(GlibDynamicLibraryLoader* mng, GModule* gmodule)
+  : m_manager(mng)
+  , m_gmodule(gmodule)
+  {}
+
  public:
+
   void close() override;
-  void* getSymbolAddress(const String& symbol_name,bool* is_found) override;
+  void* getSymbolAddress(const String& symbol_name, bool* is_found) override;
+
  private:
-  GlibDynamicLibraryLoader* m_manager;
-  GModule* m_gmodule;
+
+  GlibDynamicLibraryLoader* m_manager = nullptr;
+  GModule* m_gmodule = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,47 +59,45 @@ class ARCANE_IMPL_EXPORT GlibDynamicLibrary
 /*!
  * \brief Interface d'une chargeur dynamique de bibliothèque.
  */
-class ARCANE_IMPL_EXPORT GlibDynamicLibraryLoader
+class GlibDynamicLibraryLoader
 : public IDynamicLibraryLoader
 {
  public:
-   GlibDynamicLibraryLoader() : m_is_verbose(false){}
-   virtual ~GlibDynamicLibraryLoader(){} //!< Libère les ressources
 
- public:
-
-  void build() override
+  GlibDynamicLibraryLoader()
   {
     String s = platform::getEnvironmentVariable("ARCANE_VERBOSE_DYNAMICLIBRARY");
-    if (s=="1" || s=="true")
+    if (s == "1" || s == "true")
       m_is_verbose = true;
   }
 
-  IDynamicLibrary* open(const String& directory,const String& name) override
+  void build() override {}
+
+  IDynamicLibrary* open(const String& directory, const String& name) override
   {
     IDynamicLibrary* dl = _tryOpen(directory, name);
-    if (!dl){
+    if (!dl) {
       // Si on ne trouve pas, essaie avec l'extension '.dll' ou '.dylib' car sous
       // windows ou macos, certaines version de la GLIB prefixent automatiquement le
       // nom de la bibliothèque par 'lib' si elle ne finit pas par '.dll' ou '.dylib'.
-#ifdef ARCANE_OS_WIN32
+#ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(directory, name + ".dll");
 #endif
-#ifdef ARCANE_OS_MACOS
+#ifdef ARCCORE_OS_MACOS
       dl = _tryOpen(directory, "lib" + name + ".dylib");
 #endif
     }
-	if (!dl){
+    if (!dl) {
       // Si on ne trouve pas, essaie en cherchant à côté du binaire
       dl = _tryOpen(".", name);
     }
-    if (!dl){
+    if (!dl) {
       // Si on ne trouve pas, essaie en cherchant à côté du binaire
       // et avec l'extension dll ou dylib
-#ifdef ARCANE_OS_WIN32
+#ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(".", name + ".dll");
 #endif
-#ifdef ARCANE_OS_MACOS
+#ifdef ARCCORE_OS_MACOS
       dl = _tryOpen(".", "lib" + name + ".dylib");
 #endif
     }
@@ -110,24 +115,25 @@ class ARCANE_IMPL_EXPORT GlibDynamicLibraryLoader
     GModule* gmodule = g_module_open(full_path, GModuleFlags());
     g_free(full_path);
     if (m_is_verbose) {
-      if (!gmodule){
+      if (!gmodule) {
         std::cout << " NOT FOUND\n";
-      } else {
+      }
+      else {
         std::cout << " OK\n";
       }
     }
     if (!gmodule)
       return nullptr;
-    auto lib = new GlibDynamicLibrary(this,gmodule);
+    auto lib = new GlibDynamicLibrary(this, gmodule);
     m_opened_libraries.insert(lib);
     return lib;
   }
-  
+
   void closeLibraries() override
   {
     // Cette méthode va modifier m opened libraries donc il faut le copier avant.
-    std::vector<GlibDynamicLibrary*> libs(m_opened_libraries.begin(),m_opened_libraries.end());
-    for( auto lib : libs ){
+    std::vector<GlibDynamicLibrary*> libs(m_opened_libraries.begin(), m_opened_libraries.end());
+    for (auto lib : libs) {
       lib->close();
       delete lib;
     }
@@ -136,13 +142,13 @@ class ARCANE_IMPL_EXPORT GlibDynamicLibraryLoader
   void removeInstance(GlibDynamicLibrary* lib)
   {
     auto iter = m_opened_libraries.find(lib);
-    if (iter!=m_opened_libraries.end())
+    if (iter != m_opened_libraries.end())
       m_opened_libraries.erase(iter);
   }
 
  private:
 
-  bool m_is_verbose;
+  bool m_is_verbose = false;
   std::set<GlibDynamicLibrary*> m_opened_libraries;
 };
 
@@ -165,7 +171,7 @@ close()
 /*---------------------------------------------------------------------------*/
 
 void* GlibDynamicLibrary::
-getSymbolAddress(const String& symbol_name,bool* is_found)
+getSymbolAddress(const String& symbol_name, bool* is_found)
 {
   if (is_found)
     *is_found = false;
@@ -173,7 +179,7 @@ getSymbolAddress(const String& symbol_name,bool* is_found)
     return nullptr;
   const gchar* gname = reinterpret_cast<const gchar*>(symbol_name.utf8().data());
   void* symbol_addr = nullptr;
-  bool r = ::g_module_symbol(m_gmodule,gname,&symbol_addr);
+  bool r = ::g_module_symbol(m_gmodule, gname, &symbol_addr);
   if (is_found)
     (*is_found) = r;
   return symbol_addr;
@@ -182,7 +188,7 @@ getSymbolAddress(const String& symbol_name,bool* is_found)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_IMPL_EXPORT IDynamicLibraryLoader*
+extern "C++" ARCCORE_BASE_EXPORT IDynamicLibraryLoader*
 createGlibDynamicLibraryLoader()
 {
   IDynamicLibraryLoader* idll = new GlibDynamicLibraryLoader();
@@ -192,9 +198,21 @@ createGlibDynamicLibraryLoader()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace
+{
+  GlibDynamicLibraryLoader glib_dynamic_loader;
+  IDynamicLibraryLoader* global_default_loader = &glib_dynamic_loader;
+}
 
-} // End namespace Arcane
+IDynamicLibraryLoader* IDynamicLibraryLoader::getDefault()
+{
+  return global_default_loader;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

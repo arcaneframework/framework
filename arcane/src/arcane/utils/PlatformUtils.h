@@ -145,22 +145,6 @@ extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
 setThreadImplementationService(IThreadImplementation* service);
 
 /*!
- * \brief Service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Peut retourner \c nullptr si le chargement dynamique n'est pas disponible.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-getDynamicLibraryLoader();
-
-/*!
- * \brief Positionne le service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Retourne l'ancien service utilisé.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll);
-
-/*!
  * \brief Positionne le service utilisé pour gérer les compteurs interne du processeur.
  *
  * Retourne l'ancien service utilisé.

@@ -31,7 +31,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/IThreadImplementationService.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"
@@ -328,8 +328,7 @@ build()
     m_trace->info(4) << "*** PID: " << platform::getProcessId();
     m_trace->info(4) << "*** Host: " << platform::getHostName();
 
-    // TODO: Avec MPC, cette séquence ne doit être appelée qu'une seule fois.
-    IDynamicLibraryLoader* dynamic_library_loader = platform::getDynamicLibraryLoader();
+    IDynamicLibraryLoader* dynamic_library_loader = IDynamicLibraryLoader::getDefault();
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
 #ifdef ARCANE_OS_WIN32
@@ -341,7 +340,7 @@ build()
         // on repositionne le comportement qui autorise à ajouter des chemins
         // utilisateurs et on ajoute 'os_dir' à ce chemin.
         // Sans cela, les dépendances aux bibliothèques chargées par LoadLibrary()
-        // ne seront pas trouvé. Par exemple 'arcane_thread.dll' dépend de 'tbb.dll' et
+        // ne seront pas trouvées. Par exemple 'arcane_thread.dll' dépend de 'tbb.dll' et
         // tous les deux sont le même répertoire mais si répertoire n'est pas
         // dans la liste autorisé, alors 'tbb.dll' ne sera pas trouvé.
         //

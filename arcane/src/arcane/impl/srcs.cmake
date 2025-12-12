@@ -108,7 +108,6 @@ set( ARCANE_SOURCES
   VariableSynchronizerComputeList.cc
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
-  GlibDynamicLibraryLoader.cc
   Application.h
   ArcaneSession.h
   ArcaneMain.h

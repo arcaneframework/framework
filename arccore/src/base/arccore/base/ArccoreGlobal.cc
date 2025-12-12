@@ -30,6 +30,7 @@
 #include "arccore/base/ForLoopRunInfo.h"
 #include "arccore/base/ForLoopRanges.h"
 #include "arccore/base/ParallelLoopOptions.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 
 #include <iostream>
 #include <cstring>
