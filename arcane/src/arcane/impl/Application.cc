@@ -31,7 +31,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/IThreadImplementationService.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"

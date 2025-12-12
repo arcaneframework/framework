@@ -30,7 +30,6 @@
 #include "arcane/utils/IFunctorWithAddress.h"
 #include "arcane/utils/IRangeFunctor.h"
 #include "arcane/utils/SpinLock.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
 #include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/DataTypeContainer.h"

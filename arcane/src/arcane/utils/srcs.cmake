@@ -237,7 +237,6 @@ set(ARCANE_SOURCES
   HashFunction.cc
   IndexOutOfRangeException.h
   ItemGroupObserver.h
-  IDynamicLibraryLoader.h
   IFunctor.h
   IFunctorWithAddress.h
   IMathFunctor.h

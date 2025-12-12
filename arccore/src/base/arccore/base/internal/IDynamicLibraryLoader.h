@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDynamicLibraryLoader.h                                     (C) 2000-2019 */
+/* IDynamicLibraryLoader.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une chargeur dynamique de bibliothèque.                       */
+/* Interface d'un chargeur dynamique de bibliothèque.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IDYNAMICLIBRARYLOADER_H
-#define ARCANE_IDYNAMICLIBRARYLOADER_H
+#ifndef ARCCORE_BASE_INTERNAL_IDYNAMICLIBRARYLOADER_H
+#define ARCCORE_BASE_INTERNAL_IDYNAMICLIBRARYLOADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,18 +27,20 @@ namespace Arcane
 /*!
  * \brief Interface d'une bibliothèque dynamique.
  */
-class ARCANE_UTILS_EXPORT IDynamicLibrary
+class ARCCORE_BASE_EXPORT IDynamicLibrary
 {
  public:
-  virtual ~IDynamicLibrary(){} //!< Libère les ressources
+
+  virtual ~IDynamicLibrary() = default; //!< Libère les ressources
  public:
+
   /*!
    * \brief Ferme la bibliothèque dynamique.
    *
    * Elle ne doit plus être utilisée après fermeture et l'instance peut
    * être détruite via l'opérateur delete.
    */
-  virtual void close() =0;
+  virtual void close() = 0;
 
   /*!
    * \brief Retourne l'adresse du symbol de nom \a symbol_name.
@@ -46,7 +48,7 @@ class ARCANE_UTILS_EXPORT IDynamicLibrary
    * Si \a is_found n'est pas nul, contient en retour le booléen indiquant
    * si le symbol a été trouvé.
    */
-  virtual void* getSymbolAddress(const String& symbol_name,bool* is_found) =0;
+  virtual void* getSymbolAddress(const String& symbol_name, bool* is_found) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -54,17 +56,17 @@ class ARCANE_UTILS_EXPORT IDynamicLibrary
 /*!
  * \internal.
  *
- * \brief Interface d'une chargeur dynamique de bibliothèque.
+ * \brief Interface d'un chargeur dynamique de bibliothèque.
  */
-class ARCANE_UTILS_EXPORT IDynamicLibraryLoader
+class ARCCORE_BASE_EXPORT IDynamicLibraryLoader
 {
  public:
-	
-  virtual ~IDynamicLibraryLoader(){} //!< Libère les ressources
+
+  virtual ~IDynamicLibraryLoader() = default; //!< Libère les ressources
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
@@ -77,10 +79,10 @@ class ARCANE_UTILS_EXPORT IDynamicLibraryLoader
    * dépendant machine. Par exemple sous linux, si la bibliothèque est
    * libtoto.so, \a name doit valoir \a toto.
    */
-  virtual IDynamicLibrary* open(const String& directory,const String& name) =0;
+  virtual IDynamicLibrary* open(const String& directory, const String& name) = 0;
 
   //! Ferme toutes les bibliothèques ouvertes via \a open()
-  virtual void closeLibraries() =0;
+  virtual void closeLibraries() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -91,5 +93,4 @@ class ARCANE_UTILS_EXPORT IDynamicLibraryLoader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

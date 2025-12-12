@@ -113,6 +113,7 @@ set(SOURCES
   Functor.cc
 
   internal/ConvertInternal.h
+  internal/IDynamicLibraryLoader.h
   internal/StringImpl.h
   internal/DependencyInjection.h
   internal/ProfilingInternal.h

@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* GlibDynamicLibraryLoader.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Chargeur dynamique de bibliothèque avec Glib (utiliser gmodule).          */
+/* Chargeur dynamique de bibliothèque avec Glib (utilise gmodule).           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArrayView.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 
 #include "gmodule.h"
 

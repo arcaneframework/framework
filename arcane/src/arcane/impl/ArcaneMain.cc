@@ -28,7 +28,7 @@
 #include "arcane/utils/TimeoutException.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/TestLogger.h"
