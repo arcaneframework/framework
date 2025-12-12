@@ -355,7 +355,6 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static std::atomic<Int32> m_is_init_done;
   static void _launchMissingInitException();
   static void _checkHasInit();
-  static void _checkCreateDynamicLibraryLoader();
   static int _runDotNet();
   static void _checkAutoDetectMPI();
   static int _checkAutoDetectAccelerator(bool& has_accelerator);

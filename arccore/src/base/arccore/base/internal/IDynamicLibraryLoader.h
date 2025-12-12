@@ -83,6 +83,13 @@ class ARCCORE_BASE_EXPORT IDynamicLibraryLoader
 
   //! Ferme toutes les bibliothèques ouvertes via \a open()
   virtual void closeLibraries() = 0;
+
+ public:
+
+  /*!
+   * \brief Service utilisé pour charger dynamiquement des bibliothèques.
+   */
+  static IDynamicLibraryLoader* getDefault();
 };
 
 /*---------------------------------------------------------------------------*/

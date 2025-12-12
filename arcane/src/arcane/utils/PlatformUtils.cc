@@ -103,7 +103,6 @@ namespace platform
   ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
-  IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
 }
@@ -165,26 +164,6 @@ setProfilingService(IProfilingService* service)
 {
   IProfilingService* old_service = global_profiling_service;
   global_profiling_service = service;
-  return old_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-getDynamicLibraryLoader()
-{
-  return global_dynamic_library_loader;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll)
-{
-  IDynamicLibraryLoader* old_service = global_dynamic_library_loader;
-  global_dynamic_library_loader = idll;
   return old_service;
 }
 

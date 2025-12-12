@@ -160,9 +160,6 @@ initializeStringConverter();
 extern "C++" ARCANE_IMPL_EXPORT IArcaneMain*
 createArcaneMainBatch(const ApplicationInfo& exe_info, IMainFactory*);
 
-extern "C++" ARCCORE_BASE_EXPORT IDynamicLibraryLoader*
-createGlibDynamicLibraryLoader();
-
 extern "C++" ARCANE_IMPL_EXPORT ICodeService*
 createArcaneCodeService(IApplication* app);
 
@@ -689,18 +686,6 @@ _setArcaneLibraryPath()
 /*---------------------------------------------------------------------------*/
 
 void ArcaneMain::
-_checkCreateDynamicLibraryLoader()
-{
-  auto x = platform::getDynamicLibraryLoader();
-  if (!x) {
-    platform::setDynamicLibraryLoader(createGlibDynamicLibraryLoader());
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneMain::
 arcaneInitialize()
 {
   // Le premier thread qui arrive ici fait l'init.
@@ -722,7 +707,6 @@ arcaneInitialize()
     arcaneInitCheckMemory();
     // Initialise le singleton du groupe vide et garde une référence dessus.
     ItemGroupImpl::_buildSharedNull();
-    _checkCreateDynamicLibraryLoader();
     m_is_init_done = 1;
   }
   else
@@ -746,11 +730,9 @@ arcaneFinalize()
     ItemGroupImpl::_destroySharedNull();
 
     {
-      auto x = platform::getDynamicLibraryLoader();
+      auto x = IDynamicLibraryLoader::getDefault();
       if (x) {
         x->closeLibraries();
-        delete x;
-        platform::setDynamicLibraryLoader(nullptr);
       }
     }
     arccorePrintSpecificMemoryStats();
@@ -1003,11 +985,7 @@ _runDotNet()
   String os_dir(si->m_arcane_lib_path);
 
   try {
-    _checkCreateDynamicLibraryLoader();
-
-    IDynamicLibraryLoader* dll_loader = platform::getDynamicLibraryLoader();
-    if (!dll_loader)
-      ARCANE_FATAL("No dynamic library available for running .Net");
+    IDynamicLibraryLoader* dll_loader = IDynamicLibraryLoader::getDefault();
 
     String dll_name = "arcane_mono";
     String symbol_name = "arcane_mono_main2";
@@ -1072,11 +1050,7 @@ _checkAutoDetectMPI()
 
   typedef void (*ArcaneAutoDetectMPIFunctor)();
 
-  _checkCreateDynamicLibraryLoader();
-
-  IDynamicLibraryLoader* dll_loader = platform::getDynamicLibraryLoader();
-  if (!dll_loader)
-    return;
+  IDynamicLibraryLoader* dll_loader = IDynamicLibraryLoader::getDefault();
 
   String os_dir(si->m_arcane_lib_path);
   String dll_name = "arcane_mpi";
@@ -1138,11 +1112,7 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
 
     typedef void (*ArcaneAutoDetectAcceleratorFunctor)(Accelerator::RegisterRuntimeInfo&);
 
-    _checkCreateDynamicLibraryLoader();
-
-    IDynamicLibraryLoader* dll_loader = platform::getDynamicLibraryLoader();
-    if (!dll_loader)
-      ARCANE_FATAL("No dynamic library available for running accelerator runtime");
+    IDynamicLibraryLoader* dll_loader = IDynamicLibraryLoader::getDefault();
 
     String os_dir(si->m_arcane_lib_path);
     String dll_name = "arccore_accelerator_" + runtime_name + "_runtime";

@@ -64,12 +64,14 @@ class GlibDynamicLibraryLoader
 {
  public:
 
-  void build() override
+  GlibDynamicLibraryLoader()
   {
     String s = platform::getEnvironmentVariable("ARCANE_VERBOSE_DYNAMICLIBRARY");
     if (s == "1" || s == "true")
       m_is_verbose = true;
   }
+
+  void build() override {}
 
   IDynamicLibrary* open(const String& directory, const String& name) override
   {
@@ -192,6 +194,19 @@ createGlibDynamicLibraryLoader()
   IDynamicLibraryLoader* idll = new GlibDynamicLibraryLoader();
   idll->build();
   return idll;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace
+{
+  GlibDynamicLibraryLoader glib_dynamic_loader;
+  IDynamicLibraryLoader* global_default_loader = &glib_dynamic_loader;
+}
+
+IDynamicLibraryLoader* IDynamicLibraryLoader::getDefault()
+{
+  return global_default_loader;
 }
 
 /*---------------------------------------------------------------------------*/
