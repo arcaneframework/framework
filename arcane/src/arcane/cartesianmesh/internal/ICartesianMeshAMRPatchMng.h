@@ -77,6 +77,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * mis à jour. Cela inclut l'activation des mailles parentes.
    */
   virtual void coarsen(bool update_parent_flag) = 0;
+  virtual void _syncFlagCell() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

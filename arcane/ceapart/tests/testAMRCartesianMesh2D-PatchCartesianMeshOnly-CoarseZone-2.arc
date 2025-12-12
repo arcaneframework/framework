@@ -5,7 +5,7 @@
 
     <description>
       Test du raffinement d'un maillage cartesian 2D avec le type d'AMR PatchCartesianMeshOnly
-      puis du dé-raffinement de certaines zones (avec renumérotation version 1)
+      puis du dé-raffinement de certaines zones (sans renumérotation)
     </description>
 
     <timeloop>AMRCartesianMeshTestLoop</timeloop>
@@ -42,7 +42,7 @@
   </mesh>
 
   <a-m-r-cartesian-mesh-tester>
-    <renumber-patch-method>1</renumber-patch-method>
+    <renumber-patch-method>0</renumber-patch-method>
 
     <refinement-2d>
       <position>1.0 1.0</position>
@@ -75,13 +75,17 @@
       <length>3.0 3.0</length>
     </coarse-zone-2d>
 
-    <expected-number-of-cells-in-patchs>100 220</expected-number-of-cells-in-patchs>
-    <nodes-uid-hash>adbff87895b55d9ce55b60fcab95c542</nodes-uid-hash>
-    <faces-uid-hash>2a8a808d2c4ac5f760812c9b5b16c3f0</faces-uid-hash>
-    <cells-uid-hash>9b275bfdff8e4485ab746bab360d02d3</cells-uid-hash>
-    <nodes-direction-hash>3169601d3311a9bbd3f02dfe47ce263c</nodes-direction-hash>
-    <faces-direction-hash>c017f7f8020fab9ae8a749a05540cffc</faces-direction-hash>
-    <cells-direction-hash>a7698709767a059c1670beac54f1c8c3</cells-direction-hash>
+    <!--    <expected-number-of-cells-in-patchs>100 220</expected-number-of-cells-in-patchs>-->
+    <expected-number-of-cells-in-patchs>100 40 48 60 72</expected-number-of-cells-in-patchs>
+    <nodes-uid-hash>bc4723a3ae6b84325bb17509f94d624b</nodes-uid-hash>
+    <!-- Hash avant renumérotation niveau 0. -->
+    <!--    <faces-uid-hash>1d4aba023756b0548b078f7915e2001e</faces-uid-hash>-->
+    <faces-uid-hash>0eb269ca13f2241a9922ed69e371795b</faces-uid-hash>
+    <cells-uid-hash>8874beeeeb07e91d1d49868bcce26b21</cells-uid-hash>
+
+    <nodes-direction-hash>c36bc800fb32a162a2df3b1006e3d0cc</nodes-direction-hash>
+    <faces-direction-hash>f255f69cb6ccbc1c6a81cd794190f80b</faces-direction-hash>
+    <cells-direction-hash>d3a41bdbbc7a19b9fe26564ae0115735</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>

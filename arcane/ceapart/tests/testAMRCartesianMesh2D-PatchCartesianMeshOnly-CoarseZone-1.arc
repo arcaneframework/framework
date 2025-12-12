@@ -5,7 +5,7 @@
 
     <description>
       Test du raffinement d'un maillage cartesian 2D avec le type d'AMR PatchCartesianMeshOnly
-      puis du dé-raffinement de certaines zones (avec renumérotation version 1)
+      puis du dé-raffinement de certaines zones (sans renumérotation)
     </description>
 
     <timeloop>AMRCartesianMeshTestLoop</timeloop>
@@ -42,7 +42,7 @@
   </mesh>
 
   <a-m-r-cartesian-mesh-tester>
-    <renumber-patch-method>1</renumber-patch-method>
+    <renumber-patch-method>0</renumber-patch-method>
 
     <refinement-2d>
       <position>1.0 1.0</position>
@@ -62,13 +62,17 @@
       <length>1.0 1.0</length>
     </coarse-zone-2d>
 
-    <expected-number-of-cells-in-patchs>25 32</expected-number-of-cells-in-patchs>
-    <nodes-uid-hash>b85cb78ab44742ca5ae8d1440a38739d</nodes-uid-hash>
-    <faces-uid-hash>f21c0a9a3f794391796fced1db892419</faces-uid-hash>
-    <cells-uid-hash>77ff9dc6c92dc78592a5a0f522422acb</cells-uid-hash>
-    <nodes-direction-hash>278dd927e27f254e9dd6e03788fe10ca</nodes-direction-hash>
-    <faces-direction-hash>639237c778c0ccbb6d41e2da46f42e4d</faces-direction-hash>
-    <cells-direction-hash>88908c6b1166b61acb92923029042140</cells-direction-hash>
+    <!--    <expected-number-of-cells-in-patchs>25 32</expected-number-of-cells-in-patchs>-->
+    <expected-number-of-cells-in-patchs>25 8 8 8 8</expected-number-of-cells-in-patchs>
+    <nodes-uid-hash>228ccabec148d8994007ec68e78ff7d4</nodes-uid-hash>
+    <!-- Hash avant renumérotation niveau 0. -->
+    <!--    <faces-uid-hash>2a641fe98a56f0938992201e96d1cee8</faces-uid-hash>-->
+    <faces-uid-hash>72db90136e254db309faaa5351174a38</faces-uid-hash>
+    <cells-uid-hash>f3b6adc61a780f25ff6580c7c9f39142</cells-uid-hash>
+    
+    <nodes-direction-hash>08ab40806c58a2025313aa45658d9a13</nodes-direction-hash>
+    <faces-direction-hash>42c28bc7f547a42be25cce44e8778a91</faces-direction-hash>
+    <cells-direction-hash>80b801ca138491629baa42ef67d1a7fc</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>

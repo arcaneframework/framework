@@ -14,17 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/core/VariableTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-class ICartesianMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,9 +91,20 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
    * \param cells_local_id Le tableau qui contiendra les localIds des mailles de la zone.
    *                       Attention : le tableau sera d'abord effacé.
    */
-  void cellsInPatch(IMesh* mesh, SharedArray<Int32> cells_local_id) const;
+  void cellsInPatch(IMesh* mesh, UniqueArray<Int32>& cells_local_id) const;
+
+  /*!
+   * \brief Méthode permettant de retrouver les mailles incluses dans la zone.
+   * Un objet AMRPatchPosition désignant la position du patch est aussi rempli.
+   * \param mesh Le maillage.
+   * \param cells_local_id Le tableau qui contiendra les localIds des mailles de la zone.
+   *                       Attention : le tableau sera d'abord effacé.
+   * \param position [OUT] La position du patch.
+   */
+  void cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchPosition& position) const;
 
  private:
+
   Real3 m_position;
   Real3 m_length;
   bool m_is_3d;
@@ -109,5 +118,4 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

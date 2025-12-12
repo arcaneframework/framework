@@ -51,18 +51,28 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 
  public:
 
-  //! Groupe de mailles du patch
+  //! Groupe de mailles du patch (incluant les mailles de recouvrement).
   CellGroup cells();
 
-  Integer index() const
-  {
-    ARCANE_CHECK_POINTER(m_patch);
-    return m_patch->index();
-  }
+  /*!
+   * \brief Groupe de mailles du patch (sans les mailles de recouvrement).
+   *
+   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   */
+  CellGroup inPatchCells();
+
+  //! Index du patch dans le tableau des patchs.
+  Integer index() const;
+
+  /*!
+   * \brief Niveau du patch.
+   *
+   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   */
   Integer level() const
   {
     ARCANE_CHECK_POINTER(m_patch);
-    return m_patch->level();
+    return m_patch->position().level();
   }
 
   //! Liste des mailles dans la direction \a dir
@@ -112,6 +122,18 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
   {
     ARCANE_CHECK_POINTER(m_patch);
     m_patch->checkValid();
+  }
+
+  /*!
+   * \brief Méthode permettant de récupérer la position du patch dans le
+   * maillage cartesien.
+   *
+   * \return Une copie de la position.
+   */
+  AMRPatchPosition position() const
+  {
+    ARCANE_CHECK_POINTER(m_patch);
+    return m_patch->position();
   }
 
   //! Indique si le patch est nul.
