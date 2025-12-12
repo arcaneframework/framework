@@ -74,6 +74,11 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   if (!is_inserted && add_or_modify == ConnectivityOperation::Add && !inserted_connectivity_iterator->second.isEmpty()) {
     throw std::invalid_argument("Cannot include already inserted connectivity " + connectivity_unique_name + ". Choose ConnectivityOperation::Modify");
   }
+  auto nb_connected_item_sum = std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0);
+  if (connected_item_uids.empty() || nb_connected_item_per_item.empty() || nb_connected_item_sum == 0) {
+    Neo::print(m_rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+    return;
+  }
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ source_family, source_family.lidPropName(), PropertyStatus::ExistingProperty },
   Neo::MeshKernel::InProperty{ target_family, target_family.lidPropName(), PropertyStatus::ExistingProperty },
@@ -87,6 +92,12 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
     ItemRange const& source_items = source_items_wrapper.get();
     auto connected_item_lids = target_family_lids_property[connected_item_uids];
     _filterNullItems(connected_item_lids, nb_connected_item_per_item);
+    auto nb_connected_item_sum = std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0);
+    if (nb_connected_item_sum == 0) {
+      Neo::print(rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+      return;
+    }
+    if (connected_item_lids.empty() || nb_connected_item_per_item.empty()) return;
     if (source2target.isInitializableFrom(source_items)) {
       source2target.resize(std::move(nb_connected_item_per_item));
       source2target.init(source_items, std::move(connected_item_lids));
