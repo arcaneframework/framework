@@ -770,3 +770,34 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
 }
 
 /*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshAPITest,ConnectUnexistingItems) {
+  // If an item is connected to an unexisting item, this connectivity should be removed
+  auto mesh = Neo::Mesh{ "ConnectUnexistingItems" };
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  std::vector<Neo::utils::Int64> node_uids{ 0, 2 };
+  std::vector<Neo::utils::Int64> cell_uids{ 0 };
+  auto future_nodes = Neo::FutureItemRange{};
+  auto future_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(node_family, std::move(node_uids), future_nodes);
+  mesh.scheduleAddItems(cell_family, std::move(cell_uids), future_cells);
+  // Create connectivity (fictive mesh) the cell with 4 nodes, but 2 are not existing
+  // At the end the cell should be connected only to the two existing nodes
+  std::string cell_to_nodes_connectivity_name{ "cell_to_nodes" };
+  auto nb_node_per_cell = 4;
+  std::vector<Neo::utils::Int64> cell_nodes{ 0, 1, 2, 3 };
+  mesh.scheduleAddConnectivity(cell_family, future_cells, node_family,
+                               nb_node_per_cell, cell_nodes,
+                               cell_to_nodes_connectivity_name);
+  mesh.applyScheduledOperations();
+  auto cell_2_nodes = mesh.getConnectivity(cell_family, node_family, cell_to_nodes_connectivity_name);
+  EXPECT_EQ(cell_2_nodes[0].size(), 2);
+  EXPECT_EQ(cell_2_nodes.maxNbConnectedItems(), 2);
+  // Try a connectivity where not any connectedt items exist
+  mesh.scheduleAddConnectivity(cell_family, future_cells, node_family,
+                               nb_node_per_cell, {11,12,13,14},
+                               "empty_cell_to_nodes");
+  auto empty_connectivity = mesh.getConnectivity(cell_family, node_family, "empty_cell_to_nodes");
+  EXPECT_TRUE(empty_connectivity.isEmpty());
+}
