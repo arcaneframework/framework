@@ -40,6 +40,8 @@ set(SOURCES
   internal/HostSpecificMemoryCopy.h
 
   accelerator/CommonAcceleratorGlobal.h
+  accelerator/AcceleratorRuntimeInitialisationInfo.h
+  accelerator/AcceleratorRuntimeInitialisationInfo.cc
   accelerator/AcceleratorCore.cc
   accelerator/AcceleratorMemoryAllocatorBase.cc
   accelerator/IAcceleratorMng.h
