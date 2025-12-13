@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Exception.h                                                 (C) 2000-2022 */
+/* Exception.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations et définitions liées aux exceptions.                         */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,9 @@
 #include "arcane/utils/Atomic.h"
 
 #include <functional>
+
+// TODO: Rendre ces méthode obsolète fin 2026 et indiquer qu'il faut
+// utiliser ExceptionUtils à la place.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
