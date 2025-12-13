@@ -338,7 +338,7 @@ init(const CommandLineArguments& args)
     auto& dotnet_info = ArcaneLauncher::dotNetRuntimeInitialisationInfo();
     properties::readFromParameterList(args.parameters(),dotnet_info);
     auto& accelerator_info = ArcaneLauncher::acceleratorRuntimeInitialisationInfo();
-    properties::readFromParameterList(args.parameters(),accelerator_info);
+    properties::readFromParameterList<AcceleratorRuntimeInitialisationInfo, Accelerator::AcceleratorRuntimeInitialisationInfoProperties>(args.parameters(), accelerator_info);
     ParallelLoopOptions loop_options;
     properties::readFromParameterList<ParallelLoopOptions,ParallelLoopOptionsProperties>(args.parameters(),loop_options);
     TaskFactory::setDefaultParallelLoopOptions(loop_options);

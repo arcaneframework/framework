@@ -20,7 +20,8 @@
 #include "arccore/common/accelerator/Runner.h"
 #include "arccore/common/accelerator/RunQueue.h"
 
-#include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
+#include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 
 #include <memory>
 
@@ -29,7 +30,7 @@
 
 #define CHECK_HAS_INIT()                        \
   if (!m_has_init)\
-    ARCANE_FATAL("Invalid call because IAcceleratorMng::initialized() has not been called")
+    ARCCORE_FATAL("Invalid call because IAcceleratorMng::initialized() has not been called")
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,9 +90,9 @@ void AcceleratorMng::
 initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
 {
   if (m_has_init)
-    ARCANE_FATAL("Method initialize() has already been called");
+    ARCCORE_FATAL("Method initialize() has already been called");
 
-  arcaneInitializeRunner(m_default_runner,traceMng(),runtime_info);
+  Impl::arccoreInitializeRunner(m_default_runner,traceMng(),runtime_info);
   m_has_init = true;
 
   m_default_runner_ref = std::make_unique<Runner>(m_default_runner);
@@ -102,8 +103,8 @@ initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT Ref<IAcceleratorMng>
-arcaneCreateAcceleratorMngRef(ITraceMng* tm)
+extern "C++" ARCCORE_COMMON_EXPORT Ref<IAcceleratorMng>
+arccoreCreateAcceleratorMngRef(ITraceMng* tm)
 {
   return makeRef<IAcceleratorMng>(new AcceleratorMng(tm));
 }

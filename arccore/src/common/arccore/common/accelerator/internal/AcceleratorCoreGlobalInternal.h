@@ -122,6 +122,26 @@ class ARCCORE_COMMON_EXPORT RuntimeStaticInfo
 
 } // End namespace Arcane::Accelerator::impl
 
+namespace Arcane::Accelerator::Impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Initialise \a runner avec les informations de \a acc_info.
+ *
+ * Cette fonction appelle runner.setAsCurrentDevice() après
+ * l'initialisation.
+ */
+extern "C++" ARCCORE_COMMON_EXPORT void
+arccoreInitializeRunner(Runner& runner, ITraceMng* tm,
+                        const AcceleratorRuntimeInitialisationInfo& acc_info);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

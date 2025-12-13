@@ -9,16 +9,12 @@
 /*                                                                           */
 /* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
-#define ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
+#ifndef ARCCORE_COMMON_ACCELERATOR_ACCELERATORRUNTIMEINITIALISATIONINFO_H
+#define ARCCORE_COMMON_ACCELERATOR_ACCELERATORRUNTIMEINITIALISATIONINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/PropertyDeclarations.h"
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-#include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
+#include "arccore/common/accelerator/CommonAcceleratorGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,24 +24,44 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfoProperties
-: public AcceleratorRuntimeInitialisationInfo
-{
-  ARCANE_DECLARE_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Initialise \a runner avec les informations de \a acc_info.
- *
- * Cette fonction appelle Accelerator::Runner::setAsCurrentDevice() après
- * l'initialisation.
+ * \brief Informations pour l'initialisation des accélérateurs.
  */
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneInitializeRunner(Runner& runner, ITraceMng* tm,
-                       const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCCORE_COMMON_EXPORT AcceleratorRuntimeInitialisationInfo
+{
+ private:
+
+  class Impl;
+
+ public:
+
+  AcceleratorRuntimeInitialisationInfo();
+  AcceleratorRuntimeInitialisationInfo(const AcceleratorRuntimeInitialisationInfo& rhs);
+  ~AcceleratorRuntimeInitialisationInfo();
+  AcceleratorRuntimeInitialisationInfo& operator=(const AcceleratorRuntimeInitialisationInfo& rhs);
+
+ public:
+
+  //! Indique si on utilise un runtime accélérateur
+  void setIsUsingAcceleratorRuntime(bool v);
+  bool isUsingAcceleratorRuntime() const;
+
+  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda', 'hip' ou 'sycl')
+  void setAcceleratorRuntime(StringView name);
+  String acceleratorRuntime() const;
+
+  //! Positionne le device associé au Runner associé.
+  void setDeviceId(DeviceId name);
+  //! Device associé au Runner associé
+  DeviceId deviceId() const;
+
+  //! Politique d'exécution associée à acceleratorRuntime()
+  eExecutionPolicy executionPolicy() const;
+
+ private:
+
+  Impl* m_p;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
