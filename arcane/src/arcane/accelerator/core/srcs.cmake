@@ -3,7 +3,6 @@ set( ARCANE_SOURCES
   AcceleratorRuntimeInitialisationInfo.cc
   AcceleratorRuntimeInitialisationInfo.h
   IAcceleratorMng.h
-  AcceleratorMng.cc
   DeviceId.h
   DeviceInfo.h
   DeviceInfoList.h

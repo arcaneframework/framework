@@ -19,6 +19,8 @@
 
 #include "arcane/accelerator/SpanViews.h"
 
+#include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +44,7 @@ void Arcane::Accelerator::
 initializeRunner(Runner& runner, ITraceMng* tm,
                  const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
-  arcaneInitializeRunner(runner, tm, acc_info);
+  Impl::arccoreInitializeRunner(runner, tm, acc_info);
 }
 
 /*---------------------------------------------------------------------------*/

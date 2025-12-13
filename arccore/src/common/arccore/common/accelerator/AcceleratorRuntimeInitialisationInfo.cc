@@ -36,6 +36,7 @@ namespace Arcane::Accelerator
 class AcceleratorRuntimeInitialisationInfo::Impl
 {
  public:
+
   bool m_is_using_accelerator_runtime = false;
   String m_accelerator_runtime;
   DeviceId m_device_id;
@@ -65,7 +66,7 @@ AcceleratorRuntimeInitialisationInfo(const AcceleratorRuntimeInitialisationInfo&
 AcceleratorRuntimeInitialisationInfo& AcceleratorRuntimeInitialisationInfo::
 operator=(const AcceleratorRuntimeInitialisationInfo& rhs)
 {
-  if (&rhs!=this){
+  if (&rhs != this) {
     delete m_p;
     m_p = new Impl(*(rhs.m_p));
   }
@@ -138,15 +139,15 @@ eExecutionPolicy AcceleratorRuntimeInitialisationInfo::
 executionPolicy() const
 {
   String a = acceleratorRuntime();
-  if (a=="cuda")
+  if (a == "cuda")
     return eExecutionPolicy::CUDA;
-  if (a=="hip")
+  if (a == "hip")
     return eExecutionPolicy::HIP;
-  if (a=="sycl")
+  if (a == "sycl")
     return eExecutionPolicy::SYCL;
   if (!a.null())
     return eExecutionPolicy::None;
-  if (ConcurrencyBase::maxAllowedThread())
+  if (ConcurrencyBase::maxAllowedThread() > 1)
     return eExecutionPolicy::Thread;
   return eExecutionPolicy::Sequential;
 }
@@ -155,22 +156,22 @@ executionPolicy() const
 /*---------------------------------------------------------------------------*/
 
 void Impl::
-arccoreInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
-                       const AcceleratorRuntimeInitialisationInfo& acc_info)
+arccoreInitializeRunner(Accelerator::Runner& runner, ITraceMng* tm,
+                        const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
   using namespace Accelerator;
   String accelerator_runtime = acc_info.acceleratorRuntime();
   eExecutionPolicy policy = acc_info.executionPolicy();
-  if (policy==eExecutionPolicy::None)
+  if (policy == eExecutionPolicy::None)
     ARCCORE_FATAL("Invalid policy eExecutionPolicy::None");
   tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
   tm->info() << "DefaultDataAllocator MemoryResource=" << MemoryUtils::getDefaultDataMemoryResource();
-  if (impl::isAcceleratorPolicy(policy)){
+  if (impl::isAcceleratorPolicy(policy)) {
     tm->info() << "Using accelerator runtime=" << policy << " device=" << acc_info.deviceId();
-    runner.initialize(policy,acc_info.deviceId());
+    runner.initialize(policy, acc_info.deviceId());
     runner.setAsCurrentDevice();
   }
-  else{
+  else {
     tm->info() << "Using accelerator runtime=" << policy;
     runner.initialize(policy);
   }
@@ -179,8 +180,7 @@ arccoreInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
