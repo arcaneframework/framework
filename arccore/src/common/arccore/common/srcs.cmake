@@ -12,6 +12,8 @@ set(SOURCES
   CommonGlobal.cc
   DataView.h
   DefaultMemoryAllocator.h
+  ExceptionUtils.h
+  ExceptionUtils.cc
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
   IMemoryResourceMng.h
