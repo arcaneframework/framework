@@ -79,6 +79,7 @@ set(SOURCES
   accelerator/RunQueuePool.h
   accelerator/RunQueuePool.cc
   accelerator/RunQueueRuntime.cc
+  accelerator/RuntimeLoader.cc
   accelerator/ViewBuildInfo.h
 
   accelerator/internal/AcceleratorMemoryAllocatorBase.h
@@ -89,6 +90,7 @@ set(SOURCES
   accelerator/internal/MemoryTracer.h
   accelerator/internal/RunCommandImpl.h
   accelerator/internal/RunQueueImpl.h
+  accelerator/internal/RuntimeLoader.h
   accelerator/internal/ReduceMemoryImpl.h
   accelerator/internal/RegisterRuntimeInfo.h
   accelerator/internal/RunnerImpl.h
