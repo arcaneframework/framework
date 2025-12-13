@@ -33,8 +33,10 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/MemoryUtils.h"
-#include "arccore/common/internal/MemoryUtilsInternal.h"
+
 #include "arccore/base/internal/ConvertInternal.h"
+#include "arccore/common/ExceptionUtils.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IApplication.h"
@@ -373,16 +375,16 @@ initialize()
   }
   catch (const ArithmeticException& ex) {
     cerr << "** CATCH ARITHMETIC_EXCEPTION\n";
-    return arcanePrintArcaneException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (const Exception& ex) {
-    return arcanePrintArcaneException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (const std::exception& ex) {
-    return arcanePrintStdException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (...) {
-    return arcanePrintAnyException(nullptr);
+    return ExceptionUtils::print(nullptr);
   }
 
   // Redirige a nouveau les signaux car certaines
@@ -573,22 +575,22 @@ callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* exec_main,
   }
   catch (const ArithmeticException& ex) {
     cerr << "** ARITHMETIC EXCEPTION!\n";
-    ret_val = arcanePrintArcaneException(ex, trace);
+    ret_val = ExceptionUtils::print(ex, trace);
     if (ex.isCollective()) {
       *clean_abort = true;
     }
   }
   catch (const Exception& ex) {
-    ret_val = arcanePrintArcaneException(ex, trace);
+    ret_val = ExceptionUtils::print(ex, trace);
     if (ex.isCollective()) {
       *clean_abort = true;
     }
   }
   catch (const std::exception& ex) {
-    ret_val = arcanePrintStdException(ex, trace);
+    ret_val = ExceptionUtils::print(ex, trace);
   }
   catch (...) {
-    ret_val = arcanePrintAnyException(trace);
+    ret_val = ExceptionUtils::print(trace);
   }
   return ret_val;
 }
@@ -599,8 +601,8 @@ callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* exec_main,
 void ArcaneMain::
 _launchMissingInitException()
 {
-  cerr << "ArcaneMain: appel ArcaneMain::arcaneInitialize() manquant.\n";
-  throw std::exception();
+  std::cerr << "ERROR: ArcaneMain: missing call to ArcaneMain::arcaneInitialize().\n";
+  throw std::runtime_error("Missing call to ArcaneMain::arcaneInitialize()");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1014,13 +1016,13 @@ _runDotNet()
     my_functor = reinterpret_cast<DotNetMainFunctor>(functor_addr);
   }
   catch (const Exception& ex) {
-    return arcanePrintArcaneException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (const std::exception& ex) {
-    return arcanePrintStdException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (...) {
-    return arcanePrintAnyException(nullptr);
+    return ExceptionUtils::print(nullptr);
   }
 
   if (my_functor) {
@@ -1145,13 +1147,13 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
     }
   }
   catch (const Exception& ex) {
-    return arcanePrintArcaneException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (const std::exception& ex) {
-    return arcanePrintStdException(ex, nullptr);
+    return ExceptionUtils::print(ex, nullptr);
   }
   catch (...) {
-    return arcanePrintAnyException(nullptr);
+    return ExceptionUtils::print(nullptr);
   }
   return 0;
 }
