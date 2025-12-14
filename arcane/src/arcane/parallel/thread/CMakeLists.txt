@@ -1,34 +1,13 @@
 ﻿set(PKGS Glib TBB)
-arcane_find_package(TBB)
 
 include(srcs.cmake)
 
-set(ARCANE_TBB_SOURCES TBBThreadImplementation.cc TBBTaskImplementation.cc)
-set(ARCANE_HAS_ONETBB FALSE)
-set(ARCANE_HAS_TBBIMPL FALSE)
-if(TBB_VERSION)
-  # Si TBB_VERSION est définie, on est sur que TBB est présent.
-  # Normalement cette variable est définie si on utilise une version de TBB
-  # qui possède un fichier de configuration CMake
-  message(STATUS "[arcane_thread] TBB_VERSION=${TBB_VERSION}")
+if (ARCCORE_ENABLE_TBB)
+  message(STATUS "[arcane_thread] Using OneTBB")
+  arcane_find_package(TBB)
+  set(ARCANE_TBB_SOURCES TBBThreadImplementation.cc)
   set(ARCANE_HAS_TBBIMPL TRUE)
-  if (TBB_VERSION VERSION_GREATER_EQUAL "2021")
-    message(STATUS "[arcane_thread] Using OneTBB 2021+ implementation")
-    set(ARCANE_HAS_ONETBB TRUE)
-  else()
-    message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} of TBB is too old. Version 2020+ is required."
-    " Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command")
-  endif()
-elseif(TBB_FOUND)
-  message(FATAL_ERROR
-    "[arcane_thread] Can not find TBB_VERSION. This is probably because your TBB version is too old."
-    "Version 2021+ is required."
-    "Install a recent version of TBB or disable TBB support using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE when running cmake command"
-  )
-endif()
-
-# Si les TBB sont disponibles, indique qu'on a le support des tâches
-if (ARCANE_HAS_TBBIMPL)
+  set(ARCANE_HAS_ONETBB TRUE)
   list(APPEND ARCANE_SOURCES ${ARCANE_TBB_SOURCES})
   set(ARCANE_HAS_TASKS TRUE CACHE STRING "Support for tasks" FORCE)
 endif()
