@@ -774,6 +774,17 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Les macros suivantes permettent de de créer un identifiant en suffixant
+// le numéro de ligne du fichier. Cela permet d'avoir un identifiant unique
+// pour un fichier et est utilisé par exemple pour générer des noms
+// de variable globale pour l'enregistrement des services.
+// La macro a utiliser est ARCANE_JOIN_WITH_LINE(name).
+#define ARCCORE_JOIN_HELPER2(a,b) a ## b
+#define ARCCORE_JOIN_HELPER(a,b) ARCCORE_JOIN_HELPER2(a,b)
+#define ARCCORE_JOIN_WITH_LINE(a) ARCCORE_JOIN_HELPER(a,__LINE__)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Défitions des types de base.
 class String;
