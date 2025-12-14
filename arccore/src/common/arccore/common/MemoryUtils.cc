@@ -24,12 +24,23 @@
 
 // TODO: ajouter statistiques sur les tailles de 'datatype' utilisées.
 
+/*!
+ * \file MemoryUtils.h
+ *
+ * \brief Fonctions utilitaires de gestion mémoire.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
 using RunQueue = Accelerator::RunQueue;
+
+/*!
+ * \namespace MemoryUtils
+ *
+ * \brief Fonctions utilitaires de gestion mémoire.
+ */
 
 namespace
 {

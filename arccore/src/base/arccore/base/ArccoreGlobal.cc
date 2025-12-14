@@ -44,6 +44,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \file ArccoreGlobal.h
+ *
+ * \brief Définitions et globaux de %Arccore
+ */
+/*!
  * \namespace Arccore
  *
  * \brief Espace de nom de %Arccore
