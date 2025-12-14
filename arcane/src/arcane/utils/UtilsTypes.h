@@ -124,7 +124,7 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 
 // Pour compatibilité avec l'existant (à supprimer après la version 3.8)
-using LoopRange = ForLoopRange;
+template<typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
 template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
 template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
 
