@@ -40,7 +40,7 @@ namespace Arcane::Accelerator
  * eExecutionPolicy. Les back-ends sont de deux types:
  * - les back-ends qui s'exécutent sur l'hôte: eExecutionPolicy::Sequential
  * et eExecutionPolicy::Thread,
- *  - les back-ends qui s'exécutent sur accélérateurs : eExecutionPolicy::CUDA,
+ * - les back-ends qui s'exécutent sur accélérateurs : eExecutionPolicy::CUDA,
  * eExecutionPolicy::HIP et eExecutionPolicy::SYCL.
  *
  * La fonction \arcaneacc{isAcceleratorPolicy()} permet de savoir si une
@@ -57,11 +57,6 @@ namespace Arcane::Accelerator
  * via la fonction makeQueue(). Ces files peuvent ensuite être utilisées
  * pour lancer des commandes (RunCommand). La page \ref arcanedoc_acceleratorapi
  * décrit le fonctionnement de l'API accélérateur.
- *
- * Il est possible de changer le mécanisme utilisé pour les réductions via
- * la méthode setDeviceReducePolicy(). Par défaut on utilise un kernel
- * utilisant des synchronisations entre blocs. Cela permet de garantir la
- * répétabilité des résultats.
  */
 class ARCCORE_COMMON_EXPORT Runner
 {
@@ -188,7 +183,7 @@ class ARCCORE_COMMON_EXPORT Runner
 
  public:
 
-  //! API interne à Arcane
+  //! API interne à %Arcane
   RunnerInternal* _internalApi();
 
  private:

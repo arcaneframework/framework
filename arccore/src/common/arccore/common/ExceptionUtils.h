@@ -19,9 +19,6 @@
 
 #include <functional>
 
-// TODO: Rendre ces méthode obsolète fin 2026 et indiquer qu'il faut
-// utiliser ExceptionUtils à la place.
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

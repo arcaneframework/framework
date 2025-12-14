@@ -178,6 +178,7 @@ class SpecificMemoryCopyList
 
  public:
 
+  //! Ajoute un copieur spécifique
   template <typename CopierType>
   void addCopier()
   {

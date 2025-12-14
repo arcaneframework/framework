@@ -27,6 +27,32 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \file Span.h
+ * \brief Types et fonctions associés aux classes SpanImpl, SmallSpan and Span.
+ */
+/*!
+ * \file Span2.h
+ * \brief Types et fonctions associés aux classes Span2Impl, Small2Span and Span2.
+ */
+/*!
+ * \file ArrayView.h
+ * \brief Types et fonctions associés aux classes ArrayView et ConstArrayView.
+ */
+/*!
+ * \file Array2View.h
+ * \brief Types et fonctions associés aux classes Array2View et ConstArray2View.
+ */
+/*!
+ * \file Array3View.h
+ * \brief Types et fonctions associés aux classes Array3View et ConstArray3View.
+ */
+/*!
+ * \file Array4View.h
+ * \brief Types et fonctions associés aux classes Array4View et ConstArray4View.
+ */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {

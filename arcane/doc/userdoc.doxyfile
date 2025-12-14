@@ -2587,6 +2587,11 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = DOXYGEN_DOC=1 \
+                         ARCCORE_BASE_EXPORT= \
+                         ARCCORE_COMMON_EXPORT= \
+                         ARCCORE_COLLECTION_EXPORT= \
+                         ARCCORE_ACCELERATOR_EXPORT= \
+                         ARCCORE_MESSAGEPASSING_EXPORT= \
                          ARCANE_ALIGNAS_PACKED \
                          ARCANE_ALIGNAS \
                          "ARCANE_BEGIN_NAMESPACE=namespace Arcane {" \
@@ -2597,7 +2602,6 @@ PREDEFINED             = DOXYGEN_DOC=1 \
                          ARCANE_UTILS_EXPORT= \
                          ARCANE_IMPL_EXPORT= \
                          ARCANE_GEOMETRY_EXPORT= \
-                         ARCCORE_MESSAGEPASSING_EXPORT= \
                          "ARCCORE_HOST_DEVICE=__host__ __device__" \
                          ARCCORE_DEPRECATED_2019(a)=[[deprecated(a)]] \
                          ARCCORE_DEPRECATED_2020(a)=[[deprecated(a)]] \
