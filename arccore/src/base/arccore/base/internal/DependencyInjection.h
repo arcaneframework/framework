@@ -994,7 +994,7 @@ class InjectionRegisterer
   namespace \
   { \
     Arcane::DependencyInjection::impl::FactoryInfo \
-    ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
+    ARCCORE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
     { \
       auto si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
       Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces> injection_registerer; \
@@ -1002,7 +1002,7 @@ class InjectionRegisterer
       return si; \
     } \
   } \
-  Arcane::DependencyInjection::impl::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass)(&ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class), t_provider_property)
+  Arcane::DependencyInjection::impl::GlobalRegisterer ARCCORE_EXPORT ARCCORE_JOIN_WITH_LINE(globalServiceRegisterer##aclass)(&ARCCORE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class), t_provider_property)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

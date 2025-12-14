@@ -58,13 +58,13 @@ jobs:
       - name: Uninstall pre-installed dependencies
         continue-on-error: true
         run: |
-          for pkg in cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache; do
+          for pkg in cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache; do
             brew uninstall --force "$pkg" || true
           done
 
       - name: Install dependencies
         run: |
-          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
+          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache
 
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v4

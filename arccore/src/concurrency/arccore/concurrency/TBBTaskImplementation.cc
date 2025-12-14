@@ -30,16 +30,15 @@
 #include "arccore/concurrency/ParallelFor.h"
 #include "arccore/concurrency/internal/TaskFactoryInternal.h"
 
-#include "arcane/utils/Array.h"
-
 #include <new>
 #include <stack>
+#include <vector>
 
 // Il faut définir cette macro pour que la classe 'blocked_rangeNd' soit disponible
 
 #define TBB_PREVIEW_BLOCKED_RANGE_ND 1
 
-// la macro 'ARCANE_USE_ONETBB' est définie dans le CMakeLists.txt
+// la macro 'ARCCORE_USE_ONETBB' est définie dans le CMakeLists.txt
 // si on compile avec la version OneTBB version 2021+
 // (https://github.com/oneapi-src/oneTBB.git)
 // A terme ce sera la seule version supportée par Arcane.
@@ -88,7 +87,7 @@ using blocked_nd_range = tbb::blocked_rangeNd<Value, N>;
 
 namespace
 {
-
+  constexpr Int32 cache_line_size = 64;
   // Positif si on récupère les statistiques d'exécution
   bool isStatActive()
   {
@@ -352,7 +351,7 @@ class TBBTaskImplementation
 
   // Pour des raisons de performance, s'aligne sur une ligne de cache
   // et utilise un padding.
-  class ARCANE_ALIGNAS_PACKED(64) TaskThreadInfo
+  class ARCCORE_ALIGNAS_PACKED(64) TaskThreadInfo
   {
    public:
 
@@ -519,7 +518,7 @@ class TBBTaskImplementation::Impl
 
   Impl()
   : m_task_observer(this)
-  , m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  , m_thread_task_infos(cache_line_size)
   {
     m_nb_allowed_thread = tbb::info::default_concurrency();
     _init();
@@ -527,7 +526,7 @@ class TBBTaskImplementation::Impl
   Impl(Int32 nb_thread)
   : m_main_arena(nb_thread)
   , m_task_observer(this)
-  , m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  , m_thread_task_infos(cache_line_size)
   {
     m_nb_allowed_thread = nb_thread;
     _init();
@@ -610,13 +609,13 @@ class TBBTaskImplementation::Impl
 
   tbb::task_arena m_main_arena;
   //! Tableau dont le i-ème élément contient la tbb::task_arena pour \a i thread.
-  UniqueArray<tbb::task_arena*> m_sub_arena_list;
+  std::vector<tbb::task_arena*> m_sub_arena_list;
 
  private:
 
   TaskObserver m_task_observer;
   std::mutex m_thread_created_mutex;
-  UniqueArray<TaskThreadInfo> m_thread_task_infos;
+  std::vector<TaskThreadInfo> m_thread_task_infos;
   tbb::concurrent_set<std::thread::id> m_constructed_thread_map;
   void _init()
   {
@@ -663,7 +662,7 @@ class TBBParallelFor
 
   void operator()(tbb::blocked_range<Integer>& range) const
   {
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     if (TaskFactory::verboseLevel() >= 3) {
       std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
@@ -677,8 +676,8 @@ class TBBParallelFor
 
     int tbb_index = _currentTaskTreadIndex();
     if (tbb_index < 0 || tbb_index >= m_nb_allowed_thread)
-      ARCANE_FATAL("Invalid index for thread idx={0} valid_interval=[0..{1}[",
-                   tbb_index, m_nb_allowed_thread);
+      ARCCORE_FATAL("Invalid index for thread idx={0} valid_interval=[0..{1}[",
+                    tbb_index, m_nb_allowed_thread);
 #endif
 
     if (m_stat_info)
@@ -713,7 +712,7 @@ class TBBMDParallelFor
 
   void operator()(blocked_nd_range<Int32, RankValue>& range) const
   {
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     if (TaskFactory::verboseLevel() >= 3) {
       std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
@@ -732,8 +731,8 @@ class TBBMDParallelFor
 
     int tbb_index = _currentTaskTreadIndex();
     if (tbb_index < 0 || tbb_index >= m_nb_allowed_thread)
-      ARCANE_FATAL("Invalid index for thread idx={0} valid_interval=[0..{1}[",
-                   tbb_index, m_nb_allowed_thread);
+      ARCCORE_FATAL("Invalid index for thread idx={0} valid_interval=[0..{1}[",
+                    tbb_index, m_nb_allowed_thread);
 #endif
 
     if (m_stat_info)
@@ -847,7 +846,7 @@ class TBBDeterministicParallelFor
       iter_size = m_size - iter_begin;
     }
     iter_begin += m_begin_index;
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     if (TaskFactory::verboseLevel() >= 3) {
       std::ostringstream o;
       o << "TBB: DoBlock: BLOCK task_id=" << task_id << " block_id=" << block_id
@@ -1008,7 +1007,7 @@ class TBBTaskImplementation::MDParallelForExecute
     }
     else if (m_options.partitioner() == ParallelLoopOptions::Partitioner::Deterministic) {
       // TODO: implémenter le mode déterministe
-      ARCANE_THROW(NotImplementedException, "ParallelLoopOptions::Partitioner::Deterministic for multi-dimensionnal loops");
+      ARCCORE_THROW(NotImplementedException, "ParallelLoopOptions::Partitioner::Deterministic for multi-dimensionnal loops");
       //tbb::blocked_range<Integer> range2(0,nb_thread,1);
       //TBBDeterministicParallelFor dpf(m_impl,pf,m_begin,m_size,gsize,nb_thread);
       //tbb::parallel_for(range2,dpf);
@@ -1089,7 +1088,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
   Int32 size = loop_info.size();
   ParallelLoopOptions options = loop_info.runInfo().options().value_or(TaskFactory::defaultParallelLoopOptions());
   IRangeFunctor* f = loop_info.functor();
-  ARCANE_CHECK_POINTER(f);
+  ARCCORE_CHECK_POINTER(f);
 
   Integer max_thread = options.maxThread();
   Integer nb_allowed_thread = m_p->nbAllowedThread();

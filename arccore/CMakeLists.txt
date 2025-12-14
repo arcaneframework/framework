@@ -93,6 +93,8 @@ endif()
 
 option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code coverage" OFF)
 
+option(ARCCORE_ENABLE_TBB "Is Arccore has support for OneTBB" ON)
+
 # Pour l'instant c'est obligatoire d'avoir la GLIB.
 set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
 
