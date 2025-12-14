@@ -18,7 +18,7 @@ jobs:
             date: '20250112'
             # Disable TBB because the version in ubuntu 2022 is too old
             # (version 2021+ is required and this is version 2020)
-            args: '-DARCCORE_CXX_STANDARD=23 -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U22_C16'
@@ -28,7 +28,7 @@ jobs:
             date: '20250112'
             # Disable TBB because the version in ubuntu 2022 is too old
             # (version 2021+ is required and this is version 2020)
-            args: '-DARCCORE_CXX_STANDARD=23 -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U24_G14'
