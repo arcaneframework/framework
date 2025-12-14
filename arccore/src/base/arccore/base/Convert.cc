@@ -55,14 +55,8 @@ StringView _removeLeadingSpaces(StringView s, Int64 pos)
   // Supprime les espaces potentiels
   for (; pos < nb_byte; ++pos) {
     int charv = static_cast<unsigned char>(bytes[pos]);
-    // Visual Studio 2017 or less
-#if defined(_MSC_VER) && _MSC_VER <= 1916
-    if (std::isspace(charv, std::locale()) != 0)
+    if (std::isspace(charv) == 0)
       break;
-#else
-    if (!std::isspace(charv) != 0)
-      break;
-#endif
   }
   return s.subView(pos, nb_byte);
 }
