@@ -47,6 +47,13 @@ class ARCCORE_COMMON_EXPORT DeviceInfo
   //! Taille d'un warp
   Int32 warpSize() const { return m_warp_size; }
 
+  //! Mémoire locale par bloc
+  Int32 sharedMemoryPerBlock() const { return m_shared_memory_per_block; }
+  //! Mémoire locale par SM
+  Int32 sharedMemoryPerMultiprocessor() const { return m_shared_memory_per_multiprocessor; }
+  //! Mémoire locale par bloc qui peut s'activer sur option
+  Int32 sharedMemoryPerBlockOptin() const { return m_shared_memory_per_block_optin; }
+
  public:
 
   void setDeviceId(DeviceId id) { m_device_id = id; }
@@ -54,6 +61,9 @@ class ARCCORE_COMMON_EXPORT DeviceInfo
   void setDescription(const String& v) { m_description = v; }
   void setName(const String& v) { m_name = v; }
   void setWarpSize(Int32 v) { m_warp_size = v; }
+  void setSharedMemoryPerBlock(Int32 v) { m_shared_memory_per_block = v; }
+  void setSharedMemoryPerMultiprocessor(Int32 v) { m_shared_memory_per_multiprocessor = v; }
+  void setSharedMemoryPerBlockOptin(Int32 v) { m_shared_memory_per_block_optin = v; }
 
  private:
 
@@ -62,6 +72,9 @@ class ARCCORE_COMMON_EXPORT DeviceInfo
   String m_uuid_as_string;
   String m_description;
   Int32 m_warp_size = 0;
+  Int32 m_shared_memory_per_block = 0;
+  Int32 m_shared_memory_per_multiprocessor = 0;
+  Int32 m_shared_memory_per_block_optin = 0;
 };
 
 /*---------------------------------------------------------------------------*/

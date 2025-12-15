@@ -636,6 +636,8 @@ fillDevices(bool is_verbose)
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
     o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
+    o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
+    o << " sharedMemPerBlockOptin = " << dp.sharedMemPerBlockOptin << "\n";
     o << " regsPerBlock = " << dp.regsPerBlock << "\n";
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
@@ -682,6 +684,9 @@ fillDevices(bool is_verbose)
     device_info.setDeviceId(DeviceId(i));
     device_info.setName(dp.name);
     device_info.setWarpSize(dp.warpSize);
+    device_info.setSharedMemoryPerBlock(static_cast<Int32>(dp.sharedMemPerBlock));
+    device_info.setSharedMemoryPerMultiprocessor(static_cast<Int32>(dp.sharedMemPerMultiprocessor));
+    device_info.setSharedMemoryPerBlockOptin(static_cast<Int32>(dp.sharedMemPerBlockOptin));
     m_device_info_list.addDevice(device_info);
   }
 }
