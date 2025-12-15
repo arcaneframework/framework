@@ -32,15 +32,16 @@ bool
 MatrixInternal::init(const HYPRE_Int ilower, const HYPRE_Int iupper, const HYPRE_Int jlower,
     const int jupper, const Arccore::ConstArrayView<Arccore::Integer>& lineSizes)
 {
+  HYPRE_ClearAllErrors() ;
+
   int ierr = 0; // code d'erreur de retour
 
   // -- Matrix --
   ierr = HYPRE_IJMatrixCreate(m_comm, ilower, iupper, jlower, jupper, &m_internal);
   ierr |= HYPRE_IJMatrixSetObjectType(m_internal, HYPRE_PARCSR);
-  ierr |= HYPRE_IJMatrixInitialize(m_internal);
   if(lineSizes.size()>0)
      ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, lineSizes.unguardedBasePointer());
-
+  ierr |= HYPRE_IJMatrixInitialize(m_internal);
   return (ierr == 0);
 }
 

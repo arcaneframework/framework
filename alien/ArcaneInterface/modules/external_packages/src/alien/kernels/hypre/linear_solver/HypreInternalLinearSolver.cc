@@ -226,7 +226,9 @@ HypreInternalLinearSolver::solve(
   // Construction du système linéaire à résoudre au format
   // Le builder connait la strcuture interne garce au visiteur de l'init
 
-  int output_level = m_options->verbose() ? 3 : 0;
+  int output_level = m_options->outputLevel() ;
+  if(m_options->verbose())
+    output_level = std::min(1,output_level);
 
   HYPRE_Solver solver = nullptr;
   HYPRE_Solver preconditioner = nullptr;
@@ -235,6 +237,8 @@ HypreInternalLinearSolver::solve(
   HYPRE_PtrToParSolverFcn precond_solve_function = NULL;
   HYPRE_PtrToParSolverFcn precond_setup_function = NULL;
   int (*precond_destroy_function)(HYPRE_Solver) = NULL;
+
+  HYPRE_ClearAllErrors() ;
 
   auto pm = A.getParallelMng()->communicator();
   MPI_Comm comm = (pm.isValid())
@@ -259,13 +263,94 @@ HypreInternalLinearSolver::solve(
     precond_setup_function = HYPRE_BoomerAMGSetup;
     precond_destroy_function = HYPRE_BoomerAMGDestroy;
     {
-      int coarsening_opt = 8;
+      /*
+      !  0 -> CLJP-coarsening (a parallel coarsening algorithm using independent sets
+      !  1 -> classical Ruge-Stueben coarsening on each processor, no boundary treatment (not recommended!)
+      !  3 -> classical Ruge-Stueben coarsening on each processor, followed by a third pass,
+      !       which adds coarse points on the boundaries
+      !  6 -> Falgout coarsening (uses 1 first, followed by CLJP using the interior coarse points
+#if !defined(USE_HYPREV8) && !defined(USE_HYPREV10)
+      !  7 -> CLJP-coarsening (using a fixed random vector, for debugging purposes only)
+      !  8 -> PMIS-coarsening (a parallel coarsening algorithm using independent sets,
+      !       generating lower complexities than CLJP, might also lead to slower convergence)
+      !  9 -> PMIS-coarsening (using a fixed random vector, for debugging purposes only)
+      !  10-> HMIS-coarsening (uses one pass Ruge-Stueben on each processor independently,
+      !       followed by PMIS using the interior C-points generated as its first independent set)
+      !  11-> one-pass Ruge-Stueben coarsening on each processor, no boundary treatment (not recommended!)
+       */
+      int coarsening_opt = 8 ;
+      if(m_options->amgCoarsenType()=="PMIS")
+        coarsening_opt = 8 ;
+      if(m_options->amgCoarsenType()=="CLJP")
+        coarsening_opt = 0 ;
+      if(m_options->amgCoarsenType()=="Ruge-Stueben")
+        coarsening_opt = 1 ;
+      if(m_options->amgCoarsenType()=="Falgout")
+        coarsening_opt = 6 ;
+      if(m_options->amgCoarsenType()=="HMIS")
+        coarsening_opt = 10 ;
+      if(m_options->amgCoarsenType()=="One-Pass-Ruge-Stueben")
+        coarsening_opt = 11 ;
+
+      /*
+             ! Type of Interpolation
+      ! 0-> Interpolation = modified classical interpolation
+      ! 1-> Interpolation = LS interpolation
+      ! 2-> Interpolation = modified classical interpolation for hyperbolic PDEs
+      ! 3-> Interpolation = direct interpolation with separation of weights
+      ! 4-> Interpolation = multipass interpolation
+      ! 5-> Interpolation = multipass interpolation with separation of weights
+      ! 6-> Interpolation = extended interpolation
+      ! 7-> Interpolation = extended interpolation (if no common C point)
+      ! 8-> Interpolation = standard interpolation
+      ! 9-> Interpolation = standard interpolation with separation of weights
+      ! 10->Interpolation = block classical interpolation for nodal systems AMG
+      ! 11->Interpolation = block classical interpolation with diagonal blocks for nodal systems AMG
+      ! 12-> Interpolation = F-F interpolation
+      ! 13-> Interpolation = F-F1 interpolation
+      ! -1 : default parameter of Hypre : 0
+        - classical
+        - direct
+        - multipass
+        - multipass-wts
+        - ext+i
+        - ext+i-cc
+        - standard
+        - standard-wts
+        - FF
+        - FF1
+       */
       int interpolation_type = 7;
-      double StrongThreshold = 0.15;
-      [[maybe_unused]] int amg_debug_flag = 0;
-      [[maybe_unused]] int bicgs_debug_flag =0;
+      if(m_options->amgInterpType()=="classical")
+        interpolation_type = 0 ;
+      if(m_options->amgInterpType()=="ls-interpolation")
+        interpolation_type = 1 ;
+      if(m_options->amgInterpType()=="classical-hyperbolic-pde")
+        interpolation_type = 2 ;
+      if(m_options->amgInterpType()=="direct")
+        interpolation_type = 3 ;
+      if(m_options->amgInterpType()=="multipass")
+        interpolation_type = 4 ;
+      if(m_options->amgInterpType()=="multipass-wts")
+        interpolation_type = 5 ;
+      if(m_options->amgInterpType()=="ext+i")
+        interpolation_type = 6 ;
+      if(m_options->amgInterpType()=="ext+i-cc")
+        interpolation_type = 7;
+      if(m_options->amgInterpType()=="standard")
+        interpolation_type = 10;
+      if(m_options->amgInterpType()=="standard-wts")
+        interpolation_type = 11;
+      if(m_options->amgInterpType()=="FF")
+        interpolation_type = 12;
+      if(m_options->amgInterpType()=="FF1")
+        interpolation_type = 13;
+
+      double strong_threshold = m_options->amgStrongThreshold() ;
+      int max_levels = m_options->amgMaxLevels() ;
+      double max_row_sum = m_options->amgMaxRowSum() ;
       int ierr = 0;
-      ierr = HYPRE_BoomerAMGSetMaxIter(preconditioner,2) ;//Sophie::
+      ierr = HYPRE_BoomerAMGSetMaxIter(preconditioner,1) ;
       if( ierr == HYPRE_ERROR_CONV){
           ierr = 0;
       }else if(ierr == HYPRE_ERROR_GENERIC){
@@ -276,51 +361,168 @@ HypreInternalLinearSolver::solve(
           printf("HYPRE_ERROR_ARG while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
       }
       if(ierr) {
-          printf("Error while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
-          exit(0);
+        alien_fatal([&] {
+          cout() << "Error while calling HYPRE_BoomerAMGSetMaxIter with default value";
+        });
       }
+
       ierr = HYPRE_BoomerAMGSetTol(preconditioner,1.e-7) ;
 
-      ierr = HYPRE_BoomerAMGSetMaxLevels(preconditioner,25) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMaxLevels with default value\n"); exit(0);}
-      ierr = HYPRE_BoomerAMGSetMaxRowSum(preconditioner,0.9) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMaxRowSum with default value\n"); exit(0);}
-      ierr = HYPRE_BoomerAMGSetCycleType(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetCycleType with default value\n"); exit(0);}
-      ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,3) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetRelaxType\n"); exit(0);}
+      ierr = HYPRE_BoomerAMGSetMaxLevels(preconditioner,max_levels) ;
+      if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) {
+        alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetMaxLevels with default value";
+        });
+      }
+      ierr = HYPRE_BoomerAMGSetMaxRowSum(preconditioner,max_row_sum) ;
+      if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) {
+        alien_fatal([&] {
+                  cout() << "Error while calling HYPRE_BoomerAMGSetMaxRowSum with default value";
+        });
+      }
 
-       ierr = HYPRE_BoomerAMGSetCoarsenType(preconditioner,coarsening_opt) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetCoarsenType\n"); exit(0);}
+      ierr = HYPRE_BoomerAMGSetCycleType(preconditioner,1) ;
+      if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) {
+        alien_fatal([&] {
+             cout() << "Error while calling HYPRE_BoomerAMGSetCycleType with default value";
+        });
+      }
+      /*
+     ! Type of Smoother
+     ! 0 -> weigted jacobi
+     ! 1 -> sequentiel Gauss seidel
+     ! 3 -> Gauss Seidel Jacobi
+     ! 6 -> symetric Gauss Seidel
+     ! 9 -> Gauss Elimination
+     ! -1 : default parameter : 3
+       */
+      int relax_type = -1 ;
+      if(m_options->amgRelaxType()=="weigted-jacolbi")
+        relax_type = 0 ;
+      if(m_options->amgRelaxType()=="sequential-gauss-seidel")
+        relax_type = 1 ;
+      if(m_options->amgRelaxType()=="gauss-seidel-jacobi")
+        relax_type = 3 ;
+      if(m_options->amgRelaxType()=="symetric-gauss-seidel")
+        relax_type = 6 ;
+      if(m_options->amgRelaxType()=="gauss-elimination")
+        relax_type = 9 ;
+      ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,relax_type) ;
+      if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) {
+        alien_fatal([&] {
+            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType";
+        });
+      }
 
-       ierr = HYPRE_BoomerAMGSetNumSweeps(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetNumSweeps\n"); exit(0);}
-
-       ierr = HYPRE_BoomerAMGSetInterpType(preconditioner,interpolation_type) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetInterpType\n"); exit(0);}
-
-       ierr = HYPRE_BoomerAMGSetSmoothNumLevels(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetSmoothNumLevels\n"); exit(0);}
-
-       ierr = HYPRE_BoomerAMGSetSmoothType(preconditioner,-1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetSmoothType\n"); exit(0);}
-
-
-       ierr = HYPRE_BoomerAMGSetStrongThreshold(preconditioner,StrongThreshold) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetStrongThreshold\n"); exit(0);}
-
-       ierr = HYPRE_BoomerAMGSetMeasureType(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMeasureType with default value\n"); exit(0);}
-       ierr = HYPRE_BoomerAMGSetAggNumLevels(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetAggNumLevels with default value\n"); exit(0);}
-       ierr = HYPRE_BoomerAMGSetNumPaths(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
-       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetNumPaths with default value\n"); exit(0);}
-       if (output_level > 2) {
-          checkError("Hypre " + precond_name + " solver Setlogging",
-                      HYPRE_BoomerAMGSetLogging(preconditioner,1));
-          checkError("Hypre " + precond_name + " solver SetPrintLevel",
-                      HYPRE_BoomerAMGSetPrintLevel(preconditioner, 3));
+       ierr = HYPRE_BoomerAMGSetCoarsenType(preconditioner,coarsening_opt) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+             cout() << "Error while calling HYPRE_BoomerAMGSetCoarsenType";
+         });
        }
+
+       ierr = HYPRE_BoomerAMGSetNumSweeps(preconditioner,1) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetNumSweeps";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetSmoothNumLevels(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetSmoothNumLevels";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetMeasureType(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetMeasureType";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetAggNumLevels(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetAggNumLevels";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetNumPaths(preconditioner,1) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetNumPaths";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetInterpType(preconditioner,interpolation_type) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetInterpType";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetSmoothNumLevels(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+            cout() << "Error while calling HYPRE_BoomerAMGSetSmoothNumLevels";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetSmoothType(preconditioner,relax_type) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetSmoothType";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetStrongThreshold(preconditioner,strong_threshold) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetStrongThreshold";
+         });
+       }
+
+       ierr = HYPRE_BoomerAMGSetMeasureType(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+            cout() << "Error while calling HYPRE_BoomerAMGSetMeasureType with default value";
+         });
+       }
+       ierr = HYPRE_BoomerAMGSetAggNumLevels(preconditioner,0) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+            cout() << "Error while calling HYPRE_BoomerAMGSetAggNumLevels with default value";
+         });
+       }
+       ierr = HYPRE_BoomerAMGSetNumPaths(preconditioner,1) ;
+       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) {
+         alien_fatal([&] {
+           cout() << "Error while calling HYPRE_BoomerAMGSetNumPaths with default value";
+         });
+       }
+       checkError("Hypre " + precond_name + " solver Setlogging",
+                   HYPRE_BoomerAMGSetLogging(preconditioner,output_level));
+       checkError("Hypre " + precond_name + " solver SetPrintLevel",
+                   HYPRE_BoomerAMGSetPrintLevel(preconditioner, output_level));
     }
     break;
   case HypreOptionTypes::ParaSailsPC:
@@ -572,7 +774,8 @@ HypreInternalLinearSolver::solve(
 
   checkError("Hypre " + solver_name + " solver Setup",
       (*solver_setup_function)(solver, par_a, par_rhs, par_x));
-  m_status.succeeded = ((*solver_solve_function)(solver, par_a, par_rhs, par_x) == 0);
+  int code = (*solver_solve_function)(solver, par_a, par_rhs, par_x) ;
+  m_status.succeeded = (code==0 || code==HYPRE_ERROR_CONV);
 
   checkError("Hypre " + solver_name + " solver GetNumIterations",
       (*solver_get_num_iterations_function)(solver, &m_status.iteration_count));

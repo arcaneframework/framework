@@ -49,6 +49,102 @@
             <description>ilut max nnz per row</description>
       </simple>
       
+      <simple name="amg-coarsen-type" type="string" default="Falgout">
+      <description>
+      Coarsen alg type: 
+      - CLJP 
+      - Ruge-Stueben
+      - modifiedRuge-Stueben
+      - Falgout 
+      - PMIS 
+      - HMIS
+      </description>
+      </simple>
+    
+      <simple name="amg-interp-type" type="string" default="classical">
+      <description>
+      Interpolation type :
+        - classical   
+        - direct 
+        - multipass 
+        - multipass-wts 
+        - ext+i 
+        - ext+i-cc 
+        - standard 
+        - standard-wts   
+        - FF 
+        - FF1 
+      </description>
+      </simple>
+    
+      <simple name="amg-relax-type" type="string" default="SOR/Jacobi">
+      <description>
+      Relax type :
+        - Jacobi 
+        - sequential-Gauss-Seidel 
+        - seqboundary-Gauss-Seidel 
+        - SOR/Jacobi 
+        - backward-SOR/Jacobi  
+        - symmetric-SOR/Jacobi  
+        - l1scaled-SOR/Jacobi 
+        - Gaussian-elimination      
+        - CG 
+        - Chebyshev 
+        - FCF-Jacobi 
+        - l1scaled-Jacobi
+      </description>
+      </simple>
+    
+      <simple name="amg-nodal-coarsen" type="integer" default="1">
+      <description>
+      Nodal coarsen alg :
+      
+    1 : Frobenius norm
+    2 : sum of absolute values of elements in each block
+    3 : largest element in each block (not absolute value)
+    4 : row-sum norm
+    6 : sum of all values in each block
+      </description>
+      </simple>
+    
+      <simple name="amg-vec-interp-variant" type="integer" default="2">
+      <description>
+       Vec Interpolation Variant Algo :
+    1 : GM approach 1
+    2 : GM approach 2 (to be preferred over 1)
+    3 : LN approach
+      
+      </description>
+      </simple>
+        
+      <simple name="amg-max-levels" type="integer" default="25">
+      <description>
+          Max coarsening levels
+      </description>
+      </simple>
+    
+      <simple name="amg-pmax-elements" type="integer" default="0">
+      <description>
+          Max elements per row for interpolation operator (0=unlimited)
+      </description>
+      </simple>
+    
+      <simple name="amg-strong-threshold" type="real" default="0.15">
+            <description>ilut threshold</description>
+      </simple>
+      
+      <simple name="amg-truncfactor" type="real" default="0">
+      <description>
+          Truncation factor for interpolation (0=no truncation) (None)
+      </description>
+      </simple>
+      
+      <simple name="amg-max-row-sum" type="real" default="0.9">
+      <description>
+          Max row sum
+      </description>
+      </simple>
+    
       <enumeration name="solver" type="HypreOptionTypes::eSolver">
             <description>Solver type</description>
             <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
@@ -94,8 +190,13 @@
                <description>FSAI preconditioner</description>
             </enumvalue>
         </enumeration>
+        
         <simple name="verbose" type="bool" default="false">
             <description>Verbosity flag</description>
+        </simple>
+        
+        <simple name="output-level" type="integer" default="0">
+            <description>Verbosity level flag</description>
         </simple>
     </options>
 </service>
