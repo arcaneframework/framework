@@ -20,6 +20,7 @@
      endif()
   endif()  
 
+
   if(USE_AXLSTAR)
   generateAxl(alien_external_packages
           linear_solver/spai/PETScPrecConfigSPAI.axl
@@ -32,6 +33,7 @@
           linear_solver/arcane/PETScSolverConfigCustom.axl
           linear_solver/arcane/PETScPrecConfigJacobi.axl
           linear_solver/arcane/PETScPrecConfigDiagonal.axl
+          linear_solver/arcane/PETScPrecConfigGAMG.axl
           linear_solver/arcane/PETScSolverConfigCG.axl
           linear_solver/arcane/PETScSolverConfigLU.axl
           linear_solver/field_split/SchurFieldSplitType.axl
@@ -58,6 +60,7 @@
           linear_solver/arcane/PETScSolverConfigCustomService.cc
           linear_solver/arcane/PETScPrecConfigJacobiService.cc
           linear_solver/arcane/PETScPrecConfigDiagonalService.cc
+          linear_solver/arcane/PETScPrecConfigGAMGService.cc
           linear_solver/arcane/PETScSolverConfigCGService.cc
           linear_solver/arcane/PETScSolverConfigLUService.cc
           linear_solver/field_split/SchurFieldSplitTypeService.cc
