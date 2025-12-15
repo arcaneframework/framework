@@ -3,6 +3,7 @@
 // Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <alien/kernels/petsc/PETScPrecomp.h>
@@ -32,7 +33,7 @@
 
     -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
 
-    -pc_gamg_threshold[] <thresh,default=[- 1,�]> - Before aggregating the graph PCGAMG will remove small values from the graph on each level (< 0 does no filtering)
+    -pc_gamg_threshold[] <thresh,default=[- 1,…]> - Before aggregating the graph PCGAMG will remove small values from the graph on each level (< 0 does no filtering)
 
     -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
@@ -48,7 +49,7 @@
 
     -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0> - Number of HEM aggregation steps for PCASM smoother
 
-    -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is �aggressive�)
+    -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is ‘aggressive’)
 
     Options Database Keys for Multigrid
     -pc_mg_cycle_type - v or w, see PCMGSetCycleType()
