@@ -11,9 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Event.h"
-#include "arcane/utils/UniqueArray.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/common/Event.h"
+
+#include "arccore/base/FatalErrorException.h"
+
+#include "arccore/common/Array.h"
 
 #include <set>
 #include <iostream>
@@ -90,7 +92,7 @@ _attachObserver(EventObserverBase* obs, bool is_auto_destroy)
 {
   // Vérifie que l'observeur n'est pas dans la liste.
   if (m_p->m_observers.find(obs) != m_p->m_observers.end())
-    ARCANE_FATAL("Observer is already attached to this observable");
+    ARCCORE_FATAL("Observer is already attached to this observable");
   obs->_notifyAttach(this);
   m_p->m_observers.insert(obs);
   _rebuildObserversArray();
@@ -117,7 +119,7 @@ _detachObserver(EventObserverBase* obs)
 
   // Lance une exception si pas trouvé
   if (!is_ok)
-    ARCANE_FATAL("observer is not registered to this observable");
+    ARCCORE_FATAL("observer is not registered to this observable");
   obs->_notifyDetach();
   _rebuildObserversArray();
 }
@@ -142,7 +144,7 @@ detachAllObservers()
 /*---------------------------------------------------------------------------*/
 
 EventObserverBase::
-~EventObserverBase() ARCANE_NOEXCEPT_FALSE
+~EventObserverBase() ARCCORE_NOEXCEPT_FALSE
 {
   if (m_observable)
     m_observable->_detachObserver(this);
@@ -155,7 +157,7 @@ void EventObserverBase::
 _notifyDetach()
 {
   if (!m_observable)
-    ARCANE_FATAL("EventObserver is not attached to an EventObservable");
+    ARCCORE_FATAL("EventObserver is not attached to an EventObservable");
   m_observable = nullptr;
 }
 
@@ -166,7 +168,7 @@ void EventObserverBase::
 _notifyAttach(EventObservableBase* obs)
 {
   if (m_observable)
-    ARCANE_FATAL("EventObserver is already attached to an EventObservable");
+    ARCCORE_FATAL("EventObserver is already attached to an EventObservable");
   m_observable = obs;
 }
 

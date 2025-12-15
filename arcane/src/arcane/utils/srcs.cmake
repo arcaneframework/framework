@@ -20,7 +20,6 @@ set(ARCANE_SOURCES
   BadAlignmentException.h
   BadCastException.h
   BFloat16.h
-  Collection.cc
   Collection.h
   CommandLineArguments.h
   CommandLineArguments.cc
@@ -31,13 +30,11 @@ set(ARCANE_SOURCES
   CStringUtils.h
   DualUniqueArray.h
   DualUniqueArray.cc
-  Enumerator.cc
   Enumerator.h
   ExternalRef.h
   Exception.h
   Exception.cc
   ExtentsV.h
-  Event.cc
   Event.h
   FixedArray.h
   Float16.h

@@ -8,15 +8,20 @@ set(SOURCES
   ArrayMetaData.h
   ArrayTraits.h
   ArraySimdPadder.h
+  Collection.h
+  Collection.cc
   CommonGlobal.h
   CommonGlobal.cc
   DataView.h
   DefaultMemoryAllocator.h
+  Event.h
+  Event.cc
   ExceptionUtils.h
   ExceptionUtils.cc
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
   IMemoryResourceMng.h
+  List.h
   MemoryAllocator.cc
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
