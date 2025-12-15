@@ -126,6 +126,8 @@ class Mesh
   void _addConnectivityOrientationCheck(Neo::Family& source_family, const Neo::Family& target_family);
   static std::string _connectivityOrientationPropertyName(std::string const& source_family_name, std::string const& target_family);
 
+  void _filterNullItems(std::vector<utils::Int32>& connected_item_lids, std::vector<int>& nb_connected_item_per_item);
+
  public:
   /*!
    * @brief name of the mesh
