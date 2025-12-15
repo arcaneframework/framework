@@ -309,9 +309,10 @@ _filterNodes()
     }
   }
 }
- 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Calcul des connectivités noeuds/mailles par direction.
  */
@@ -396,6 +397,10 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
     m_infos_view[node.localId()].setCellIndexes(indexes_ptr);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void NodeDirectionMng::
 _computeNodeCellInfos() const
 {
@@ -436,7 +441,7 @@ _computeNodeCellInfos() const
 
     ENUMERATE_ (Node, inode, dm_all_nodes) {
       Node node = *inode;
-      numbering->cellUniqueIdsAroundNode(av_uids, node);
+      numbering->cellUniqueIdsAroundNode(node, av_uids);
       Integer nb_cell = node.nbCell();
 
       indexes.fill(DirNode::NULL_CELL);
@@ -492,7 +497,7 @@ _computeNodeCellInfos() const
 
     ENUMERATE_ (Node, inode, dm_all_nodes) {
       Node node = *inode;
-      numbering->cellUniqueIdsAroundNode(av_uids, node);
+      numbering->cellUniqueIdsAroundNode(node, av_uids);
       Integer nb_cell = node.nbCell();
 
       indexes.fill(DirNode::NULL_CELL);

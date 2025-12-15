@@ -34,9 +34,12 @@ class AMRPatchPositionSignature
  public:
 
   AMRPatchPositionSignature();
-  AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches);
-  AMRPatchPositionSignature(AMRPatchPosition patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Integer nb_cut);
-  ~AMRPatchPositionSignature();
+  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches);
+  ~AMRPatchPositionSignature() = default;
+
+ private:
+
+  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Int32 nb_cut);
 
  public:
 
@@ -46,12 +49,11 @@ class AMRPatchPositionSignature
   bool canBeCut() const;
   void compute();
   Real efficacity() const;
-  std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, Integer cut_point) const;
-  bool isIn(Integer x, Integer y, Integer z) const;
+  std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, CartCoordType cut_point) const;
 
-  ConstArrayView<Integer> sigX() const;
-  ConstArrayView<Integer> sigY() const;
-  ConstArrayView<Integer> sigZ() const;
+  ConstArrayView<CartCoordType> sigX() const;
+  ConstArrayView<CartCoordType> sigY() const;
+  ConstArrayView<CartCoordType> sigZ() const;
   AMRPatchPosition patch() const;
   ICartesianMesh* mesh() const;
   bool stopCut() const;
@@ -63,7 +65,7 @@ class AMRPatchPositionSignature
   bool m_is_null;
   AMRPatchPosition m_patch;
   ICartesianMesh* m_mesh;
-  Integer m_nb_cut;
+  Int32 m_nb_cut;
   bool m_stop_cut;
 
   ICartesianMeshNumberingMngInternal* m_numbering;
@@ -71,9 +73,9 @@ class AMRPatchPositionSignature
   bool m_have_cells;
   bool m_is_computed;
 
-  UniqueArray<Integer> m_sig_x;
-  UniqueArray<Integer> m_sig_y;
-  UniqueArray<Integer> m_sig_z;
+  UniqueArray<CartCoordType> m_sig_x;
+  UniqueArray<CartCoordType> m_sig_y;
+  UniqueArray<CartCoordType> m_sig_z;
 
   AMRPatchPositionLevelGroup* m_all_patches;
 };

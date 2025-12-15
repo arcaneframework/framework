@@ -33,7 +33,8 @@ class AMRPatchPositionSignatureCut
   ~AMRPatchPositionSignatureCut();
 
  public:
-  static Integer _cutDim(ConstArrayView<Integer> sig);
+
+  static CartCoordType _cutDim(ConstArrayView<CartCoordType> sig);
   static std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(const AMRPatchPositionSignature& sig);
   static void cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a);
 };

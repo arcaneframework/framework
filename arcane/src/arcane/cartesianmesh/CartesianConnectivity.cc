@@ -174,15 +174,15 @@ _computeInfos2D(ICartesianMesh* cmesh)
 
     ENUMERATE_ (Node, inode, node_family->allItems()) {
       Node node = *inode;
-      numbering->cellUniqueIdsAroundNode(av_cells_around, node);
+      numbering->cellUniqueIdsAroundNode(node, av_cells_around);
 
       Index& idx = cc._index(node);
       idx.fill(NULL_ITEM_LOCAL_ID);
 
-      const Integer nb_cell = node.nbCell();
-      for (Integer i = 0; i < nb_cell; ++i) {
+      const Int32 nb_cell = node.nbCell();
+      for (Int32 i = 0; i < nb_cell; ++i) {
         Cell cell = node.cell(i);
-        Integer pos = 0;
+        Int32 pos = 0;
         for (; pos < nb_cell_around_node_max; ++pos) {
           if (cell.uniqueId() == av_cells_around[pos])
             break;
@@ -214,15 +214,15 @@ _computeInfos2D(ICartesianMesh* cmesh)
 
     ENUMERATE_ (Cell, icell, cell_family->allItems()) {
       Cell cell = *icell;
-      numbering->cellNodeUniqueIds(av_nodes_in_cell, cell);
+      numbering->cellNodeUniqueIds(cell, av_nodes_in_cell);
 
       Index& idx = _index(cell);
       idx.fill(NULL_ITEM_LOCAL_ID);
 
-      const Integer nb_node = cell.nbNode();
-      for (Integer i = 0; i < nb_node; ++i) {
+      const Int32 nb_node = cell.nbNode();
+      for (Int32 i = 0; i < nb_node; ++i) {
         Node node = cell.node(i);
-        Integer pos = 0;
+        Int32 pos = 0;
         for (; pos < nb_node_in_cell_max; ++pos) {
           if (node.uniqueId() == av_nodes_in_cell[pos])
             break;
@@ -365,15 +365,15 @@ _computeInfos3D(ICartesianMesh* cmesh)
 
     ENUMERATE_ (Node, inode, node_family->allItems()) {
       Node node = *inode;
-      numbering->cellUniqueIdsAroundNode(av_cells_around, node);
+      numbering->cellUniqueIdsAroundNode(node, av_cells_around);
 
       Index& idx = cc._index(node);
       idx.fill(NULL_ITEM_LOCAL_ID);
 
-      const Integer nb_cell = node.nbCell();
-      for (Integer i = 0; i < nb_cell; ++i) {
+      const Int32 nb_cell = node.nbCell();
+      for (Int32 i = 0; i < nb_cell; ++i) {
         Cell cell = node.cell(i);
-        Integer pos = 0;
+        Int32 pos = 0;
         for (; pos < nb_cell_around_node_max; ++pos) {
           if (cell.uniqueId() == av_cells_around[pos])
             break;
@@ -406,15 +406,15 @@ _computeInfos3D(ICartesianMesh* cmesh)
 
     ENUMERATE_ (Cell, icell, cell_family->allItems()) {
       Cell cell = *icell;
-      numbering->cellNodeUniqueIds(av_nodes_in_cell, cell);
+      numbering->cellNodeUniqueIds(cell, av_nodes_in_cell);
 
       Index& idx = _index(cell);
       idx.fill(NULL_ITEM_LOCAL_ID);
 
-      const Integer nb_node = cell.nbNode();
-      for (Integer i = 0; i < nb_node; ++i) {
+      const Int32 nb_node = cell.nbNode();
+      for (Int32 i = 0; i < nb_node; ++i) {
         Node node = cell.node(i);
-        Integer pos = 0;
+        Int32 pos = 0;
         for (; pos < nb_node_in_cell_max; ++pos) {
           if (node.uniqueId() == av_nodes_in_cell[pos])
             break;

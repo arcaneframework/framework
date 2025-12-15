@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPositionLevelGroup::
-AMRPatchPositionLevelGroup(Integer max_level)
+AMRPatchPositionLevelGroup(Int32 max_level)
 : m_max_level(max_level)
 , m_patches(max_level+1)
 {}
@@ -42,8 +42,8 @@ AMRPatchPositionLevelGroup::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer AMRPatchPositionLevelGroup::
-maxLevel()
+Int32 AMRPatchPositionLevelGroup::
+maxLevel() const
 {
   return m_max_level;
 }
@@ -52,7 +52,7 @@ maxLevel()
 /*---------------------------------------------------------------------------*/
 
 ConstArrayView<AMRPatchPosition> AMRPatchPositionLevelGroup::
-patches(Integer level)
+patches(Int32 level)
 {
   return m_patches[level];
 }
@@ -61,7 +61,7 @@ patches(Integer level)
 /*---------------------------------------------------------------------------*/
 
 void AMRPatchPositionLevelGroup::
-addPatch(AMRPatchPosition patch)
+addPatch(const AMRPatchPosition& patch)
 {
   m_patches[patch.level()].add(patch);
 }
@@ -70,7 +70,7 @@ addPatch(AMRPatchPosition patch)
 /*---------------------------------------------------------------------------*/
 
 void AMRPatchPositionLevelGroup::
-fusionPatches(Integer level)
+fusionPatches(Int32 level)
 {
   fusionPatches(m_patches[level], true);
 }

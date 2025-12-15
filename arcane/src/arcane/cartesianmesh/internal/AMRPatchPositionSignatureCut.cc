@@ -42,8 +42,7 @@ namespace
 
 AMRPatchPositionSignatureCut::
 AMRPatchPositionSignatureCut()
-{
-}
+= default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,18 +50,21 @@ AMRPatchPositionSignatureCut()
 AMRPatchPositionSignatureCut::
 ~AMRPatchPositionSignatureCut() = default;
 
-Integer AMRPatchPositionSignatureCut::
-_cutDim(ConstArrayView<Integer> sig)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CartCoordType AMRPatchPositionSignatureCut::
+_cutDim(ConstArrayView<CartCoordType> sig)
 {
   if (sig.size() < MIN_SIZE * 2) {
     return -1;
   }
 
-  Integer cut_point = -1;
-  Integer mid = sig.size() / 2;
+  CartCoordType cut_point = -1;
+  CartCoordType mid = sig.size() / 2;
 
   {
-    for (Integer i = 0; i < sig.size(); ++i) {
+    for (CartCoordType i = 0; i < sig.size(); ++i) {
       if (sig[i] == 0) {
         cut_point = i;
         break;
@@ -78,12 +80,12 @@ _cutDim(ConstArrayView<Integer> sig)
   }
 
   {
-    UniqueArray<Integer> dsec_sig(sig.size(), 0);
+    UniqueArray<CartCoordType> dsec_sig(sig.size(), 0);
 
-    Integer max = -1;
-    for (Integer i = 1; i < dsec_sig.size() - 1; ++i) {
+    CartCoordType max = -1;
+    for (CartCoordType i = 1; i < dsec_sig.size() - 1; ++i) {
       dsec_sig[i] = sig[i + 1] - 2 * sig[i] + sig[i - 1];
-      Integer dif = math::abs(dsec_sig[i - 1] - dsec_sig[i]);
+      CartCoordType dif = math::abs(dsec_sig[i - 1] - dsec_sig[i]);
       if (dif > max) {
         cut_point = i;
         max = dif;
@@ -109,12 +111,15 @@ _cutDim(ConstArrayView<Integer> sig)
   return -1;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPositionSignatureCut::
 cut(const AMRPatchPositionSignature& sig)
 {
-  Integer cut_point_x = _cutDim(sig.sigX());
-  Integer cut_point_y = _cutDim(sig.sigY());
-  Integer cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
+  CartCoordType cut_point_x = _cutDim(sig.sigX());
+  CartCoordType cut_point_y = _cutDim(sig.sigY());
+  CartCoordType cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
 
   if (cut_point_x == -1 && cut_point_y == -1 && cut_point_z == -1) {
     return {};
@@ -360,6 +365,7 @@ cut(const AMRPatchPositionSignature& sig)
     }
     return { fst_z, snd_z };
   }
+  return {};
 }
 
 void AMRPatchPositionSignatureCut::
@@ -377,7 +383,7 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
     UniqueArray<AMRPatchPositionSignature>& array_out = a_a_b_b ? sig_array_b : sig_array_a;
 
     for (Integer i = 0; i < array_in.size(); ++i) {
-      AMRPatchPositionSignature sig = array_in[i];
+      AMRPatchPositionSignature& sig = array_in[i];
       // sig.mesh()->traceMng()->info() << "Cut() -- i : " << i;
 
       if (!sig.stopCut()) {
