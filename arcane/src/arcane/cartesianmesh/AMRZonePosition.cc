@@ -72,10 +72,10 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   }
   auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  FixedArray<Int64, 6> min_n_max;
-  min_n_max[0] = INT64_MAX;
-  min_n_max[1] = INT64_MAX;
-  min_n_max[2] = INT64_MAX;
+  FixedArray<CartCoordType, 6> min_n_max;
+  min_n_max[0] = INT32_MAX;
+  min_n_max[1] = INT32_MAX;
+  min_n_max[2] = INT32_MAX;
   min_n_max[3] = -1;
   min_n_max[4] = -1;
   min_n_max[5] = -1;
@@ -109,29 +109,27 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
       if (icell->isOwn())
         nb_cells++;
 
-      Int64 pos_x = numbering->cellUniqueIdToCoordX(cell);
-      if (pos_x < min[MD_DirX])
-        min[MD_DirX] = pos_x;
-      if (pos_x > max[MD_DirX])
-        max[MD_DirX] = pos_x;
+      CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+      if (pos.x < min[MD_DirX])
+        min[MD_DirX] = pos.x;
+      if (pos.x > max[MD_DirX])
+        max[MD_DirX] = pos.x;
 
-      Int64 pos_y = numbering->cellUniqueIdToCoordY(cell);
-      if (pos_y < min[MD_DirY])
-        min[MD_DirY] = pos_y;
-      if (pos_y > max[MD_DirY])
-        max[MD_DirY] = pos_y;
+      if (pos.y < min[MD_DirY])
+        min[MD_DirY] = pos.y;
+      if (pos.y > max[MD_DirY])
+        max[MD_DirY] = pos.y;
 
-      Int64 pos_z = numbering->cellUniqueIdToCoordZ(cell);
-      if (pos_z < min[MD_DirZ])
-        min[MD_DirZ] = pos_z;
-      if (pos_z > max[MD_DirZ])
-        max[MD_DirZ] = pos_z;
+      if (pos.z < min[MD_DirZ])
+        min[MD_DirZ] = pos.z;
+      if (pos.z > max[MD_DirZ])
+        max[MD_DirZ] = pos.z;
     }
   }
   mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMin, min);
   mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, max);
   nb_cells = mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, nb_cells);
-  Integer level_r = mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
+  Int32 level_r = mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
 
   if (level != -1 && level != level_r) {
     ARCANE_FATAL("Bad level reduced");

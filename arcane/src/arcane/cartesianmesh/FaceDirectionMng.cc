@@ -410,7 +410,7 @@ _computeCellInfos() const
     if (back_cell.null()) {
       Int64 uids[6];
       ArrayView av_uids(numbering->nbFaceByCell(), uids);
-      numbering->cellFaceUniqueIds(av_uids, front_cell);
+      numbering->cellFaceUniqueIds(front_cell, av_uids);
       if (m_p->m_cartesian_mesh->mesh()->dimension() == 2) {
         if (dir == MD_DirX) {
           if (face.uniqueId() == av_uids[1])
@@ -449,7 +449,7 @@ _computeCellInfos() const
     else if (front_cell.null()) {
       Int64 uids[6];
       ArrayView av_uids(numbering->nbFaceByCell(), uids);
-      numbering->cellFaceUniqueIds(av_uids, back_cell);
+      numbering->cellFaceUniqueIds(back_cell, av_uids);
       if (m_p->m_cartesian_mesh->mesh()->dimension() == 2) {
         if (dir == MD_DirX) {
           if (face.uniqueId() == av_uids[3])

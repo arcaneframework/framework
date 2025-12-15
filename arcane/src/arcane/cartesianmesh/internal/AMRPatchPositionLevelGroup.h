@@ -31,20 +31,20 @@ class AMRPatchPositionLevelGroup
 {
  public:
 
-  explicit AMRPatchPositionLevelGroup(Integer max_level);
+  explicit AMRPatchPositionLevelGroup(Int32 max_level);
   ~AMRPatchPositionLevelGroup();
 
  public:
 
-  Integer maxLevel();
-  ConstArrayView<AMRPatchPosition> patches(Integer level);
-  void addPatch(AMRPatchPosition patch);
-  void fusionPatches(Integer level);
+  Int32 maxLevel() const;
+  ConstArrayView<AMRPatchPosition> patches(Int32 level);
+  void addPatch(const AMRPatchPosition& patch);
+  void fusionPatches(Int32 level);
   static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
 
  private:
 
-  Integer m_max_level;
+  Int32 m_max_level;
   UniqueArray<UniqueArray<AMRPatchPosition>> m_patches;
 };
 

@@ -59,121 +59,126 @@ class CartesianMeshNumberingMngInternal
   void prepareLevel(Int32 level) override;
   void updateFirstLevel() override;
 
-  Int64 firstCellUniqueId(Integer level) const override;
-  Int64 firstNodeUniqueId(Integer level) const override;
-  Int64 firstFaceUniqueId(Integer level) const override;
+  Int64 firstCellUniqueId(Int32 level) const override;
+  Int64 firstNodeUniqueId(Int32 level) const override;
+  Int64 firstFaceUniqueId(Int32 level) const override;
 
-  Int64 globalNbCellsX(Integer level) const override;
-  Int64 globalNbCellsY(Integer level) const override;
-  Int64 globalNbCellsZ(Integer level) const override;
+  CartCoordType globalNbCellsX(Int32 level) const override;
+  CartCoordType globalNbCellsY(Int32 level) const override;
+  CartCoordType globalNbCellsZ(Int32 level) const override;
 
-  Int64 globalNbNodesX(Integer level) const override;
-  Int64 globalNbNodesY(Integer level) const override;
-  Int64 globalNbNodesZ(Integer level) const override;
+  CartCoordType globalNbNodesX(Int32 level) const override;
+  CartCoordType globalNbNodesY(Int32 level) const override;
+  CartCoordType globalNbNodesZ(Int32 level) const override;
 
-  Int64 globalNbFacesX(Integer level) const override;
-  Int64 globalNbFacesY(Integer level) const override;
-  Int64 globalNbFacesZ(Integer level) const override;
+  CartCoordType globalNbFacesX(Int32 level) const override;
+  CartCoordType globalNbFacesY(Int32 level) const override;
+  CartCoordType globalNbFacesZ(Int32 level) const override;
 
-  Int64 globalNbFacesXCartesianView(Integer level) const override;
-  Int64 globalNbFacesYCartesianView(Integer level) const override;
-  Int64 globalNbFacesZCartesianView(Integer level) const override;
+  CartCoordType globalNbFacesXCartesianView(Int32 level) const override;
+  CartCoordType globalNbFacesYCartesianView(Int32 level) const override;
+  CartCoordType globalNbFacesZCartesianView(Int32 level) const override;
 
-  Int64 nbCellInLevel(Integer level) const override;
-  Int64 nbNodeInLevel(Integer level) const override;
-  Int64 nbFaceInLevel(Integer level) const override;
+  Int64 nbCellInLevel(Int32 level) const override;
+  Int64 nbNodeInLevel(Int32 level) const override;
+  Int64 nbFaceInLevel(Int32 level) const override;
 
-  Integer pattern() const override;
+  Int32 pattern() const override;
 
   Int32 cellLevel(Int64 uid) const override;
   Int32 nodeLevel(Int64 uid) const override;
   Int32 faceLevel(Int64 uid) const override;
 
-  Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
-  Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
+  CartCoordType offsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const override;
+  CartCoord3Type offsetLevelToLevel(CartCoord3Type coord, Int32 level_from, Int32 level_to) const override;
 
-  Int64 cellUniqueIdToCoordX(Int64 uid, Integer level) override;
-  Int64 cellUniqueIdToCoordX(Cell cell) override;
+  CartCoordType faceOffsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const override;
 
-  Int64 cellUniqueIdToCoordY(Int64 uid, Integer level) override;
-  Int64 cellUniqueIdToCoordY(Cell cell) override;
+  CartCoord3Type cellUniqueIdToCoord(Int64 uid, Int32 level) override;
+  CartCoord3Type cellUniqueIdToCoord(Cell cell) override;
 
-  Int64 cellUniqueIdToCoordZ(Int64 uid, Integer level) override;
-  Int64 cellUniqueIdToCoordZ(Cell cell) override;
+  CartCoordType cellUniqueIdToCoordX(Int64 uid, Int32 level) override;
+  CartCoordType cellUniqueIdToCoordX(Cell cell) override;
 
-  Int64 nodeUniqueIdToCoordX(Int64 uid, Integer level) override;
-  Int64 nodeUniqueIdToCoordX(Node node) override;
+  CartCoordType cellUniqueIdToCoordY(Int64 uid, Int32 level) override;
+  CartCoordType cellUniqueIdToCoordY(Cell cell) override;
 
-  Int64 nodeUniqueIdToCoordY(Int64 uid, Integer level) override;
-  Int64 nodeUniqueIdToCoordY(Node node) override;
+  CartCoordType cellUniqueIdToCoordZ(Int64 uid, Int32 level) override;
+  CartCoordType cellUniqueIdToCoordZ(Cell cell) override;
 
-  Int64 nodeUniqueIdToCoordZ(Int64 uid, Integer level) override;
-  Int64 nodeUniqueIdToCoordZ(Node node) override;
+  CartCoordType nodeUniqueIdToCoordX(Int64 uid, Int32 level) override;
+  CartCoordType nodeUniqueIdToCoordX(Node node) override;
 
-  Int64 faceUniqueIdToCoordX(Int64 uid, Integer level) override;
-  Int64 faceUniqueIdToCoordX(Face face) override;
+  CartCoordType nodeUniqueIdToCoordY(Int64 uid, Int32 level) override;
+  CartCoordType nodeUniqueIdToCoordY(Node node) override;
 
-  Int64 faceUniqueIdToCoordY(Int64 uid, Integer level) override;
-  Int64 faceUniqueIdToCoordY(Face face) override;
+  CartCoordType nodeUniqueIdToCoordZ(Int64 uid, Int32 level) override;
+  CartCoordType nodeUniqueIdToCoordZ(Node node) override;
 
-  Int64 faceUniqueIdToCoordZ(Int64 uid, Integer level) override;
-  Int64 faceUniqueIdToCoordZ(Face face) override;
+  CartCoordType faceUniqueIdToCoordX(Int64 uid, Int32 level) override;
+  CartCoordType faceUniqueIdToCoordX(Face face) override;
 
-  Int64 cellUniqueId(Integer level, Int64x3 cell_coord) override;
-  Int64 cellUniqueId(Integer level, Int64x2 cell_coord) override;
+  CartCoordType faceUniqueIdToCoordY(Int64 uid, Int32 level) override;
+  CartCoordType faceUniqueIdToCoordY(Face face) override;
 
-  Int64 nodeUniqueId(Integer level, Int64x3 node_coord) override;
-  Int64 nodeUniqueId(Integer level, Int64x2 node_coord) override;
+  CartCoordType faceUniqueIdToCoordZ(Int64 uid, Int32 level) override;
+  CartCoordType faceUniqueIdToCoordZ(Face face) override;
 
-  Int64 faceUniqueId(Integer level, Int64x3 face_coord) override;
-  Int64 faceUniqueId(Integer level, Int64x2 face_coord) override;
+  Int64 cellUniqueId(CartCoord3Type cell_coord, Int32 level) override;
+  Int64 cellUniqueId(CartCoord2Type cell_coord, Int32 level) override;
 
-  Integer nbNodeByCell() override;
-  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
-  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
-  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
-  void cellNodeUniqueIds(ArrayView<Int64> uid, Cell cell) override;
+  Int64 nodeUniqueId(CartCoord3Type node_coord, Int32 level) override;
+  Int64 nodeUniqueId(CartCoord2Type node_coord, Int32 level) override;
 
-  Integer nbFaceByCell() override;
-  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
-  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
-  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
-  void cellFaceUniqueIds(ArrayView<Int64> uid, Cell cell) override;
+  Int64 faceUniqueId(CartCoord3Type face_coord, Int32 level) override;
+  Int64 faceUniqueId(CartCoord2Type face_coord, Int32 level) override;
 
-  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x3 cell_coord, Int32 level) override;
-  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64x2 cell_coord, Int32 level) override;
-  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
-  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Cell cell) override;
+  Int32 nbNodeByCell() override;
+  void cellNodeUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellNodeUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellNodeUniqueIds(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) override;
+  void cellNodeUniqueIds(Cell cell, ArrayView<Int64> uid) override;
 
-  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x3 node_coord, Int32 level) override;
-  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64x2 node_coord, Int32 level) override;
-  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Int64 node_uid, Int32 level) override;
-  void cellUniqueIdsAroundNode(ArrayView<Int64> uid, Node node) override;
+  Int32 nbFaceByCell() override;
+  void cellFaceUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellFaceUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellFaceUniqueIds(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) override;
+  void cellFaceUniqueIds(Cell cell, ArrayView<Int64> uid) override;
+
+  void cellUniqueIdsAroundCell(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundCell(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundCell(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundCell(Cell cell, ArrayView<Int64> uid) override;
+
+  void cellUniqueIdsAroundNode(CartCoord3Type node_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundNode(CartCoord2Type node_coord, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundNode(Int64 node_uid, Int32 level, ArrayView<Int64> uid) override;
+  void cellUniqueIdsAroundNode(Node node, ArrayView<Int64> uid) override;
 
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
-  Int64 parentCellUniqueIdOfCell(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentCellUniqueIdOfCell(Int64 uid, Int32 level, bool do_fatal) override;
   Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal) override;
 
-  Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
-  Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord3Type child_coord_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord2Type child_coord_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, Int32 child_index_in_parent) override;
 
-  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, CartCoord3Type child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, CartCoord2Type child_coord_in_parent) override;
 
-  Int64 parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentNodeUniqueIdOfNode(Int64 uid, Int32 level, bool do_fatal) override;
   Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal) override;
 
-  Int64 childNodeUniqueIdOfNode(Int64 uid, Integer level) override;
+  Int64 childNodeUniqueIdOfNode(Int64 uid, Int32 level) override;
   Int64 childNodeUniqueIdOfNode(Node node) override;
 
-  Int64 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentFaceUniqueIdOfFace(Int64 uid, Int32 level, bool do_fatal) override;
   Int64 parentFaceUniqueIdOfFace(Face face, bool do_fatal) override;
 
-  Int64 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent) override;
-  Int64 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent) override;
+  Int64 childFaceUniqueIdOfFace(Int64 uid, Int32 level, Int32 child_index_in_parent) override;
+  Int64 childFaceUniqueIdOfFace(Face face, Int32 child_index_in_parent) override;
 
  private:
 
@@ -186,7 +191,7 @@ class CartesianMeshNumberingMngInternal
    * \param level Le niveau de la numérotation.
    * \return Le nombre de faces {xy, yz, zx}.
    */
-  Int64x3 _face3DNumberingThreeParts(Integer level) const;
+  Int64x3 _face3DNumberingThreeParts(Int32 level) const;
 
   static void _pushFront(UniqueArray<Int64>& array, Int64 elem);
 
@@ -197,7 +202,7 @@ class CartesianMeshNumberingMngInternal
   Ref<Properties> m_properties;
 
   Integer m_dimension;
-  Integer m_pattern;
+  Int32 m_pattern;
 
   UniqueArray<Int32> m_p_to_l_level;
   Int32 m_max_level;
@@ -212,11 +217,11 @@ class CartesianMeshNumberingMngInternal
   Int64 m_latest_face_uid;
   UniqueArray<Int64> m_first_face_uid_level;
 
-  Int64x3 m_nb_cell_ground;
+  CartCoord3Type m_nb_cell_ground;
 
   // Partie conversion numérotation d'origine <-> nouvelle numérotation (face).
   bool m_converting_numbering_face;
-  Integer m_ori_level;
+  Int32 m_ori_level;
   std::unordered_map<Int64, Int64> m_face_ori_numbering_to_new;
   std::unordered_map<Int64, Int64> m_face_new_numbering_to_ori;
 };

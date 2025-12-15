@@ -72,13 +72,13 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * \brief Méthode permettant de récupérer le niveau du patch.
    * \return Le niveau du patch.
    */
-  Integer level() const;
+  Int32 level() const;
 
   /*!
    * \brief Méthode permettant de définir le niveau du patch.
    * \param level Le niveau du patch.
    */
-  void setLevel(Integer level);
+  void setLevel(Int32 level);
 
   /*!
    * \brief Méthode permettant de récupérer la position min de la boite
@@ -86,14 +86,14 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La position min.
    */
-  Int64x3 minPoint() const;
+  CartCoord3Type minPoint() const;
 
   /*!
    * \brief Méthode permettant de définir la position min de la boite
    * englobante.
    * \param min_point la position min.
    */
-  void setMinPoint(Int64x3 min_point);
+  void setMinPoint(CartCoord3Type min_point);
 
   /*!
    * \brief Méthode permettant de récupérer la position max de la boite
@@ -101,14 +101,14 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La position max.
    */
-  Int64x3 maxPoint() const;
+  CartCoord3Type maxPoint() const;
 
   /*!
    * \brief Méthode permettant de définir la position max de la boite
    * englobante.
    * \param max_point la position max.
    */
-  void setMaxPoint(Int64x3 max_point);
+  void setMaxPoint(CartCoord3Type max_point);
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de couches de mailles de
@@ -116,28 +116,28 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return le nombre de couches de mailles de recouvrement
    */
-  Integer overlapLayerSize() const;
+  Int32 overlapLayerSize() const;
 
   /*!
    * \brief Méthode permettant de définir le nombre de couches de mailles de
    * recouvrement du patch.
    * \param layer_size le nombre de couches de mailles de recouvrement
    */
-  void setOverlapLayerSize(Integer layer_size);
+  void setOverlapLayerSize(Int32 layer_size);
 
   /*!
    * \brief Méthode permettant de récupérer la position min de la boite
    * englobante en incluant la couche de mailles de recouvrement.
    * \return La position min avec la couche de mailles de recouvrement.
    */
-  Int64x3 minPointWithOverlap() const;
+  CartCoord3Type minPointWithOverlap() const;
 
   /*!
    * \brief Méthode permettant de récupérer la position max de la boite
    * englobante en incluant la couche de mailles de recouvrement.
    * \return La position max avec la couche de mailles de recouvrement.
    */
-  Int64x3 maxPointWithOverlap() const;
+  CartCoord3Type maxPointWithOverlap() const;
 
   /*!
    * \brief Méthode permettant de connaitre le nombre de mailles du patch
@@ -161,7 +161,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * \param dim La dimension qui doit être découpée.
    * \return Les deux positions de patch résultant de la découpe.
    */
-  std::pair<AMRPatchPosition, AMRPatchPosition> cut(Int64 cut_point, Integer dim) const;
+  std::pair<AMRPatchPosition, AMRPatchPosition> cut(CartCoordType cut_point, Integer dim) const;
 
   /*!
    * \brief Méthode permettant de savoir si notre patch peut être fusionné
@@ -231,7 +231,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La taille du patch.
    */
-  Int64x3 length() const;
+  CartCoord3Type length() const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
@@ -246,7 +246,20 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isIn(Int64 x, Int64 y, Int64 z) const;
+  bool isIn(CartCoordType x, CartCoordType y, CartCoordType z) const;
+
+  /*!
+   * \brief Méthode permettant de savoir si une maille est incluse dans ce
+   * patch.
+   *
+   * Pour inclure la couche de recouvrement, utiliser la méthode
+   * \a isInWithOverlap().
+   *
+   * \param coord Position de la maille.
+   *
+   * \return True si la maille est dans le patch.
+   */
+  bool isIn(CartCoord3Type coord) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
@@ -258,11 +271,22 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(Int64 x, Int64 y, Int64 z) const;
+  bool isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z) const;
+
+  /*!
+   * \brief Méthode permettant de savoir si une maille est incluse dans ce
+   * patch avec couche de recouvrement.
+   *
+   * \param coord Position de la maille.
+   *
+   * \return True si la maille est dans le patch.
+   */
+  bool isInWithOverlap(CartCoord3Type coord) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
    * incluse dans ce patch avec couche de recouvrement fourni en paramètre.
+   *
    * \param x Position X de la maille.
    * \param y Position Y de la maille.
    * \param z Position Z de la maille.
@@ -270,7 +294,18 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(Int64 x, Int64 y, Int64 z, Integer overlap) const;
+  bool isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z, Integer overlap) const;
+
+  /*!
+   * \brief Méthode permettant de savoir si une maille est incluse dans ce
+   * patch avec couche de recouvrement fourni en paramètre.
+   *
+   * \param coord Position de la maille.
+   * \param overlap Le nombre de mailles de recouvrement de la couche.
+   *
+   * \return True si la maille est dans le patch.
+   */
+  bool isInWithOverlap(CartCoord3Type coord, Integer overlap) const;
 
   /*!
    * \brief Méthode permettant de savoir si notre patch est en contact avec le
@@ -283,10 +318,10 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 
  private:
 
-  Integer m_level;
-  Int64x3 m_min_point;
-  Int64x3 m_max_point;
-  Integer m_overlap_layer_size;
+  Int32 m_level;
+  CartCoord3Type m_min_point;
+  CartCoord3Type m_max_point;
+  Int32 m_overlap_layer_size;
 };
 
 /*---------------------------------------------------------------------------*/

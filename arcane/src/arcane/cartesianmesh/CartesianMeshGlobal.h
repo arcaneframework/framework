@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/UtilsTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,6 +74,13 @@ enum eCellNodePosition
   CNP_TopPreviousRight = 6,
   CNP_TopPreviousLeft = 7
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+typedef Int32 CartCoordType;
+typedef Int32x3 CartCoord3Type;
+typedef Int32x2 CartCoord2Type;
 
 } // End namespace Arcane
 
