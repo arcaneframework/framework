@@ -16,7 +16,6 @@
 #include <ALIEN/axl/PETScPrecConfigGAMG_axl.h>
 
 
-
 /*
  * PCGAMG
    Geometric algebraic multigrid (AMG) preconditioner
