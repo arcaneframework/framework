@@ -261,11 +261,11 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
 bool
 IFPInternalLinearSolver::_solve()
 {
-  bool m_resizeable = false;
+  bool resizeable = false;
 
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
-      &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
+      &m_normalisation_pivot, &m_ilu0_algo, &resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);
@@ -275,11 +275,11 @@ IFPInternalLinearSolver::_solve()
 
 // A. Anciaux
 bool
-IFPInternalLinearSolver::_solveRs(bool m_resizeable)
+IFPInternalLinearSolver::_solveRs(bool resizeable)
 {
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
-      &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
+      &m_normalisation_pivot, &m_ilu0_algo, &resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);

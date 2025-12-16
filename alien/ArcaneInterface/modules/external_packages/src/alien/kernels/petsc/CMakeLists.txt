@@ -144,6 +144,7 @@
               linear_solver/mumps/PETScSolverConfigMUMPSService.cc
               linear_solver/mumps/PETScPrecConfigMUMPSService.cc
       )
+      linkLibraries(alien_external_packages petsc::mumps)
   endif (TARGET petsc::mumps)
 
   if (TARGET superlu)

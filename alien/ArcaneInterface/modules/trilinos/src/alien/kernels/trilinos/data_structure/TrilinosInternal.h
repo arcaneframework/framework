@@ -234,7 +234,7 @@ class MatrixInternal
                               global_ordinal_type,
                               node_type>                     coord_vector_type;
   
-  MatrixInternal(int local_offset, int global_size, int local_size, MPI_Comm const& comm)
+  MatrixInternal(int local_offset, int global_size, int local_size, int max_row_size, MPI_Comm const& comm)
   {
     using Teuchos::Array;
     using Teuchos::ArrayView;
@@ -251,11 +251,11 @@ class MatrixInternal
     m_map = rcp(new map_type(gsize, indices, 0, m_comm));
 
     //m_internal.reset(new matrix_type(this->m_map, 0, Tpetra::ProfileType(1)));
-    m_internal.reset(new matrix_type(this->m_map, 10));
+    m_internal.reset(new matrix_type(this->m_map, max_row_size));
   }
 
   bool initMatrix(int local_offset, int nrows, int const* kcol, int const* cols,
-      int block_size, ValueT const* values);
+      int block_size, int max_row_size, ValueT const* values);
 
   bool setMatrixValues(Real const* values);
 

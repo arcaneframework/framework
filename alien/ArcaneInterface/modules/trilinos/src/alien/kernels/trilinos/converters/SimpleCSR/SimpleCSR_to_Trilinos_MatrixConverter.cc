@@ -98,8 +98,24 @@ SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_build(
 template <typename TagT>
 void
 SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_buildBlock(
-    [[maybe_unused]] const SimpleCSRMatrix<Real>& sourceImpl,[[maybe_unused]] TrilinosMatrix<Real, TagT>& targetImpl) const
+    const SimpleCSRMatrix<Real>& sourceImpl, TrilinosMatrix<Real, TagT>& targetImpl) const
 {
+  const MatrixDistribution& dist = targetImpl.distribution();
+  const Integer localOffset = dist.rowOffset();
+  const Integer globalSize = dist.globalRowSize();
+
+  auto const& matrixInternal = *sourceImpl.internal();
+
+  auto const& matrix_profile = sourceImpl.internal()->getCSRProfile();
+  int nrows = matrix_profile.getNRow();
+  int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer();
+  int const* cols = matrix_profile.getCols().unguardedBasePointer();
+   int block_size = sourceImpl.block() ? sourceImpl.block()->size() : 1;
+
+  if (not targetImpl.initMatrix(dist.parallelMng(), localOffset, globalSize, nrows, kcol,
+          cols, block_size, matrixInternal.getDataPtr())) {
+    throw FatalErrorException(A_FUNCINFO, "Trilinos Initialisation failed");
+  }
 }
 
 #ifdef KOKKOS_ENABLE_SERIAL
