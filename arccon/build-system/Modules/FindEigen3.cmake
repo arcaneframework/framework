@@ -24,7 +24,7 @@ if(NOT Eigen3_FOUND)
 
   find_path(EIGEN3_INCLUDE_DIR Eigen
     HINTS ${EIGEN3_ROOT} 
-		PATH_SUFFIXES include/eigen3
+    PATH_SUFFIXES include include/eigen3
     ${_EIGEN3_SEARCH_OPTS}
     )
   mark_as_advanced(EIGEN3_INCLUDE_DIR)
