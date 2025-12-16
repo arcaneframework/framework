@@ -41,6 +41,12 @@
 #include <sys/time.h>
 #endif
 
+#if defined(ARCCORE_OS_MACOS)
+#include <cstdlib>
+#include <mach-o/dyld.h>
+#include <crt_externs.h>
+#endif
+
 // SD: Useless ? Bug with MacOS
 //#include <malloc.h>
 
