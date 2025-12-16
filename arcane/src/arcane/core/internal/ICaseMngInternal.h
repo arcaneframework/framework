@@ -21,6 +21,7 @@
 
 namespace Arcane
 {
+class ParameterListWithCaseOption;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,9 @@ class ARCANE_CORE_EXPORT ICaseMngInternal
    * de le détruire.
    */
   virtual ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) = 0;
+
+  //! Liste des paramètres pouvant surcharger le jeu de données
+  virtual const ParameterListWithCaseOption& parameters() const=0;
 };
 
 /*---------------------------------------------------------------------------*/

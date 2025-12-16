@@ -19,6 +19,7 @@
 #include "arcane/utils/Ref.h"
 
 #include "arcane/utils/internal/ParameterOption.h"
+#include "arcane/utils/internal/ParameterListWithCaseOption.h"
 
 #include <algorithm>
 
@@ -227,9 +228,23 @@ fillParameters(StringList& param_names,StringList& values) const
 /*---------------------------------------------------------------------------*/
 
 ParameterCaseOption ParameterList::
-getParameterCaseOption(const String& language) const
+_getParameterCaseOption(const String& language) const
 {
   return { m_p->getParameterOption(), language };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParameterListWithCaseOption::
+addParameters(const ParameterList& parameters)
+{
+  StringList names;
+  StringList values;
+  parameters.fillParameters(names,values);
+  Int32 size = names.count();
+  for (Int32 i = 0; i < size; ++i)
+    m_p->addParameter(names[i],values[i]);
 }
 
 /*---------------------------------------------------------------------------*/

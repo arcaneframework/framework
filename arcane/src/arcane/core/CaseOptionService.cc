@@ -32,6 +32,7 @@
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/internal/ICaseOptionListInternal.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 #include "arcane/utils/ParameterCaseOption.h"
 
 #include <typeinfo>
@@ -192,7 +193,7 @@ _readPhase1()
   }
 
   XmlNode element = col->rootElement();
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
   const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
@@ -385,7 +386,7 @@ multiAllocate(const XmlNodeList& elem_list)
   if (!m_container)
     ARCANE_FATAL("null 'm_container'. did you called setContainer() method ?");
 
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
   const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   XmlNode parent_element = configList()->parentElement();
