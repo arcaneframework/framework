@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/DeviceInfo.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
 
@@ -203,6 +204,11 @@ void _testEmptyKernel(IAcceleratorMng* acc_mng)
   // On garde les références sur les files créées pour ne pas les
   // réutiliser. Cela permet d'avoir des mesures fiables sur les temps.
   Runner runner = acc_mng->runner();
+  Accelerator::DeviceInfo device_info = runner.deviceInfo();
+  std::cout << "Device: sharedMemPerBlock=" << device_info.sharedMemoryPerBlock() << "\n";
+  std::cout << "Device: sharedMemPerMultiprocessor=" << device_info.sharedMemoryPerMultiprocessor() << "\n";
+  std::cout << "Device: sharedMemPerBlockOptin=" << device_info.sharedMemoryPerBlockOptin() << "\n";
+
   UniqueArray<RunQueue*> queues;
   queues.reserve(8);
   queues.add(_testEmptyKernelHelper(acc_mng, false, false, false));
@@ -262,7 +268,7 @@ arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_arg
   try{
     r = _testStandaloneLauncher(cmd_line_args,method_name);
   }
-  catch(const Exception& ex){
+  catch (const Exception& ex) {
     std::cerr << "EXCEPTION: " << ex << "\n";
     throw;
   }
