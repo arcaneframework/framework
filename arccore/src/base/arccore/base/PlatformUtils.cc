@@ -803,6 +803,62 @@ getConsoleHasColor()
   return global_has_color_console;
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" String Platform::
+getLoadedSharedLibraryFullPath(const String& dll_name)
+{
+  String full_path;
+  if (dll_name.null())
+    return full_path;
+#if defined(ARCCORE_OS_LINUX)
+  {
+    std::ifstream ifile("/proc/self/maps");
+    String v;
+    String true_name = "lib" + dll_name + ".so";
+    while (ifile.good()){
+      ifile >> v;
+      Span<const Byte> vb = v.bytes();
+      if (vb.size()>0 && vb[0]=='/'){
+        if (v.endsWith(true_name)){
+          full_path = v;
+          //std::cout << "V='" << v << "'\n";
+          break;
+        }
+      }
+    }
+  }
+#elif defined(ARCCORE_OS_WIN32)
+  HMODULE hModule = GetModuleHandleA(dll_name.localstr());
+  if (!hModule)
+    return full_path;
+  TCHAR dllPath[_MAX_PATH];
+  GetModuleFileName(hModule, dllPath, _MAX_PATH);
+  full_path = StringView(dllPath);
+#elif defined(ARCCORE_OS_MACOS)
+  {
+    String true_name = "lib" + dll_name + ".dylib";
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+      const char* image_name = _dyld_get_image_name(i);
+      if (image_name) {
+        String image_path(image_name);
+        if (image_path.endsWith(true_name)) {
+          full_path = image_path;
+          break;
+        }
+      }
+    }
+  }
+#else
+  throw NotSupportedException(A_FUNCINFO);
+//#error "platform::getSymbolFullPath() not implemented for this platform"
+#endif
+  return full_path;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
