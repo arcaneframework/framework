@@ -46,13 +46,9 @@ class CartesianMeshAMRPatchMng
 
  public:
 
-  void flagCellToRefine(ConstArrayView<Int32> cells_lids, bool clear_old_flags) override;
-  void flagCellToCoarsen(ConstArrayView<Int32> cells_lids, bool clear_old_flags) override;
-
   void refine() override;
   void createSubLevel() override;
   void coarsen(bool update_parent_flag) override;
-  void _syncFlagCell() const override;
 
  private:
 

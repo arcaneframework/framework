@@ -68,7 +68,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
-  void removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
+  void removeCellsInZone(const AMRZonePosition& zone_to_delete);
 
   void applyPatchEdit(bool remove_empty_patches);
 
@@ -89,6 +89,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
  private:
 
+  void _removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
+
   Integer _nextIndexForNewPatch();
 
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
@@ -100,7 +102,6 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
 
-  bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
   void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
   void _addPatch(const AMRPatchPosition& new_patch_position);

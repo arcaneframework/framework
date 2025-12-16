@@ -1167,25 +1167,20 @@ _applyRefine(const AMRZonePosition& position)
 void CartesianMeshImpl::
 _applyCoarse(const AMRZonePosition& zone_position)
 {
-  UniqueArray<Int32> cells_local_id;
-  AMRPatchPosition patch_position;
   if (m_amr_type == eMeshAMRKind::Cell) {
+    UniqueArray<Int32> cells_local_id;
+
     zone_position.cellsInPatch(mesh(), cells_local_id);
-  }
-  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    zone_position.cellsInPatch(this, cells_local_id, patch_position);
-  }
 
-  Integer nb_cell = cells_local_id.size();
-  info(4) << "Local_NbCellToCoarsen = " << nb_cell;
+    Integer nb_cell = cells_local_id.size();
+    info(4) << "Local_NbCellToCoarsen = " << nb_cell;
 
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
-  info(4) << "Global_NbCellToCoarsen = " << total_nb_cell;
-  if (total_nb_cell == 0)
-    return;
+    IParallelMng* pm = m_mesh->parallelMng();
+    Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
+    info(4) << "Global_NbCellToCoarsen = " << total_nb_cell;
+    if (total_nb_cell == 0)
+      return;
 
-  if (m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Coarse with modifier() (for all mesh types)";
     m_patch_group.removeCellsInAllPatches(cells_local_id);
     m_patch_group.applyPatchEdit(true);
@@ -1193,15 +1188,12 @@ _applyCoarse(const AMRZonePosition& zone_position)
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
     m_mesh->modifier()->coarsenItemsV2(true);
   }
+
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
-    m_patch_group.removeCellsInAllPatches(patch_position);
-    m_patch_group.applyPatchEdit(false);
-
-    computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
-    m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
+    m_patch_group.removeCellsInZone(zone_position);
   }
+
   else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }

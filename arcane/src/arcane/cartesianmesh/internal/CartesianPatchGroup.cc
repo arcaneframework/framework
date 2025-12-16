@@ -343,11 +343,8 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
+_removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
 {
-  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
-    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
-  }
   // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
   // i = 1 car on ne peut pas déraffjner le patch ground.
   const Integer nb_patchs = m_amr_patches_pointer.size();
@@ -361,10 +358,45 @@ removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
     //                                     << ", max : " << zone_to_delete.maxPoint()
     //                                     << ", level : " << zone_to_delete.level() << ")";
 
-    if (_isPatchInContact(patch->position(), zone_to_delete)) {
+    if (zone_to_delete.haveIntersection(patch->position())) {
       _splitPatch(i, zone_to_delete);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+removeCellsInZone(const AMRZonePosition& zone_to_delete)
+{
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+  clearRefineRelatedFlags();
+
+  UniqueArray<Int32> cells_local_id;
+
+  AMRPatchPosition patch_position;
+  zone_to_delete.cellsInPatch(m_cmesh, cells_local_id, patch_position);
+
+  _removeCellsInAllPatches(patch_position);
+  applyPatchEdit(false);
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  Int32 level = patch_position.level();
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    if (!icell->hasHChildren()) {
+      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      if (patch_position.isIn(pos)) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+      }
+    }
+  }
+
+  amr->coarsen(true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -578,8 +610,6 @@ refine(bool clear_refine_flag)
   Int32 future_max_level = -1; // Désigne le niveau max qui aura des enfants, donc le futur level max +1.
   Int32 old_max_level = -1; // Mais s'il reste des mailles à des niveaux plus haut, il faut les retirer.
   auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
-
-  amr->_syncFlagCell();
 
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
     Integer level = icell->level();
@@ -1069,19 +1099,6 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool CartesianPatchGroup::
-_isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1)
-{
-  return (
-  (patch_position0.level() == patch_position1.level()) &&
-  (patch_position0.maxPoint().x > patch_position1.minPoint().x && patch_position1.maxPoint().x > patch_position0.minPoint().x) &&
-  (patch_position0.maxPoint().y > patch_position1.minPoint().y && patch_position1.maxPoint().y > patch_position0.minPoint().y) &&
-  (m_cmesh->mesh()->dimension() == 2 || (patch_position0.maxPoint().z > patch_position1.minPoint().z && patch_position1.maxPoint().z > patch_position0.minPoint().z)));
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

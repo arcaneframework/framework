@@ -368,6 +368,7 @@ bool AMRPatchPosition::
 haveIntersection(const AMRPatchPosition& other) const
 {
   return (
+  (other.level() == level()) &&
   (other.maxPoint().x > minPoint().x && maxPoint().x > other.minPoint().x) &&
   (other.maxPoint().y > minPoint().y && maxPoint().y > other.minPoint().y) &&
   (other.maxPoint().z > minPoint().z && maxPoint().z > other.minPoint().z));
