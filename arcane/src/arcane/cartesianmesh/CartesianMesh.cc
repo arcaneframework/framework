@@ -1245,23 +1245,23 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
 
-  if (face_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    ARCANE_FATAL("Face renumbering is not compatible with this type of AMR");
-  }
-
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method < 0 || patch_method > 4)
+  if (patch_method < 0 || patch_method > 4) {
     ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2, 3 or 4",
                  patch_method);
-    
-  else if (patch_method == 1 || patch_method == 3 || patch_method == 4){
-    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch(),patch_method);
+  }
+  if (patch_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Mesh items renumbering is not compatible with this type of AMR");
+  }
+
+  if (patch_method == 1 || patch_method == 3 || patch_method == 4) {
+    CartesianMeshUniqueIdRenumbering renumberer(this, cmgi, v.parentPatch(), patch_method);
     renumberer.renumber();
   }
-  else if (patch_method == 2){
+  else if (patch_method == 2) {
     warning() << "The patch method 2 is experimental!";
-    CartesianMeshUniqueIdRenumberingV2 renumberer(this,cmgi);
+    CartesianMeshUniqueIdRenumberingV2 renumberer(this, cmgi);
     renumberer.renumber();
   }
 

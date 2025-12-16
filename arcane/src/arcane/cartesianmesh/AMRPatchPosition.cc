@@ -150,7 +150,7 @@ maxPointWithOverlap() const
 Int64 AMRPatchPosition::
 nbCells() const
 {
-  return (m_max_point.x - m_min_point.x) * (m_max_point.y - m_min_point.y) * (m_max_point.z - m_min_point.z);
+  return static_cast<Int64>(m_max_point.x - m_min_point.x) * (m_max_point.y - m_min_point.y) * (m_max_point.z - m_min_point.z);
 }
 
 /*---------------------------------------------------------------------------*/

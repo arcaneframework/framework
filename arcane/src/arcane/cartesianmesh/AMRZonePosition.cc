@@ -140,7 +140,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   max[MD_DirZ] += 1;
 
   {
-    Int64 nb_cells_patch = (max[MD_DirX] - min[MD_DirX]) * (max[MD_DirY] - min[MD_DirY]) * (max[MD_DirZ] - min[MD_DirZ]);
+    Int64 nb_cells_patch = static_cast<Int64>(max[MD_DirX] - min[MD_DirX]) * (max[MD_DirY] - min[MD_DirY]) * (max[MD_DirZ] - min[MD_DirZ]);
     if (nb_cells != nb_cells_patch) {
       ARCANE_FATAL("Not regular patch");
     }
