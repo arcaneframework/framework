@@ -332,4 +332,5 @@ set(ARCANE_SOURCES
   internal/ValueConvertInternal.h
   internal/MemoryBuffer.h
   internal/ParallelLoopOptionsProperties.h
+  internal/ParameterListWithCaseOption.h
   )

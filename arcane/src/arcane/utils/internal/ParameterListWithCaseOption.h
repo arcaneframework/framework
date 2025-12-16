@@ -5,21 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringVariableReplace.h                                     (C) 2000-2025 */
+/* ParameterListWithCaseOption.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de remplacer les symboles d'une chaine de caractères    */
-/* par une autre chaine de caractères définie dans les arguments de          */
-/* lancement.                                                                */
-/* Un symbole est défini par une chaine de caractères entourée de @.         */
-/* Exemple : @mon_symbole@                                                   */
+/* Liste de paramètres avec support pour les options du jeu de données.      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
-#define ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
+#ifndef ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
+#define ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/ParameterCaseOption.h"
 #include "arcane/utils/ParameterList.h"
-#include "arcane/utils/internal/ParameterListWithCaseOption.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,22 +26,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_CORE_EXPORT StringVariableReplace
+/*!
+ * \brief Liste de paramètres avec informations pour surcharger les options
+ * du jeu de données.
+ */
+class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
+: private ParameterList
 {
  public:
 
-  static String replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found = false,
-                                       bool fatal_if_invalid = true);
-  static String replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list,
-                                       StringView string_with_symbols,
-                                       bool fatal_if_not_found = false,
-                                       bool fatal_if_invalid = true);
+  using ParameterList::addParameterLine;
+  using ParameterList::getParameterOrNull;
 
- private:
+  /*!
+   * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
+   *
+   * Cet objet peut être détruit après utilisation.
+   *
+   * \param language Le langage dans lequel est écrit le jeu de données.
+   * \return Un objet de type ParameterCaseOption.
+   */
+  ParameterCaseOption getParameterCaseOption(const String& language) const
+  {
+    return _getParameterCaseOption(language);
+  }
 
-  static void _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c);
-  static void _countChar(StringView str_view, char c, Integer& count_c, Integer& count_c_with_escape);
+  //! Ajoute les paramètres de \a parameters aux paramètres de l'instance
+  void addParameters(const ParameterList& parameters);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -55,4 +63,4 @@ class ARCANE_CORE_EXPORT StringVariableReplace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  
