@@ -49,9 +49,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 
  public:
 
-  virtual void _build() = 0;
-  virtual void _saveInfosInProperties() = 0;
-  virtual void _recreateFromDump() = 0;
+  virtual void build() = 0;
+  virtual void saveInfosInProperties() = 0;
+  virtual void recreateFromDump() = 0;
 
   /*!
    * \brief Méthode permettant de renuméroter les faces du niveau 0.

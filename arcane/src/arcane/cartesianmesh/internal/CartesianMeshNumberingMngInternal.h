@@ -48,9 +48,9 @@ class CartesianMeshNumberingMngInternal
 
  public:
 
-  void _build() override;
-  void _saveInfosInProperties() override;
-  void _recreateFromDump() override;
+  void build() override;
+  void saveInfosInProperties() override;
+  void recreateFromDump() override;
 
   void renumberingFacesLevel0FromOriginalArcaneNumbering() override;
 

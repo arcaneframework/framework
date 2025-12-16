@@ -56,6 +56,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * Une position nulle est définie par un level = -2.
    */
   AMRPatchPosition();
+  AMRPatchPosition(Int32 level, CartCoord3Type min_point, CartCoord3Type max_point, Int32 overlap_layer_size);
 
   /*!
    * \brief Constructeur de copie.

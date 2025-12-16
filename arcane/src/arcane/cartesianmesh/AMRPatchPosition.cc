@@ -32,8 +32,18 @@ AMRPatchPosition::
 AMRPatchPosition()
 : m_level(-2)
 , m_overlap_layer_size(0)
-{
-}
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AMRPatchPosition::
+AMRPatchPosition(Int32 level, CartCoord3Type min_point, CartCoord3Type max_point, Int32 overlap_layer_size)
+: m_level(level)
+, m_min_point(min_point)
+, m_max_point(max_point)
+, m_overlap_layer_size(overlap_layer_size)
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

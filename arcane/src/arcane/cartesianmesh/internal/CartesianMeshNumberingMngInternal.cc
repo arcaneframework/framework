@@ -104,7 +104,7 @@ CartesianMeshNumberingMngInternal(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_build()
+build()
 {
   m_properties = makeRef(new Properties(*(m_mesh->properties()), "CartesianMeshNumberingMngInternal"));
 }
@@ -113,7 +113,7 @@ _build()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_saveInfosInProperties()
+saveInfosInProperties()
 {
   m_properties->set("Version", 1);
   m_properties->set("FirstCellUIDByLevel", m_first_cell_uid_level);
@@ -129,7 +129,7 @@ _saveInfosInProperties()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_recreateFromDump()
+recreateFromDump()
 {
   Int32 v = m_properties->getInt32("Version");
   if (v != 1)

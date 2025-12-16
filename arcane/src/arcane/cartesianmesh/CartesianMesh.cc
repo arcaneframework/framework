@@ -301,8 +301,9 @@ build()
 {
   m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_build();
+    m_internal_api.cartesianMeshNumberingMngInternal()->build();
   }
+  m_patch_group.build();
 }
 
 namespace
@@ -332,22 +333,10 @@ _saveInfosInProperties()
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   m_properties->set("Version",SERIALIZE_VERSION);
 
-  // Sauve les informations des patches
-  UniqueArray<String> patch_group_names;
-  for (Integer i = 1; i < m_patch_group.nbPatch(); ++i) {
-    patch_group_names.add(m_patch_group.allCells(i).name());
-  }
-  m_properties->set("PatchGroupNames",patch_group_names);
-
-  // TODO : Trouver une autre façon de gérer ça.
-  //        Dans le cas d'une protection reprise, le tableau m_available_index
-  //        ne peut pas être correctement recalculé à cause des éléments après
-  //        le "index max" des "index actif". Ces éléments "en trop" ne
-  //        peuvent pas être retrouvés sans plus d'infos.
-  m_properties->set("PatchGroupNamesAvailable", m_patch_group.availableGroupIndex());
+  m_patch_group.saveInfosInProperties();
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_saveInfosInProperties();
+    m_internal_api.cartesianMeshNumberingMngInternal()->saveInfosInProperties();
     //m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 }
@@ -361,7 +350,7 @@ recreateFromDump()
   info() << "Creating 'CartesianMesh' infos from dump";
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_recreateFromDump();
+    m_internal_api.cartesianMeshNumberingMngInternal()->recreateFromDump();
     m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 
@@ -371,22 +360,9 @@ recreateFromDump()
     ARCANE_FATAL("Bad serializer version: trying to read from incompatible checkpoint v={0} expected={1}",
                  v,SERIALIZE_VERSION);
 
-  // Récupère les noms des groupes des patchs
-  UniqueArray<String> patch_group_names;
-  m_properties->get("PatchGroupNames",patch_group_names);
-  info(4) << "Found n=" << patch_group_names.size() << " patchs";
-  m_patch_group.clear();
+  m_patch_group.recreateFromDump();
+
   m_all_items_direction_info = m_patch_group.groundPatch();
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  for (const String& x : patch_group_names) {
-    CellGroup group = cell_family->findGroup(x);
-    if (group.null())
-      ARCANE_FATAL("Can not find cell group '{0}'",x);
-    m_patch_group.addPatchAfterRestore(group);
-  }
-  UniqueArray<Int32> available_index;
-  m_properties->get("PatchGroupNamesAvailable", available_index);
-  m_patch_group.rebuildAvailableGroupIndex(available_index);
 
   computeDirections();
 }

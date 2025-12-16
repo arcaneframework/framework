@@ -19,6 +19,7 @@
 #include "arcane/core/ItemGroup.h"
 
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
@@ -43,6 +44,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   explicit CartesianPatchGroup(ICartesianMesh* cmesh);
 
  public:
+
+  void build();
+  void saveInfosInProperties();
+  void recreateFromDump();
 
   Ref<CartesianMeshPatch> groundPatch();
 
@@ -119,6 +124,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Integer> m_available_group_index;
   Integer m_size_of_overlap_layer_sub_top_level;
   Integer m_higher_level;
+  Ref<Properties> m_properties;
 };
 
 /*---------------------------------------------------------------------------*/
