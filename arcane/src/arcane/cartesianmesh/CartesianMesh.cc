@@ -1090,7 +1090,6 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
-  m_patch_group.updateLevelsBeforeAddGroundPatch();
   _addPatch(parent_cells_local_id);
 }
 
@@ -1124,30 +1123,32 @@ _addPatch(ConstArrayView<Int32> parent_cells)
 void CartesianMeshImpl::
 _applyRefine(const AMRZonePosition& position)
 {
-  UniqueArray<Int32> cells_local_id;
-  position.cellsInPatch(mesh(), cells_local_id);
+  if (m_amr_type == eMeshAMRKind::Cell) {
+    UniqueArray<Int32> cells_local_id;
+    position.cellsInPatch(mesh(), cells_local_id);
 
-  Integer nb_cell = cells_local_id.size();
-  info(4) << "Local_NbCellToRefine = " << nb_cell;
+    Integer nb_cell = cells_local_id.size();
+    info(4) << "Local_NbCellToRefine = " << nb_cell;
 
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum,nb_cell);
-  info(4) << "Global_NbCellToRefine = " << total_nb_cell;
-  if (total_nb_cell==0)
-    return;
+    IParallelMng* pm = m_mesh->parallelMng();
+    Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
+    info(4) << "Global_NbCellToRefine = " << total_nb_cell;
+    if (total_nb_cell == 0)
+      return;
 
-  if(m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Refine with modifier() (for all mesh types)";
     m_mesh->modifier()->flagCellToRefine(cells_local_id);
     m_mesh->modifier()->adapt();
+
+    _addPatch(cells_local_id);
   }
+
   else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
-    computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id, true);
-    m_internal_api.cartesianMeshAMRPatchMng()->refine();
+    m_patch_group.addPatch(position);
   }
-  else if(m_amr_type == eMeshAMRKind::Patch) {
+
+  else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
   else{
@@ -1158,7 +1159,6 @@ _applyRefine(const AMRZonePosition& position)
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();
   }
-  _addPatch(cells_local_id);
 }
 
 /*---------------------------------------------------------------------------*/

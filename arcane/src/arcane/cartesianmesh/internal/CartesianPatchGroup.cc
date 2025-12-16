@@ -21,6 +21,7 @@
 #include "arcane/core/MeshKind.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/AMRZonePosition.h"
 
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
@@ -70,6 +71,10 @@ groundPatch()
 void CartesianPatchGroup::
 addPatch(ConstArrayView<Int32> cells_local_id)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Do not use this method with AMR type 3");
+  }
+
   Integer index = _nextIndexForNewPatch();
   String children_group_name = String("CartesianMeshPatchCells") + index;
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
@@ -190,6 +195,34 @@ addPatch(CellGroup cell_group, Integer group_index)
   // m_cmesh->traceMng()->info() << "Min Point : " << cdi->position().minPoint();
   // m_cmesh->traceMng()->info() << "Max Point : " << cdi->position().maxPoint();
   // m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+addPatch(const AMRZonePosition& zone_position)
+{
+  clearRefineRelatedFlags();
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  auto position = zone_position.toAMRPatchPosition(m_cmesh);
+  Int32 level = position.level();
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    if (!icell->hasHChildren()) {
+      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      if (position.isInWithOverlap(pos)) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+      }
+    }
+  }
+
+  amr->refine();
+
+  _addPatch(position.patchUp(m_cmesh->mesh()->dimension()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -381,12 +414,17 @@ applyPatchEdit(bool remove_empty_patches)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-updateLevelsBeforeAddGroundPatch()
+updateLevelsAndAddGroundPatch()
 {
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     return;
   }
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  // Attention : on suppose que numbering->updateFirstLevel(); a déjà été appelé !
+
+  // TODO : Mettre à jour la taille des couches de recouvrement !
+
   for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
     const Int32 level = patch->position().level();
     // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
@@ -415,6 +453,14 @@ updateLevelsBeforeAddGroundPatch()
       }
     }
   }
+
+  AMRPatchPosition old_ground;
+  old_ground.setLevel(1);
+  old_ground.setMinPoint({ 0, 0, 0 });
+  old_ground.setMaxPoint({ numbering->globalNbCellsX(1), numbering->globalNbCellsY(1), numbering->globalNbCellsZ(1) });
+  old_ground.setOverlapLayerSize(0);
+
+  _addPatch(old_ground);
 }
 
 /*---------------------------------------------------------------------------*/

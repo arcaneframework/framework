@@ -50,6 +50,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Integer addPatchAfterRestore(CellGroup cell_group);
   void addPatch(CellGroup cell_group, Integer group_index);
 
+  void addPatch(const AMRZonePosition& zone_position);
+
   Integer nbPatch() const;
 
   Ref<CartesianMeshPatch> patch(Integer index) const;
@@ -70,7 +72,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void applyPatchEdit(bool remove_empty_patches);
 
-  void updateLevelsBeforeAddGroundPatch();
+  void updateLevelsAndAddGroundPatch();
 
   void mergePatches();
 

@@ -30,6 +30,7 @@
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 
+#include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -2762,10 +2763,7 @@ createSubLevel()
   }
 
   //! Créé le patch avec les mailles filles
-  {
-    CellGroup parent_cells = m_mesh->allLevelCells(0);
-    m_cmesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
-  }
+  m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
 
   // Recalcule les informations de synchronisation
   // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées
