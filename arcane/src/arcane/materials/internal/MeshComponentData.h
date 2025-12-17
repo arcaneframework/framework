@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.h                                         (C) 2000-2024 */
+/* MeshComponentData.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -103,6 +103,16 @@ class MeshComponentData
     return m_component_id;
   }
 
+  void setSpecificExecutionPolicy(Accelerator::eExecutionPolicy policy)
+  {
+    m_specific_execution_policy = policy;
+  }
+
+  Accelerator::eExecutionPolicy specificExecutionPolicy() const
+  {
+    return m_specific_execution_policy;
+  }
+
  private:
 
   void _resizeItemsInternal(Int32 nb_item);
@@ -141,6 +151,9 @@ class MeshComponentData
 
   MeshComponentPartData* m_part_data = nullptr;
   FunctorT<MeshComponentData> m_recompute_part_data_functor;
+
+  //! Politique d'exécution spécifique
+  Accelerator::eExecutionPolicy m_specific_execution_policy = Accelerator::eExecutionPolicy::None;
 
  private:
 

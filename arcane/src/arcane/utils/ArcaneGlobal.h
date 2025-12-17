@@ -29,6 +29,10 @@
 #  define ARCANE_OS_WIN32
 #endif
 
+#ifdef ARCCORE_OS_MACOS
+#  define ARCANE_OS_MACOS
+#endif
+
 #define ARCANE_EXPORT ARCCORE_EXPORT
 #define ARCANE_IMPORT ARCCORE_IMPORT
 #define ARCANE_TEMPLATE_EXPORT ARCCORE_TEMPLATE_EXPORT
@@ -36,37 +40,9 @@
 
 #define ARCANE_STD std
 
-//Tag var as a voluntary unused variable.
-//Works with any compiler but might be improved by using attribute.
+// Tag var as a voluntary unused variable.
+// Works with any compiler but might be improved by using attribute.
 #define ARCANE_UNUSED(var) ARCCORE_UNUSED(var)
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_HAS_CUDA) && defined(__CUDACC__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de CUDA et qu'on utilise le compilateur CUDA.
- */
-#define ARCANE_COMPILING_CUDA
-#endif
-#if defined(ARCANE_HAS_HIP) && defined(__HIP__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de HIP et qu'on utilise le compilateur HIP.
- */
-#define ARCANE_COMPILING_HIP
-#endif
-
-#if defined(ARCANE_HAS_SYCL)
-#  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
-/*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de SYCL et qu'on utilise le compilateur SYCL.
- */
-#    define ARCANE_COMPILING_SYCL
-#  endif
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -681,18 +657,6 @@ arcaneCheckNull(const void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Taille du padding pour les index dans les opérations SIMD.
- *
- * Afin d'avoir le même code quel que soit le mécanisme de vectorisation
- * utilisé, cette valeur est fixe et correspond au plus grand vecteur SIMD.
- *
- * \sa arcanedoc_simd
- */
-static const Integer SIMD_PADDING_SIZE = 8;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Retourne la taille avec padding pour une taille \a size.
  *
  * La valeurs retournée est un multiple de SIMD_PADDING_SIZE et vaut:
@@ -747,22 +711,45 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
  * \brief Macro pour envoyer une exception avec formattage.
  *
  * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés formatter un message d'erreur via la
+ * la macro sont utilisés pour formatter un message d'erreur via la
  * méthode String::format().
  */
-#define ARCANE_THROW(exception_class,...)                           \
-  throw exception_class (A_FUNCINFO,Arcane::String::format(__VA_ARGS__))
+#define ARCANE_THROW(exception_class,...) \
+  ARCCORE_THROW(exception_class,__VA_ARGS__)
+
+/*!
+ * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ *
+ * \a exception_class est le type de l'exception. Les arguments suivants de
+ * la macro sont utilisés pour formatter un message d'erreur via la
+ * méthode String::format().
+ *
+ * \sa ARCANE_THROW
+ */
+#define ARCANE_THROW_IF(const, exception_class, ...)    \
+  ARCCORE_THROW_IF(const, exception_class, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Macro envoyant une exception FatalErrorException.
  *
- * Les arguments de la macro sont utilisés formatter un message
+ * Les arguments de la macro sont utilisés pour formatter un message
  * d'erreur via la méthode String::format().
  */
-#define ARCANE_FATAL(...)\
-  throw Arcane::FatalErrorException(A_FUNCINFO,Arcane::String::format(__VA_ARGS__))
+#define ARCANE_FATAL(...) \
+  ARCCORE_FATAL(__VA_ARGS__)
+
+/*!
+ * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ *
+ * Les arguments de la macro sont utilisés pour formatter un message
+ * d'erreur via la méthode String::format().
+ *
+ * \sa ARCANE_FATAL
+ */
+#define ARCANE_FATAL_IF(const, ...) \
+  ARCCORE_FATAL_IF(const, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

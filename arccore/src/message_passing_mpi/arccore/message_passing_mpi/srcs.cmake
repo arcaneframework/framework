@@ -1,0 +1,40 @@
+
+set(SOURCES
+  MessagePassingMpiGlobal.h
+  MessagePassingMpiGlobal.cc
+  MessagePassingMpiEnum.cc
+  MpiAdapter.cc
+  MpiAllInOneMachineMemoryWindowBase.cc
+  MpiDatatype.h
+  MpiDatatype.cc
+  MpiControlDispatcher.cc
+  MpiRequestList.cc
+  MpiSerializeDispatcher.cc
+  MpiTypeDispatcher.cc
+  MpiMessagePassingMng.cc
+  MpiMessagePassingMng.h
+  MpiMachineMemoryWindowBaseInternal.cc
+  MpiMachineMemoryWindowBaseInternalCreator.cc
+  MpiDynamicMachineMemoryWindowBaseInternal.cc
+  MpiDynamicMultiMachineMemoryWindowBaseInternal.cc
+
+  StandaloneMpiMessagePassingMng.cc
+  StandaloneMpiMessagePassingMng.h
+
+  internal/IMpiProfiling.h
+  internal/MessagePassingMpiEnum.h
+  internal/MpiAdapter.h
+  internal/MpiAllInOneMachineMemoryWindowBase.h
+  internal/MpiControlDispatcher.h
+  internal/MpiLock.h
+  internal/MpiMachineMemoryWindowBaseInternal.h
+  internal/MpiMachineMemoryWindowBaseInternalCreator.h
+  internal/MpiDynamicMachineMemoryWindowBaseInternal.h
+  internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h
+  internal/MpiRequest.h
+  internal/MpiRequestList.h
+  internal/MpiSerializeDispatcher.h
+  internal/MpiTypeDispatcher.h
+  internal/MpiTypeDispatcherImpl.h
+  internal/NoMpiProfiling.h
+)

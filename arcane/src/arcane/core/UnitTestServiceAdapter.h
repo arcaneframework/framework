@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnitTestServiceAdapter.h                                    (C) 2000-2020 */
+/* UnitTestServiceAdapter.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Adapte un service qui déclare des tests a l'interface IUnitTest.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UNITTESTADAPTER_H
-#define ARCANE_UNITTESTADAPTER_H
+#ifndef ARCANE_CORE_UNITTESTADAPTER_H
+#define ARCANE_CORE_UNITTESTADAPTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IUnitTest.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/Assertion.h"
-#include "arcane/XmlNode.h"
+#include "arcane/core/IUnitTest.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/Assertion.h"
+#include "arcane/core/XmlNode.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

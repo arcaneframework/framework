@@ -211,12 +211,81 @@ comportement à l'exécution :
 </tr>
 <tr>
   <td>
+    ARCANE_ENABLE_NON_IO_MASTER_CURVES
+  </td>
+  <td>
+    Variable d'environnement permettant d'autoriser plusieurs processus à écrire des courbes.
+    Avec l'API historique (Arcane::ITimeHistoryMng), tous les processus écrivent les courbes
+    et avec les écrivains disponibles dans %Arcane, ces processus écrivent dans le même fichier.
+    Un écrivain personnalisé doit donc gérer cela.
+    Avec les nouvelles APIs (Arcane::GlobalTimeHistoryAdder et Arcane::MeshTimeHistoryAdder),
+    l'écriture de courbes par plusieurs processus est géré correctement. Cette variable
+    d'environnement reste nécessaire pour activer cette fonctionnalité (pour l'instant).
+    Voir la page \ref arcanedoc_io_timehistory_howto
+  </td>
+</tr>
+<tr>
+  <td>
+    ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES
+  </td>
+  <td>
+    Variable d'environnement utile lors de l'utilisation de réplicats et permettant d'autoriser
+    tous les processus à écrire des courbes.
+  </td>
+</tr>
+<tr>
+  <td>
     ARCANE_REPLACE_SYMBOLS_IN_DATASET
   </td>
   <td>
     Variable d'environnement permettant d'activer le remplacement des symboles dans
     le jeu de données à partir des arguments de la ligne de commande.
     Voir la page \ref arcanedoc_execution_commandlineargs
+  </td>
+</tr>
+<tr>
+  <td>
+    ARCANE_USE_BACKWARDCPP
+  </td>
+  <td>
+    Variable d'environnement permettant d'activer l'affichage de la pile d'appels via
+    BackwardCpp.<br>
+    BackwardCpp nécessite d'avoir compilé Arcane avec au moins la bibliothèque DW.<br>
+    Valeur par défaut : **0**<br>
+    Valeurs possibles : **0** ou **1**
+  </td>
+</tr>
+<tr>
+  <td>
+    ARCANE_CALLSTACK_VERBOSE
+  </td>
+  <td>
+    Variable d'environnement permettant d'afficher plus ou moins d'informations
+    lors de l'affichage de la pile d'appels.<br>
+    Nécessite la variable d'environnement ARCANE_USE_BACKWARDCPP.<br>
+    Valeur par défaut : **2**<br>
+    Valeurs possibles :<br>
+    - **0** : CallStack classique (nom de fonction uniquement)
+    - **1** : CallStack classique avec numéro de ligne et fichier pour les classes/fonctions hors du namespace Arcane
+    - **2** : CallStack classique avec numéro de ligne et fichier pour toutes les classes/fonctions
+    - **3** : CallStack classique avec numéro de ligne, fichier pour toutes les classes/fonctions et snippet pour les classes/fonctions hors du namespace Arcane
+    - **4** : CallStack classique avec numéro de ligne, fichier et snippet pour toutes les classes/fonctions
+  </td>
+</tr>
+<tr>
+  <td>
+    ARCANE_CALLSTACK_HUMAN_READABLE
+  </td>
+  <td>
+    Variable d'environnement permettant d'afficher la pile d'appels avec des
+    espaces entre les appels et le numéro de ligne avant le chemin du fichier
+    source, pour améliorer la lisibilité.<br>
+    Si la valeur est mise à zéro, le chemin du fichier et le numéro de ligne
+    sont affichés de manière reconnaissable par un debugger ou un IDE
+    (chemin:ligne).<br>
+    Nécessite la variable d'environnement ARCANE_USE_BACKWARDCPP.<br>
+    Valeur par défaut : **1**<br>
+    Valeurs possibles : **0** ou **1**
   </td>
 </tr>
 

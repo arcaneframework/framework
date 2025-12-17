@@ -45,13 +45,16 @@ Par défaut, l'installation se fait dans `/usr/local` si l'option
 `CMAKE_INSTALL_PREFIX` n'est pas spécifiée.
 
 <details>
-<summary>Les options de compilation générales disponibles</summary>
+<summary>Les options de configuration générales disponibles</summary>
 Options générales :
 <table>
 <tr><th>Option <th>Valeur <th>Description
 <tr><td>`CMAKE_INSTALL_PREFIX` <td>`/path/to/install` <td>Choix d'un dossier d'installation
 <tr><td>`ARCANEFRAMEWORK_BUILD_COMPONENTS` <td>`%Arcane` ou `Alien` ou `%Arcane;Alien` <td>Composant(s) à compiler 
-<tr><td>`ARCCORE_CXX_STANDARD` <td>`17` ou `20` ou `23` <td>Choix du standard C++ à utiliser
+<tr><td>`ARCCORE_CXX_STANDARD` <td>`20` (le défaut), `23` ou `26` <td>Choix du standard C++ à utiliser
+<tr><td>`ARCANE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Active/Désactive les tests
+<tr><td>`ARCANE_ENABLE_DOTNET_WRAPPER` <td>`ON`/`OFF` <td>Active/Désactive le wrapper C#/.Net
+<tr><td>`ARCANE_ENABLE_ALEPH` <td>`ON`/`OFF` <td>Active/Désactive le support de la composante Aleph
 </table>
 </details>
 
@@ -114,9 +117,9 @@ Une liste de valeurs est possible (par exemple `gfx90a;gfx1031`)
 </table>
 </details>
 
-Depuis la version 3.12 de %Arcane, le support des accélérateurs nécessite un
-compilateur supportant le C++20. Il est donc nécessaire de compiler
-%Arcane en spécifiant la variable CMake `-DARCCORE_CXX_STANDARD=20`.
+\note Avant la version 4.0 de %Arcane, il est nécessaire pour
+le support des accélérateurs de spécifier l'option
+CMake `-DARCCORE_CXX_STANDARD=20`.
 
 La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
 type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
@@ -147,7 +150,6 @@ pour plus d'informations)
 # Avec 'clang'
 cmake -DARCANE_ACCELERATOR_MODE=CUDA
 -DCMAKE_CUDA_COMPILER=/usr/bin/clang++-19 \
--DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
 
@@ -155,7 +157,6 @@ cmake -DARCANE_ACCELERATOR_MODE=CUDA
 # Avec 'nvcc'
 cmake -DARCANE_ACCELERATOR_MODE=CUDA
 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12/bin/nvcc \
--DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
 
@@ -166,7 +167,6 @@ SDK](https://developer.nvidia.com/hpc-sdk) de NVidia:
 export CXX=`which nvc++`
 export CC=`which nvc`
 cmake -DARCANE_ACCELERATOR_MODE=CUDA \
--DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
 
@@ -175,6 +175,8 @@ Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
 `-DCMAKE_CUDA_ARCHITECTURES=80`.
 
 #### Compilation AMD ROCM/HIP
+
+La version de ROCM minimale requise est la version 5.7.
 
 Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
 MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
@@ -192,11 +194,8 @@ export CMAKE_HIP_COMPILER=/opt/rocm/hip/bin/hipcc
 cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" \
 -DARCANE_ACCELERATOR_MODE=ROCMHIP \
 -DCMAKE_HIP_ARCHITECTURES=gfx90a \
--DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
-
-
 
 ### Génération de la documentation
 
@@ -259,10 +258,6 @@ cmake --build ${BUILD_DIR} --target devdoc
 
 La documentation utilisateur ne contient les infos que des classes
 utiles pour le développeur.
-
-
-
-
 
 ### Recherche de packages
 

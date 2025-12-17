@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableUtils.cc                                            (C) 2000-2024 */
+/* VariableUtils.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires diverses sur les variables.                         */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/core/VariableUtils.h"
 
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/IMemoryAllocator.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -55,6 +56,11 @@ prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null)
   IData* d = var->data();
   INumericDataInternal* nd = d->_commonInternal()->numericData();
   if (!nd)
+    return;
+  // On ne pré-charge que si la variable est en mémoire unifiée.
+  // Cela n'est utile que dans ce cas et de plus avec CUDA cela provoque
+  // une erreur si la mémoire n'est pas u
+  if (nd->memoryAllocator()->memoryResource() != eMemoryResource::UnifiedMemory)
     return;
   ConstMemoryView mem_view = nd->memoryView();
   queue_or_null->prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());

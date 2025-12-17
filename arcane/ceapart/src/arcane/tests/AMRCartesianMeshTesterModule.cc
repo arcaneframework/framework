@@ -42,10 +42,12 @@
 #include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/AMRZonePosition.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/FaceDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
 #include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
@@ -98,6 +100,7 @@ class AMRCartesianMeshTesterModule
   Ref<CartesianMeshTestUtils> m_utils;
   UniqueArray<VariableCellReal*> m_cell_patch_variables;
   Int32 m_nb_expected_patch = 0;
+  bool m_merge_patches = true;
 
  private:
 
@@ -105,6 +108,7 @@ class AMRCartesianMeshTesterModule
   void _compute2();
   void _initAMR();
   void _coarseZone();
+  void _mergePatches();
   void _reduceNbGhostLayers();
   void _computeSubCellDensity(Cell cell);
   void _computeCenters();
@@ -258,9 +262,14 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
 
+  m_merge_patches = options()->mergePatches();
+
   if (!subDomain()->isContinue()) {
     _initAMR();
     _coarseZone();
+    if (m_merge_patches) {
+      _mergePatches();
+    }
     _reduceNbGhostLayers();
   }
 
@@ -379,10 +388,11 @@ _processPatches()
   // à computeDirections() n'ajoutent pas de patchs.
   // Cette vérification ne s'applique que s'il n'y a pas de zone de dé-raffinement.
   // En effet, dé-raffiner un patch complet le supprime de la liste des patchs.
+  // Elle est aussi désactivée s'il y a fusion possible des patchs.
   Integer nb_expected_patch = m_nb_expected_patch;
     
   Integer nb_patch = m_cartesian_mesh->nbPatch();
-  if (without_coarse_zone && nb_expected_patch != nb_patch)
+  if (without_coarse_zone && nb_expected_patch != nb_patch && !m_merge_patches)
     ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
 
   IParallelMng* pm = parallelMng();
@@ -502,22 +512,26 @@ _computeCenters()
 void AMRCartesianMeshTesterModule::
 _initAMR()
 {
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  amr_mng.enableOverlapLayer(false);
+
   // Regarde si on dé-raffine le maillage initial
   if (options()->coarseAtInit()){
     // Il faut que les directions aient été calculées avant d'appeler le dé-raffinement
     m_cartesian_mesh->computeDirections();
 
     info() << "Doint initial coarsening";
-
-    if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-      debug() << "Coarse with specific coarser (for cartesian mesh only)";
-      Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
-      coarser->createSubLevel();
-    }
-    else {
-      Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
-      coarser->createCoarseCells();
-    }
+    //
+    // if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    //   debug() << "Coarse with specific coarser (for cartesian mesh only)";
+    //   Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
+    //   coarser->createSubLevel();
+    // }
+    // else {
+    //   Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+    //   coarser->createCoarseCells();
+    // }
+    amr_mng.createSubLevel();
 
     CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
     Int32 nb_patch = patches.size();
@@ -534,15 +548,15 @@ _initAMR()
   // à raffiner celles qui sont contenues dans le boîte englobante
   // spécifiée dans le jeu de données.
   Int32 dim = defaultMesh()->dimension();
-  if (dim==2){
-    for( const auto& x : options()->refinement2d() ){
-      m_cartesian_mesh->refinePatch({x->position(), x->length()});
+  if (dim == 2) {
+    for (const auto& x : options()->refinement2d()) {
+      amr_mng.refineZone({ x->position(), x->length() });
       m_cartesian_mesh->computeDirections();
     }
   }
-  if (dim==3){
-    for( const auto& x : options()->refinement3d() ){
-      m_cartesian_mesh->refinePatch({x->position(), x->length()});
+  if (dim == 3) {
+    for (const auto& x : options()->refinement3d()) {
+      amr_mng.refineZone({ x->position(), x->length() });
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -555,6 +569,7 @@ void AMRCartesianMeshTesterModule::
 _coarseZone()
 {
   Int32 dim = defaultMesh()->dimension();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (dim == 2) {
     //UniqueArray<Int32> cells_in_patchs;
@@ -563,7 +578,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
+      amr_mng.coarseZone({ { x->position() }, { x->length() } });
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -574,10 +589,22 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
+      amr_mng.coarseZone({ { x->position() }, { x->length() } });
       m_cartesian_mesh->computeDirections();
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_mergePatches()
+{
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  amr_mng.mergePatches();
+
+  m_cartesian_mesh->computeDirections();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -603,6 +630,16 @@ void AMRCartesianMeshTesterModule::
 compute()
 {
   _compute1();
+  // info() << "NbPatch : " << m_cartesian_mesh->nbPatch();
+  // info() << "NbPatch : " << m_cartesian_mesh->patches().size();
+  //
+  // for (Integer i = 0; i < m_cartesian_mesh->patches().size(); ++i) {
+  //   auto patch = m_cartesian_mesh->amrPatch(i);
+  //   info() << "Patch #" << i;
+  //   info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
+  //   info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
+  //   info() << "\tLevel : " << patch.patchInterface()->position().level();
+  // }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -807,7 +844,7 @@ _checkDirections()
     }
 
     if (cell_hash != expected_hash)
-      ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v= {1} expected='{2}'",
+      ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v='{1}' expected='{2}'",
                    item_family->fullName(), cell_hash, expected_hash);
   };
 

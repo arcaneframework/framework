@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
       *sourceImpl.internal();
 
-  Arccore::Integer max_line_size = localSize * block_size;
+  Arccore::Integer max_line_size = 0;
   Arccore::Integer data_count = 0;
   Arccore::Integer pos = 0;
   Arccore::UniqueArray<int> sizes(localSize * block_size);
@@ -186,16 +186,16 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
            << "[" << jlower << ":" << jupper << "]";
   });
 
-  // Buffer de construction
-  Arccore::UniqueArray2<Arccore::Real> values;
-  values.resize(block_size, max_line_size);
-  Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
-  indices.resize(std::max(max_line_size, localSize * block_size));
   // est ce qu'on reconstruit la matrice  ?
   {
     if (not targetImpl.initMatrix(ilower, iupper, jlower, jupper, sizes)) {
       throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre Initialisation failed");
     }
+
+    // Buffer de construction
+    Arccore::UniqueArray2<Arccore::Real> values(block_size, max_line_size);
+    Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
+    indices.resize(max_line_size);
 
     Arccore::ConstArrayView<Arccore::Integer> cols = profile.getCols();
     Arccore::ConstArrayView<Arccore::Real> m_values = matrixInternal.getValues();

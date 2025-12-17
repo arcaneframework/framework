@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 #include "arccore/message_passing/IRequestList.h"
 #include "arccore/message_passing/BasicSerializeMessage.h"
@@ -194,8 +194,7 @@ buildMessageInfo(ISerializeMessage* sm)
 Ref<ISerializeMessage> SerializeMessageList::
 createAndAddMessage(MessageRank destination,ePointToPointMessageType type)
 {
-  MessageRank source(m_message_passing_mng->commRank());
-  auto x = BasicSerializeMessage::create(source,destination,type);
+  auto x = mpCreateSerializeMessage(m_message_passing_mng, destination, type);
   addMessage(x.get());
   return x;
 }

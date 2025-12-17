@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableDiff.h                                              (C) 2000-2023 */
+/* VariableDiff.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des différences entre les variables                               */
 /*---------------------------------------------------------------------------*/
@@ -39,6 +39,7 @@ class VariableDiff
  public:
 
   using VarDataTypeTraits = VariableDataTypeTraitsT<DataType>;
+  static constexpr bool IsNumeric = std::is_same_v<typename VarDataTypeTraits::IsNumeric, TrueType>;
 
  public:
 
@@ -107,15 +108,15 @@ class VariableDiff
 
  protected:
 
-  void _sortAndDump(IVariable* var, IParallelMng* pm, int max_print)
+  void _sortAndDump(IVariable* var, IParallelMng* pm, const VariableComparerArgs& compare_args)
   {
     _sort();
-    dump(var, pm, max_print);
+    dump(var, pm, compare_args);
   }
 
-  void dump(IVariable* var, IParallelMng* pm, int max_print)
+  void dump(IVariable* var, IParallelMng* pm, const VariableComparerArgs& compare_args)
   {
-    DiffPrinter::dump(m_diffs_info, var, pm, max_print);
+    DiffPrinter::dump(m_diffs_info, var, pm, compare_args);
   }
   void _sort()
   {
@@ -128,8 +129,9 @@ class VariableDiff
   {
    public:
 
-    ARCANE_CORE_EXPORT static void dump(ConstArrayView<DiffInfo> diff_infos,
-                                        IVariable* var, IParallelMng* pm, int max_print);
+    ARCANE_CORE_EXPORT static void
+    dump(ConstArrayView<DiffInfo> diff_infos, IVariable* var, IParallelMng* pm,
+         const VariableComparerArgs& compare_args);
     ARCANE_CORE_EXPORT static void sort(ArrayView<DiffInfo> diff_infos);
   };
 };

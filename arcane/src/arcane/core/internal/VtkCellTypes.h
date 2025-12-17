@@ -1,23 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkCellTypes.h                                              (C) 2000-2024 */
+/* VtkCellTypes.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Définitions des types de maille de VTK.                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_INTERNAL_VTKCELLTYPES_H
-#define ARCANE_STD_INTERNAL_VTKCELLTYPES_H
+#ifndef ARCANE_CORE_INTERNAL_VTKCELLTYPES_H
+#define ARCANE_CORE_INTERNAL_VTKCELLTYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class ItemTypeInfo;
+}
 
 namespace Arcane::VtkUtils
 {
@@ -107,11 +112,17 @@ const unsigned char VTK_BEZIER_HEXAHEDRON = 79;
 const unsigned char VTK_BEZIER_WEDGE = 80;
 const unsigned char VTK_BEZIER_PYRAMID = 81;
 
+// Invalid value to detect unsupported Arcane type
+const unsigned char VTK_BAD_ARCANE_TYPE = 255;
+
 extern "C++" ARCANE_CORE_EXPORT Int16
 vtkToArcaneCellType(int vtk_type, Int32 nb_node);
 
 extern "C++" ARCANE_CORE_EXPORT unsigned char
 arcaneToVtkCellType(Int16 arcane_type);
+
+extern "C++" ARCANE_CORE_EXPORT unsigned char
+arcaneToVtkCellType(const ItemTypeInfo* arcane_type);
 
 // Les valeurs pour les types 'CellGhostTypes' et 'PointGhostTypes' sont définies
 // dans le fichier vtkDataSetAttributes.h.

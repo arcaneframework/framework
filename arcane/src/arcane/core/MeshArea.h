@@ -1,32 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshArea.h                                                  (C) 2000-2005 */
+/* MeshArea.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Zone du maillage.                                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHAREA_H
-#define ARCANE_MESHAREA_H
+#ifndef ARCANE_CORE_MESHAREA_H
+#define ARCANE_CORE_MESHAREA_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#include "arcane/IMeshArea.h"
-#include "arcane/ItemGroup.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/IMeshArea.h"
+#include "arcane/core/ItemGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IParallelMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,24 +33,24 @@ class ARCANE_CORE_EXPORT MeshArea
 {
  public:
 
-  MeshArea(IMesh* mesh);
-  virtual ~MeshArea();
+  explicit MeshArea(IMesh* mesh);
+  ~MeshArea() override;
 
  public:
 
   //! Sous-domaine associé
-  virtual ISubDomain* subDomain();
+  ISubDomain* subDomain() override;
 
   //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng();
+  ITraceMng* traceMng() override;
 
   //! Maillage auquel appartient la zone
-  virtual IMesh* mesh();
+  IMesh* mesh() override;
 
  public:
 
   //! Nombre de noeuds du maillage
-  virtual Integer nbNode();
+  Integer nbNode() override;
 
   //! Nombre d'arêtes du maillage
   virtual Integer nbEdge();
@@ -64,7 +59,7 @@ class ARCANE_CORE_EXPORT MeshArea
   virtual Integer nbFace();
 
   //! Nombre de mailles du maillage
-  virtual Integer nbCell();
+  Integer nbCell() override;
 
   //! Nombre d'éléments du genre \a ik
   virtual Integer nbItem(eItemKind ik);
@@ -72,7 +67,7 @@ class ARCANE_CORE_EXPORT MeshArea
  public:
 
   //! Groupe de tous les noeuds
-  virtual NodeGroup allNodes();
+  NodeGroup allNodes() override;
 
   //! Groupe de tous les arêtes
   virtual EdgeGroup allEdges();
@@ -81,13 +76,13 @@ class ARCANE_CORE_EXPORT MeshArea
   virtual FaceGroup allFaces();
 
   //! Groupe de toutes les mailles
-  virtual CellGroup allCells();
+  CellGroup allCells() override;
 
   //! Groupe de toutes les entités du genre \a item_kind
   virtual ItemGroup allItems(eItemKind item_kind);
 
   //! Groupe de tous les noeuds propres au domaine
-  virtual NodeGroup ownNodes();
+  NodeGroup ownNodes() override;
 
   //! Groupe de tous les arêtes propres au domaine
   virtual EdgeGroup ownEdges();
@@ -96,23 +91,20 @@ class ARCANE_CORE_EXPORT MeshArea
   virtual FaceGroup ownFaces();
 
   //! Groupe de toutes les mailles propres au domaine
-  virtual CellGroup ownCells();
+  virtual CellGroup ownCells() override;
 
   //! Groupe de toutes les entités propres au sous-domaine du genre \a item_kind
   virtual ItemGroup ownItems(eItemKind item_kind);
 
  public:
 
-  //void setArea(const NodeGroup& nodes,const EdgeGroup& edges,
-  //const FaceGroup& faces,const CellGroup& cells);
-
-  void setArea(const NodeGroup& nodes,const CellGroup& cells);
+  void setArea(const NodeGroup& nodes, const CellGroup& cells);
 
  protected:
 
-  IMesh* m_mesh;
-  ISubDomain* m_sub_domain;
-  ITraceMng* m_trace_mng;
+  IMesh* m_mesh = nullptr;
+  ISubDomain* m_sub_domain = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
   NodeGroup m_all_nodes;
   EdgeGroup m_all_edges;
   FaceGroup m_all_faces;
@@ -122,7 +114,7 @@ class ARCANE_CORE_EXPORT MeshArea
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

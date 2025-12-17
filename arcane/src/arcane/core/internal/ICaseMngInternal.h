@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseMngInternal.h                                          (C) 2000-2023 */
+/* ICaseMngInternal.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de ICaseMng.                                      */
 /*---------------------------------------------------------------------------*/
@@ -14,13 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ParameterListWithCaseOption;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,9 @@ class ARCANE_CORE_EXPORT ICaseMngInternal
    * de le détruire.
    */
   virtual ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) = 0;
+
+  //! Liste des paramètres pouvant surcharger le jeu de données
+  virtual const ParameterListWithCaseOption& parameters() const=0;
 };
 
 /*---------------------------------------------------------------------------*/

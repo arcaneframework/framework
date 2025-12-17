@@ -8,6 +8,19 @@
 
 arccon_return_if_package_found(LZ4)
 
+# Essaie de trouver le fichier de configuration correspondant.
+# 'LZ4' ne livre normalement pas de fichier de configuration mais
+# par exemple 'vcpkg' en génère un
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(lz4 CONFIG)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+if (TARGET lz4::lz4)
+  arccon_register_cmake_config_target(LZ4 CONFIG_TARGET_NAME lz4::lz4)
+  return()
+endif()
+
 # Il n'y a pas de find_package correspondant à 'LZ4' dans 'CMake'
 find_library(LZ4_LIBRARY lz4)
 find_path(LZ4_INCLUDE_DIR lz4.h)

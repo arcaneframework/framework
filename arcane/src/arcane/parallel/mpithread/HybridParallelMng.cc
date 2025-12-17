@@ -25,12 +25,16 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
+
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 
 #include "arcane/impl/TimerMng.h"
@@ -40,7 +44,7 @@
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/RequestListBase.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -157,6 +161,43 @@ _wait(Parallel::eWaitType wait_mode)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class HybridParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(HybridParallelMng* pm, HybridMachineMemoryWindowBaseInternalCreator* window_creator)
+  : ParallelMngInternal(pm)
+  , m_parallel_mng(pm)
+  , m_window_creator(window_creator)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
+  }
+
+ private:
+
+  HybridParallelMng* m_parallel_mng;
+  HybridMachineMemoryWindowBaseInternalCreator* m_window_creator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 HybridParallelMng::
 HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.local_rank,bi.local_nb_rank))
@@ -175,6 +216,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 , m_sub_builder_factory(bi.sub_builder_factory)
 , m_parent_container_ref(bi.container)
 , m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
+, m_parallel_mng_internal(new Impl(this, bi.window_creator))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -206,6 +248,7 @@ HybridParallelMng::
   delete m_timer_mng;
   delete m_stat;
   delete m_mpi_parallel_mng;
+  delete m_parallel_mng_internal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -624,6 +667,15 @@ communicator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MP::Communicator HybridParallelMng::
+machineCommunicator() const
+{
+  return m_mpi_parallel_mng->machineCommunicator();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 PointToPointMessageInfo HybridParallelMng::
 buildMessage(const PointToPointMessageInfo& message)
 {
@@ -782,7 +834,8 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
     // Suppose qu'on à le même nombre de rangs MPI qu'avant donc on utilise
     // le communicateur MPI qu'on a déjà.
     MP::Communicator c = communicator();
-    builder = m_sub_builder_factory->_createParallelMngBuilder(new_local_nb_rank,c);
+    MP::Communicator mc = machineCommunicator();
+    builder = m_sub_builder_factory->_createParallelMngBuilder(new_local_nb_rank, c, mc);
     // Positionne le builder pour tout le monde
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }

@@ -27,7 +27,8 @@ extern "C"
 int arcaneTestCudaReduction();
 extern "C"
 void arcaneTestCooperativeLaunch();
-
+extern "C"
+int arcaneTestVirtualFunction();
 
 extern "C" ARCANE_EXPORT
 int func0()
@@ -37,5 +38,6 @@ int func0()
   arcaneTestCudaReduction();
   arcaneTestCuda4();
   arcaneTestCooperativeLaunch();
+  arcaneTestVirtualFunction();
   return 0;
 }

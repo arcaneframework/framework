@@ -1,9 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* ArcaneTestInit.cc                                           (C) 2000-2025 */
+/*                                                                           */
+/* Initialisation pour les tests.                                            */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/PlatformUtils.h"
 
@@ -11,8 +17,15 @@
 
 #include "arcane/impl/ArcaneMain.h"
 
+// Pour détecter si Hdf5 est disponible.
+#include "arcane_packages.h"
+
 // Pour forcer enregistrement de 'arcane_std'
 #include "arcane/std/ArcaneStdRegisterer.h"
+
+#ifdef ARCANE_HAS_PACKAGE_HDF5
+#include "arcane/hdf5/ArcaneHdf5Registerer.h"
+#endif
 
 // La fonction doit être 'C' pour pouvoir être appelée depuis le C#.
 extern "C" ARCANE_EXPORT void
@@ -22,6 +35,9 @@ arcaneTestSetApplicationInfo()
 
   // Force le chargement de 'arcane_std'
   ArcaneStdRegisterer::registerLibrary();
+#ifdef ARCANE_HAS_PACKAGE_HDF5
+  ArcaneHdf5Registerer::registerLibrary();
+#endif
 
   ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
   app_build_info.setApplicationName("ArcaneTest");
@@ -33,6 +49,7 @@ arcaneTestSetApplicationInfo()
 #ifdef ARCANE_OS_WIN32
   app_build_info.addDynamicLibrary("PerfectGas");
   app_build_info.addDynamicLibrary("StiffenedGas");
+  app_build_info.addDynamicLibrary("arcane_cea");
   app_build_info.addDynamicLibrary("arcane_cea_tests");
   app_build_info.addDynamicLibrary("arcane_aleph_tests");
   app_build_info.addDynamicLibrary("arcane_aleph_hypre");

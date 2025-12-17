@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
+
 #include "arccore/base/BaseTypes.h"
 #include "arccore/base/RefDeclarations.h"
 #include "arccore/collections/CollectionsGlobal.h"
@@ -44,18 +45,6 @@ template<typename T> class ConstMultiArray2View;
 template<typename T> class MultiArray2;
 template<typename DataType> class UniqueMultiArray2;
 template<typename DataType> class SharedMultiArray2;
-
-template<typename T> class EnumeratorT;
-template<typename T> class ListEnumeratorT;
-
-template<typename T> class Collection;
-template<typename T> class List;
-
-class EventObservableBase;
-class EventObserverBase;
-template<typename... Args> class EventObservable;
-template<typename... Args> class EventObserver;
-template <typename... Args> class EventObservableView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,22 +84,13 @@ class Observable;
 class Observer;
 
 class ArrayShape;
-class ConstMemoryView;
 using MemoryView ARCANE_DEPRECATED_REASON("Use 'ConstMemoryView' instead") = ConstMemoryView;
-class MutableMemoryView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class IPerformanceCounterService;
-class ForLoopTraceInfo;
 class ForLoopOneExecStat;
-namespace impl
-{
-class ForLoopStatInfoList;
-class ForLoopStatInfoListImpl;
-class ForLoopCumulativeStat;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -130,74 +110,11 @@ class TaskFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Ces classes ne sont pas accessibles dans 'utils' mais il est possible
-// d'utiliser des pointeurs sur ces instances.
-// La définition est dans 'arcane_accelerator_core'
-namespace Accelerator
-{
-class Runner;
-class RunQueue;
-}
-using Accelerator::Runner;
-using Accelerator::RunQueue;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class DefaultLayout;
-template<int RankValue> class RightLayoutN;
-template<int RankValue> class LeftLayoutN;
-template<int RankValue> class MDDimType;
-class IMemoryResourceMng;
-using IMemoryRessourceMng = IMemoryResourceMng;
-template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
-template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-class MDSpan;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-using MDSpanBase ARCANE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
-template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
-class NumArray;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-using NumArrayBase ARCANE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
-template<typename ExtentType> class ArrayBounds;
-template<int RankValue, typename IndexType_ = Int32> class MDIndexBase;
-template<int RankValue, typename IndexType_ = Int32> class MDIndex;
-template<int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue,IndexType_>;
-template<int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue,IndexType_>;
-template<int RankValue> using ArrayBoundsIndexBase ARCANE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
-template<int RankValue> using ArrayBoundsIndex ARCANE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
-template<typename Extents> class ArrayExtentsBase;
-template<typename Extents> class ArrayExtents;
-template<int RankValue> class ArrayStridesBase;
-template<typename Extents,typename LayoutPolicy> class ArrayExtentsWithOffset;
-class ForLoopRange;
-template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
-template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
-template<int RankValue> class IMDRangeFunctor;
-template<int RankValue> class ArrayExtentsValueDynamic;
-namespace impl
-{
-template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 // Pour compatibilité avec l'existant (à supprimer après la version 3.8)
-using LoopRange = ForLoopRange;
+template<typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
 template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
 template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// Les types de ce namespace sont dans la composante 'arcane_accelerator_core'
-// et ne sont pas directement accessibles dans 'arcane_utils'.
-// Ils peuvent cependant être utilisés en paramètre de certaines méthodes.
-
-namespace Accelerator
-{
-class RunQueue;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

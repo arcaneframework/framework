@@ -39,7 +39,9 @@ replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found, 
   StringList args;
   platform::fillCommandLineArguments(args);
   const CommandLineArguments cla{ args };
-  return replaceWithCmdLineArgs(cla.parameters(), string_with_symbols, fatal_if_not_found, fatal_if_invalid);
+  ParameterListWithCaseOption parameters;
+  parameters.addParameters(cla.parameters());
+  return replaceWithCmdLineArgs(parameters, string_with_symbols, fatal_if_not_found, fatal_if_invalid);
 }
 
 /*!
@@ -94,7 +96,8 @@ replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found, 
  * \return La chaine de caractères avec les symboles remplacés par leurs valeurs.
  */
 String StringVariableReplace::
-replaceWithCmdLineArgs(const ParameterList& parameter_list, StringView string_with_symbols, bool fatal_if_not_found, bool fatal_if_invalid)
+replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, StringView string_with_symbols,
+                       bool fatal_if_not_found, bool fatal_if_invalid)
 {
   // Si la variable d'environnement ARCANE_REPLACE_SYMBOLS_IN_DATASET n'est pas
   // définie, on ne touche pas à la chaine de caractères.

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPrinter.cc                                              (C) 2000-2024 */
+/* ItemPrinter.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Ecriture d'Item sur flux.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -224,8 +224,8 @@ _printFlags(std::ostream& o, Integer flags)
     o << ((position++) ? "|" : "") << "MasterFace";
   if (flags & ItemFlags::II_Detached)
     o << ((position++) ? "|" : "") << "Detached";
-  if (flags & ItemFlags::II_HasTrace)
-    o << ((position++) ? "|" : "") << "HasTrace";
+  if (flags & ItemFlags::II_HasEdgeFor1DItems)
+    o << ((position++) ? "|" : "") << "HasEdgeFor1DItems";
   if (flags & ItemFlags::II_Coarsen)
     o << ((position++) ? "|" : "") << "Coarsen";
   if (flags & ItemFlags::II_DoNothing)

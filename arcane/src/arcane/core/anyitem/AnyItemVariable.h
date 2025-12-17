@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemVariable.h                                           (C) 2000-2022 */
+/* AnyItemVariable.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable aggrégée de types quelconques.                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ANYITEMS_ANYITEMVARIABLE_H 
-#define ARCANE_ANYITEMS_ANYITEMVARIABLE_H
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMVARIABLE_H 
+#define ARCANE_CORE_ANYITEM_ANYITEMVARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Exception.h"
 
-#include "arcane/anyitem/AnyItemGlobal.h"
-#include "arcane/anyitem/AnyItemGroup.h"
-#include "arcane/anyitem/AnyItemLinkFamily.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemGroup.h"
+#include "arcane/core/anyitem/AnyItemLinkFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

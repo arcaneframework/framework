@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Process.cc                                                  (C) 2000-2016 */
+/* Process.cc                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des processus.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -110,9 +110,14 @@ execute(ProcessExecArgs& args)
       args.m_output_bytes.addRange(ByteConstArrayView((Integer)r,buf));
       //::write(STDOUT_FILENO, buf, r);
     }
+
     // Attend que le processus fils soit fini.
     int status = 0;
-    ::waitpid(cpid,&status,0);                /* Wait for child */
+    pid_t child_pid = 0;
+    do{
+      child_pid = ::waitpid(cpid,&status,0);                /* Wait for child */
+    } while (child_pid == -1 && errno == EINTR);
+
     if (WIFEXITED(status)){
       args.m_exit_code = WEXITSTATUS(status);
       //printf("exited, status=%d\n", WEXITSTATUS(status));

@@ -1,30 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRayMeshIntersection.h                                      (C) 2000-2009 */
+/* IRayMeshIntersection.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Calcul de l'intersection entre des segments et la surface d'un maillage.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IRAYMESHINTERSECTION_H
-#define ARCANE_IRAYMESHINTERSECTION_H
+#ifndef ARCANE_CORE_IRAYMESHINTERSECTION_H
+#define ARCANE_CORE_IRAYMESHINTERSECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMesh;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,12 +49,12 @@ class IRayFaceIntersector
    * \param intersection_position en retour, position du point d'intersection
    * \return true si une intersection est trouvée, false sinon.
    */
-  virtual bool computeIntersection(Real3 origin,Real3 direction,
+  virtual bool computeIntersection(Real3 origin, Real3 direction,
                                    Int32 orig_face_local_id,
                                    Int32 face_local_id,
                                    Real3ConstArrayView face_nodes,
                                    Int32* user_value,
-                                   Real* distance,Real3* intersection_position) =0;
+                                   Real* distance, Real3* intersection_position) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -72,12 +68,12 @@ class IRayMeshIntersection
  public:
 
   //! Libère les ressources
-  virtual ~IRayMeshIntersection() {}
+  virtual ~IRayMeshIntersection() = default;
 
  public:
 
   //! Construit l'instance
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
@@ -94,12 +90,12 @@ class IRayMeshIntersection
                        Int32ArrayView user_values,
                        Real3ArrayView intersections,
                        RealArrayView distances,
-                       Int32ArrayView faces_local_id) =0;
+                       Int32ArrayView faces_local_id) = 0;
 
   /*!
    * \brief Calcule l'intersection de rayons.
    *
-   * Calcul l'intersection des rayons de la familly \a ray_family
+   * Calcul l'intersection des rayons de la famille \a ray_family
    * avec la surface du maillage. La position et la direction
    * des rayons est donnée par les variables \a rays_position
    * et \a rays_direction. Le tableau \a rays_orig_face contient
@@ -129,7 +125,7 @@ class IRayMeshIntersection
                        VariableParticleInt32& user_values,
                        VariableParticleReal3& intersections,
                        VariableParticleReal& distances,
-                       VariableParticleInt32& rays_face) =0;
+                       VariableParticleInt32& rays_face) = 0;
 
   /*!
    * \brief Positionne le callback d'intersection.
@@ -138,16 +134,16 @@ class IRayMeshIntersection
    * d'intersection d'un rayon avec une face. Si cette méthode n'est
    * pas appelée, un intersecteur par défaut est utilisé.   
    */
-  virtual void setFaceIntersector(IRayFaceIntersector* intersector) =0;
+  virtual void setFaceIntersector(IRayFaceIntersector* intersector) = 0;
 
   //! Intersecteur utilisé (0 si aucun spécifié)
-  virtual IRayFaceIntersector* faceIntersector() =0;
+  virtual IRayFaceIntersector* faceIntersector() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

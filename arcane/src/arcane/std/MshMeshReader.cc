@@ -272,7 +272,7 @@ _switchMshType(Integer mshElemType, Integer& nNodes)
       return IT_HemiHexa7;
     default:
       info() << "Could not decode IT_NullType with nNodes=" << nNodes;
-      throw IOException("_switchMshType", "Could not decode IT_NullType with nNodes");
+      throw IOException("_convertToMshType", "Could not decode IT_NullType with nNodes");
     }
     break;
   case (MSH_PNT):

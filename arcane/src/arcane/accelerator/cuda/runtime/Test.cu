@@ -28,7 +28,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include "arccore/accelerator_native/CudaAccelerator.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 using namespace Arccore;
@@ -242,7 +242,7 @@ int arcaneTestCuda3()
 {
   std::cout << "TEST_CUDA_3\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Cuda::getCudaMemoryAllocator();
+  IMemoryAllocator* cuda_allocator = MemoryUtils::getAllocator(Arcane::eMemoryResource::UnifiedMemory);
   IMemoryAllocator* cuda_allocator2 = MemoryUtils::getDefaultDataAllocator();
   if (!cuda_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
@@ -544,6 +544,127 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
   std::cout << "MinReducer v_int=" << min_int_reducer.reduce()
             << " v_double=" << min_double_reducer.reduce()
             << "\n";
+}
+
+
+#include <stdio.h>
+
+__device__ int my_add(int a, int b) {
+    return a + b;
+}
+
+__device__ int mul(int a, int b) {
+    return a * b;
+}
+
+// Pointeur de fonction sur le device
+//__device__ int (*op)(int, int) = &add;
+
+__global__ void compute(int *d_result, int N, int (*op_func)(int, int)) {
+  int idx = threadIdx.x + blockIdx.x * blockDim.x;
+  if (idx == 0)
+    printf("MyFuncDevice=%p\n",op_func);
+
+    if (idx < N) {
+        d_result[idx] = op_func(idx, idx);
+    }
+}
+using BinaryFuncType = int (*)(int a, int b);
+
+__device__ int (*my_func_ptr)(int a, int b) = my_add;
+
+__global__ void kernelSetFunction(BinaryFuncType* func_ptr)
+{
+  *func_ptr = my_add;
+  printf("MyAddDevice=%p\n",my_add);
+}
+
+class LambaDeviceFunc
+{
+  static __device__ int doFunc(int a, int b)
+  {
+    return a+b;
+  }
+};
+
+
+class FooBase
+{
+ public:
+
+  virtual ARCCORE_HOST_DEVICE ~FooBase() {}
+  virtual ARCCORE_HOST_DEVICE int apply(int a,int b) =0;
+};
+
+class FooDerived
+: public FooBase
+{
+ public:
+  ARCCORE_HOST_DEVICE int apply(int a,int b) override { return a+b;}
+};
+
+__global__ void compute_virtual(int* d_result, int N, FooBase* ptr)
+{
+  //FooBase* ptr = nullptr;
+  //FooDerived my_foo;
+  //ptr = &my_foo;
+  int idx = threadIdx.x + blockIdx.x * blockDim.x;
+  if (idx == 0)
+    printf("Using foo_derived=%p\n",ptr);
+
+  if (idx < N) {
+    d_result[idx] = ptr->apply(idx, idx);
+  }
+}
+
+__global__ void createFooDerived(FooDerived* ptr)
+{
+  int idx = threadIdx.x + blockIdx.x * blockDim.x;
+  if (idx==0) {
+    new (ptr) FooDerived();
+  }
+}
+
+extern "C"
+int arcaneTestVirtualFunction()
+{
+  std::cout << "Test function pointer\n";
+  //std::cout << "FuncPtr direct=" << my_func_ptr << "\n";
+  std::cout.flush();
+
+  const int N = 10;
+  int h_result[N];
+  int *d_result = nullptr;
+  cudaMalloc(&d_result, N * sizeof(int));
+
+  int (*host_func)(int, int) = nullptr;
+  cudaMalloc(&host_func, sizeof(void*) * 8);
+  
+  //my_func_ptr = my_add;
+  //cudaMemcpyFromSymbol(&host_func, my_func_ptr, sizeof(void*));
+  kernelSetFunction<<<1, 1>>>(&host_func);
+  cudaDeviceSynchronize();
+
+  FooDerived* foo_derived =nullptr;
+  cudaMalloc(&foo_derived,sizeof(FooDerived));
+  createFooDerived<<<1, 1>>>(foo_derived);
+  cudaDeviceSynchronize();
+
+  std::cout.flush();
+
+  // Appel du kernel
+  //compute<<<1, N>>>(d_result, N, host_func);
+  compute_virtual <<<1, N>>>(d_result, N, foo_derived);
+  //compute<<<1, N>>>(d_result, N, my_func_ptr);
+  cudaMemcpy(h_result, d_result, N * sizeof(int), cudaMemcpyDeviceToHost);
+
+  for (int i = 0; i < N; ++i) {
+    printf("%d ", h_result[i]);
+  }
+  printf("\n");
+
+  cudaFree(d_result);
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/

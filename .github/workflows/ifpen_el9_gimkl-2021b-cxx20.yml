@@ -69,7 +69,7 @@ jobs:
         id: checkout
         if: |
           (success() || failure())
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -166,7 +166,7 @@ jobs:
   #       id: checkout
   #       if: |
   #         (success() || failure())
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@v5
   #       with:
   #         path: ${{ env.SOURCE_DIR }}
   #         submodules: true

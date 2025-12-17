@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -44,7 +44,11 @@
 #include <Teuchos_Comm.hpp>
 #include <Teuchos_OrdinalTraits.hpp>
 
+#if (TRILINOS_MAJOR_VERSION < 15)
 #include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
+#else
+#include <Tpetra_KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
+#endif
 
 #include <MatrixMarket_Tpetra.hpp>
 
@@ -131,7 +135,11 @@ void initAMGX(AMGXEnv& amgx_env) ;
 #ifdef KOKKOS_ENABLE_SERIAL
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetraserial>
 {
+#if (TRILINOS_MAJOR_VERSION < 15)
   typedef Kokkos::Compat::KokkosSerialWrapperNode type;
+#else
+  typedef Tpetra::KokkosCompat::KokkosSerialWrapperNode type;
+#endif
   static const std::string name;
   static const std::string execution_space_name;
 };
@@ -147,7 +155,11 @@ inline void initAMGX(AMGXEnv& amgx_env,
 #ifdef KOKKOS_ENABLE_OPENMP
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetraomp>
 {
+#if (TRILINOS_MAJOR_VERSION < 15)
   typedef Kokkos::Compat::KokkosOpenMPWrapperNode type;
+#else
+  typedef Tpetra::KokkosCompat::KokkosOpenMPWrapperNode type;
+#endif
   static const std::string name;
   static const std::string execution_space_name;
 };
@@ -162,7 +174,11 @@ inline void initAMGX(AMGXEnv& amgx_env,
 #ifdef KOKKOS_ENABLE_THREADS
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetrapth>
 {
+#if (TRILINOS_MAJOR_VERSION < 15)
   typedef Kokkos::Compat::KokkosThreadsWrapperNode type;
+#else
+  typedef Tpetra::KokkosCompat::KokkosThreadsWrapperNode type;
+#endif
   static const std::string name;
   static const std::string execution_space_name;
 };
@@ -171,7 +187,11 @@ template <> struct TrilinosInternal::Node<BackEnd::tag::tpetrapth>
 #ifdef KOKKOS_ENABLE_CUDA
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetracuda>
 {
+#if (TRILINOS_MAJOR_VERSION < 15)
   typedef Kokkos::Compat::KokkosCudaWrapperNode type;
+#else
+  typedef Tpetra::KokkosCompat::KokkosCudaWrapperNode type;
+#endif
   static const std::string name;
   static const std::string execution_space_name;
 };

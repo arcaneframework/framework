@@ -17,6 +17,12 @@ if(FLEXLM_ROOT)
   string(REPLACE "\\" "/" FLEXLM_ROOT ${FLEXLM_ROOT})
 endif()
 
+if(NOT FLEXLM_VENDOR)
+  if(DEFINED ENV{FLEXLM_VENDOR})
+    set(FLEXLM_VENDOR "_$ENV{FLEXLM_VENDOR}")
+  endif()
+endif()
+
 # HINTS can be removed when using find_package for flexlm
 FIND_PATH(FLEXLM_INCLUDE_DIR FlexlmAPI.h HINTS ${FLEXLM_ROOT}/include)
 
@@ -26,7 +32,7 @@ SET(FLEXLM_LIBRARY_FAILED)
 
 # par l'inclusion de la lib noact, nous ne visons ici que FlexNet v11 et +
 IF(WIN32)
-  FOREACH(WANTED_LIB FlexlmAPI lmgr_dongle_stub lmgr libsb libnoact libcrvs)
+  FOREACH(WANTED_LIB FlexlmAPI${FLEXLM_VENDOR} lmgr_dongle_stub lmgr libsb libnoact libcrvs)
     FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB})
     # MESSAGE(STATUS "Look for FlexNet lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
     IF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})

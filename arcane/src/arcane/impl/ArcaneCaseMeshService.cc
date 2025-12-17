@@ -140,11 +140,11 @@ createMesh(const String& default_name)
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
-  // Indique si les entités multi-dimension sont autorisées
-  bool is_non_manifold = options()->nonManifoldMesh;
-  if (is_non_manifold) {
+  // Indique la gestion des dimensions des mailles
+  eMeshCellDimensionKind mesh_dim_kind = options()->cellDimensionKind();
+  if (mesh_dim_kind != build_info.meshKind().meshDimensionKind()) {
     MeshKind mesh_kind = build_info.meshKind();
-    mesh_kind.setIsNonManifold(true);
+    mesh_kind.setMeshDimensionKind(mesh_dim_kind);
     build_info.addMeshKind(mesh_kind);
   }
 
@@ -224,26 +224,40 @@ _checkMeshCreationAndAllocation(bool is_check_allocated)
 void ArcaneCaseMeshService::
 _fillReadInfo(CaseMeshReaderReadInfo& read_info)
 {
-  read_info.setFileName(m_mesh_file_name);
-
+  // Cherche l'extension du fichier.
+  String file_extension;
   {
-    String extension;
-    // Cherche l'extension du fichier et la conserve dans \a case_ext
     std::string_view fview = m_mesh_file_name.toStdStringView();
     std::size_t extension_pos = fview.find_last_of('.');
     if (extension_pos!=std::string_view::npos){
       fview.remove_prefix(extension_pos+1);
-      extension = fview;
+      file_extension = fview;
     }
-    read_info.setFormat(extension);
+    read_info.setFormat(file_extension);
   }
+
+  // Nom du maillage à utiliser pour la lecture
+  // Normalement c'est le nom du maillage dans le jeu de données
+  // sauf en cas d'utilisation du partitionneur externe auquel cas
+  // c'est 'CPU%05d.$file_extension'.
+  String mesh_file_name = m_mesh_file_name;
 
   String partitioner_name = options()->partitioner();
   bool use_internal_partitioner = partitioner_name != "External";
-  if (use_internal_partitioner)
+  if (use_internal_partitioner){
     m_partitioner_name = partitioner_name;
+  }
+  else{
+    info() << "Using external partitioner";
+    int mesh_rank = m_sub_domain->parallelMng()->commRank();
+    char buf[128];
+    sprintf(buf,"CPU%05d.%s",mesh_rank,file_extension.localstr());
+    mesh_file_name = String(std::string_view(buf));
+  }
 
-  info() << "Mesh filename=" << m_mesh_file_name
+  read_info.setFileName(mesh_file_name);
+
+  info() << "Mesh filename=" << mesh_file_name
          << " extension=" << read_info.format() << " partitioner=" << partitioner_name;
 
   read_info.setParallelRead(use_internal_partitioner);
@@ -417,6 +431,13 @@ _setUniqueIdNumberingVersion()
     info() << "Set face uniqueId numbering version to '" << v << "' from caseoption";
     IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
     mum->setFaceBuilderVersion(v);
+  }
+
+  if (options()->edgeNumberingVersion.isPresent()) {
+    Int32 v = options()->edgeNumberingVersion.value();
+    info() << "Set edge uniqueId numbering version to '" << v << "' from caseoption";
+    IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
+    mum->setEdgeBuilderVersion(v);
   }
 }
 

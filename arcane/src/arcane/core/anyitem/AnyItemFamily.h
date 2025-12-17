@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemFamily.h                                             (C) 2000-2023 */
+/* AnyItemFamily.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Famille d'items de types quelconques.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ANYITEM_ANYITEMFAMILY_H
-#define ARCANE_ANYITEM_ANYITEMFAMILY_H 
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMFAMILY_H
+#define ARCANE_CORE_ANYITEM_ANYITEMFAMILY_H 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,11 +22,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/anyitem/AnyItemGlobal.h"
-#include "arcane/anyitem/AnyItemPrivate.h"
-#include "arcane/anyitem/AnyItemGroup.h"
-#include "arcane/anyitem/AnyItemFamilyObserver.h"
-#include "arcane/ItemGroupObserver.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemPrivate.h"
+#include "arcane/core/anyitem/AnyItemGroup.h"
+#include "arcane/core/anyitem/AnyItemFamilyObserver.h"
+#include "arcane/core/ItemGroupObserver.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,10 +43,10 @@ namespace Arcane::AnyItem
  */
 class FamilyInternal
 { 
-private:
+ private:
   typedef std::set<IFamilyObserver*> FamilyObservers;
   
-public:
+ public:
   
   FamilyInternal() : m_max_local_id(0) {}
   ~FamilyInternal() 
@@ -54,7 +54,7 @@ public:
     clear();
   }
   
-public:
+ public:
   
   //! Ajout d'un groupe dans la famille
   FamilyInternal& operator<<(GroupBuilder builder)

@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/datatype/DataTypes.h"
+#include "arcane/core/datatype/DataTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,13 +69,17 @@ class ITimeStats;
 /*---------------------------------------------------------------------------*/
 
 class IService;
+class IServiceFactory;
+class IServiceMng;
 class IServiceInfo;
 class IServiceInstance;
 class ISingletonServiceInstance;
 class IModule;
 class ISubDomain;
 class IServiceInstance;
+class ModuleBuildInfo;
 class ServiceBuildInfoBase;
+class ServiceBuildInfo;
 class ServiceProperty;
 class ServiceInstanceRef;
 
@@ -104,12 +108,24 @@ class ServiceAllInterfaceRegisterer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CaseOptionsMain;
+class CheckpointInfo;
+class CheckpointReadInfo;
+class CommonVariables;
+class ConnectivityItemVector;
+class FileContent;
+class ICheckpointReader;
+class ICheckpointWriter;
 class IVariableMng;
 class IMeshFactoryMng;
 class IMeshMng;
 class IMesh;
+class IMeshArea;
+class IMeshCompacter;
+class IMeshExchanger;
 class IMeshInternal;
 class IMeshBase;
+class IMeshPartitionConstraint;
 class IUserDataList;
 class IMeshBuilder;
 class MeshHandle;
@@ -123,11 +139,13 @@ class ItemFamilyItemListChangedEventArgs;
 class ItemPairEnumerator;
 class ItemInfoListView;
 class ItemGenericInfoListView;
+class ItemPairGroupBuilder;
 class IIndexedIncrementalItemConnectivityMng;
 class IIndexedIncrementalItemConnectivity;
 class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
 class CartesianMeshAllocateBuildInfo;
+class IConfiguration;
 class IIncrementalItemConnectivity;
 class IIncrementalItemConnectivityInternal;
 class IIncrementalItemTargetConnectivity;
@@ -142,23 +160,59 @@ class IParallelNonBlockingCollective;
 class IParallelMngUtilsFactory;
 class IGetVariablesValuesParallelOperation;
 class ITransferValuesParallelOperation;
+class IVariableComputeFunction;
+class IMemoryAccessTrace;
 class IParallelExchanger;
 class IVariableSynchronizer;
 class IParallelTopology;
 class IParallelMngInternal;
+class IAsyncParticleExchanger;
 class IIOMng;
 class ITimerMng;
 class IThreadMng;
 class ItemUniqueId;
 class IItemConnectivityInfo;
 class IItemConnectivity;
+class IItemConnectivitySynchronizer;
+class IItemConnectivityGhostPolicy;
 class IItemInternalSortFunction;
 class IItemConnectivityMng;
 class Properties;
 class IItemFamilyTopologyModifier;
 class IItemFamilyPolicyMng;
+class IPhysicalUnit;
+class IPhysicalUnitConverter;
+class IPhysicalUnitSystem;
+class IDataReader;
+class IDataReader2;
+class IDataWriter;
+class IXmlDocumentHolder;
+class VariableComparer;
+class VariableComparerArgs;
+class VariableComparerResults;
+class SubDomainBuildInfo;
+class XmlNode;
+class TimeLoopEntryPointInfo;
+class TimeLoopSingletonServiceInfo;
+class Timer;
+class VariableDependInfo;
+class VariableMetaData;
+enum class eVariableComparerCompareMode;
+enum class eVariableComparerComputeDifferenceMethod;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
+using  TimeLoopEntryPointInfoCollection = Collection<TimeLoopEntryPointInfo>;
+using TimeLoopSingletonServiceInfoCollection = Collection<TimeLoopSingletonServiceInfo>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Les classes suivantes ne doivent pas être déclarées pour SWIG car ce
+// fichier est inclus par SWIG et la déclaration modifie la manière dont
+// certaines classes sont générées ce qui conduit à des erreurs
+#ifndef SWIG
+class ItemVectorView;
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -288,7 +342,14 @@ static const Int16 IT_Quad8 = 33;
 static const Int16 IT_Tetraedron10 = 34;
 //! Hexaèdre d'ordre 2
 static const Int16 IT_Hexaedron20 = 35;
+//! Pyramide d'ordre 2
+static const Int16 IT_Pyramid13 = 36;
+//! Prisme d'ordre 2
+static const Int16 IT_Pentaedron15 = 37;
 //@}
+
+//! Maille Line3. EXPERIMENTAL !
+static const Int16 IT_CellLine3 = 38;
 
 /*!
  * \brief Mailles 2D dans un maillage 3D.
@@ -297,15 +358,33 @@ static const Int16 IT_Hexaedron20 = 35;
  */
 //@{
 //! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Line2 = 36;
+static const Int16 IT_Cell3D_Line2 = 39;
 //! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Triangle3 = 37;
-//! Maille Quadrangulaire à 5 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Quad4 = 38;
+static const Int16 IT_Cell3D_Triangle3 = 40;
+//! Maille Quadrangulaire à 4 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad4 = 41;
+//! Maille Line3 dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Line3 = 42;
+//! Maille Triangulaire à 6 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Triangle6 = 43;
+//! Maille Quadrangulaire à 8 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad8 = 44;
+//! Maille Quadrangulaire à 9 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad9 = 45;
 //@}
 
+//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces et 1 noeud au centre). EXPERIMENTAL !
+static const Int16 IT_Quad9 = 46;
+//! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
+static const Int16 IT_Hexaedron27 = 47;
+
+//! Ligne d'ordre 3
+static const Int16 IT_Line4 = 48;
+//! Triangle d'ordre 3. EXPERIMENTAL !
+static const Int16 IT_Triangle10 = 49;
+
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 39;
+static const Integer NB_BASIC_ITEM_TYPE = 50;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
@@ -405,16 +484,6 @@ class SharedItemVariableScalarRefT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
-class DataViewSetter;
-template <typename DataType>
-class DataViewGetter;
-template <typename DataType>
-class DataViewGetterSetter;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT;
 template <typename ItemType, typename DataType, typename Extents>
@@ -426,6 +495,12 @@ class MeshMDVariableRefT;
 class CollectionBase;
 class IItemFamily;
 class IItemFamilyInternal;
+class IItemFamilyCompactPolicy;
+class IItemFamilyExchanger;
+class IItemFamilySerializer;
+class IItemFamilySerializeStepFactory;
+class ItemFamilySerializeArgs;
+class ILoadBalanceMng;
 class IMesh;
 class IMeshPartitioner;
 class IMeshPartitionerBase;
@@ -436,11 +511,20 @@ class IModuleFactoryInfo;
 class IServiceInstance;
 class IEntryPoint;
 class ITimeLoop;
+class ITimeLoopService;
 class IVariable;
 class IVariableInternal;
 class VariableRef;
 class Item;
 class CaseOptionBuildInfo;
+class CaseOptionEnum;
+class CaseOptionExtended;
+class CaseOptionMultiSimple;
+class CaseOptionServiceImpl;
+class CaseOptionSimple;
+class CaseOptionMultiEnum;
+class CaseOptionMultiExtended;
+class CaseOptionMultiServiceImpl;
 class ICaseOptions;
 class ICaseFunction;
 class ICaseDocument;

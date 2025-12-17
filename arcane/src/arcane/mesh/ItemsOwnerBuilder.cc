@@ -13,12 +13,9 @@
 
 #include "arcane/mesh/ItemsOwnerBuilder.h"
 
-#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/SmallArray.h"
-#include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/HashTableMap2.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ParallelMngUtils.h"
@@ -30,6 +27,7 @@
 
 #include "arcane/mesh/ItemInternalMap.h"
 #include "arcane/mesh/NodeFamily.h"
+#include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/DynamicMesh.h"
 
 #include <unordered_set>
@@ -118,6 +116,7 @@ class ItemsOwnerBuilderImpl
  public:
 
   void computeFacesOwner();
+  void computeEdgesOwner();
   void computeNodesOwner();
 
  private:
@@ -125,6 +124,14 @@ class ItemsOwnerBuilderImpl
   DynamicMesh* m_mesh = nullptr;
   Int32 m_verbose_level = 0;
   UniqueArray<ItemOwnerInfo> m_items_owner_info;
+  /*!
+   * \brief Indique comment effectuer le tri.
+   *
+   * Si vrai, on utilise la maille de plus petit uniqueId()
+   * pour le tri. Sinon, c'est le plus petit rang. Cela servira
+   * à déterminer qui sera le propriétaire d'une entité.
+   */
+  bool m_use_cell_uid_to_sort = true;
 
  private:
 
@@ -142,7 +149,13 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
 {
  public:
 
-  static bool compareLess(const ItemOwnerInfo& k1, const ItemOwnerInfo& k2)
+  explicit ItemOwnerInfoSortTraits(bool use_cell_uid_to_sort)
+  : m_use_cell_uid_to_sort(use_cell_uid_to_sort)
+  {}
+
+ public:
+
+  bool compareLess(const ItemOwnerInfo& k1, const ItemOwnerInfo& k2) const
   {
     if (k1.m_first_node_uid < k2.m_first_node_uid)
       return true;
@@ -154,16 +167,28 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
     if (k1.m_item_uid > k2.m_item_uid)
       return false;
 
-    if (k1.m_cell_uid < k2.m_cell_uid)
-      return true;
-    if (k1.m_cell_uid > k2.m_cell_uid)
-      return false;
+    if (m_use_cell_uid_to_sort) {
+      if (k1.m_cell_uid < k2.m_cell_uid)
+        return true;
+      if (k1.m_cell_uid > k2.m_cell_uid)
+        return false;
 
-    if (k1.m_item_sender_rank < k2.m_item_sender_rank)
-      return true;
-    if (k1.m_item_sender_rank > k2.m_item_sender_rank)
-      return false;
+      if (k1.m_item_sender_rank < k2.m_item_sender_rank)
+        return true;
+      if (k1.m_item_sender_rank > k2.m_item_sender_rank)
+        return false;
+    }
+    else {
+      if (k1.m_item_sender_rank < k2.m_item_sender_rank)
+        return true;
+      if (k1.m_item_sender_rank > k2.m_item_sender_rank)
+        return false;
 
+      if (k1.m_cell_uid < k2.m_cell_uid)
+        return true;
+      if (k1.m_cell_uid > k2.m_cell_uid)
+        return false;
+    }
     // ke.node2_uid == k2.node2_uid
     return (k1.m_cell_owner < k2.m_cell_owner);
   }
@@ -190,6 +215,10 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
   {
     return fsi.m_item_uid != INT64_MAX;
   }
+
+ private:
+
+  bool m_use_cell_uid_to_sort = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -202,12 +231,16 @@ ItemsOwnerBuilderImpl::
 ItemsOwnerBuilderImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 {
-  DynamicMesh* dm = dynamic_cast<DynamicMesh*>(mesh);
+  auto* dm = dynamic_cast<DynamicMesh*>(mesh);
   if (!dm)
     ARCANE_FATAL("Mesh is not an instance of 'DynamicMesh'");
   m_mesh = dm;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_IMPL_DEBUG_LEVEL", true))
     m_verbose_level = v.value();
+  // Indique si on trie en fonction de la maille de plus petit uniqueId()
+  // ou en fonction du plus petit rang.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_USE_RANK", true))
+    m_use_cell_uid_to_sort = !v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -266,6 +299,68 @@ computeFacesOwner()
 /*---------------------------------------------------------------------------*/
 
 void ItemsOwnerBuilderImpl::
+computeEdgesOwner()
+{
+  m_items_owner_info.clear();
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 my_rank = pm->commRank();
+  ItemInternalMap& edges_map = m_mesh->edgesMap();
+  EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
+
+  info() << "** BEGIN ComputeEdgesOwner nb_edge=" << edges_map.count();
+
+  // Parcours toutes les arêtes.
+  // Ne garde que celles qui sont frontières ou dont au moins un des propriétaires des
+  // mailles connectées sont différents de notre sous-domaine.
+  UniqueArray<Int32> edges_to_add;
+  UniqueArray<Int64> edges_to_add_uid;
+  // La force brute ajoute toutes les arêtes.
+  // Cela permet de garantir qu'on calcule bien les propriétaires, même si
+  // on ne sait pas déterminer les arêtes frontìères.
+  // Cela n'est pas optimum, car on envoie aussi nos arêtes internes
+  // alors qu'on est certain qu'on est leur propriétaire.
+  bool do_brute_force = true;
+  edges_map.eachItem([&](Edge edge) {
+    Int32 nb_cell = edge.nbCell();
+    Int32 nb_cell_with_my_rank = 0;
+    for (Cell cell : edge.cells())
+      if (cell.owner() == my_rank)
+        ++nb_cell_with_my_rank;
+    bool do_add = (nb_cell == 1 || (nb_cell != nb_cell_with_my_rank));
+    if (do_add || do_brute_force) {
+      edges_to_add.add(edge.localId());
+      edges_to_add_uid.add(edge.uniqueId());
+    }
+    else
+      edge.mutableItemBase().setOwner(my_rank, my_rank);
+  });
+  info() << "ItemsOwnerBuilder: NB_FACE_TO_TRANSFER=" << edges_to_add.size();
+  const Int32 verbose_level = m_verbose_level;
+
+  EdgeInfoListView edges(&edge_family);
+  for (Int32 lid : edges_to_add) {
+    Edge edge(edges[lid]);
+    Int64 edge_uid = edge.uniqueId();
+    for (Cell cell : edge.cells()) {
+      if (verbose_level >= 2)
+        info() << "ADD lid=" << lid << " uid=" << edge_uid << " cell_uid=" << cell.uniqueId() << " owner=" << cell.owner();
+      m_items_owner_info.add(ItemOwnerInfo(edge_uid, edge.node(0).uniqueId(), cell.uniqueId(), my_rank, cell.owner()));
+    }
+  }
+
+  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
+  // dans items_owner_info.
+  _sortInfos();
+  _processSortedInfos(edges_map);
+
+  edge_family.notifyItemsOwnerChanged();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilderImpl::
 computeNodesOwner()
 {
   m_items_owner_info.clear();
@@ -283,38 +378,49 @@ computeNodesOwner()
     node.mutableItemBase().setOwner(my_rank, my_rank);
   });
 
-  // Parcours toutes les faces.
-  // Ne garde que celles qui sont frontières ou dont les propriétaires des
-  // deux mailles de part et d'autre sont différents de notre sous-domaine.
-  //UniqueArray<Int32> faces_to_add;
-  //faces_map.eachItem([&](Face face) {
-  //Int32 nb_cell = face.nbCell();
-  // if (nb_cell == 1)
-  //  faces_to_add.add(face.localId());
-  //});
-  //info() << "ItemsOwnerBuilder: NB_FACE_TO_ADD=" << faces_to_add.size();
+  // Parcours toutes les faces frontières et ajoute leurs noeuds
+  // à la liste des noeuds à traiter (nodes_to_add). Les faces frontières sont
+  // celles qui ne sont connectées qu'à une seule maille.
+  // qui connectées à une seule maille.
   const Int32 verbose_level = m_verbose_level;
 
-  // Ajoute tous les noeuds des faces frontières.
+  // Liste des noeuds à traiter
+  UniqueArray<Int32> nodes_to_add;
+
+  // Ensemble pour déterminer si un noeud a déjà été ajouté à \a nodes_to_add.
   std::unordered_set<Int32> done_nodes;
 
-  FaceInfoListView faces(m_mesh->faceFamily());
-  UniqueArray<Int32> nodes_to_add;
-  faces_map.eachItem([&](Face face) {
-    Int32 face_nb_cell = face.nbCell();
-    if (face_nb_cell == 2)
-      return;
-    for (Node node : face.nodes()) {
-      Int32 node_id = node.localId();
-      if (done_nodes.find(node_id) == done_nodes.end()) {
-        nodes_to_add.add(node_id);
-        done_nodes.insert(node_id);
-        node.mutableItemBase().setOwner(A_NULL_RANK, my_rank);
-      }
-    }
-  });
+  const bool is_mono_dimension = m_mesh->meshKind().isMonoDimension();
 
-  info() << "ItemsOwnerBuilder: NB_NODE_TO_ADD=" << nodes_to_add.size();
+  FaceInfoListView faces(m_mesh->faceFamily());
+  if (is_mono_dimension) {
+    faces_map.eachItem([&](Face face) {
+      Int32 face_nb_cell = face.nbCell();
+      if (face_nb_cell == 2)
+        return;
+      for (Node node : face.nodes()) {
+        Int32 node_id = node.localId();
+        if (done_nodes.find(node_id) == done_nodes.end()) {
+          nodes_to_add.add(node_id);
+          done_nodes.insert(node_id);
+          node.mutableItemBase().setOwner(A_NULL_RANK, my_rank);
+        }
+      }
+    });
+  }
+  else {
+    // Dans le cas de maillage multi-dimension, il n'y a pas actuellement
+    // de moyen simple de détecter les noeuds frontières. On traite donc tous
+    // les noeuds même si cela n'est pas optimal.
+    // NOTE: La détection n'est difficile que pour les noeuds connectés à des mailles
+    // de dimension 1 ou 2. Pour les mailles 3D, on pourrait n'ajouter que
+    // les noeuds connectées à une face n'ayant qu'une maille.
+    ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
+      nodes_to_add.add(inode.itemLocalId());
+    }
+  }
+
+  info() << "ItemsOwnerBuilder: NB_NODE_TO_ADD=" << nodes_to_add.size() << " is_mono_dim=" << is_mono_dimension;
   NodeInfoListView nodes(&node_family);
   for (Int32 lid : nodes_to_add) {
     Node node(nodes[lid]);
@@ -345,7 +451,8 @@ _sortInfos()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 verbose_level = m_verbose_level;
-  Parallel::BitonicSort<ItemOwnerInfo, ItemOwnerInfoSortTraits> items_sorter(pm);
+  ItemOwnerInfoSortTraits sort_traits(m_use_cell_uid_to_sort);
+  Parallel::BitonicSort<ItemOwnerInfo, ItemOwnerInfoSortTraits> items_sorter(pm, sort_traits);
   items_sorter.setNeedIndexAndRank(false);
   Real sort_begin_time = platform::getRealTime();
   items_sorter.sort(m_items_owner_info);
@@ -455,7 +562,10 @@ _processSortedInfos(ItemInternalMap& items_map)
     // Si l'id courant est différent du précédent, on commence une nouvelle liste.
     if (item_uid != current_item_uid) {
       current_item_uid = item_uid;
-      current_item_owner = first_ioi->m_cell_owner;
+      if (m_use_cell_uid_to_sort)
+        current_item_owner = first_ioi->m_cell_owner;
+      else
+        current_item_owner = first_ioi->m_item_sender_rank;
       if (verbose_level >= 2)
         info() << "SetOwner from sorted index=" << index << " item_uid=" << current_item_uid << " new_owner=" << current_item_owner;
     }
@@ -539,6 +649,15 @@ void ItemsOwnerBuilder::
 computeFacesOwner()
 {
   m_p->computeFacesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilder::
+computeEdgesOwner()
+{
+  m_p->computeEdgesOwner();
 }
 
 /*---------------------------------------------------------------------------*/

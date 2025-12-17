@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,12 +14,19 @@
 #include "arccore/base/BasicTranscoder.h"
 
 #include <vector>
+#include <array>
 
-using namespace Arccore;
+#ifdef ARCCORE_OS_WIN32
+#include <windows.h>
+#endif
+
+using namespace Arcane;
+using namespace Arcane::Impl;
 
 namespace
 {
 // Classe pour restaurer automatiquement les flags() d'un 'std::ostream'
+  // To Test
 class IosFlagsWrapper
 {
  public:
@@ -35,6 +42,37 @@ class IosFlagsWrapper
   std::ostream* m_stream;
   std::ios_base::fmtflags m_flags;
 };
+
+#ifdef ARCCORE_OS_WIN32
+void _testWStringWin32(const char* str0)
+{
+  std::wstring wideWhat;
+  int str0len = (int)std::strlen(str0);
+  int convertResult = MultiByteToWideChar(CP_UTF8, 0, str0, str0len, NULL, 0);
+  if (convertResult <= 0) {
+    wideWhat = L"Exception occurred: Failure to convert its message text using MultiByteToWideChar: convertResult=";
+  }
+  else {
+    wideWhat.resize(convertResult + 10);
+    convertResult = MultiByteToWideChar(CP_UTF8, 0, str0, str0len, wideWhat.data(), (int)wideWhat.size());
+    if (convertResult <= 0) {
+      wideWhat = L"Exception occurred: Failure to convert its message text using MultiByteToWideChar: convertResult=";
+    }
+    else {
+      wideWhat.resize(convertResult);
+      //wideWhat.insert(0, L"Exception occurred: ");
+    }
+  }
+  std::cout << "STR0=" << str0 << " len=" << str0len << "\n";
+  std::cout << "convertResult=" << convertResult << "\n";
+  std::wcout << "WSTR0 len=" << wideWhat.length() << " v='" << wideWhat << "'\n ";
+  for (int i = 0; i < convertResult; ++i)
+    std::wcout << "PRINT1 I=" << i << " V=" << wideWhat[i] << "\n";
+  std::wcout.flush();
+  for (int i = 0; i < convertResult; ++i)
+    std::cout << "PRINT2 I=" << i << " V=" << std::hex << static_cast<int>(wideWhat[i]) << "\n";
+}
+#endif
 
 void _doConvertTest(const char* name, const String& str)
 {
@@ -64,7 +102,6 @@ void _doConvertTest(const char* name, const String& str)
 
 } // namespace
 
-#ifndef ARCCORE_OS_WIN32
 // TODO: Regarder pourquoi le test ne passe pas sous windows sur le CI de github
 // (alors qu'il fonctionne sur un PC perso. Il faudrait regarder si cela n'est pas
 // un problème d'encodage par défaut).
@@ -72,11 +109,24 @@ TEST(String, Utf8AndUtf16)
 {
   IosFlagsWrapper io_wrapper(&std::cout);
   {
-    String str1("▲▼●■◆");
+    String str1_direct = "▲▼●■◆éà😀a😈";
+    std::cout << "STR1_UTF8=" << str1_direct << "\n";
+
+    std::array<Byte, 28> str1_bytes = { 0xE2, 0x96, 0xB2, 0xE2, 0x96, 0xBC, 0xE2, 0x97, 0x8F, 0xE2, 0x96, 0xA0, 0xE2, 0x97,
+                                        0x86, 0xC3, 0xA9, 0xC3, 0xA0, 0xF0, 0x9F, 0x98, 0x80, 0x61, 0xF0, 0x9F, 0x98, 0x88 };
+    String str1(str1_bytes);
+    String str1_orig("▲▼●■◆");
+    //String str1(str1_bytes);
+#ifdef ARCCORE_OS_WIN32
+    _testWStringWin32(str1.localstr());
+#endif
+    std::vector < UChar> utf16_vector_direct{ StringUtils::asUtf16BE(str1_direct) };
     std::vector<UChar> utf16_vector{ StringUtils::asUtf16BE(str1) };
-    std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
+    std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6, 0x00E9, 0x00E0, 0xD83D, 0xDE00, 0x0061, 0xD83D, 0xDE08 };
+    //std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
     for (int x : utf16_vector)
       std::cout << "Utf16: " << std::hex << x << "\n";
+    ASSERT_EQ(big_endian_ref_vector, utf16_vector_direct);
     ASSERT_EQ(big_endian_ref_vector, utf16_vector);
     Span<const UChar> utf16_bytes(utf16_vector.data(), utf16_vector.size());
     std::cout << "Utf16_size=" << utf16_bytes.smallView() << "\n";
@@ -95,8 +145,8 @@ TEST(String, Utf8AndUtf16)
     std::cout << "str2.utf16=" << str2.utf16() << "\n";
     std::cout.flush();
 
-    ASSERT_EQ(str1.utf16().size(), 6);
-    ASSERT_EQ(str2.utf16().size(), 6);
+    ASSERT_EQ(str1.utf16().size(), 13);
+    ASSERT_EQ(str2.utf16().size(), 13);
 
     ASSERT_EQ(str1.utf8().size(), str2.utf8().size());
     ASSERT_EQ(str1.utf16().size(), str2.utf16().size());
@@ -141,7 +191,6 @@ TEST(String, Utf8AndUtf16)
     _doConvertTest("X4", x4);
   }
 }
-#endif
 
 TEST(String, Misc)
 {

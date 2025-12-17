@@ -14,7 +14,7 @@
   <test name="MeshUnitTest">
     <maillage-additionnel>sod.vtk</maillage-additionnel>
     <create-edges>true</create-edges>
-    <connectivity-file-checksum>131147c126dd36a7257eabb8c50318b89d46ff1cda7be3e091c7a056192d2e10</connectivity-file-checksum>
+    <connectivity-file-checksum>64f536dbc3403c0900c67e3d3001237ef83e02a4930da0e3cd764592b93bfc89</connectivity-file-checksum>
     <!-- The values in parallel are not always the same in the CI. So we disable them -->
     <!-- <connectivity-file-checksum-parallel>a58676121852d7c0a8e4494fa4679e3c04b349174c1663611987b09c5ccbb393</connectivity-file-checksum-parallel>
     <connectivity-file-checksum-parallel>e3a0b58c733bfc6ae1886a7e884d480e6ad1237d9b65352f6569a626ac64f42c</connectivity-file-checksum-parallel>

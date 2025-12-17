@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2024 */
+/* AcceleratorGlobal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -15,10 +15,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arccore/accelerator/AcceleratorGlobal.h"
 
 #include <iosfwd>
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,20 +35,6 @@
 
 namespace Arcane::Accelerator
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Type d'opération atomique supportée
-enum class eAtomicOperation
-{
-  //! Ajout
-  Add,
-  //! Minimum
-  Min,
-  //! Maximum
-  Max
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,36 +55,4 @@ initializeRunner(Runner& runner, ITraceMng* tm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_ACCELERATOR_EXPORT String
-getBadPolicyMessage(eExecutionPolicy policy);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
-#define ARCANE_FATAL_NO_HIP_COMPILATION() \
-  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
-
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
-#define ARCANE_FATAL_NO_CUDA_COMPILATION() \
-  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
-
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec SYCL
-#define ARCANE_FATAL_NO_SYCL_COMPILATION() \
-  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
+#endif

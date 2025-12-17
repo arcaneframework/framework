@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariable.h                                     (C) 2000-2023 */
+/* IMeshMaterialVariable.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un variable sur un matériau du maillage.                      */
+/* Interface d'une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLE_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -226,6 +226,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Classe pour gérer la création du type concret de la variable matériaux.
  */
 template<typename TrueType>
@@ -234,6 +235,7 @@ class MeshMaterialVariableBuildTraits
  public:
   static ARCANE_CORE_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
   static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
+  static ARCANE_CORE_EXPORT TrueType* getVariableReference(IMeshMaterialVariable* var);
 };
 
 /*---------------------------------------------------------------------------*/

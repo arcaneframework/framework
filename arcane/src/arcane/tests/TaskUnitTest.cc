@@ -17,7 +17,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
-#include "arcane/utils/internal/TaskFactoryInternal.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/IMesh.h"

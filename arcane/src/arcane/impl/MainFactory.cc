@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MainFactory.cc                                              (C) 2000-2023 */
+/* MainFactory.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* AbstractFactory des gestionnaires d'Arcane.                               */
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ arcaneCreateIOMng(IParallelMng*);
 namespace Accelerator
 {
 extern "C++" ARCANE_IMPORT Ref<IAcceleratorMng>
-arcaneCreateAcceleratorMngRef(ITraceMng* tm);
+arccoreCreateAcceleratorMngRef(ITraceMng* tm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -411,7 +411,7 @@ createDataFactoryMngRef(IApplication* app)
 Ref<IAcceleratorMng> MainFactory::
 createAcceleratorMngRef(ITraceMng* tm)
 {
-  return Accelerator::arcaneCreateAcceleratorMngRef(tm);
+  return Accelerator::arccoreCreateAcceleratorMngRef(tm);
 }
 
 /*---------------------------------------------------------------------------*/

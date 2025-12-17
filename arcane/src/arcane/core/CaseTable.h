@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseTable.h                                                 (C) 2000-2023 */
+/* CaseTable.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une table de marche.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASETABLE_H
-#define ARCANE_CASETABLE_H
+#ifndef ARCANE_CORE_CASETABLE_H
+#define ARCANE_CORE_CASETABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/datatype/SmallVariant.h"
+#include "arcane/core/datatype/SmallVariant.h"
 
-#include "arcane/CaseFunction.h"
+#include "arcane/core/CaseFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

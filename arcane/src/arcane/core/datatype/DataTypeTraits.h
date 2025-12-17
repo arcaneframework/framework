@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypeTraits.h                                            (C) 2000-2024 */
+/* DataTypeTraits.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Caractéristiques d'un type de donnée.                                     */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,14 @@
 #include "arcane/utils/Int128.h"
 
 #include "arcane/core/ArcaneTypes.h"
-
+/*
+ * NOTE: Les fonctions telles que HasSubscriptOperator(), HasComponent*()
+ * ne sont plus utilisées depuis décembre 2025. Avant elles étaient utilisées
+ * par DataViewSetter et DataViewGetterSetter mais avec le passage au C++20
+ * ce n'est plus le cas. Il en est de même avec les types ComponentType,
+ * SubscriptType, FunctionCall1ReturnType ou FunctionCall2ReturnType.
+ * On pourra donc à terme rendre ces types obsolètes puis les supprimer.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

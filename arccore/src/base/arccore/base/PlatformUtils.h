@@ -96,6 +96,14 @@ getCurrentTime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Temps horloge en nano-secondes.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+getRealTimeNS();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Date et l'heure courante sous la forme ISO 8601.
@@ -356,6 +364,14 @@ getCompilerId();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille des pages du système hôte en octets
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+getPageSize();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 }
 
@@ -395,10 +411,12 @@ using Arcane::Platform::stdMemcpy;
 using Arcane::Platform::getMemoryUsed;
 using Arcane::Platform::getCPUTime;
 using Arcane::Platform::getRealTime;
+using Arcane::Platform::getRealTimeNS;
 using Arcane::Platform::timeToHourMinuteSecond;
 using Arcane::Platform::isDenormalized;
 using Arcane::Platform::safeStringCopy;
 using Arcane::Platform::sleep;
+using Arcane::Platform::getPageSize;
 
 using Arcane::Platform::enableFloatingException;
 using Arcane::Platform::isFloatingExceptionEnabled;

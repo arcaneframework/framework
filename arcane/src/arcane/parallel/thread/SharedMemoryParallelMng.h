@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.h                                   (C) 2000-2024 */
+/* SharedMemoryParallelMng.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@ class IParallelTopology;
 
 namespace Arcane::MessagePassing
 {
+class SharedMemoryMachineMemoryWindowBaseInternalCreator;
 class ISharedMemoryMessageQueue;
 class SharedMemoryAllDispatcher;
 
@@ -44,8 +45,16 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 {
  public:
   SharedMemoryParallelMngBuildInfo()
-  : rank(-1), nb_rank(0), trace_mng(nullptr), thread_mng(nullptr)
-  , message_queue(nullptr), thread_barrier(nullptr), all_dispatchers(nullptr){}
+  : rank(-1)
+  , nb_rank(0)
+  , trace_mng(nullptr)
+  , thread_mng(nullptr)
+  , message_queue(nullptr)
+  , thread_barrier(nullptr)
+  , all_dispatchers(nullptr)
+  , window_creator(nullptr)
+  {}
+
  public:
   Int32 rank;
   Int32 nb_rank;
@@ -59,6 +68,7 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
   MP::Communicator communicator;
+  SharedMemoryMachineMemoryWindowBaseInternalCreator* window_creator = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +81,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 {
  public:
   class RequestList;
+  class Impl;
+
  public:
 
   explicit SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info);
@@ -81,6 +93,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   Int32 commSize() const override { return m_nb_rank; }
   void* getMPICommunicator() override { return m_mpi_communicator.communicatorAddress(); }
   MP::Communicator communicator() const override { return m_mpi_communicator; }
+  MP::Communicator machineCommunicator() const override { return m_mpi_communicator; }
   bool isThreadImplementation() const override { return true; }
   bool isHybridImplementation() const override { return false; }
   ITraceMng* traceMng() const override { return m_trace.get(); }
@@ -124,6 +137,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IParallelNonBlockingCollective* nonBlockingCollective() const override { return 0; }
 
   void build() override;
+
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  public:
   
@@ -180,6 +195,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   Ref<IParallelMngContainer> m_parent_container_ref;
   MP::Communicator m_mpi_communicator;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

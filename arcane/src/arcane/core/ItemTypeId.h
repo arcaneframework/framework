@@ -136,7 +136,14 @@ static constexpr ItemTypeId ITI_Quad8(IT_Quad8);
 static constexpr ItemTypeId ITI_Tetraedron10(IT_Tetraedron10);
 //! Hexaèdre d'ordre 2
 static constexpr ItemTypeId ITI_Hexaedron20(IT_Hexaedron20);
+//! Hexaèdre d'ordre 2
+static constexpr ItemTypeId ITI_Pentaedron15(IT_Pentaedron15);
+//! Pyramide d'ordre 2
+static constexpr ItemTypeId ITI_Pyramid13(IT_Pyramid13);
 //@}
+
+//! Maille Line3. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_CellLine3(IT_CellLine3);
 
 /*!
  * \brief Mailles 2D dans un maillage 3D.
@@ -148,9 +155,27 @@ static constexpr ItemTypeId ITI_Hexaedron20(IT_Hexaedron20);
 static constexpr ItemTypeId ITI_Cell3D_Line2(IT_Cell3D_Line2);
 //! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle3(IT_Cell3D_Triangle3);
-//! Maille Quadrangulaire à 5 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Maille Quadrangulaire à 4 noeuds dans un maillage 3D. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad4(IT_Cell3D_Quad4);
+//! Maille Line3 dans un maillage 3D. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Cell3D_Line3(IT_Cell3D_Line3);
+//! Maille Triangulaire à 6 noeuds dans un maillage 3D. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Cell3D_Triangle6(IT_Cell3D_Triangle6);
+//! Maille Quadrangulaire à 8 noeuds dans un maillage 3D. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Cell3D_Quad8(IT_Cell3D_Quad8);
+//! Maille Quadrangulaire à 9 noeuds dans un maillage 3D. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Cell3D_Quad9(IT_Cell3D_Quad9);
 //@}
+
+//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces et 1 noeud au centre). EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Quad9(IT_Quad9);
+//! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Hexaedron27(IT_Hexaedron27);
+
+//! Ligne d'ordre 3. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Line4(IT_Line4);
+//! Triangle d'ordre 3. EXPERIMENTAL !
+static constexpr ItemTypeId ITI_Triangle10(IT_Triangle10);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

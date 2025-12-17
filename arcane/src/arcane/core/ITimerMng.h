@@ -1,30 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimerMng.h                                                 (C) 2000-2019 */
+/* ITimerMng.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un gestionnaire de timer.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITIMERMNG_H
-#define ARCANE_ITIMERMNG_H
+#ifndef ARCANE_CORE_ITIMERMNG_H
+#define ARCANE_CORE_ITIMERMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Timer;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,7 +53,7 @@ class ITimerMng
    * \brief Libère les ressources.
    * \pre !hasTimer()
    */
-  virtual ~ITimerMng() {}
+  virtual ~ITimerMng() = default;
 
  public:
 
@@ -68,7 +64,7 @@ class ITimerMng
    * \pre !hasTimer(\a timer)
    * \post hasTimer(\a timer)
    */
-  virtual void beginTimer(Timer* timer) =0;
+  virtual void beginTimer(Timer* timer) = 0;
 
   /*!
    * \brief Relâche le timer \a timer.
@@ -79,7 +75,7 @@ class ITimerMng
    * \pre hasTimer(\a timer)
    * \post !hasTimer(\a timer)
    */
-  virtual Real endTimer(Timer* timer) =0;
+  virtual Real endTimer(Timer* timer) = 0;
 
   /*!
    * \brief Temps écoulé depuis le dernier appel à beginTimer().
@@ -87,7 +83,7 @@ class ITimerMng
    * \pre !\a timer
    * \pre hasTimer(\a timer)
    */
-  virtual Real getTime(Timer* timer) =0;
+  virtual Real getTime(Timer* timer) = 0;
 
   /*!
    * \brief Indique si le timer \a timer est enregistré.
@@ -96,16 +92,15 @@ class ITimerMng
    * \deprecated Cette fonction sera supprimé à terme. Ne plus utiliser.
    */
   ARCCORE_DEPRECATED_2019("Do not use this method")
-  virtual bool hasTimer(Timer* timer) =0;
+  virtual bool hasTimer(Timer* timer) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

@@ -1,0 +1,10 @@
+name: arcane-env
+channels:
+- conda-forge/label/cf202003
+- anaconda
+dependencies:
+- sphinx
+- breathe
+- conda-forge::pythonnet
+- conda-forge::pybind11
+- anaconda::cython

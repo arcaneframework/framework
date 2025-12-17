@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.cc                                          (C) 2000-2024 */
+/* MeshMaterialMng.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des matériaux et milieux d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,10 @@ MeshMaterialMng::RunnerInfo::
 RunnerInfo(Runner& runner)
 : m_runner(runner)
 , m_run_queue(makeQueue(m_runner))
+, m_sequential_runner(Accelerator::eExecutionPolicy::Sequential)
+, m_sequential_run_queue(makeQueue(m_sequential_runner))
+, m_multi_thread_runner(Accelerator::eExecutionPolicy::Thread)
+, m_multi_thread_run_queue(makeQueue(m_multi_thread_runner))
 {
 }
 
@@ -116,6 +120,21 @@ initializeAsyncPool(Int32 nb_queue)
   m_async_queue_pool.initialize(m_runner,nb_queue);
   if (is_accelerator)
     m_async_queue_pool.setAsync(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue MeshMaterialMng::RunnerInfo::
+runQueue(Accelerator::eExecutionPolicy policy) const
+{
+  if (policy == Accelerator::eExecutionPolicy::None)
+    return m_run_queue;
+  if (policy == Accelerator::eExecutionPolicy::Sequential)
+    return m_sequential_run_queue;
+  if (policy == Accelerator::eExecutionPolicy::Thread)
+    return m_multi_thread_run_queue;
+  ARCANE_FATAL("Invalid value '{0}' for execution policy. Valid values are None, Sequential or Thread", policy);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -416,8 +435,9 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
 
   // Créé et ajoute les matériaux
   Integer nb_mat = infos.materials().size();
+  ConstArrayView<MeshEnvironmentBuildInfo::MatInfo> mat_build_infos = infos.materials();
   for( Integer i=0; i<nb_mat; ++i ){
-    const MeshEnvironmentBuildInfo::MatInfo& buildinfo = infos.materials()[i];
+    const MeshEnvironmentBuildInfo::MatInfo& buildinfo = mat_build_infos[i];
     const String& mat_name = buildinfo.m_name;
     String new_mat_name = env_name + "_" + mat_name;
     MeshMaterialInfo* mat_info = _findMaterialInfo(mat_name);

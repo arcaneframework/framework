@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicWriter.cc                                              (C) 2000-2024 */
+/* BasicWriter.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Ecriture simple pour les protections/reprises.                            */
 /*---------------------------------------------------------------------------*/
@@ -231,7 +231,7 @@ setMetaData(const String& meta_data)
   else {
     Int32 my_rank = m_parallel_mng->commRank();
     String filename = _getMetaDataFileName(my_rank);
-    std::ofstream ofile(filename.localstr());
+    std::ofstream ofile(filename.localstr(), ios::binary);
     meta_data.writeBytes(ofile);
   }
 }

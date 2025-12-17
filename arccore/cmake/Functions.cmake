@@ -26,7 +26,6 @@ function(arccore_add_library target)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(rel_path ${ARGS_RELATIVE_PATH})
   set(_FILES)
   #set(_INSTALL_FILES)
   foreach(isource ${ARGS_FILES})
@@ -41,16 +40,51 @@ function(arccore_add_library target)
       get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
       string(REGEX MATCH "internal/" _INTERNAL_HEADER ${isource})
       if (NOT _INTERNAL_HEADER)
-        install(FILES ${_FILE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${rel_path}/${_HEADER_RELATIVE_PATH})
+        if (DEFINED ARGS_RELATIVE_PATH)
+          set(_FILE_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${ARGS_RELATIVE_PATH}/${_HEADER_RELATIVE_PATH}")
+        else()
+          set(_FILE_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_HEADER_RELATIVE_PATH}")
+        endif()
+        install(FILES ${_FILE} DESTINATION "${_FILE_DESTINATION}")
       endif()
     endif()
     list(APPEND _FILES ${_FILE})
   endforeach()
   #message(STATUS "TARGET=${target} FILES=${_FILES}")
   add_library(${target} ${_FILES})
-  #if (_INSTALL_FILES)
-  #install(FILES ${_INSTALL_FILES} DESTINATION include/${rel_path})
-  #endif()
+
+  if (ARCCORE_EXPORT_TARGET)
+    install(TARGETS ${target} EXPORT ${ARCCORE_EXPORT_TARGET}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    add_library(Arccore::${target} ALIAS ${target})
+  endif()
+
+  set(_libpath ${CMAKE_BINARY_DIR}/lib)
+  if (WIN32)
+    set_target_properties(${target}
+      PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+      LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+      LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+      )
+  else()
+    set_target_properties(${target}
+      PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+      RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+      )
+  endif()
+  # Ajoute au RPATH celui des bibliothèques et utilise $ORIGIN
+  set_target_properties(${target}
+    PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH 1
+    BUILD_RPATH_USE_ORIGIN 1
+    )
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -72,12 +106,17 @@ endfunction()
 #
 function(arccore_add_component_library component_name)
   set(options)
-  set(oneValueArgs)
+  set(oneValueArgs LIB_NAME)
   set(multiValueArgs FILES)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  if (NOT ARGS_LIB_NAME)
+    set(_LIB_NAME arccore_${component_name})
+  else()
+    set(_LIB_NAME ${ARGS_LIB_NAME})
+    message(STATUS "Adding component library '${component_name}' with library name '${_LIB_NAME}'")
+  endif()
 
-  set(_LIB_NAME arccore_${component_name})
   arccore_add_library(${_LIB_NAME}
           INPUT_PATH ${Arccore_SOURCE_DIR}/src/${component_name}
           RELATIVE_PATH arccore/${component_name}
@@ -86,39 +125,13 @@ function(arccore_add_component_library component_name)
 
   target_compile_definitions(${_LIB_NAME} PRIVATE ARCCORE_COMPONENT_${_LIB_NAME})
   target_include_directories(${_LIB_NAME} PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/${component_name}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-  if (ARCCORE_EXPORT_TARGET)
-    install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET}
-      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-    target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
-    add_library(Arccore::${_LIB_NAME} ALIAS ${_LIB_NAME})
-  endif()
+  target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
 
   # Génère les bibliothèques dans le répertoire 'lib' du projet.
   #set_target_properties(${_LIB_NAME} PROPERTIES
   #  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
   #  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
   #  )
-
-  set(_libpath ${CMAKE_BINARY_DIR}/lib)
-  if (WIN32)
-    set_target_properties(${_LIB_NAME}
-      PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-      LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-      LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-      )
-  else()
-    set_target_properties(${_LIB_NAME}
-      PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY ${_libpath}
-      RUNTIME_OUTPUT_DIRECTORY ${_libpath}
-      )
-  endif()
 
 endfunction()
 
@@ -192,6 +205,31 @@ function(arccore_add_component_directory name)
     endif()
   endif()
 endfunction()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Indique que les fichiers passés en argument doivent être compilés avec
+# le support accélérateur correspondant.
+macro(arccore_accelerator_add_source_files)
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDA")
+    foreach(_x ${ARGN})
+      message(STATUS "Add CUDA language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
+    endforeach()
+  endif()
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM")
+    foreach(_x ${ARGN})
+      message(STATUS "Add HIP language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
+    endforeach()
+  endif()
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCL")
+    foreach(_x ${ARGN})
+      message(STATUS "Add SYCL language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES COMPILE_OPTIONS "${ARCCORE_CXX_SYCL_FLAGS}")
+    endforeach()
+  endif()
+endmacro()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

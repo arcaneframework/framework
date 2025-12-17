@@ -1,0 +1,14 @@
+set(SOURCES
+  Array.h
+  Array2.h
+  Array2.cc
+  ArrayTraits.h
+  ArrayDebugInfo.h
+  CollectionsGlobal.h
+  CollectionsGlobal.cc
+  IMemoryAllocator.h
+  MemoryAllocationArgs.h
+  MemoryAllocationOptions.h
+  StringVector.h
+  StringVector.cc
+)

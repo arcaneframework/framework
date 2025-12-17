@@ -89,8 +89,9 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_edge_family(m_mesh->trueEdgeFamily())
 , m_item_type_mng(m_mesh->itemTypeMng())
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
+, m_face_reorderer(m_item_type_mng)
 {
-  m_work_face_sorted_nodes.reserve(100);
+  //m_work_face_sorted_nodes.reserve(100);
   m_work_face_orig_nodes_uid.reserve(100);
 }
 
@@ -179,15 +180,17 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
 {
   const Integer face_nb_node = nodes_uid.size();
 
-  m_work_face_sorted_nodes.resize(face_nb_node);
-  m_work_face_orig_nodes_uid.resize(face_nb_node);
-  for( Integer z=0; z<face_nb_node; ++z )
-    m_work_face_orig_nodes_uid[z] = nodes_uid[z];
-  // TODO: dans le cas où la face sera orpheline (non connectée à une mailles),
+  //m_work_face_sorted_nodes.resize(face_nb_node);
+  //m_work_face_orig_nodes_uid.resize(face_nb_node);
+  //for( Integer z=0; z<face_nb_node; ++z )
+  //m_work_face_orig_nodes_uid[z] = nodes_uid[z];
+  m_face_reorderer.reorder(type_id,nodes_uid);
+  ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
+  // TODO: dans le cas où la face sera orpheline (non connectée à une maille),
   // vérifier s'il faut réorienter la face car cela risque d'introduire
   // une incohérence si par la suite on souhaite calculer une normale.
-  MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
-  face_uid = _checkGenerateFaceUniqueId(face_uid,m_work_face_sorted_nodes);
+  //MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
+  face_uid = _checkGenerateFaceUniqueId(face_uid,face_sorted_nodes);
   bool is_add_face = false;
   Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
   // La face n'existe pas
@@ -195,14 +198,14 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
     ++m_mesh_info.nbFace();
     face.mutableItemBase().setOwner(owner_rank, m_mesh_info.rank());
     for(Integer i_node=0; i_node<face_nb_node; ++i_node ){
-      Node node = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
+      Node node = addOneNode(face_sorted_nodes[i_node], m_mesh_info.rank());
       m_face_family.replaceNode(face,i_node,node);
       m_node_family.addFaceToNode(node, face);
     }
   }
   else {
     if (arcaneIsCheck())
-      _checkSameItemCoherency(face, m_work_face_sorted_nodes);
+      _checkSameItemCoherency(face, face_sorted_nodes);
   }
   
   return ItemCompatibility::_itemInternal(face);
@@ -262,8 +265,25 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   const ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
-  Node nbi = nodes_map.findItem(m_work_face_sorted_nodes[0]);
-  Face face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),m_work_face_sorted_nodes);
+  ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
+  Int64 face_unique_id = NULL_ITEM_UNIQUE_ID;
+  Face face_internal;
+  const bool use_hash = m_use_hash_for_edge_and_face_unique_id;
+  // Si on calcule les uniqueId() des faces à partir des noeuds,
+  // on peut directement savoir la face existe déjà. Sinon, on
+  // appelle ItemTools::findFaceInNode2() mais cette fonction est plus
+  // couteuse car elle recherche la face en parcourant les faces connectées
+  // au premier noeud de la face.
+  if (use_hash){
+    face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
+    face_internal = m_face_family.itemsMap().tryFind(face_unique_id);
+  }
+  else{
+    // Récupère les noeuds orientés de la face
+    // (Il faut avoir appelé une des méthodes d'ajout de face avant)
+    Node nbi = nodes_map.findItem(face_sorted_nodes[0]);
+    face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),face_sorted_nodes);
+  }
   if (face_internal.null()) {
     // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
     // Si cela est autorisé, on créée la nouvelle face.
@@ -274,11 +294,13 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
       ARCANE_FATAL("On the fly face allocation is not allowed here.\n"
                    " You need to add faces with IMeshModifier::addFaces().\n"
                    " CellUid={0} LocalFace={1} FaceNodes={2}",
-                   cell_info.uniqueId(),i_face,m_work_face_sorted_nodes);
+                   cell_info.uniqueId(),i_face,face_sorted_nodes);
     }
-    ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
-    Int64 face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,m_work_face_sorted_nodes);
+    // Ne recalcule le hash que si ce n'est pas déjà fait.
+    if (!use_hash)
+      face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
     is_add = true;
+    ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     return m_face_family.allocOne(face_unique_id,face_type);
   }
   else {
@@ -311,20 +333,27 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 {
   ARCANE_UNUSED(i_edge);
 
-  const ItemInternalMap& nodes_map = m_mesh->nodesMap();
-  Node nbi = nodes_map.findItem(first_node);
-  Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
+  const bool use_hash = m_use_hash_for_edge_and_face_unique_id;
+  FixedArray<Int64,2> nodes;
+  Int64 edge_unique_id = NULL_ITEM_UNIQUE_ID;
+  Edge edge_internal;
+  if (use_hash){
+    nodes[0] = first_node;
+    nodes[1] = second_node;
+    edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
+    edge_internal = m_edge_family.itemsMap().tryFind(edge_unique_id);
+  }
+  else{
+    const ItemInternalMap& nodes_map = m_mesh->nodesMap();
+    Node nbi = nodes_map.findItem(first_node);
+    edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
+  }
   if (edge_internal.null()){
-    if (!cell_info.allowBuildEdge() && !m_use_hash_for_edge_and_face_unique_id)
+    if (!cell_info.allowBuildEdge() && !use_hash)
       ARCANE_FATAL("On the fly edge allocation is not allowed here."
                    " You need to add edges before with IMeshModifier::addEdges()");
-    Int64 edge_unique_id = m_next_edge_uid++;
-    if (m_use_hash_for_edge_and_face_unique_id){
-      FixedArray<Int64,2> nodes;
-      nodes[0] = first_node;
-      nodes[1] = second_node;
-      edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
-    }
+    if (!use_hash)
+      edge_unique_id = m_next_edge_uid++;
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
   }
@@ -609,6 +638,10 @@ _addOneCell(const CellInfo& cell_info)
 
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   ItemTypeId cell_type_id = cell_type_info->itemTypeId();
+  const bool is_verbose = false;
+  if (is_verbose)
+    info() << "AddNewCell type_id=" << cell_type_id << " nb_node=" << cell_info.nbNode()
+           << " type=" << cell_type_info->typeName();
   // Regarde si la maille existe déjà (auquel cas on ne fait rien)
   Cell inew_cell;
   {
@@ -627,16 +660,17 @@ _addOneCell(const CellInfo& cell_info)
     }
   }
 
-  const bool is_verbose = false;
-
   Cell new_cell(inew_cell);
 
   ++m_mesh_info.nbCell();
 
-  const bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
+  const MeshKind& mesh_kind = m_mesh->meshKind();
+  const bool allow_multi_dim_cell = !mesh_kind.isMonoDimension();
   const Int32 cell_nb_face = cell_info.nbFace();
-
-  inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
+  MutableItemBase mut_cell = new_cell.mutableItemBase();
+  if (cell_type_info->dimension() == 2 && cell_type_info->nbLocalFace() == 0)
+    mut_cell.addFlags(ItemFlags::II_HasEdgeFor1DItems);
+  mut_cell.setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
   if (is_check){
     if (cell_info.nbNode()!=inew_cell.nbNode())
@@ -699,24 +733,34 @@ _addOneCell(const CellInfo& cell_info)
   for( Integer i_face=0; i_face<cell_nb_face; ++i_face ){
     const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
     const Integer face_nb_node = lf.nbNode();
-    const bool is_reorder = _isReorder(i_face, lf, cell_info); 
-    // en effet de bord, _isReorder construit aussi m_work_face_sorted_nodes
-    
+    // en effet de bord, _isReorder positionne m_face_reorderer.sortedNodes();
+    const bool is_reorder = _isReorder(i_face, lf, cell_info);
+    ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
     bool is_add = false;
     Face face = _findInternalFace(i_face, cell_info, is_add);
     if (is_add){
+      // Pour les éléments d'ordre supérieur à 1, on ajoute les faces qu'aux noeuds
+      // qui correspondent à l'élément d'ordre 1 (linéaire) associé.
+      const ItemTypeInfo* face_type_info = m_item_type_mng->typeFromId(lf.typeId());
+      const Int32 face_nb_linear_node = face_type_info->linearTypeInfo()->nbLocalNode();
       if (is_verbose){
-        info() << "Create face " << face.uniqueId() << ' ' << face.localId();
-        info() << "AddCell (uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
+        info() << "AddFaceToCell (cell_uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
                << ") uid=" << face.uniqueId()
-               << " lid=" << face.localId();
+               << " lid=" << face.localId()
+               << " type=" << face_type_info->typeName()
+               << " face_nb_linear_node=" << face_nb_linear_node
+               << " sorted_nodes=" << face_sorted_nodes;
       }
       face.mutableItemBase().setOwner(cell_info.faceOwner(i_face),m_mesh_info.rank());
-      
-      for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
-        Node current_node = nodes_map.findItem(m_work_face_sorted_nodes[i_node]);
+
+      for (Integer i_node = 0; i_node < face_nb_node; ++i_node) {
+        if (is_verbose)
+          info() << "AddNodeToFace i_node=" << i_node << " uid=" << face_sorted_nodes[i_node];
+        Node current_node = nodes_map.findItem(face_sorted_nodes[i_node]);
         m_face_family.replaceNode(face, i_node, current_node);
-        m_node_family.addFaceToNode(current_node, face);
+        if (i_node<face_nb_linear_node){
+          m_node_family.addFaceToNode(current_node, face);
+        }
       }
 
       if (m_mesh_builder->hasEdge()) {
@@ -981,18 +1025,17 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   const ItemTypeInfo::LocalFace& lf = type->localFace(i_face);
     Integer face_nb_node = lf.nbNode();
 
-    m_work_face_sorted_nodes.resize(face_nb_node);
     m_work_face_orig_nodes_uid.resize(face_nb_node);
     for( Integer z=0; z<face_nb_node; ++z )
       m_work_face_orig_nodes_uid[z] = nodes_uid[ lf.node(z) ];
     bool is_reorder = false;
     if (m_mesh->dimension() == 1) { // is 1d mesh
-      is_reorder = (i_face==1);
-      m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
+      is_reorder = m_face_reorderer.reorder1D(i_face, m_work_face_orig_nodes_uid[0]);
     }
-    else
-      is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
-
+    else{
+      is_reorder = m_face_reorderer.reorder(ItemTypeId::fromInteger(lf.typeId()), m_work_face_orig_nodes_uid);
+    }
+    ConstArrayView<Int64> face_sorted_nodes(m_face_reorderer.sortedNodes());
     // find parent item
     Item parent_item;
     if (kind==IK_Cell) {
@@ -1000,11 +1043,11 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     }
     else if (kind==IK_Face) {
       if (m_mesh->dimension() == 1) { // is 1d mesh
-        parent_item = parent_nodes_map.findItem(m_work_face_sorted_nodes[0]);
+        parent_item = parent_nodes_map.findItem(face_sorted_nodes[0]);
       } else {
         // Algo sans CT_FaceToEdge
-        Int64 first_node = m_work_face_sorted_nodes[0];
-        Int64 second_node = m_work_face_sorted_nodes[1];
+        Int64 first_node = face_sorted_nodes[0];
+        Int64 second_node = face_sorted_nodes[1];
         if (first_node > second_node)
           std::swap(first_node,second_node);
         Node nbi = parent_nodes_map.findItem(first_node);
@@ -1027,7 +1070,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       face_internal->setOwner(parent_item.owner(),m_mesh_info.rank());
 
       for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
-        Node current_node = nodes_map.findItem(m_work_face_sorted_nodes[i_node]);
+        Node current_node = nodes_map.findItem(face_sorted_nodes[i_node]);
         m_face_family.replaceNode(ItemLocalId(face_internal), i_node, current_node);
         m_node_family.addFaceToNode(current_node, face_internal);
       }
@@ -1087,18 +1130,16 @@ bool OneMeshItemAdder::
 _isReorder(Integer i_face, const ItemTypeInfo::LocalFace& lf, const CellInfo& cell_info)
 {
   const Integer face_nb_node = lf.nbNode();
-  m_work_face_sorted_nodes.resize(face_nb_node);
   m_work_face_orig_nodes_uid.resize(face_nb_node);
   for(Integer i_node=0; i_node < face_nb_node; ++i_node)
     m_work_face_orig_nodes_uid[i_node] = cell_info.nodeUniqueId(lf.node(i_node));
   bool is_reorder = false;
   if (m_mesh->dimension() == 1) { // is 1d mesh
-    is_reorder = (i_face==1);
-    m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
+    is_reorder = m_face_reorderer.reorder1D(i_face, m_work_face_orig_nodes_uid[0]);
   }
-  else
-    is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,
-                                               m_work_face_sorted_nodes);
+  else{
+    is_reorder = m_face_reorderer.reorder(ItemTypeId::fromInteger(lf.typeId()), m_work_face_orig_nodes_uid);
+  }
   
   return is_reorder;
 }

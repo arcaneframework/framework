@@ -49,7 +49,7 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20250120
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_stable
 
     steps:
       - name: Display CPU infos
@@ -77,14 +77,14 @@ jobs:
         shell: bash
         run: |
           source /root/scripts/use_openmpi.sh
-          source /root/scripts/use_gcc-13.sh
+          source /root/scripts/use_gcc-14.sh
 
       - name: Get date
         shell: bash
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Checkout framework
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -180,9 +180,7 @@ jobs:
           rm -v -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage files to Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN : ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
         with:
           verbose: true
           fail_ci_if_error: true

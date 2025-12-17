@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubDomain.cc                                                (C) 2000-2024 */
+/* SubDomain.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire du sous-domaine.                                             */
 /*---------------------------------------------------------------------------*/
@@ -57,26 +57,18 @@
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/Timer.h"
-#include "arcane/core/CommonVariables.h"
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/IPhysicalUnitSystem.h"
 #include "arcane/core/IPhysicalUnitSystemService.h"
-#include "arcane/core/IService.h"
-#include "arcane/core/IServiceInfo.h"
-#include "arcane/core/ServiceUtils.h"
-#include "arcane/core/IRessourceMng.h"
 #include "arcane/core/ISession.h"
 #include "arcane/core/IMeshStats.h"
-#include "arcane/core/IParallelSuperMng.h"
 #include "arcane/core/IParallelReplication.h"
 #include "arcane/core/IServiceLoader.h"
-#include "arcane/core/ICheckpointReader.h"
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/ICaseMeshMasterService.h"
 #include "arcane/core/ILoadBalanceMng.h"
 #include "arcane/core/CaseNodeNames.h"
-#include "arcane/core/ModuleBuildInfo.h"
 #include "arcane/core/Observable.h"
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/SubDomainBuildInfo.h"
@@ -943,7 +935,7 @@ checkId(const String& where,const String& id)
   if (!isalpha(str[0]))
     throw BadIDException(where,id);
   for( Int64 i=1; i<len; ++i )
-    if (!isalpha(str[i]) && !isdigit(str[i]) && str[i]!='_' && str[i]!='.')
+    if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_' && str[i] != '.' && str[i] != '-')
       throw BadIDException(where,id);
 }
 

@@ -5,7 +5,7 @@
 
     <description>
       Test du raffinement d'un maillage cartesian 3D avec le type d'AMR PatchCartesianMeshOnly
-      puis du dé-raffinement de certaines zones (avec renumérotation version 1)
+      puis du dé-raffinement de certaines zones (sans renumérotation)
     </description>
 
     <timeloop>AMRCartesianMeshTestLoop</timeloop>
@@ -43,7 +43,7 @@
   </mesh>
 
   <a-m-r-cartesian-mesh-tester>
-    <renumber-patch-method>1</renumber-patch-method>
+    <renumber-patch-method>0</renumber-patch-method>
 
     <refinement-3d>
       <position>0.0 1.0 1.0</position>
@@ -63,13 +63,14 @@
       <length>1.0 1.0 1.0</length>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>
+    <!--    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>-->
+    <expected-number-of-cells-in-patchs>125 16 16 32 48 48 48</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>549c906b4835458793357c764e285d6c</nodes-uid-hash>
-    <faces-uid-hash>2408a4cfc18f1c81c1238708ee7a7219</faces-uid-hash>
+    <faces-uid-hash>2470beb5b4e98e14b204a2150718c269</faces-uid-hash>
     <cells-uid-hash>67073338e696ff7e73e429ed9965fd28</cells-uid-hash>
-    <nodes-direction-hash>ccdf163df5ca9a60fac41ed1ac72f017</nodes-direction-hash>
-    <faces-direction-hash>b0da47342026988b44055852a68da914</faces-direction-hash>
-    <cells-direction-hash>2dda186b82f5335e506f0c04ed0d7b9f</cells-direction-hash>
+    <nodes-direction-hash>6b1a40dac2171382d2e126ba7769a9d9</nodes-direction-hash>
+    <faces-direction-hash>22dee55d78b67b49c00d04ebcae58278</faces-direction-hash>
+    <cells-direction-hash>b21ef3d675b8238a88b2db8ee55c6b0d</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>

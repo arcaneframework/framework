@@ -13,19 +13,26 @@ namespace Arcane.ExecDrivers.DotNetCompile
 {
   class Compile
   {
+    // NOTE: Il faut protéger les arguments en les entourant
+    // de guillements ('"') au cas où ils contiennent des espaces.
+    // NOTE: Avec '.Net Core', il y a dans ProcessStartInfo une propriété
+    // ArgumentList de type Collection<string> pour gérer les arguments.
+    // Il serait préférable d'utiliser cela pour éviter les problèmes
+    // comme les caractères blancs dans les noms d'arguments.
     class Helper
     {
       internal List<string> m_args = new List<string>();
 
       internal void AddReferenceLib(string path, string name)
       {
-        m_args.Add("/reference:" + Path.Combine(path, name));
+        m_args.Add("\"/reference:" + Path.Combine(path, name) + '"');
       }
       internal void AddArg(string name)
       {
-        m_args.Add(name);
+        m_args.Add('"'+name+'"');
       }
     }
+
     /*!
      * \brief Commande pour compiler les fichiers \a args.
      *
@@ -36,7 +43,6 @@ namespace Arcane.ExecDrivers.DotNetCompile
     {
       var helper = new Helper();
       string lib_dir = Utils.CodeLibPath;
-
       // Le répertoire de base de 'dotnet' est le répertoire dans lequel
       // il y a l'exécutable 'dotnet'
       string dotnet_command = Utils.DotnetCoreClrPath;
@@ -46,7 +52,6 @@ namespace Arcane.ExecDrivers.DotNetCompile
       string dotnet_sdk_path = Utils.DotnetCoreClrSdkPath;
 
       // Le compilateur est: ${dotnet_root}/sdk/${dotnet_full_version}/Roslyn/bincore/csc.dll
-      helper.AddArg(Utils.DotnetCoreClrPath);
       helper.AddArg("exec");
       helper.AddArg(Path.Combine(dotnet_sdk_path, "Roslyn", "bincore", "csc.dll"));
       helper.AddArg("/noconfig");
@@ -57,7 +62,7 @@ namespace Arcane.ExecDrivers.DotNetCompile
       helper.AddReferenceLib(Path.Combine(dotnet_sdk_path, "ref"), "netstandard.dll");
       helper.m_args.AddRange(args);
       string cmd = string.Join(" ", helper.m_args);
-      Utils.ExecShellCommand(cmd, null);
+      Utils.ExecCommand(Utils.DotnetCoreClrPath, cmd, null);
 
       return 0;
     }

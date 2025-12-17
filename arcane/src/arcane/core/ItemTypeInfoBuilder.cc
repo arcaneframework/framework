@@ -47,6 +47,7 @@ setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
 {
   m_mng = mng;
   m_type_id = type_id;
+  m_linear_type_id = type_id;
   m_dimension = static_cast<Int16>(dimension);
   m_nb_node = nb_node;
   m_type_name = type_name;
@@ -87,6 +88,16 @@ setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
+setOrder(Int16 order, ItemTypeId linear_type_id)
+{
+  m_order = order;
+  m_linear_type_id = linear_type_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
 addEdge(Int32 edge_index, Int32 n0, Int32 n1, Int32 f_left, Int32 f_right)
 {
   Array<Integer>& buf = m_mng->m_ids_buffer;
@@ -95,6 +106,20 @@ addEdge(Int32 edge_index, Int32 n0, Int32 n1, Int32 f_left, Int32 f_right)
   buf.add(n1);
   buf.add(f_left);
   buf.add(f_right);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+addEdge2D(Integer edge_index, Integer n0, Integer n1)
+{
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + edge_index] = buf.size();
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(-1);
+  buf.add(-1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -128,6 +153,23 @@ addFaceLine(Integer face_index, Integer n0, Integer n1)
   buf.add(0); // no edge
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+addEdgeAndFaceLine(Int32 edge_face_index,
+                   std::array<Int16, 2> begin_end_node,
+                   std::array<Int16, 2> left_and_right_face)
+{
+  Int16 n0 = begin_end_node[0];
+  Int16 n1 = begin_end_node[1];
+  addFaceLine(edge_face_index, n0, n1);
+  addEdge(edge_face_index, n0, n1, left_and_right_face[0], left_and_right_face[1]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
 void ItemTypeInfoBuilder::
 addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
@@ -140,6 +182,25 @@ addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
   buf.add(n0);
   buf.add(n1);
   buf.add(n2);
+  buf.add(0); // no edge
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
+void ItemTypeInfoBuilder::
+addFaceLine4(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3)
+{
+  _checkDimension(2);
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
+  buf.add(IT_Line4);
+  buf.add(4);
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(n2);
+  buf.add(n3);
   buf.add(0); // no edge
 }
 
@@ -225,6 +286,32 @@ addFaceQuad8(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
   buf.add(n5);
   buf.add(n6);
   buf.add(n7);
+  buf.add(4);
+  for (Integer i = 0; i < 4; ++i)
+    buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+addFaceQuad9(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+             Integer n4, Integer n5, Integer n6, Integer n7, Integer n8)
+{
+  _checkDimension(3);
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
+  buf.add(IT_Quad9);
+  buf.add(9);
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(n2);
+  buf.add(n3);
+  buf.add(n4);
+  buf.add(n5);
+  buf.add(n6);
+  buf.add(n7);
+  buf.add(n8);
   buf.add(4);
   for (Integer i = 0; i < 4; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos

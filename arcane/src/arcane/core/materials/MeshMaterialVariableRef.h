@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.h                                   (C) 2000-2024 */
+/* MeshMaterialVariableRef.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLEREF_H
-#define ARCANE_MATERIALS_MESHMATERIALVARIABLEREF_H
+#ifndef ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEREF_H
+#define ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -22,8 +22,8 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array2View.h"
 
-#include "arcane/Item.h"
-#include "arcane/VariableRef.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableRef.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MatItemEnumerator.h"
@@ -175,18 +175,18 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
  private:
 
   //! Variable associée
-  IMeshMaterialVariable* m_material_variable;
+  IMeshMaterialVariable* m_material_variable = nullptr;
 
   //! Référence précédente sur \a m_variable
-  MeshMaterialVariableRef* m_previous_reference;
+  MeshMaterialVariableRef* m_previous_reference = nullptr;
 
   //! Référence suivante sur \a m_variable
-  MeshMaterialVariableRef* m_next_reference;
+  MeshMaterialVariableRef* m_next_reference = nullptr;
 
   //! Variable globale associée
-  IVariable* m_global_variable;
+  IVariable* m_global_variable = nullptr;
 
-  bool m_is_registered;
+  bool m_is_registered = false;
 
  private:
   void _checkValid() const
@@ -204,6 +204,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 /*!
  * \ingroup ArcaneMaterials
  * \brief Variable scalaire sur les mailles d'un matériau du maillage.
+ *
  * Pour l'instant, cette classe n'est instanciée que pour les mailles
  */
 template<typename DataType_>
@@ -220,9 +221,17 @@ class CellMaterialVariableScalarRef
 
  public:
 
+  //! Construit une référence à la variable spécifiée dans \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb);
+  /*!
+   * \brief Construit une référence à la variable \a var.
+   *
+   * \a var doit avoir comme type de donnée \a DataType et doit être une variable scalaire sinon
+   * une exception est levée.
+   */
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(IMeshMaterialVariable* var);
   ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const ThatClass& rhs);
 
  public:
@@ -379,9 +388,17 @@ class CellMaterialVariableArrayRef
 
  public:
 
+  //! Construit une référence à la variable spécifiée dans \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb);
+  /*!
+   * \brief Construit une référence à la variable \a var.
+   *
+   * \a var doit avoir comme type de donnée \a DataType et doit être une variable tableau sinon
+   * une exception est levée.
+   */
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(IMeshMaterialVariable* var);
   ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const ThatClass& rhs);
 
  public:

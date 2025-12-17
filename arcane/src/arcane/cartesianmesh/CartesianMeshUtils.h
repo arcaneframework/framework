@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUtils.h                                        (C) 2000-2024 */
+/* CartesianMeshUtils.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires associées à 'ICartesianMesh'.                       */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,6 @@
 #include "arcane/utils/Ref.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,13 +35,6 @@ namespace Arcane::CartesianMeshUtils
  */
 extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<CartesianMeshCoarsening2>
 createCartesianMeshCoarsening2(ICartesianMesh* cm);
-
-/*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V3?).
- * \warning Very experimental method !
- */
-extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<ICartesianMeshAMRPatchMng>
-cartesianMeshAMRPatchMng(ICartesianMesh* cm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

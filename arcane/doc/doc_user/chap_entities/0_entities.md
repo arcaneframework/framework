@@ -21,6 +21,7 @@ Sommaire de ce chapitre :
 
 5. \subpage arcanedoc_entities_geometric
 
+6. \subpage arcanedoc_entities_tools
 ____
 
 <div class="section_buttons">

@@ -1,31 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITransferValuesParallelOperation.h                          (C) 2000-2014 */
+/* ITransferValuesParallelOperation.h                          (C) 2000-2025 */
 /*                                                                           */
 /* Transfert de valeurs sur différents processeurs.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITRANSFERVALUESPARALLELOPERATION_H
-#define ARCANE_ITRANSFERVALUESPARALLELOPERATION_H
+#ifndef ARCANE_CORE_ITRANSFERVALUESPARALLELOPERATION_H
+#define ARCANE_CORE_ITRANSFERVALUESPARALLELOPERATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
-#include "arcane/ArcaneTypes.h"
+
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IParallelMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,32 +104,37 @@ class IParallelMng;
 class ARCANE_CORE_EXPORT ITransferValuesParallelOperation
 {
  public:
+
   //! Destructeur
-  virtual ~ITransferValuesParallelOperation() {}
+  virtual ~ITransferValuesParallelOperation() = default;
+
  public:
+
   //! Gestionnaire de parallélisme associé
-  virtual IParallelMng* parallelMng() =0;
+  virtual IParallelMng* parallelMng() = 0;
+
  public:
+
   //! Positionne le tableau indiquant à qui envoyer les valeurs.
-  virtual void setTransferRanks(Int32ConstArrayView ranks) =0;
+  virtual void setTransferRanks(Int32ConstArrayView ranks) = 0;
   //! Ajoute un tableau de \c Int32
-  virtual void addArray(Int32ConstArrayView send_values,SharedArray<Int32> recv_value) =0;
+  virtual void addArray(Int32ConstArrayView send_values, SharedArray<Int32> recv_value) = 0;
   //! Ajoute un tableau de \c Int64
-  virtual void addArray(Int64ConstArrayView send_values,SharedArray<Int64> recv_values) =0;
+  virtual void addArray(Int64ConstArrayView send_values, SharedArray<Int64> recv_values) = 0;
   //! Ajoute un tableau de \c Int64
-  virtual void addArray(RealConstArrayView send_values,SharedArray<Real> recv_values) =0;
+  virtual void addArray(RealConstArrayView send_values, SharedArray<Real> recv_values) = 0;
   /*!
    * \brief Envoie et réceptionne les valeurs.
    *
    * Cet appel est collectif et bloquant.
    */
-  virtual void transferValues() =0;
+  virtual void transferValues() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

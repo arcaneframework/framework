@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.cc                                                (C) 2000-2024 */
+/* TimeStats.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Statistiques sur les temps d'exécution.                                   */
 /*---------------------------------------------------------------------------*/
@@ -22,16 +22,16 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/Exception.h"
 
-#include "arcane/Timer.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ITimerMng.h"
-#include "arcane/MathUtils.h"
-#include "arcane/Properties.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ITimerMng.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/Properties.h"
 
 #include "arcane/impl/TimeStats.h"
 
-#include "arccore/trace/ITimeMetricCollector.h"
-#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/internal/ITimeMetricCollector.h"
+#include "arccore/trace/internal/TimeMetric.h"
 
 #include <algorithm>
 

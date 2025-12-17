@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.cc                                        (C) 2000-2024 */
+/* ItemGroupInternal.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -13,7 +13,6 @@
 
 #include "arcane/core/internal/ItemGroupInternal.h"
 
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
@@ -26,7 +25,6 @@
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
-#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +38,7 @@ namespace Arcane
 ItemGroupInternal::
 ItemGroupInternal()
 : m_internal_api(this)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -56,6 +55,7 @@ ItemGroupInternal(IItemFamily* family,const String& name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -73,6 +73,7 @@ ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
+, m_sub_parts_by_type(this)
 {
   _init();
 }
@@ -111,13 +112,6 @@ _init()
     updateTimestamp();
   }
 
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
-    m_use_v2_for_apply_operation = (v.value()==2);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
-    m_is_debug_apply_operation = (v.value()>0);
-
   m_is_check_simd_padding = arcaneIsCheck();
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)){
     m_is_check_simd_padding = (v.value()>0);
@@ -129,6 +123,10 @@ _init()
     m_is_print_stack_apply_simd_padding = (v.value()>1);
   }
 
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE", true)) {
+    if (v.value() > 0)
+      m_check_need_update_mutex.create();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -188,8 +186,7 @@ resetSubGroups()
   m_outer_active_face_group = nullptr;
   m_level_cell_group.clear();
   m_own_level_cell_group.clear();
-  m_children_by_type.clear();
-  m_children_by_type_ids.clear();
+  m_sub_parts_by_type.clear();
   m_sub_groups.clear();
 }
 
@@ -263,12 +260,12 @@ notifyInvalidateObservers()
  * \brief Vérifie que les localIds() sont contigüs.
  */
 void ItemGroupInternal::
-checkIsContigous()
+checkIsContiguous()
 {
-  m_is_contigous = false;
+  m_is_contiguous = false;
   Int32ConstArrayView lids = itemsLocalId();
-  if (lids.empty()){
-    m_is_contigous = false;
+  if (lids.empty()) {
+    m_is_contiguous = false;
     return;
   }
   Int32 first_lid = lids[0];
@@ -281,7 +278,7 @@ checkIsContigous()
     }
   }
   if (!is_bad)
-    m_is_contigous = true;
+    m_is_contiguous = true;
 }
 
 /*---------------------------------------------------------------------------*/

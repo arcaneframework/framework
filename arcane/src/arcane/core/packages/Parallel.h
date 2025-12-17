@@ -1,5 +1,5 @@
 ﻿// -*- C++ -*-
-#include "arcane/Parallel.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/IParallelMng.h"
 #include "arcane/ParallelFatalErrorException.h"
 

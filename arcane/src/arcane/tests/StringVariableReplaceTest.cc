@@ -88,8 +88,9 @@ executeTest()
   StringList args;
   platform::fillCommandLineArguments(args);
   const CommandLineArguments cla{ args };
+  ParameterListWithCaseOption params;
+  params.addParameters(cla.parameters());
 
-  ParameterList params(cla.parameters());
   String test("aaaa");
   bool fatal = true;
 

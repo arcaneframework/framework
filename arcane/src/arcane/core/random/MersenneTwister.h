@@ -1,37 +1,39 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MersenneTwister.h                                           (C) 2000-2006 */
+/* MersenneTwister.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Ce fichier definit le patron de classe  MersenneTwister ainsi que deux    */
 /* classes  associees mt19937 et mt11213b. Il est une version adapte a TROLL */
 /* du fichier MersenneTwister.hpp provenant de la bibliotheque BOOST         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_RANDOM_MERSENNE_TWISTER_H
-#define ARCANE_RANDOM_MERSENNE_TWISTER_H
+#ifndef ARCANE_CORE_RANDOM_MERSENNETWISTER_H
+#define ARCANE_CORE_RANDOM_MERSENNETWISTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/random/RandomGlobal.h"
+#include "arcane/core/random/RandomGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane::random
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RANDOM_BEGIN_NAMESPACE
-
-/*! Patron de classe MersenneTwister. Il permet de définir des classes de 
+/*!
+ * \brief Patron de classe MersenneTwister.
+ *
+ * Il permet de définir des classes de 
  * générateurs de type Mersenne Twister en fonction des paramètres w,n,m,r,a,u
  * s,b,t,c et l. Les nombres pseudo-aléatoires générés sont de type UIntType.
  * La génération de ces nombres s'effectue par l'appel de l'opérateur \c (). L'état
@@ -334,8 +336,9 @@ typedef MersenneTwister<UInt32,32,351,175,19,0xccab8ee7,11,
 typedef MersenneTwister<UInt32,32,624,397,31,0x9908b0df,11,
   7,0x9d2c5680,15,0xefc60000,18, 3346425566U> Mt19937;
 
-RANDOM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif // ARCANE_RANDOM_MERSENNE_TWISTER_H

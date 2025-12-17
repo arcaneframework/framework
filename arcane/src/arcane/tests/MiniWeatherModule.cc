@@ -1,25 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MiniWeatherModule.cc                                        (C) 2000-2021 */
+/* MiniWeatherModule.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Module pour la miniapplication MiniWeather.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
-
-#include "arcane/BasicModule.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/ServiceInfo.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/ITimeLoop.h"
+#include "arcane/core/BasicModule.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/ITimeLoop.h"
 #include "arcane/tests/MiniWeatherTypes.h"
 #include "arcane/tests/MiniWeather_axl.h"
 

@@ -13,14 +13,13 @@
 /* Un symbole est défini par une chaine de caractères entourée de @.         */
 /* Exemple : @mon_symbole@                                                   */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
 #define ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ParameterList.h"
+#include "arcane/utils/internal/ParameterListWithCaseOption.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,8 +34,12 @@ class ARCANE_CORE_EXPORT StringVariableReplace
 {
  public:
 
-  static String replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
-  static String replaceWithCmdLineArgs(const ParameterList& parameter_list, StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
+  static String replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found = false,
+                                       bool fatal_if_invalid = true);
+  static String replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list,
+                                       StringView string_with_symbols,
+                                       bool fatal_if_not_found = false,
+                                       bool fatal_if_invalid = true);
 
  private:
 

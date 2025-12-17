@@ -47,15 +47,15 @@ ENUMERATE_COMPONENTITEM()
 
 ### Boucles sur les milieux {#arcanedoc_materials_loop_envloop}
 
-\snippet MeshMaterialTesterModule.cc SampleEnumerateComponentItemEnv
+\snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemEnv
 
 ### Boucles sur les matériaux {#arcanedoc_materials_loop_matloop}
 
-\snippet MeshMaterialTesterModule.cc SampleEnumerateComponentItemMat
+\snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemMat
 
 ### Boucles génériques sur les composants {#arcanedoc_materials_loop_componentloop}
 
-\snippet MeshMaterialTesterModule.cc SampleEnumerateComponentItemComponent
+\snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemComponent
 
 ## Boucles vectorielles sur les composants {#arcanedoc_materials_loop_simdloop}
 
@@ -89,11 +89,11 @@ cette macro.
 
 Par exemple, avec les déclarations suivantes des variables :
 
-\snippet MeshMaterialTesterModule.cc SampleEnumerateVariableDeclaration
+\snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateVariableDeclaration
 
 Il est possible d'utiliser les boucles vectorielles comme suit :
 
-\snippet MeshMaterialTesterModule.cc SampleEnumerateSimdComponentItem
+\snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateSimdComponentItem
 
 \warning Pour des raisons de performance, l'ordre des itérations peut
 être quelconque. Il est donc indispensable qu'il n'y ait pas de

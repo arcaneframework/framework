@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtuMeshWriter.cc                                            (C) 2000-2018 */
+/* VtuMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format VtuMeshWriter.                    */
 /*---------------------------------------------------------------------------*/
@@ -304,7 +304,9 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	\************************/
 	vtkXMLUnstructuredGridWriter* vtk_grid_writer = vtkXMLUnstructuredGridWriter::New();
 	vtk_grid_writer->SetInputData(grid);
-	String fileNameDotVtu(file_name + ".vtu");
+  String fileNameDotVtu(file_name);
+  if (!file_name.endsWith(".vtu"))
+    fileNameDotVtu = file_name + ".vtu";
 	vtk_grid_writer->SetFileName(fileNameDotVtu.localstr());
 	info() << "[writeMeshToFile] SetFileName " << fileNameDotVtu;
   String isAscii = platform::getEnvironmentVariable("ARCANE_VTU_DATA_MODE_TO_ASCII");

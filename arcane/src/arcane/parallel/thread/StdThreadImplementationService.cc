@@ -13,12 +13,11 @@
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
+#include "arccore/base/internal/DependencyInjection.h"
+
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/IThreadImplementationService.h"
-#include "arcane/utils/internal/DependencyInjection.h"
-
-#include "arcane/core/FactoryService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +33,6 @@ class StdThreadImplementationService
 {
  public:
 
-  explicit StdThreadImplementationService(const ServiceBuildInfo&) {}
   StdThreadImplementationService() = default;
 
  public:
@@ -51,10 +49,6 @@ class StdThreadImplementationService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_APPLICATION_FACTORY(StdThreadImplementationService,
-                                    IThreadImplementationService,
-                                    StdThreadImplementationService);
 
 ARCANE_DI_REGISTER_PROVIDER(StdThreadImplementationService,
                             DependencyInjection::ProviderProperty("StdThreadImplementationService"),

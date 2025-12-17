@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeFamily.cc                                               (C) 2000-2022 */
+/* EdgeFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Famille d'arêtes.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -15,11 +15,12 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
+#include "arcane/core/IMesh.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Connectivity.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Connectivity.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
@@ -310,6 +311,41 @@ setConnectivity(const Integer c)
           << m_node_prealloc << " by node, " 
           << m_face_prealloc << " by face, "
           << m_cell_prealloc << " by cell.";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EdgeFamily::
+reorientEdgesIfNeeded()
+{
+  info() << "Reorient Edges family=" << fullName();
+  // Réoriente les arêtes si nécessaire. Cela est le cas par exemple si on
+  // a changé la numérotation des uniqueId() des noeuds.
+  NodesOfItemReorderer reorderer(mesh()->itemTypeMng());
+  SmallArray<Int32> new_nodes_lid;
+  IncrementalItemConnectivity* true_connectivity = m_node_connectivity->trueCustomConnectivity();
+  ENUMERATE_ (Edge, iedge, allItems()) {
+    Edge edge = *iedge;
+    ItemTypeId edge_type = edge.itemTypeId();
+    Int32 nb_node = edge.nbNode();
+    // Il faut que le premier noeud soit celui de plus petit uniqueId().
+    // Si le type est ITI_Line3, le troisième noeud ne change pas.
+    if (edge_type == ITI_Line2 || edge_type == ITI_Line3) {
+      new_nodes_lid.resize(nb_node);
+      for (Int32 i = 0; i < nb_node; ++i)
+        new_nodes_lid[i] = edge.nodeId(i);
+      Node node0 = edge.node(0);
+      Node node1 = edge.node(1);
+      if (node0.uniqueId() > node1.uniqueId()) {
+        std::swap(new_nodes_lid[0], new_nodes_lid[1]);
+      }
+      true_connectivity->replaceConnectedItems(edge, new_nodes_lid);
+    }
+    else
+      ARCANE_FATAL("Reorientation of edge of type '{0}' not yet supported", edge_type);
+  }
+  info() << "End Edge Reorientation";
 }
 
 /*---------------------------------------------------------------------------*/

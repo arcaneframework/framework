@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.h                                              (C) 2000-2024 */
+/* ItemInternal.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
  public:
   ItemBaseBuildInfo() = default;
-  ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
  public:
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
@@ -114,7 +114,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   struct Int32View
   {
    public:
-    Int32 operator[](Int32 index) const
+    constexpr Int32 operator[](Int32 index) const
     {
 #ifdef ARCANE_CHECK
       if (index==NULL_ITEM_LOCAL_ID){
@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 #endif
       return m_data[index];
     }
-    void operator=(ConstArrayView<Int32> v)
+    constexpr void operator=(ConstArrayView<Int32> v)
     {
       m_data = v.data();
       m_size = v.size();
@@ -204,7 +204,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    * \brief localId() de la \a index-ème entité de type \a item_kind
    * connectés à l'entité de de localid() \a lid.
    */
-  Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
+  constexpr Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
     return m_container[item_kind].itemLocalId(lid,index);
   }
@@ -273,13 +273,13 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
-  ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),A_INTERNAL_SI(node)); }
-  ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),A_INTERNAL_SI(edge)); }
-  ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),A_INTERNAL_SI(face)); }
-  ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
   ItemBaseBuildInfo hParentBase(Int32 lid, Int32 aindex, ItemSharedInfo* isf) const
   {
@@ -311,12 +311,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
-  Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
-  Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
-  Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
-  Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
-  Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
+  constexpr Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
+  constexpr Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
+  constexpr Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
+  constexpr Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
+  constexpr Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
+  constexpr Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
 
  private:
 
@@ -329,10 +329,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  Int32 _nbNodeV2(Int32 lid) const { return m_container[NODE_IDX].m_nb_item[lid]; }
-  Int32 _nbEdgeV2(Int32 lid) const { return m_container[EDGE_IDX].m_nb_item[lid]; }
-  Int32 _nbFaceV2(Int32 lid) const { return m_container[FACE_IDX].m_nb_item[lid]; }
-  Int32 _nbCellV2(Int32 lid) const { return m_container[CELL_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbNodeV2(Int32 lid) const { return m_container[NODE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbEdgeV2(Int32 lid) const { return m_container[EDGE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbFaceV2(Int32 lid) const { return m_container[FACE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbCellV2(Int32 lid) const { return m_container[CELL_IDX].m_nb_item[lid]; }
   Int32 _nbHParentV2(Int32 lid) const { return m_container[HPARENT_IDX].m_nb_item[lid]; }
   Int32 _nbHChildrenV2(Int32 lid) const { return m_container[HCHILD_IDX].m_nb_item[lid]; }
 
@@ -365,7 +365,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     {
       return &(m_list[ m_indexes[lid] ]);
     }
-    Int32 itemLocalId(Int32 lid,Integer index) const
+    constexpr Int32 itemLocalId(Int32 lid,Integer index) const
     {
       return m_list[ m_indexes[lid] + index] + itemOffset(lid);
     }
@@ -373,7 +373,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     {
       return ItemConnectivityContainerView( m_list, m_indexes, m_nb_item );
     }
-    Int32 itemOffset([[maybe_unused]] Int32 lid) const
+    constexpr Int32 itemOffset([[maybe_unused]] Int32 lid) const
     {
 #ifdef ARCANE_USE_OFFSET_FOR_CONNECTIVITY
       return m_offset[lid];
@@ -445,13 +445,13 @@ class ARCANE_CORE_EXPORT ItemBase
 
  private:
 
-  ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
 
  public:
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
-  ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
+  constexpr ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
 
  public:
 
@@ -694,6 +694,9 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   inline ItemBase parentBase(Int32 index) const;
 
+  //! Retourne si les flags \a flags sont positionnées pour l'entité
+  bool hasFlags(Int32 flags) const { return (this->flags() & flags); }
+
  public:
 
  /*!
@@ -722,6 +725,10 @@ class ARCANE_CORE_EXPORT ItemBase
   {
     return _internalActiveCells2(local_ids);
   }
+
+ private:
+
+  Int32 _nbLinearNode() const;
 
  private:
 
@@ -828,7 +835,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
   //! Positionne les flags de l'entité
   void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
 
-  //! Ajoute les flags \added_flags à ceux de l'entité
+  //! Ajoute les flags \a added_flags à ceux de l'entité
   void addFlags(Int32 added_flags)
   {
     Int32 f = this->flags();
@@ -836,7 +843,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
     this->setFlags(f);
   }
 
-  //! Supprime les flags \added_flags de ceux de l'entité
+  //! Supprime les flags \a removed_flags de ceux de l'entité
   void removeFlags(Int32 removed_flags)
   {
     Int32 f = this->flags();

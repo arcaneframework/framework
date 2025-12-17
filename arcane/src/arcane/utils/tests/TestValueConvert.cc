@@ -8,7 +8,10 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/internal/ValueConvertInternal.h"
+
+#include "arccore/base/internal/ConvertInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,7 +162,7 @@ void _testDoubleConvert(bool use_from_chars)
 
 void _testReal2Convert(bool use_same_that_real)
 {
-  impl::arcaneSetUseSameValueConvertForAllReal(use_same_that_real);
+  Convert::Impl::ConvertPolicy::setUseSameConvertForAllReal(use_same_that_real);
   Real v_nan = std::numeric_limits<double>::quiet_NaN();
   _checkReal2("2.3e1 -1.2", Real2(2.3e1, -1.2));
   if (use_same_that_real) {
@@ -173,7 +176,7 @@ void _testReal2Convert(bool use_same_that_real)
 
 void _testReal3Convert(bool use_same_that_real)
 {
-  impl::arcaneSetUseSameValueConvertForAllReal(use_same_that_real);
+  Convert::Impl::ConvertPolicy::setUseSameConvertForAllReal(use_same_that_real);
   Real v_nan = std::numeric_limits<double>::quiet_NaN();
   Real v_inf = std::numeric_limits<double>::infinity();
   _checkReal3("2.3e1 -1.2 1.5", Real3(2.3e1, -1.2, 1.5));
@@ -203,23 +206,40 @@ void _testReal3Convert(bool use_same_that_real)
 TEST(ValueConvert, Basic)
 {
   std::cout << "TEST_ValueConvert Basic\n";
-  impl::arcaneSetValueConvertVerbosity(1);
+  Convert::Impl::ConvertPolicy::setVerbosity(1);
 
-#if defined(ARCANE_HAS_CXX20)
-  impl::arcaneSetIsValueConvertUseFromChars(true);
+  Convert::Impl::ConvertPolicy::setUseFromChars(true);
   _testDoubleConvert(true);
   _testReal2Convert(true);
   _testReal2Convert(false);
   _testReal3Convert(true);
   _testReal3Convert(false);
-#endif
 
-  impl::arcaneSetIsValueConvertUseFromChars(false);
+  Convert::Impl::ConvertPolicy::setUseFromChars(true);
   _testDoubleConvert(false);
   _testReal2Convert(true);
   _testReal2Convert(false);
   _testReal3Convert(true);
   _testReal3Convert(false);
+
+  EXPECT_THROW(arcaneCheckArraySize(-5),ArgumentException);
+  {
+    unsigned long long x1 = 123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x1), ArgumentException);
+    long long x2 = 123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x2), ArgumentException);
+    long long x3 = -123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x3), ArgumentException);
+    long x4 = -1234567;
+    EXPECT_THROW(arcaneCheckArraySize(x4), ArgumentException);
+
+    long x5 = 1234567;
+    ASSERT_EQ(arcaneCheckArraySize(x5), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned long long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<long long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned int>(x5)), x5);
+  }
 }
 
 TEST(ValueConvert, TryParse)

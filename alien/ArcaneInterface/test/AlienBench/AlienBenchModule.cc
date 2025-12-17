@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -237,22 +237,22 @@ AlienBenchModule::test()
   }
   else
 #endif
-    {
-      info() << " CPU ASSEMPBLY ";
+  {
+    info() << " CPU ASSEMPBLY ";
 
-    _test(pbuild_timer,
-          areaU,
-          cell_cell_connection,
-          all_cell_cell_connection,
-          allUIndex,
-          vectorB,
-          vectorBB,
-          vectorX,
-          coordX,
-          coordY,
-          coordZ,
-          matrixA) ;
-    }
+  _test(pbuild_timer,
+        areaU,
+        cell_cell_connection,
+        all_cell_cell_connection,
+        allUIndex,
+        vectorB,
+        vectorBB,
+        vectorX,
+        coordX,
+        coordY,
+        coordZ,
+        matrixA) ;
+  }
 
 
 #ifdef ALIEN_USE_HTSSOLVER
@@ -755,87 +755,47 @@ AlienBenchModule::test()
                 "skip it";
     } else {
       Integer nb_resolutions = options()->nbResolutions();
-      for (Integer i = 0; i < nb_resolutions; ++i) {
+      for (Integer i = 0; i < nb_resolutions; ++i)
+      {
         if (i > 0) // i=0, matrix allready filled
         {
-          Timer::Sentry ts(&pbuild_timer);
-          Alien::ProfiledMatrixBuilder builder(
-              matrixA, Alien::ProfiledMatrixOptions::eResetValues);
-          ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+#ifdef ALIEN_USE_SYCL
+          if(m_use_accelerator)
           {
-            const Cell& cell = *icell;
-            double diag = dii(cell);
-
-            Integer i = allUIndex[cell.localId()];
-            builder(i, i) += diag;
-            ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-            {
-              const Cell& subcell = *isubcell;
-              double off_diag = fij(cell, subcell);
-              builder(i, i) += off_diag;
-              Integer j = allUIndex[subcell.localId()];
-              builder(i, j) -= off_diag;
-            }
+            if(m_with_usm)
+              _fillSystemSYCLWithUSM(pbuild_timer,
+                                     cell_cell_connection,
+                                     all_cell_cell_connection,
+                                     allUIndex,
+                                     vectorB,
+                                     vectorBB,
+                                     vectorX,
+                                     matrixA) ;
+            else
+              _fillSystemSYCL(pbuild_timer,
+                             cell_cell_connection,
+                             all_cell_cell_connection,
+                             allUIndex,
+                             vectorB,
+                             vectorBB,
+                             vectorX,
+                             matrixA) ;
           }
-          if (options()->sigma() > 0.) {
-            m_sigma = options()->sigma();
-            auto xCmax = Real3{ 0.25, 0.25, 0.25 };
-            auto xCmin = Real3{ 0.75, 0.75, 0.55 };
-            ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
-            {
-              const Cell& cell = *icell;
-              Real3 xC = m_cell_center[icell];
-              Real3 xDmax = xC - xCmax;
-              Real3 xDmin = xC - xCmin;
-              m_s[cell] = 0;
-              if (xDmax.normL2() < options()->epsilon()) {
-                m_s[cell] = 1.;
-                Integer i = allUIndex[cell.localId()];
-                info() << "MATRIX TRANSFO SIGMAMAX " << i;
-                if (cell.isOwn())
-                  builder(i, i) = m_sigma;
-                ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-                {
-                  const Cell& subcell = *isubcell;
-                  if (subcell.isOwn()) {
-                    Integer j = allUIndex[subcell.localId()];
-                    builder(j, i) = 0.;
-                  }
-                }
-              }
-              if (xDmin.normL2() < options()->epsilon()) {
-                m_s[cell] = -1.;
-                Integer i = allUIndex[cell.localId()];
-                info() << "MATRIX TRANSFO SIGMA MIN" << i;
-
-                if (cell.isOwn())
-                  builder(i, i) = 1. / m_sigma;
-                ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-                {
-                  const Cell& subcell = *isubcell;
-                  if (subcell.isOwn()) {
-                    Integer j = allUIndex[subcell.localId()];
-                    builder(j, i) = 0.;
-                  }
-                }
-              }
-            }
-          }
-
-          builder.finalize();
-        }
-
-        // Réinitialisation de vectorX
-        if(i>0)  // i=0, vector allready filled
-        {
-          Alien::LocalVectorReader reader(vectorBB);
-          Alien::LocalVectorWriter vb(vectorB);
-          Alien::LocalVectorWriter vx(vectorX);
-          for (Integer i = 0; i < m_vdist.localSize(); ++i) {
-            vx[i] = 0.;
-            vb[i] = reader[i];
+          else
+#endif
+          {
+            _fillSystemCPU(pbuild_timer,
+                           cell_cell_connection,
+                           all_cell_cell_connection,
+                           allUIndex,
+                           vectorB,
+                           vectorBB,
+                           vectorX,
+                           matrixA) ;
           }
         }
+
+
         /*
         if(i==0)
         {
@@ -1112,9 +1072,101 @@ AlienBenchModule::_test(Timer& pbuild_timer,
   }
 
 }
+
+
+void
+AlienBenchModule::_fillSystemCPU( Timer& pbuild_timer,
+                                  CellCellGroup& cell_cell_connection,
+                                  CellCellGroup& all_cell_cell_connection,
+                                  Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                                  Alien::Vector& vectorB,
+                                  Alien::Vector& vectorBB,
+                                  Alien::Vector& vectorX,
+                                  Alien::Matrix& matrixA)
+{
+  {
+    Timer::Sentry ts(&pbuild_timer);
+    Alien::ProfiledMatrixBuilder builder(
+        matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+    {
+      const Cell& cell = *icell;
+      double diag = dii(cell);
+
+      Integer i = allUIndex[cell.localId()];
+      builder(i, i) += diag;
+      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+      {
+        const Cell& subcell = *isubcell;
+        double off_diag = fij(cell, subcell);
+        builder(i, i) += off_diag;
+        Integer j = allUIndex[subcell.localId()];
+        builder(i, j) -= off_diag;
+      }
+    }
+    if (options()->sigma() > 0.)
+    {
+      m_sigma = options()->sigma();
+      auto xCmax = Real3{ 0.25, 0.25, 0.25 };
+      auto xCmin = Real3{ 0.75, 0.75, 0.55 };
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        Real3 xC = m_cell_center[icell];
+        Real3 xDmax = xC - xCmax;
+        Real3 xDmin = xC - xCmin;
+        m_s[cell] = 0;
+        if (xDmax.normL2() < options()->epsilon()) {
+          m_s[cell] = 1.;
+          Integer i = allUIndex[cell.localId()];
+          info() << "MATRIX TRANSFO SIGMAMAX " << i;
+          if (cell.isOwn())
+            builder(i, i) = m_sigma;
+          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+          {
+            const Cell& subcell = *isubcell;
+            if (subcell.isOwn()) {
+              Integer j = allUIndex[subcell.localId()];
+              builder(j, i) = 0.;
+            }
+          }
+        }
+        if (xDmin.normL2() < options()->epsilon()) {
+          m_s[cell] = -1.;
+          Integer i = allUIndex[cell.localId()];
+          info() << "MATRIX TRANSFO SIGMA MIN" << i;
+
+          if (cell.isOwn())
+            builder(i, i) = 1. / m_sigma;
+          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+          {
+            const Cell& subcell = *isubcell;
+            if (subcell.isOwn()) {
+              Integer j = allUIndex[subcell.localId()];
+              builder(j, i) = 0.;
+            }
+          }
+        }
+      }
+    }
+
+    builder.finalize();
+  }
+
+  // Réinitialisation de vectorX
+  {
+    Alien::LocalVectorReader reader(vectorBB);
+    Alien::LocalVectorWriter vb(vectorB);
+    Alien::LocalVectorWriter vx(vectorX);
+    for (Integer i = 0; i < m_vdist.localSize(); ++i) {
+      vx[i] = 0.;
+      vb[i] = reader[i];
+    }
+  }
+}
 /*---------------------------------------------------------------------------*/
 
-Real
+ARCCORE_HOST_DEVICE Real
 AlienBenchModule::funcn(Real3 p) const
 {
   return p.x * p.x * p.y;

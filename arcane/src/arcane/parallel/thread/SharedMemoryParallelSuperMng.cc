@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2024 */
+/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de messages utilisant uniquement la mémoire partagée.        */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/internal/SharedMemoryThreadMng.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/IApplication.h"
@@ -76,6 +77,7 @@ class SharedMemoryParallelMngContainer
   IThreadBarrier* m_thread_barrier = nullptr;
   SharedMemoryAllDispatcher* m_all_dispatchers = nullptr;
   IParallelMngContainerFactory* m_sub_factory_builder = nullptr;
+  SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator = nullptr;
 
  private:
 
@@ -108,6 +110,7 @@ SharedMemoryParallelMngContainer::
   delete m_thread_mng;
   delete m_all_dispatchers;
   delete m_internal_create_mutex;
+  delete m_window_creator;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -126,6 +129,8 @@ build()
   m_all_dispatchers->resize(m_nb_local_rank);
 
   m_internal_create_mutex = new Mutex();
+
+  m_window_creator = new SharedMemoryMachineMemoryWindowBaseInternalCreator(m_nb_local_rank, m_thread_barrier);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -154,6 +159,7 @@ _createParallelMng(Int32 local_rank,ITraceMng* tm)
   build_info.all_dispatchers = m_all_dispatchers;
   build_info.sub_builder_factory = m_sub_factory_builder;
   build_info.container = makeRef<IParallelMngContainer>(this);
+  build_info.window_creator = m_window_creator;
   // Seul le rang 0 positionne l'éventuel communicateur sinon tous les PE
   // vont se retrouver avec le même rang MPI
   if (local_rank==0)
@@ -176,8 +182,9 @@ class SharedMemoryParallelMngContainerFactory
   SharedMemoryParallelMngContainerFactory(const ServiceBuildInfo& sbi)
   : AbstractService(sbi), m_application(sbi.application()){}
  public:
-  Ref<IParallelMngContainer> _createParallelMngBuilder(Int32 nb_rank,MP::Communicator comm) override
+  Ref<IParallelMngContainer> _createParallelMngBuilder(Int32 nb_rank, MP::Communicator comm, MP::Communicator machine_comm) override
   {
+    ARCANE_UNUSED(machine_comm);
     auto x = new SharedMemoryParallelMngContainer(m_application,nb_rank,comm,this);
     x->build();
     return makeRef<IParallelMngContainer>(x);
@@ -261,7 +268,7 @@ build()
   ServiceBuilder<IParallelMngContainerFactory> sb(m_application);
   String service_name = "SharedMemoryParallelMngContainerFactory";
   m_builder_factory = sb.createReference(service_name);
-  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n,communicator());
+  Ref<IParallelMngContainer> x = m_builder_factory->_createParallelMngBuilder(n, communicator(), communicator());
   m_main_builder = x;
   m_container = dynamic_cast<SharedMemoryParallelMngContainer*>(x.get());
   ARCANE_CHECK_POINTER(m_container);

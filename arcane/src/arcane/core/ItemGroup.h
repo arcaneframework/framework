@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroup.h                                                 (C) 2000-2024 */
+/* ItemGroup.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Groupes d'entités du maillage.                                            */
 /*---------------------------------------------------------------------------*/
@@ -282,12 +282,27 @@ class ARCANE_CORE_EXPORT ItemGroup
   //! Indique si le groupe est celui de toutes les entités
   bool isAllItems() const;
 
-  //! Retourne le temps du groupe. Ce temps est incrémenté après chaque modification.
+  /*!
+   * Retourne le temps de dernière modification du groupe.
+   *
+   * Ce temps est incrémenté automatiquement après chaque modification.
+   * Il est possible de l'incrémenter manuellement via l'appel
+   * à incrementTimestamp().
+   */
   Int64 timestamp() const
   {
     return m_impl->timestamp();
   }
   
+  /*!
+   * \brief Incrément le temps de dernière modification du groupe.
+   *
+   * Normalement ce temps est incrémenté automatiquemnt. Il est néanmmoins
+   * possible de le faire manuellement en cas de modification externe des
+   * informations du groupe.
+   */
+  void incrementTimestamp() const;
+
   //! Table des local ids vers une position pour toutes les entités du groupe
   SharedPtrT<GroupIndexTable> localIdToIndex() const
   {

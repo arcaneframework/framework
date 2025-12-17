@@ -428,8 +428,8 @@ TEST(Span, StdArray)
     SmallSpan<const Real> small2(v2r);
     LargeSpan<const std::byte> small_fb2(asBytes(small2));
 
-    Span<Int64,DynExtent,-1> a4(v2.data()+1,v2.size()-1);
-    ASSERT_EQ(a4[-1],2);
+    //Span<Int64,DynExtent,-1> a4(v2.data()+1,v2.size()-1);
+    //ASSERT_EQ(a4[-1],2);
   }
 }
 
@@ -740,6 +740,31 @@ TEST(ArrayView,Copyable)
   ASSERT_TRUE(std::is_trivially_copyable_v<Span2<const int>>);
 }
 
+TEST(Span,FixedValue)
+{
+  using namespace Arccore;
+  std::cout << "sizeof(Span<Int32,1>) = " << sizeof(Span<Int32,1>) << "\n";
+  std::cout << "sizeof(Span<Int32,DynExtent>) = " << sizeof(Span<Int32,DynExtent>) << "\n";
+  std::cout << "sizeof(Span<Int64,1>) = " << sizeof(Span<Int64,1>) << "\n";
+  std::cout << "sizeof(Span<Int64,DynExtent>) = " << sizeof(Span<Int64,DynExtent>) << "\n";
+
+  // Vérifie que [[no_unique_address]] est bien pris en compte
+  // A priori cela n'est pas le cas avec VS2022.
+  ASSERT_EQ(sizeof(Span<Int32,1>),sizeof(void*));
+  ASSERT_EQ(sizeof(Span<Int64, 1>), sizeof(void*));
+
+  std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
+  Span<Int64, 12> fixed_list(vlist);
+  Int32 sub_view_size = 5;
+  Span<Int64> sub_view1 = fixed_list.subspan(0, sub_view_size);
+  ASSERT_EQ(sub_view1.size(), sub_view_size);
+
+  Span<Int64,12> fixed_span_only_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_ptr.data(),vlist.data());
+  Span<const Int64,12> fixed_span_only_const_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_const_ptr.data(),vlist.data());
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -760,16 +785,6 @@ template class SmallSpan<const Int32>;
 template class SmallSpan<double>;
 template class SmallSpan<const double>;
 
-template class Span<Int32,DynExtent,-1>;
-template class Span<const Int32,DynExtent,-1>;
-template class Span<double,DynExtent,-1>;
-template class Span<const double,DynExtent,-1>;
-
-template class SmallSpan<Int32,DynExtent,-1>;
-template class SmallSpan<const Int32,DynExtent,-1>;
-template class SmallSpan<double,DynExtent,-1>;
-template class SmallSpan<const double,DynExtent,-1>;
-
 template class Span<Int32,4>;
 template class Span<const Int32,5>;
 template class Span<double,6>;
@@ -779,16 +794,6 @@ template class SmallSpan<Int32,4>;
 template class SmallSpan<const Int32,5>;
 template class SmallSpan<double,6>;
 template class SmallSpan<const double,7>;
-
-template class Span<Int32,4,-1>;
-template class Span<const Int32,5,-1>;
-template class Span<double,6,-1>;
-template class Span<const double,7,-1>;
-
-template class SmallSpan<Int32,4,-1>;
-template class SmallSpan<const Int32,5,-1>;
-template class SmallSpan<double,6,-1>;
-template class SmallSpan<const double,7,-1>;
 
 template class Span2<Int32>;
 template class Span2<const Int32>;

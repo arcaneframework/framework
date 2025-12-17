@@ -25,6 +25,12 @@
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float128.h"
 #include "arccore/base/Int128.h"
+#include "arccore/base/IRangeFunctor.h"
+#include "arccore/base/CheckedConvert.h"
+#include "arccore/base/ForLoopRunInfo.h"
+#include "arccore/base/ForLoopRanges.h"
+#include "arccore/base/ParallelLoopOptions.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 
 #include <iostream>
 #include <cstring>
@@ -37,6 +43,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \file ArccoreGlobal.h
+ *
+ * \brief Définitions et globaux de %Arccore
+ */
 /*!
  * \namespace Arccore
  *

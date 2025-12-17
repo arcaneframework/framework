@@ -25,7 +25,7 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ITimeStats.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -38,7 +38,7 @@
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/message_passing/IRequestList.h"
 #include "arccore/message_passing/ISerializeMessageList.h"
-#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/internal/TimeMetric.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -218,67 +218,6 @@ class ParallelMngDispatcher::SerializeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher::Impl
-: public IParallelMngInternal
-{
- public:
-
-  explicit Impl(ParallelMngDispatcher* pm)
-  : m_parallel_mng(pm)
-  , m_runner(Accelerator::eExecutionPolicy::Sequential)
-  , m_queue(makeQueue(m_runner))
-  {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING", true))
-      m_is_accelerator_aware_disabled = (v.value()!=0);
-  }
-  ~Impl()
-  {
-  }
- public:
-
-  Runner runner() const override { return m_runner; }
-  RunQueue queue() const override { return m_queue; }
-  bool isAcceleratorAware() const override
-  {
-    if (m_is_accelerator_aware_disabled)
-      return false;
-    if (m_queue.isNull())
-      return false;
-    if (!m_queue.isAcceleratorPolicy())
-      return false;
-    return m_parallel_mng->_isAcceleratorAware();
-  }
-  void setDefaultRunner(const Runner& runner) override
-  {
-    if (!m_runner.isInitialized())
-      ARCANE_FATAL("Can not set an unitialized Runner");
-
-    // Attention à bien supprimer la référence sur la RunQueue
-    // avant de détruire le Runner car s'il n'y a pas d'autres
-    // références sur \a m_runner il sera détruit avec \a m_queue
-    // et ce dernier aura un \a m_runner détruit.
-    m_queue = RunQueue{};
-    m_runner = runner;
-    Accelerator::RunQueueBuildInfo build_info(-5);
-    m_queue = makeQueue(m_runner,build_info);
-    m_queue.setAsync(true);
-  }
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override
-  {
-    return m_parallel_mng->_createSubParallelMngRef(color, key);
-  }
-
- private:
-
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -309,7 +248,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
-, m_parallel_mng_internal(new Impl(this))
+, m_parallel_mng_internal(new ParallelMngInternal(this))
 {
 }
 
@@ -498,14 +437,25 @@ void ParallelMngDispatcher::
 processMessages(ConstArrayView<ISerializeMessage*> messages)
 {
   TimeMetricSentry tphase(Timer::phaseAction(timeStats(),TP_Communication));
-  ScopedPtrT<ISerializeMessageList> message_list(createSerializeMessageList());
+  Ref<ISerializeMessageList> message_list(createSerializeMessageListRef());
 
-  Integer nb_message = messages.size();
-  for( Integer i=0; i<nb_message; ++i ){
-    ISerializeMessage* m = messages[i];
+  for (ISerializeMessage* m : messages)
     message_list->addMessage(m);
-  }
-  message_list->processPendingMessages();
+
+  message_list->waitMessages(Parallel::WaitAll);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngDispatcher::
+processMessages(ConstArrayView<Ref<ISerializeMessage>> messages)
+{
+  TimeMetricSentry tphase(Timer::phaseAction(timeStats(), TP_Communication));
+  Ref<ISerializeMessageList> message_list(createSerializeMessageListRef());
+
+  for (const Ref<ISerializeMessage>& v : messages)
+    message_list->addMessage(v.get());
 
   message_list->waitMessages(Parallel::WaitAll);
 }
@@ -566,7 +516,7 @@ _doWaitRequests(ArrayView<Request> requests,eWaitType wait_type)
   Integer nb_request = requests.size();
   request_list->add(requests);
   request_list->wait(wait_type);
-  // Ne pas oublier de recopier les requêtes car elles ont pu être modifiées
+  // Ne pas oublier de recopier les requêtes, car elles ont pu être modifiées
   for (Integer i=0; i<nb_request; ++i )
     requests[i] = request_list->request(i);
   return request_list->doneRequestIndexes();
@@ -596,142 +546,142 @@ testSomeRequests(ArrayView<Request> requests)
 #define ARCANE_PARALLEL_MANAGER_DISPATCH(field,type)\
 void ParallelMngDispatcher::\
 allGather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->allGather(send_buf,recv_buf);\
-}\
-void ParallelMngDispatcher::\
-gather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer rank) \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->gather(send_buf,recv_buf,rank);                \
-}\
-void ParallelMngDispatcher::\
-allGatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->allGatherVariable(send_buf,recv_buf);\
-}\
-void ParallelMngDispatcher::\
-gatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf,Integer rank) \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->gatherVariable(send_buf,recv_buf,rank);        \
-}\
-void ParallelMngDispatcher::\
-scatterVariable(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer root)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->scatterVariable(send_buf,recv_buf,root);\
-}\
-type ParallelMngDispatcher::\
-reduce(eReduceType rt,type v)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allReduce(rt,v);\
-}\
-void ParallelMngDispatcher::\
-reduce(eReduceType rt,ArrayView<type> v)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->allReduce(rt,v);\
-}\
-void ParallelMngDispatcher::\
-broadcast(ArrayView<type> send_buf,Integer id)\
 { \
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->broadcast(send_buf,id);\
-}\
-void ParallelMngDispatcher::\
-send(ConstArrayView<type> values,Integer id)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->send(values,id);\
-}\
-void ParallelMngDispatcher::\
-recv(ArrayView<type> values,Integer id)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->recv(values,id);\
-}\
-Parallel::Request ParallelMngDispatcher::\
-send(ConstArrayView<type> values,Integer id,bool is_blocked)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->send(values,id,is_blocked);\
-}\
-Request ParallelMngDispatcher::\
-send(Span<const type> values,const PointToPointMessageInfo& message)  \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->send(values,message);\
-}\
-Parallel::Request ParallelMngDispatcher::\
-recv(ArrayView<type> values,Integer id,bool is_blocked)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->recv(values,id,is_blocked);\
-}\
-Request ParallelMngDispatcher::\
-receive(Span<type> values,const PointToPointMessageInfo& message)  \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->receive(values,message);\
-}\
-void ParallelMngDispatcher::\
-sendRecv(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer id)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->sendRecv(send_buf,recv_buf,id);\
-}\
-void ParallelMngDispatcher::\
-allToAll(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer count)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->allToAll(send_buf,recv_buf,count);\
-}\
-void ParallelMngDispatcher::\
-allToAllVariable(ConstArrayView<type> send_buf,Int32ConstArrayView send_count,\
-                 Int32ConstArrayView send_index,ArrayView<type> recv_buf,\
-                 Int32ConstArrayView recv_count,Int32ConstArrayView recv_index)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->allToAllVariable(send_buf,send_count,send_index,recv_buf,recv_count,recv_index);\
-}\
-type ParallelMngDispatcher::\
-scan(eReduceType rt,type v)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->scan(rt,v);\
-}\
-void ParallelMngDispatcher::\
-computeMinMaxSum(type val,type& min_val,type& max_val,type& sum_val,Int32& min_proc,Int32& max_proc)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->computeMinMaxSum(val,min_val,max_val,sum_val,min_proc,max_proc);\
-}\
-IParallelDispatchT<type>* ParallelMngDispatcher::\
-dispatcher(type*)\
-{\
-  return field;\
-}\
-void ParallelMngDispatcher::\
-computeMinMaxSum(ConstArrayView<type> values,    \
-                 ArrayView<type> min_values,     \
-                 ArrayView<type> max_values,     \
-                 ArrayView<type> sum_values,     \
-                 ArrayView<Int32> min_ranks,     \
-                 ArrayView<Int32> max_ranks)     \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->computeMinMaxSum(values,min_values,max_values,sum_values,min_ranks,max_ranks);\
-}\
-void ParallelMngDispatcher::\
-scan(eReduceType rt,ArrayView<type> v)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  field->scan(rt,v);\
-}
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->allGather(send_buf, recv_buf); \
+  } \
+  void ParallelMngDispatcher:: \
+  gather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer rank) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->gather(send_buf, recv_buf, rank); \
+  } \
+  void ParallelMngDispatcher:: \
+  allGatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->allGatherVariable(send_buf, recv_buf); \
+  } \
+  void ParallelMngDispatcher:: \
+  gatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf, Integer rank) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->gatherVariable(send_buf, recv_buf, rank); \
+  } \
+  void ParallelMngDispatcher:: \
+  scatterVariable(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer root) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->scatterVariable(send_buf, recv_buf, root); \
+  } \
+  type ParallelMngDispatcher:: \
+  reduce(eReduceType rt, type v) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->allReduce(rt, v); \
+  } \
+  void ParallelMngDispatcher:: \
+  reduce(eReduceType rt, ArrayView<type> v) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->allReduce(rt, v); \
+  } \
+  void ParallelMngDispatcher:: \
+  broadcast(ArrayView<type> send_buf, Integer id) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->broadcast(send_buf, id); \
+  } \
+  void ParallelMngDispatcher:: \
+  send(ConstArrayView<type> values, Integer id) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->send(values, id); \
+  } \
+  void ParallelMngDispatcher:: \
+  recv(ArrayView<type> values, Integer id) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->recv(values, id); \
+  } \
+  Parallel::Request ParallelMngDispatcher:: \
+  send(ConstArrayView<type> values, Integer id, bool is_blocked) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->send(values, id, is_blocked); \
+  } \
+  Request ParallelMngDispatcher:: \
+  send(Span<const type> values, const PointToPointMessageInfo& message) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->send(values, message); \
+  } \
+  Parallel::Request ParallelMngDispatcher:: \
+  recv(ArrayView<type> values, Integer id, bool is_blocked) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->recv(values, id, is_blocked); \
+  } \
+  Request ParallelMngDispatcher:: \
+  receive(Span<type> values, const PointToPointMessageInfo& message) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->receive(values, message); \
+  } \
+  void ParallelMngDispatcher:: \
+  sendRecv(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer id) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->sendRecv(send_buf, recv_buf, id); \
+  } \
+  void ParallelMngDispatcher:: \
+  allToAll(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer count) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->allToAll(send_buf, recv_buf, count); \
+  } \
+  void ParallelMngDispatcher:: \
+  allToAllVariable(ConstArrayView<type> send_buf, Int32ConstArrayView send_count, \
+                   Int32ConstArrayView send_index, ArrayView<type> recv_buf, \
+                   Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->allToAllVariable(send_buf, send_count, send_index, recv_buf, recv_count, recv_index); \
+  } \
+  type ParallelMngDispatcher:: \
+  scan(eReduceType rt, type v) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return (field)->scan(rt, v); \
+  } \
+  void ParallelMngDispatcher:: \
+  computeMinMaxSum(type val, type& min_val, type& max_val, type& sum_val, Int32& min_proc, Int32& max_proc) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->computeMinMaxSum(val, min_val, max_val, sum_val, min_proc, max_proc); \
+  } \
+  IParallelDispatchT<type>* ParallelMngDispatcher:: \
+  dispatcher(type*) \
+  { \
+    return (field); \
+  } \
+  void ParallelMngDispatcher:: \
+  computeMinMaxSum(ConstArrayView<type> values, \
+                   ArrayView<type> min_values, \
+                   ArrayView<type> max_values, \
+                   ArrayView<type> sum_values, \
+                   ArrayView<Int32> min_ranks, \
+                   ArrayView<Int32> max_ranks) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->computeMinMaxSum(values, min_values, max_values, sum_values, min_ranks, max_ranks); \
+  }\
+void ParallelMngDispatcher:: \
+  scan(eReduceType rt, ArrayView<type> v) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    (field)->scan(rt, v); \
+  }
 
 ARCANE_PARALLEL_MANAGER_DISPATCH(m_char,char)
 ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_char,unsigned char)

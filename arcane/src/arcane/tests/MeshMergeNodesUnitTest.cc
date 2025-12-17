@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMergeNodesUnitTest.cc                                   (C) 2000-2024 */
+/* MeshMergeNodesUnitTest.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Service de test de la fusion des noeuds.                                  */
 /*---------------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ executeTest()
     ItemInternal* left_item = family->findOneItem(iter.second.left_uid);
     ItemInternal* right_item = family->findOneItem(iter.second.right_uid);
     if (!left_item && !right_item)
-      break;
+      continue;
     if (!left_item || !right_item)
       ARCANE_FATAL("Invalid NodePair (right or left item is null)");
     nodes_local_id.add(left_item->localId());
@@ -213,10 +213,15 @@ void MeshMergeNodesUnitTest::
 initializeTest()
 {
   if (mesh()->parallelMng()->isParallel()) {
+    if (mesh()->dimension()!=2)
+      ARCANE_FATAL("This test is only valid for specific 'merge_nodes_2d.vtk'");
     // En parallèle, comme on ne peut pas déterminer la liste des noeuds
     // connectés car ils ne sont pas forcément dans le même sous-domaine
     // on remplit directement les valeurs. Du coup ce test ne fonctionne
     // qu'avec un maillage spécifique qui est actuellement le maillage 2D
+    // NOTE: pour l'insant le test n'est pas actif en parallèle car il faut ajouter
+    // des contraintes pour être sur que deux faces fusionnés sont dans le
+    // même sous-domaine.
     _addNodePairDirect(-0.5, 6, 3);
     _addNodePairDirect(-0.4, 62, 35);
     _addNodePairDirect(-0.3, 63, 36);

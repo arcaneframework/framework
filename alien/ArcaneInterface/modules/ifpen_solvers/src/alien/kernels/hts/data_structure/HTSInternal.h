@@ -1,7 +1,10 @@
-#ifndef ALIEN_HTSIMPL_MTLINTERNAL_H
-#define ALIEN_HTSIMPL_MTLINTERNAL_H
-/* Author :
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#pragma once
 
 //! Internal struct for HTS implementation
 /*! Separate data from header;
@@ -10,17 +13,14 @@
 
 #include <alien/distribution/MatrixDistribution.h>
 
-#include "HARTSSolver/HARTSSolverConfig.h"
-
+#ifdef ALIEN_USE_HARTS
 #include "HARTS/HARTS.h"
+#endif
 
 #ifdef ALIEN_USE_HTSSOLVER
 #include "HARTSSolver/HTS.h"
 #include "HARTSSolver/MatrixVector/CSR/CSRProfile.h"
 #include "HARTSSolver/MatrixVector/CSR/CSRMatrix.h"
-#endif
-
-//#include "Resources.h"
 
 #include "HARTSSolver/Utils/TraceMng.h"
 #include "HARTSSolver/Utils/ArrayUtils.h"
@@ -47,6 +47,7 @@
 #include "HARTSSolver/MatrixVector/DistUtils/SendRecvOp.h"
 #include "HARTSSolver/MatrixVector/DistUtils/DistStructInfo.h"
 #include "HARTSSolver/MatrixVector/MCCSR/MCCSRMatrix.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -212,5 +213,3 @@ template <typename ValueT, bool is_mpi = true> class VectorInternal
 
 END_HTSINTERNAL_NAMESPACE
 
-/*---------------------------------------------------------------------------*/
-#endif /* ALIEN_MTLIMPL_MTLINTERNAL_H */

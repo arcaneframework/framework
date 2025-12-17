@@ -18,28 +18,23 @@ set(ARCANE_SOURCES
   BasicDataType.h
   BadAlignmentException.cc
   BadAlignmentException.h
-  BadCastException.cc
   BadCastException.h
   BFloat16.h
-  Collection.cc
   Collection.h
   CommandLineArguments.h
   CommandLineArguments.cc
   Convert.cc
   Convert.h
-  ConcurrencyUtils.cc
   ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
-  DependencyInjection.cc
   DualUniqueArray.h
-  Enumerator.cc
+  DualUniqueArray.cc
   Enumerator.h
   ExternalRef.h
   Exception.h
   Exception.cc
   ExtentsV.h
-  Event.cc
   Event.h
   FixedArray.h
   Float16.h
@@ -48,11 +43,9 @@ set(ARCANE_SOURCES
   FloatingPointExceptionSentry.h
   FileContent.cc
   FileContent.h
-  ForLoopTraceInfo.cc
   ForLoopTraceInfo.h
   ForLoopRanges.h
   GenericRegisterer.h
-  GenericRegisterer.cc
   GoBackwardException.cc
   GoBackwardException.h
   HashSuite.h
@@ -80,9 +73,7 @@ set(ARCANE_SOURCES
   ISO88591Transcoder.h
   MDSpan.h
   MemoryAllocator.h
-  MemoryPool.cc
   MemoryView.h
-  MemoryView.cc
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
@@ -95,7 +86,6 @@ set(ARCANE_SOURCES
   MemoryInfo.cc
   MemoryInfo.h
   MemoryRessource.h
-  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
   Numeric.cc
@@ -104,11 +94,10 @@ set(ARCANE_SOURCES
   NumArray.h
   NumArrayContainer.h
   NumArrayUtils.h
+  NumArrayUtils.cc
   NumericTraits.h
   NumMatrix.h
   NumVector.h
-  Observable.cc
-  Observer.cc
   Observable.h
   Observer.h
   OStringStream.cc
@@ -126,7 +115,6 @@ set(ARCANE_SOURCES
   Process.cc
   Process.h
   Profiling.h
-  Profiling.cc
   Property.cc
   Property.h
   PropertyDeclarations.h
@@ -145,7 +133,6 @@ set(ARCANE_SOURCES
   SignalException.h
   Simd.cc
   Simd.h
-  SmallArray.cc
   SmallArray.h
   TestLogger.h
   TestLogger.cc
@@ -247,7 +234,6 @@ set(ARCANE_SOURCES
   HashFunction.cc
   IndexOutOfRangeException.h
   ItemGroupObserver.h
-  IDynamicLibraryLoader.h
   IFunctor.h
   IFunctorWithAddress.h
   IMathFunctor.h
@@ -339,34 +325,12 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
-  internal/DependencyInjection.h
+
   internal/ApplicationInfoProperties.h
-  internal/MemoryResourceMng.h
-  internal/MemoryUtilsInternal.h
-  internal/IMemoryRessourceMngInternal.h
-  internal/IMemoryCopier.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
-  internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
-  internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
-  internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h
-  internal/TaskFactoryInternal.h
+  internal/ParameterListWithCaseOption.h
   )
-
-if (ARCANE_HAS_CXX20)
-  list(APPEND ARCANE_SOURCES
-    ArcaneCxx20.cc
-    )
-endif()
-
-if (ARCANE_HAS_ACCELERATOR_API)
-  list(APPEND ARCANE_SOURCES
-    MDSpan.cc
-    NumArray.cc
-    DualUniqueArray.cc
-    NumArrayUtils.cc
-  )
-endif()

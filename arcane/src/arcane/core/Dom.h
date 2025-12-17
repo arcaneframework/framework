@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Dom.h                                                       (C) 2000-2024 */
+/* Dom.h                                                       (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un DOM1+DOM2+DOM3(core).                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOM_H
-#define ARCANE_DOM_H
+#ifndef ARCANE_CORE_DOM_H
+#define ARCANE_CORE_DOM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/DomDeclaration.h"
+#include "arcane/core/DomDeclaration.h"
 #include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/

@@ -273,7 +273,7 @@ ____
 <span class="back_section_button">
 \ref arcanedoc_entities_itemtype
 </span>
-<!-- <span class="next_section_button">
-\ref arcanedoc_execution_direct_execution
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_entities_tools
+</span>
 </div>

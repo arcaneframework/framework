@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2024 */
+/* Variable.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/core/VariableMetaData.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/VariableComparer.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
@@ -68,6 +69,12 @@
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const char* IVariable::TAG_POST_PROCESSING = "PostProcessing";
+const char* IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION = "PostProcessingAtThisIteration";
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,7 +115,7 @@ class VariablePrivate
   AutoDetachObservable m_write_observable; //!< Observable en écriture
   AutoDetachObservable m_read_observable; //!< Observable en lecture
   AutoDetachObservable m_on_size_changed_observable; //!< Observable en redimensionnement
-  std::map<String,String> m_tags; //!< Liste des tags
+  std::map<String, String> m_tags; //!< Liste des tags
   bool m_has_recursive_depend = true; //!< Vrai si les dépendances sont récursives
   bool m_want_shrink = false;
   Variable* m_variable = nullptr; //!< Variable associée
@@ -123,28 +130,26 @@ class VariablePrivate
    */
   void serializeHashId(ISerializer* sbuf)
   {
-    switch(sbuf->mode()){
+    switch (sbuf->mode()) {
     case ISerializer::ModeReserve:
-      sbuf->reserveSpan(eBasicDataType::Byte,HASHID_SIZE);
+      sbuf->reserveSpan(eBasicDataType::Byte, HASHID_SIZE);
       break;
     case ISerializer::ModePut:
-      sbuf->putSpan(Span<const Byte>(m_hash_id,HASHID_SIZE));
+      sbuf->putSpan(Span<const Byte>(m_hash_id, HASHID_SIZE));
       break;
-    case ISerializer::ModeGet:
-      {
-        Byte read_hash_id_buf[HASHID_SIZE];
-        Span<Byte> read_span(read_hash_id_buf,HASHID_SIZE);
-        sbuf->getSpan(read_span);
-        Span<const Byte> ref_span(m_hash_id,HASHID_SIZE);
-        if (ref_span!=Span<const Byte>(read_span))
-          ARCANE_FATAL("Bad hashid for variable name='{0}'\n"
-                       "  expected_hash_id='{1}'\n"
-                       "  hash_id         ='{2}'\n"
-                       " This may be due to incoherence in variable list (order) between ranks"
-                       " during serialization",
-                       m_infos.fullName(),String(ref_span),String(read_span));
-      }
-      break;
+    case ISerializer::ModeGet: {
+      Byte read_hash_id_buf[HASHID_SIZE];
+      Span<Byte> read_span(read_hash_id_buf, HASHID_SIZE);
+      sbuf->getSpan(read_span);
+      Span<const Byte> ref_span(m_hash_id, HASHID_SIZE);
+      if (ref_span != Span<const Byte>(read_span))
+        ARCANE_FATAL("Bad hashid for variable name='{0}'\n"
+                     "  expected_hash_id='{1}'\n"
+                     "  hash_id         ='{2}'\n"
+                     " This may be due to incoherence in variable list (order) between ranks"
+                     " during serialization",
+                     m_infos.fullName(), String(ref_span), String(read_span));
+    } break;
     }
   }
 
@@ -154,6 +159,8 @@ class VariablePrivate
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
   void resize(const VariableResizeArgs& resize_args) override;
+  VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) override;
+  IParallelMng* replicaParallelMng() const;
   //!@}
 
  private:
@@ -172,15 +179,15 @@ class VariablePrivate
   {
     constexpr Int64 hashid_hexa_length = 16;
     constexpr Int64 name_length = HASHID_SIZE - hashid_hexa_length;
-    Span<Byte> hash_id(m_hash_id,HASHID_SIZE);
+    Span<Byte> hash_id(m_hash_id, HASHID_SIZE);
     hash_id.fill('~');
     const String& full_name = m_infos.fullName();
     Int64 hash_value = IntegerHashFunctionT<StringView>::hashfunc(full_name.view());
-    Convert::toHexaString(hash_value,hash_id);
+    Convert::toHexaString(hash_value, hash_id);
     Span<const Byte> bytes = full_name.bytes();
-    if (bytes.size()>name_length)
-      bytes = bytes.subspan(0,name_length);
-    auto hash_id2 = hash_id.subspan(hashid_hexa_length,name_length);
+    if (bytes.size() > name_length)
+      bytes = bytes.subspan(0, name_length);
+    auto hash_id2 = hash_id.subspan(hashid_hexa_length, name_length);
     hash_id2.copy(bytes);
   }
 };
@@ -224,7 +231,7 @@ VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* va
   // Pour teste de libération mémoire.
   {
     String str = platform::getEnvironmentVariable("ARCANE_VARIABLE_SHRINK_MEMORY");
-    if (str=="1")
+    if (str == "1")
       m_want_shrink = true;
   }
 }
@@ -236,21 +243,20 @@ VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* va
 class ItemGroupPartialVariableObserver
 : public IItemGroupObserver
 {
-public:
-  ItemGroupPartialVariableObserver(IVariable * var) 
-    : m_var(var)
+ public:
+
+  explicit ItemGroupPartialVariableObserver(IVariable* var)
+  : m_var(var)
   {
-    ARCANE_ASSERT((m_var),("Variable pointer null")); 
-    
-    if(var->itemGroup().isAllItems()) 
+    ARCANE_ASSERT((m_var), ("Variable pointer null"));
+
+    if (var->itemGroup().isAllItems())
       ARCANE_FATAL("No observer should be attached on all items group");
   }
-  
-  ~ItemGroupPartialVariableObserver() {}
 
-  void executeExtend(const Int32ConstArrayView * info)
+  void executeExtend(const Int32ConstArrayView* info) override
   {
-    const Int32ConstArrayView & new_ids = *info;
+    const Int32ConstArrayView& new_ids = *info;
     if (new_ids.empty())
       return;
     ItemGroup group = m_var->itemGroup();
@@ -258,40 +264,40 @@ public:
 
     const Integer old_size = id_to_index->size();
     const Integer group_size = group.size();
-    if (group_size != (old_size+new_ids.size()))
+    if (group_size != (old_size + new_ids.size()))
       ARCANE_FATAL("Inconsitent extended size");
     m_var->resizeFromGroup();
     //id_to_index->update();
   }
 
-  void executeReduce(const Int32ConstArrayView * info)
+  void executeReduce(const Int32ConstArrayView* info) override
   {
     // contient la liste des localids des items supprimés dans l'ancien groupe
-    const Int32ConstArrayView & removed_lids = *info; 
+    const Int32ConstArrayView& removed_lids = *info;
     if (removed_lids.empty())
       return;
     ItemGroup group = m_var->itemGroup();
     SharedPtrT<GroupIndexTable> id_to_index = group.localIdToIndex();
-    
+
     const Integer old_size = id_to_index->size();
     const Integer group_size = group.size();
 
-    if (group_size != (old_size-removed_lids.size()))
-      ARCANE_FATAL("Inconsitent reduced size {0} vs {1}",group_size,old_size);
+    if (group_size != (old_size - removed_lids.size()))
+      ARCANE_FATAL("Inconsitent reduced size {0} vs {1}", group_size, old_size);
     [[maybe_unused]] ItemVectorView view = group.view();
     Int32UniqueArray source;
     Int32UniqueArray destination;
     source.reserve(group_size);
     destination.reserve(group_size);
-    for(Integer i=0,index=0,removed_index=0; i<old_size ;++i) {
-      if (removed_index < removed_lids.size() && 
+    for (Integer i = 0, index = 0, removed_index = 0; i < old_size; ++i) {
+      if (removed_index < removed_lids.size() &&
           id_to_index->keyLocalId(i) == removed_lids[removed_index]) {
         ++removed_index;
       }
       else {
         ARCANE_ASSERT((id_to_index->keyLocalId(i) == view[index].localId()),
                       ("Inconsistent key (pos=%d,key=%d) vs (pos=%d,key=%d)",
-                       i,id_to_index->keyLocalId(i),index,view[index].localId()));
+                       i, id_to_index->keyLocalId(i), index, view[index].localId()));
         if (i != index) {
           destination.add(index);
           source.add(i);
@@ -299,37 +305,41 @@ public:
         ++index;
       }
     }
-    m_var->copyItemsValues(source,destination);
+    m_var->copyItemsValues(source, destination);
     m_var->resizeFromGroup();
   }
 
-  void executeCompact(const Int32ConstArrayView* info) {
-    const Int32ConstArrayView & ids = *info;
-    if (ids.empty()) return;
+  void executeCompact(const Int32ConstArrayView* info) override
+  {
+    const Int32ConstArrayView& ids = *info;
+    if (ids.empty())
+      return;
     ItemGroup group = m_var->itemGroup();
     SharedPtrT<GroupIndexTable> id_to_index = group.localIdToIndex();
     m_var->compact(*info);
     //id_to_index->compact(info);
   }
 
-  void executeInvalidate() {
+  void executeInvalidate() override
+  {
     ItemGroup group = m_var->itemGroup();
     SharedPtrT<GroupIndexTable> id_to_index = group.localIdToIndex();
     m_var->resizeFromGroup();
     //id_to_index->update();
   }
 
-  bool needInfo() const { return true; }
+  bool needInfo() const override { return true; }
 
-private:
-  IVariable* m_var;
+ private:
+
+  IVariable* m_var = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Variable::
-Variable(const VariableBuildInfo& v,const VariableInfo& vi)
+Variable(const VariableBuildInfo& v, const VariableInfo& vi)
 : TraceAccessor(v.traceMng())
 , m_p(new VariablePrivate(v, vi, this))
 {
@@ -364,13 +374,13 @@ addVariableRef(VariableRef* ref)
   _checkSetProperty(ref);
   ++m_p->m_nb_reference;
   ref->setNextReference(m_p->m_first_reference);
-  if (m_p->m_first_reference){
+  if (m_p->m_first_reference) {
     VariableRef* _list = m_p->m_first_reference;
     if (_list->previousReference())
       _list->previousReference()->setNextReference(ref);
     _list->setPreviousReference(ref);
   }
-  else{
+  else {
     ref->setPreviousReference(0);
   }
   m_p->m_first_reference = ref;
@@ -388,7 +398,7 @@ removeVariableRef(VariableRef* ref)
       tmp->previousReference()->setNextReference(tmp->nextReference());
     if (tmp->nextReference())
       tmp->nextReference()->setPreviousReference(tmp->previousReference());
-    if (m_p->m_first_reference==tmp)
+    if (m_p->m_first_reference == tmp)
       m_p->m_first_reference = m_p->m_first_reference->nextReference();
   }
   // La référence peut être utilisée par la suite donc il ne faut pas oublier
@@ -401,9 +411,9 @@ removeVariableRef(VariableRef* ref)
 
   // Lorsqu'il n'y a plus de références sur cette variable, le signale au
   // gestionnaire de variable, sauf s'il s'agit d'une variable persistante
-  if (!_hasReference()){
+  if (!_hasReference()) {
     bool is_persistant = property() & IVariable::PPersistant;
-    if (!is_persistant){
+    if (!is_persistant) {
       //m_p->m_trace->info() << " REF PROPERTY name=" << name() << " " << ref->referenceProperty();
       _removeMeshReference();
       ISubDomain* sd = m_p->m_sub_domain;
@@ -430,7 +440,7 @@ _checkSetProperty(VariableRef* ref)
 {
   // Garantie que la propriété est correctement mise à jour avec la valeur
   // de la seule référence.
-  if (!_hasReference()){
+  if (!_hasReference()) {
     m_p->m_property = ref->referenceProperty();
     m_p->m_need_property_update = false;
   }
@@ -455,7 +465,6 @@ subDomain()
 {
   return m_p->m_sub_domain;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -550,28 +559,28 @@ property() const
   bool want_persistant = false;
 
   int property = 0;
-  for( VarRefEnumerator i(this); i.hasNext(); ++i ){
+  for (VarRefEnumerator i(this); i.hasNext(); ++i) {
     VariableRef* vref = *i;
     int p = vref->referenceProperty();
-    if ( ! (p & IVariable::PNoDump) )
+    if (!(p & IVariable::PNoDump))
       want_dump = true;
-    if ( ! (p & IVariable::PNoNeedSync) )
+    if (!(p & IVariable::PNoNeedSync))
       want_sync = true;
-    if ( ! (p & IVariable::PNoReplicaSync) )
+    if (!(p & IVariable::PNoReplicaSync))
       want_replica_sync = true;
-    if ( (p & IVariable::PSubDomainDepend) )
+    if ((p & IVariable::PSubDomainDepend))
       sub_domain_depend = true;
-    if ( (p & IVariable::PExecutionDepend) )
+    if ((p & IVariable::PExecutionDepend))
       execution_depend = true;
-    if ( (p & IVariable::PPersistant) )
+    if ((p & IVariable::PPersistant))
       want_persistant = true;
-    if ( (p & IVariable::PPrivate) )
+    if ((p & IVariable::PPrivate))
       want_private = true;
-    if ( ! (p & IVariable::PNoRestore) )
+    if (!(p & IVariable::PNoRestore))
       want_restore = true;
-    if ( ! (p & IVariable::PNoExchange) )
+    if (!(p & IVariable::PNoExchange))
       want_exchange = true;
-    if ( ! (p & IVariable::PTemporary) )
+    if (!(p & IVariable::PTemporary))
       want_notemporary = true;
   }
 
@@ -615,20 +624,20 @@ notifyReferencePropertyChanged()
 void Variable::
 setUsed(bool is_used)
 {
-  if (m_p->m_is_used==is_used)
+  if (m_p->m_is_used == is_used)
     return;
 
   m_p->m_is_used = is_used;
 
   eItemKind ik = itemKind();
-  
-  if (m_p->m_is_used){
-    if (m_p->m_item_group.null() && ik!=IK_Unknown){
+
+  if (m_p->m_is_used) {
+    if (m_p->m_item_group.null() && ik != IK_Unknown) {
       _checkSetItemFamily();
       _checkSetItemGroup();
       // Attention à ne pas reinitialiser les valeurs lorsque ces dernières
       // sont valides, ce qui est le cas par exemple après une protection.
-      if (!m_p->m_has_valid_data){
+      if (!m_p->m_has_valid_data) {
         resizeFromGroup();
         // Historiquement on remplissait dans tous les cas la variable avec le
         // constructeur par défaut
@@ -637,15 +646,15 @@ setUsed(bool is_used)
         // getGlobalDataInitialisationPolicy() (dans DataTypes.h).
         // On ne le fait maintenant que si le mode d'initialisation est égal
         // à DIP_Legacy. Ce mode doit à terme disparaître.
-        if (getGlobalDataInitialisationPolicy()==DIP_Legacy)
+        if (getGlobalDataInitialisationPolicy() == DIP_Legacy)
           m_p->m_data->fillDefault();
         m_p->m_has_valid_data = true;
       }
     }
   }
-  else{
+  else {
     _removeMeshReference();
-    if (ik==IK_Unknown)
+    if (ik == IK_Unknown)
       resize(0);
     else
       resizeFromGroup();
@@ -653,7 +662,7 @@ setUsed(bool is_used)
     m_p->m_has_valid_data = false;
   }
 
-  for( VarRefEnumerator i(this); i.hasNext(); ++i ){
+  for (VarRefEnumerator i(this); i.hasNext(); ++i) {
     VariableRef* ref = *i;
     ref->internalSetUsed(m_p->m_is_used);
   }
@@ -668,10 +677,10 @@ _removeMeshReference()
   IItemFamily* family = m_p->m_item_family;
   if (family)
     family->_internalApi()->removeVariable(this);
-  
+
   if (isPartial())
     m_p->m_item_group.internal()->detachObserver(this);
-  
+
   m_p->m_item_group = ItemGroup();
   m_p->m_item_family = 0;
 }
@@ -691,20 +700,20 @@ isUsed() const
 namespace
 {
 
-String _buildVariableFullType(const IVariable* var)
-{
-  StringBuilder full_type_b;
-  full_type_b = dataTypeName(var->dataType());
-  full_type_b += ".";
-  full_type_b += itemKindName(var->itemKind());
-  full_type_b += ".";
-  full_type_b += var->dimension();
-  full_type_b += ".";
-  full_type_b += var->multiTag();
-  if (var->isPartial())
-    full_type_b += ".Partial";
-  return full_type_b.toString();
-}
+  String _buildVariableFullType(const IVariable* var)
+  {
+    StringBuilder full_type_b;
+    full_type_b = dataTypeName(var->dataType());
+    full_type_b += ".";
+    full_type_b += itemKindName(var->itemKind());
+    full_type_b += ".";
+    full_type_b += var->dimension();
+    full_type_b += ".";
+    full_type_b += var->multiTag();
+    if (var->isPartial())
+      full_type_b += ".Partial";
+    return full_type_b.toString();
+  }
 
 }
 
@@ -714,8 +723,8 @@ String _buildVariableFullType(const IVariable* var)
 VariableMetaData* Variable::
 _createMetaData() const
 {
-  auto vmd = new VariableMetaData(name(),meshName(),itemFamilyName(),
-                                  itemGroupName(),isPartial());
+  auto vmd = new VariableMetaData(name(), meshName(), itemFamilyName(),
+                                  itemGroupName(), isPartial());
   vmd->setFullType(_buildVariableFullType(this));
   vmd->setMultiTag(String::fromNumber(multiTag()));
   vmd->setProperty(property());
@@ -747,7 +756,7 @@ void Variable::
 syncReferences()
 {
   //cout << "** SYNC REFERENCE N=" << m_p->m_nb_reference << " F=" << m_p->m_first_reference << '\n';
-  for( VarRefEnumerator i(this); i.hasNext(); ++i ){
+  for (VarRefEnumerator i(this); i.hasNext(); ++i) {
     VariableRef* ref = *i;
     //cout << "** SYNC REFERENCE V=" << ref << '\n';
     ref->updateFromInternal();
@@ -760,26 +769,42 @@ syncReferences()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer Variable::
+Int32 Variable::
 checkIfSync(int max_print)
 {
-  ARCANE_UNUSED(max_print);
-  return 0;
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(eVariableComparerCompareMode::Sync);
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(true);
+  VariableComparerResults results = _compareVariable(compare_args);
+  return results.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer Variable::
+Int32 Variable::
 checkIfSameOnAllReplica(Integer max_print)
 {
-  //TODO: regarder si la variable est utilisée.
-  IMesh* mesh = this->mesh();
-  IParallelMng* pm = (mesh) ? mesh->parallelMng() : subDomain()->parallelMng();
-  IParallelReplication* pr = pm->replication();
-  if (!pr->hasReplication())
-    return 0;
-  return _checkIfSameOnAllReplica(pr->replicaParallelMng(),max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(eVariableComparerCompareMode::SameOnAllReplica);
+  compare_args.setMaxPrint(max_print);
+  VariableComparerResults r = _compareVariable(compare_args);
+  return r.nbDifference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 Variable::
+checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost)
+{
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+  compare_args.setDataReader(reader);
+  VariableComparerResults r = _compareVariable(compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -863,10 +888,10 @@ void Variable::
 _setData(const Ref<IData>& data)
 {
   m_p->m_data = data;
-  if (!data.get()){
+  if (!data.get()) {
     ARCANE_FATAL("Invalid data: name={0} datatype={1} dimension={2} multitag={3}",
-                 m_p->m_infos.fullName(),m_p->m_infos.dataType(),
-                 m_p->m_infos.dimension(),m_p->m_infos.multiTag());
+                 m_p->m_infos.fullName(), m_p->m_infos.dataType(),
+                 m_p->m_infos.dimension(), m_p->m_infos.multiTag());
   }
   data->setName(m_p->m_infos.fullName());
 }
@@ -911,13 +936,13 @@ dataFactoryMng() const
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation)
+serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operation)
 {
   debug(Trace::High) << "Serialize (partial) variable name=" << fullName();
   m_p->serializeHashId(sbuffer);
-  m_p->m_data->serialize(sbuffer,ids,operation);
+  m_p->m_data->serialize(sbuffer, ids, operation);
   // En mode lecture, les données sont modifiées
-  if (sbuffer->mode()==ISerializer::ModeGet)
+  if (sbuffer->mode() == ISerializer::ModeGet)
     syncReferences();
 }
 
@@ -925,14 +950,14 @@ serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-serialize(ISerializer* sbuffer,IDataOperation* operation)
+serialize(ISerializer* sbuffer, IDataOperation* operation)
 {
   debug(Trace::High) << "Serialize (full) variable name=" << fullName();
 
   m_p->serializeHashId(sbuffer);
-  m_p->m_data->serialize(sbuffer,operation);
+  m_p->m_data->serialize(sbuffer, operation);
   // En mode lecture, les données sont modifiées
-  if (sbuffer->mode()==ISerializer::ModeGet)
+  if (sbuffer->mode() == ISerializer::ModeGet)
     syncReferences();
 }
 
@@ -943,7 +968,7 @@ void Variable::
 _resize(const VariableResizeArgs& resize_args)
 {
   eItemKind ik = itemKind();
-  if (ik!=IK_Unknown){
+  if (ik != IK_Unknown) {
     ARCANE_FATAL("This call is invalid for item variable. Use resizeFromGroup() instead");
   }
   _internalResize(resize_args);
@@ -966,26 +991,26 @@ void Variable::
 resizeFromGroup()
 {
   eItemKind ik = itemKind();
-  if (ik==IK_Unknown)
+  if (ik == IK_Unknown)
     return;
   Integer new_size = 0;
   IItemFamily* family = m_p->m_item_family;
-  if (family){
+  if (family) {
     if (m_p->m_item_group.isAllItems())
       new_size = m_p->m_item_family->maxLocalId();
     else
       new_size = m_p->m_item_group.size();
   }
-  else{
+  else {
     ItemGroup group = m_p->m_item_group;
-    if (!group.null()){
-      ARCANE_FATAL("Variable '{0}' has group but no family",fullName());
+    if (!group.null()) {
+      ARCANE_FATAL("Variable '{0}' has group but no family", fullName());
     }
   }
   debug(Trace::High) << "Variable::resizeFromGroup() var='" << fullName()
                      << "' with " << new_size << " items "
                      << " this=" << this;
-  _internalResize(VariableResizeArgs(new_size,new_size/20));
+  _internalResize(VariableResizeArgs(new_size, new_size / 20));
   syncReferences();
 }
 
@@ -1003,29 +1028,29 @@ _checkSetItemFamily()
 
   IMesh* mesh = m_p->m_mesh_handle.mesh();
   if (!mesh)
-    ARCANE_FATAL("No mesh named '{0}' exists for variable '{1}'",m_p->m_infos.meshName(),name());
+    ARCANE_FATAL("No mesh named '{0}' exists for variable '{1}'", m_p->m_infos.meshName(), name());
 
   eItemKind ik = itemKind();
 
   IItemFamily* family = 0;
   const String& family_name = m_p->m_infos.itemFamilyName();
-  if (ik==IK_Particle || ik==IK_DoF){
-    if (family_name.null()){
-      ARCANE_FATAL("family name not specified for variable {0}",name());
+  if (ik == IK_Particle || ik == IK_DoF) {
+    if (family_name.null()) {
+      ARCANE_FATAL("family name not specified for variable {0}", name());
     }
-    family = mesh->findItemFamily(ik,family_name,true);
+    family = mesh->findItemFamily(ik, family_name, true);
   }
-  else{
+  else {
     family = mesh->itemFamily(ik);
   }
 
-  if (family && family->itemKind()!=itemKind())
-    ARCANE_FATAL("Bad family kind '{0}' '{1}'",family->itemKind(),itemKind());
+  if (family && family->itemKind() != itemKind())
+    ARCANE_FATAL("Bad family kind '{0}' '{1}'", family->itemKind(), itemKind());
 
-  if (family && family->name()!=itemFamilyName())
+  if (family && family->name() != itemFamilyName())
     ARCANE_FATAL("Incoherent family name. var={0} from_type={1} given={2}",
-                 name(),family->name(),itemFamilyName());
-  
+                 name(), family->name(), itemFamilyName());
+
   if (!family)
     ARCANE_FATAL("Family not found");
 
@@ -1049,23 +1074,23 @@ _checkSetItemGroup()
     return;
   const String& group_name = m_p->m_infos.itemGroupName();
   //info() << " CHECK SET GROUP var=" << name() << " group=" << group_name;
-  if (group_name.null()){
+  if (group_name.null()) {
     m_p->m_item_group = m_p->m_item_family->allItems();
   }
   else
-    m_p->m_item_group = m_p->m_item_family->findGroup(group_name,true);
+    m_p->m_item_group = m_p->m_item_family->findGroup(group_name, true);
 
-  ItemGroupImpl * internal = m_p->m_item_group.internal();
+  ItemGroupImpl* internal = m_p->m_item_group.internal();
   // (HP) TODO: faut il garder ce controle hérité de l'ancienne implémentation de addVariable
   if (internal->parent() && (mesh()->parallelMng()->isParallel() && internal->isOwn()))
     ARCANE_FATAL("Cannot add variable ({0}) on a own group (name={1})",
-                 fullName(),internal->name());
+                 fullName(), internal->name());
   if (isPartial()) {
     if (group_name.empty())
       ARCANE_FATAL("Cannot create a partial variable with an empty item_group_name");
-    debug(Trace::High) << "Attach ItemGroupPartialVariableObserver from " << fullName() 
+    debug(Trace::High) << "Attach ItemGroupPartialVariableObserver from " << fullName()
                        << " to " << m_p->m_item_group.name();
-    internal->attachObserver(this,new ItemGroupPartialVariableObserver(this));
+    internal->attachObserver(this, new ItemGroupPartialVariableObserver(this));
   }
 }
 
@@ -1114,41 +1139,41 @@ update()
 void Variable::
 update(Real wanted_time)
 {
-  if (m_p->m_last_update_time<wanted_time){
-    for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
+  if (m_p->m_last_update_time < wanted_time) {
+    for (Integer k = 0, n = m_p->m_depends.size(); k < n; ++k) {
       VariableDependInfo& vdi = m_p->m_depends[k];
-      if (vdi.dependType()==DPT_PreviousTime)
+      if (vdi.dependType() == DPT_PreviousTime)
         vdi.variable()->update(wanted_time);
     }
   }
-    
-  if (m_p->m_has_recursive_depend){
-    for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
+
+  if (m_p->m_has_recursive_depend) {
+    for (Integer k = 0, n = m_p->m_depends.size(); k < n; ++k) {
       VariableDependInfo& vdi = m_p->m_depends[k];
-      if (vdi.dependType()==DPT_CurrentTime)
+      if (vdi.dependType() == DPT_CurrentTime)
         vdi.variable()->update(m_p->m_last_update_time);
     }
   }
 
   bool need_update = false;
   Int64 modified_time = m_p->m_modified_time;
-  for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
+  for (Integer k = 0, n = m_p->m_depends.size(); k < n; ++k) {
     VariableDependInfo& vdi = m_p->m_depends[k];
     Int64 mt = vdi.variable()->modifiedTime();
-    if (mt>modified_time){
+    if (mt > modified_time) {
       need_update = true;
       break;
     }
   }
-  if (need_update){
+  if (need_update) {
     IVariableComputeFunction* cf = m_p->m_compute_function.get();
     //msg->info() << "Need Compute For Variable <" << name() << "> " << cf;
-    if (cf){
+    if (cf) {
       //msg->info() << "Compute For Variable <" << name() << ">";
       cf->execute();
     }
-    else{
-      ARCANE_FATAL("No compute function for variable '{0}'",fullName());
+    else {
+      ARCANE_FATAL("No compute function for variable '{0}'", fullName());
     }
   }
 }
@@ -1176,18 +1201,18 @@ modifiedTime()
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-addDepend(IVariable* var,eDependType dt)
+addDepend(IVariable* var, eDependType dt)
 {
-  m_p->m_depends.add(VariableDependInfo(var,dt,TraceInfo()));
+  m_p->m_depends.add(VariableDependInfo(var, dt, TraceInfo()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-addDepend(IVariable* var,eDependType dt,const TraceInfo& tinfo)
+addDepend(IVariable* var, eDependType dt, const TraceInfo& tinfo)
 {
-  m_p->m_depends.add(VariableDependInfo(var,dt,tinfo));
+  m_p->m_depends.add(VariableDependInfo(var, dt, tinfo));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1224,7 +1249,7 @@ computeFunction()
 void Variable::
 dependInfos(Array<VariableDependInfo>& infos)
 {
-  for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
+  for (Integer k = 0, n = m_p->m_depends.size(); k < n; ++k) {
     VariableDependInfo& vdi = m_p->m_depends[k];
     infos.add(vdi);
   }
@@ -1237,7 +1262,7 @@ dependInfos(Array<VariableDependInfo>& infos)
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-addTag(const String& tagname,const String& tagvalue)
+addTag(const String& tagname, const String& tagvalue)
 {
   m_p->m_tags[tagname] = tagvalue;
 }
@@ -1257,7 +1282,7 @@ removeTag(const String& tagname)
 bool Variable::
 hasTag(const String& tagname)
 {
-  return m_p->m_tags.find(tagname)!=m_p->m_tags.end();
+  return m_p->m_tags.find(tagname) != m_p->m_tags.end();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1266,8 +1291,8 @@ hasTag(const String& tagname)
 String Variable::
 tagValue(const String& tagname)
 {
-  std::map<String,String>::const_iterator i = m_p->m_tags.find(tagname);
-  if (i==m_p->m_tags.end())
+  std::map<String, String>::const_iterator i = m_p->m_tags.find(tagname);
+  if (i == m_p->m_tags.end())
     return String();
   return i->second;
 }
@@ -1299,7 +1324,7 @@ notifyBeginWrite()
 void Variable::
 read(IDataReader* reader)
 {
-  reader->read(this,data());
+  reader->read(this, data());
   notifyEndRead();
 }
 
@@ -1310,7 +1335,7 @@ void Variable::
 write(IDataWriter* writer)
 {
   notifyBeginWrite();
-  writer->write(this,data());
+  writer->write(this, data());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1320,7 +1345,7 @@ void Variable::
 changeGroupIds(Int32ConstArrayView old_to_new_ids)
 {
   ARCANE_UNUSED(old_to_new_ids);
- // pH: default implementation since this method is not yet official
+  // pH: default implementation since this method is not yet official
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1345,7 +1370,7 @@ _checkSwapIsValid(Variable* rhs)
     ARCANE_FATAL("Can not swap variable values for unused variable (argument)");
   if (isPartial() || rhs->isPartial())
     ARCANE_FATAL("Can not swap variable values for partial variables");
-  if (itemGroup()!=rhs->itemGroup())
+  if (itemGroup() != rhs->itemGroup())
     ARCANE_FATAL("Can not swap variable values for variables from different groups");
 }
 
@@ -1445,6 +1470,31 @@ void VariablePrivate::
 resize(const VariableResizeArgs& resize_args)
 {
   return m_variable->_resize(resize_args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableComparerResults VariablePrivate::
+compareVariable(const VariableComparerArgs& compare_args)
+{
+  return m_variable->_compareVariable(compare_args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelMng* VariablePrivate::
+replicaParallelMng() const
+{
+  //TODO: regarder si la variable est utilisée.
+  IMesh* mesh = m_variable->mesh();
+  // TODO: faut-il prendre le sous-domaine dans ce cas ?
+  IParallelMng* pm = (mesh) ? mesh->parallelMng() : m_variable->subDomain()->parallelMng();
+  IParallelReplication* pr = pm->replication();
+  if (!pr->hasReplication())
+    return nullptr;
+  return pr->replicaParallelMng();
 }
 
 /*---------------------------------------------------------------------------*/

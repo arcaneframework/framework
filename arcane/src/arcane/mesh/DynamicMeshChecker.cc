@@ -29,6 +29,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IParallelReplication.h"
 #include "arcane/core/VariableCollection.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 
 #include <set>
 
@@ -323,6 +324,7 @@ checkValidConnectivity()
   }
 
   _checkFacesOrientation();
+  _checkEdgesOrientation();
 
   if (m_mesh->parentMesh()){
     Integer nerror = 0;
@@ -374,10 +376,12 @@ checkValidConnectivity()
                    m_mesh->name(),String::plural(nerror, "error", false));
   }
 
-  _checkValidItemOwner(m_mesh->nodeFamily());
-  _checkValidItemOwner(m_mesh->edgeFamily());
-  _checkValidItemOwner(m_mesh->faceFamily());
-  _checkValidItemOwner(m_mesh->cellFamily());
+  if (m_is_check_items_owner){
+    _checkValidItemOwner(m_mesh->nodeFamily());
+    _checkValidItemOwner(m_mesh->edgeFamily());
+    _checkValidItemOwner(m_mesh->faceFamily());
+    _checkValidItemOwner(m_mesh->cellFamily());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -446,11 +450,11 @@ _checkFacesOrientation()
 
   String func_name = "MeshChecker::_checkFacesOrientation";
 
-  Int64UniqueArray m_work_face_sorted_nodes;
-  IntegerUniqueArray m_work_face_nodes_index;
-  Int64UniqueArray m_work_face_orig_nodes_uid;
-
-
+  Int64UniqueArray work_face_sorted_nodes;
+  IntegerUniqueArray work_face_nodes_index;
+  Int64UniqueArray work_face_orig_nodes_uid;
+  ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
+  NodesOfItemReorderer face_reorderer(item_type_mng);
   ENUMERATE_(Cell,icell,m_mesh->allCells()){
     Cell cell = *icell;
     const ItemTypeInfo* type = cell.typeInfo();
@@ -459,21 +463,17 @@ _checkFacesOrientation()
       const ItemTypeInfo::LocalFace& lf = type->localFace(i_face);
       Integer face_nb_node = lf.nbNode();
 
-      m_work_face_sorted_nodes.resize(face_nb_node);
-      m_work_face_nodes_index.resize(face_nb_node);
-      m_work_face_orig_nodes_uid.resize(face_nb_node);
+      work_face_orig_nodes_uid.resize(face_nb_node);
       for( Integer z=0; z<face_nb_node; ++z )
-        m_work_face_orig_nodes_uid[z] = cell.node(lf.node(z)).uniqueId();
+        work_face_orig_nodes_uid[z] = cell.node(lf.node(z)).uniqueId();
 
       bool is_reorder = false;
       if (is_1d){
-        is_reorder = (i_face==1);
-        m_work_face_nodes_index[0] = 0;
+        is_reorder = face_reorderer.reorder1D(i_face, work_face_orig_nodes_uid[0]);
       }
       else
-        is_reorder = mesh_utils::reorderNodesOfFace2(m_work_face_orig_nodes_uid,m_work_face_nodes_index);
-      for( Integer z=0; z<face_nb_node; ++z )
-        m_work_face_sorted_nodes[z] = m_work_face_orig_nodes_uid[m_work_face_nodes_index[z]];
+        is_reorder = face_reorderer.reorder(ItemTypeId::fromInteger(lf.typeId()), work_face_orig_nodes_uid);
+      ConstArrayView<Int64> face_sorted_nodes(face_reorderer.sortedNodes());
 
       Face cell_face = cell.face(i_face);
       if (cell_face.nbNode()!=face_nb_node)
@@ -482,9 +482,9 @@ _checkFacesOrientation()
                      ItemPrinter(cell),ItemPrinter(cell_face),face_nb_node,cell_face.nbNode());
 
       for( Integer z=0; z<face_nb_node; ++z ){
-        if (cell_face.node(z).uniqueId()!=m_work_face_sorted_nodes[z])
-          ARCANE_FATAL("Bad unique id for face: cell={0} face={1} cell_node_uid={2} face_node_uid={3}",
-                       ItemPrinter(cell),ItemPrinter(cell_face),m_work_face_sorted_nodes[z],
+        if (cell_face.node(z).uniqueId()!=face_sorted_nodes[z])
+          ARCANE_FATAL("Bad node unique id for face: cell={0} face={1} cell_node_uid={2} face_node_uid={3} z={4}",
+                       ItemPrinter(cell),ItemPrinter(cell_face),face_sorted_nodes[z],
                        cell_face.node(z).uniqueId());
       }
       if (is_reorder){
@@ -511,6 +511,34 @@ _checkFacesOrientation()
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que les arêtes sont correctement numérotées.
+ */
+void DynamicMeshChecker::
+_checkEdgesOrientation()
+{
+  // Pour les arêtes, vérifie que le uniqueId() du premier noeud est
+  // inférieur à celui du deuxième.
+  Int32 nb_error = 0;
+  ENUMERATE_ (Edge, iedge, m_mesh->allEdges()) {
+    Edge edge = *iedge;
+    Int32 nb_node = edge.nbNode();
+    if (nb_node >= 2) {
+      Node node0 = edge.node(0);
+      Node node1 = edge.node(1);
+      if (node0.uniqueId() > node1.uniqueId()) {
+        ++nb_error;
+        info() << "Error: bad orientation for edge '" << ItemPrinter(edge)
+               << " n0=" << node0.uniqueId() << " n1=" << node1.uniqueId();
+      }
+    }
+  }
+  if (nb_error != 0)
+    ARCANE_FATAL("Bad connectivity for '{0}' edges", nb_error);
 }
 
 /*---------------------------------------------------------------------------*/

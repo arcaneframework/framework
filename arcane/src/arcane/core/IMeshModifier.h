@@ -129,7 +129,15 @@ class MeshModifierAddFacesArgs
  * \brief Interface de modification du maillage.
  *
  * Cette interface fournit les services permettant de modifier un
- * maillage.
+ * maillage. La manipulation du maillage est un mécanisme complexe et est
+ * réservée aux utilisateurs avertis. Certaines manipulations peuvent
+ * laisser le maillage dans un état incohérent.
+ *
+ * Les opérations supportées dépendent du type de maillage.
+ * Pour des raisons de performance, l'ajout et la supression d'entité ne
+ * mettent pas directement à jour les variables ou les groupes d'entités.
+ * Pour que cela soit pris en compte, il faut appeler la méthode endUpdate().
+ * En parallèle, cela provoque aussi la mise à jour des entités fantômes.
  */
 class ARCANE_CORE_EXPORT IMeshModifier
 {

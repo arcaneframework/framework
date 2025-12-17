@@ -6,17 +6,41 @@ import os
 import clr
 import sys
 
-assembly_path = r"@ARCANE_DOTNET_DLLS_DIR@"
+# This file is ${ARCANE_ROOT}/lib/python/ArcanePython/__init__.py
+# The libraries are in ${ARCANE_ROOT}
 
-clr.AddReference(os.path.join(assembly_path,"Arcane.Launcher.dll"))
-clr.AddReference(os.path.join(assembly_path,"Arcane.Utils.dll"))
-clr.AddReference(os.path.join(assembly_path,"Arcane.Core.dll"))
-clr.AddReference(os.path.join(assembly_path,"Arcane.Services.dll"))
+print("PATH=",__file__)
+that_path = os.path.dirname(__file__)
+print("PATH1=",that_path)
+arcane_lib_python_path = os.path.dirname(that_path)
+print("PATH2=",arcane_lib_python_path)
+_assembly_path = os.path.dirname(arcane_lib_python_path)
+print("PATH3=",_assembly_path)
+del that_path, arcane_lib_python_path
+
+clr.AddReference(os.path.join(_assembly_path,"Arcane.Launcher.dll"))
+clr.AddReference(os.path.join(_assembly_path,"Arcane.Utils.dll"))
+clr.AddReference(os.path.join(_assembly_path,"Arcane.Core.dll"))
+clr.AddReference(os.path.join(_assembly_path,"Arcane.Services.dll"))
 
 import Arcane
+
+# If not 'None', use files located in the source directory
+source_path = @ARCANE_PYTHON_INIT_SOURCE_PATH@
+print("SOURCE_PATH=",source_path)
+if source_path != None:
+    sys.path.insert(1, source_path)
+
+from _ArcanePython import *
+import _ArcanePython._utils as _utils
+from _ArcanePython.SubDomainContext import *
+
+_utils.func0()
+
+print("INIT_ArcanePython",flush=True)
 
 from Arcane import ArcaneLauncher
 
 app_info = ArcaneLauncher.ApplicationInfo;
-app_info.SetDataOsDir(assembly_path)
-app_info.SetDataDir(assembly_path)
+app_info.SetDataOsDir(_assembly_path)
+app_info.SetDataDir(_assembly_path)

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,9 +40,9 @@ namespace SYCL
   class CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::Impl
   {
   public :
-    typedef HCSRMatrix<ValueT>::InternalType MatrixInternalType ;
-    typedef MatrixInternalType::ValueBufferType ValueBufferType ;
-    typedef MatrixInternalType::IndexBufferType IndexBufferType ;
+    typedef typename HCSRMatrix<ValueT>::InternalType MatrixInternalType ;
+    typedef typename MatrixInternalType::ValueBufferType ValueBufferType ;
+    typedef typename MatrixInternalType::IndexBufferType IndexBufferType ;
 
     Impl(std::size_t size,
          IndexT const* ptr)
@@ -127,7 +127,7 @@ namespace SYCL
     using ValueAccessorType = decltype(m_vb->template get_access<sycl::access::mode::read_write>(*m_h));
     using IndexAccessorType = decltype(m_ib->template get_access<sycl::access::mode::read>(*m_h));
 
-    typedef ProfiledMatrixBuilderT<ValueT,IndexT>::View BaseType ;
+    typedef typename ProfiledMatrixBuilderT<ValueT,IndexT>::View BaseType ;
   public :
     explicit View(ValueAccessorType values_accessor,
                   IndexAccessorType cols_accessor,
@@ -169,7 +169,7 @@ namespace SYCL
 
   /*---------------------------------------------------------------------------*/
   template <typename ValueT,typename IndexT, typename CombineOpT>
-  CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::View CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::view(SYCLControlGroupHandler& cgh)
+  typename CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::View CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::view(SYCLControlGroupHandler& cgh)
   {
     return View(BaseType::m_impl->m_values_buffer.template get_access<sycl::access::mode::read_write>(cgh.m_internal),
                 BaseType::m_impl->m_cols_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
@@ -224,7 +224,7 @@ namespace SYCL
     using IndexAccessorType = decltype(m_ib->get_host_access());
 
 
-    typedef ProfiledMatrixBuilderT<ValueT,IndexT>::HostView BaseType ;
+    typedef typename ProfiledMatrixBuilderT<ValueT,IndexT>::HostView BaseType ;
 
     HostView(ValueAccessorType values,
              IndexAccessorType cols,
@@ -260,7 +260,7 @@ namespace SYCL
 
 
   template <typename ValueT,typename IndexT, typename CombineOpT>
-  CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::HostView
+  typename CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::HostView
   CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::hostView()
   {
     return HostView(BaseType::m_impl->m_values_buffer.get_host_access(),

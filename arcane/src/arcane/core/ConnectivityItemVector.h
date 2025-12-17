@@ -1,40 +1,34 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConnectivityItemVector.h                                    (C) 2000-2016 */
+/* ConnectivityItemVector.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface des accesseurs des connectivité des entités.                    */
+/* Interface des accesseurs des connectivités des entités.                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CONNECTIVITYITEMVECTOR_H
-#define ARCANE_CONNECTIVITYITEMVECTOR_H
+#ifndef ARCANE_CORE_CONNECTIVITYITEMVECTOR_H
+#define ARCANE_CORE_CONNECTIVITYITEMVECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemTypes.h"
-
-#include "arcane/ItemVector.h"
-#include "arcane/IItemConnectivity.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/IItemConnectivity.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
 #include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ConnectivityItemVector;
-class IItemConnectivity;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,11 +36,10 @@ class IItemConnectivity;
  * \brief Type temporaire automatiquement casté en ConnectivityItemVector
  */
 struct ConnectivityItemVectorCatalyst
-  {
-    std::function<void(ConnectivityItemVector&)> set;
-    std::function<void(ConnectivityItemVector&)> apply; // When C++14 available, use a template type (will avoid std::function object and allow more genericity).
-  };
-
+{
+  std::function<void(ConnectivityItemVector&)> set;
+  std::function<void(ConnectivityItemVector&)> apply; // When C++14 available, use a template type (will avoid std::function object and allow more genericity).
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,33 +52,38 @@ struct ConnectivityItemVectorCatalyst
  */
 class ARCANE_CORE_EXPORT ConnectivityItemVector
 : public ItemVector
-  // SDC new API : user handles directly the ConnectivityItemVector and iterates on it...need a public inheritance.
-  // the Use of views as in first version is confusing for user that doesn't understand where the view comes from and easily invalidates it...
+// SDC new API : user handles directly the ConnectivityItemVector and iterates on it...need a public inheritance.
+// the Use of views as in first version is confusing for user that doesn't understand where the view comes from and easily invalidates it...
 {
-public:
+ public:
 
   ConnectivityItemVector(IItemConnectivity* c)
-  : ItemVector(c->targetFamily()), m_connectivity_accessor(c)
+  : ItemVector(c->targetFamily())
+  , m_connectivity_accessor(c)
   {
     c->_initializeStorage(this);
   }
   ConnectivityItemVector(IItemConnectivity& c)
-  : ItemVector(c.targetFamily()), m_connectivity_accessor(&c)
+  : ItemVector(c.targetFamily())
+  , m_connectivity_accessor(&c)
   {
     c._initializeStorage(this);
   }
   ConnectivityItemVector(IIncrementalItemConnectivity* c)
-  : ItemVector(c->targetFamily()), m_connectivity_accessor(c)
+  : ItemVector(c->targetFamily())
+  , m_connectivity_accessor(c)
   {
     c->_initializeStorage(this);
   }
   ConnectivityItemVector(IIncrementalItemConnectivity& c)
-  : ItemVector(c.targetFamily()), m_connectivity_accessor(&c)
+  : ItemVector(c.targetFamily())
+  , m_connectivity_accessor(&c)
   {
     c._initializeStorage(this);
   }
   ConnectivityItemVector(const ConnectivityItemVectorCatalyst& to_c)
-  : ItemVector(), m_connectivity_accessor(nullptr)
+  : ItemVector()
+  , m_connectivity_accessor(nullptr)
   {
     to_c.set(*this);
     to_c.apply(*this);
@@ -94,15 +92,12 @@ public:
  public:
 
   //! Connectivité associée
-  IItemConnectivityAccessor* accessor() const
-  {
-    return m_connectivity_accessor;
-  }
+  IItemConnectivityAccessor* accessor() const { return m_connectivity_accessor; }
 
   //! Retourne les entités connectées à \a item.
   ItemVectorView connectedItems(ItemLocalId item)
   {
-    return m_connectivity_accessor->_connectedItems(item,*this);
+    return m_connectivity_accessor->_connectedItems(item, *this);
   }
 
  public:
@@ -142,13 +137,13 @@ public:
 
  private:
 
-  IItemConnectivityAccessor* m_connectivity_accessor;
+  IItemConnectivityAccessor* m_connectivity_accessor = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

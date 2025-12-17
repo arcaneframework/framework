@@ -1,18 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ZoltanMeshPartitioner.cc                                    (C) 2000-2023 */
+/* ZoltanMeshPartitioner.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliotheque Zoltan.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/Array.h"
@@ -22,20 +21,22 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Service.h"
-#include "arcane/Timer.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/CommonVariables.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/CommonVariables.h"
 #include "arcane/utils/HashTableMap.h"
+
+#include "arcane_internal_config.h"
 
 // Au cas ou on utilise mpich2 ou openmpi
 #define MPICH_SKIP_MPICXX

@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.h                                               (C) 2000-2022 */
+/* ItemTypeMng.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des types d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMTYPEMNG_H
-#define ARCANE_ITEMTYPEMNG_H
+#ifndef ARCANE_CORE_ITEMTYPEMNG_H
+#define ARCANE_CORE_ITEMTYPEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 #include <set>
 #include <atomic>
@@ -48,20 +48,19 @@ class MultiBufferT;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
- * \brief Gestionnaire des types d'entités de maillage.
-
- Il n'existe qu'une seule instance de ce gestionnaire (singleton).
-
- Les types souhaités (autre que les types par défaut) doivent être ajoutés
- avant que le premier maillage ne soit créé. Il n'est pas possible
- de créer de nouveaux types pendant l'exécution.
-
- Les types disponibles doivent être strictement identiques pour tous
- les processus (i.e Tous les ItemTypeMng de tous les processus doivent
- avoir les mêmes types).
-
- \todo Ajouter les méthodes pour ajouter un nouveau type
- */
+ * \brief Gestionnaire des types d'entités d'un maillage.
+ *
+ * Il faut appeler build(IMesh*) avant de pouvoir utiliser cette
+ * instance.
+ *
+ * Les types souhaités (autre que les types par défaut) doivent être ajoutés
+ * avant que le premier maillage ne soit créé. Il n'est pas possible
+ * de créer de nouveaux types pendant l'exécution.
+ * 
+ * Les types disponibles doivent être strictement identiques pour tous
+ * les processus (i.e Tous les ItemTypeMng de tous les processus doivent
+ * avoir les mêmes types).
+  */
 class ARCANE_CORE_EXPORT ItemTypeMng
 {
   // Ces classes sont ici temporairement tant que le singleton est accessible.
@@ -70,6 +69,8 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   friend class Application;
   friend class ArcaneMain;
   friend class Item;
+  friend ItemTypeInfo;
+  friend ItemTypeInfoBuilder;
 
  protected:
 
@@ -79,8 +80,21 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  public:
 
-  //! Constructeur effectif
+  /*!
+   * \brief Constructeur effectif.
+   *
+   * Cette méthode ne doit être appelée que pout initialiser
+   * l'instance singleton qui est obsolète.
+   *
+   * \deprecated Utiliser build(IMesh*) à la place.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2025: Use build(IMesh*) instead")
   void build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
+
+  /*!
+   * \brief Construit l'instance associée au maillage \a mesh.
+   */
+  void build(IMesh* mesh);
 
  private:
 
@@ -158,11 +172,6 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  private:
 
-  //! Lecture des types a partir d'un fichier de nom filename
-  void readTypes(IParallelSuperMng* parallel_mng, const String& filename);
-
- private:
-
   //! Instance singleton
   static ItemTypeMng* singleton_instance;
 
@@ -172,7 +181,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Flag d'initialisation
   bool m_initialized = false;
 
-  std::atomic<Int32> m_initialized_counter;
+  std::atomic<Int32> m_initialized_counter = 0;
 
   //! Gestionnaire de traces
   ITraceMng* m_trace = nullptr;
@@ -180,24 +189,21 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Liste des types
   UniqueArray<ItemTypeInfo*> m_types;
 
-  //! Allocations des objets de type (il faut un pointeur pour eviter inclusion multiple)
+  //! Allocations des objets de type (il faut un pointeur pour éviter inclusion multiple)
   MultiBufferT<ItemTypeInfoBuilder>* m_types_buffer = nullptr;
 
   //! Ensemble des maillages contenant des mailles générales (sans type défini)
   std::set<IMesh*> m_mesh_with_general_cells;
 
- public:
-
-  /*!
-   * \brief Tampon d'allocation des données de type.
-   *
-   * Ce champs est public en attendant d'affiner la gestion de l'accès.
-   */
+  //! Tableau contenant les données de type.
   UniqueArray<Integer> m_ids_buffer;
 
  private:
 
-  void _build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
+  void _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace);
+  void _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace);
+  //! Lecture des types a partir d'un fichier de nom filename
+  void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
 };
 
 /*---------------------------------------------------------------------------*/

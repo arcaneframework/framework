@@ -695,6 +695,39 @@ raiseFloatingException()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCCORE_BASE_EXPORT Int64 Platform::
+getRealTimeNS()
+{
+  auto x = std::chrono::high_resolution_clock::now();
+  // Converti la valeur en nanosecondes.
+  auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
+  // Retourne le temps en nano-secondes.
+  return static_cast<Int64>(y.time_since_epoch().count());
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Int64 Platform::
+getPageSize()
+{
+#if defined(ARCCORE_OS_WIN32)
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  return si.dwPageSize;
+#elif defined(ARCCORE_OS_LINUX)
+  return ::sysconf(_SC_PAGESIZE);
+#else
+#warning "getPageSize() not implemented for your platform. Default is 4096"
+  Int64 page_size = 4096;
+  return page_size;
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool _getHasColorTerminal()
 {
 #ifdef ARCCORE_OS_UNIX

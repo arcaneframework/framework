@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Timer.cc                                                    (C) 2000-2019 */
+/* Timer.cc                                                    (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'un timer.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/String.h"
@@ -20,18 +18,18 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Iostream.h"
 
-#include "arcane/Timer.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ITimerMng.h"
-#include "arcane/ITimeStats.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ITimerMng.h"
+#include "arcane/core/ITimeStats.h"
 
-#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/internal/TimeMetric.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -280,8 +278,7 @@ phaseAction(ITimeStats* s,eTimePhase phase)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

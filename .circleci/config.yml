@@ -54,7 +54,7 @@ jobs:
 
     executor: <<parameters.arch>>
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20250120
+      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20250830
 
     steps:
       - when:
@@ -83,8 +83,11 @@ jobs:
           steps:
             - run:
                 name: (ARM64) Set specific variables
+                # TODO : Désactivation de vtk_vtu et de ios_vtu car la libexpat (nécessaire pour libvtk9) des packages
+                #        U24 est buguée.
+                #        À retirer lors du passage en U26.
                 command: |
-                  echo 'export CT_REGEX="${CT_REGEX}|^utils1$|^hydro5_papi_backtrace$|^ref\.mpi\.mpi-4$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
+                  echo 'export CT_REGEX="${CT_REGEX}|^vtk_vtu$|^ios_vtu$|^utils1$|^hydro5_papi_backtrace$|^ref\.mpi\.mpi-4$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
 
       - run:
           name: "Compute build type"
@@ -119,7 +122,7 @@ jobs:
             git submodule update --init
 
       - restore_cache:
-          keys: 
+          keys:
             - <<parameters.arch>>-arcane-<<parameters.type_build>>-
 
       - run:
@@ -222,15 +225,15 @@ workflows:
       - build-and-test:
           filters:
             branches:
-              only: 
+              only:
                 - main
                 - /dev\/[a-z]+-highci-.*/
           matrix:
             parameters:
-              arch: [arm64, amd64]
-              image_version: [full]
-              exec_type: [normal]
-              type_build: [Check]
+              arch: [ arm64, amd64 ]
+              image_version: [ full ]
+              exec_type: [ normal ]
+              type_build: [ Check ]
 
   # WF exécuté à chaque push.
   every-push:
@@ -238,10 +241,10 @@ workflows:
       - build-and-test:
           matrix:
             parameters:
-              arch: [arm64, amd64]
-              image_version: [minimal]
-              exec_type: [quick]
-              type_build: [Check]
+              arch: [ arm64, amd64 ]
+              image_version: [ minimal ]
+              exec_type: [ quick ]
+              type_build: [ Check ]
 
   # WFs exécutés tous les jours.
   every-day:
@@ -256,7 +259,7 @@ workflows:
       - build-and-test:
           matrix:
             parameters:
-              arch: [arm64, amd64]
-              image_version: [minimal, full]
-              exec_type: [normal]
-              type_build: [Check]
+              arch: [ arm64, amd64 ]
+              image_version: [ minimal, full ]
+              exec_type: [ normal ]
+              type_build: [ Check ]

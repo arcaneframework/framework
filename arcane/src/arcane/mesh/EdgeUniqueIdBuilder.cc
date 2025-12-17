@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2024 */
+/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Construction des identifiants uniques des arêtes.                         */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/mesh/EdgeUniqueIdBuilder.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
+#include "arcane/mesh/ItemsOwnerBuilder.h"
 
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/IParallelMng.h"
@@ -62,33 +63,48 @@ computeEdgesUniqueIds()
 
   info() << "Using version=" << edge_version << " to compute edges unique ids"
          << " mesh=" << m_mesh->name();
-
+  bool need_compute_owner = false;
+  bool has_renumbering = true;
   if (edge_version == 1)
     _computeEdgesUniqueIdsParallel3();
   else if (edge_version == 2)
     _computeEdgesUniqueIdsParallelV2();
-  else if (edge_version == 3)
+  else if (edge_version == 3) {
+    need_compute_owner = true;
     _computeEdgesUniqueIdsParallel64bit();
-  else if (edge_version == 0)
+  }
+  else if (edge_version == 0) {
+    need_compute_owner = true;
+    has_renumbering = false;
     info() << "No renumbering for edges";
+  }
   else
     ARCANE_FATAL("Invalid valid version '{0}'. Valid values are 0, 1, 2 or 3");
 
   double end_time = platform::getRealTime();
-  Real diff = (Real)(end_time - begin_time);
+  Real diff = static_cast<Real>(end_time - begin_time);
   info() << "TIME to compute edge unique ids=" << diff;
 
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
-  // Il faut ranger à nouveau #m_edges_map car les uniqueId() des
-  // edges ont été modifiés
-  edges_map.notifyUniqueIdsChanged();
+  // Il faut ranger à nouveau #m_edges_map si les uniqueId() des
+  // arêtes ont été modifiés.
+  if (has_renumbering)
+    edges_map.notifyUniqueIdsChanged();
 
   if (m_mesh_builder->isVerbose()) {
     info() << "NEW EDGES_MAP after re-indexing";
     edges_map.eachItem([&](Item edge) {
       info() << "Edge uid=" << edge.uniqueId() << " lid=" << edge.localId();
     });
+  }
+
+  // S'il n'y a pas de renumérotation, il n'y a pas non de
+  // calcul des propriétaires. Il faut donc le faire maintenant
+  // si on est en parallèle.
+  if (need_compute_owner && m_mesh->parallelMng()->isParallel()) {
+    ItemsOwnerBuilder owner_builder(m_mesh);
+    owner_builder.computeEdgesOwner();
   }
 }
 

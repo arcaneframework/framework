@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real2.h                                                     (C) 2000-2024 */
+/* Real2.h                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Vecteur à 2 dimensions de 'Real'.                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DATATYPE_REAL2_H
-#define ARCANE_DATATYPE_REAL2_H
+#ifndef ARCANE_UTILS_REAL2_H
+#define ARCANE_UTILS_REAL2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -155,6 +155,14 @@ class ARCANE_UTILS_EXPORT Real2
   //! Construit l'instance en premier les deux premières composantes de Real3.
   inline constexpr ARCCORE_HOST_DEVICE explicit Real2(const Real3& v);
 
+  //! Construit le couplet (av[0], av[1])
+  constexpr ARCCORE_HOST_DEVICE Real2(ConstArrayView<Real> av)
+  : Real2POD()
+  {
+    x = av[0];
+    y = av[1];
+  }
+
   Real2& operator=(const Real2& f) = default;
 
   //! Affecte à l'instance le couple (v,v).
@@ -191,6 +199,18 @@ class ARCANE_UTILS_EXPORT Real2
     x = f.x;
     y = f.y;
     return (*this);
+  }
+
+  //! Retourne une vue sur les deux élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 2, &x };
+  }
+
+  //! Retourne une vue constante sur les deux élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
+  {
+    return { 2, &x };
   }
 
   //! Valeur absolue composante par composante.

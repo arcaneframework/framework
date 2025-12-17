@@ -4,6 +4,11 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+
+#ifdef WIN32
+#include <iso646.h>
+#endif
+
 #include "arcane/corefinement/ParallelCorefinementService.h"
 
 #include <arcane/utils/List.h>

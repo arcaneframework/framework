@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialHeatTestModule.cc                                   (C) 2000-2024 */
+/* MaterialHeatTestModule.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Module de test des matériaux.                                             */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/utils/Profiling.h"
-#include "arcane/utils/internal/ProfilingInternal.h"
+#include "arccore/base/internal/ProfilingInternal.h"
 
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMesh.h"
@@ -45,7 +45,7 @@
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/internal/RunnerInternal.h"
+#include "arccore/common/accelerator/internal/RunnerInternal.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"

@@ -15,9 +15,13 @@ linkLibraries(alien_interface_fortran.exe
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_interface_c
-        alien_external_packages
-        alien_ifpen_solvers
         )
+if(TARGET alien_external_packages)
+    linkLibraries(alien_interface_fortran.exe alien_external_packages)
+endif()
+if(TARGET alien_ifpen_solvers)
+    linkLibraries(alien_interface_fortran.exe alien_ifpen_solvers)
+endif()
 
 if (TARGET intel)
     linkLibraries(alien_interface_fortran.exe intel)
@@ -49,9 +53,13 @@ linkLibraries(alien_interface_fortran_param.exe
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_interface_c
-        alien_external_packages
-        alien_ifpen_solvers
         )
+if(TARGET alien_external_packages)
+    linkLibraries(alien_interface_fortran_param.exe alien_external_packages)
+endif()
+if(TARGET alien_ifpen_solvers)
+    linkLibraries(alien_interface_fortran_param.exe alien_ifpen_solvers)
+endif()
 
 if (TARGET intel)
     linkLibraries(alien_interface_fortran_param.exe intel)

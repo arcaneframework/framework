@@ -1,4 +1,4 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-13-14 / CLang 16-18-19 / CUDA 12.6 / ROCM 6.3.1 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19-21 / CUDA 13.0 / ROCM 6.4.3 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
@@ -19,7 +19,9 @@ jobs:
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U22_C16'
@@ -29,7 +31,9 @@ jobs:
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U24_G14'
@@ -38,40 +42,46 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_C18'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '18'
+            compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_G13_CU126'
+          - short: 'U24_G14_CU130'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
-            compilo_version: '13'
+            compilo_version: '14'
             acc_compilo_name: 'cuda'
-            acc_compilo_version: '126'
-            date: '20250120'
+            acc_compilo_version: '130'
+            date: '20250830'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
+              -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
-          - short: 'U24_C18_CU126'
+          - short: 'U24_C19_CU130'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '18'
+            compilo_version: '19'
             acc_compilo_name: 'cuda'
-            acc_compilo_version: '126'
-            date: '20250120'
+            acc_compilo_version: '130'
+            date: '20250830'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
+              -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
           - short: 'U24_G14_CUC19'
@@ -79,39 +89,40 @@ jobs:
             compilo_name: 'gcc'
             compilo_version: '14'
             acc_compilo_name: 'clang_cuda'
+            # CLang 21 doesn't support CUDA 13.0.
             acc_compilo_version: '19'
             date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
-          - short: 'U24_G14_RC631'
+          - short: 'U24_G14_RC643'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
             acc_compilo_name: 'rocm'
-            acc_compilo_version: '631'
-            date: '20250120'
+            acc_compilo_version: '643'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
-          - short: 'U24_C19_RC631'
+          - short: 'U24_C19_RC643'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '19'
             acc_compilo_name: 'rocm'
-            acc_compilo_version: '631'
-            date: '20250120'
+            acc_compilo_version: '643'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
           - short: 'U24_ACPP'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '18'
+            compilo_version: '19'
             acc_compilo_name: 'acpp'
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: false
 
@@ -129,30 +140,36 @@ jobs:
 
         config:
           - type: 'Release'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
           - type: 'Debug'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
         mpi:
           - implementation: 'OMPI'
           - implementation: 'MPICH'
 
+        runner:
+          - runner_tag: 'ubuntu-latest'
+            runner_name: 'GH'
+            excluded_tests: ''
+            excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_parallel_jobs: '-j4'
+
         exclude:
+          # Certains packages ne sont pas compilés avec MPICH dans les images Full.
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
+          # Il n'y a pas CUDA ni ROCm dans les images Minimal.
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C19_CU130' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G14_RC631' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C19_RC631' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_RC643' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C19_RC643' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          # Pas possible de compiler Arcane avec AdaptiveCpp en Debug.
           - { config: { type: 'Debug' }, image: { short: 'U24_ACPP' } }
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
+    name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
@@ -167,8 +184,9 @@ jobs:
       verbose: true
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
-      excluded_tests: ${{ matrix.config.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      excluded_tests: ${{ matrix.runner.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.runner.excluded_tests_with_labels }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
+      runner_tag: ${{ matrix.runner.runner_tag }}

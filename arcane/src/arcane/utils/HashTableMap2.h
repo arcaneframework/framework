@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,7 +10,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arccore/collections/IMemoryAllocator.h"
+#include "arccore/common/AllocatedMemoryInfo.h"
+#include "arccore/common/IMemoryAllocator.h"
 
 // Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
 // emhash8::HashMap for C++14/17

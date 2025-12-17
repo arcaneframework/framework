@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianPatch.cc                                           (C) 2000-2023 */
+/* CartesianPatch.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Patch AMR d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,26 @@ cells()
 {
   ARCANE_CHECK_POINTER(m_patch);
   return m_patch->cells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup CartesianPatch::
+inPatchCells()
+{
+  ARCANE_CHECK_POINTER(m_patch);
+  return m_patch->inPatchCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer CartesianPatch::
+index() const
+{
+  ARCANE_CHECK_POINTER(m_patch);
+  return m_patch->index();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IBufferCopier.h                                             (C) 2000-2024 */
+/* IBufferCopier.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface pour la copie de buffer.                                        */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/GroupIndexTable.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -44,11 +45,11 @@ class IBufferCopier
 
  public:
 
-  virtual void copyFromBufferAsync(Int32ConstArrayView indexes,
+  virtual void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                                    ConstMemoryView buffer,
                                    MutableMemoryView var_value) = 0;
 
-  virtual void copyToBufferAsync(Int32ConstArrayView indexes,
+  virtual void copyToBufferAsync(ConstArrayView<Int32> indexes,
                                  MutableMemoryView buffer,
                                  ConstMemoryView var_value) = 0;
 
@@ -71,20 +72,20 @@ class DirectBufferCopier
 {
  public:
 
-  void copyFromBufferAsync(Int32ConstArrayView indexes,
+  void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                            ConstMemoryView buffer,
                            MutableMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    buffer.copyToIndexes(var_value, indexes, q);
+    MemoryUtils::copyWithIndexedSource(var_value, buffer, indexes, q);
   }
 
-  void copyToBufferAsync(Int32ConstArrayView indexes,
+  void copyToBufferAsync(ConstArrayView<Int32> indexes,
                          MutableMemoryView buffer,
                          ConstMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    buffer.copyFromIndexes(var_value, indexes, q);
+    MemoryUtils::copyWithIndexedDestination(buffer, var_value, indexes, q);
   }
 
   void barrier() override;
@@ -103,24 +104,24 @@ class TableBufferCopier
 {
  public:
 
-  TableBufferCopier(GroupIndexTable* table)
+  explicit TableBufferCopier(GroupIndexTable* table)
   : m_table(table)
   {}
 
-  void copyFromBufferAsync(Int32ConstArrayView indexes,
+  void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                            ConstMemoryView buffer,
                            MutableMemoryView var_value) override
   {
-    UniqueArray<Int32> final_indexes;
+    UniqueArray<Int32> final_indexes(MemoryUtils::getDefaultDataAllocator());
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyFromBufferAsync(final_indexes, buffer, var_value);
   }
 
-  void copyToBufferAsync(Int32ConstArrayView indexes,
+  void copyToBufferAsync(ConstArrayView<Int32> indexes,
                          MutableMemoryView buffer,
                          ConstMemoryView var_value) override
   {
-    UniqueArray<Int32> final_indexes;
+    UniqueArray<Int32> final_indexes(MemoryUtils::getDefaultDataAllocator());
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyToBufferAsync(final_indexes, buffer, var_value);
   }
@@ -130,7 +131,7 @@ class TableBufferCopier
 
  private:
 
-  GroupIndexTable* m_table;
+  GroupIndexTable* m_table = nullptr;
   DirectBufferCopier m_base_copier;
 
  private:
@@ -138,6 +139,8 @@ class TableBufferCopier
   void _buildFinalIndexes(Array<Int32>& final_indexes, ConstArrayView<Int32> orig_indexes)
   {
     // TODO: faire cette allocation qu'une seule fois et la conserver.
+    // Regarder pour allouer sur le device si on est sur GPU (dans ce cas il
+    // faudrait lancer le code suivant aussi sur le device)
     GroupIndexTable& table = *m_table;
     Int32 n = orig_indexes.size();
     final_indexes.resize(n);

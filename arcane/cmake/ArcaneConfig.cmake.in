@@ -83,92 +83,26 @@ set(ARCANE_CORECLR_VERSION "@ARCANE_CORECLR_VERSION@" CACHE STRING ".Net coreclr
 # le support des accélérateurs. Dans ce cas, il est possible d'utiliser la macro
 # 'arcane_enable_cuda' ou 'arcane_enable_rocmhip' pour rechercher les différents composants nécessaires.
 
-set(ARCANE_HAS_ACCELERATOR "@ARCANE_HAS_ACCELERATOR@" CACHE BOOL "Is Arcane compiled with Accelerator support?" FORCE)
-set(ARCANE_HAS_CUDA "@ARCANE_WANT_CUDA@" CACHE BOOL "Is Arcane compiled with CUDA support?" FORCE)
-set(ARCANE_HAS_HIP "@ARCANE_WANT_HIP@" CACHE BOOL "Is Arcane compiled with HIP support?" FORCE)
-set(ARCANE_CUDA_COMPILER_HINT "@CMAKE_CUDA_COMPILER@")
-set(ARCANE_HIP_COMPILER_HINT "@CMAKE_HIP_COMPILER@")
-set(ARCANE_HIP_DIR_HINT "@Hip_DIR@")
-set(ARCANE_DEFAULT_HIP_ARCHITECTURES "@CMAKE_HIP_ARCHITECTURES@" CACHE STRING "Default GPU architectures?" FORCE)
+set(ARCANE_HAS_ACCELERATOR "${ARCCORE_HAS_ACCELERATOR}" CACHE BOOL "Is Arcane compiled with Accelerator support?" FORCE)
+set(ARCANE_HAS_CUDA "${ARCCORE_HAS_CUDA}" CACHE BOOL "Is Arcane compiled with CUDA support?" FORCE)
+set(ARCANE_HAS_HIP "${ARCCORE_HAS_HIP}" CACHE BOOL "Is Arcane compiled with HIP support?" FORCE)
+set(ARCANE_HAS_SYCL "${ARCCORE_HAS_SYCL}" CACHE BOOL "Is Arcane compiled with Sycl support?" FORCE)
+#set(ARCANE_CUDA_COMPILER_HINT "@CMAKE_CUDA_COMPILER@")
+#set(ARCANE_HIP_COMPILER_HINT "@CMAKE_HIP_COMPILER@")
+#set(ARCANE_HIP_DIR_HINT "@Hip_DIR@")
+#set(ARCANE_DEFAULT_HIP_ARCHITECTURES "@CMAKE_HIP_ARCHITECTURES@" CACHE STRING "Default GPU architectures?" FORCE)
 set(ARCANE_HAS_DOTNET_WRAPPER "@ARCANE_HAS_DOTNET_WRAPPER@" CACHE BOOL "Is C# wrapping enabled?" FORCE)
 set(ARCANE_HAS_ACCELERATOR_API "@ARCANE_HAS_ACCELERATOR_API@" CACHE BOOL "True Arcane has accelerator API" FORCE)
-
-macro(arcane_internal_enable_cuda)
-  if (ARCANE_HAS_CUDA)
-    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
-    # La commande 'enable_language(CUDA)' a besoin que la variable
-    # d'environnement 'CUDACXX' ou la variable cmake 'CMAKE_CUDA_COMPILER'
-    # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
-    # utilisé pour compiler Arcane.
-    if(NOT DEFINED ENV{CUDACXX} AND NOT CMAKE_CUDA_COMPILER)
-      set(CMAKE_CUDA_COMPILER "${ARCANE_CUDA_COMPILER_HINT}")
-    endif()
-    message(STATUS "ArcaneCUDA: CMAKE_CUDA_COMPILER = ${CMAKE_CUDA_COMPILER}")
-
-    enable_language(CUDA)
-    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80 CACHE STRING "Default architectures" FORCE)
-    endif()
-
-    find_package(CUDAToolkit REQUIRED)
-  else()
-    message(FATAL_ERROR "Can not enable CUDA because Arcane is not compiled with CUDA support")
-  endif()
-endmacro()
-
-macro(arcane_internal_enable_hip)
-  if (ARCANE_HAS_HIP)
-    # La commande 'enable_language(HIP)' a besoin que la variable
-    # d'environnement 'HIPCXX' ou la variable cmake 'CMAKE_HIP_COMPILER'
-    # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
-    # utilisé pour compiler Arcane.
-    if(NOT DEFINED ENV{HIPCXX} AND NOT CMAKE_HIP_COMPILER)
-      set(CMAKE_HIP_COMPILER "${ARCANE_HIP_COMPILER_HINT}")
-    endif()
-    message(STATUS "ArcaneHIP: CMAKE_HIP_COMPILER = ${CMAKE_HIP_COMPILER}")
-
-    # Il faut au moins la version 3.21 de CMake pour HIP
-    enable_language(HIP)
-    if (NOT CMAKE_HIP_ARCHITECTURES)
-      set(CMAKE_HIP_ARCHITECTURES ${ARCANE_DEFAULT_HIP_ARCHITECTURES} CACHE STRING "Default architectures" FORCE)
-    endif()
-
-    # Il faut ajouter dans CMAKE_MODULE_PATH le chemin ou se trouve ROCM.
-    # On suppose que Hip_ROOT a été positionné lors du configure de Arcane et qu'il
-    # est dans ${ROCM_ROOT}/hip/lib/cmake/hip.
-    set(_SAVED_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
-    if (ARCANE_HIP_DIR_HINT)
-      # NOTE: Cette commande 'cmake_path' n'existe qu'à partir de CMake 3.20
-      cmake_path(GET ARCANE_HIP_DIR_HINT PARENT_PATH _path_result1)
-      cmake_path(GET _path_result1 PARENT_PATH _path_result2)
-      cmake_path(GET _path_result2 PARENT_PATH _path_result)
-      if (_path_result)
-        list(APPEND CMAKE_PREFIX_PATH "${_path_result}")
-      endif()
-      message(STATUS "Computed CMAKE_PREFIX_PATH for Hip : ${CMAKE_PREFIX_PATH}")
-    endif()
-    find_package(Hip REQUIRED "${ARCANE_HIP_DIR_HINT}")
-    set(CMAKE_PREFIX_PATH ${_SAVED_CMAKE_PREFIX_PATH})
-  else()
-    message(FATAL_ERROR "Can not enable HIP because Arcane is not compiled with HIP support")
-  endif()
-endmacro()
 
 # ----------------------------------------------------------------------------
 # Macro pour activer le support des accélérateurs.
 # A utiliser avant les autres commandes 'arcane_accelerator_...'
 macro(arcane_accelerator_enable)
-  if (ARCANE_HAS_CUDA)
-    arcane_internal_enable_cuda()
-  endif()
-  if (ARCANE_HAS_HIP)
-    arcane_internal_enable_hip()
-  endif()
+  arccore_accelerator_enable()
 endmacro()
 
 # Active les accélérateurs si Arcane a été compilé avec ce support
+# (Normalement cela est toujours actif à partir du C++20)
 if(ARCANE_HAS_ACCELERATOR_API)
   arcane_accelerator_enable()
 endif()
@@ -177,18 +111,7 @@ endif()
 # Indique que les fichiers passés en argument doivent être compilés avec le support accélérateur
 # correspondant.
 function(arcane_accelerator_add_source_files)
-  if (ARCANE_HAS_CUDA)
-    foreach(_x ${ARGN})
-      message(STATUS "Add CUDA language to file '${_x}'")
-      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
-    endforeach()
-  endif()
-  if (ARCANE_HAS_HIP)
-    foreach(_x ${ARGN})
-      message(STATUS "Add HIP language to file '${_x}'")
-      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
-    endforeach()
-  endif()
+  arccore_accelerator_add_source_files(${ARGN})
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -198,18 +121,8 @@ function(arcane_accelerator_add_to_target target_name)
   if (NOT target_name)
     message(FATAL_ERROR "Invalid null argument 'target_name' (${target_name}) to 'arcane_accelerator_add_to_target' function")
   endif()
+  arccore_accelerator_add_to_target(${target_name})
   target_link_libraries(${target_name} PUBLIC arcane_accelerator)
-  if (ARCANE_HAS_CUDA)
-    target_link_libraries(${target_name} PUBLIC arcane_accelerator_cuda_runtime)
-    set_property(TARGET ${target_name} PROPERTY CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES})
-  endif()
-  if (ARCANE_HAS_HIP)
-    target_link_libraries(${target_name} PUBLIC arcane_accelerator_hip_runtime)
-    set_property(TARGET ${target_name} PROPERTY HIP_ARCHITECTURES ${CMAKE_HIP_ARCHITECTURES})
-  endif()
-  if (ARCANE_HAS_SYCL)
-    target_link_libraries(${target_name} PUBLIC arcane_accelerator_sycl_runtime)
-  endif()
 endfunction()
 
 # ----------------------------------------------------------------------------

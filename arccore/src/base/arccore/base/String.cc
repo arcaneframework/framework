@@ -17,6 +17,7 @@
 #include "arccore/base/APReal.h"
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/NotSupportedException.h"
 #include "arccore/base/StringView.h"
 #include "arccore/base/StringUtils.h"
 
@@ -1278,6 +1279,39 @@ std::vector<UChar> StringUtils::
 asUtf16BE(const String& str)
 {
   return StringUtilsImpl::toUtf16BE(str);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::wstring StringUtils::
+convertToStdWString([[maybe_unused]] const String& str)
+{
+#ifdef ARCCORE_OS_WIN32
+  ConstArrayView<UChar> utf16 = str.utf16();
+  const wchar_t* wdata = reinterpret_cast<const wchar_t*>(utf16.data());
+  const size_t wlen = utf16.size();
+  std::wstring_view wstr_view(wdata,wlen);
+  return std::wstring(wstr_view);
+#else
+  ARCCORE_THROW(NotSupportedException,"This function is only supported on Win32");
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String StringUtils::
+convertToArcaneString([[maybe_unused]] const std::wstring_view& wstr)
+{
+#ifdef ARCCORE_OS_WIN32
+  const UChar* ux = reinterpret_cast<const UChar*>(wstr.data());
+  Int32 len = arccoreCheckArraySize(wstr.length());
+  ConstArrayView<UChar> buf(len, ux);
+  return String(buf);
+#else
+  ARCCORE_THROW(NotSupportedException,"This function is only supported on Win32");
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

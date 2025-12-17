@@ -427,16 +427,29 @@ AlephMatrixCreate(void)
     if (ilower==-1) ilower=m_kernel->topology()->gathered_nb_row(iCpu);
     iupper=m_kernel->topology()->gathered_nb_row(iCpu+1);
   }
+
   AlephInt size = iupper-ilower;
+
+  PetscInt* row_data = _toPetscInt(m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).data());
+
+  PetscInt m = size;  // Local number of rows
+  PetscInt n = size;  // Local number of columns (assuming square)
+  PetscInt M = m_kernel->topology()->nb_row_size(); // Global number of rows
+  PetscInt N = M; // Global number of columns (assuming square)
+
+  MatCreate(PETSC_COMM_WORLD, &m_petsc_matrix);
+  MatSetSizes(m_petsc_matrix, m, n, M, N);
+
+  // Preallocate (AIJ is sparse, so preallocation improves performance)
+  MatSetType(m_petsc_matrix, MATAIJ);
+  MatMPIAIJSetPreallocation(m_petsc_matrix, 0, row_data, 0, row_data);
+
+  // Allow matrix type selection at runtime (Flexible, Runtime Configurable with -mat_type)
+  MatSetFromOptions(m_petsc_matrix);
+#if PETSC_VERSION_LE(3,0,0)
   AlephInt jlower=ilower;
   AlephInt jupper=iupper;
 
-#if PETSC_VERSION_GE(3,3,0)
-  #define PETSC_VERSION_MatCreate MatCreateAIJ
-#elif PETSC_VERSION_(3,0,0)
-  #define PETSC_VERSION_MatCreate MatCreateMPIAIJ
-#endif
-  PetscInt* row_data = _toPetscInt(m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).data());
   PETSC_VERSION_MatCreate(MPI_COMM_SUB,
                           iupper-ilower, // m = number of rows
                           jupper-jlower, // n = number of columns
@@ -449,6 +462,8 @@ AlephMatrixCreate(void)
                           // array containing the number of nonzeros in the various rows of the OFF-DIAGONAL portion of local submatrix
                           row_data,
                           &m_petsc_matrix);
+#endif
+
   MatSetOption(m_petsc_matrix, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE);
   MatSetUp(m_petsc_matrix);
   debug()<<"\t\t[AlephMatrixPetsc::AlephMatrixCreate] PETSC MatrixCreate idx:"<<m_index

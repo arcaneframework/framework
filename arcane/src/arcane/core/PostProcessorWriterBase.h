@@ -1,31 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PostProcessorWriterBase.h                                   (C) 2000-2018 */
+/* PostProcessorWriterBase.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base d'un écrivain pour les informations de post-traitement.    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_POSTPROCESSORWRITERBASE_H
-#define ARCANE_POSTPROCESSORWRITERBASE_H
+#ifndef ARCANE_CORE_POSTPROCESSORWRITERBASE_H
+#define ARCANE_CORE_POSTPROCESSORWRITERBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicService.h"
-#include "arcane/IPostProcessorWriter.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/BasicService.h"
+#include "arcane/core/IPostProcessorWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ISubDomain;
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class PostProcessorWriterBasePrivate;
 
 /*---------------------------------------------------------------------------*/
@@ -39,41 +39,40 @@ class ARCANE_CORE_EXPORT PostProcessorWriterBase
 , public IPostProcessorWriter
 {
  public:
- public:
 
-  PostProcessorWriterBase(const ServiceBuildInfo& sbi);
-  virtual ~PostProcessorWriterBase();
-
- public:
-
-  virtual void build(){}
+  explicit PostProcessorWriterBase(const ServiceBuildInfo& sbi);
+  ~PostProcessorWriterBase() override;
 
  public:
 
-  virtual void setBaseDirectoryName(const String& dirname);
-  virtual const String& baseDirectoryName();
+  void build() override {}
 
-  virtual void setBaseFileName(const String& filename);
-  virtual const String& baseFileName();
+ public:
 
-  virtual void setTimes(RealConstArrayView times);
-  virtual RealConstArrayView times();
+  void setBaseDirectoryName(const String& dirname) override;
+  const String& baseDirectoryName() override;
 
-  virtual void setVariables(VariableCollection variables);
-  virtual VariableCollection variables();
+  void setBaseFileName(const String& filename) override;
+  const String& baseFileName() override;
 
-  virtual void setGroups(ItemGroupCollection groups);
-  virtual ItemGroupCollection groups();
+  void setTimes(RealConstArrayView times) override;
+  RealConstArrayView times() override;
+
+  void setVariables(VariableCollection variables) override;
+  VariableCollection variables() override;
+
+  void setGroups(ItemGroupCollection groups) override;
+  ItemGroupCollection groups() override;
 
  private:
 
-  PostProcessorWriterBasePrivate* m_p; //! Implémentation
+  PostProcessorWriterBasePrivate* m_p = nullptr; //! Implémentation
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

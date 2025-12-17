@@ -32,35 +32,35 @@ Getting the sources
 
     git clone --recurse-submodules -b stable https://github.com/illuhad/hipSYCL
 
-Example of configuration hipSYCL with GCC 10.2 and CUDA 10
-----------------------------------------------------------
+Example of configuration hipSYCL with GCC 11 and CUDA 11 ou 12
+--------------------------------------------------------------
 
 .. code-block:: bash
 
-    export INSTALL_PREFIX=`pwd`/usr/local/gcc102
-    export HIPSYCL_INSTALL_PREFIX=${INSTALL_PATH}/sycl2020
-    export HIPSYCL_LLVM_INSTALL_PREFIX=${INSTALL_PATH}
+    export INSTALL_PREFIX=`pwd`/install
+    export HIPSYCL_INSTALL_PREFIX=${INSTALL_PREFIX}/sycl2020
+    export CLANG_INSTALL_PREFIX=...
+    export CUDA_INSTALL_PREFIX=$CUDA_ROOT
+    export HIPSYCL_WITH_CUDA=ON
     export HIPSYCL_WITH_ROCM=OFF
     export CC=${GCCCORE_ROOT}/bin/gcc
     export CXX=${GCCCORE_ROOT}/bin/g++
     export HIPSYCL_BASE_CC=gcc
     export HIPSYCL_BASE_CXX=g++
     export hipSYCL_DIR=${INSTALL_PATH}/sycl2020/lib/cmake/hipSYCL
-    export HIPSYCL_LLVM_BUILD_DIR=$PWD/llvm
-    export HIPSYCL_BUILD_DIR=$PWD/sycl2020/hipSYCL
     mkdir build-hipSYCL
     cmake  -S `pwd`/hipSYCL \
            -B `pwd`/build-hipSYCL \
-          -DCMAKE_C_COMPILER=$HIPSYCL_LLVM_INSTALL_PREFIX/llvm/bin/clang \
-          -DCMAKE_CXX_COMPILER=$HIPSYCL_LLVM_INSTALL_PREFIX/llvm/bin/clang++ \
+          -DCMAKE_C_COMPILER=$CLANG_INSTALL_PREFIX/bin/clang \
+          -DCMAKE_CXX_COMPILER=$CLANG_INSTALL_PREFIX/bin/clang++ \
           -DCMAKE_CXX_FLAGS:STRING='--gcc-toolchain=/work/gratienj/local/expl/eb/centos_7/easybuild/software/Core/GCCcore/10.2.0' \
           -DWITH_CPU_BACKEND=ON \
           -DWITH_CUDA_BACKEND=$HIPSYCL_WITH_CUDA \
           -DWITH_ROCM_BACKEND=$HIPSYCL_WITH_ROCM \
-          -DLLVM_DIR=$HIPSYCL_LLVM_INSTALL_PREFIX/llvm/lib/cmake/llvm \
-          -DROCM_PATH=$HIPSYCL_INSTALL_PREFIX/rocm \
-          -DCUDA_TOOLKIT_ROOT_DIR=$HIPSYCL_LLVM_INSTALL_PREFIX/cuda \
-          -DCLANG_EXECUTABLE_PATH=$HIPSYCL_LLVM_INSTALL_PREFIX/llvm/bin/clang++ \
+          -DLLVM_DIR=$CLANG_INSTALL_PREFIX/lib/cmake/llvm \
+          -DROCM_PATH=$ROCM_INSTALL_PREFIX/rocm \
+          -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_INSTALL_PREFIX/cuda \
+          -DCLANG_EXECUTABLE_PATH=$CLANG_INSTALL_PREFIX/bin/clang++ \
           -DCLANG_INCLUDE_PATH=$LLVM_INCLUDE_PATH \
           -DCMAKE_INSTALL_PREFIX=$HIPSYCL_INSTALL_PREFIX \
           -DROCM_LINK_LINE='-rpath $HIPSYCL_ROCM_LIB_PATH -rpath $HIPSYCL_ROCM_PATH/hsa/lib -L$HIPSYCL_ROCM_LIB_PATH -lhip_hcc -lamd_comgr -lamd_hostcall -lhsa-runtime64 -latmi_runtime -rpath $HIPSYCL_ROCM_PATH/hcc/lib -L$HIPSYCL_ROCM_PATH/hcc/lib -lmcwamp -lhc_am' \
@@ -138,3 +138,85 @@ Installing
     sh ${ALIEN_ROOT}/tools/sycl/install-llvm.sh
     
     sh ${ALIEN_ROOT}/tools/syclinstall-hipsycl.sh
+    
+    
+Installing AdaptiveCPP v24.10.0 with CUDA or ROCM Support
+=========================================================
+
+Alien's build system is based on CMake.
+
+Getting the sources
+-------------------
+
+
+.. code-block:: bash
+
+    git clone https://github.com/AdaptiveCpp/AdaptiveCpp
+    cd AdaptiveCpp
+    git checkout tags/v24.10.0
+
+Example of configuration with GCC 11 and CUDA 11 ou 12
+--------------------------------------------------------------
+
+.. code-block:: bash
+
+    export INSTALL_PREFIX=`pwd`/install
+    export ACPPSYCL_INSTALL_PREFIX=${INSTALL_PREFIX}/adpativecpp-v24.10.0
+    export CUDA_INSTALL_PREFIX=$CUDA_ROOT
+    export HIPSYCL_WITH_CUDA=ON
+    export HIPSYCL_WITH_ROCM=OFF
+    export CC=${GCCCORE_ROOT}/bin/gcc
+    export ACPPSYCL_DIR=${INSTALL_PATH}/sycl2020/lib/cmake/a
+    mkdir build-hipSYCL
+    cmake  -S `pwd`/AdapativeCpp \
+           -B `pwd`/build-adaptivecpp \
+          -DCMAKE_C_COMPILER=$CLANG_INSTALL_PREFIX/bin/clang \
+          -DCMAKE_CXX_COMPILER=$CLANG_INSTALL_PREFIX/bin/clang++ \
+          -DCMAKE_CXX_FLAGS:STRING='--gcc-toolchain=${GCCCORE_ROOT}' \
+          -DWITH_CPU_BACKEND=ON \
+          -DWITH_CUDA_BACKEND=$HIPSYCL_WITH_CUDA \
+          -DWITH_ROCM_BACKEND=$HIPSYCL_WITH_ROCM \
+          -DLLVM_DIR=$CLANG_INSTALL_PREFIX/lib/cmake/llvm \
+          -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_INSTALL_PREFIX/cuda \
+          -DCLANG_EXECUTABLE_PATH=$CLANG_INSTALL_PREFIX/bin/clang++ \
+          -DCLANG_INCLUDE_PATH=$LLVM_INCLUDE_PATH \
+          -DCMAKE_INSTALL_PREFIX=$ACPPSYCL_INSTALL_PREFIX 
+
+Example of configuration AdpativeCpp with Clang and ROCM 5.5.1
+----------------------------------------------------------
+
+.. code-block:: bash
+ 
+    export ROCM_ROOT=/opt/rocm-6.1.2
+    export LLVM_DIR=/opt/rocm-6.1.2/llvm/lib/cmake/llvm
+    export CC=$ROCM_ROOT/llvm/bin/clang
+    export CXX=$ROCM_ROOT/llvm/bin/clang++
+    export BOOST_ROOT=/opt/software/gaia/prod/1.1.1/__spack_path_placeholder__/__spack_path_placeholder__/__spack_path_placeholder__/__spack_path_plac/boost-1.81.0-rocmcc-5.3.0-cky6
+
+    export CC=clang
+    export CXX=clang++
+
+    export ROOT_DIR=/lus/work/CT2A/cad14948/SHARED
+    export PREFIX_PATH="$ROCM_ROOT;$ROCM_ROOT/hip"
+
+    export HIP_ARCHITECTURES=gfx90a    # AMD Instinct MI300 = gfx940 architecture
+
+    cd buildAdaptiveCPP24100
+    cmake -DCMAKE_C_COMPILER=$CC \
+          -DCMAKE_CXX_COMPILER=$CXX \
+          -DLLVM_DIR=$ROCM_ROOT/llvm/lib/cmake/llvm \
+          -DCLANG_EXECUTABLE_PATH=$ROCM_ROOT/llvm/bin/clang++ \
+          -DCLANG_INCLUDE_PATH=$ROCM_ROOT/llvm/include \
+          -DROCM_PATH=${ROCM_ROOT} \
+          -DWITH_CPU_BACKEND=ON \
+          -DWITH_ROCM_BACKEND=ON \
+          -WITH_OPENCL_BACKEND=OFF \
+          -DWITH_LEVEL_ZERO_BACKEND=OFF \
+          -WITH_SSCP_COMPILER=OFF \
+          -DCMAKE_INSTALL_PREFIX=/lus/work/CT2A/cad14948/SHARED/local/adaptivecpp/v24.10.0 \
+          -DWITH_ACCELERATED_CPU=OFF \
+          -DBOOST_ROOT=$BOOST_ROOT \
+          /lus/work/CT2A/cad14948/SHARED/AdaptiveCpp-v24.10.0
+    make install
+
+

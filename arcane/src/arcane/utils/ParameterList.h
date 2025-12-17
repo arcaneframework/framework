@@ -15,13 +15,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/ParameterCaseOption.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ParameterCaseOption;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@ class ARCANE_UTILS_EXPORT ParameterList
 {
  private:
 
+  friend class ParameterListWithCaseOption;
   class Impl; //!< Implémentation
 
  public:
@@ -45,7 +46,7 @@ class ARCANE_UTILS_EXPORT ParameterList
   //! Construit un dictionnaire
   ParameterList(const ParameterList& rhs);
   ~ParameterList(); //!< Libère les ressources
-  
+
  public:
 
   /*!
@@ -79,28 +80,22 @@ class ARCANE_UTILS_EXPORT ParameterList
    * \retval true sinon.
    */
   bool addParameterLine(const String& line);
-  
+
   /*!
    * \brief Récupère la liste des paramètres et leur valeur.
    *
    * Retourne dans \a param_names la liste des noms des paramêtres et
    * dans \a values la valeur associée.
    */
-  void fillParameters(StringList& param_names,StringList& values) const;
-
-  /*!
-   * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
-   *
-   * Cet objet peut être détruit après utilisation.
-   *
-   * \param language Le langage dans lequel est écrit le jeu de données.
-   * \return Un objet de type ParameterCaseOption.
-   */
-  ParameterCaseOption getParameterCaseOption(const String& language) const;
+  void fillParameters(StringList& param_names, StringList& values) const;
 
  private:
 
-  Impl* m_p; //!< Implémentation
+  Impl* m_p = nullptr; //!< Implémentation
+
+ private:
+
+  ParameterCaseOption _getParameterCaseOption(const String& language) const;
 };
 
 /*---------------------------------------------------------------------------*/

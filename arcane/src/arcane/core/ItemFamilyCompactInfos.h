@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyCompactInfos.h                                    (C) 2000-2016 */
+/* ItemFamilyCompactInfos.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour gérer le compactage des entités d'une famille.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMFAMILYCOMPACTINFOS_H
-#define ARCANE_ITEMFAMILYCOMPACTINFOS_H
+#ifndef ARCANE_CORE_ITEMFAMILYCOMPACTINFOS_H
+#define ARCANE_CORE_ITEMFAMILYCOMPACTINFOS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,13 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMeshCompacter;
-class IItemFamily;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,10 +30,15 @@ class IItemFamily;
 class ARCANE_CORE_EXPORT ItemFamilyCompactInfos
 {
  public:
-  ItemFamilyCompactInfos(IMeshCompacter* acompacter,IItemFamily* afamily)
-  : m_compacter(acompacter), m_family(afamily){}
-  ~ItemFamilyCompactInfos() {}
+
+  ItemFamilyCompactInfos(IMeshCompacter* acompacter, IItemFamily* afamily)
+  : m_compacter(acompacter)
+  , m_family(afamily)
+  {}
+  ~ItemFamilyCompactInfos() = default;
+
  public:
+
   IMeshCompacter* compacter() const { return m_compacter; }
   IItemFamily* family() const { return m_family; }
   //! Conversion entre les anciens et les nouveaux id locaux.
@@ -65,9 +65,11 @@ class ARCANE_CORE_EXPORT ItemFamilyCompactInfos
     m_old_to_new_local_ids.clear();
     m_new_to_old_local_ids.clear();
   }
+
  private:
-  IMeshCompacter* m_compacter;
-  IItemFamily* m_family;
+
+  IMeshCompacter* m_compacter = nullptr;
+  IItemFamily* m_family = nullptr;
   UniqueArray<Int32> m_old_to_new_local_ids;
   UniqueArray<Int32> m_new_to_old_local_ids;
 };
@@ -75,7 +77,7 @@ class ARCANE_CORE_EXPORT ItemFamilyCompactInfos
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -145,22 +145,6 @@ extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
 setThreadImplementationService(IThreadImplementation* service);
 
 /*!
- * \brief Service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Peut retourner \c nullptr si le chargement dynamique n'est pas disponible.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-getDynamicLibraryLoader();
-
-/*!
- * \brief Positionne le service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Retourne l'ancien service utilisé.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll);
-
-/*!
  * \brief Positionne le service utilisé pour gérer les compteurs interne du processeur.
  *
  * Retourne l'ancien service utilisé.
@@ -265,7 +249,6 @@ extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane"
 ARCANE_UTILS_EXPORT IMemoryRessourceMng*
 setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -321,14 +304,6 @@ getExeFullPath();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Temps horloge en nano-secondes.
- */
-extern "C++" ARCANE_UTILS_EXPORT Int64
-getRealTimeNS();
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
  *
  * Retourne le chemin complet de la bibliothèque dynamique de nom
@@ -355,14 +330,6 @@ getLoadedSharedLibraryFullPath(const String& dll_name);
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 fillCommandLineArguments(StringList& arg_list);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Taille des pages du système hôte en octets
- */
-extern "C++" ARCANE_UTILS_EXPORT Int64
-getPageSize();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

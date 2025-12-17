@@ -60,8 +60,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 
  private:
 
-  Int32 m_comm_rank;
-  Int32 m_comm_size;
+  Int32 m_comm_rank = A_NULL_RANK;
+  Int32 m_comm_size = A_NULL_RANK;
   IDispatchers* m_dispatchers = nullptr;
   ITimeMetricCollector* m_time_metric_collector = nullptr;
   Communicator m_communicator;

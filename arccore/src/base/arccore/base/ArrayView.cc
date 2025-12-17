@@ -14,6 +14,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/ArgumentException.h"
 #include "arccore/base/TraceInfo.h"
+#include "arccore/base/FatalErrorException.h"
 
 // On n'utilise pas directement ces fichiers mais on les inclus pour tester
 // la compilation. Lorsque les tests seront en place on pourra supprimer
@@ -24,6 +25,32 @@
 #include "arccore/base/Span.h"
 #include "arccore/base/Span2.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \file Span.h
+ * \brief Types et fonctions associés aux classes SpanImpl, SmallSpan and Span.
+ */
+/*!
+ * \file Span2.h
+ * \brief Types et fonctions associés aux classes Span2Impl, Small2Span and Span2.
+ */
+/*!
+ * \file ArrayView.h
+ * \brief Types et fonctions associés aux classes ArrayView et ConstArrayView.
+ */
+/*!
+ * \file Array2View.h
+ * \brief Types et fonctions associés aux classes Array2View et ConstArray2View.
+ */
+/*!
+ * \file Array3View.h
+ * \brief Types et fonctions associés aux classes Array3View et ConstArray3View.
+ */
+/*!
+ * \file Array4View.h
+ * \brief Types et fonctions associés aux classes Array4View et ConstArray4View.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,6 +98,15 @@ binaryRead(std::istream& istr,const Span<std::byte>& bytes)
 {
   auto* ptr = reinterpret_cast<char*>(bytes.data());
   istr.read(ptr,bytes.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Impl::ExtentStorageBase::
+_throwBadSize(Int64 wanted_size, Int64 expected_size)
+{
+  ARCCORE_FATAL("Bad size value for fixed extent size={0} expected={1}", wanted_size, expected_size);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -22,6 +22,7 @@
 #include "arcane/core/CaseOptionBase.h"
 #include "arcane/core/ICaseOptionList.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/internal/ItemGroupInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -569,7 +570,7 @@ _view(bool do_padding) const
     return ItemVectorView();
   m_impl->_checkNeedUpdate(do_padding);
   Int32 flags = 0;
-  if (m_impl->isContigousLocalIds())
+  if (m_impl->isContiguousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
   // TODO: gérer l'offset
   return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));
@@ -655,6 +656,15 @@ checkIsSorted() const
 {
   m_impl->_checkNeedUpdate(false);
   return m_impl->checkIsSorted();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroup::
+incrementTimestamp() const
+{
+  m_impl->m_p->updateTimestamp();
 }
 
 /*---------------------------------------------------------------------------*/

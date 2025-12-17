@@ -1,30 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshPartitionConstraintMng.h                               (C) 2000-2009 */
+/* IMeshPartitionConstraintMng.h                               (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un gestionnaire de contraintes de partitionnement de maillage.*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHPARTITIONCONSTRAINTMNG_H
-#define ARCANE_IMESHPARTITIONCONSTRAINTMNG_H
+#ifndef ARCANE_CORE_IMESHPARTITIONCONSTRAINTMNG_H
+#define ARCANE_CORE_IMESHPARTITIONCONSTRAINTMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMeshPartitionConstraint;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,12 +32,12 @@ class IMeshPartitionConstraintMng
 {
  public:
 
-  virtual ~IMeshPartitionConstraintMng() {} //<! Libère les ressources
+  virtual ~IMeshPartitionConstraintMng() = default; //!< Libère les ressources
 
  public:
 
   //! Ajoute une contrainte
-  virtual void addConstraint(IMeshPartitionConstraint* constraint) =0;
+  virtual void addConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
    * \brief Supprime une contrainte.
@@ -49,7 +45,7 @@ class IMeshPartitionConstraintMng
    * L'appelant devient propriétaire de \a constraint et doit
    * gérer sa destruction.
    */
-  virtual void removeConstraint(IMeshPartitionConstraint* constraint) =0;
+  virtual void removeConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
    * \brief Calcule et applique des contraintes.
@@ -62,12 +58,12 @@ class IMeshPartitionConstraintMng
    *
    * Cette opération ne garantit pas que les partitions résultantes soient
    * équilibrées au niveau de la charge. Pour cela,
-   * il faut utiliser un service de repartionnement (IMeshPartitioner)
+   * il faut utiliser un service de re-partionnement (IMeshPartitioner)
    * qui prennent en compte ces contraintes.
    *
    * Cette opération est collective.
    */
-  virtual void computeAndApplyConstraints() =0;
+  virtual void computeAndApplyConstraints() = 0;
 
   /*!
    * \brief Calcule les contraintes et retourne une liste d'entités liées.
@@ -79,10 +75,10 @@ class IMeshPartitionConstraintMng
    *
    * Cette opération est collective.
    */
-  virtual void computeConstraintList(Int64MultiArray2 & tied_uids) =0;
+  virtual void computeConstraintList(Int64MultiArray2& tied_uids) = 0;
 
   //! Ajoute une contrainte
-  virtual void addWeakConstraint(IMeshPartitionConstraint* constraint) =0;
+  virtual void addWeakConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
    * \brief Supprime une contrainte.
@@ -90,7 +86,7 @@ class IMeshPartitionConstraintMng
    * L'appelant devient propriétaire de \a constraint et doit
    * gérer sa destruction.
    */
-  virtual void removeWeakConstraint(IMeshPartitionConstraint* constraint) =0;
+  virtual void removeWeakConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
    * \brief Calcule et applique des contraintes.
@@ -103,12 +99,12 @@ class IMeshPartitionConstraintMng
    *
    * Cette opération ne garantit pas que les partitions résultantes soient
    * équilibrées au niveau de la charge. Pour cela,
-   * il faut utiliser un service de repartionnement (IMeshPartitioner)
+   * il faut utiliser un service de re-partionnement (IMeshPartitioner)
    * qui prennent en compte ces contraintes.
    *
    * Cette opération est collective.
    */
-  virtual void computeAndApplyWeakConstraints() =0;
+  virtual void computeAndApplyWeakConstraints() = 0;
 
   /*!
    * \brief Calcule les contraintes et retourne une liste d'entités liées.
@@ -120,13 +116,13 @@ class IMeshPartitionConstraintMng
    *
    * Cette opération est collective.
    */
-  virtual void computeWeakConstraintList(Int64MultiArray2 & tied_uids) =0;
+  virtual void computeWeakConstraintList(Int64MultiArray2& tied_uids) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

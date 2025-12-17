@@ -6,4 +6,11 @@ set(ARCANE_SOURCES
   HybridParallelSuperMng.cc
   HybridParallelDispatch.cc
   HybridParallelDispatch.h
+
+  internal/HybridMachineMemoryWindowBaseInternalCreator.cc
+  internal/HybridMachineMemoryWindowBaseInternalCreator.h
+  internal/HybridMachineMemoryWindowBaseInternal.cc
+  internal/HybridMachineMemoryWindowBaseInternal.h
+  internal/HybridDynamicMachineMemoryWindowBaseInternal.cc
+  internal/HybridDynamicMachineMemoryWindowBaseInternal.h
 )

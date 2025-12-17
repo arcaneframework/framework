@@ -82,6 +82,14 @@ class Mesh
       if (nb_connected_elements.size() == 0) {return 0;}
       return *std::max_element(nb_connected_elements.begin(), nb_connected_elements.end());
     }
+
+    bool isEmpty() const {
+      return maxNbConnectedItems() == 0;
+    }
+
+    friend bool operator==(Connectivity const& lhs, Connectivity const& rhs) {
+      return (lhs.source_family == rhs.source_family) && (lhs.target_family == rhs.target_family) && lhs.name == rhs.name;
+    }
   };
 
   enum class ConnectivityOperation
@@ -91,6 +99,7 @@ class Mesh
   };
 
   explicit Mesh(std::string const& mesh_name);
+  explicit Mesh(std::string const& mesh_name, int mesh_rank);
   ~Mesh();
 
  private:
@@ -101,6 +110,7 @@ class Mesh
   using ConnectivityPerFamilyMapType = std::map<std::pair<ItemKind, std::string>, std::vector<Connectivity>>;
   ConnectivityPerFamilyMapType m_connectivities_per_family;
   int m_dimension = 3;
+  int m_rank = 0;
 
   template <typename ItemRangeT>
   void _scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items,
@@ -115,6 +125,8 @@ class Mesh
 
   void _addConnectivityOrientationCheck(Neo::Family& source_family, const Neo::Family& target_family);
   static std::string _connectivityOrientationPropertyName(std::string const& source_family_name, std::string const& target_family);
+
+  void _filterNullItems(std::vector<utils::Int32>& connected_item_lids, std::vector<int>& nb_connected_item_per_item);
 
  public:
   /*!
@@ -501,14 +513,14 @@ class Mesh
    * @param moved_item_uids uids of the moving items
    * @param moved_item_new_coords new coordinates of the moving nodes given in \p node_uids
    */
-  void scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords);
+  void scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> moved_item_uids, std::vector<Neo::utils::Real3> moved_item_new_coords);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
    * @param item_family item family of removed items
    * @param removed_item_uids unique ids of removed items
    */
-  void scheduleRemoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+  void scheduleRemoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> removed_item_uids);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
@@ -551,6 +563,10 @@ class Mesh
  public:
   [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
     return "removed_" + item_family.name() + "_items";
+  }
+
+  [[nodiscard]] std::string _isolatedItemLidsPropertyName(Family const& source_family, Family const& target_family) const {
+    return "isolated_" + source_family.name() + "_to_" + target_family.name() + "_item_lids";
   }
 };
 

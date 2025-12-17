@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataInternal.h                                             (C) 2000-2024 */
+/* IDataInternal.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de IData.                                         */
 /*---------------------------------------------------------------------------*/
@@ -160,6 +160,11 @@ class ARCANE_CORE_EXPORT INumericDataInternal
    * \warning For experimental use only.
    */
   virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
+
+  /*!
+   * \brief Allocateur utilisé pour la donnée.
+   */
+  virtual IMemoryAllocator* memoryAllocator() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

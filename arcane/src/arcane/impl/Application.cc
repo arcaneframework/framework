@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/StringUtils.h"
+
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/List.h"
@@ -29,13 +31,14 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/IThreadImplementationService.h"
-#include "arcane/utils/IDynamicLibraryLoader.h"
+#include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Profiling.h"
-#include "arcane/utils/internal/TaskFactoryInternal.h"
-#include "arcane/utils/internal/DependencyInjection.h"
+
+#include "arccore/base/internal/DependencyInjection.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/ArcaneVersion.h"
 #include "arcane/core/ISubDomain.h"
@@ -325,10 +328,32 @@ build()
     m_trace->info(4) << "*** PID: " << platform::getProcessId();
     m_trace->info(4) << "*** Host: " << platform::getHostName();
 
-    // TODO: Avec MPC, cette séquence ne doit être appelée qu'une seule fois.
-    IDynamicLibraryLoader* dynamic_library_loader = platform::getDynamicLibraryLoader();
+    IDynamicLibraryLoader* dynamic_library_loader = IDynamicLibraryLoader::getDefault();
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
+#ifdef ARCANE_OS_WIN32
+      {
+        // Sous windows, si le processus est lancé via 'dotnet' par exemple,
+        // les chemins de recherche pour LoadLibrary() ont pu être modifiés
+        // et on ne vas plus chercher par défaut dans le répertoire courant
+        // pour charger les bibliothèques natives. Pour corrige ce problème
+        // on repositionne le comportement qui autorise à ajouter des chemins
+        // utilisateurs et on ajoute 'os_dir' à ce chemin.
+        // Sans cela, les dépendances aux bibliothèques chargées par LoadLibrary()
+        // ne seront pas trouvées. Par exemple 'arcane_thread.dll' dépend de 'tbb.dll' et
+        // tous les deux sont le même répertoire mais si répertoire n'est pas
+        // dans la liste autorisé, alors 'tbb.dll' ne sera pas trouvé.
+        //
+        // NOTE: On pourrait peut-être éviter cela en utilisant LoadLibraryEx() et en
+        // spécifiant LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR comme flag de recherche.
+        // A vérifier si cela fonctionne lorsqu'on n'utilisera plus le chargeur
+        // dynamique de la glib.
+        m_trace->info(4) << "Adding '" << os_dir << "' to search library path";
+        std::wstring wide_os_dir = StringUtils::convertToStdWString(os_dir);
+        SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+        AddDllDirectory(wide_os_dir.c_str());
+      }
+#endif
       for( StringCollection::Enumerator i(m_exe_info.dynamicLibrariesName()); ++i; ){
         String name = *i;
         m_trace->info(4) << "*** Trying to load dynamic library: " << name;
@@ -341,6 +366,7 @@ build()
 #ifdef ARCANE_OS_WIN32
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
+      // TODO: Ajouter le répertoire contenant 'arcane_impl' qui est connu dans ArcaneMain dans m_arcane_lib_path.
       String dyn_lib_names[5] = { "arcane_mpi", "arcane_std", "arcane_mesh",
                                   "arcane_thread", "arcane_mpithread",
                                 };
@@ -372,7 +398,14 @@ build()
     bool has_dbghelp = false;
     {
       ServiceBuilder<IStackTraceService> sf(this);
-      Ref<IStackTraceService> sv = sf.createReference("LibUnwind",SB_AllowNull);
+      Ref<IStackTraceService> sv;
+      const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
+      if (v && v.value() != 0) {
+        sv = sf.createReference("BackwardCppStackTraceService", SB_AllowNull);
+      }
+      else {
+        sv = sf.createReference("LibUnwind", SB_AllowNull);
+      }
       if (!sv.get()){
         sv = sf.createReference("DbgHelpStackTraceService", SB_AllowNull);
         if (sv.get())

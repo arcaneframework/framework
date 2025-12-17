@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3x3.h                                                   (C) 2000-2024 */
+/* Real3x3.h                                                   (C) 2000-2025 */
 /*                                                                           */
 /* Matrice 3x3 de 'Real'.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -89,6 +89,7 @@ class ARCANE_UTILS_EXPORT Real3x3
   , y(ay, by, cy)
   , z(az, bz, cz)
   {}
+
   //! Construit un triplet identique à \a f
   Real3x3(const Real3x3& f) = default;
   //! Construit un triplet identique à \a f
@@ -97,11 +98,20 @@ class ARCANE_UTILS_EXPORT Real3x3
   , y(f.y)
   , z(f.z)
   {}
+
   //! Construit l'instance avec le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real3x3(Real v)
   {
     x = y = z = v;
   }
+
+  //! Construit le triplet ((av[0], av[1], av[2]), (av[3], av[4], av[5]), (av[6], av[7], av[8]))
+  constexpr ARCCORE_HOST_DEVICE explicit Real3x3(ConstArrayView<Real> av)
+  : x(av[0], av[1], av[2])
+  , y(av[3], av[4], av[5])
+  , z(av[6], av[7], av[8])
+  {}
+
   //! Opérateur de recopie
   Real3x3& operator=(const Real3x3& f) = default;
 
@@ -169,6 +179,20 @@ class ARCANE_UTILS_EXPORT Real3x3
     y = f.y;
     z = f.z;
     return (*this);
+  }
+
+  //! Retourne une vue sur les neuf élements de la matrice.
+  //! [x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z]
+  constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 9, &x.x };
+  }
+
+  //! Retourne une vue constante sur les neuf élements de la matrice.
+  //! [x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z]
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
+  {
+    return { 9, &x.x };
   }
 
   /*!

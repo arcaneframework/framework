@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MEDMeshReaderService.cc                                     (C) 2000-2024 */
+/* MEDMeshReaderService.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Lecture d'un maillage au format MED.                                      */
 /*---------------------------------------------------------------------------*/
@@ -146,6 +146,7 @@ class MEDMeshReader
 namespace
 {
   const Int32 Hexaedron8_indirection[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
+  const Int32 Hexaedron20_indirection[] = { 1, 8, 10, 3,   9, 2, 0, 11,   5, 14, 18, 7,   6, 4, 16, 15,  13, 12, 17, 19 };
   const Int32 Pyramid5_indirection[] = { 1, 0, 3, 2, 4 };
   const Int32 Quad4_indirection[] = { 1, 0, 3, 2 };
   const Int32 Triangle3_indirection[] = { 1, 0, 2 };
@@ -183,7 +184,7 @@ _initMEDToArcaneTypes()
   _addTypeInfo(3, 13, MED_PYRA13, IT_NullType); // Non supporté
   _addTypeInfo(3, 15, MED_PENTA15, IT_NullType); // Non supporté
   _addTypeInfo(3, 18, MED_PENTA18, IT_NullType); // Non supporté
-  _addTypeInfo(3, 20, MED_HEXA20, IT_Hexaedron20);
+  _addTypeInfo(3, 20, MED_HEXA20, IT_Hexaedron20, Hexaedron20_indirection);
   _addTypeInfo(3, 27, MED_HEXA27, IT_NullType); // Non supporté
 
   // Mailles dont la géométrie à une connectivité variable.
@@ -374,7 +375,6 @@ _readAndAllocateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, con
         for (Integer k = 0; k < nb_item_node; ++k)
           cinfo_span[k] = med_cinfo_span[k] - 1;
       }
-
       med_connectivity_index += nb_item_node;
       cells_infos_index += nb_item_node;
 

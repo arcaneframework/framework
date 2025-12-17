@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -276,7 +276,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
 
                     auto local_size = cell_lids.size() ;
                     handler.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::ParallelEngine::Item<1> item)
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0) ;
                                             for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -320,7 +320,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
                     //command << RUNCOMMAND_ENUMERATE(Cell,vi,areaU.own())
 
                     handler.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::ParallelEngine::Item<1> item)
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0) ;
                                             for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -390,7 +390,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
                         //command << RUNCOMMAND_LOOP1(iter,cell_cell_connection.itemGroup().size())
 
                         handler.parallel_for(engine.maxNumThreads(),
-                                             [=](Alien::ParallelEngine::Item<1> item)
+                                             [=](Alien::ParallelEngine::Item<1>::type item)
                                              {
                                                 auto id = item.get_id(0) ;
                                                 for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -478,7 +478,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
 
                           auto local_size = all_cell_cell_connection.itemGroup().size() ;
                           handler.parallel_for(engine.maxNumThreads(),
-                                               [=](Alien::ParallelEngine::Item<1> item)
+                                               [=](Alien::ParallelEngine::Item<1>::type item)
                                                {
                                                   auto id = item.get_id(0) ;
                                                   for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -499,8 +499,8 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
                                                       for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
                                                       {
                                                         auto slid = in_conn_index[k] ;
-                                                        auto svi = CellLocalId(slid) ;
-                                                        if(in_is_own[svi]==1) {
+                                                        auto svj = CellLocalId(slid) ;
+                                                        if(in_is_own[svj]==1) {
                                                             Integer j = in_allUIndex[slid];
                                                             auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
                                                             //matrix_acc[eji] = 0.;
@@ -517,8 +517,8 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
                                                       for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
                                                       {
                                                         auto slid = in_conn_index[k] ;
-                                                        auto svi = CellLocalId(slid) ;
-                                                        if(in_is_own[svi]==1) {
+                                                        auto svj = CellLocalId(slid) ;
+                                                        if(in_is_own[svj]==1) {
                                                             Integer j = in_allUIndex[slid];
                                                             auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
                                                             //matrix_acc[eji] = 0.;
@@ -655,7 +655,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
 
                     auto local_size = cell_lids.size() ;
                     handler.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::ParallelEngine::Item<1> item)
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0) ;
                                             for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -706,7 +706,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
                     //command << RUNCOMMAND_ENUMERATE(Cell,vi,areaU.own())
 
                     handler.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::ParallelEngine::Item<1> item)
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0) ;
                                             for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -786,7 +786,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
                         //command << RUNCOMMAND_LOOP1(iter,cell_cell_connection.itemGroup().size())
 
                         handler.parallel_for(engine.maxNumThreads(),
-                                             [=](Alien::ParallelEngine::Item<1> item)
+                                             [=](Alien::ParallelEngine::Item<1>::type item)
                                              {
                                                 auto id = item.get_id(0) ;
                                                 for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -871,7 +871,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
 
                           auto local_size = all_cell_cell_connection.itemGroup().size() ;
                           handler.parallel_for(engine.maxNumThreads(),
-                                               [=](Alien::ParallelEngine::Item<1> item)
+                                               [=](Alien::ParallelEngine::Item<1>::type item)
                                                {
                                                   auto id = item.get_id(0) ;
                                                   for (auto index = id; index < local_size; index += item.get_range()[0])
@@ -933,6 +933,428 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
     syclAlg.mult(matrixA, vectorX, vectorBB);
     Real normeb = syclAlg.norm2(vectorB);
     std::cout << "||b||=" << normeb<<std::endl ;
+    {
+      SYCLInternalLinearAlgebra alg ;
+
+      auto&  sycl_x = vectorX.impl()->get<Alien::BackEnd::tag::sycl>(true) ;
+      alg.assign(sycl_x,0.) ;
+    }
+  }
+}
+void
+AlienBenchModule::_fillSystemSYCLWithUSM(Timer& pbuild_timer,
+                                         CellCellGroup& cell_cell_connection,
+                                         CellCellGroup& all_cell_cell_connection,
+                                         Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                                         Alien::Vector& vectorB,
+                                         Alien::Vector& vectorBB,
+                                         Alien::Vector& vectorX,
+                                         Alien::Matrix& matrixA)
+{
+  {
+    Timer::Sentry ts(&pbuild_timer);
+
+    Computer computer{m_homogeneous,
+                      m_diag_coeff,
+                      m_off_diag_coeff,
+                      m_lambdax,
+                      m_lambday,
+                      m_lambdaz,
+                      m_alpha,
+                      m_sigma} ;
+
+    Arccore::SmallSpan<const Int32> accAllUIndex = allUIndex ;//index_manager.getIndexes(indexSetU);
+
+    Arccore::UniqueArray<Arccore::Integer> cell_conn_lids(platform::getDefaultDataAllocator()) ;
+    cell_conn_lids = cell_cell_connection.itemGroup().view().localIds() ;
+    Arccore::UniqueArray<Arccore::Integer> all_cell_conn_lids(platform::getDefaultDataAllocator()) ;
+    all_cell_conn_lids = all_cell_cell_connection.itemGroup().view().localIds() ;
+
+
+    Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+    builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
+
+    Alien::ParallelEngine engine(*m_default_queue) ;
+    engine.submit([&](ControlGroupHandler& handler)
+                  {
+                    auto& command = handler.command() ;
+
+                    auto in_allUIndex      = ax::viewIn(command,accAllUIndex) ;
+                    auto in_conn_index     = ax::viewIn(command,m_cell_cell_connection_index) ;
+                    auto in_conn_offset    = ax::viewIn(command,m_cell_cell_connection_offset) ;
+                    auto in_cell_conn_lids = ax::viewIn(command,cell_conn_lids) ;
+                    auto in_center         = ax::viewIn(command,m_cell_center);
+                    auto in_is_own         = ax::viewIn(command,m_cell_is_own);
+
+                    auto matrix_acc = builder.view(handler) ;
+                    auto local_size = cell_cell_connection.itemGroup().size() ;
+
+
+                    handler.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
+                                         {
+                                            auto id = item.get_id(0) ;
+                                            for (auto index = id; index < local_size; index += item.get_range()[0])
+                                            {
+                                              auto lid = in_cell_conn_lids[index] ;
+                                              //auto vi = in_cell_conn_lids[index] ;
+                                              auto vi = CellLocalId(in_cell_conn_lids[index]) ;
+                                              double diag = computer.dii(vi);
+
+                                              auto xi = in_center[vi] ;
+
+                                              Integer i = in_allUIndex[vi];
+                                              auto eii = matrix_acc.entryIndex(i, i) ;
+                                              matrix_acc[eii] += diag;
+
+                                              for(auto k=in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                              {
+
+                                                auto slid = in_conn_index[k] ;
+                                                //auto svj = in_conn_index[k] ;
+                                                auto svj = CellLocalId(slid) ;
+                                                auto xj = in_center[svj] ;
+                                                Integer j = in_allUIndex[svj];
+                                                auto eij = matrix_acc.entryIndex(i, j) ;
+
+                                                double off_diag = computer.fij(lid, slid,xi,xj);
+                                                //double off_diag = computer.fij(vi, svj,xi,xj);
+                                                matrix_acc[eii] += off_diag;
+                                                matrix_acc[eij] -= off_diag;
+                                              }
+                                            } ;
+                                          }) ;
+                  }) ;
+    /*
+    {
+      auto hview = builder.hostView();
+      for(std::size_t index=0;index<cell_lids.size();++index)
+      {
+          auto i = allUIndex[cell_lids[index]] ;
+          auto eii = hview.entryIndex(i,i) ;
+          std::cout <<" ROW ["<<index<<"]: DIAG("<<cell_lids[index]<<","<<i<<","<<eii<<","<<hview[eii]<<") ";
+          for(std::size_t k=m_cell_cell_connection_offset[index];k<m_cell_cell_connection_offset[index+1];++k)
+          {
+              auto jindex = m_cell_cell_connection_index[k] ;
+              auto j =  allUIndex[cell_lids[jindex]] ;
+              auto eij =  hview.entryIndex(i,j) ;
+            std::cout <<"("<<cell_lids[jindex]<<","<<j<<","<<eij<<","<<hview[eij]<<")";
+          }
+          std::cout<<std::endl ;
+      }
+    }*/
+    if (options()->sigma() > 0.)
+    {
+      m_sigma = options()->sigma();
+      Arcane::Real3 xCmax { 0.25, 0.25, 0.25 };
+      Arcane::Real3 xCmin { 0.75, 0.75, 0.55 };
+      auto epsilon = options()->epsilon() ;
+      auto sigma = m_sigma ;
+      engine.submit([&](ControlGroupHandler& handler)
+                    {
+                      auto& command = handler.command() ;
+
+                      auto in_center = ax::viewIn(command,m_cell_center);
+                      auto in_is_own = ax::viewIn(command,m_cell_is_own);
+                      auto out_s   = ax::viewOut(command,m_s);
+                      auto in_conn_index = ax::viewIn(command,m_cell_cell_connection_index) ;
+                      auto in_conn_offset = ax::viewIn(command,m_cell_cell_connection_offset) ;
+                      //auto in_cell_conn_lids = viewIn(command,cell_conn_lids) ;
+                      auto in_cell_conn_lids = ax::viewIn(command,all_cell_conn_lids) ;
+                      auto in_allUIndex = ax::viewIn(command,accAllUIndex) ;
+
+
+                      auto matrix_acc = builder.view(handler) ;
+
+                      auto local_size = all_cell_cell_connection.itemGroup().size() ;
+                      handler.parallel_for(engine.maxNumThreads(),
+                                           [=](Alien::ParallelEngine::Item<1>::type item)
+                                           {
+                                              auto id = item.get_id(0) ;
+                                              for (auto index = id; index < local_size; index += item.get_range()[0])
+                                              {
+                                                //auto vi = in_cell_conn_lids[index] ;
+                                                auto lid = in_cell_conn_lids[index] ;
+                                                auto vi = CellLocalId(lid) ;
+
+                                                auto xC = in_center[vi];
+                                                auto xDmax = xC - xCmax;
+                                                auto xDmin = xC - xCmin;
+                                                out_s[vi] = 0.;
+                                                Integer i = in_allUIndex[lid];
+                                                auto eii = matrix_acc.entryIndex(i, i) ;
+                                                if (xDmax.normL2() < epsilon) {
+                                                  out_s[vi] = 1.;
+                                                  if (in_is_own[vi]==1)
+                                                    matrix_acc[eii] = sigma;
+                                                  for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                                  {
+                                                    auto slid = in_conn_index[k] ;
+                                                    auto svj = CellLocalId(slid) ;
+                                                    if(in_is_own[svj]==1) {
+                                                        Integer j = in_allUIndex[slid];
+                                                        auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                        //matrix_acc[eji] = 0.;
+                                                        matrix_acc.combine(ejik,0.) ;
+                                                    }
+                                                  }
+                                                }
+                                                if (xDmin.normL2() < epsilon) {
+                                                  out_s[vi] = -1.;
+                                                  Integer i = in_allUIndex[vi];
+
+                                                  if (in_is_own[vi])
+                                                    matrix_acc[eii] = 1. / sigma;
+                                                  for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                                  {
+                                                    auto slid = in_conn_index[k] ;
+                                                    auto svj = CellLocalId(slid) ;
+                                                    if(in_is_own[svj]==1) {
+                                                        Integer j = in_allUIndex[slid];
+                                                        auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                        //matrix_acc[eji] = 0.;
+                                                        matrix_acc.combine(ejik,0.) ;
+                                                    }
+                                                  }
+                                                }
+                                              } ;
+                                           }) ;
+                    }) ;
+        builder.combine() ;
+      }
+    builder.finalize() ;
+  }
+
+  // Réinitialisation de vectorX
+  {
+    {
+      Alien::SYCLLinearAlgebra syclAlg;
+      syclAlg.copy(vectorBB, vectorB);
+    }
+    {
+      SYCLInternalLinearAlgebra alg ;
+
+      auto&  sycl_x = vectorX.impl()->get<Alien::BackEnd::tag::sycl>(true) ;
+      alg.assign(sycl_x,0.) ;
+    }
+  }
+}
+
+
+void
+AlienBenchModule::_fillSystemSYCL( Timer& pbuild_timer,
+                                   CellCellGroup& cell_cell_connection,
+                                   CellCellGroup& all_cell_cell_connection,
+                                   Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                                   Alien::Vector& vectorB,
+                                   Alien::Vector& vectorBB,
+                                   Alien::Vector& vectorX,
+                                   Alien::Matrix& matrixA)
+{
+  {
+    Timer::Sentry ts(&pbuild_timer);
+
+    Arccore::SmallSpan<const Int32> accAllUIndex = allUIndex ;//index_manager.getIndexes(indexSetU);
+    Arccore::UniqueArray<Arccore::Integer> cell_conn_lids(platform::getDefaultDataAllocator()) ;
+    cell_conn_lids = cell_cell_connection.itemGroup().view().localIds() ;
+    Arccore::UniqueArray<Arccore::Integer> all_cell_conn_lids(platform::getDefaultDataAllocator()) ;
+    all_cell_conn_lids = all_cell_cell_connection.itemGroup().view().localIds() ;
+
+    sycl::buffer<Integer,1> allUIndex_buffer(allUIndex.data(),sycl::range(allUIndex.size())) ;
+    sycl::buffer<Integer,1> cell_conn_offset_buffer(m_cell_cell_connection_offset.data(),sycl::range(m_cell_cell_connection_offset.size())) ;
+    sycl::buffer<Integer,1> cell_conn_index_buffer(m_cell_cell_connection_index.data(),sycl::range(m_cell_cell_connection_index.size())) ;
+    sycl::buffer<Integer,1> cell_conn_lids_buffer(cell_conn_lids.data(),sycl::range(cell_conn_lids.size())) ;
+    sycl::buffer<Integer,1> all_cell_conn_lids_buffer(all_cell_conn_lids.data(),sycl::range(all_cell_conn_lids.size())) ;
+
+    sycl::buffer<double,1>  s_buffer(m_s.asArray().data(),sycl::range(m_s.asArray().size())) ;
+
+    sycl::buffer<Int16,1>   cell_is_own_buffer(m_cell_is_own.asArray().data(),sycl::range(m_cell_is_own.asArray().size())) ;
+    sycl::buffer<Real3,1>   cell_center_buffer(m_cell_center.asArray().data(),sycl::range(m_cell_center.asArray().size())) ;
+
+    Computer computer{m_homogeneous,
+                      m_diag_coeff,
+                      m_off_diag_coeff,
+                      m_lambdax,
+                      m_lambday,
+                      m_lambdaz,
+                      m_alpha,
+                      m_sigma} ;
+
+    Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+    builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
+
+    Alien::ParallelEngine engine(*m_default_queue) ;
+    engine.submit([&](ControlGroupHandler& handler)
+                  {
+                    auto& command = handler.command() ;
+                    /*
+                    auto in_allUIndex      = ax::viewIn(command,accAllUIndex) ;
+                    auto in_conn_index     = ax::viewIn(command,m_cell_cell_connection_index) ;
+                    auto in_conn_offset    = ax::viewIn(command,m_cell_cell_connection_offset) ;
+                    auto in_cell_conn_lids = ax::viewIn(command,cell_conn_lids) ;
+                    auto in_center         = ax::viewIn(command,m_cell_center);
+                    auto in_is_own         = ax::viewIn(command,m_cell_is_own);
+                    */
+
+                    //auto in_cell_lids      = cell_lids_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                    auto in_conn_index     = cell_conn_index_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                    auto in_conn_offset    = cell_conn_offset_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                    auto in_cell_conn_lids = cell_conn_lids_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                    auto in_allUIndex      = allUIndex_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+
+                    auto in_is_own = cell_is_own_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                    auto in_center = cell_center_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+
+                    auto matrix_acc = builder.view(handler) ;
+                    auto local_size = cell_cell_connection.itemGroup().size() ;
+                    //command << RUNCOMMAND_ENUMERATE(Cell,vi,CellGroup(cell_cell_connection.itemGroup()))
+                    //command << RUNCOMMAND_LOOP1(iter,cell_cell_connection.itemGroup().size())
+
+                    handler.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::ParallelEngine::Item<1>::type item)
+                                         {
+                                            auto id = item.get_id(0) ;
+                                            for (auto index = id; index < local_size; index += item.get_range()[0])
+                                            {
+                                              auto vi = in_cell_conn_lids[index] ;
+                                              //auto vi = CellLocalId(in_cell_conn_lids[index]) ;
+                                              double diag = computer.dii(vi);
+
+                                              auto xi = in_center[vi] ;
+
+                                              Integer i = in_allUIndex[vi];
+                                              auto eii = matrix_acc.entryIndex(i, i) ;
+                                              matrix_acc[eii] += diag;
+
+                                              for(auto k=in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                              {
+                                                auto svj = in_conn_index[k] ;
+                                                //auto svj = CellLocalId(slid) ;
+                                                auto xj = in_center[svj] ;
+                                                Integer j = in_allUIndex[svj];
+                                                auto eij = matrix_acc.entryIndex(i, j) ;
+
+                                                double off_diag = computer.fij(vi, svj,xi,xj);
+                                                matrix_acc[eii] += off_diag;
+                                                matrix_acc[eij] -= off_diag;
+                                              }
+                                            } ;
+                                          }) ;
+                  }) ;
+    /*
+    {
+      auto hview = builder.hostView();
+      for(std::size_t index=0;index<cell_lids.size();++index)
+      {
+          auto i = allUIndex[cell_lids[index]] ;
+          auto eii = hview.entryIndex(i,i) ;
+          std::cout <<" ROW ["<<index<<"]: DIAG("<<cell_lids[index]<<","<<i<<","<<eii<<","<<hview[eii]<<") ";
+          for(std::size_t k=m_cell_cell_connection_offset[index];k<m_cell_cell_connection_offset[index+1];++k)
+          {
+              auto jindex = m_cell_cell_connection_index[k] ;
+              auto j =  allUIndex[cell_lids[jindex]] ;
+              auto eij =  hview.entryIndex(i,j) ;
+            std::cout <<"("<<cell_lids[jindex]<<","<<j<<","<<eij<<","<<hview[eij]<<")";
+          }
+          std::cout<<std::endl ;
+      }
+    }*/
+    if (options()->sigma() > 0.)
+    {
+      m_sigma = options()->sigma();
+      Arcane::Real3 xCmax { 0.25, 0.25, 0.25 };
+      Arcane::Real3 xCmin { 0.75, 0.75, 0.55 };
+      auto epsilon = options()->epsilon() ;
+      auto sigma = m_sigma ;
+      engine.submit([&](ControlGroupHandler& handler)
+                    {
+                      auto& command = handler.command() ;
+                      /*
+                      auto in_cell_center = ax::viewIn(command,m_cell_center);
+                      auto in_cell_is_own = ax::viewIn(command,m_cell_is_own);
+                      auto out_s   = ax::viewOut(command,m_s);
+                      auto in_conn_index = ax::viewIn(command,m_cell_cell_connection_index) ;
+                      auto in_conn_offset = ax::viewIn(command,m_cell_cell_connection_offset) ;
+                      auto in_cell_conn_lids = viewIn(command,cell_conn_lids) ;
+                      auto in_allUIndex = ax::viewIn(command,accAllUIndex) ;
+                      */
+
+                      //auto in_cell_lids      = cell_lids_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                      auto in_conn_index     = cell_conn_index_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                      auto in_conn_offset    = cell_conn_offset_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                      auto in_cell_conn_lids = all_cell_conn_lids_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+
+                      auto in_allUIndex      = allUIndex_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+
+                      auto in_is_own = cell_is_own_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                      auto in_center = cell_center_buffer.get_access<sycl::access::mode::read>(handler.m_internal) ;
+                      auto out_s     = s_buffer.get_access<sycl::access::mode::read_write>(handler.m_internal) ;
+
+                      auto matrix_acc = builder.view(handler) ;
+                      //command << RUNCOMMAND_ENUMERATE(Cell,vi,CellGroup(cell_cell_connection.itemGroup()))
+                      //command << RUNCOMMAND_LOOP1(iter,cell_cell_connection.itemGroup().size())
+
+                      auto local_size = all_cell_cell_connection.itemGroup().size() ;
+                      handler.parallel_for(engine.maxNumThreads(),
+                                           [=](Alien::ParallelEngine::Item<1>::type item)
+                                           {
+                                              auto id = item.get_id(0) ;
+                                              for (auto index = id; index < local_size; index += item.get_range()[0])
+                                              {
+                                                auto vi = in_cell_conn_lids[index] ;
+
+                                                auto xC = in_center[vi];
+                                                auto xDmax = xC - xCmax;
+                                                auto xDmin = xC - xCmin;
+                                                out_s[vi] = 0.;
+                                                Integer i = in_allUIndex[vi];
+                                                auto eii = matrix_acc.entryIndex(i, i) ;
+                                                if (xDmax.normL2() < epsilon) {
+                                                  out_s[vi] = 1.;
+                                                  if (in_is_own[vi]==1)
+                                                    matrix_acc[eii] = sigma;
+                                                  for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                                  {
+                                                    auto svj = in_conn_index[k] ;
+                                                    if(in_is_own[svj]==1) {
+                                                        Integer j = in_allUIndex[svj];
+                                                        auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                        //matrix_acc[eji] = 0.;
+                                                        matrix_acc.combine(ejik,0.) ;
+                                                    }
+                                                  }
+                                                }
+                                                if (xDmin.normL2() < epsilon) {
+                                                  out_s[vi] = -1.;
+                                                  Integer i = in_allUIndex[vi];
+
+                                                  if (in_is_own[vi])
+                                                    matrix_acc[eii] = 1. / sigma;
+                                                  for(auto k = in_conn_offset[index];k<in_conn_offset[index+1];++k)
+                                                  {
+                                                    auto svj = in_conn_index[k] ;
+                                                    if(in_is_own[svj]==1) {
+                                                        Integer j = in_allUIndex[svj];
+                                                        auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                        //matrix_acc[eji] = 0.;
+                                                        matrix_acc.combine(ejik,0.) ;
+                                                    }
+                                                  }
+                                                }
+                                              } ;
+                                           }) ;
+                    }) ;
+        builder.combine() ;
+      }
+    builder.finalize() ;
+  }
+
+  // Réinitialisation de vectorX
+  {
+    {
+      Alien::SYCLLinearAlgebra syclAlg;
+      syclAlg.copy(vectorBB, vectorB);
+    }
     {
       SYCLInternalLinearAlgebra alg ;
 

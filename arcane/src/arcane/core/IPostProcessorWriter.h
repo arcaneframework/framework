@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPostProcessorWriter.h                                      (C) 2000-2023 */
+/* IPostProcessorWriter.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un écrivain pour les informations de post-traitement.         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IPOSTPROCESSORWRITER_H
-#define ARCANE_IPOSTPROCESSORWRITER_H
+#ifndef ARCANE_CORE_IPOSTPROCESSORWRITER_H
+#define ARCANE_CORE_IPOSTPROCESSORWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IService.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -118,7 +118,11 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   //! Liste des variables à sauver
   virtual VariableCollection variables() = 0;
 
-  //! Positionne la liste des groupes à sortir
+  /*!
+   * \brief Positionne la liste des groupes à sortir.
+   *
+   * La collection passée en argument est clonée.
+   */
   virtual void setGroups(ItemGroupCollection groups) = 0;
 
   //! Liste des groupes à sauver

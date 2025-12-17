@@ -86,6 +86,7 @@ class MpiParallelSuperMng
   Int32 m_nb_local_sub_domain; //!< Nombre de sous-domaines locaux
   MPI_Comm m_mpi_main_communicator; //!< Communicateur MPI
   MP::Communicator m_main_communicator; //!< Communicateur MPI
+  MP::Communicator m_machine_communicator; //!< Communicateur MPI Machine
   MpiErrorHandler m_error_handler;
   MpiAdapter* m_adapter;
   MpiDatatypeList* m_datatype_list;
@@ -110,6 +111,7 @@ MpiParallelSuperMng(const ServiceBuildInfo& sbi)
 , m_nb_local_sub_domain(1)
 , m_mpi_main_communicator(MPI_COMM_NULL)
 , m_main_communicator(MPI_COMM_NULL)
+, m_machine_communicator(MPI_COMM_NULL)
 , m_adapter(nullptr)
 , m_datatype_list(nullptr)
 {
@@ -141,6 +143,8 @@ MpiParallelSuperMng::
 
   MPI_Comm_free(&m_mpi_main_communicator);
   m_mpi_main_communicator = MPI_COMM_NULL;
+
+  MPI_Comm_free(static_cast<MPI_Comm*>(m_machine_communicator.communicatorAddress()));
 
   arcaneFinalizeMPI();
 }
@@ -232,6 +236,11 @@ build()
   MPI_Comm_rank(m_mpi_main_communicator,&rank);
   MPI_Comm_size(m_mpi_main_communicator,&size);
 
+  MPI_Comm mpi_machine_communicator = MPI_COMM_NULL;
+  MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, rank, MPI_INFO_NULL, &mpi_machine_communicator);
+
+  m_machine_communicator = MP::Communicator(mpi_machine_communicator);
+
 #ifndef ARCANE_USE_MPC
   m_error_handler.registerHandler(m_main_communicator);
 #endif
@@ -270,6 +279,9 @@ internalCreateWorldParallelMng(Int32 local_rank)
   MPI_Comm comm = MPI_COMM_NULL;
   MPI_Comm_dup(m_main_communicator,&comm);
 
+  MPI_Comm machine_comm = MPI_COMM_NULL;
+  MPI_Comm_dup(m_machine_communicator, &machine_comm);
+
   int rank = -1;
   int nb_rank = -1;
   MPI_Comm_rank(comm,&rank);
@@ -277,7 +289,7 @@ internalCreateWorldParallelMng(Int32 local_rank)
 
   bool is_parallel = nb_rank > 1;
 
-  MpiParallelMngBuildInfo bi(comm);
+  MpiParallelMngBuildInfo bi(comm, machine_comm);
   bi.is_parallel = is_parallel;
   bi.stat = m_stat;
   bi.trace_mng = tm;

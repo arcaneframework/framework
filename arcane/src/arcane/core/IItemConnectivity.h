@@ -1,35 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemConnectivity.h                                         (C) 2000-2016 */
+/* IItemConnectivity.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Interface de connectivité des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMCONNECTIVITY_H
-#define ARCANE_IITEMCONNECTIVITY_H
+#ifndef ARCANE_CORE_IITEMCONNECTIVITY_H
+#define ARCANE_CORE_IITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemTypes.h"
-
-#include "arcane/IItemConnectivityAccessor.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/IItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IItemFamily;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,15 +37,14 @@ class IItemFamily;
  * Pour récupérer les entités cibles connectées à une entité source, il faut
  * utiliser la classe ConnectivityItemVector. Par exemple:
  *
- \code
+ * \code
  * IItemConnectivity* c = ...;
  * Item my_item;
  * ConnectivityItemVector civ(c);
  * ENUMERATE_ITEM(icitem,civ.connectedItems(my_item)){
  *  // Itère sur les entités connectées à \a my_item via \a c.
  * }
- \endcode
-
+ * \endcode
  */
 class ARCANE_CORE_EXPORT IItemConnectivity
 : public IItemConnectivityAccessor
@@ -58,10 +52,6 @@ class ARCANE_CORE_EXPORT IItemConnectivity
  public:
 
   friend class ConnectivityItemVector;
-
- public:
-
-  virtual ~IItemConnectivity(){}
 
  public:
 
@@ -78,10 +68,10 @@ class ARCANE_CORE_EXPORT IItemConnectivity
   virtual IItemFamily* targetFamily() const = 0;
 
   //! Notifie la connectivité que la famille source est compactée.
-  virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) =0;
+  virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) = 0;
 
   //! Notifie la connectivité que la famille cible est compactée.
-  virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) =0;
+  virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) = 0;
 
   /*!
    * \brief Mise à jour de la connectivité.
@@ -97,7 +87,7 @@ class ARCANE_CORE_EXPORT IItemConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

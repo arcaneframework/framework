@@ -15,5 +15,6 @@ arcane_add_library(arcane_aleph_petsc
 
 arcane_add_arccon_packages(arcane_aleph_petsc PRIVATE ${PKGS})
 target_link_libraries(arcane_aleph_petsc PUBLIC arcane_core)
+target_link_libraries(arcane_aleph_petsc PRIVATE arcane_aleph)
 
 arcane_register_library(arcane_aleph_petsc OPTIONAL)

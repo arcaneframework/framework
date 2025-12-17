@@ -1,5 +1,5 @@
 <?xml version="1.0" ?><!-- -*- SGML -*- -->
-<service name="ArcaneCaseMeshService" parent-name="AbstractService" type="caseoption">
+<service name="ArcaneCaseMeshService" version="1.0" parent-name="Arcane::AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
     Service %Arcane permettant de lire ou créer un maillage.
@@ -9,6 +9,11 @@
     à partir du fichier spécifié. Si c'est `&lt;generator&gt;`, alors le
     maillage sera généré directement en ligne à partir d'un des
     générateurs disponible dans %Arcane.
+
+    La balise `&lt;partitioner;&gt;` indique le partitionneur à utiliser pour
+    le partitionnement initial. La valeur `External` permet d'indiquer que le partitionnement
+    a déjà été fait. Dans ce cas, les fichiers de maillage seront de la
+    forme 'CPU...%n' avec N le numéro de la partie du maillage.
   </description>
     
   <interface name="Arcane::ICaseMeshService" />
@@ -87,17 +92,33 @@
       </description>
     </simple>
 
-    <simple name="non-manifold-mesh"
-            type="bool"
-            default="false"
+    <simple name="edge-numbering-version"
+            type="int32"
+            optional = "true"
             >
       <description>
-        Indique si le maillage est 'non-manifold'. Un maillage de ce type contient
+        Version du calcul des identifiants uniques des arêtes.
+
+        Cette option n'est utilisée que pour les maillages 3D.
+
+        Cette option est interne à Arcane.
+      </description>
+    </simple>
+
+    <enumeration name="cell-dimension-kind"
+                 type="Arcane::eMeshCellDimensionKind"
+                 default="mono-dimension"
+            >
+      <description>
+        Indique si le maillage est 'non-manifold' ou multi-dimension. Un maillage de ce type contient
         des mailles de différents dimensions.
 
         AVERTISSEMENT: Ce mode est expérimental. Ne pas utiliser en dehors de %Arcane.
       </description>
-    </simple>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MonoDimension" name="mono-dimension"/>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MultiDimension" name="multi-dimension"/>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::NonManifold" name="non-manifold"/>
+    </enumeration>
 
     <!-- Service spécifique de lecture de maillage -->
     <service-instance

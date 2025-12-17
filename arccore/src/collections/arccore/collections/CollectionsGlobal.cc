@@ -24,58 +24,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-  const char* _toName(eHostDeviceMemoryLocation v)
-  {
-    switch (v) {
-    case eHostDeviceMemoryLocation::Unknown:
-      return "Unknown";
-    case eHostDeviceMemoryLocation::Device:
-      return "Device";
-    case eHostDeviceMemoryLocation::Host:
-      return "Host";
-    case eHostDeviceMemoryLocation::ManagedMemoryDevice:
-      return "ManagedMemoryDevice";
-    case eHostDeviceMemoryLocation::ManagedMemoryHost:
-      return "ManagedMemoryHost";
-    }
-    return "Invalid";
-  }
-
-  const char* _toName(eMemoryResource r)
-  {
-    switch (r) {
-    case eMemoryResource::Unknown:
-      return "Unknown";
-    case eMemoryResource::Host:
-      return "Host";
-    case eMemoryResource::HostPinned:
-      return "HostPinned";
-    case eMemoryResource::Device:
-      return "Device";
-    case eMemoryResource::UnifiedMemory:
-      return "UnifiedMemory";
-    }
-    return "Invalid";
-  }
-
-} // namespace
-
-extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
-{
-  o << _toName(v);
-  return o;
-}
-
-extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eMemoryResource v)
-{
-  o << _toName(v);
-  return o;
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

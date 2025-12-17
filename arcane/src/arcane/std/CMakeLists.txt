@@ -1,5 +1,6 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
-set(PUBLIC_PKGS MPI vtkIOXML vtkIOLegacy)
+﻿arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en focntion des versions de VTK
+set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd DW)
+set(PUBLIC_PKGS MPI ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
 foreach(package ${PKGS})
@@ -8,49 +9,63 @@ endforeach()
 
 # ----------------------------------------------------------------------------
 # Pour l'instant n'active pas KDI car il n'y a pas d'installation disponibles
+
+option(ARCANE_ENABLE_KDI "Is KDI service enabled?" OFF)
+
 set(ARCANE_HAS_KDI FALSE)
 
 # Nécessite CMake 3.26 pour la détection de l'API stable de Python
 # NOTE: aout 2024. Cependant il semble que cette API stable ne soit pas
 # toujours bien détectée (la cible CMake associée ne contient rien)
 # On utilise donc la cible Python classique temporairement
-
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
-  message(STATUS "Checking support for KDI Python")
-  set(Python_USE_STATIC_LIBS FALSE)
-  find_package (Python 3.10 COMPONENTS Development Development.SABIModule NumPy)
-  if (Python_FOUND AND Python_Development.SABIModule_FOUND AND Python_NumPy_FOUND)
-    set(ARCANE_HAS_KDI_PYTHON TRUE)
-    message(STATUS "Python version = ${Python_VERSION}")
-    message(STATUS "Python libs = ${Python_LIBRARIES} rtlibs=${Python_RUNTIME_LIBRARY_DIRS}")
-    message(STATUS "Python SABI libs = ${Python_SABI_LIBRARY} ${Python_SABI_LIBRARIES} ${Python_RUNTIME_SABI_LIBRARY_DIRS} ${Python_SABI_LIBRARY_DIRS}")
-    message(STATUS "Python NumPy version = ${Python_NumPy_VERSION}")
-    message(STATUS "Python NumPy include_dirs = ${Python_NumPy_INCLUDE_DIRS}")
-    if (Python_NumPy_VERSION VERSION_LESS 1.23)
-      message(STATUS "Disabling Python_NumPy because version is too old (minimum=1.23)")
+if (ARCANE_ENABLE_KDI)
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
+    message(STATUS "Checking support for KDI Python")
+    set(Python_USE_STATIC_LIBS FALSE)
+    find_package (Python 3.10 COMPONENTS Development Development.SABIModule NumPy)
+    if (Python_FOUND AND Python_Development.SABIModule_FOUND AND Python_NumPy_FOUND)
+      set(ARCANE_HAS_KDI_PYTHON TRUE)
+      message(STATUS "Python version = ${Python_VERSION}")
+      message(STATUS "Python libs = ${Python_LIBRARIES} rtlibs=${Python_RUNTIME_LIBRARY_DIRS}")
+      message(STATUS "Python SABI libs = ${Python_SABI_LIBRARY} ${Python_SABI_LIBRARIES} ${Python_RUNTIME_SABI_LIBRARY_DIRS} ${Python_SABI_LIBRARY_DIRS}")
+      message(STATUS "Python NumPy version = ${Python_NumPy_VERSION}")
+      message(STATUS "Python NumPy include_dirs = ${Python_NumPy_INCLUDE_DIRS}")
+      if (Python_NumPy_VERSION VERSION_LESS 1.23)
+        message(STATUS "Disabling Python_NumPy because version is too old (minimum=1.23)")
+        set (ARCANE_HAS_KDI_PYTHON FALSE)
+      endif()
+    else()
       set (ARCANE_HAS_KDI_PYTHON FALSE)
     endif()
-  else()
-    set (ARCANE_HAS_KDI_PYTHON FALSE)
+  endif()
+
+  message(STATUS "Is KDI python requisites available? = ${ARCANE_HAS_KDI_PYTHON}")
+  set (ARCANE_HAS_KDI ${ARCANE_HAS_KDI_PYTHON})
+
+  message(STATUS "Is KDI available? = ${ARCANE_HAS_KDI}")
+  set(ARCANE_HAS_KDI ${ARCANE_HAS_KDI} CACHE BOOL "Is KDI available" FORCE)
+  if (NOT ARCANE_HAS_KDI)
+    message(FATAL_ERROR "KDI service is enabled but pre-requisites are not fulfilled")
   endif()
 endif()
-
-if (NOT ARCANE_HAS_KDI_PYTHON)
-  set (ARCANE_HAS_KDI FALSE)
-endif()
-
-message(STATUS "Is KDI available? = ${ARCANE_HAS_KDI}")
-set(ARCANE_HAS_KDI ${ARCANE_HAS_KDI} CACHE BOOL "Is KDI available" FORCE)
 
 # ----------------------------------------------------------------------------
 
 include(srcs.cmake)
+
+# Backward-cpp peut fonctionner avec d'autres lib. Voir pour les ajouter.
+if (DW_FOUND)
+  list(APPEND ARCANE_SOURCES BackwardCppStackTraceService.cc)
+endif ()
 
 if(BZIP2_FOUND)
   list(APPEND ARCANE_SOURCES Bzip2DeflateService.cc)
 endif()
 if(LZ4_FOUND)
   list(APPEND ARCANE_SOURCES LZ4DeflateService.cc)
+endif()
+if(zstd_FOUND)
+  list(APPEND ARCANE_SOURCES ZstdDataCompressor.cc)
 endif()
 
 if(Parmetis_FOUND)
@@ -131,7 +146,7 @@ if(ARCANE_HAS_LINUX_PERF_COUNTERS)
     )
 endif()
 
-if(vtkIOXML_FOUND AND vtkIOLegacy_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND AND ${VTK_PACKAGE_PREFIX}IOLegacy_FOUND)
   list(APPEND ARCANE_SOURCES
     VtkPolyhedralMeshIOService.cc
     )

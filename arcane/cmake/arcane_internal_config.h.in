@@ -19,6 +19,16 @@
 //! Name of the accelerator runtime
 #cmakedefine ARCANE_ACCELERATOR_RUNTIME "@ARCANE_ACCELERATOR_RUNTIME@"
 
+#define METIS_DEFAULT_PARTITIONER 1
+#define PTSCOTCH_DEFAULT_PARTITIONER 2
+#define ZOLTAN_DEFAULT_PARTITIONER 3
+#define ARCANEGEOMETRICMESHPARTITIONER_DEFAULT_PARTITIONER 4
+#define ARCANE_DEFAULT_PARTITIONER_STR "@ARCANE_DEFAULT_PARTITIONER@"
+
+#ifndef ARCANE_DEFAULT_PARTITIONER
+#define ARCANE_DEFAULT_PARTITIONER @ARCANE_UPPER_DEFAULT_PARTITIONER@_DEFAULT_PARTITIONER
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -1,4 +1,4 @@
-name: '[Require PR] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 19 / Minimal)'
+name: '[Require PR] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 21 / Minimal)'
 
 on:
   pull_request:
@@ -15,13 +15,13 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - short: 'U24_C19'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -32,16 +32,22 @@ jobs:
 
         config:
           - type: 'Check'
-            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[3-9]thread|[1-9][0-9]+thread).*$'
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_args: '--timeout 1200'
 
         mpi:
           - implementation: 'OMPI'
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
+        runner:
+          - runner_tag: 'm-1'
+            runner_name: 'M1'
+            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[3-9]thread|[1-9][0-9]+thread).*$'
+            excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_parallel_jobs: '-j12'
+
+    name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    secrets: inherit
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
@@ -55,8 +61,9 @@ jobs:
       ccache_debug_mode: false
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
-      excluded_tests: ${{ matrix.config.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      excluded_tests: ${{ matrix.runner.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.runner.excluded_tests_with_labels }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
+      runner_tag: ${{ matrix.runner.runner_tag }}

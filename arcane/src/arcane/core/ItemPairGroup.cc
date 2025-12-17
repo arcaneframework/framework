@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroup.cc                                            (C) 2000-2024 */
+/* ItemPairGroup.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Tableau de listes d'entités.                                              */
 /*---------------------------------------------------------------------------*/
@@ -145,12 +145,14 @@ class ItemPairGroup::CustomFunctorWrapper
  public:
   void executeFunctor() override
   {
-    ItemPairGroupBuilder builder(m_group);
+    ItemPairGroup pair_group(m_group);
+    ItemPairGroupBuilder builder(pair_group);
     m_functor->executeFunctor(builder);
   }
  public:
-  ItemPairGroupImpl* m_group;
-  ItemPairGroup::CustomFunctor* m_functor;
+
+  ItemPairGroupImpl* m_group = nullptr;
+  ItemPairGroup::CustomFunctor* m_functor = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

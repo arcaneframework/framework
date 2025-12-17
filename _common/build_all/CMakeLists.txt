@@ -78,6 +78,15 @@ endif()
 
 message(STATUS "ARCANEFRAMEWORK_BUILD_COMPONENTS are: '${ARCANEFRAMEWORK_BUILD_COMPONENTS}'")
 
+# ----------------------------------------------------------------------------
+
+if (Arccore IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
+  add_subdirectory(${ARCFRAMEWORK_ROOT}/arccore arccore)
+  set(Arccore_FOUND YES)
+endif()
+
+# ----------------------------------------------------------------------------
+
 if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
   message(STATUS "Configuring Arcane")
   configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)

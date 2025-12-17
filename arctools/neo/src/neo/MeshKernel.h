@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKernel                                     (C) 2000-2024             */
+/* MeshKernel                                     (C) 2000-2025             */
 /*                                                                           */
 /* Brief code description                                                    */
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ namespace tye
 #ifdef _MSC_VER
           auto functor = VisitorOverload{ [](const auto& arg1, const auto& arg2, const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
 #else
-                                                                                                                               auto functor = VisitorOverload{ []([[maybe_unused]] const auto& arg1, [[maybe_unused]] const auto& arg2, [[maybe_unused]] const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
+          auto functor = VisitorOverload{ []([[maybe_unused]] const auto& arg1, [[maybe_unused]] const auto& arg2, [[maybe_unused]] const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
 #endif
           functor(concrete_arg1, concrete_arg2, concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
         },
@@ -139,6 +139,9 @@ namespace MeshKernel
     virtual void operator()() = 0;
     virtual InProperty const& inProperty(int index = 0) const = 0;
     virtual OutProperty const& outProperty(int index = 0) const = 0;
+    virtual ~IAlgorithm() = default;
+    virtual int nbInProperties() const = 0;
+    virtual int nbOutProperties() const = 0;
   };
 
   /*---------------------------------------------------------------------------*/
@@ -167,6 +170,14 @@ namespace MeshKernel
         return m_out_property;
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
+
+    int nbInProperties() const override {
+      return 1;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
     }
   };
 
@@ -201,6 +212,14 @@ namespace MeshKernel
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
+
+    int nbInProperties() const override {
+      return 2;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -234,6 +253,14 @@ namespace MeshKernel
       else
         throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::outProperty(index) with index > 1");
     }
+
+    int nbInProperties() const override {
+      return 1;
+    }
+
+    int nbOutProperties() const override {
+      return 2;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -257,6 +284,14 @@ namespace MeshKernel
         return m_out_property;
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
+
+    int nbInProperties() const override {
+      return 0;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
     }
   };
 
@@ -286,6 +321,14 @@ namespace MeshKernel
       else
         throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
     }
+
+    int nbInProperties() const override {
+      return 0;
+    }
+
+    int nbOutProperties() const override {
+      return 2;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -300,6 +343,7 @@ namespace MeshKernel
   {
    public:
     std::string m_name;
+    int m_rank = 0;
     std::list<std::shared_ptr<IAlgorithm>> m_algos;
     using AlgoPtr = std::shared_ptr<IAlgorithm>;
     using ProducingAlgoArray = std::vector<AlgoPtr>;
@@ -397,7 +441,7 @@ namespace MeshKernel
         m_kept_no_deps_dual_out_algos.clear();
       }
       else {
-        _addKeptAlgorithms(); // Kept algorithm are rescheduled
+        _addKeptAlgorithms(); // Kept algorithms are rescheduled
       }
     }
 
@@ -415,25 +459,25 @@ namespace MeshKernel
      * @brief Apply added algorithms
      * @param execution_order
      * @return object EndOfMeshUpdate to unlock FutureItemRange
-     * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
+     * Added algorithms are kept at the end of the method. If the method is called twice, the algorithms are played again.
      */
     EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
       return _applyAlgorithms(execution_order, true);
     }
 
     EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
-      Neo::print() << "-- apply added algorithms with execution order ";
+      Neo::print(m_rank) << "-- apply added algorithms with execution order ";
       switch (execution_order) {
       case AlgorithmExecutionOrder::FIFO:
-        Neo::print() << "FIFO --" << std::endl;
+        Neo::print(m_rank) << "FIFO --" << std::endl;
         std::for_each(m_algos.begin(), m_algos.end(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::LIFO:
-        Neo::print() << "LIFO --" << std::endl;
+        Neo::print(m_rank) << "LIFO --" << std::endl;
         std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::DAG:
-        Neo::print() << "DAG --" << std::endl;
+        Neo::print(m_rank) << "DAG --" << std::endl;
         _build_graph();
         try {
           auto sorted_graph = m_dag.topologicalSort();
@@ -448,33 +492,82 @@ namespace MeshKernel
       }
       if (!do_keep_algorithms)
         removeAlgorithms();
-      _addKeptAlgorithms(); // Add again the algorithms that must be kept
       return EndOfMeshUpdate{};
     }
 
-   private:
+    PropertyStatus propertyStatus(std::string const& property_unique_name,std::shared_ptr<IAlgorithm>const& algorithm) {
+      for (auto input_property_index = 0; input_property_index < algorithm->nbInProperties(); ++input_property_index) {
+        if (property_unique_name == algorithm->inProperty(input_property_index).uniqueName()) {
+          return algorithm->inProperty(input_property_index).m_status;
+        }
+      }
+      for (auto output_property_index = 0; output_property_index < algorithm->nbOutProperties(); ++output_property_index) {
+        if (property_unique_name == algorithm->outProperty(output_property_index).uniqueName()) {
+          return algorithm->outProperty(output_property_index).m_status;
+        }
+      }
+      return PropertyStatus::ComputedProperty;
+    }
+
+  private:
+
     void _build_graph() {
-      // Mark algorithms that won't have their input properties
-      std::vector<AlgoPtr> to_remove_algos;
-      to_remove_algos.reserve(10);
+      // Mark algorithms that won't have at least one input property
+      auto compare_algo = [](auto const& algo1, auto const& algo2) { return algo1.get() < algo2.get(); };
+      std::set<AlgoPtr,decltype(compare_algo)> to_remove_algos{compare_algo};
       for (auto&& [property, property_algos] : m_property_algorithms) {
         auto& [producing_property_array, consuming_property_array] = property_algos;
-        if ((producing_property_array.size() == 0 && property.m_status == PropertyStatus::ComputedProperty) // no producing algo for a computed property
-            || !property.m_family.hasProperty(property.m_name)) { // property does not exist
+        if (!property.m_family.hasProperty(property.m_name)) {
+          // Property does not exist: Remove all its algorithms
           for (auto&& algo_to_remove : consuming_property_array) {
-            to_remove_algos.push_back(algo_to_remove);
+            to_remove_algos.insert(algo_to_remove);
           }
           for (auto&& algo_to_remove : producing_property_array) { // property does not exist
-            to_remove_algos.push_back(algo_to_remove);
+            to_remove_algos.insert(algo_to_remove);
+          }
+        }
+        else if (producing_property_array.size() == 0) {
+          // The property has no producing algorithm: the algorithm consuming it as a ComputedProperty must be removed
+          for (auto&& consuming_algo : consuming_property_array) {
+            // Warning, cannot use the status of the property: this status may change with algorithm and property only stored once in m_property_algorithm
+            if (propertyStatus(property.uniqueName(),consuming_algo) == PropertyStatus::ComputedProperty) to_remove_algos.insert(consuming_algo);
           }
         }
       }
-      auto compare_algo = [](auto const& algo1, auto const& algo2) { return algo1.get() < algo2.get(); };
-      std::sort(to_remove_algos.begin(), to_remove_algos.end(), compare_algo);
+      // Handle removed algos: they don't produce their output => new algos may be to remove
+      std::map<std::string, int> property_nb_producing_algos;
+      std::vector<AlgoPtr> removed_algos(to_remove_algos.begin(),to_remove_algos.end()), currently_removed_algos;
+      while (removed_algos.size() > 0) {
+        for (auto&& algo_to_remove : removed_algos) {
+          for (auto out_prop_index = 0; out_prop_index < algo_to_remove->nbOutProperties(); ++out_prop_index) {
+            auto const& out_prop = algo_to_remove->outProperty(out_prop_index);
+            auto& [producing_property_array, consuming_property_array] = m_property_algorithms[out_prop];
+            auto prop_nb_prod_algo_it = property_nb_producing_algos.find(out_prop.uniqueName());
+            if (prop_nb_prod_algo_it == property_nb_producing_algos.end()) { // property is not yet registered
+              property_nb_producing_algos[out_prop.uniqueName()] = producing_property_array.size() - 1; // one of its production algo is removed
+            }
+            else {
+              --prop_nb_prod_algo_it->second;
+            }
+            prop_nb_prod_algo_it = property_nb_producing_algos.find(out_prop.uniqueName()); // iterator may be invalidated by insertion
+
+            if (prop_nb_prod_algo_it->second == 0) { // property has no more producing algo
+              for (auto&& consuming_algo : consuming_property_array) { // property does not exist
+                if (propertyStatus(out_prop.uniqueName(),consuming_algo) == PropertyStatus::ComputedProperty) {
+                  to_remove_algos.insert(consuming_algo);
+                  currently_removed_algos.push_back(consuming_algo);
+                }
+              }
+            }
+          }
+        }
+        removed_algos = currently_removed_algos;
+        currently_removed_algos.clear();
+      }
 
       // Add edges between producing and consuming algos
-      auto is_removed_algo = [&to_remove_algos, compare_algo](AlgoPtr const& algo) {
-        return std::binary_search(to_remove_algos.begin(), to_remove_algos.end(), algo, compare_algo);
+      auto is_removed_algo = [&to_remove_algos](AlgoPtr const& algo) {
+        return (to_remove_algos.find(algo) != to_remove_algos.end());
       };
 
       for (auto& [property, property_algos] : m_property_algorithms) {

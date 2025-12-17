@@ -55,6 +55,10 @@ class UnstructuredMeshUtilities
                                 Int64ConstArrayView items_connectivity,
                                 Int32ArrayView local_ids,
                                 bool allow_null) override;
+  void getFacesLocalIdFromConnectivity(ConstArrayView<ItemTypeId> items_type,
+                                       ConstArrayView<Int64> items_connectivity,
+                                       ArrayView<Int32> local_ids,
+                                       bool allow_null) override;
 
   /*!
    * \brief Calcule la normale d'un groupe de face.
@@ -91,9 +95,11 @@ class UnstructuredMeshUtilities
                                                bool initial_partition) override;
 
   void mergeNodes(Int32ConstArrayView nodes_local_id,
-                  Int32ConstArrayView nodes_to_merge_local_id) override;
+                  Int32ConstArrayView nodes_to_merge_local_id,
+                  bool allow_non_corresponding_face) override;
 
   void computeAndSetOwnersForNodes() override;
+  void computeAndSetOwnersForEdges() override;
   void computeAndSetOwnersForFaces() override;
 
   void recomputeItemsUniqueIdFromNodesUniqueId() override;

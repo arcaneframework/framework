@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.h                                            (C) 2000-2024 */
+/* VariableScalar.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLE_SCALAR_H
-#define ARCANE_VARIABLE_SCALAR_H
+#ifndef ARCANE_CORE_VARIABLESCALAR_H
+#define ARCANE_CORE_VARIABLESCALAR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Variable.h"
+#include "arcane/core/Variable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,7 +51,6 @@ class VariableScalarT
 
  public:
 
-  Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
   void synchronize(Int32ConstArrayView local_ids) override;
   Real allocatedMemory() const override;
@@ -82,7 +81,7 @@ class VariableScalarT
   {
     ARCANE_UNUSED(resize_args);
   }
-  Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
+  VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 
  private:
 

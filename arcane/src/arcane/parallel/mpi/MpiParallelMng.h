@@ -43,11 +43,12 @@ class ArcaneMpiSerializeMessageList;
 struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 {
  public:
-  MpiParallelMngBuildInfo(MPI_Comm comm);
+  MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm);
  public:
   Int32 commRank() const { return comm_rank; }
   Int32 commSize() const { return comm_nb_rank; }
   MPI_Comm mpiComm() const { return mpi_comm; }
+  MPI_Comm mpiMachineComm() const { return mpi_machine_comm; }
   Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
   Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
  public:
@@ -63,6 +64,7 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
   IParallelMng* world_parallel_mng = nullptr;
  private:
   MPI_Comm mpi_comm;
+  MPI_Comm mpi_machine_comm;
  public:
   bool is_mpi_comm_owned;
   MpiLock* mpi_lock = nullptr;
@@ -82,6 +84,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
  public:
   friend ArcaneMpiSerializeMessageList;
   class RequestList;
+  class Impl;
 
  public:
 
@@ -143,12 +146,17 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   
   MpiAdapter* adapter() { return m_adapter; }
   Communicator communicator() const override { return Communicator(m_communicator); }
+  Communicator machineCommunicator() const override { return Communicator(m_machine_communicator); }
 
   MpiLock* mpiLock() const { return m_mpi_lock; }
 
   MpiDatatypeList* datatypes() { return m_datatype_list; }
 
   MpiSerializeDispatcher* serializeDispatcher() const { return m_mpi_serialize_dispatcher; }
+
+ public:
+
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  protected:
 
@@ -189,11 +197,13 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   bool m_is_initialized = false; //!< \a true si déjà initialisé
   Parallel::IStat* m_stat = nullptr;
   MPI_Comm m_communicator = MPI_COMM_NULL;
+  MPI_Comm m_machine_communicator = MPI_COMM_NULL;
   bool m_is_communicator_owned = false;
   MpiLock* m_mpi_lock = nullptr;
   IParallelNonBlockingCollective* m_non_blocking_collective = nullptr;
   MpiSerializeDispatcher* m_mpi_serialize_dispatcher = nullptr;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 
  private:
 

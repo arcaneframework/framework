@@ -45,3 +45,5 @@ target_link_libraries(alien_kernel_redistributor PUBLIC alien_utils alien_header
 target_compile_definitions(alien_kernel_redistributor PRIVATE alien_core_EXPORTS)
 
 install(TARGETS alien_kernel_redistributor EXPORT ${ALIEN_EXPORT_TARGET})
+
+add_library(Alien::alien_kernel_redistributor ALIAS alien_kernel_redistributor)

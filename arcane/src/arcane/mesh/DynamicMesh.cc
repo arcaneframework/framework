@@ -97,6 +97,8 @@
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivityMng.h"
 
+#include "arcane/mesh/internal/DynamicMeshInternal.h"
+
 #include <functional>
 #include <memory>
 
@@ -170,48 +172,6 @@ const std::string DynamicMesh::PerfCounter::m_names[] = {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DynamicMesh::InternalApi
-: public IMeshInternal
-, public IMeshModifierInternal
-{
- public:
-
-  explicit InternalApi(DynamicMesh* mesh)
-  : m_mesh(mesh)
-  , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
-  {}
-
- public:
-
-  void setMeshKind(const MeshKind& v) override
-  {
-    m_mesh->m_mesh_kind = v;
-  }
-
-  IItemConnectivityMng* dofConnectivityMng() const noexcept override
-  {
-    return m_connectivity_mng.get();
-  }
-
-  IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
-  {
-    return nullptr;
-  }
-
-  void removeNeedRemoveMarkedItems() override
-  {
-    m_mesh->incrementalBuilder()->removeNeedRemoveMarkedItems();
-  }
-
- private:
-
-  DynamicMesh* m_mesh = nullptr;
-  std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 DynamicMesh::
 DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 : MeshVariables(sub_domain,mbi.name())
@@ -244,7 +204,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
-, m_internal_api(std::make_unique<InternalApi>(this))
+, m_internal_api(std::make_unique<DynamicMeshInternal>(this))
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
@@ -258,7 +218,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_mesh_compact_mng(new MeshCompactMng(this))
 , m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
-, m_item_type_mng(ItemTypeMng::_singleton())
+, m_item_type_mng(new ItemTypeMng())
 , m_indexed_connectivity_mng(new IndexedIncrementalItemConnectivityMng(m_parallel_mng->traceMng()))
 , m_mesh_kind(mbi.meshKind())
 {
@@ -401,6 +361,8 @@ DynamicMesh::
   delete m_face_family;
   delete m_edge_family;
   delete m_node_family;
+
+  delete m_item_type_mng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,6 +375,8 @@ build()
 
   info() << "Building DynamicMesh name=" << name()
          << " ItemInternalMapImpl=" << ItemInternalMap::UseNewImpl;
+
+  m_item_type_mng->build(this);
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
@@ -456,7 +420,8 @@ build()
     obs->executeExtend(&localIds);
     this->endUpdate();
 
-  } else {
+  }
+  else {
     m_submesh_tools = 0;
     //! AMR
 
@@ -476,12 +441,18 @@ build()
      else if(m_amr_type == eMeshAMRKind::Patch){
        ARCANE_FATAL("Patch AMR type is not implemented.");
      }
-     else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly){
+     else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
        // L'AMR PatchCartesianMeshOnly n'est pas géré par MeshRefinement().
        // Voir dans CartesianMesh.cc.
+       // TODO : CartesianMeshAMRPatchMng en a besoin pour les mailles fantômes.
+       //        Voir pour retirer ou remplacer l'appel à la methode
+       //        updateGhostLayerFromParent().
+       m_mesh_refinement = new MeshRefinement(this);
      }
     }
   }
+
+  m_internal_api->build();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -791,6 +762,7 @@ deallocate()
 void DynamicMesh::
 allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_alloc)
 {
+  ARCANE_FATAL_IF(m_is_allocated, "mesh has already been allocated (via endAllocate() or allocateCells())");
   if (mesh_nb_cell==0 && !cells_infos.empty())
     ARCANE_FATAL("Can not dynamically compute the number of cells");
 
@@ -815,9 +787,10 @@ allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_allo
 void DynamicMesh::
 endAllocate()
 {
+  ARCANE_FATAL_IF(m_is_allocated, "mesh has already been allocated (via endAllocate() or allocateCells())");
+
   Trace::Setter mci(traceMng(),_className());
-  if (m_is_allocated)
-    ARCANE_FATAL("endAllocate() has already been called");
+
   _checkDimension();    // HP: add control if endAllocate is called
   _checkConnectivity(); // without any cell allocation
 
@@ -2021,7 +1994,7 @@ _exchangeItemsNew()
 
   // S'il n'y a aucune entité à échanger, on arrête immédiatement l'échange.
   if (mesh_exchanger->computeExchangeInfos()){
-    pwarning() << "No load balance is performed";
+    info() << "No load balance is performed";
     m_mesh_exchange_mng->endExchange();
     return;
   }
@@ -2292,7 +2265,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
   cells_map.eachItem([&](Cell cell) {
     if (cell.owner() != sid)
       return;
-    if (cell.itemBase().flags() & ItemFlags::II_JustCoarsened) {
+    if (cell.hasFlags(ItemFlags::II_JustCoarsened)) {
       cells_to_coarsen.add(cell.uniqueId());
       for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
         cells_to_remove.add(cell.hChild(c));
@@ -2978,18 +2951,37 @@ _setDimension(Integer dim)
     ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
+  const bool is_non_manifold = meshKind().isNonManifold();
+  // Force le fait de ne pas re-numéroter les faces et les arêtes
+  // dans le cas d'un maillage non-manifold
+  if (is_non_manifold){
+    info() << "Force no-renumbering of edge and face uid because we are using non manifold mesh";
+    m_mesh_unique_id_mng->setFaceBuilderVersion(0);
+    m_mesh_unique_id_mng->setEdgeBuilderVersion(0);
+  }
   bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
-  // Si les entités libres sont autorisées, alors il faut obligatoirement utiliser
+  // Si le maillage est non-manifold, alors il faut obligatoirement utiliser
   // la génération à partir des uniqueId() à partir des noeuds pour garantir
   // la cohérence des entités créées.
-  if (!v && meshKind().isNonManifold()) {
+  // Cette contrainte pourra être éventuellement être supprimée lorsque ce type
+  // de maillage ne sera plus expérimental.
+  if (!v && is_non_manifold) {
     v = true;
-    info() << "Force using edge and face uid generation from nodes because loose items are allowed";
+    info() << "Force using edge and face uid generation from nodes because we are using non manifold mesh";
   }
   if (m_mesh_builder){
     auto* adder = m_mesh_builder->oneMeshItemAdder();
     if (adder)
       adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
+  }
+  // En 3D, avec les maillages non manifold, il faut obligatoirement créer les arêtes.
+  // Elles seront utilisées à la place des faces pour les mailles 2D.
+  if (dim == 3 && is_non_manifold) {
+    Connectivity c(m_mesh_connectivity);
+    if (!c.hasConnectivity(Connectivity::CT_HasEdge)) {
+      c.enableConnectivity(Connectivity::CT_HasEdge);
+      info() << "Force creating edges for 3D non-manifold mesh";
+    }
   }
 }
 

@@ -116,6 +116,23 @@ message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Si CMAKE_BUILD_TYPE existe, vérifie qu'il vaut une valeur pré-définie
+# Cela est nécessaire sinon certaines propriétés peuvent ne pas être valides,
+# ce qui peut poser problèmes lors de la configuration (par exemple les chemins
+# d'installation.
+
+if (DEFINED CMAKE_BUILD_TYPE)
+  string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CMAKE_BUILD_TYPE)
+  set (VALID_BUILD_TYPE_LIST "release;relwithdebinfo;debug;minsizerelease")
+  if(NOT (LOWER_CMAKE_BUILD_TYPE IN_LIST VALID_BUILD_TYPE_LIST))
+    message(FATAL_ERROR "Invalid value '${CMAKE_BUILD_TYPE}' for CMAKE_BUILD_TYPE."
+      " Case insensitive valid values are '${VALID_BUILD_TYPE_LIST}'")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 SET(ARCANEBUILDROOT ${CMAKE_BINARY_DIR})
 SET(ARCANESRCROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -147,17 +164,12 @@ if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   endif()
 endif()
 
-# Indique si on ajoute automatiquement dans le rpath les chemins des bibliothèques
-# dynamiques. Ce mode existe historiquement pour contourner des problèmes avec
-# d'anciennes versions de CMake (pré 3.10) mais ne devrait plus être nécessaire.
-# Il faudrait donc le supprimer.
-option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" OFF)
-
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
+option(ARCANE_ENABLE_ALEPH "Enable the compilation of Aleph component" ON)
 
 # Expérimental. Ne pas utiliser en dehors d'Arcane
 option(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER "Enable compilation python extension using '.Net' wrapper" OFF)
@@ -330,38 +342,6 @@ message(STATUS "Threads are always enabled")
 
 # ----------------------------------------------------------------------------
 
-# Maintenant, on considère qu'on a toujours le support du C++11 et C++14
-set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
-set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
-
-set(ARCANE_HAS_CXX20 FALSE)
-set(ARCANE_HAS_CXX23 FALSE)
-if (DEFINED ARCCORE_CXX_STANDARD)
-  if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 20)
-    if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 23)
-      set(ARCANE_HAS_CXX23 TRUE)
-    endif()
-    set(ARCANE_HAS_CXX20 TRUE)
-    message(STATUS "Arcane use C++20 or greater standard")
-    # Il faut au moins GCC 11 ou Clang 15
-    if(CMAKE_COMPILER_IS_GNUCXX)
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
-        message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
-      endif()
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15)
-        message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 16+ is required")
-      endif()
-    endif()
-  endif()
-endif()
-set(ARCANE_HAS_CXX20 ${ARCANE_HAS_CXX20} CACHE BOOL "True if C++20 is used" FORCE)
-set(ARCANE_HAS_CXX23 ${ARCANE_HAS_CXX23} CACHE BOOL "True if C++23 is used" FORCE)
-set(ARCANE_HAS_ACCELERATOR_API ${ARCANE_HAS_CXX20} CACHE BOOL "True Arcane has accelerator API" FORCE)
-
-# ----------------------------------------------------------------------------
-
 # Si on utilise gcc, supprime les extensions pour forcer le '-std=c++11'
 # car sinon cmake va ajouter lui même l'option et dans ce cas il met '-std=gnu++11'.
 # Cela pose problème car ce mode gnu++11 n'est pas strictement équivalent à c++11,
@@ -393,6 +373,20 @@ endif()
 
 message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
 message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")
+
+# ----------------------------------------------------------------------------
+
+# Maintenant, on considère qu'on a toujours le support du C++20
+set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
+set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
+set(ARCANE_HAS_CXX20 TRUE CACHE BOOL "True if C++20 is used (should be always true)" FORCE)
+set(ARCANE_HAS_ACCELERATOR_API TRUE CACHE BOOL "True Arcane has accelerator API" FORCE)
+
+set(ARCANE_HAS_CXX23 FALSE)
+if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 23)
+  set(ARCANE_HAS_CXX23 TRUE)
+endif()
+set(ARCANE_HAS_CXX23 ${ARCANE_HAS_CXX23} CACHE BOOL "True if C++23 is used" FORCE)
 
 # ----------------------------------------------------------------------------
 # Utilise les mêmes options de compilation que 'Arccore'.
@@ -504,8 +498,17 @@ install(TARGETS arcane_full EXPORT ArcaneTargets)
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # TODO: Vérifier que tous les compilateurs Linux (GCC,CLANG,Intel) supportent
   # cette option.
-  message(STATUS "Adding 'no-as-needed' to link option")
+  message(STATUS "Adding 'no-as-needed' to link option for 'arcane_full'")
   target_link_options(arcane_full INTERFACE "-Wl,--no-as-needed")
+  # Normalement ce n'est pas nécessaire par défaut mais cela peut permettre de
+  # contourner des problèmes de RPATH ou RUNPATH pour les bibliothèques
+  # pas directement utilisées par Arcane pour lequel le RPATH ou le RUNPATH
+  # n'est pas bien géré (cela peut-être du à un bug ou un fichier
+  # de configuration qui n'utilise pas cela)
+  if (ARCANE_FORCE_NOASNEEDED)
+    message(STATUS "Adding 'no-as-needed' to link option for 'arcane_build_compile_flags'")
+    target_link_options(arcane_build_compile_flags INTERFACE "-Wl,--no-as-needed")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -879,8 +882,8 @@ option(ARCANE_DISABLE_PERFCOUNTER_TESTS "True if we disable tests using perf cou
 # Option pour indiquer si on veut utiliser la nouvelle implémentation
 # de ItemInternalMap. Cette nouvelle implémentation est plus rapide et consomme
 # moins de mémoire que l'ancienne.
-# L'ancienne version est conservée tant que la validation est en cours
-option(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP "True if we want to use new implementation of ItemInternalMap" ON)
+# A partir de la version 4.0 de Arcane, seule la nouvelle implémentation est disponible.
+set(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -911,95 +914,37 @@ endif()
 
 add_subdirectory(src/arcane/hdf5)
 add_subdirectory(src/arcane/std)
-add_subdirectory(src/arcane/aleph)
+if (ARCANE_ENABLE_ALEPH)
+  add_subdirectory(src/arcane/aleph)
+endif()
 add_subdirectory(src/arcane/driverlib)
 add_subdirectory(src/arcane/driver)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
-
-# Pour des raisons de compatibilité avec les configurations 2021, on
-# regarde d'abord si ARCANE_WANT_CUDA est défini
-if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
-  set (ARCANE_ACCELERATOR_MODE "CUDA")
-endif()
-
-# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
-# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
-  set (ARCANE_ACCELERATOR_MODE "CUDA" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
-  set (ARCANE_ACCELERATOR_MODE "SYCL" )
-endif()
-
-if(DEFINED ARCANE_ACCELERATOR_MODE)
-  if (NOT ARCANE_HAS_CXX20)
-    message(FATAL_ERROR "Arcane Accelerator API requires C++20. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
-  endif()
-
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
-    set (ARCANE_WANT_CUDA TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME cuda)
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-    set (ARCANE_WANT_HIP TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME hip)
-    # TODO: vérifier qu'on utilise bien 'hipcc'
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
-    set (ARCANE_WANT_SYCL TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME sycl)
-  else()
-    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
-  endif()
-  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
-  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
-  set (ARCANE_HAS_ACCELERATOR TRUE)
-  message(STATUS "Arcane has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
-endif()
-
-# ----------------------------------------------------------------------------
+# Le choix du runtime accélérateur est maintenant dans Arccore (2025/11)
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (NOT ARCANE_ACCELERATOR_RUNTIME)
-    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
-  endif()
+  # Les macros ARCANE_WANT* sont utilisées uniquement pour spécifier
+  # le runtime utilisé dans 'arcane_core_config'. A terme il faudra
+  # utiliser ce qui est dans Arccore.
   if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
-    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
+    set (ARCANE_WANT_HIP TRUE)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
-    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
-    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
-
-    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
-    endif()
     if (NOT CMAKE_CUDA_HOST_COMPILER)
       set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
     enable_language(CUDA)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    # Rien à faire de spécial pour SYCL.
-  else()
-    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+    set (ARCANE_WANT_CUDA TRUE)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCANE_WANT_SYCL TRUE)
   endif()
-  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME})
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
-if (ARCANE_HAS_ACCELERATOR_API)
-  add_subdirectory(src/arcane/accelerator)
-endif()
+add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR)
   add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME}/runtime)
@@ -1025,8 +970,9 @@ if (NOT ARCANE_DEFAULT_PARTITIONER)
   set (ARCANE_DEFAULT_PARTITIONER "Auto")
 endif()
 
+set(ARCANE_INTERNAL_MESH_PARTITIONER "ArcaneGeometricMeshPartitioner")
 message(STATUS "Wanted Default Partitioner is '${ARCANE_DEFAULT_PARTITIONER}'")
-if(MPI_FOUND)
+if (MPI_FOUND)
   set(PARTITIONER_FOUND FALSE)
   if(ARCANE_DEFAULT_PARTITIONER STREQUAL "Auto")
     message(STATUS "Automatic detection of Default Partitioner in the following order: 'Metis', 'Zoltan', 'PTScotch'")
@@ -1038,6 +984,8 @@ if(MPI_FOUND)
       set(ARCANE_DEFAULT_PARTITIONER "Zoltan")
     elseif(PTScotch_FOUND)
       set(ARCANE_DEFAULT_PARTITIONER "PTScotch")
+    else()
+      set(ARCANE_DEFAULT_PARTITIONER ${ARCANE_INTERNAL_MESH_PARTITIONER})
     endif()
     message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
   elseif(ARCANE_DEFAULT_PARTITIONER STREQUAL "Metis")
@@ -1052,23 +1000,30 @@ if(MPI_FOUND)
     if(NOT Zoltan_FOUND)
       MESSAGE(FATAL_ERROR "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not available") 
     endif()
+  elseif(ARCANE_DEFAULT_PARTITIONER STREQUAL "${ARCANE_INTERNAL_MESH_PARTITIONER}")
+    # Always available
   else()
     if(Parmetis_FOUND OR PTScotch_FOUND OR Zoltan_FOUND)
-      message(FATAL_ERROR "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not allowed : choose between Metis, PTScotch, Zoltan or Auto")
+      message(FATAL_ERROR
+        "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not allowed :"
+        " choose between Metis, PTScotch, Zoltan, ${ARCANE_INTERNAL_MESH_PARTITIONER} or Auto")
     endif()
   endif()
-  if(Parmetis_FOUND OR TARGET PTScotch_FOUND OR Zoltan_FOUND)
-    message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
-    message(STATUS "Setting PARTITIONER_FOUND to TRUE")
-    set(PARTITIONER_FOUND TRUE)
-    set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_DEFAULT_PARTITIONER}" CACHE STRING "Default partitioner" FORCE)
-    set(ARCANE_DEFAULT_PARTITIONER_IS_METIS FALSE)
-    if(ARCANE_DEFAULT_PARTITIONER STREQUAL Metis)
-      set(ARCANE_DEFAULT_PARTITIONER_IS_METIS TRUE)
-    endif()
-    set(ARCANE_DEFAULT_PARTITIONER_IS_METIS "${ARCANE_DEFAULT_PARTITIONER_IS_METIS}" CACHE STRING "Is Metis the default partitioner?" FORCE)
-  endif()
+else()
+  # Ce partitionneur est toujours disponible, même si MPI ne l'est pas
+  set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_INTERNAL_MESH_PARTITIONER}")
 endif()
+
+message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
+message(STATUS "Setting PARTITIONER_FOUND to TRUE")
+set(PARTITIONER_FOUND TRUE)
+set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_DEFAULT_PARTITIONER}" CACHE STRING "Default partitioner" FORCE)
+set(ARCANE_DEFAULT_PARTITIONER_IS_METIS FALSE)
+if(ARCANE_DEFAULT_PARTITIONER STREQUAL Metis)
+  set(ARCANE_DEFAULT_PARTITIONER_IS_METIS TRUE)
+endif()
+set(ARCANE_DEFAULT_PARTITIONER_IS_METIS "${ARCANE_DEFAULT_PARTITIONER_IS_METIS}" CACHE STRING "Is Metis the default partitioner?" FORCE)
+string(TOUPPER ${ARCANE_DEFAULT_PARTITIONER} ARCANE_UPPER_DEFAULT_PARTITIONER)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1247,12 +1202,13 @@ function(arcane_gen_core_config_file filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_STD_UNORDEREDMAP ARCANE_USE_STD_UNORDEREDMAP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_ARCANEMPI ARCANE_HAS_ARCANEMPI)
 
-  SET(_STR "${_STR}#define METIS_DEFAULT_PARTITIONER 1\n")
-  SET(_STR "${_STR}#define PTSCOTCH_DEFAULT_PARTITIONER 2\n")
-  SET(_STR "${_STR}#define ZOLTAN_DEFAULT_PARTITIONER 3\n")
-  Set(_STR "${_STR}#define ARCANE_DEFAULT_PARTITIONER_STR \"${ARCANE_DEFAULT_PARTITIONER}\"\n")
-  STRING(TOUPPER ${ARCANE_DEFAULT_PARTITIONER} ARCANE_DEFAULT_PARTITIONER)
-  SET(_STR "${_STR}#ifndef ARCANE_DEFAULT_PARTITIONER\n#define ARCANE_DEFAULT_PARTITIONER ${ARCANE_DEFAULT_PARTITIONER}_DEFAULT_PARTITIONER\n#endif\n")
+  #SET(_STR "${_STR}#define METIS_DEFAULT_PARTITIONER 1\n")
+  #SET(_STR "${_STR}#define PTSCOTCH_DEFAULT_PARTITIONER 2\n")
+  #SET(_STR "${_STR}#define ZOLTAN_DEFAULT_PARTITIONER 3\n")
+  #SET(_STR "${_STR}#define ARCANEGEOMETRIC_DEFAULT_PARTITIONER 4\n")
+  #Set(_STR "${_STR}#define ARCANE_DEFAULT_PARTITIONER_STR \"${ARCANE_DEFAULT_PARTITIONER}\"\n")
+  STRING(TOUPPER ${ARCANE_UPPER_DEFAULT_PARTITIONER} ARCANE_DEFAULT_PARTITIONER)
+  #SET(_STR "${_STR}#ifndef ARCANE_DEFAULT_PARTITIONER\n#define ARCANE_DEFAULT_PARTITIONER ${ARCANE_UPPER_DEFAULT_PARTITIONER}_DEFAULT_PARTITIONER\n#endif\n")
   SET(_STR "${_STR}#endif // ARCANE_CORE_CONFIG_H\n")
   ARCANE_WRITE_CONFIG_STR(${_STR} ${filename})
 endfunction()
@@ -1283,6 +1239,9 @@ function(arcane_gen_package_config_file filename)
   ARCANE_WRITE_CONFIG_STR(${_STR} ${filename})
 endfunction()
 
+# Fichier de configuration interne à Arcane
+# Contient le nom de certaines configurations comme le runtime accélérateur
+# ou le partitionneur par défaut 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/arcane_internal_config.h.in ${CMAKE_BINARY_DIR}/arcane_internal_config.h)
 
 # ----------------------------------------------------------------------------
@@ -1381,19 +1340,33 @@ endif()
 # TODO: pour 'libfabric.dll', plutôt modifier le package 'intel-mpi' de 'vcpkg' pour
 # indiquer explicitement où se trouve cette DLL.
 #
-if (ARCANE_ENABLE_TESTS)
+if (TARGET arcane_tests_exec)
   file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
-  set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
-  file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
-  add_custom_target(copy_dlls
-    COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
 endif()
-
+# Pour copier 'nethost.dll' sous Windows.
+if (TARGET arcane_dotnet_coreclr)
+  file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_dotnet_coreclr>\")\n")
+endif()
+foreach(pkg ${ARCANE_LIBRARIES})
+  if (TARGET ${pkg})
+    file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:${pkg}>\")\n")
+  endif()
+endforeach()
+foreach(pkg ${ARCANE_OPTIONAL_LIBRARIES})
+  if (TARGET ${pkg})
+    file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:${pkg}>\")\n")
+  endif()
+endforeach()
 find_path(INTEL_LIBFABRIC NAMES "libfabric.dll" PATH_SUFFIXES bin)
 if (INTEL_LIBFABRIC)
   message (STATUS "Found 'libfabric.dll' in = '${INTEL_LIBFABRIC}'")
   file(COPY ${INTEL_LIBFABRIC}/libfabric.dll DESTINATION "${LIBRARY_OUTPUT_PATH}")
 endif()
+
+set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
+file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
+add_custom_target(copy_dlls
+  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

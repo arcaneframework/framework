@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2024 */
+/* TimeLoopMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -73,6 +73,7 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/IVariableSynchronizerMng.h"
+#include "arcane/core/VariableComparer.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/Runner.h"
@@ -279,6 +280,7 @@ class TimeLoopMng
   //! Si vrai, effectue vérifications à chaque point d'entrée, sinon uniquement en fin d'itération.
   bool m_verification_at_entry_point;
   bool m_verification_only_at_exit = false;
+  eVariableComparerComputeDifferenceMethod m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
   IBackwardMng* m_backward_mng; //!< Gestionnaire du retour-arrière;
   bool m_my_own_backward_mng;
@@ -422,6 +424,20 @@ build()
     }
     if (m_verif_type!=VerifNone)
       m_verification_active = true;
+  }
+
+  {
+    String s = platform::getEnvironmentVariable("STDENV_VERIF_DIFF_METHOD");
+    if (!s.null()){
+      if (s=="RELATIVE"){
+        m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
+        info() << "Using 'Relative' method to compute difference of variable values";
+      }
+      if (s=="LOCALNORMMAX"){
+        m_compute_diff_method = eVariableComparerComputeDifferenceMethod::LocalNormMax;
+        info() << "Using 'LocalNormMax' method to compute difference of variable values";
+      }
+    }
   }
   {
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ENTRYPOINT");
@@ -661,7 +677,9 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
 
   ISubDomain* sd = subDomain();
   IApplication* app = sd->application();
-
+  VariableComparer variable_comparer;
+  VariableComparerArgs sync_compare_args = variable_comparer.buildForCheckIfSync();
+  sync_compare_args.setMaxPrint(5);
 
   if ((m_verif_type==VerifRead || m_verif_type==VerifWrite) && !m_verifier_service.get()){
     String service_name1 = platform::getEnvironmentVariable("STDENV_VERIF_SERVICE");
@@ -691,7 +709,8 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
           continue;
         if (var->isPartial())
           continue;
-        nb_error += var->checkIfSync(5);
+        VariableComparerResults r = variable_comparer.apply(var, sync_compare_args);
+        nb_error += r.nbDifference();
       }
       if (nb_error!=0)
         info() << "Error in synchronization nb_error=" << nb_error
@@ -722,6 +741,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
           
         m_verifier_service->setFileName(path.toString());
         m_verifier_service->setSubDir(sub_dir.toString());
+        m_verifier_service->setComputeDifferenceMethod(m_compute_diff_method);
       }
       bool parallel_sequential = pm->isParallel();
       if (m_verif_same_parallel)
@@ -783,11 +803,15 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
   VariableCollection common_vars = vm->utilities()->filterCommonVariables(replica_pm,vars_to_check,true);
 
   Integer nb_error = 0;
+  VariableComparer variable_comparer;
   {
+    VariableComparerArgs compare_args = variable_comparer.buildForCheckIfSameOnAllReplica();
+    compare_args.setMaxPrint(10);
     FloatingPointExceptionSentry fpes(false);
     for( VariableCollection::Enumerator ivar(common_vars); ++ivar; ){
       IVariable* var = *ivar;
-      nb_error += var->checkIfSameOnAllReplica(10);
+      VariableComparerResults r = variable_comparer.apply(var, compare_args);
+      nb_error += r.nbDifference();
     }
   }
 

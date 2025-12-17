@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.h                                            (C) 2000-2024 */
+/* ItemSharedInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
@@ -292,12 +292,12 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  Int32 _ownerV2(Int32 local_id) const { return m_owners[local_id]; }
+  constexpr Int32 _ownerV2(Int32 local_id) const { return m_owners[local_id]; }
   void _setOwnerV2(Int32 local_id,Int32 aowner) { m_owners[local_id] = aowner; }
-  Int32 _flagsV2(Int32 local_id) const { return m_flags[local_id]; }
+  constexpr Int32 _flagsV2(Int32 local_id) const { return m_flags[local_id]; }
   void _setFlagsV2(Int32 local_id,Int32 f) { m_flags[local_id] = f; }
 
-  Int16 _typeId(Int32 local_id) const { return m_type_ids[local_id]; }
+  constexpr Int16 _typeId(Int32 local_id) const { return m_type_ids[local_id]; }
   void _setTypeId(Int32 local_id,Int16 v) { m_type_ids[local_id] = v; }
 
  public:

@@ -11,12 +11,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/concurrency/ConcurrencyGlobal.h"
+
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/Ref.h"
 #include "arccore/base/NotSupportedException.h"
 
-#include "arccore/concurrency/ConcurrencyGlobal.h"
+#include "arccore/concurrency/ParallelFor.h"
+#include "arccore/concurrency/TaskFactory.h"
+#include "arccore/concurrency/ITaskImplementation.h"
+#include "arccore/concurrency/Task.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
@@ -116,6 +121,14 @@ void IThreadImplementation::
 _deprecatedUnlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
 {
   unlockSpinLock(spin_lock_addr, scoped_spin_lock_addr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 ITaskImplementation::nbAllowedThread() const
+{
+  return ConcurrencyBase::maxAllowedThread();
 }
 
 /*---------------------------------------------------------------------------*/

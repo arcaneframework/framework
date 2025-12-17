@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.h                                                (C) 2000-2023 */
+/* ArcaneMain.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -355,7 +355,6 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static std::atomic<Int32> m_is_init_done;
   static void _launchMissingInitException();
   static void _checkHasInit();
-  static void _checkCreateDynamicLibraryLoader();
   static int _runDotNet();
   static void _checkAutoDetectMPI();
   static int _checkAutoDetectAccelerator(bool& has_accelerator);

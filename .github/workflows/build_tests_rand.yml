@@ -1,4 +1,4 @@
-name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-18 / Full / Debug)'
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-21 / Full / Debug)'
 
 on:
   schedule:
@@ -16,7 +16,9 @@ jobs:
             compilo_name: 'gcc'
             compilo_version: '12'
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U22_C16'
@@ -24,22 +26,24 @@ jobs:
             compilo_name: 'clang'
             compilo_version: '16'
             date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable TBB because the version in ubuntu 2022 is too old
+            # (version 2021+ is required and this is version 2020)
+            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
           - short: 'U24_G14'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_C18'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '18'
-            date: '20250120'
+            compilo_version: '21'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -51,13 +55,20 @@ jobs:
 
         config:
           - type: 'Debug'
+            ctest_args: '--timeout 1200'
+
+        runner:
+          - runner_tag: 'ubuntu-latest'
+            runner_name: 'GH'
             excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --timeout 1200'
+            ctest_parallel_jobs: '-j4'
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_OMPI_${{matrix.config.type}}'
+
+    name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_OMPI_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    secrets: inherit
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
@@ -69,8 +80,9 @@ jobs:
       with_samples: true
       with_rand_script: true
       execute_tests: ${{ matrix.image.execute_tests }}
-      excluded_tests: ${{ matrix.config.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      excluded_tests: ${{ matrix.runner.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.runner.excluded_tests_with_labels }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }} ${{ matrix.runner.ctest_parallel_jobs }}'
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
+      runner_tag: ${{ matrix.runner.runner_tag }}

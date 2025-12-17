@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshMerger.cc                                        (C) 2000-2023 */
+/* DynamicMeshMerger.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Fusion de plusieurs maillages.                                            */
 /*---------------------------------------------------------------------------*/
@@ -330,7 +330,8 @@ mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
   if (!pbf)
     ARCANE_FATAL("Can not find service '{0}' implementing IParallelMngContainerFactory",message_passing_service);
   Parallel::Communicator comm = m_mesh->parallelMng()->communicator();
-  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(nb_local_rank,comm));
+  Parallel::Communicator machine_comm = m_mesh->parallelMng()->machineCommunicator();
+  Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(nb_local_rank, comm, machine_comm));
 
   IApplication* app = am->application();
   UniqueArray<LauncherThreadInfo> launch_infos(nb_local_rank);

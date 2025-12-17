@@ -1,32 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableStatusChangedEventArgs.h                            (C) 2000-2017 */
+/* VariableStatusChangedEventArgs.h                            (C) 2000-2025 */
 /*                                                                           */
 /* Arguments des évènements générés par IVariableMng.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLESTATUSCHANGEDEVENTARGS_H
-#define ARCANE_VARIABLESTATUSCHANGEDEVENTARGS_H
+#ifndef ARCANE_CORE_VARIABLESTATUSCHANGEDEVENTARGS_H
+#define ARCANE_CORE_VARIABLESTATUSCHANGEDEVENTARGS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Array.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariable;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,6 +35,7 @@ class IVariable;
 class ARCANE_CORE_EXPORT VariableStatusChangedEventArgs
 {
  public:
+
   enum class Status
   {
     //! Variable ajoutée
@@ -44,26 +43,33 @@ class ARCANE_CORE_EXPORT VariableStatusChangedEventArgs
     //! Variable supprimée
     Removed
   };
+
  public:
-  VariableStatusChangedEventArgs(IVariable* var,Status s)
-  : m_variable(var), m_status(s){}
+
+  VariableStatusChangedEventArgs(IVariable* var, Status s)
+  : m_variable(var)
+  , m_status(s)
+  {}
   VariableStatusChangedEventArgs(const VariableStatusChangedEventArgs& rhs) = default;
-  ~VariableStatusChangedEventArgs(){}
   VariableStatusChangedEventArgs& operator=(const VariableStatusChangedEventArgs& rhs) = default;
+
  public:
+
   //! Variable dont l'état change
   IVariable* variable() const { return m_variable; }
   //! Etat
   Status status() const { return m_status; }
+
  private:
-  IVariable* m_variable;
-  Status m_status;
+
+  IVariable* m_variable = nullptr;
+  Status m_status = Status::Added;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

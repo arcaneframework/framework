@@ -387,7 +387,7 @@ addBackCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.backCell();
-    if (face.itemBase().flags() & ItemFlags::II_HasBackCell){
+    if (face.hasFlags(ItemFlags::II_HasBackCell)){
       ARCANE_FATAL("Face already having a back cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -420,7 +420,7 @@ addFrontCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.frontCell();
-    if (face.itemBase().flags() & ItemFlags::II_HasFrontCell){
+    if (face.hasFlags(ItemFlags::II_HasFrontCell)){
       ARCANE_FATAL("Face already having a front cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -473,13 +473,13 @@ addBackFrontCellsFromParentFace(Face subface,Face face)
 	Cell fcell= face.frontCell();
 	Cell bcell= face.backCell();
 
-	if (subface.itemBase().flags() & ItemFlags::II_HasBackCell){
+	if (subface.hasFlags(ItemFlags::II_HasBackCell)){
     if(fcell.isActive()) 
       addFrontCellToFace(subface,face.frontCell());
     else if(bcell.isActive())
       addFrontCellToFace(subface,face.backCell());
 	}
-	else if (subface.itemBase().flags() & ItemFlags::II_HasFrontCell){
+	else if (subface.hasFlags(ItemFlags::II_HasFrontCell)){
     if(bcell.isActive()) 
       addBackCellToFace(subface,face.backCell());
     else if (fcell.isActive())
@@ -778,8 +778,11 @@ _removeFace(Face face)
   ItemLocalId face_lid = face;
   for( Int32 edge : face.edgeIds() )
     m_edge_family->removeFaceFromEdge(ItemLocalId(edge),face_lid);
-  for( Int32 node : face.nodeIds() )
-    m_node_family->removeFaceFromNode(ItemLocalId(node),face_lid);
+  Int32 nb_linear_node = face.nbLinearNode();
+  for( Int32 i=0; i<nb_linear_node; ++i ){
+    m_node_family->removeFaceFromNode(face.nodeId(i),face_lid);
+  }
+
   _removeOne(face);
   // On ne supprime pas ici les autres relations (ici aucune)
   // Car l'autre de suppression doit toujours être cell, face, edge, node
@@ -971,7 +974,7 @@ applyTiedInterface(ITiedInterface* interface)
     Integer nb_slave = slave_tied_faces.size();
     slave_faces.clear();
     for( Integer zz=0; zz<nb_slave; ++zz ){
-      const TiedFace& tn = tied_faces[index][zz];
+      TiedFace tn = tied_faces[index][zz];
       Face slave_face = tn.face();
       slave_faces.add(slave_face.localId());
       _addMasterFaceToFace(slave_face,master_face);
@@ -994,7 +997,7 @@ removeTiedInterface(ITiedInterface* interface)
     ConstArrayView<TiedFace> slave_tied_faces(tied_faces[index]);
     Integer nb_slave = slave_tied_faces.size();
     for( Integer zz=0; zz<nb_slave; ++zz ){
-      const TiedFace& tn = tied_faces[index][zz];
+      TiedFace tn = tied_faces[index][zz];
       Face slave_face = tn.face();
       _removeMasterFaceToFace(slave_face);
     }

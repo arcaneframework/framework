@@ -26,19 +26,23 @@
 
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/RequestListBase.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 
 #include <map>
 
@@ -89,6 +93,40 @@ class SharedMemoryParallelMng::RequestList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SharedMemoryParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryMachineMemoryWindowBaseInternalCreator* window_creator)
+  : ParallelMngInternal(pm)
+  , m_parallel_mng(pm)
+  , m_window_creator(window_creator)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
+  }
+
+ private:
+
+  SharedMemoryParallelMng* m_parallel_mng;
+  SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 SharedMemoryParallelMng::
 SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(build_info.rank,build_info.nb_rank))
@@ -111,6 +149,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_parent_container_ref(build_info.container)
 , m_mpi_communicator(build_info.communicator)
 , m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
+, m_parallel_mng_internal(new Impl(this, build_info.window_creator))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -122,6 +161,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 SharedMemoryParallelMng::
 ~SharedMemoryParallelMng()
 {
+  delete m_parallel_mng_internal;
   delete m_replication;
   m_sequential_parallel_mng.reset();
   delete m_io_mng;
@@ -462,7 +502,7 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   barrier();
   // Le rang 0 créé le builder
   if (m_rank==0){
-    builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank,m_mpi_communicator);
+    builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank, m_mpi_communicator, m_mpi_communicator);
     // Positionne le builder pour tout le monde
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }

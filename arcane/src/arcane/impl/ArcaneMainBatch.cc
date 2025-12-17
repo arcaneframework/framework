@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMainBatch.cc                                          (C) 2000-2024 */
+/* ArcaneMainBatch.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Gestion de l'exécution en mode Batch.                                     */
 /*---------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@
 #include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
 
-#include "arcane/accelerator/core/internal/RunnerInternal.h"
+#include "arccore/common/accelerator/internal/RunnerInternal.h"
 
 #include <thread>
 
@@ -304,6 +304,7 @@ _sequentialParseArgs(StringList args)
   String us_direct_test("direct_test");
   String us_direct_mesh("direct_mesh");
   String us_tool_arg("tool_arg");
+  String us_direct_exec_mesh_arg("direct_exec_mesh_arg");
   String us_nb_sub_domain("nb_sub_domain");
   String us_nb_replication("nb_replication");
   String us_idle_service("idle_service");
@@ -325,6 +326,7 @@ _sequentialParseArgs(StringList args)
   
   StringList unknown_args;
   StringBuilder tool_args_xml;
+  StringBuilder direct_exec_mesh_args_xml;
   String tool_mesh;
   
   String nb_sub_domain_str;
@@ -390,7 +392,7 @@ _sequentialParseArgs(StringList args)
         is_valid_opt = true;
       }
     }
-    else if (str==us_tool_arg){
+    else if (str==us_tool_arg || str==us_direct_exec_mesh_arg){
       ++i;
       String arg;
       String value;
@@ -401,7 +403,11 @@ _sequentialParseArgs(StringList args)
       if (i<s){
         value = args[i];
         is_valid_opt = true;
-        tool_args_xml += String::format("<{0}>{1}</{2}>\n",arg,value,arg);
+        String to_add = String::format("<{0}>{1}</{2}>\n",arg,value,arg);
+        if (str==us_tool_arg)
+          tool_args_xml += to_add;
+        else if (str==us_direct_exec_mesh_arg)
+          direct_exec_mesh_args_xml += to_add;
       }
     }
     else if (str==us_nb_sub_domain){
@@ -503,9 +509,12 @@ _sequentialParseArgs(StringList args)
     s += "  <description>DirectExec</description>\n";
     s += "  <timeloop>ArcaneDirectExecutionLoop</timeloop>\n";
     s += " </arcane>\n";
-    s += " <mesh>\n";
-    s += String::format("  <file>{0}</file>\n",tool_mesh);
-    s += " </mesh>\n";
+    s += " <meshes>\n";
+    s += "   <mesh>\n";
+    s += String::format("  <filename>{0}</filename>\n",tool_mesh);
+    s += direct_exec_mesh_args_xml;
+    s += "   </mesh>\n";
+    s += " </meshes>\n";
     s += " <arcane-direct-execution>\n";
     s += String::format("  <tool name='{0}'>\n",m_direct_exec_name);
     s += tool_args_xml;

@@ -1,33 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemConnectivityAccessor.h                                 (C) 2000-2016 */
+/* IItemConnectivityAccessor.h                                 (C) 2000-2025 */
 /*                                                                           */
 /* Interface des accesseurs des connectivité des entités.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMCONNECTIVITYACCESSOR_H
-#define ARCANE_IITEMCONNECTIVITYACCESSOR_H
+#ifndef ARCANE_CORE_IITEMCONNECTIVITYACCESSOR_H
+#define ARCANE_CORE_IITEMCONNECTIVITYACCESSOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ConnectivityItemVector;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,35 +32,33 @@ class ConnectivityItemVector;
  */
 class ARCANE_CORE_EXPORT IItemConnectivityAccessor
 {
- public:
-
-  friend class ConnectivityItemVector;
+  friend ConnectivityItemVector;
 
  public:
 
-  virtual ~IItemConnectivityAccessor(){}
+  virtual ~IItemConnectivityAccessor() = default;
 
  public:
 
   //! Nombre d'entité connectées à l'entité source de numéro local \a lid
-  virtual Integer nbConnectedItem(ItemLocalId lid) const =0;
+  virtual Integer nbConnectedItem(ItemLocalId lid) const = 0;
 
   //! localId() de la \a index-ième entitée connectées à l'entité source de numéro local \a lid
-  virtual Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const =0;
+  virtual Int32 connectedItemLocalId(ItemLocalId lid, Integer index) const = 0;
 
  protected:
 
   //! Implémente l'initialisation de \a civ pour cette connectivitée.
-  virtual void _initializeStorage(ConnectivityItemVector* civ) =0;
+  virtual void _initializeStorage(ConnectivityItemVector* civ) = 0;
 
   //! Remplit \a con_items avec les entités connectées à \a item.
-  virtual ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const = 0;
+  virtual ItemVectorView _connectedItems(ItemLocalId item, ConnectivityItemVector& con_items) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

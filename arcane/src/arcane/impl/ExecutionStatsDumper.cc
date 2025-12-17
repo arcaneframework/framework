@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExecutionStatsDumper.cc                                     (C) 2000-2024 */
+/* ExecutionStatsDumper.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Ecriture des statistiques d'exécution.                                    */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/FloatingPointExceptionSentry.h"
 
-#include "arcane/utils/internal/ProfilingInternal.h"
+#include "arccore/base/internal/ProfilingInternal.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IVariableMng.h"
@@ -52,7 +52,7 @@ void ExecutionStatsDumper::
 _dumpProfilingJSON(JSONWriter& json_writer)
 {
   json_writer.write("Version", "1");
-  auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
+  auto f = [&](const Impl::ForLoopStatInfoList& stat_list) {
     JSONWriter::Object jo(json_writer);
     json_writer.writeKey("Loops");
     json_writer.beginArray();
@@ -103,7 +103,7 @@ _dumpProfilingTable(ISimpleTableOutput* table)
   table->addColumn("NbChunk");
 
   Integer list_index = 0;
-  auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
+  auto f = [&](const Impl::ForLoopStatInfoList& stat_list) {
     for (const auto& x : stat_list._internalImpl()->m_stat_map) {
       const auto& s = x.second;
       String row_name = x.first;
@@ -129,7 +129,7 @@ _dumpProfiling(std::ostream& o)
   // Affiche les informations de profiling sur \a o
   _printGlobalLoopInfos(o, ProfilingRegistry::globalLoopStat());
   {
-    auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
+    auto f = [&](const Impl::ForLoopStatInfoList& stat_list) {
       _dumpOneLoopListStat(o, stat_list);
     };
     ProfilingRegistry::visitLoopStat(f);
@@ -137,7 +137,7 @@ _dumpProfiling(std::ostream& o)
   // Avant d'afficher le profiling accélérateur, il faudrait être certain
   // qu'il est désactivé. Normalement c'est le cas si on utilise ArcaneMainBatch.
   {
-    auto f = [&](const impl::AcceleratorStatInfoList& stat_list) {
+    auto f = [&](const Impl::AcceleratorStatInfoList& stat_list) {
       stat_list.print(o);
     };
     ProfilingRegistry::visitAcceleratorStat(f);
@@ -148,7 +148,7 @@ _dumpProfiling(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
-_dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list)
+_dumpOneLoopListStat(std::ostream& o, const Impl::ForLoopStatInfoList& stat_list)
 {
   struct SortedStatInfo
   {
@@ -157,7 +157,7 @@ _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list
       return m_stat.execTime() > rhs.m_stat.execTime();
     }
     String m_name;
-    impl::ForLoopProfilingStat m_stat;
+    Impl::ForLoopProfilingStat m_stat;
   };
 
   // Met 1 pour éviter de diviser par zéro.
@@ -178,7 +178,7 @@ _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list
 
   char old_filler = o.fill();
   for (const auto& x : sorted_set) {
-    const impl::ForLoopProfilingStat& s = x.m_stat;
+    const Impl::ForLoopProfilingStat& s = x.m_stat;
     Int64 nb_loop = s.nbCall();
     Int64 nb_chunk = s.nbChunk();
     Int64 total_time_ns = s.execTime();
@@ -203,7 +203,7 @@ _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
-_printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumulative_stat)
+_printGlobalLoopInfos(std::ostream& o, const Impl::ForLoopCumulativeStat& cumulative_stat)
 {
   Int64 nb_loop_parallel_for = cumulative_stat.nbLoopParallelFor();
   if (nb_loop_parallel_for == 0)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.h                                             (C) 2000-2024 */
+/* ItemGroupImpl.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités du maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/SharedReference.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/SharedReference.h"
 #include "arcane/utils/SharedPtr.h"
 
-#include "arcane/GroupIndexTable.h"
+#include "arcane/core/GroupIndexTable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,13 +50,13 @@ class ItemGroupImplInternal;
  * \internal
  * \brief Implémentation d'un groupe d'entités de maillage.
 
- Un groupe est un ensemble d'entité du maillage (noeuds,faces,mailles,...)
+ Un groupe est un ensemble d'entité du maillage (noeuds, faces, mailles,...)
  de même genre.
 
  Une instance de cette classe ne doit pas s'utiliser directement, mais
  par l'intermédiaire d'une instance de ItemGroup.
 
- Une entité élément ne peut être présente qu'une seul fois.
+ Une entité élément ne peut être présente qu'une seule fois.
 
  Le développeur ne doit pas conserver directement des instances de cette
  class mais passer par un ItemGroup. Certains groupes étant déterminés
@@ -73,6 +73,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 {
  private:
 
+  friend class ItemGroupSubPartsByType;
   friend ItemGroup;
   class ItemSorter;
 
@@ -404,15 +405,21 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   bool checkIsSorted() const;
 
+  //! \deprecated Utiliser isContiguousLocalIds() à la place
+  bool isContigousLocalIds() const { return isContiguousLocalIds(); }
+
   //! Indique si les entités du groupe ont des localIds() contigüs.
-  bool isContigousLocalIds() const;
+  bool isContiguousLocalIds() const;
+
+  //! \deprecated Utiliser checkLocalIdsAreContiguous() à la place
+  void checkLocalIdsAreContigous() const { return checkLocalIdsAreContiguous(); }
 
   /*!
    * \brief Vérifie si les entités du groupe ont des localIds() contigüs.
    *
-   * Si c'est le cas, alors \a isContigousLocalIds() retournera \a vrai.
+   * Si c'est le cas, alors \a isContiguousLocalIds() retournera \a vrai.
    */
-  void checkLocalIdsAreContigous() const;
+  void checkLocalIdsAreContiguous() const;
 
   /*!
    * \brief Limite au maximum la mémoire utilisée par le groupe.
@@ -454,14 +461,8 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
  private:
 
-  //! Initialisation des sous-groupes par types
-  void _initChildrenByType();
   //! Méthode de calcul des sous-groupes par type
   void _computeChildrenByType();
-  //! Initialisation des sous-groupes par types
-  void _initChildrenByTypeV2();
-  //! Méthode de calcul des sous-groupes par type
-  void _computeChildrenByTypeV2();
   //! Invalidation des sous-groupes
   void _executeExtend(const Int32ConstArrayView * info);
   //! Invalidation des sous-groupes

@@ -51,6 +51,7 @@ set( ARCANE_SOURCES
   InternalInfosDumper.cc
   ItemEnumeratorTracer.cc
   ItemEnumeratorTracer.h
+  ArcaneGeometricMeshPartitionerService.cc
   MeshPartitionerTesterService.cc
   MainFactory.cc
   MainFactory.h
@@ -107,7 +108,6 @@ set( ARCANE_SOURCES
   VariableSynchronizerComputeList.cc
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
-  GlibDynamicLibraryLoader.cc
   Application.h
   ArcaneSession.h
   ArcaneMain.h
@@ -174,5 +174,6 @@ set(AXL_FILES
   ArcaneCaseMeshMasterService
   ArcaneCaseMeshService
   MeshPartitionerTesterService
+  ArcaneGeometricMeshPartitionerService
   ArcaneBasicMeshSubdividerService
 )

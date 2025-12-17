@@ -17,7 +17,8 @@
                 "ARCANE_DISABLE_DEPRECATED_WARNINGS" : "TRUE",
                 "BUILD_SHARED_LIBS" : "TRUE",
                 "ARCANE_ENABLE_TESTS" : "FALSE",
-                "NEO_BUILD_TEST" : "FALSE"
+                "NEO_BUILD_TEST" : "FALSE",
+                "ARCCORE_WANT_TEST" : "FALSE"
             }
         },
         {

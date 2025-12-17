@@ -68,6 +68,11 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
     // Default option is reversed in PETSc (CF-Relaxation is default)
     // checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL,
     // "-pc_hypre_boomeramg_CF","1"));
+    if(options()->outputLevel()>0)
+    {
+      checkError("Hypre AMG SetDebugFlag",       PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+      checkError("Hypre AMG SetDebugFlag",       PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_statistics", "3"));
+    }
     break ;
   case PETScPrecConfigHypreOptions::AMGN:
     /*
@@ -91,10 +96,33 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
       checkError("Set Hypre coarsening",         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_coarsen_type",   options()->coarsenType().localstr()));
       checkError("Set Hypre Interpolation type", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_interp_type",    options()->interpType().localstr()));
       checkError("Set Hypre Relax type",         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all", options()->relaxType().localstr()));
-      if(options()->truncfactor()>0)
+
+      if(options()->amgTol()>0)
       {
-        Arcane::String factor = Arcane::String::format("{0}",options()->truncfactor()) ;
-        checkError("Set Hypre truncfactor",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_truncfactor",factor.localstr())) ;
+        Arcane::String factor = Arcane::String::format("{0}",options()->amgTol()) ;
+        checkError("Set Hypre AMG tol",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_truncfactor",factor.localstr())) ;
+      }
+
+      if(options()->maxLevels()>0)
+      {
+        Arcane::String max_level = Arcane::String::format("{0}",options()->maxLevels()) ;
+        checkError("Set Hypre max level",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_max_levels",max_level.localstr())) ;
+      }
+
+      if(options()->truncFactor()>0)
+      {
+        Arcane::String factor = Arcane::String::format("{0}",options()->truncFactor()) ;
+        checkError("Set Hypre trunc-factor",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_truncfactor",factor.localstr())) ;
+      }
+      if(options()->strongThreshold()>0)
+      {
+        Arcane::String factor = Arcane::String::format("{0}",options()->strongThreshold()) ;
+        checkError("Set Hypre strong threshold",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_strong_threshold",factor.localstr())) ;
+      }
+      if(options()->maxRowSum()>0)
+      {
+        Arcane::String factor = Arcane::String::format("{0}",options()->maxRowSum()) ;
+        checkError("Set Hypre maw row sum",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_max_row_sum",factor.localstr())) ;
       }
       if(options()->pmaxElements()>0)
       {
@@ -108,7 +136,23 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
         checkError("Set Hypre Nodal Coarsen algo", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_nodal_coarsen",nodal_coarsen.localstr()));
         checkError("Set Hypre Vec Interp Variant", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_vec_interp_variant",vec_interp_variant.localstr()));
       }
-      checkError("Hypre AMG SetDebugFlag",       PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+
+      {
+       checkError("Agg NL",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_smooth_num_levels","0")) ;
+       checkError("Agg NL",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_agg_nl","0")) ;
+       checkError("Agg NP",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_agg_num_paths","1")) ;
+       checkError("Sweep All",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_grid_sweeps_all","1")) ;
+       checkError("Sweep Down",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_grid_sweeps_down","1")) ;
+       checkError("Sweep Up",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_grid_sweeps_up","1")) ;
+       checkError("Sweep Coarse",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_grid_sweeps_coarse","1")) ;
+       checkError("Measure",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_measure_type","local")) ;
+      }
+      
+      if(options()->outputLevel()>0)
+      {
+        checkError("Hypre AMG SetDebugFlag",       PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+        checkError("Hypre AMG SetDebugFlag",       PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_statistics", "3"));
+      }
       PCSetFromOptions(pc);
       // Default option is reversed in PETSc (CF-Relaxation is default)
       // checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL,"-pc_hypre_boomeramg_CF","1"));

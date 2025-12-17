@@ -28,6 +28,7 @@
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/materials/ComponentSimd.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,8 +48,8 @@ class AcceleratorViewsUnitTest
 {
  public:
 
-  explicit AcceleratorViewsUnitTest(const ServiceBuildInfo& cb);
-  ~AcceleratorViewsUnitTest();
+  explicit AcceleratorViewsUnitTest(const ServiceBuildInfo& sbi);
+  ~AcceleratorViewsUnitTest() override;
 
  public:
 
@@ -174,7 +175,7 @@ void AcceleratorViewsUnitTest::
 _setCellArrayValue(Integer seed)
 {
   Integer n = m_cell_array1.arraySize();
-  ENUMERATE_CELL (icell, allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     Int32 lid = icell.itemLocalId();
     for (Integer i = 0; i < n; ++i) {
       m_cell_array1[icell][i] = Real((i + 1) + lid + seed);
@@ -338,8 +339,8 @@ _executeTest1()
 
     auto command = makeCommand(m_queue);
 
-    auto in_cell_array1 = ax::viewIn(command, m_cell_array1);
-    auto out_cell_array2 = ax::viewInOut(command, m_cell_array2);
+    auto in_cell_array1 = viewIn(command, m_cell_array1);
+    auto out_cell_array2 = viewInOut(command, m_cell_array2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -355,12 +356,12 @@ _executeTest1()
 
     auto command = makeCommand(m_queue);
 
-    auto inout_cell_array1 = ax::viewInOut(command, m_cell_array1);
-    auto out_cell_array2 = ax::viewInOut(command, m_cell_array2);
+    auto inout_cell_array1 = viewInOut(command, m_cell_array1);
+    auto inout_cell_array2 = viewInOut(command, m_cell_array2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
-      out_cell_array2[vi].copy(inout_cell_array1[vi]);
+      inout_cell_array2[vi].copy(inout_cell_array1[vi]);
     };
 
     _checkCellArrayValue("View5");
@@ -373,8 +374,8 @@ _executeTest1()
 void AcceleratorViewsUnitTest::
 _executeTest2()
 {
+  auto queue = makeQueue(m_runner);
   {
-    auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
     auto inout_cell1_real2 = viewInOut(command, m_cell1_real2);
 
@@ -387,13 +388,60 @@ _executeTest2()
       inout_cell1_real2[vi].setX(ref_v[0]);
       inout_cell1_real2[vi].setY(ref_v[1]);
     };
+    _checkResultReal2(2.0);
   }
-  _checkResultReal2(2.0);
 
   {
-    auto queue = makeQueue(m_runner);
+    // Test l'utilisation des vues avec Item comme type de base
+    // (par exemple VariableItemReal2)
+    VariableItemReal2 cell1_as_item_real2(VariableBuildInfo(mesh(), "CellAsItemReal2"), IK_Cell);
+    {
+      auto command = makeCommand(queue);
+      auto inout_cell1_as_item_real2 = viewInOut(command, cell1_as_item_real2);
+      command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+      {
+        Real v = static_cast<Real>(vi.localId());
+        Real2 ref_v;
+        ref_v[0] = 4.0 + v;
+        ref_v[1] = ref_v[0] + 1.0;
+        inout_cell1_as_item_real2[vi].setX(ref_v[0]);
+        inout_cell1_as_item_real2[vi].setY(ref_v[1]);
+      };
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_cell1_as_item_real2 = viewIn(command, cell1_as_item_real2);
+      auto out_cell1_real2 = viewOut(command, m_cell1_real2);
+      command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+      {
+        out_cell1_real2[vi] = in_cell1_as_item_real2[vi];
+      };
+    }
+    _checkResultReal2(4.0);
+    {
+      auto command = makeCommand(queue);
+      auto out_cell1_as_item_real2 = viewOut(command, cell1_as_item_real2);
+      command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+      {
+        Real v = 6.0 + static_cast<Real>(vi.localId());
+        out_cell1_as_item_real2[vi] = Real2(v, v + 1.0);
+      };
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_cell1_as_item_real2 = viewIn(command, cell1_as_item_real2);
+      auto out_cell1_real2 = viewOut(command, m_cell1_real2);
+      command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+      {
+        out_cell1_real2[vi] = in_cell1_as_item_real2[vi];
+      };
+    }
+    _checkResultReal2(6.0);
+  }
+
+  {
     auto command = makeCommand(queue);
-    auto inout_cell1_real2 = ax::viewInOut(command, m_cell1_real2);
+    auto inout_cell1_real2 = viewInOut(command, m_cell1_real2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -404,13 +452,12 @@ _executeTest2()
       inout_cell1_real2[vi][0] = ref_v[0];
       inout_cell1_real2[vi][1] = ref_v[1];
     };
+    _checkResultReal2(4.0);
   }
-  _checkResultReal2(4.0);
 
   {
-    auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real3 = ax::viewInOut(command, m_cell1_real3);
+    auto inout_cell1_real3 = viewInOut(command, m_cell1_real3);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -423,13 +470,12 @@ _executeTest2()
       inout_cell1_real3[vi].setY(ref_v[1]);
       inout_cell1_real3[vi].setZ(ref_v[2]);
     };
+    _checkResultReal3(2.0);
   }
-  _checkResultReal3(2.0);
 
   {
-    auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real3 = ax::viewInOut(command, m_cell1_real3);
+    auto inout_cell1_real3 = viewInOut(command, m_cell1_real3);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -442,13 +488,15 @@ _executeTest2()
       inout_cell1_real3[vi][1] = ref_v[1];
       inout_cell1_real3[vi][2] = ref_v[2];
     };
+    _checkResultReal3(6.0);
   }
-  _checkResultReal3(6.0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Test command avec IteratorWithIndex.
+ */
 void AcceleratorViewsUnitTest::
 _executeTest3()
 {
@@ -462,7 +510,7 @@ _executeTest3()
   checked_local_ids.fill(-1, queue);
   {
     // Remplit out_checked_local_ids avec le i-ème localId() du groupe.
-    auto out_checked_local_ids = ax::viewOut(command, checked_local_ids);
+    auto out_checked_local_ids = viewOut(command, checked_local_ids);
     command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, own_cells)
     {
       out_checked_local_ids[vi.index()] = vi.value();
@@ -487,7 +535,8 @@ _executeTestReal2x2()
   {
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real2x2 = ax::viewInOut(command, m_cell1_real2x2);
+    auto inout_cell1_real2x2 = viewInOut(command, m_cell1_real2x2);
+    auto out_cell1_real2x2 = viewOut(command, m_cell1_real2x2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -497,6 +546,7 @@ _executeTestReal2x2()
       ref_v[1][0] = 3.0 + v;
       ref_v[0][1] = 4.0 + v;
       ref_v[1][1] = 5.0 + v;
+      out_cell1_real2x2[vi][0].setX(ref_v[0][0]);
       inout_cell1_real2x2[vi].setXX(ref_v[0][0]);
       inout_cell1_real2x2[vi].setYX(ref_v[1][0]);
       inout_cell1_real2x2[vi].setXY(ref_v[0][1]);
@@ -508,7 +558,28 @@ _executeTestReal2x2()
   {
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real2x2 = ax::viewInOut(command, m_cell1_real2x2);
+    auto out_cell1_real2x2 = viewOut(command, m_cell1_real2x2);
+
+    command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+    {
+      Real v = static_cast<Real>(vi.localId());
+      Real2x2 ref_v;
+      ref_v[0][0] = 3.0 + v;
+      ref_v[1][0] = 4.0 + v;
+      ref_v[0][1] = 5.0 + v;
+      ref_v[1][1] = 6.0 + v;
+      out_cell1_real2x2[vi][0].setX(ref_v[0][0]);
+      out_cell1_real2x2[vi][1].setX(ref_v[1][0]);
+      out_cell1_real2x2[vi][0].setY(ref_v[0][1]);
+      out_cell1_real2x2[vi][1].setY(ref_v[1][1]);
+    };
+  }
+  _checkResultReal2x2(3.0);
+
+  {
+    auto queue = makeQueue(m_runner);
+    auto command = makeCommand(queue);
+    auto inout_cell1_real2x2 = viewInOut(command, m_cell1_real2x2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -537,7 +608,7 @@ _executeTestReal3x3()
   {
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real3x3 = ax::viewInOut(command, m_cell1_real3x3);
+    auto inout_cell1_real3x3 = viewInOut(command, m_cell1_real3x3);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -581,7 +652,7 @@ _executeTest2Real3x3()
   {
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
-    auto inout_cell1_real3x3 = ax::viewInOut(command, m_cell1_real3x3);
+    auto inout_cell1_real3x3 = viewInOut(command, m_cell1_real3x3);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -905,7 +976,14 @@ _executeTestMultiArray()
   {
     auto command = makeCommand(queue);
     auto out_values_view = viewOut(command, result_values);
-
+    if (queue.executionPolicy() == ax::eExecutionPolicy::Thread) {
+      // Teste le changement du nombre de threads
+      ParallelLoopOptions opts = command.parallelLoopOptions();
+      if (opts.maxThread() > 2)
+        opts.setMaxThread(2);
+      command.setParallelLoopOptions(opts);
+      vc.areEqual(command.parallelLoopOptions().maxThread(), 2, "Bad number of CPU thread");
+    }
     command << RUNCOMMAND_LOOP1(iter, dim1_size)
     {
       auto [i] = iter();

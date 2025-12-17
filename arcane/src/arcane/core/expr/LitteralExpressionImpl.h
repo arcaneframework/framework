@@ -1,21 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LitteralExpressionImpl.h                                    (C) 2000-2022 */
+/* LitteralExpressionImpl.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'une expression littérale contenant un scalaire.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_EXPR_LITTERALEXPRESSIONIMPL_H
-#define ARCANE_EXPR_LITTERALEXPRESSIONIMPL_H
+#ifndef ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
+#define ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#include "arcane/datatype/ScalarVariant.h"
+#include "arcane/core/datatype/ScalarVariant.h"
 
 #include "arcane/expr/ExpressionImpl.h"
 #include "arcane/expr/Expression.h"

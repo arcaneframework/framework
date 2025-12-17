@@ -1431,6 +1431,12 @@ _readGroups()
     if (group.null())
       createGroup(name);
   }
+  // Notifie les groupes qu'ils ont été mis à jour de manière
+  // externe. Cela peut être nécessaire pour recalculer automatiquement
+  // certaines informations (comme le padding pour la vectorisation)
+  for ( ItemGroup& group : m_item_groups) {
+    group.incrementTimestamp();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

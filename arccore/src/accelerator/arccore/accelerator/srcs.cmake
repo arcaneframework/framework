@@ -1,0 +1,39 @@
+set(SOURCES
+  # On met ces fichiers en premier car ce sont les plus long à compiler
+  MemoryCopier.cc
+  MemoryCopierTpl1.cc
+  MemoryCopierTpl2.cc
+
+  AcceleratorGlobal.h
+  AcceleratorGlobal.cc
+  AcceleratorUtils.h
+  Atomic.h
+  CommonCudaHipReduceImpl.h
+  CommonCudaHipAtomicImpl.h
+  CommonUtils.h
+  CommonUtils.cc
+  GenericFilterer.h
+  GenericFilterer.cc
+  GenericPartitioner.h
+  GenericPartitioner.cc
+  GenericReducer.h
+  GenericScanner.h
+  GenericSorter.h
+  KernelLauncher.h
+  LocalMemory.h
+  MultiThreadAlgo.h
+  MultiThreadAlgo.cc
+  NumArrayViews.h
+  NumArrayViews.cc
+  Reduce.h
+  RunCommandLaunch.h
+  RunCommandLaunch.cc
+  RunCommandLaunchImpl.h
+  RunCommandLoop.h
+  ScanImpl.h
+  SpanViews.h
+  WorkGroupLoopRange.h
+  WorkGroupLoopRange.cc
+
+  internal/AcceleratorMemoryCopier.h
+)

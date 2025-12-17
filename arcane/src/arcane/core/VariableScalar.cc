@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.cc                                           (C) 2000-2024 */
+/* VariableScalar.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,8 @@
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -56,20 +58,21 @@ class ScalarVariableDiff
   //TODO: a simplifier car recopie de ArrayVariableDiff
   // mais pour les variables scalaires il n'y a qu'une valeur et aucun groupe
   // associé.
-  Integer
+  VariableComparerResults
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
-        int max_print,bool compare_ghost)
+        const VariableComparerArgs& compare_args)
   {
+    const bool compare_ghost = compare_args.isCompareGhost();
     ItemGroup group = var->itemGroup();
     if (group.null())
-      return 0;
+      return {};
     IMesh* mesh = group.mesh();
     if (!mesh)
-      return 0;
+      return {};
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : nullptr;
 
     int nb_diff = 0;
     bool compare_failed = false;
@@ -108,20 +111,25 @@ class ScalarVariableDiff
         
     }
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,const DataType& var_value,
-                       Integer max_print)
+  VariableComparerResults
+  checkReplica(IVariable* var, const DataType& var_value,
+               const VariableComparerArgs& compare_args)
   {
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    IParallelMng* replica_pm = var->_internalApi()->replicaParallelMng();
+    if (!replica_pm)
+      return {};
+    const int max_print = compare_args.maxPrint();
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm,var_value);
-    ARCANE_UNUSED(pm);
+      return _checkReplica2(replica_pm, var_value);
+    ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_value);
     ARCANE_UNUSED(max_print);
@@ -130,11 +138,12 @@ class ScalarVariableDiff
 
  private:
 
-  Integer _checkReplica2(IParallelMng* pm,const DataType& var_value)
+  VariableComparerResults
+  _checkReplica2(IParallelMng* pm, const DataType& var_value)
   {
     Int32 nb_rank = pm->commSize();
     if (nb_rank==1)
-      return 0;
+      return {};
 
     DataType max_value = pm->reduce(Parallel::ReduceMax,var_value);
     DataType min_value = pm->reduce(Parallel::ReduceMin,var_value);
@@ -145,7 +154,7 @@ class ScalarVariableDiff
       this->m_diffs_info.add(DiffInfo(min_value,max_value,diff,0,NULL_ITEM_ID));
       ++nb_diff;
     }
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
 };
@@ -204,56 +213,62 @@ getReference(IVariable* var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> Integer VariableScalarT<T>::
-checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
-{
-  if (itemKind()==IK_Particle)
-    return 0;
-  T from(value());
-  T ref = T();
-  Ref< IScalarDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
-  reader->read(this,ref_data.get());
-  ref = ref_data->value();
-  ConstArrayView<T> from_array(1,&from);
-  ConstArrayView<T> ref_array(1,&ref);
-  ScalarVariableDiff<T> csa;
-  return csa.check(this,ref_array,from_array,max_print,compare_ghost);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 // Utilise une fonction Helper afin de spécialiser l'appel dans le
 // cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
-  template<typename T> Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 const T& value,Integer max_print)
+  template <typename T> VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IVariable* var, const T& value,
+                                 const VariableComparerArgs& compare_args)
   {
     ScalarVariableDiff<T> csa;
-    return csa.checkReplica(pm,var,value,max_print);
+    return csa.checkReplica(var, value, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
-  Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 const Byte& value,Integer max_print)
+  VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IVariable* var, const Byte& value,
+                                 const VariableComparerArgs& compare_args)
   {
     Integer int_value = value;
     ScalarVariableDiff<Integer> csa;
-    return csa.checkReplica(pm,var,int_value,max_print);
+    return csa.checkReplica(var, int_value, compare_args);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Integer VariableScalarT<T>::
-_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
+template<typename T> VariableComparerResults VariableScalarT<T>::
+_compareVariable(const VariableComparerArgs& compare_args)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value(),max_print);
+  switch (compare_args.compareMode()) {
+  case eVariableComparerCompareMode::Same: {
+
+    if (itemKind() == IK_Particle)
+      return {};
+    IDataReader* reader = compare_args.dataReader();
+    ARCANE_CHECK_POINTER(reader);
+    T from(value());
+    T ref = T();
+    Ref<IScalarDataT<T>> ref_data(m_value->cloneTrueEmptyRef());
+    reader->read(this, ref_data.get());
+    ref = ref_data->value();
+    ConstArrayView<T> from_array(1, &from);
+    ConstArrayView<T> ref_array(1, &ref);
+    ScalarVariableDiff<T> csa;
+    VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
+    return r;
+  }
+  case eVariableComparerCompareMode::Sync:
+    return {};
+  case eVariableComparerCompareMode::SameOnAllReplica: {
+    VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, value(), compare_args);
+    return r;
+  }
+  }
+  ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }
 
 /*---------------------------------------------------------------------------*/

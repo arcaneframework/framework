@@ -1,30 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshChecker.h                                              (C) 2000-2018 */
+/* IMeshChecker.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Interface de méthodes de vérification d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHCHECKER_H
-#define ARCANE_IMESHCHECKER_H
+#ifndef ARCANE_CORE_IMESHCHECKER_H
+#define ARCANE_CORE_IMESHCHECKER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMesh;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,12 +31,12 @@ class IMeshChecker
 {
  public:
 
-  virtual ~IMeshChecker() {} //<! Libère les ressources
+  virtual ~IMeshChecker() = default; //!< Libère les ressources
 
  public:
 
   //! Maillage associé
-  virtual IMesh* mesh() =0;
+  virtual IMesh* mesh() = 0;
 
   /*!
    * \brief Positionne le niveau de vérification du maillage.
@@ -49,15 +45,15 @@ class IMeshChecker
    * 1 - tests partiels, après les endUpdate()
    * 2 - tests complets, après les endUpdate()
    */
-  virtual void setCheckLevel(Integer level) =0;
-  
+  virtual void setCheckLevel(Integer level) = 0;
+
   //! Niveau actuel de vérification
-  virtual Integer checkLevel() const =0;
+  virtual Integer checkLevel() const = 0;
 
   /*!
-   * \brief Vérification de la validité des structues internes de maillage (interne).
+   * \brief Vérification de la validité des structures internes de maillage (interne).
    */
-  virtual void checkValidMesh() =0;
+  virtual void checkValidMesh() = 0;
 
   /*!
    * \brief Vérification de la validité du maillage.
@@ -70,7 +66,7 @@ class IMeshChecker
    * La vérification peut-être assez coûteuse en temps CPU.
    * Cette méthode est collective.
    */
-  virtual void checkValidMeshFull() =0;
+  virtual void checkValidMeshFull() = 0;
 
   /*!
    * \brief Vérifie que les sous-domaines sont correctement répliqués.
@@ -79,19 +75,19 @@ class IMeshChecker
    * - mêmes familles d'entité et mêmes valeurs pour ces familles.
    * - mêmes coordonnées des noeuds du maillage.
    */
-  virtual void checkValidReplication() =0;
+  virtual void checkValidReplication() = 0;
 
   /*!
    * \brief Vérifie la synchronisation des variables.
    *
    * Vérifie pour chaque variable que ses valeurs sur les entités fantômes sont
-   * les mêmes que sur la valeur sur le sous-domaine propriétaire de l'entité.
+   * les mêmes que la valeur sur le sous-domaine propriétaire de l'entité.
    *
    * Les variables sur les particules ne sont pas comparées.
    *
-   * Lance une exception FatalErrorException en cas d'erreur.
+   * Lève une exception FatalErrorException en cas d'erreur.
    */
-  virtual void checkVariablesSynchronization() =0;
+  virtual void checkVariablesSynchronization() = 0;
 
   /*!
    * \brief Vérifie la synchronisation sur les groupes d'entités.
@@ -99,15 +95,34 @@ class IMeshChecker
    * Vérifie pour chaque groupe de chaque famille (autre que les particules)
    * que les entités sont les mêmes sur chaque sous-domaine.
    *
-   * Lance une exception FatalErrorException en cas d'erreur.
+   * Lève une exception FatalErrorException en cas d'erreur.
    */
-  virtual void checkItemGroupsSynchronization() =0;
+  virtual void checkItemGroupsSynchronization() = 0;
+
+  /*!
+   * \brief Indique si on active la vérification des propriétaires des entités.
+   *
+   * Cette vérification est effectuée lors de l'appel à checkValidConnectivity().
+   * Si elle est active, on vérifie que les noeuds, arêtes et
+   * faces ont bien le même propriétaire qu'une des mailles auxquels ils sont
+   * connectés.
+   *
+   * C'est toujours le cas si lorsque les propriétaires sont gérés par %Arcane
+   * et il est donc préférable de toujours faire cette vérification pour
+   * garantir la cohérence des informations en parallèle. Cependant, si la
+   * gestion des propriétaires est faite par l'utilisateur, il est possible
+   * de désactiver cette vérification.
+   */
+  virtual void setIsCheckItemsOwner(bool v) = 0;
+
+  //! Indique si la vérification des propriétaires des entités (vrai par défaut)
+  virtual bool isCheckItemsOwner() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,17 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoGraphTest.cpp                                (C) 2000-2023             */
+/* NeoGraphTest.cpp                                (C) 2000-2025             */
 /*                                                                           */
 /* Test dag plug in Neo AlgorithmPropertyGraph                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+#include <iterator>
+#include <algorithm>
 #include "neo/Neo.h"
 #include "neo/MeshKernel.h"
 
@@ -471,6 +473,94 @@ TEST(NeoGraphTest, MultipleAlgoTest) {
   is_called_5 = false;
 }
 
+TEST(NeoGraphTest,CascadingRemoveAlgosTest)
+{
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  // Check algos are well removed
+  bool is_called_1 = false;
+  bool is_called_2 = false;
+  bool is_called_3 = false;
+  // Consume P1, produce P2
+  mesh.removeAlgorithms();
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop1");
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop2");
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1" },
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop2" },
+                    [&is_called_1](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                                        Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
+                      std::cout << "Algo 1 " << std::endl;
+                      is_called_1 = true;
+  });
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop3");
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop2" },
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop3" },
+                    [&is_called_2](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                                        Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
+                      std::cout << "Algo 2 " << std::endl;
+                      is_called_2 = true;
+  });
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop4");
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop3" },
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop4" },
+                [&is_called_3](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                                    Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
+                      std::cout << "Algo 3 " << std::endl;
+                      is_called_3 = true;
+  });
+  mesh.applyAndKeepAlgorithms(Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmExecutionOrder::DAG);
+  // P1 is not produced, nobody should be called
+  EXPECT_FALSE(is_called_1 || is_called_2 || is_called_3);
+}
+
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,StableSortAlgoTest) {
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  // Check two algorithm with same priority level are executed in the order of registration
+  std::vector<int> algorithm_order{};
+  cell_family.addArrayProperty<Neo::utils::Int32>("Prop1");
+  cell_family.addScalarProperty<Neo::utils::Int32>("Prop2");
+  // Add 10 algos producing
+  for (int i = 0; i < 10; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::OutProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32>&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+      });
+  }
+  // Add 20 Algos consuming
+  for (int i = 10; i < 30; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::InProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32> const&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+    });
+  }
+  // Add 30 producing
+  for (int i = 30; i < 60; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::OutProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32>&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+      });
+  }
+  mesh.applyAlgorithms();
+  std::vector<int> ref_order(60);
+  std::iota(ref_order.begin(),ref_order.begin()+10,0);
+  std::iota(ref_order.begin()+10,ref_order.begin()+40,30);
+  std::iota(ref_order.begin()+40,ref_order.begin()+60,10);
+  std::copy(ref_order.begin(),ref_order.end(),std::ostream_iterator<int>(std::cout," "));
+  auto prop1 = cell_family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>("Prop1");
+  prop1.debugPrint();
+  EXPECT_TRUE(std::equal(prop1.begin(),prop1.end(),ref_order.begin()));
+}
+
+
 //----------------------------------------------------------------------------/
 
 TEST(NeoGraphTest, ItemAndConnectivityTest) {
@@ -549,6 +639,60 @@ TEST(NeoGraphTest, ItemAndConnectivityTest) {
   auto node_to_cell_view = node_to_cell.constView();
   std::vector cell_id{ 0, 0, 0, 0, 0, 0, 0, 0 };
   EXPECT_TRUE(std::equal(node_to_cell_view.begin(), node_to_cell_view.end(), cell_id.begin()));
+}
+
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,PropertyStatusTest) {
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  Neo::MeshKernel::PropertyHolder in_prop_holder{ cell_family, "in_prop1" };
+  Neo::MeshKernel::PropertyHolder out_prop_holder{ cell_family, "out_prop1" };
+  auto algo1 = [](Neo::MeshKernel::InProperty prop_in, Neo::MeshKernel::OutProperty prop_out) {};
+  std::shared_ptr<Neo::MeshKernel::IAlgorithm> ialgo1 = std::make_shared<Neo::MeshKernel::AlgoHandler<decltype(algo1)>>(
+    Neo::MeshKernel::InProperty{cell_family,"in_prop1", Neo::PropertyStatus::ExistingProperty},
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo1)));
+  auto algo2 = [](Neo::MeshKernel::InProperty prop_in, Neo::MeshKernel::OutProperty prop_out) {};
+  std::shared_ptr<Neo::MeshKernel::IAlgorithm> ialgo2 = std::make_shared<Neo::MeshKernel::AlgoHandler<decltype(algo2)>>(
+    Neo::MeshKernel::InProperty{cell_family,"in_prop1", Neo::PropertyStatus::ComputedProperty},
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo2)));
+
+  EXPECT_EQ(mesh.propertyStatus(in_prop_holder.uniqueName(), ialgo1),Neo::PropertyStatus::ExistingProperty);
+  EXPECT_EQ(mesh.propertyStatus(in_prop_holder.uniqueName(), ialgo2),Neo::PropertyStatus::ComputedProperty);
+  EXPECT_EQ(mesh.propertyStatus(out_prop_holder.uniqueName(), ialgo1),Neo::PropertyStatus::ComputedProperty);
+}
+
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,PropertyStatusRemovalBugTest) {
+  // If algo removal in the graph doesn't take into account property status, Algo 2 won't be called
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  // Add property
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop1");
+  cell_family.addMeshScalarProperty<Neo::utils::Int32>("prop2");
+  // Add algo
+  bool algo1_is_called = false;
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1",Neo::PropertyStatus::ComputedProperty },
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop2" },
+                    [&algo1_is_called](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                       Neo::MeshScalarPropertyT<Neo::utils::Int32>& ) {
+                      std::cout << "Algo 1 " << std::endl;
+                      algo1_is_called = true;
+                       }
+  );
+  bool algo2_is_called = false;
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1",Neo::PropertyStatus::ExistingProperty },
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop2" },
+                    [&algo2_is_called](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                       Neo::MeshScalarPropertyT<Neo::utils::Int32>& ) {
+                      std::cout << "Algo 2 " << std::endl;
+                      algo2_is_called = true;
+                    }
+  );
+  mesh.applyAndKeepAlgorithms(Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmExecutionOrder::DAG);
+  EXPECT_FALSE(algo1_is_called);
+  EXPECT_TRUE(algo2_is_called);
 }
 
 //----------------------------------------------------------------------------/

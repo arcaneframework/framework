@@ -42,60 +42,40 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            full_name: 'ubuntu-22.04'
-            package_name: 'ubuntu-22.04'
-            triplet: x64-linux-dynamic
-            vcpkg_os: ubuntu-22.04
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,200'
-          - os: ubuntu-22.04
+            base_os: ubuntu
             full_name: 'ubuntu-cxx20-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
             dotnet_version : "6.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
             ctest_specific_args : '-I 1,210'
           - os: ubuntu-24.04
+            base_os: ubuntu
             full_name: 'ubuntu-cxx20-24.04'
             package_name: 'ubuntu-24.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-24.04
             dotnet_version : "8.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,210'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-msmpi'
-            package_name: 'windows-2019-msmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-intelmpi'
-            package_name: 'windows-2019-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
-            full_name: 'windows-2022-intelmpi'
-            package_name: 'windows-2022-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2022
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2022'
+            base_os: windows
             full_name: 'windows-2022-cxx20-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             dotnet_version : "8.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
+            ctest_specific_args : '-I 1,160'
+          - os: 'windows-2022'
+            base_os: windows
+            full_name: 'windows-2022-cxx20-debug-intelmpi'
+            package_name: 'windows-2022-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2022
+            dotnet_version : "8.0.x"
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,160'
 
     env:
@@ -115,19 +95,20 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.7.3-${{ matrix.package_name }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.9.1-${{ matrix.package_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
+      ARCANE_VERBOSE_DYNAMICLIBRARY: 1
 
     steps:
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
       - name: Checkout framework-ci
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/framework-ci
           path: framework-ci
@@ -220,7 +201,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE -DCMAKE_INSTALL_PREFIX="${{ env.CMAKE_BUILD_DIR }}/install"
 
       - name: Dump Some Generated files
         shell: bash
@@ -241,30 +222,62 @@ jobs:
         run: |
           find "${{ env.CMAKE_BUILD_DIR }}/lib"
 
+      - name: Print libraries path
+        if: matrix.base_os != 'windows'
+        shell: bash
+        run: |
+          ldd "${{ env.CMAKE_BUILD_DIR }}/lib/arcane_tests_exec"
+          ldd ${{ env.CMAKE_BUILD_DIR }}/lib/lib*.so
+          readelf -d ${{ env.CMAKE_BUILD_DIR }}/lib/lib*.so
+
       - name: Get 'ccache' status
         run: ccache -s -v
+
+      - name: Install arcane
+        shell: bash
+        run: |
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target install
 
       - name: Test arcane
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -E python_test
 
       - name: Test Aleph kappa
-        if: matrix.os != 'windows-2022'
+        if: matrix.base_os != 'windows'
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
 
-      - name: Test Python wrapper
-        shell: bash
-        run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
+      # - name: Test Python wrapper
+      #   shell: bash
+      #   run: |
+      #     cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
 
-      # NOTE: pour l'instant sous Win32 on ne peut pas exÃ©cuter les tests 'embedded'
-      # car il faut gÃ©rer le lancement de la compilation et aussi vÃ©rifier
-      # que la DLL 'arcane_dotnet_coreclr' est bien trouvÃ©e
       - name: Test .Net wrapper
         shell: bash
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
+
+      - name: Test Convert Mesh
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R convert_mesh
+
+      - name: Test command line replace
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R replace
+
+      - name: Test compare
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
+
+      # Comme ces tests sont un peu long on ne les exécute que sous Windows.
+      # Pour Linux, ils sont déjà lancés dans des CI dédiés.
+      - name: Test Checkpoint
+        shell: bash
+        if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R checkpoint

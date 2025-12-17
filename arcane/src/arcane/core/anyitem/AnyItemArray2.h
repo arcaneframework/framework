@@ -1,25 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemArray2.h                                             (C) 2000-2014 */
+/* AnyItemArray2.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Tableau 2D d'items de types quelconques.                                  */
 /*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
+#define ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ANYITEM_ANYITEMARRAY2_H
-#define ARCANE_ANYITEM_ANYITEMARRAY2_H
-
-#include "arcane/IItemFamily.h"
 #include "arcane/utils/Array2.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/anyitem/AnyItemGlobal.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

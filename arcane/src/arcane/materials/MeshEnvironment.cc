@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironment.cc                                          (C) 2000-2024 */
+/* MeshEnvironment.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -296,7 +296,7 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
       const MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
       CellGroup mat_cells = mat->cells();
       info(4) << "COMPUTE (V2) mat_cells mat=" << mat->name() << " nb_cell=" << mat_cells.size()
-              << " mat_id=" << mat_id << " index=" << var_indexer->index();
+              << " mat_id=" << mat_id << " index=" << var_indexer->index() << " is_async=" << queue.isAsync();
 
       mat->resizeItemsInternal(var_indexer->nbItem());
 
@@ -329,6 +329,9 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
       mat_cells._internalApi()->notifySimdPaddingDone();
     }
   }
+  // La RunQueue est asynchrone. Cette barrière est nécessaire pour éviter une
+  // erreur si on utilise le pool mémoire.
+  queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/

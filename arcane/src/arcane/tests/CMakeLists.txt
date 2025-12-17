@@ -1,7 +1,7 @@
 ﻿set(TEST_DIRS . anyitem dof inout)
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
-if(MPI_FOUND AND NOT WIN32)
+if(TARGET arcane_aleph_tests)
   # Aleph n'est disponible que si on a MPI et Linux
   set(TEST_LIBS ${TEST_LIBS} arcane_aleph_tests)
 endif()
@@ -44,6 +44,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorSorterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorMathUnitTest.cc
+  accelerator/AcceleratorLocalMemoryUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
@@ -246,8 +247,10 @@ ARCANE_COPY_MESH_DIRECT(square_v41.msh)
 ARCANE_COPY_MESH_DIRECT(xml_data.xmf)
 ARCANE_COPY_MESH_DIRECT(mesh.h5)
 ARCANE_COPY_MESH_DIRECT(merge_nodes_2d.vtk)
+arcane_copy_mesh_direct(merge_nodes_3d.vtk)
 ARCANE_COPY_MESH_DIRECT(mesh1.med)
 ARCANE_COPY_MESH_DIRECT(mesh2.med)
+arcane_copy_mesh_direct(quadratic3d.msh)
 arcane_copy_mesh_direct(tube5x5x100.mli2)
 arcane_copy_mesh_direct(tube5x5x100.unf)
 arcane_copy_mesh_direct(sphere1.mli2)
@@ -269,19 +272,21 @@ arcane_copy_mesh_direct(plancher.msh)
 arcane_copy_mesh_direct(plancher.binary.msh)
 arcane_copy_mesh_direct(hex_tetra_pyramics.msh)
 arcane_copy_mesh_direct(onesphere.msh)
+arcane_copy_mesh_direct(onesphere.order2.msh)
 arcane_copy_mesh_direct(periodic_rotation_on_axis.msh)
 arcane_copy_mesh_direct(onesphere.binary.msh)
 arcane_copy_mesh_direct(mesh_with_loose_items.msh)
+arcane_copy_mesh_direct(order2_misc_types.msh)
+arcane_copy_mesh_direct(triangles10_v41.msh)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
+arcane_copy_mesh(sphere_na sphere_na vtk)
 arcane_copy_mesh(sphere_tied_1 sphere_tied_1 vtk)
 arcane_copy_mesh(sphere_tied_2 sphere_tied_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
-
-configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
@@ -308,6 +313,9 @@ endmacro()
 
 message(STATUS "ADD AUTOMATED TESTS")
 ARCANE_ADD_TEST_SEQUENTIAL(utils1 testUtils-1.arc)
+ARCANE_ADD_TEST_SEQUENTIAL(stacktrace_default1 testStackTrace-1.arc)
+ARCANE_ADD_TEST_SEQUENTIAL(stacktrace_backwardcpp1 testStackTrace-1.arc -We,ARCANE_USE_BACKWARDCPP,1)
+ARCANE_ADD_TEST_SEQUENTIAL(stacktrace_backwardcpp2 testStackTrace-1.arc -We,ARCANE_USE_BACKWARDCPP,1 -We,ARCANE_CALLSTACK_VERBOSE,4)
 arcane_add_test_sequential(itemtypes1 testItemTypes-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(json1 testJSON-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(xml1 testXml-1.arc -We,ARCANE_XML_PATH,${ARCANE_ARC_PATH})
@@ -322,6 +330,9 @@ ARCANE_ADD_TEST_SEQUENTIAL(variable testVariable-1.arc)
 if (LZ4_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(variable_lz4 testVariable-1-lz4.arc)
 endif()
+if (zstd_FOUND)
+  arcane_add_test_sequential(variable_zstd testVariable-1-zstd.arc)
+endif()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(mdvariable testMDVariable-1.arc)
 endif()
@@ -334,6 +345,10 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
 arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
   "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
 
+set(APPEND OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE)
+if (HDF5_FOUND)
+  list(APPEND OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor")
+endif()
 arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-commandLineReplace.arc
     "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
     "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
@@ -366,11 +381,11 @@ arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-comman
     "-A,PostProcessor1FrName=Ensight7PostProcessor"
     "-A,//case-options-tester/post-processor1/fileset-size=1"
     "-A,//case-options-tester/post-processor1[1]/binary-file=false"
-    "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor"
     "-A,//case-options-tester/post-processor1[4]/@name=UCDPostProcessor"
     "-A,//case-options-tester/post-processor2[2]/@mesh-name=Mesh1"
     "-A,//case-options-tester/complex1/simple-real-2=3"
     "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
+    ${OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE}
 )
 
 arcane_add_test_sequential(caseoptions_commandlinereplace_fail1 testCaseOptions-specific-entry-point.arc
@@ -499,6 +514,7 @@ endif()
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
 arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_sequential(standalone_subdomain3 dummy.arc "-A,StandaloneSubDomainMethod=Test3")
+arcane_add_test_sequential(standalone_subdomain4 dummy.arc "-A,StandaloneSubDomainMethod=Test4")
 arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_parallel(standalone_subdomain2_legacy_partition_init dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2" "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
 if (ARCANE_HAS_ACCELERATOR_API)
@@ -511,11 +527,23 @@ endif()
 macro(add_test_message_passing test_name)
   set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
-  add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
+
+  arcane_add_test_direct(NAME ${_TEST_NAME}_seq
+      COMMAND ${ARCANE_TEST_DRIVER} launch ${_OPTS}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+
   if(TARGET arcane_mpi)
-    add_test(${_TEST_NAME}_4proc ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS})
+    arcane_add_test_direct(NAME ${_TEST_NAME}_4proc
+        COMMAND ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS}
+        WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+    set_tests_properties(${_TEST_NAME}_4proc PROPERTIES PROCESSORS 4)
   endif()
-  add_test(${_TEST_NAME}_4thread ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS})
+
+  arcane_add_test_direct(NAME ${_TEST_NAME}_4thread
+      COMMAND ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+  set_tests_properties(${_TEST_NAME}_4thread PROPERTIES PROCESSORS 4)
+
   arcane_add_test_message_passing_hybrid(${_TEST_NAME} NB_MPI 3 NB_SHM 4 ARGS ${_OPTS})
 endmacro()
 
@@ -530,6 +558,7 @@ add_test_message_passing(send_receive_nb3)
 add_test_message_passing(reduce2)
 add_test_message_passing(topology)
 add_test_message_passing(broadcast_serializer)
+add_test_message_passing(machine_window)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
@@ -539,8 +568,10 @@ arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARG
 
 # ----------------------------------------------------------------------------
 
-ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
-ARCANE_ADD_TEST_PARALLEL(parallel2 testParallel-2.arc 4)
+arcane_add_test_parallel(parallel testParallel-1.arc 4)
+arcane_add_accelerator_test_parallel(parallel testParallel-1.arc 4)
+arcane_add_test_parallel(parallel2 testParallel-2.arc 4)
+arcane_add_accelerator_test_parallel(parallel2 testParallel-2.arc 4)
 arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize1.arc 4)
 arcane_add_test_parallel_thread(parallel2_synchronize testParallel-synchronize1.arc 4)
 arcane_add_test_parallel(parallel2_synchronize_compare testParallel-synchronize1.arc 4 -We,ARCANE_AUTO_COMPARE_SYNCHRONIZE,3)
@@ -648,7 +679,8 @@ ARCANE_ADD_TEST_SEQUENTIAL(graphdof_twocells testGraph-TwoCells.arc -We,ARCANE_G
 ARCANE_ADD_TEST_PARALLEL(graphdof_fourcells testGraph-TwoCells2P.arc 2 -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
 ARCANE_ADD_TEST_PARALLEL(graphdof_fourcells testGraph-FourCells.arc 4 -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
 ARCANE_ADD_TEST_SEQUENTIAL(inout testInOut.arc)
-ARCANE_ADD_TEST_SEQUENTIAL(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc)
+arcane_add_test_sequential(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc)
+arcane_add_test_sequential(mesh_merge_nodes_3d testMeshMergeNodes-3D.arc)
 arcane_add_test_sequential(mesh_merge_boundaries testMeshMergeBoundaries-1.arc)
 arcane_add_test_parallel(mesh_merge_boundaries testMeshMergeBoundaries-1.arc 4)
 arcane_add_test_sequential(mesh_merge_boundaries2 testMeshMergeBoundaries-2.arc)
@@ -669,19 +701,24 @@ endif()
 
 arcane_add_test_sequential(mesh_modification-1D testMeshModificationTester-1D.arc)
 arcane_add_test_sequential(mesh_modification-3D testMeshModificationTester-3D.arc)
-arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1")
+arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
 if (Parmetis_FOUND)
   arcane_add_test_parallel_thread(mesh2_face_unique_id_v5 testMesh-2-face-unique-id-v5.arc 4)
 endif()
 arcane_add_test(mesh2_generate_edge_face_uid testMesh-2-generate-edge-face-uid.arc)
 arcane_add_test(mesh2_non_manifold testMesh-2-non-manifold.arc)
+arcane_add_test(mesh2_non_manifold_use_rank testMesh-2-non-manifold.arc "-We,ARCANE_ITEMS_OWNER_BUILDER_USE_RANK,1")
 arcane_add_test(mesh2_non_manifold_write_msh testMesh-2-non-manifold-write-msh.arc)
+#arcane_add_test(mesh2_order2_misc_types testMesh-2-order2-misc-types.arc)
+arcane_add_test(mesh2_order2_non_manifold testMesh-2-order2-non-manifold.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh2_non_manifold testMesh-2-non-manifold.arc 4)
 endif()
-arcane_add_test_sequential(mesh2_generate_edge_face_uid_env testMesh-2-env-generate-edge-face-uid.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
+arcane_add_test(mesh2_triangles10 testMesh-2-triangles10.arc)
+arcane_add_test(mesh2_generate_edge_face_uid_env testMesh-2-env-generate-edge-face-uid.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1" "-We,ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION,0")
 arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
 arcane_add_test(mesh2_compute_owners_direct testMesh-2-compute-owners-direct.arc)
+arcane_add_test(mesh2_compute_owners_direct_non_manifold testMesh-2-compute-owners-direct-non-manifold.arc)
 arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")
 arcane_add_test_sequential(mesh2_init_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,DEFAULT" "-We,ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE,1")
 arcane_add_test_sequential(mesh2_init_nan_and_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN_AND_DEFAULT")
@@ -696,14 +733,16 @@ if(HDF5_FOUND)
   ARCANE_ADD_TEST(checkpoint_hdf5_g2 testCheckpoint-4.arc -c 3 -m 5)
   ARCANE_ADD_TEST(checkpoint_hdf5_g4 testCheckpoint-5.arc -c 3 -m 5)
 endif()
-if(vtkIOXML_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(vtk_vtu testMesh-format_vtu.arc)
-  if (vtkIOLegacy_FOUND AND Neo_FOUND)
-    arcane_add_test_sequential(polyhedral_vtk1 testMeshPolyhedral-1.arc)
-    arcane_add_test_sequential(polyhedral_vtk2 testMeshPolyhedral-2.arc)
-    arcane_add_test_sequential(polyhedral_vtk3 testMeshPolyhedral-3.arc)
-    arcane_add_test_sequential(polyhedral_vtk4 testMeshPolyhedral-4.arc)
-    arcane_add_test_sequential(polyhedral_with_dofs testMeshPolyhedralWithDoFs.arc)
+  if (${VTK_PACKAGE_PREFIX}IOLegacy_FOUND AND Neo_FOUND)
+    arcane_add_test(polyhedral_vtk1 testMeshPolyhedral-1.arc)
+    arcane_add_test(polyhedral_vtk2 testMeshPolyhedral-2.arc)
+    arcane_add_test(polyhedral_vtk3 testMeshPolyhedral-3.arc)
+    arcane_add_test(polyhedral_vtk4 testMeshPolyhedral-4.arc)
+    arcane_add_test(polyhedral_with_dofs testMeshPolyhedralWithDoFs.arc)
+    arcane_add_test_parallel(polyhedral_exchange_item1 testExchangeItem-polyhedral-1.arc 3)
+    arcane_add_test_parallel(polyhedral_exchange_item2 testExchangeItem-polyhedral-2.arc 3)
   endif()
 endif()
 if(MEDFile_FOUND)
@@ -711,7 +750,9 @@ if(MEDFile_FOUND)
   arcane_add_test(mesh2_med testMesh-med2.arc)
   arcane_add_test(mesh2_med_meshservice testMesh-med2-meshservice.arc)
 endif()
-ARCANE_ADD_TEST(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
+# Désactive temporairement la lecture des mailles quadratiques avec VTK car
+# le maillage n'est pas correct.
+arcane_add_test(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
 ARCANE_ADD_TEST(mesh_tied_interface_2d_1_vtk42 testMesh-tied_interface_2d_1-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
@@ -726,6 +767,9 @@ if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh1_onesphere_msh testMesh-onesphere-1.arc 4)
   arcane_add_test_parallel_thread(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc 4)
 endif()
+arcane_add_test_sequential(meshreader_onesphere_msh testMeshReader-generate-edge-face-uid.arc "-We,ARCANE_GMSH_VERBOSITY_LEVEL,2")
+arcane_add_test_sequential(meshreader_onesphere_msh_swap_nodes_uid testMeshReader-swap-nodes-uid.arc)
+arcane_add_test(meshreader_no_renumbering_onesphere_msh testMeshReader-generate-edge-face-uid-no-renumbering.arc)
 
 ##############
 # UNIT TESTS #
@@ -743,15 +787,17 @@ endif()
 # IOS TESTS #
 #############
 set(_VTK_FOUND_BOOL false)
-if(vtkIOXML_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   set(_VTK_FOUND_BOOL true)
 endif()
 set(_XDMF_FOUND_BOOL false)
-if(vtkIOXdmf2_FOUND)
+message(STATUS "VTK VERSION before .arc export" ${VTK_VERSION})
+if(VTK_HAS_XDMF)
   set(_XDMF_FOUND_BOOL true)
 endif()
 configure_file(${ARCANE_ARC_PATH}/testIos.cmake ${ARCANE_TEST_PATH}/testIos.arc @ONLY)
-ARCANE_ADD_TEST_SEQUENTIAL(ios ${ARCANE_TEST_PATH}/testIos.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
+arcane_add_test_sequential(ios ${ARCANE_TEST_PATH}/testIos.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
+arcane_add_test_sequential(mesh_io_simple testMeshIO-simple.arc)
 # Désactive temporairement ce test tant qu'on ne détecte pas correctement la dimension
 # du maillage
 #arcane_add_test_sequential(ios_msh testIos-msh.arc)
@@ -772,11 +818,8 @@ if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   # Ne fonctionne pas encore
   # arcane_add_test_parallel(ios_msh6_parallel_face5 testIos-msh6.arc 4 "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
 endif()
-if(vtkIOXML_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(ios_vtu testIos-vtu.arc)
-endif()
-if(vtkIOXdmf2_FOUND)
-   ARCANE_ADD_TEST_SEQUENTIAL(ios_xmf testIos-xmf.arc)
 endif()
 
 ###############
@@ -800,14 +843,18 @@ if (LZ4_FOUND)
   arcane_add_test_sequential(checkpoint_basic2-v3-lz4 testCheckpoint-basic2-v3-lz4.arc -c 3 -m 5 -We,ARCANE_OUTPUT_LEVEL,5)
   arcane_add_test_sequential(checkpoint_basic_hash_lz4 testCheckpoint-basic2-v3-lz4.arc -c 3 -m 5 -We,ARCANE_HASHALGORITHM,SHA3_512 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb2)
 endif()
-if (BZIP2_FOUND)
+if (zstd_FOUND)
+  arcane_add_test_sequential(checkpoint_basic2-v3-zstd testCheckpoint-basic2-v3-zstd.arc -c 3 -m 5 -We,ARCANE_OUTPUT_LEVEL,5)
+  arcane_add_test_sequential(checkpoint_basic_hash_zstd testCheckpoint-basic2-v3-zstd.arc -c 3 -m 5 -We,ARCANE_HASHALGORITHM,SHA3_512 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb2)
+endif()
+if (BZip2_FOUND)
   arcane_add_test_sequential(checkpoint_basic2-v3-bzip2 testCheckpoint-basic2-v3-bzip2.arc -c 3 -m 5 -We,ARCANE_OUTPUT_LEVEL,5)
 endif()
 arcane_add_test(checkpoint_basic_ghost5 testCheckpoint-6.arc -c 3 -m 5)
 
 arcane_add_test_parallel_all(amr2 testAMR-2.arc 3 4)
 arcane_add_test_parallel_all(amr2_checkpoint testAMR-2-checkpoint.arc 3 4 -c 2)
-ARCANE_ADD_TEST(hydro3 testHydro-3.arc -m 50)
+arcane_add_test(hydro3 testHydro-3.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian testHydro-3-cartesian.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10)
 arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10 "-We,ARCANE_USE_ACTIVE_SHM_QUEUE,1")
@@ -835,6 +882,9 @@ endif()
 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
+arcane_add_test_parallel_all(hydro5_thread_itemgroup testHydro-5.arc 3 4 -m 50 -We,ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE,1)
+
+arcane_add_test_parallel(hydro5_checksync testHydro-5.arc 4 "-m 50" "-We,STDENV_VERIF,CHECKSYNC")
 arcane_add_test(hydro5_message_passing_prof testHydro-5.arc -m 50 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)
 arcane_add_test(hydrosimd5 testHydroSimd-5.arc -m 50)
 if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
@@ -850,6 +900,8 @@ endif()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
   arcane_add_accelerator_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
+  arcane_add_accelerator_test_sequential(hydro_accelerator5_no_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,0")
+  arcane_add_accelerator_test_sequential(hydro_accelerator5_full_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,7")
   arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_accelerator_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
@@ -868,8 +920,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
 endif()
 
 arcane_add_test_sequential_task(hydrosimd5 testHydroSimd-5.arc 4 -m 50)
-ARCANE_ADD_TEST_PARALLEL(hydro5-3proc_rep4 testHydro-5.arc 12 -m 50 -R 4)
-ARCANE_ADD_TEST_PARALLEL(hydro5-1proc_rep4 testHydro-5.arc 4 -m 50 -R 4)
+arcane_add_test_parallel(hydro5-3proc_replica4 testHydro-5.arc 12 -m 50 -R 4)
+arcane_add_test_parallel(hydro5-checkreplica_2proc_replica2 testHydro-5.arc 4 -m 10 -R 2 "-We,STDENV_VERIF,CHECKREPLICA")
+arcane_add_test_parallel(hydro5-1proc_replica4 testHydro-5.arc 4 -m 50 -R 4)
 ARCANE_ADD_TEST(hydro5-listing testHydro-listing.arc -m 50)
 ARCANE_ADD_TEST_PARALLEL(hydro5_4proc_3sd testHydro-5.arc 4 -m 50 -A,P=3 -arcane_opt idle_service ParallelTestIdleService)
 ARCANE_ADD_TEST(hydro_backward testHydro-back.arc -m 25)
@@ -990,6 +1043,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
 
   arcane_add_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
   arcane_add_accelerator_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
+
+  arcane_add_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
+  arcane_add_test_sequential_task(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
 endif()
 
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)
@@ -1075,16 +1132,61 @@ if(GEOMETRYKERNEL_FOUND)
   ARCANE_ADD_TEST_PARALLEL(corefinement testParallelCorefinement.arc 1)
   ARCANE_ADD_TEST_PARALLEL(corefinement testParallelCorefinement.arc 4)
 endif()
+arcane_add_test(mesh2_basic_geometric_partitioner testMesh-2-basic-geometric-partitioner.arc)
+arcane_add_test_parallel(mesh2_basic_geometric_partitioner testMesh-2-basic-geometric-partitioner.arc 2)
+arcane_add_test_parallel_thread(mesh2_basic_geometric_partitioner_3d testMesh-2-basic-geometric-partitioner-3d.arc 5)
+arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d testMesh-2-basic-geometric-partitioner-3d.arc 8)
+arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d_v1 testMesh-2-basic-geometric-partitioner-3d.arc 5 "-We,GEOMETRIC_PARTITIONER_IMPL,1")
 
+# TODO: Indiquer que ces cas tests ne doivent pas être lancés simulatanément
 if(UNIX AND MPI_FOUND)
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-msh.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart1.sh)
   add_test(NAME partition_mesh_msh
-    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu.sh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart1.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
+  set_tests_properties(partition_mesh_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-meshservice-msh.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart2.sh)
+  add_test(NAME partition_mesh_meshservice_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart2.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set_tests_properties(partition_mesh_meshservice_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter --manifold- mesh_with_loose_items.msh")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testMesh-2-non-manifold-external-cut.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart3.sh)
+  add_test(NAME partition_mesh_nonmanifold_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart3.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set_tests_properties(partition_mesh_nonmanifold_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter onesphere.msh")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testMesh-onesphere-external-cut-1.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart4.sh)
+  add_test(NAME partition_mesh_onesphere_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart4.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set_tests_properties(partition_mesh_onesphere_msh PROPERTIES RUN_SERIAL ON)
 endif()
 
 add_test(convert_mesh1_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
-add_test(convert_mesh1_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/tube5x5x100.vtk)
+add_test(convert_mesh1_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh1.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/tube5x5x100.vtk)
+add_test(convert_mesh2_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh2.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
+add_test(convert_mesh3_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh3.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.binary.msh)
+add_test(convert_mesh4_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh4.msh --writer MshMeshWriter --manifold- ${ARCANE_TEST_PATH}/mesh_with_loose_items.msh)
+add_test(convert_mesh5_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh5.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
+add_test(convert_mesh_msh_quadratic3d_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.vtk)
+add_test(convert_mesh_vtk_quadratic3d_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.msh)
+add_test(convert_mesh_msh_quadratic3d_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.msh)
+add_test(convert_mesh_msh_onesphere2_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_onesphere2.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.order2.msh)
 arcane_add_test(tied_interface1 testTiedInterface-1.arc "-m 10")
 arcane_add_test(tied_interface2 testTiedInterface-2.arc "-m 10")
 arcane_add_test(tied_interface1_2D testTiedInterface2D-1.arc "-m 10")
@@ -1194,11 +1296,13 @@ endif()
 ####################
 # MULTI ALEPH TEST #
 ####################
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 1)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 2)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 4)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 6)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
+if (TARGET arcane_aleph_tests)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 1)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 2)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 4)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 6)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
+endif()
 
 #################################################################
 #################################################################
@@ -1206,6 +1310,7 @@ ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
 # Test les comparaisons bit à bit entre deux exécutions
 arcane_add_test_script(compare_seq_seq compare_seq_seq.xml)
 arcane_add_test_script(compare_seq_seq_v3 compare_seq_seq_v3.xml)
+arcane_add_test_script(compare_seq_seq_localnormmax compare_seq_seq_localnormmax.xml)
 arcane_add_test_script(compare_seq_seq_hash_only compare_seq_seq_hash_only.xml)
 arcane_add_test_script(compare_seq_par_hash_only compare_seq_par_hash_only.xml)
 arcane_add_test_script(compare_par_par_hash_only compare_par_par_hash_only.xml)
@@ -1213,7 +1318,12 @@ if (LZ4_FOUND)
   arcane_add_test_script(compare_seq_seq_lz4 compare_seq_seq_lz4.xml)
   arcane_add_test_script(compare_seq_seq_lz4_v3 compare_seq_seq_lz4_v3.xml)
 endif()
-if (BZIP2_FOUND)
+if (zstd_FOUND)
+  # Pas encore supporté dans VariableComparer.
+  #arcane_add_test_script(compare_seq_seq_zstd compare_seq_seq_zstd.xml)
+  #arcane_add_test_script(compare_seq_seq_zstd_v3 compare_seq_seq_zstd_v3.xml)
+endif()
+if (BZip2_FOUND)
   arcane_add_test_script(compare_seq_seq_bzip2 compare_seq_seq_bzip2.xml)
   arcane_add_test_script(compare_seq_seq_bzip2_v3 compare_seq_seq_bzip2_v3.xml)
 endif()
@@ -1260,20 +1370,28 @@ arcane_add_test_sequential(parameter_option testParameterOption.arc)
 
 # Test pour les implementations de TimeHistoryAdder.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
+arcane_add_test_parallel(time_history_adder_1_replication testTimeHistoryAdder-1.arc 4 -c 2 -m 5
+    -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1
+    -A,R=2
+    -A,//meshes/mesh[]/generator/nb-part-y=1
+    -A,//meshes/mesh[]/generator/y/n=2
+    -A,//meshes/mesh[]/generator/y/length=2.0
+)
 
 #################################################################
 function(arcane_add_python_test_sequential test_name script_name case_file)
   arcane_add_test_sequential(${test_name} "${ARCANE_TEST_PATH}/testPython-${script_name}.arc" -A,UsingDotNet=1 ${ARGN})
   set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
-  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python")
-  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${Python_SITEARCH}")
+  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${Arcane_SOURCE_DIR}/python:${Python_SITEARCH}")
   set(ARCANE_TEST_PYTHON_SCRIPT ${script_name})
   configure_file(${ARCANE_ARC_PATH}/${case_file}.in "${ARCANE_TEST_PATH}/testPython-${script_name}.arc")
 endfunction()
 
 #################################################################
 # Test wrapper python en mode embedded
+message(STATUS "Check add tests for python wrapper (is_active?=${ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER})")
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  message(STATUS "Try to find 'Python' embedded component for tests")
   # Il faut trouver le chemin de 'libpython.so' et positionner
   # la variable d'environnement PYTHONNET_PYDLL pour le mode embedded.
   # TODO: Positionner directement lors de la compilation la propriété C# Python.Runtime.PythonDLL

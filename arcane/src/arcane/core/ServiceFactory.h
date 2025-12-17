@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceFactory.h                                            (C) 2000-2019 */
+/* ServiceFactory.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Manufacture des services.                                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SERVICEFACTORY_H
-#define ARCANE_SERVICEFACTORY_H
+#ifndef ARCANE_CORE_SERVICEFACTORY_H
+#define ARCANE_CORE_SERVICEFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,17 +18,17 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/ExternalRef.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ServiceBuildInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceBuildInfo.h"
 
-#include "arcane/IServiceFactory.h"
-#include "arcane/ServiceRegisterer.h"
-#include "arcane/ServiceInfo.h"
-#include "arcane/IService.h"
-#include "arcane/ServiceProperty.h"
-#include "arcane/ServiceInstance.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/ServiceRegisterer.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/IService.h"
+#include "arcane/core/ServiceProperty.h"
+#include "arcane/core/ServiceInstance.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -43,10 +43,21 @@ if(ALIEN_USE_SYCL)
       message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
       message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
     ENDIF()
+    IF(ALIEN_USE_ACPPSYCL)
+      find_package(AdaptiveCpp REQUIRED)
+      message(status "AdaptiveSYCL           : ${AdaptiveCpp_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+      message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
+      find_package(Boost COMPONENTS fiber context REQUIRED)
+    ENDIF()
 
     add_executable(test_sycl.exe test_sycl.cpp)
     add_executable(test_mvhandler_sycl.exe test_mvhandler_sycl.cpp)
     add_executable(test_combine_mvhandler_sycl.exe test_combine_mvhandler_sycl.cpp)
+    target_compile_definitions(test_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
+    target_compile_definitions(test_mvhandler_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
+    target_compile_definitions(test_combine_mvhandler_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
     IF(ALIEN_USE_HIPSYCL)
       add_sycl_to_target(TARGET  test_sycl.exe
                          SOURCES test_sycl.cpp)
@@ -73,6 +84,19 @@ if(ALIEN_USE_SYCL)
                           SOURCES test_mvhandler_sycl.cpp)
        add_sycl_to_target(TARGET  test_combine_mvhandler_sycl.exe
                           SOURCES test_combine_mvhandler_sycl.cpp)
+    ENDIF()
+    IF(ALIEN_USE_ACPPSYCL)
+      target_compile_definitions(test_sycl.exe PRIVATE USE_ACPPSYCL)
+      add_sycl_to_target(TARGET  test_sycl.exe
+                         SOURCES test_sycl.cpp)
+                         
+      target_compile_definitions(test_mvhandler_sycl.exe PRIVATE USE_ACPPSYCL)
+      add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
+                         SOURCES test_mvhandler_sycl.cpp)
+
+      target_compile_definitions(test_combine_mvhandler_sycl.exe PRIVATE USE_ACPPSYCL)
+      add_sycl_to_target(TARGET  test_combine_mvhandler_sycl.exe
+                         SOURCES test_combine_mvhandler_sycl.cpp)
     ENDIF()
     
     target_link_libraries(test_sycl.exe PUBLIC
@@ -115,7 +139,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
 endif()
 
 if(ALIEN_USE_SYCL)
-  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL) 
+  target_compile_definitions(krylov_example.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
   IF(ALIEN_USE_HIPSYCL)
     add_sycl_to_target(TARGET  krylov_example.exe
                         SOURCES test_krylov.cpp)
@@ -126,6 +150,11 @@ if(ALIEN_USE_SYCL)
       set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
       target_compile_options(krylov_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
     ENDIF()
+    add_sycl_to_target(TARGET  krylov_example.exe
+                        SOURCES test_krylov.cpp)
+  ENDIF()
+  IF(ALIEN_USE_ACPPSYCL)
+    target_compile_definitions(krylov_example.exe PRIVATE USE_ACPPSYCL)
     add_sycl_to_target(TARGET  krylov_example.exe
                         SOURCES test_krylov.cpp)
   ENDIF()

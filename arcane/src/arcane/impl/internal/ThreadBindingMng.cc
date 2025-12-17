@@ -17,7 +17,7 @@
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IProcessorAffinityService.h"
-#include "arcane/utils/internal/TaskFactoryInternal.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

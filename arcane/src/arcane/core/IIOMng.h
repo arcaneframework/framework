@@ -1,32 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IIOMng.h                                                    (C) 2000-2014 */
+/* IIOMng.h                                                    (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire des entrées-sorties.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IIOMNG_H
-#define ARCANE_IIOMNG_H
+#ifndef ARCANE_CORE_IIOMNG_H
+#define ARCANE_CORE_IIOMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class XmlNode;
-class IXmlDocumentHolder;
-class IParallelMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,13 +31,12 @@ class IParallelMng;
  *
  * \todo gestionnaire des entrées sorties permettant d'encapsuler
  * la gestion des fichiers en parallèles.
- *
  */
-class IIOMng
+class ARCANE_CORE_EXPORT IIOMng
 {
  public:
 
-  virtual ~IIOMng() {} //!< Libère les ressources
+  virtual ~IIOMng() = default; //!< Libère les ressources
 
  public:
 
@@ -55,8 +49,8 @@ class IIOMng
    * Si un nom de schéma est spécifié, la cohérence
    * du fichier relativement au schéma est vérifiée.
    */
-  virtual IXmlDocumentHolder* parseXmlFile(const String& filename,
-                                           const String& schemaname=String()) =0;
+  virtual IXmlDocumentHolder*
+  parseXmlFile(const String& filename, const String& schemaname = String{}) = 0;
 
   /*!
    * \brief Lit et analyse le fichier XML \a filename.
@@ -69,7 +63,7 @@ class IIOMng
    */
   virtual IXmlDocumentHolder* parseXmlFile(const String& filename,
                                            const String& schemaname,
-                                           ByteConstArrayView schema_data) =0;
+                                           ConstArrayView<Byte> schema_data) = 0;
 
   /*!
    * \brief Lit et analyse le fichier XML contenu dans le buffer \a buffer.
@@ -80,7 +74,7 @@ class IIOMng
    * L'argument \a name associe un nom à la zone mémoire qui est
    * utilisé pour afficher les messages d'erreur.
    */
-  virtual IXmlDocumentHolder* parseXmlBuffer(Span<const Byte> buffer,const String& name) =0;
+  virtual IXmlDocumentHolder* parseXmlBuffer(Span<const Byte> buffer, const String& name) = 0;
 
   /*!
    * \brief Lit et analyse le fichier XML contenu dans le buffer \a buffer.
@@ -91,7 +85,7 @@ class IIOMng
    * L'argument \a name associe un nom à la zone mémoire qui est
    * utilisé pour afficher les messages d'erreur.
    */
-  virtual IXmlDocumentHolder* parseXmlBuffer(Span<const std::byte> buffer,const String& name) =0;
+  virtual IXmlDocumentHolder* parseXmlBuffer(Span<const std::byte> buffer, const String& name) = 0;
 
   /*!
    * \brief Lit et analyse le fichier XML contenu dans la chaîne \a str.
@@ -102,13 +96,13 @@ class IIOMng
    * L'argument \a name associe un nom à la zone mémoire qui est
    * utilisé pour afficher les messages d'erreur.
    */
-  virtual IXmlDocumentHolder* parseXmlString(const String& str,const String& name) =0;
+  virtual IXmlDocumentHolder* parseXmlString(const String& str, const String& name) = 0;
 
   /*! \brief Ecrit l'arbre XML du document \a doc dans le fichier filename.
    * \retval true en cas d'erreur,
    * \return false en cas de succès.
    */
-  virtual bool writeXmlFile(IXmlDocumentHolder* doc,const String& filename, const bool indented=false) =0;
+  virtual bool writeXmlFile(IXmlDocumentHolder* doc, const String& filename, const bool indented = false) = 0;
 
   /*!
    * \brief Lecture collective d'un fichier.
@@ -124,7 +118,7 @@ class IIOMng
    * \retval true en cas d'erreur
    * \retval false si tout est ok.
    */
-  virtual bool collectiveRead(const String& filename,ByteArray& bytes) =0;
+  virtual bool collectiveRead(const String& filename, ByteArray& bytes) = 0;
 
   /*!
    * \brief Lecture collective d'un fichier.
@@ -141,7 +135,7 @@ class IIOMng
    * \retval true en cas d'erreur
    * \retval false si tout est ok.
    */
-  virtual bool collectiveRead(const String& filename,ByteArray& bytes,bool is_binary) =0;
+  virtual bool collectiveRead(const String& filename, ByteArray& bytes, bool is_binary) = 0;
 
   /*!
    * \brief Lecture locale d'un fichier.
@@ -156,7 +150,7 @@ class IIOMng
    * \warning retourne aussi true si le fichier est vide.
    * \warning si le ByteUniqueArray doit être converti en String, il _faut_ y ajouter un 0 terminal au préalable (bytes.add(0))
    */
-  virtual bool localRead(const String& filename,ByteArray& bytes) =0;
+  virtual bool localRead(const String& filename, ByteArray& bytes) = 0;
 
   /*!
    * \brief Lecture locale d'un fichier.
@@ -171,13 +165,13 @@ class IIOMng
    * \warning retourne aussi true si le fichier est vide.
    * \warning si le ByteUniqueArray doit être converti en String, il _faut_ y ajouter un 0 terminal au préalable (bytes.add(0))
    */
-  virtual bool localRead(const String& filename,ByteArray& bytes,bool is_binary) =0;
+  virtual bool localRead(const String& filename, ByteArray& bytes, bool is_binary) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

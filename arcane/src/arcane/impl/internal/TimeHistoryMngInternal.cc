@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMngInternal.cc                                   (C) 2000-2024 */
+/* TimeHistoryMngInternal.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Classe interne gérant un historique de valeurs.                           */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ void TimeHistoryMngInternal::
 addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer)
 {
   m_trace_mng->info() << "Add CurveWriter2 name=" << writer->name();
-  if (m_is_master_io || m_enable_non_io_master_curves)
+  if (m_is_master_io || (m_enable_non_io_master_curves && m_is_master_io_of_sd))
     m_curve_writers2.insert(writer);
 }
 
@@ -70,7 +70,7 @@ updateMetaData()
       meta_data_str() << " support='" << val->meshHandle().meshName() << "'";
     }
     if (val->isLocal()) {
-      meta_data_str() << " sub-domain='" << val->localProcId() << "'";
+      meta_data_str() << " sub-domain='" << val->localSubDomainId() << "'";
     }
 
     meta_data_str() << "/>\n";
@@ -138,7 +138,7 @@ updateGlobalTimeCurve()
 void TimeHistoryMngInternal::
 dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
+  if (!m_is_master_io && (!m_enable_non_io_master_curves || !m_is_master_io_of_sd))
     return;
 
   if (!m_io_master_write_only) {
@@ -150,7 +150,18 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
     }
     writer->endWrite();
   }
+
   else {
+
+#ifdef ARCANE_CHECK
+    if (m_enable_non_io_master_curves) {
+      bool all_need_comm = m_parallel_mng->reduce(MessagePassing::ReduceMin, m_need_comm);
+      if (all_need_comm != m_need_comm) {
+        ARCANE_FATAL("Internal error: m_need_comm not sync");
+      }
+    }
+#endif
+
     if (m_is_master_io) {
       TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
       writer->beginWrite(infos);
@@ -161,7 +172,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
       }
 
       // Les courbes reçues.
-      if (m_enable_non_io_master_curves) {
+      if (m_need_comm && m_enable_non_io_master_curves) {
         Integer master_io_rank = m_parallel_mng->masterIORank();
         UniqueArray<Int32> length(5);
 
@@ -201,7 +212,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 
       writer->endWrite();
     }
-    else if (m_enable_non_io_master_curves) {
+    else if (m_need_comm) {
       TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
       Integer master_io_rank = m_parallel_mng->masterIORank();
       Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
@@ -243,7 +254,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 void TimeHistoryMngInternal::
 dumpHistory()
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
+  if (!m_is_master_io && (!m_enable_non_io_master_curves || !m_is_master_io_of_sd))
     return;
   if (!m_is_dump_active)
     return;
@@ -261,7 +272,7 @@ dumpHistory()
 void TimeHistoryMngInternal::
 applyTransformation(ITimeHistoryTransformer* v)
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
+  if (!m_is_master_io && (!m_enable_non_io_master_curves || !m_is_master_io_of_sd))
     return;
   for (IterT<HistoryList> i(m_history_list); i(); ++i) {
     TimeHistoryValue& th = *(i->second);
@@ -332,6 +343,7 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
     Integer sub_domain = NULL_SUB_DOMAIN_ID;
     if (!sub_domain_node.null()) {
       sub_domain = sub_domain_node.valueAsInteger();
+      m_need_comm = true;
     }
 
     if (sub_domain != NULL_SUB_DOMAIN_ID && m_parallel_mng->commRank() != sub_domain) {
@@ -439,11 +451,11 @@ editOutputPath(const Directory& directory)
 void TimeHistoryMngInternal::
 iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values)
 {
-  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
+  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves || !m_is_master_io_of_sd)) {
     return;
   }
 
-  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
+  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localSubDomainId() != m_parallel_mng->commRank()) {
     return;
   }
 
@@ -481,7 +493,7 @@ _dumpCurvesAllWriters()
 {
   m_trace_mng->debug() << "Writing of the history of values path=" << m_output_path;
 
-  if (m_is_master_io || m_enable_non_io_master_curves) {
+  if (m_is_master_io || (m_enable_non_io_master_curves && m_is_master_io_of_sd)) {
     m_trace_mng->info() << "Begin output history: " << platform::getCurrentDateTime();
 
     // Ecriture via version 2 des curve writers
@@ -521,7 +533,9 @@ _dumpSummaryOfCurvesLegacy()
     }
     // Puis, si les autres processus peuvent aussi avoir des courbes, on
     // écrit aussi leurs noms.
-    if (m_enable_non_io_master_curves) {
+    // Même si "m_io_master_write_only" est égal à false, ce fichier est
+    // forcement écrit par un seul processus.
+    if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
       for (Integer i = 0; i < m_parallel_mng->commSize(); ++i)
         if (i != master_io_rank) {
           Integer nb_curve = 0;
@@ -548,7 +562,7 @@ _dumpSummaryOfCurvesLegacy()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if (m_enable_non_io_master_curves) {
+  else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
     for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
@@ -615,7 +629,9 @@ _dumpSummaryOfCurves()
 
           // Puis, si les autres processus peuvent aussi avoir des courbes, on
           // écrit aussi leurs noms.
-          if (m_enable_non_io_master_curves) {
+          // Même si "m_io_master_write_only" est égal à false, ce fichier est
+          // forcement écrit par un seul processus.
+          if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
             for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
               if (i != master_io_rank) {
                 Integer nb_curve = 0;
@@ -658,7 +674,7 @@ _dumpSummaryOfCurves()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if (m_enable_non_io_master_curves) {
+  else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
 
     Integer master_io_rank = m_parallel_mng->masterIORank();
 
@@ -696,11 +712,15 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     return;
   }
 
-  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
+  if (thpi.timeHistoryAddValueArg().isLocal()) {
+    m_need_comm = true;
+  }
+
+  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves || !m_is_master_io_of_sd)) {
     return;
   }
 
-  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
+  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localSubDomainId() != m_parallel_mng->commRank()) {
     return;
   }
 

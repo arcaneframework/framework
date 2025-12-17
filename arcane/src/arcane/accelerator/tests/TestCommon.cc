@@ -1,28 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arccore/common/accelerator/internal/RegisterRuntimeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_HAS_CUDA)
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimecuda();
+arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info);
 #endif
 
 #if defined(ARCANE_HAS_HIP)
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimehip();
+arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info);
 #endif
 
 #if defined(ARCANE_HAS_SYCL)
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimesycl();
+arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& init_info);
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -31,12 +32,14 @@ arcaneRegisterAcceleratorRuntimesycl();
 extern "C++" void
 arcaneRegisterDefaultAcceleratorRuntime()
 {
+  Arcane::Accelerator::RegisterRuntimeInfo init_info;
+  init_info.setVerbose(true);
 #ifdef ARCANE_HAS_CUDA
-  arcaneRegisterAcceleratorRuntimecuda();
+  arcaneRegisterAcceleratorRuntimecuda(init_info);
 #elif defined(ARCANE_HAS_HIP)
-  arcaneRegisterAcceleratorRuntimehip();
+  arcaneRegisterAcceleratorRuntimehip(init_info);
 #elif defined(ARCANE_HAS_SYCL)
-  arcaneRegisterAcceleratorRuntimesycl();
+  arcaneRegisterAcceleratorRuntimesycl(init_info);
 #endif
 }
 

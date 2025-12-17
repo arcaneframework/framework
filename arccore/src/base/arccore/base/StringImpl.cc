@@ -226,7 +226,7 @@ utf16()
 {
   _checkReference();
   _createUtf16();
-  return m_utf16_array.view().smallView();
+  return m_utf16_array.view();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,7 +383,7 @@ replaceWhiteSpace()
 {
   _createUtf8();
   _invalidateUtf16();
-  BasicTranscoder::replaceWS(m_utf8_array);
+  Impl::BasicTranscoder::replaceWS(m_utf8_array);
   return this;
 }
 
@@ -395,7 +395,7 @@ collapseWhiteSpace()
 {
   _createUtf8();
   _invalidateUtf16();
-  BasicTranscoder::collapseWS(m_utf8_array);
+  Impl::BasicTranscoder::collapseWS(m_utf8_array);
   return this;
 }
 
@@ -407,7 +407,7 @@ toUpper()
 {
   _createUtf8();
   _invalidateUtf16();
-  BasicTranscoder::upperCase(m_utf8_array);
+  Impl::BasicTranscoder::upperCase(m_utf8_array);
   return this;
 }
 
@@ -419,7 +419,7 @@ toLower()
 {
   _createUtf8();
   _invalidateUtf16();
-  BasicTranscoder::lowerCase(m_utf8_array);
+  Impl::BasicTranscoder::lowerCase(m_utf8_array);
   return this;
 }
 
@@ -430,7 +430,7 @@ StringImpl* StringImpl::
 substring(StringImpl* str,Int64 pos,Int64 len)
 {
   StringImpl* s = new StringImpl();
-  BasicTranscoder::substring(s->m_utf8_array,str->largeUtf8(),pos,len);
+  Impl::BasicTranscoder::substring(s->m_utf8_array,str->largeUtf8(),pos,len);
   s->m_flags |= eValidUtf8;
   return s;
 }
@@ -446,7 +446,7 @@ _createUtf16()
 
   if (m_flags & eValidUtf8){
     ARCCORE_ASSERT(m_utf16_array.empty(),("Not empty utf16_array"));
-    BasicTranscoder::transcodeFromUtf8ToUtf16(m_utf8_array,m_utf16_array);
+    Impl::BasicTranscoder::transcodeFromUtf8ToUtf16(m_utf8_array,m_utf16_array);
     m_flags |= eValidUtf16;
     return;
   }
@@ -465,7 +465,7 @@ _createUtf8()
 
   if (m_flags & eValidUtf16){
     ARCCORE_ASSERT(m_utf8_array.empty(),("Not empty utf8_array"));
-    BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array,m_utf8_array);
+    Impl::BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array,m_utf8_array);
     _finalizeUtf8Creation();
     return;
   }

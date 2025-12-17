@@ -61,11 +61,10 @@ template <typename T> class ConstArray3View;
 template <typename T> class Array3View;
 template <typename T> class ConstArray4View;
 template <typename T> class Array4View;
-template <class DataType> class CoreArray;
-template <typename T, typename SizeType, SizeType Extent = DynExtent, SizeType MinValue = 0> class SpanImpl;
-template <typename T, Int64 Extent = DynExtent, Int64 MinValue = 0> class Span;
-template <typename T, Int32 Extent = DynExtent, Int32 MinValue = 0> class SmallSpan;
-template <typename T, Int64 Extent = DynExtent, Int64 MinValue = 0> using LargeSpan = Span<T, Extent, MinValue>;
+template <typename T, typename SizeType, SizeType Extent = DynExtent> class SpanImpl;
+template <typename T, Int64 Extent = DynExtent> class Span;
+template <typename T, Int32 Extent = DynExtent> class SmallSpan;
+template <typename T, Int64 Extent = DynExtent> using LargeSpan = Span<T, Extent>;
 template <typename T, typename SizeType, SizeType Extent1 = DynExtent, SizeType Extent2 = DynExtent> class Span2Impl;
 template <typename T, Int64 Extent1 = DynExtent, Int64 Extent2 = DynExtent> class Span2;
 template <typename T, Int32 Extent1 = DynExtent, Int32 Extent2 = DynExtent> class SmallSpan2;
@@ -78,6 +77,19 @@ class StringVector;
 class StringBuilder;
 class StringFormatterArg;
 struct ReferenceCounterTag;
+
+class IRangeFunctor;
+template<int RankValue> class IMDRangeFunctor;
+template<typename InstanceType> class RangeFunctorT;
+template<typename LambdaType> class LambdaRangeFunctorT;
+template<typename LambdaType, typename... Views> class LambdaRangeFunctorTVa;
+class ForLoopTraceInfo;
+template<typename IndexType_ = Int32> class ForLoopRange;
+template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
+template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
+class ForLoopOneExecStat;
+class ForLoopRunInfo;
+class ParallelLoopOptions;
 
 class TraceInfo;
 class StackTrace;
@@ -122,10 +134,82 @@ namespace impl
   class ReferenceCounterWrapper;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Ces classes sont internes à Arccore/Arcane
 template <typename T>
 class ArrayRange;
+namespace Impl
+{
 class BasicTranscoder;
+template <class DataType> class CoreArray;
+class ForLoopStatInfoList;
+class ForLoopStatInfoListImpl;
+class ForLoopCumulativeStat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Ces classes ne sont pas accessibles dans 'utils' mais il est possible
+// d'utiliser des pointeurs sur ces instances.
+// La définition est dans 'arcane_accelerator_core'
+namespace Accelerator
+{
+class Runner;
+class RunQueue;
+}
+using Accelerator::Runner;
+using Accelerator::RunQueue;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DefaultLayout;
+template<int RankValue> class RightLayoutN;
+template<int RankValue> class LeftLayoutN;
+template<int RankValue> class MDDimType;
+class ConstMemoryView;
+class MutableMemoryView;
+class IMemoryResourceMng;
+// TODO: Rendre obsolète
+using IMemoryRessourceMng = IMemoryResourceMng;
+template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
+template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+class MDSpan;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using MDSpanBase ARCCORE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
+template<typename ExtentType> class ArrayBounds;
+
+template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
+class NumArray;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using NumArrayBase ARCCORE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
+
+template<typename Extents,typename LayoutPolicy> class ArrayExtentsWithOffset;
+template<int RankValue, typename IndexType_ = Int32> class MDIndexBase;
+template<int RankValue, typename IndexType_ = Int32> class MDIndex;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue,IndexType_>;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue,IndexType_>;
+template<int RankValue> using ArrayBoundsIndexBase ARCCORE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
+template<int RankValue> using ArrayBoundsIndex ARCCORE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
+template<typename Extents> class ArrayExtentsBase;
+template<typename Extents> class ArrayExtents;
+template<int RankValue> class ArrayStridesBase;
+template<int RankValue> class IMDRangeFunctor;
+template<int RankValue> class ArrayExtentsValueDynamic;
+namespace impl
+{
+template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
+}
+template <typename T, Int32 NbElement>
+class FixedArray;
+
+class IObservable;
+class IObserver;
+class Observable;
+class Observer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -237,7 +321,6 @@ using Arcane::ConstArray3View;
 using Arcane::ConstArray4View;
 using Arcane::ConstArrayView;
 using Arcane::ConstIterT;
-using Arcane::CoreArray;
 using Arcane::eBasicDataType;
 using Arcane::IterT;
 using Arcane::SmallSpan;
@@ -329,7 +412,6 @@ using Arcane::IntegerConstSpan;
 using Arcane::DynExtent;
 
 // Ces classes sont internes à Arccore/Arcane
-using Arcane::BasicTranscoder;
 using Arcane::ArrayRange;
 }
 

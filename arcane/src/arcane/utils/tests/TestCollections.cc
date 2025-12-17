@@ -13,9 +13,7 @@
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/MultiArray2.h"
 
-#ifdef ARCANE_HAS_CXX20
 #include <ranges>
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,7 +90,7 @@ TEST(Collections,SmallArray)
   {
     constexpr int N = 934;
     char buf[N];
-    impl::StackMemoryAllocator b(buf,N);
+    Impl::StackMemoryAllocator b(buf,N);
     ASSERT_EQ(b.guarantedAlignment({}),0);
   }
   {
@@ -187,9 +185,7 @@ TEST(Collections,SmallArray)
 
 TEST(Collections, FixedArray)
 {
-#ifdef ARCANE_HAS_CXX20
   static_assert(std::ranges::contiguous_range<FixedArray<Int32, 2>>);
-#endif
 
   {
     FixedArray<Int32, 0> empty_array;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2020             */
+/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2025             */
 /*                                                                           */
 /* First polyhedral mesh tests                                               */
 /*---------------------------------------------------------------------------*/
@@ -299,9 +299,9 @@ void createMesh(Neo::Mesh& mesh) {
               std::vector<int>(face_uids.size(), nb_node_per_face),
               std::vector<int>(face_uids.size(), nb_cell_per_face));
   // Validation
-  auto cell_family = mesh.findFamily(Neo::ItemKind::IK_Cell, StaticMesh::cell_family_name);
-  auto node_family = mesh.findFamily(Neo::ItemKind::IK_Node, StaticMesh::node_family_name);
-  auto face_family = mesh.findFamily(Neo::ItemKind::IK_Face, StaticMesh::face_family_name);
+  auto& cell_family = mesh.findFamily(Neo::ItemKind::IK_Cell, StaticMesh::cell_family_name);
+  auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, StaticMesh::node_family_name);
+  auto& face_family = mesh.findFamily(Neo::ItemKind::IK_Face, StaticMesh::face_family_name);
   EXPECT_EQ(cell_uids.size(), cell_family.nbElements());
   EXPECT_EQ(node_uids.size(), node_family.nbElements());
   EXPECT_EQ(face_uids.size(), face_family.nbElements());

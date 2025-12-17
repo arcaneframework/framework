@@ -1,17 +1,21 @@
-set(PKGS vtkIOXML vtkIOXdmf2)
-arcane_find_package(vtkIOXML)
-arcane_find_package(vtkIOXdmf2)
+arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en fonction des versions de VTK
+set(PKGS ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOXdmf2)
+arcane_find_package(${VTK_PACKAGE_PREFIX}IOXML)
+arcane_find_package(${VTK_PACKAGE_PREFIX}IOXdmf2)
 
 include(srcs.cmake)
 
-if(vtkIOXdmf2_FOUND)
-  list(APPEND ARCANE_SOURCES
-    XmfMeshWriter.cc
-    XmfMeshReader.cc
+if(${VTK_PACKAGE_PREFIX}IOXdmf2_FOUND)
+  if (${VTK_VERSION} VERSION_LESS_EQUAL "8.90.0")
+    list(APPEND ARCANE_SOURCES
+      XmfMeshWriter.cc
+      XmfMeshReader.cc
     )
+    set (VTK_HAS_XDMF TRUE PARENT_SCOPE)
+  endif ()
 endif()
 
-if(vtkIOXML_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   list(APPEND ARCANE_SOURCES
     VtuMeshReader.cc
     VtuMeshWriter.cc

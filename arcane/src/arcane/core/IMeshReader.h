@@ -1,31 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshReader.h                                               (C) 2000-2008 */
+/* IMeshReader.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un service de lecture du maillage.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHREADER_H
-#define ARCANE_IMESHREADER_H
+#ifndef ARCANE_CORE_IMESHREADER_H
+#define ARCANE_CORE_IMESHREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IPrimaryMesh;
-class XmlNode;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,14 +47,14 @@ class ARCANE_CORE_EXPORT IMeshReader
 
  public:
 
-  virtual ~IMeshReader() {} //<! Libère les ressources
+  virtual ~IMeshReader() = default; //!< Libère les ressources
 
  public:
 
   //! Vérifie si le service supporte les fichiers avec l'extension \a str
-	virtual bool allowExtension(const String& str) =0;
+  virtual bool allowExtension(const String& str) = 0;
 
-	/*! \brief Lit un maillage à partir d'un fichier.
+  /*! \brief Lit un maillage à partir d'un fichier.
    *
    * Lit la géométrie d'un maillage à partir du fichier \a file_name
    * ainsi que les informations de découpage correspondantes
@@ -77,14 +72,14 @@ class ARCANE_CORE_EXPORT IMeshReader
   virtual eReturnType readMeshFromFile(IPrimaryMesh* mesh,
                                        const XmlNode& mesh_element,
                                        const String& file_name,
-																			 const String& dir_name,
-																			 bool use_internal_partition) =0;
+                                       const String& dir_name,
+                                       bool use_internal_partition) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

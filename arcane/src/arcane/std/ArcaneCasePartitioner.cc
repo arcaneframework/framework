@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCasePartitioner.cc                                    (C) 2000-2024 */
+/* ArcaneCasePartitioner.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Service de partitionnement externe du maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,10 @@
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/Properties.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IMeshFactoryMng.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/IInitialPartitioner.h"
 #include "arcane/core/Timer.h"
 #include "arcane/core/IMesh.h"
@@ -38,6 +42,7 @@
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/core/ExternalPartitionConstraint.h"
+#include "arcane/core/internal/MshMeshGenerationInfo.h"
 
 #include "arcane/std/ArcaneCasePartitioner_axl.h"
 
@@ -372,7 +377,6 @@ _partitionMesh(Int32 nb_part)
   // les mailles d'une partie soient sur le même sous-domaine. Pour cela,
   // on stocke le numéro de la partie dans \a true_cells_owner, puis
   // on échange le maillage.
-  //mesh_partitioner->partitionMesh(current_mesh,nb_part);
   VariableCellInt32 true_cells_owner(*m_init_part->m_part_indexes[0].m_true_cells_owner);
   VariableNodeInt32 true_nodes_owner(*m_init_part->m_part_indexes[0].m_true_nodes_owner);
   IItemFamily* current_cell_family = mesh()->cellFamily();
@@ -381,8 +385,15 @@ _partitionMesh(Int32 nb_part)
   Integer total_current_nb_cell = pm->reduce(Parallel::ReduceSum,current_all_cells.own().size());
   info() << "TOTAL_NB_CELL=" << total_current_nb_cell;
 
-  IMainFactory* main_factory = sd->application()->mainFactory();
-  IPrimaryMesh* new_mesh = main_factory->createMesh(sd,pm->sequentialParallelMng(),"SubMesh");
+  IPrimaryMesh* new_mesh = nullptr;
+  {
+    IMeshFactoryMng* mfm = sd->meshMng()->meshFactoryMng();
+    MeshBuildInfo build_info("SubMesh");
+    build_info.addMeshKind(current_mesh->meshKind());
+    build_info.addParallelMng(makeRef(pm->sequentialParallelMng()));
+    new_mesh = mfm->createMesh(build_info);
+  }
+
   new_mesh->setDimension(mesh()->dimension());
   // Pour optimiser, il n'y a pas besoin de trier ni de compacter les entités.
   new_mesh->properties()->setBool("compact",false);
@@ -390,9 +401,20 @@ _partitionMesh(Int32 nb_part)
   new_mesh->modifier()->setDynamic(true);
   new_mesh->allocateCells(0,Int64ConstArrayView(),true);
 
-  Integer saved_nb_cell = 0;
-  Integer min_nb_cell = total_current_nb_cell;
-  Integer max_nb_cell = 0;
+  // Si le maillage d'origine a des informations de génération de MSH,
+  // on les copie sur le nouveau maillage.
+  // TODO: regarder comment faire cela automatiquement, par exemple en ajoutant
+  // une méthode pour cloner le maillage.
+  impl::MshMeshGenerationInfo* new_msh_mesh_info = nullptr;
+  auto* msh_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh(), false);
+  if (msh_mesh_info){
+    new_msh_mesh_info = impl::MshMeshGenerationInfo::getReference(new_mesh, true);
+    *new_msh_mesh_info = *msh_mesh_info;
+  }
+
+  Int32 saved_nb_cell = 0;
+  Int32 min_nb_cell = total_current_nb_cell;
+  Int32 max_nb_cell = 0;
   
   if (options()->createCorrespondances())
     _initCorrespondance(my_rank);
@@ -401,7 +423,7 @@ _partitionMesh(Int32 nb_part)
   Integer maxLocalIdCell = mesh()->cellFamily()->maxLocalId();
   Integer maxLocalIdNode = mesh()->nodeFamily()->maxLocalId();
 
-  // Force le propriétaire des entités pour au sous-domaine 0 car
+  // Force le propriétaire des entités au sous-domaine 0 car
   // new_mesh utilise un parallelMng() séquentiel.
   for( IItemFamily* family : mesh()->itemFamilies() ){
     ENUMERATE_ITEM(iitem,family->allItems()){

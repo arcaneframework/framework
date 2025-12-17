@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeBuffer.h                                     (C) 2000-2023 */
+/* DataSynchronizeBuffer.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un buffer générique pour la synchronisation de donnéess. */
+/* Implémentation d'un buffer générique pour la synchronisation de données.  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATASYNCHRONIZEBUFFER_H
@@ -17,10 +17,12 @@
 
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/utils/FixedArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,27 +39,45 @@ class MemoryBuffer;
 /*!
  * \internal
  * \brief Classe de base de l'implémentation de IDataSynchronizeBuffer.
+ *
+ * Cette implémentation utilise un seul buffer mémoire pour gérer les trois
+ * parties de la synchronisation : le buffer d'envoi, le buffer de réception
+ * et le buffer pour les comparer si la synchronisation a modifié des valeurs
+ * (ce dernier est optionnel).
+ * Chaque buffer est ensuite séparé en N parties, appelées sous-buffer,
+ * avec N le nombre de rangs qui communiquent. Enfin, chaque sous-buffer est
+ * lui-même séparé en P parties, avec P le nombre de données à communiquer.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 : public IDataSynchronizeBuffer
 {
+  /*!
+   * \brief Buffer pour un élément de la synchronisation (envoi, réception ou comparaison)
+   */
   class BufferInfo
   {
-    friend DataSynchronizeBufferBase;
-
    public:
 
     //! Buffer global
-    MutableMemoryView globalBuffer() { return m_memory_view; }
+    MutableMemoryView globalBuffer() const { return m_memory_view; }
+
+    //! Positionne le buffer global.
+    void setGlobalBuffer(MutableMemoryView v);
 
     //! Buffer pour le \a index-ème rang
-    MutableMemoryView localBuffer(Int32 index);
+    MutableMemoryView localBuffer(Int32 rank_index) const;
+
+    //! Buffer pour le \a index-ème rang et la \a data_index-ème donnée
+    MutableMemoryView dataLocalBuffer(Int32 rank_index, Int32 data_index) const;
 
     //! Déplacement dans \a globalBuffer() pour le \a index-ème rang
-    Int64 displacement(Int32 index) const;
+    Int64 displacement(Int32 rank_index) const;
+
+    //! Taille (en octet) du buffer local pour le rang \a rank_index.
+    Int64 localBufferSize(Int32 rank_index) const;
 
     //! Taille totale en octet du buffer global
-    Int64 totalSize() const { return m_memory_view.bytes().size(); }
+    Int64 totalSize() const { return m_total_size; }
 
     //! Numéros locaux des entités pour le rang \a index
     ConstArrayView<Int32> localIds(Int32 index) const;
@@ -67,10 +87,24 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
       ARCANE_CHECK_POINTER(m_buffer_info);
     }
 
+    void initialize(ConstArrayView<Int32> datatype_sizes, const DataSynchronizeBufferInfoList* buffer_info);
+
    private:
 
+    /*!
+     * \brief Vue sur la zone mémoire du buffer.
+     *
+     * Cette variable n'est valide qu'après allocation de tous les buffers.
+     */
     MutableMemoryView m_memory_view;
-    Int32 m_datatype_size = 0;
+    //! Offset (en octet) dans globalBuffer() de chaque donnée
+    UniqueArray2<Int64> m_displacements;
+    //! Taille (en octet) de chaque buffer local.
+    SmallArray<Int64> m_local_buffer_size;
+    //! Taille (en octet) du type de chaque donnée.
+    ConstArrayView<Int32> m_datatype_sizes;
+    //! Taille total (en octet) du buffer
+    Int64 m_total_size = 0;
     const DataSynchronizeBufferInfoList* m_buffer_info = nullptr;
   };
 
@@ -112,20 +146,20 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
    * \brief Prépare la synchronisation.
    *
    * Prépare la synchronisation et alloue les buffers si nécessaire.
-   * \a datatype_size est la taille (en octet) du type de la donnée.
+   *
    * Si \a is_compare_sync est vrai, on compare après la synchronisation les
    * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
    *
-   * Il faut avoir appeler setSynchronizeBuffer() au moins une fois avant d'appeler
+   * Il faut avoir appelé setSynchronizeBuffer() au moins une fois avant d'appeler
    * cette méthode pour positionner la zone mémoire allouée.
    */
-  virtual void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) = 0;
+  virtual void prepareSynchronize(bool is_compare_sync) = 0;
 
  protected:
 
-  void _allocateBuffers(Int32 datatype_size);
+  void _allocateBuffers();
   //! Calcule les informations pour la synchronisation
-  void _compute(Int32 datatype_size);
+  void _compute(ConstArrayView<Int32> datatype_sizes);
 
  protected:
 
@@ -154,12 +188,14 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
  * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
  */
 class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
-: public DataSynchronizeBufferBase
+: public TraceAccessor
+, public DataSynchronizeBufferBase
 {
  public:
 
-  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier)
-  : DataSynchronizeBufferBase(sync_info, copier)
+  SingleDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier)
+  : TraceAccessor(tm)
+  , DataSynchronizeBufferBase(sync_info, copier)
   {}
 
  public:
@@ -169,10 +205,14 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 
  public:
 
-  void setDataView(MutableMemoryView v) { m_data_view = v; }
+  void setDataView(MutableMemoryView v)
+  {
+    m_data_view = v;
+    m_datatype_sizes[0] = v.datatypeSize();
+  }
   //! Zone mémoire contenant les valeurs de la donnée à synchroniser
   MutableMemoryView dataView() { return m_data_view; }
-  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
+  void prepareSynchronize(bool is_compare_sync) override;
 
   /*!
    * \brief Termine la synchronisation.
@@ -183,6 +223,8 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
+  //! Tableau contenant les tailles des types de donnée
+  FixedArray<Int32, 1> m_datatype_sizes;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -205,23 +247,30 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  public:
 
-  void copyReceiveAsync(Int32 index) final;
-  void copySendAsync(Int32 index) final;
+  void copyReceiveAsync(Int32 rank_index) final;
+  void copySendAsync(Int32 rank_index) final;
 
  public:
 
   void setNbData(Int32 nb_data)
   {
     m_data_views.resize(nb_data);
+    m_datatype_sizes.resize(nb_data);
   }
-  void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
+  void setDataView(Int32 index, MutableMemoryView v)
+  {
+    m_data_views[index] = v;
+    m_datatype_sizes[index] = v.datatypeSize();
+  }
 
-  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
+  void prepareSynchronize(bool is_compare_sync) override;
 
  private:
 
   //! Vue sur les données de la variable
   SmallArray<MutableMemoryView> m_data_views;
+  //! Tableau contenant les tailles des types de donnée
+  SmallArray<Int32> m_datatype_sizes;
 };
 
 /*---------------------------------------------------------------------------*/

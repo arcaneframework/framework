@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalMap.h                                           (C) 2000-2024 */
+/* ItemInternalMap.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Tableau associatif de ItemInternal.                                       */
 /*---------------------------------------------------------------------------*/
@@ -23,9 +23,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// Indique si on utilise la nouvelle implémentation pour ItemInternalMap
-// #define ARCANE_USE_NEW_IMPL_FOR_ITEMINTERNALMAP
 
 namespace Arcane
 {
@@ -65,13 +62,7 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
  public:
 
-#ifdef ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP
   static constexpr bool UseNewImpl = 1;
-#else
-  static constexpr bool UseNewImpl = 0;
-#endif
-
- public:
 
   class LookupData
   {
@@ -128,28 +119,19 @@ class ARCANE_MESH_EXPORT ItemInternalMap
    */
   bool add(Int64 key, ItemInternal* v)
   {
-    if constexpr (UseNewImpl)
-      return m_new_impl.insert(std::make_pair(key, v)).second;
-    else
-      return m_impl.add(key, v);
+    return m_new_impl.insert(std::make_pair(key, v)).second;
   }
 
   //! Supprime tous les éléments de la table
   void clear()
   {
-    if constexpr (UseNewImpl)
-      return m_new_impl.clear();
-    else
-      return m_impl.clear();
+    return m_new_impl.clear();
   }
 
   //! Nombre d'éléments de la table
   Int32 count() const
   {
-    if constexpr (UseNewImpl)
-      return CheckedConvert::toInt32(m_new_impl.size());
-    else
-      return m_impl.count();
+    return CheckedConvert::toInt32(m_new_impl.size());
   }
 
   /*!
@@ -159,33 +141,21 @@ class ARCANE_MESH_EXPORT ItemInternalMap
    */
   void remove(Int64 key)
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(key);
-      if (x == m_new_impl.end())
-        _throwNotFound(key);
-      m_new_impl.erase(x);
-    }
-    else
-      m_impl.remove(key);
+    auto x = m_new_impl.find(key);
+    if (x == m_new_impl.end())
+      _throwNotFound(key);
+    m_new_impl.erase(x);
   }
 
   //! \a true si une valeur avec la clé \a id est présente
   bool hasKey(Int64 key)
   {
-    if constexpr (UseNewImpl)
-      return (m_new_impl.find(key) != m_new_impl.end());
-    else
-      return m_impl.hasKey(key);
+    return (m_new_impl.find(key) != m_new_impl.end());
   }
 
   //! Redimensionne la table de hachage
-  void resize(Int32 new_size, bool use_prime = false)
+  void resize([[maybe_unused]] Int32 new_size, [[maybe_unused]] bool use_prime = false)
   {
-    if constexpr (UseNewImpl) {
-      // Nothing to do
-    }
-    else
-      m_impl.resize(new_size, use_prime);
   }
 
   /*!
@@ -210,27 +180,13 @@ class ARCANE_MESH_EXPORT ItemInternalMap
   template <class Lambda> void
   eachItem(const Lambda& lambda)
   {
-    if constexpr (UseNewImpl) {
-      for (auto [key, value] : m_new_impl)
-        lambda(Arcane::impl::ItemBase(value));
-    }
-    else {
-      ConstArrayView<BaseData*> b = m_impl.buckets();
-      for (Int32 k = 0, n = b.size(); k < n; ++k) {
-        BaseData* nbid = b[k];
-        for (; nbid; nbid = nbid->next()) {
-          lambda(Arcane::impl::ItemBase(nbid->value()));
-        }
-      }
-    }
+    for (auto [key, value] : m_new_impl)
+      lambda(Arcane::impl::ItemBase(value));
   }
   //! Nombre de buckets
   Int32 nbBucket() const
   {
-    if constexpr (UseNewImpl)
-      return CheckedConvert::toInt32(m_new_impl.bucket_count());
-    else
-      return m_impl.buckets().size();
+    return CheckedConvert::toInt32(m_new_impl.bucket_count());
   }
 
  public:
@@ -238,26 +194,14 @@ class ARCANE_MESH_EXPORT ItemInternalMap
   //! Retourne l'entité associée à \a key si trouvé ou l'entité nulle sinon
   impl::ItemBase tryFind(Int64 key) const
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(key);
-      return (x != m_new_impl.end()) ? x->second : impl::ItemBase{};
-    }
-    else {
-      const BaseData* d = m_impl.lookup(key);
-      return (d ? impl::ItemBase(d->value()) : impl::ItemBase{});
-    }
+    auto x = m_new_impl.find(key);
+    return (x != m_new_impl.end()) ? x->second : impl::ItemBase{};
   }
   //! Retourne le localId() associé à \a key si trouvé ou NULL_ITEM_LOCAL_ID sinon aucun
   Int32 tryFindLocalId(Int64 key) const
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(key);
-      return (x != m_new_impl.end()) ? x->second->localId() : NULL_ITEM_LOCAL_ID;
-    }
-    else {
-      const BaseData* d = m_impl.lookup(key);
-      return (d ? d->value()->localId() : NULL_ITEM_LOCAL_ID);
-    }
+    auto x = m_new_impl.find(key);
+    return (x != m_new_impl.end()) ? x->second->localId() : NULL_ITEM_LOCAL_ID;
   }
 
   /*!
@@ -267,14 +211,10 @@ class ARCANE_MESH_EXPORT ItemInternalMap
    */
   impl::ItemBase findItem(Int64 uid) const
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(uid);
-      if (x == m_new_impl.end())
-        _throwNotFound(uid);
-      return x->second;
-    }
-    else
-      return impl::ItemBase(m_impl.lookupValue(uid));
+    auto x = m_new_impl.find(uid);
+    if (x == m_new_impl.end())
+      _throwNotFound(uid);
+    return x->second;
   }
 
   /*!
@@ -284,14 +224,10 @@ class ARCANE_MESH_EXPORT ItemInternalMap
    */
   Int32 findLocalId(Int64 uid) const
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(uid);
-      if (x == m_new_impl.end())
-        _throwNotFound(uid);
-      return x->second->localId();
-    }
-    else
-      return m_impl.lookupValue(uid)->localId();
+    auto x = m_new_impl.find(uid);
+    if (x == m_new_impl.end())
+      _throwNotFound(uid);
+    return x->second->localId();
   }
 
   void checkValid() const;
@@ -299,79 +235,52 @@ class ARCANE_MESH_EXPORT ItemInternalMap
  public:
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-  Data* lookup(Int64 key)
+  Data* lookup([[maybe_unused]] Int64 key)
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
-    }
-    else
-      return m_impl.lookup(key);
+    _throwNotSupported("lookup");
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-  const Data* lookup(Int64 key) const
+  const Data* lookup([[maybe_unused]] Int64 key) const
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
-    }
-    else
-      return m_impl.lookup(key);
+    _throwNotSupported("lookup");
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   ConstArrayView<BaseData*> buckets() const
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("buckets");
-    }
-    else
-      return m_impl.buckets();
+    _throwNotSupported("buckets");
   }
 
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
-  BaseData* lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
+  BaseData* lookupAdd([[maybe_unused]] Int64 id,
+                      [[maybe_unused]] ItemInternal* value,
+                      [[maybe_unused]] bool& is_add)
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("lookupAdd(id,value,is_add)");
-    }
-    else
-      return m_impl.lookupAdd(id, value, is_add);
+    _throwNotSupported("lookupAdd(id,value,is_add)");
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-  BaseData* lookupAdd(Int64 uid)
+  BaseData* lookupAdd([[maybe_unused]] Int64 uid)
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("lookupAdd(uid)");
-    }
-    else
-      return m_impl.lookupAdd(uid);
+    _throwNotSupported("lookupAdd(uid)");
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
-  ItemInternal* lookupValue(Int64 uid) const
+  ItemInternal* lookupValue([[maybe_unused]] Int64 uid) const
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("lookupValue");
-    }
-    else
-      return m_impl.lookupValue(uid);
+    _throwNotSupported("lookupValue");
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
-  ItemInternal* operator[](Int64 uid) const
+  ItemInternal* operator[]([[maybe_unused]] Int64 uid) const
   {
-    if constexpr (UseNewImpl) {
-      _throwNotSupported("operator[]");
-    }
-    else
-      return m_impl.lookupValue(uid);
+    _throwNotSupported("operator[]");
   }
 
  private:
 
   NewImpl m_new_impl;
-  LegacyImpl m_impl;
 
  private:
 
@@ -384,29 +293,19 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
   LookupData _lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.insert(std::make_pair(id, value));
-      is_add = x.second;
-      return LookupData(x.first);
-    }
-    else
-      return LookupData(m_impl.lookupAdd(id, value, is_add));
+    auto x = m_new_impl.insert(std::make_pair(id, value));
+    is_add = x.second;
+    return LookupData(x.first);
   }
 
   //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
   ItemInternal* _tryFindItemInternal(Int64 key) const
   {
-    if constexpr (UseNewImpl) {
-      auto x = m_new_impl.find(key);
-      if (x == m_new_impl.end())
-        return nullptr;
-      _checkValid(key, x->second);
-      return x->second;
-    }
-    else {
-      const BaseData* d = m_impl.lookup(key);
-      return (d ? d->value() : nullptr);
-    }
+    auto x = m_new_impl.find(key);
+    if (x == m_new_impl.end())
+      return nullptr;
+    _checkValid(key, x->second);
+    return x->second;
   }
 
  private:
@@ -418,19 +317,6 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Macro pour itérer sur les valeurs d'un ItemInternalMap.
- *
- * \deprecated Utiliser ItemInternalMap::eachItem() à la place.
- */
-#define ENUMERATE_ITEM_INTERNAL_MAP_DATA(iter,item_list) \
-for( auto __i__##iter : item_list .buckets() ) \
-    for (auto* iter = __i__##iter; iter; iter = iter->next())
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 }
 
 /*---------------------------------------------------------------------------*/

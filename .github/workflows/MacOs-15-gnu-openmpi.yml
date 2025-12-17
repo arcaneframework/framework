@@ -1,0 +1,115 @@
+name: MacOs-gnu-openmpi
+# This workflow is designed to run on MacOs
+# tests only Arcane component install
+# hypre and swig are disabled
+# It uses GNU compilers and OpenMPI
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.MD'
+      - '**.md'
+      - '**/.gitignore'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.MD'
+      - '**.md'
+      - '**/.gitignore'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}-gnu-openmpi
+    env:
+      CCACHE_BASEDIR: ${{github.workspace}}
+      CCACHE_DIR: '${{ github.workspace }}/ccache'
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+      CCACHE_MAXSIZE: 5G
+      # To tell 'openmpi' we may use more cpu core than available
+      OMPI_MCA_rmaps_base_oversubscribe : true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: macos-15
+          full-name: "MacOs-15-gnu-openmpi"
+        - os: macos-26
+          full-name: "MacOs-26-gnu-openmpi"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      
+      - name: Setup environment
+        shell: 'bash'
+        run : |
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          cmake --version
+          mkdir -p ${{ env.CCACHE_DIR }}
+          echo "Display CPU information"
+          sysctl -a | grep machdep.cpu
+
+      - name: Uninstall pre-installed dependencies
+        continue-on-error: true
+        run: |
+          for pkg in cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache; do
+            brew uninstall --force "$pkg" || true
+          done
+
+      - name: Install dependencies
+        run: |
+          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache
+
+      - name: Get cache for 'ccache' tool
+        uses: actions/cache@v4
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: framework-ccache1-macos-gnu-${{ matrix.os }}-${{ github.run_number }}
+          restore-keys: |
+            framework-ccache1-macos-gnu-${{ matrix.os }}
+
+      - name: 'Display environment after setup'
+        shell: 'bash'
+        continue-on-error: true
+        run: |
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          echo Ninja path is: `which ninja`
+          echo CCache path is: `which ccache`
+          echo Dotnet path is: `which dotnet`
+          ccache -z
+          cmake --version
+
+      - name: configure
+        run: |
+          cmake -S . -B ./build \
+            -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+            -DCMAKE_INSTALL_PREFIX=$HOME/framework-install \
+            -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
+            -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
+            -DARCCORE_CXX_STANDARD=20 \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DCMAKE_C_COMPILER=gcc-15 \
+            -DARCANE_ENABLE_DOTNET_WRAPPER=OFF \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE \
+            -G Ninja
+            
+      - name: Build arcane
+        run: |
+          cmake --build .
+        working-directory: ./build
+
+      - name: Get 'ccache' status
+        run: ccache -s -v
+
+      - name: Make tests
+        run: |
+          echo "nb_job=$(sysctl -n hw.ncpu)"
+          ctest -j$(sysctl -n hw.ncpu) --output-on-failure
+        working-directory: ./build

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemIndexArrayView.h                                        (C) 2000-2024 */
+/* ItemIndexArrayView.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Vue sur un tableau d'index (localIds()) d'entités.                        */
 /*---------------------------------------------------------------------------*/
@@ -29,12 +29,12 @@ namespace Arcane
  * \internal
  * \brief Vue sur un tableau d'index (localIds()) d'entités.
  *
- * \warning la vue n'est valide que tant que le tableau associé n'est
+ * \warning La vue n'est valide que tant que le tableau associé n'est
  * pas modifié. Les instances de cette classe sont en général temporaires
  * et ne doivent pas être conservées.
  *
  * En plus de la liste des entités, cette classe permet d'avoir des
- * informations supplémentaires comme par exemple si la liste est contigüe.
+ * informations supplémentaires, comme par exemple si la liste est contigüe.
  */
 class ARCANE_CORE_EXPORT ItemIndexArrayView
 {
@@ -52,7 +52,8 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
   // propager dans les méthodes telles que subView().
   enum
   {
-    F_Contigous = 1 << 1, //!< Les numéros locaux sont contigüs.
+    F_Contiguous = 1 << 1, //!< Les numéros locaux sont contigüs.
+    F_Contigous = F_Contiguous
   };
 
  public:
@@ -101,8 +102,10 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
     return m_flags;
   }
 
+  bool isContigous() const { return isContiguous(); }
+
   //! Vrai si les localIds() sont contigüs
-  bool isContigous() const
+  bool isContiguous() const
   {
     return m_flags & F_Contigous;
   }

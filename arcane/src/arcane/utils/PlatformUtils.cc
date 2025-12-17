@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2024 */
+/* PlatformUtils.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -20,10 +20,15 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/StringList.h"
 #include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arcane/utils/CheckedConvert.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
+
+#include "arccore/base/StringUtils.h"
 
 #include <chrono>
 
@@ -51,7 +56,14 @@
 #include <fcntl.h>
 #endif
 
+#ifdef ARCANE_OS_MACOS
+#include <cstdlib>
+#include <mach-o/dyld.h>
+#include <crt_externs.h>
+#else
 #include <malloc.h>
+#endif
+
 
 #if !defined(ARCANE_OS_CYGWIN) && !defined(ARCANE_OS_WIN32)
 #if defined(__i386__)
@@ -91,7 +103,6 @@ namespace platform
   ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
-  IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
 }
@@ -153,26 +164,6 @@ setProfilingService(IProfilingService* service)
 {
   IProfilingService* old_service = global_profiling_service;
   global_profiling_service = service;
-  return old_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-getDynamicLibraryLoader()
-{
-  return global_dynamic_library_loader;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll)
-{
-  IDynamicLibraryLoader* old_service = global_dynamic_library_loader;
-  global_dynamic_library_loader = idll;
   return old_service;
 }
 
@@ -412,6 +403,13 @@ getExeFullPath()
   if (r>0){
     full_path = StringView(buf);
   }
+#elif defined(ARCANE_OS_MACOS)
+  char buf[2048];
+  uint32_t bufSize = 2000;
+  int r = _NSGetExecutablePath(buf, &bufSize);
+  if (r==0) { // success returns 0
+    full_path = StringView(buf);
+  }
 #else
 #error "platform::getExeFullPath() not implemented for this platform"
 #endif
@@ -451,6 +449,21 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
   TCHAR dllPath[_MAX_PATH];
   GetModuleFileName(hModule, dllPath, _MAX_PATH);
   full_path = StringView(dllPath);
+#elif defined(ARCANE_OS_MACOS)
+  {
+    String true_name = "lib" + dll_name + ".dylib";
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+      const char* image_name = _dyld_get_image_name(i);
+      if (image_name) {
+        String image_path(image_name);
+        if (image_path.endsWith(true_name)) {
+          full_path = image_path;
+          break;
+        }
+      }
+    }
+  }
 #else
   throw NotSupportedException(A_FUNCINFO);
 //#error "platform::getSymbolFullPath() not implemented for this platform"
@@ -495,39 +508,29 @@ fillCommandLineArguments(StringList& arg_list)
     while (*ptr++ && ptr < end)
       ;
   }
-#endif
-}
+#elif defined(ARCANE_OS_WIN32)
+  LPWSTR* w_arg_list = nullptr;
+  int nb_arg = 0;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// TODO: mettre ensuite dans 'Arccore'
+  w_arg_list = ::CommandLineToArgvW(GetCommandLineW(), &nb_arg);
+  if (!w_arg_list)
+    ARCANE_FATAL("Can not get arguments from command line");
 
-extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
-getRealTimeNS()
-{
-  auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
-  auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en nano-secondes.
-  return static_cast<Int64>(y.time_since_epoch().count());
-}
+  for (int i = 0; i < nb_arg; i++) {
+    std::wstring_view wstr_view(w_arg_list[i]);
+    String str = StringUtils::convertToArcaneString(wstr_view);
+    arg_list.add(str);
+  }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
-getPageSize()
-{
-#if defined(ARCCORE_OS_WIN32)
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  return si.dwPageSize;
-#elif defined(ARCANE_OS_LINUX)
-  return ::sysconf(_SC_PAGESIZE);
+  ::LocalFree(w_arg_list);
+#elif defined(ARCANE_OS_MACOS)
+  int argc = *_NSGetArgc();
+  char** argv = *_NSGetArgv();
+  for (int i = 0; i < argc; i++) {
+    arg_list.add(StringView(argv[i]));
+  }
 #else
-#warning "getPageSize() not implemented for your platform. Default is 4096"
-  Int64 page_size = 4096;
-  return page_size;
+  ARCANE_THROW(NotImplementedException, "not implemented for this platform");
 #endif
 }
 

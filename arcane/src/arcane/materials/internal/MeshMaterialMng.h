@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2024 */
+/* MeshMaterialMng.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -80,9 +80,17 @@ class MeshMaterialMng
 
    public:
 
+    RunQueue runQueue(Accelerator::eExecutionPolicy policy) const;
+
+   public:
+
     Runner m_runner;
     RunQueue m_run_queue;
     Accelerator::RunQueuePool m_async_queue_pool;
+    Runner m_sequential_runner;
+    RunQueue m_sequential_run_queue;
+    Runner m_multi_thread_runner;
+    RunQueue m_multi_thread_run_queue;
   };
 
   class InternalApi
@@ -147,6 +155,10 @@ class MeshMaterialMng
     bool isUseAcceleratorForConstituentItemVector() const override
     {
       return m_material_mng->m_is_use_accelerator_for_constituent_item_vector;
+    }
+    RunQueue runQueue(Accelerator::eExecutionPolicy policy) const override
+    {
+      return m_material_mng->m_runner_info->runQueue(policy);
     }
 
    private:

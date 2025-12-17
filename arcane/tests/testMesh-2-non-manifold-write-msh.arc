@@ -8,15 +8,14 @@
   <meshes>
     <mesh>
       <filename>mesh_with_loose_items.msh</filename>
-      <non-manifold-mesh>true</non-manifold-mesh>
-      <face-numbering-version>0</face-numbering-version>
+      <cell-dimension-kind>non-manifold</cell-dimension-kind>
     </mesh>
   </meshes>
 
   <unit-test-module>
     <test name="MeshUnitTest">
-      <create-edges>true</create-edges>
       <write-mesh-service-name>MshMeshWriter</write-mesh-service-name>
+      <test-adjency>false</test-adjency>
     </test>
   </unit-test-module>
 </case>
