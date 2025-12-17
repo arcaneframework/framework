@@ -214,7 +214,7 @@ class MemoryPool::Impl
   void freeMemory(void* ptr, size_t size);
   void dumpStats(std::ostream& ostr);
   void dumpFreeMap(std::ostream& ostr);
-  void setMaxCachedBlockSize(size_t v);
+  void setMaxCachedBlockSize(Int32 v);
   void freeCachedMemory();
 
  public:
@@ -316,10 +316,12 @@ dumpFreeMap(std::ostream& ostr)
 /*---------------------------------------------------------------------------*/
 
 void MemoryPool::Impl::
-setMaxCachedBlockSize(size_t v)
+setMaxCachedBlockSize(Int32 v)
 {
   if (m_allocated_map.size() != 0 || m_free_map.size() != 0)
     ARCCORE_FATAL("Can not change maximum cached block size on non empty pool");
+  if (v < 0)
+    v = 0;
   m_max_memory_size_to_pool = v;
 }
 
@@ -381,7 +383,7 @@ String MemoryPool::name() const
   return m_p->m_name;
 }
 void MemoryPool::
-setMaxCachedBlockSize(size_t v)
+setMaxCachedBlockSize(Int32 v)
 {
   m_p->setMaxCachedBlockSize(v);
 }

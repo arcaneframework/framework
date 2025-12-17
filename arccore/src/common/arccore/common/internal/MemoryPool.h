@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/common/CommonGlobal.h"
+#include "arccore/common/IMemoryPool.h"
 
 #include <memory>
 
@@ -61,7 +61,8 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
  * durant toute la vie de l'instance.
  */
 class ARCCORE_COMMON_EXPORT MemoryPool
-: public IMemoryPoolAllocator
+: public IMemoryPool
+, public IMemoryPoolAllocator
 {
   class Impl;
 
@@ -92,10 +93,10 @@ class ARCCORE_COMMON_EXPORT MemoryPool
    * Cette méthode ne peut être appelée que s'il n'y a aucun bloc dans le
    * cache.
    */
-  void setMaxCachedBlockSize(size_t v);
+  void setMaxCachedBlockSize(Int32 v) override;
 
   //! Libère la mémoire dans le cache
-  void freeCachedMemory();
+  void freeCachedMemory() override;
 
  private:
 

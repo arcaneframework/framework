@@ -20,6 +20,7 @@ set(SOURCES
   ExceptionUtils.cc
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
+  IMemoryPool.h
   IMemoryResourceMng.h
   List.h
   MemoryAllocator.cc
