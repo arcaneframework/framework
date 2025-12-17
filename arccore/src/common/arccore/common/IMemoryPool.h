@@ -46,6 +46,12 @@ class ARCCORE_COMMON_EXPORT IMemoryPool
 
   //! Libère la mémoire dans le cache
   virtual void freeCachedMemory() = 0;
+
+  //! Taille totale (en octet) allouée dans le pool mémoire
+  virtual size_t totalAllocated() const = 0;
+
+  //! Taille totale (en octet) dans le cache
+  virtual size_t totalCached() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
