@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -109,8 +109,8 @@ TEST(TestSchur, SchurEngine)
 
   Alien::BlockBuilder block_builder(index_manager);
 
-  auto allU1Index = indexSetU1.getOwnIndexes();
-  auto allU2Index = indexSetU2.getOwnIndexes();
+  auto allU1Index = indexSetU1.getAllIndexes();
+  auto allU2Index = indexSetU2.getAllIndexes();
   block_builder[allU1Index] = 2;
   block_builder[allU2Index] = 3;
 
@@ -137,7 +137,6 @@ TEST(TestSchur, SchurEngine)
       profiler.addMatrixEntry(row1, row2);
 
       profiler.addMatrixEntry(row2, row1);
-
       if (i == 0) {
         if (comm_rank > 0) {
           Integer jcol = allU1Index[ghost_cell1_lid[0]];

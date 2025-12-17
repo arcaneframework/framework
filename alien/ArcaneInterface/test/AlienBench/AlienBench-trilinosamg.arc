@@ -18,7 +18,7 @@
   <mesh>
     <meshgenerator>
       <cartesian>
-        <origine></origine>
+        <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
         <lx nx="100">1.</lx>
         <ly ny="100">1.</ly>
@@ -38,7 +38,7 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-      <linear-solver name="TrilinosSolverCUDA">
+      <linear-solver name="TrilinosSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
@@ -66,7 +66,7 @@
         <iluk>
           <level-of-fill>0</level-of-fill>
         </iluk>
-        <output>1</output>
+        <output>2</output>
       </linear-solver>
 
     
