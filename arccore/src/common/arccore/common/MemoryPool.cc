@@ -344,7 +344,7 @@ freeCachedMemory()
 
 MemoryPool::
 MemoryPool(IMemoryPoolAllocator* allocator, const String& name)
-: m_p(std::make_shared<Impl>(allocator, name))
+: m_p(std::make_unique<Impl>(allocator, name))
 {
 }
 
