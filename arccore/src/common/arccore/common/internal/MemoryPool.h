@@ -86,17 +86,13 @@ class ARCCORE_COMMON_EXPORT MemoryPool
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
 
-  /*!
-   * \brief Positionne la taille en octet à partir de laquelle
-   * on ne conserve pas un bloc dans le cache.
-   *
-   * Cette méthode ne peut être appelée que s'il n'y a aucun bloc dans le
-   * cache.
-   */
+  //! Implémentation de IMemoryPool
+  //@{
   void setMaxCachedBlockSize(Int32 v) override;
-
-  //! Libère la mémoire dans le cache
   void freeCachedMemory() override;
+  size_t totalAllocated() const override;
+  size_t totalCached() const override;
+  //@}
 
  private:
 

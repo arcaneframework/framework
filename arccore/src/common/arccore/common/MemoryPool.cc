@@ -392,6 +392,16 @@ freeCachedMemory()
 {
   m_p->freeCachedMemory();
 }
+size_t MemoryPool::
+totalAllocated() const
+{
+  return m_p->m_total_allocated;
+}
+size_t MemoryPool::
+totalCached() const
+{
+  return m_p->m_total_free;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
