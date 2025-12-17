@@ -45,6 +45,7 @@ class ARCCORE_COMMON_EXPORT MemoryResourceMng
 
   IMemoryAllocator* getAllocator(eMemoryResource r) override;
   IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) override;
+  IMemoryPool* getMemoryPoolOrNull(eMemoryResource r) override;
 
  public:
 
@@ -54,6 +55,7 @@ class ARCCORE_COMMON_EXPORT MemoryResourceMng
  public:
 
   void setAllocator(eMemoryResource r, IMemoryAllocator* allocator) override;
+  void setMemoryPool(eMemoryResource r, IMemoryPool* pool) override;
   void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
   void setIsAccelerator(bool v) override { m_is_accelerator = v; }
 
@@ -69,7 +71,10 @@ class ARCCORE_COMMON_EXPORT MemoryResourceMng
 
  private:
 
+  //! Liste des allocateurs
   FixedArray<IMemoryAllocator*, ARCCORE_NB_MEMORY_RESOURCE> m_allocators;
+  //! Liste des pools mémoire
+  FixedArray<IMemoryPool*, ARCCORE_NB_MEMORY_RESOURCE> m_memory_pools;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
   bool m_is_accelerator = false;
