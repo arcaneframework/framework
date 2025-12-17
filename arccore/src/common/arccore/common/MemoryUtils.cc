@@ -214,6 +214,15 @@ getAllocationOptions(eMemoryResource mem_resource)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryPool* MemoryUtils::
+getMemoryPoolOrNull(eMemoryResource mem_resource)
+{
+  return getDataMemoryResourceMng()->getMemoryPoolOrNull(mem_resource);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MemoryUtils::
 copy(MutableMemoryView destination, eMemoryResource destination_mem,
      ConstMemoryView source, eMemoryResource source_mem, const RunQueue* queue)

@@ -140,10 +140,24 @@ getAllocationOptions(eMemoryResource mem_resource);
 /*!
  * \brief Allocateur par défaut pour la ressource \a mem_resource.
  *
+ * Lève une exception si aucun allocateur n'est disponible pour la
+ * ressource \a mem_resource.
+ *
  * \sa getAllocationOptions().
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryAllocator*
 getAllocator(eMemoryResource mem_resource);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Pool mémoire pour la ressource \a mem_resource.
+ *
+ * Retourne \a nullptr si aucun pool mémoire n'est disponible pour
+ * la ressource \a mem_resource.
+ */
+extern "C++" ARCCORE_COMMON_EXPORT IMemoryPool*
+getMemoryPoolOrNull(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -46,11 +46,19 @@ class ARCCORE_COMMON_EXPORT IMemoryResourceMng
   /*!
    * \brief Allocateur mémoire pour la ressource \a r.
    *
-   * Si aucun allocateur pour la ressoruce \a v existe, lève une
+   * Si aucun allocateur pour la ressource \a v existe, lève une
    * exception si \a throw_if_not_found est vrai ou retourne \a nullptr
    * si \a throw_if_not_found est faux.
    */
   virtual IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) = 0;
+
+  /*!
+   * \brief Pool mémoire pour la ressource \a r.
+   *
+   * Retourne le pool mémoire associé à la ressource \a v ou \a nullptr
+   * s'il n'y en a pas.
+   */
+  virtual IMemoryPool* getMemoryPoolOrNull(eMemoryResource r) = 0;
 
  public:
 

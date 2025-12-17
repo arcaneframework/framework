@@ -26,15 +26,14 @@
 
 namespace Arcane
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-  inline bool _isHost(eMemoryResource r)
+  bool _isHost(eMemoryResource r)
   {
-    // Si on sait pas, considère qu'on est accessible de puis l'hôte.
+    // Si on ne sait pas, considère qu'on est accessible depuis l'hôte.
     if (r == eMemoryResource::Unknown)
       return true;
     if (r == eMemoryResource::Host || r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned)
@@ -79,7 +78,7 @@ MemoryResourceMng()
 : m_default_memory_copier(new DefaultHostMemoryCopier())
 , m_copier(m_default_memory_copier.get())
 {
-  // Par défaut on utilise l'allocateur CPU. Les allocateurs spécifiques pour
+  // Par défaut, on utilise l'allocateur CPU. Les allocateurs spécifiques pour
   // les accélérateurs seront positionnés lorsqu'on aura choisi le runtime
   // accélérateur
   IMemoryAllocator* a = AlignedMemoryAllocator::Simd();
@@ -108,7 +107,7 @@ getAllocator(eMemoryResource r, bool throw_if_not_found)
   IMemoryAllocator* a = m_allocators[x];
 
   // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
-  // utilise platform::getAcceleratorHostMemoryAllocator().
+  // utilise Platform::getAcceleratorHostMemoryAllocator().
   if (!a && !m_is_accelerator) {
     if (r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned) {
       eMemoryResource mem = MemoryUtils::getDefaultDataMemoryResource();
@@ -136,11 +135,31 @@ getAllocator(eMemoryResource r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryPool* MemoryResourceMng::
+getMemoryPoolOrNull(eMemoryResource r)
+{
+  int x = _checkValidResource(r);
+  return m_memory_pools[x];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MemoryResourceMng::
 setAllocator(eMemoryResource r, IMemoryAllocator* allocator)
 {
   int x = _checkValidResource(r);
   m_allocators[x] = allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryResourceMng::
+setMemoryPool(eMemoryResource r, IMemoryPool* pool)
+{
+  int x = _checkValidResource(r);
+  m_memory_pools[x] = pool;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,7 +191,7 @@ genericCopy(ConstMemoryView from, MutableMemoryView to)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
