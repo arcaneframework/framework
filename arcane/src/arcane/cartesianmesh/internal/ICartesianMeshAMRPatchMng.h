@@ -38,20 +38,6 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
  public:
 
   /*!
-   * \brief Méthode permettant de définir les mailles à raffiner (à marquer avec le flag "II_Refine").
-   * \param cells_lids Les localIds des mailles.
-   * \param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
-   */
-  virtual void flagCellToRefine(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
-
-  /*!
-   * \brief Méthode permettant de définir les mailles à déraffiner (à marquer avec le flag "II_Coarsen").
-   * \param cells_lids Les localIds des mailles.
-   * \param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
-   */
-  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
-
-  /*!
    * \brief Méthode permettant de raffiner les mailles avec le
    * flag "II_Refine".
    */
@@ -77,7 +63,6 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * mis à jour. Cela inclut l'activation des mailles parentes.
    */
   virtual void coarsen(bool update_parent_flag) = 0;
-  virtual void _syncFlagCell() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -19,6 +19,7 @@
 #include "arcane/core/ItemGroup.h"
 
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
@@ -44,11 +45,17 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
  public:
 
+  void build();
+  void saveInfosInProperties();
+  void recreateFromDump();
+
   Ref<CartesianMeshPatch> groundPatch();
 
   void addPatch(ConstArrayView<Int32> cells_local_id);
   Integer addPatchAfterRestore(CellGroup cell_group);
   void addPatch(CellGroup cell_group, Integer group_index);
+
+  void addPatch(const AMRZonePosition& zone_position);
 
   Integer nbPatch() const;
 
@@ -66,11 +73,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
-  void removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
+  void removeCellsInZone(const AMRZonePosition& zone_to_delete);
 
   void applyPatchEdit(bool remove_empty_patches);
 
-  void updateLevelsBeforeAddGroundPatch();
+  void updateLevelsAndAddGroundPatch();
 
   void mergePatches();
 
@@ -87,6 +94,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
  private:
 
+  void _removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
+
   Integer _nextIndexForNewPatch();
 
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
@@ -98,7 +107,6 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
 
-  bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
   void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
   void _addPatch(const AMRPatchPosition& new_patch_position);
@@ -116,6 +124,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Integer> m_available_group_index;
   Integer m_size_of_overlap_layer_sub_top_level;
   Integer m_higher_level;
+  Ref<Properties> m_properties;
 };
 
 /*---------------------------------------------------------------------------*/

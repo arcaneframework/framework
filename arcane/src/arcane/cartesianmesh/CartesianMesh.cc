@@ -301,8 +301,9 @@ build()
 {
   m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_build();
+    m_internal_api.cartesianMeshNumberingMngInternal()->build();
   }
+  m_patch_group.build();
 }
 
 namespace
@@ -332,22 +333,10 @@ _saveInfosInProperties()
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   m_properties->set("Version",SERIALIZE_VERSION);
 
-  // Sauve les informations des patches
-  UniqueArray<String> patch_group_names;
-  for (Integer i = 1; i < m_patch_group.nbPatch(); ++i) {
-    patch_group_names.add(m_patch_group.allCells(i).name());
-  }
-  m_properties->set("PatchGroupNames",patch_group_names);
-
-  // TODO : Trouver une autre façon de gérer ça.
-  //        Dans le cas d'une protection reprise, le tableau m_available_index
-  //        ne peut pas être correctement recalculé à cause des éléments après
-  //        le "index max" des "index actif". Ces éléments "en trop" ne
-  //        peuvent pas être retrouvés sans plus d'infos.
-  m_properties->set("PatchGroupNamesAvailable", m_patch_group.availableGroupIndex());
+  m_patch_group.saveInfosInProperties();
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_saveInfosInProperties();
+    m_internal_api.cartesianMeshNumberingMngInternal()->saveInfosInProperties();
     //m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 }
@@ -361,7 +350,7 @@ recreateFromDump()
   info() << "Creating 'CartesianMesh' infos from dump";
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_internal_api.cartesianMeshNumberingMngInternal()->_recreateFromDump();
+    m_internal_api.cartesianMeshNumberingMngInternal()->recreateFromDump();
     m_internal_api.cartesianMeshNumberingMngInternal()->printStatus();
   }
 
@@ -371,22 +360,9 @@ recreateFromDump()
     ARCANE_FATAL("Bad serializer version: trying to read from incompatible checkpoint v={0} expected={1}",
                  v,SERIALIZE_VERSION);
 
-  // Récupère les noms des groupes des patchs
-  UniqueArray<String> patch_group_names;
-  m_properties->get("PatchGroupNames",patch_group_names);
-  info(4) << "Found n=" << patch_group_names.size() << " patchs";
-  m_patch_group.clear();
+  m_patch_group.recreateFromDump();
+
   m_all_items_direction_info = m_patch_group.groundPatch();
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  for (const String& x : patch_group_names) {
-    CellGroup group = cell_family->findGroup(x);
-    if (group.null())
-      ARCANE_FATAL("Can not find cell group '{0}'",x);
-    m_patch_group.addPatchAfterRestore(group);
-  }
-  UniqueArray<Int32> available_index;
-  m_properties->get("PatchGroupNamesAvailable", available_index);
-  m_patch_group.rebuildAvailableGroupIndex(available_index);
 
   computeDirections();
 }
@@ -1090,7 +1066,6 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
-  m_patch_group.updateLevelsBeforeAddGroundPatch();
   _addPatch(parent_cells_local_id);
 }
 
@@ -1124,30 +1099,32 @@ _addPatch(ConstArrayView<Int32> parent_cells)
 void CartesianMeshImpl::
 _applyRefine(const AMRZonePosition& position)
 {
-  UniqueArray<Int32> cells_local_id;
-  position.cellsInPatch(mesh(), cells_local_id);
+  if (m_amr_type == eMeshAMRKind::Cell) {
+    UniqueArray<Int32> cells_local_id;
+    position.cellsInPatch(mesh(), cells_local_id);
 
-  Integer nb_cell = cells_local_id.size();
-  info(4) << "Local_NbCellToRefine = " << nb_cell;
+    Integer nb_cell = cells_local_id.size();
+    info(4) << "Local_NbCellToRefine = " << nb_cell;
 
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum,nb_cell);
-  info(4) << "Global_NbCellToRefine = " << total_nb_cell;
-  if (total_nb_cell==0)
-    return;
+    IParallelMng* pm = m_mesh->parallelMng();
+    Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
+    info(4) << "Global_NbCellToRefine = " << total_nb_cell;
+    if (total_nb_cell == 0)
+      return;
 
-  if(m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Refine with modifier() (for all mesh types)";
     m_mesh->modifier()->flagCellToRefine(cells_local_id);
     m_mesh->modifier()->adapt();
+
+    _addPatch(cells_local_id);
   }
+
   else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
-    computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id, true);
-    m_internal_api.cartesianMeshAMRPatchMng()->refine();
+    m_patch_group.addPatch(position);
   }
-  else if(m_amr_type == eMeshAMRKind::Patch) {
+
+  else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
   else{
@@ -1158,7 +1135,6 @@ _applyRefine(const AMRZonePosition& position)
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();
   }
-  _addPatch(cells_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1167,25 +1143,20 @@ _applyRefine(const AMRZonePosition& position)
 void CartesianMeshImpl::
 _applyCoarse(const AMRZonePosition& zone_position)
 {
-  UniqueArray<Int32> cells_local_id;
-  AMRPatchPosition patch_position;
   if (m_amr_type == eMeshAMRKind::Cell) {
+    UniqueArray<Int32> cells_local_id;
+
     zone_position.cellsInPatch(mesh(), cells_local_id);
-  }
-  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    zone_position.cellsInPatch(this, cells_local_id, patch_position);
-  }
 
-  Integer nb_cell = cells_local_id.size();
-  info(4) << "Local_NbCellToCoarsen = " << nb_cell;
+    Integer nb_cell = cells_local_id.size();
+    info(4) << "Local_NbCellToCoarsen = " << nb_cell;
 
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
-  info(4) << "Global_NbCellToCoarsen = " << total_nb_cell;
-  if (total_nb_cell == 0)
-    return;
+    IParallelMng* pm = m_mesh->parallelMng();
+    Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
+    info(4) << "Global_NbCellToCoarsen = " << total_nb_cell;
+    if (total_nb_cell == 0)
+      return;
 
-  if (m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Coarse with modifier() (for all mesh types)";
     m_patch_group.removeCellsInAllPatches(cells_local_id);
     m_patch_group.applyPatchEdit(true);
@@ -1193,15 +1164,12 @@ _applyCoarse(const AMRZonePosition& zone_position)
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
     m_mesh->modifier()->coarsenItemsV2(true);
   }
+
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
-    m_patch_group.removeCellsInAllPatches(patch_position);
-    m_patch_group.applyPatchEdit(false);
-
-    computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
-    m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
+    m_patch_group.removeCellsInZone(zone_position);
   }
+
   else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
@@ -1245,23 +1213,23 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
 
-  if (face_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    ARCANE_FATAL("Face renumbering is not compatible with this type of AMR");
-  }
-
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method < 0 || patch_method > 4)
+  if (patch_method < 0 || patch_method > 4) {
     ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2, 3 or 4",
                  patch_method);
-    
-  else if (patch_method == 1 || patch_method == 3 || patch_method == 4){
-    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch(),patch_method);
+  }
+  if (patch_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Mesh items renumbering is not compatible with this type of AMR");
+  }
+
+  if (patch_method == 1 || patch_method == 3 || patch_method == 4) {
+    CartesianMeshUniqueIdRenumbering renumberer(this, cmgi, v.parentPatch(), patch_method);
     renumberer.renumber();
   }
-  else if (patch_method == 2){
+  else if (patch_method == 2) {
     warning() << "The patch method 2 is experimental!";
-    CartesianMeshUniqueIdRenumberingV2 renumberer(this,cmgi);
+    CartesianMeshUniqueIdRenumberingV2 renumberer(this, cmgi);
     renumberer.renumber();
   }
 
