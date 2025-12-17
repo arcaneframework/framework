@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParameterOptionTest.cc                                (C) 2000-2025 */
+/* ParameterOptionTest.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Service de test de ParameterOption.                                 */
+/* Service de test de ParameterOption.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,6 +15,7 @@
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/utils/internal/ParameterOption.h"
+#include "arcane/utils/internal/ParameterListWithCaseOption.h"
 
 #include "arcane/tests/ParameterOptionTest_axl.h"
 

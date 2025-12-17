@@ -5,20 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshAMRPatchMng.h                                 (C) 2000-2025 */
+/* ParameterListWithCaseOption.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface de gestionnaire de l'AMR par patch d'un maillage cartésien.     */
+/* Liste de paramètres avec support pour les options du jeu de données.      */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
+#define ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
-#define ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/ParameterCaseOption.h"
+#include "arcane/utils/ParameterList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,41 +26,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
+/*!
+ * \brief Liste de paramètres avec informations pour surcharger les options
+ * du jeu de données.
+ */
+class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
+: private ParameterList
 {
  public:
 
-  virtual ~ICartesianMeshAMRPatchMng() = default;
-
- public:
-
-  /*!
-   * \brief Méthode permettant de raffiner les mailles avec le
-   * flag "II_Refine".
-   */
-  virtual void refine() = 0;
+  using ParameterList::addParameterLine;
+  using ParameterList::getParameterOrNull;
 
   /*!
-   * \brief Méthode permettant de déraffiner les mailles de niveau 0.
+   * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
    *
-   * Un niveau de maille -1 sera créé avec des mailles parentes aux mailles
-   * de niveau 0 puis tous les niveaux seront incrémentés de 1. Le niveau créé
-   * par cette méthode sera donc le nouveau niveau 0.
+   * Cet objet peut être détruit après utilisation.
+   *
+   * \param language Le langage dans lequel est écrit le jeu de données.
+   * \return Un objet de type ParameterCaseOption.
    */
-  virtual void createSubLevel() = 0;
+  ParameterCaseOption getParameterCaseOption(const String& language) const
+  {
+    return _getParameterCaseOption(language);
+  }
 
-  /*!
-   * \brief Méthode permettant de retirer les mailles marquées avec le
-   * flag "II_Coarsen".
-   *
-   * Les propriétaires des faces et des noeuds ayant des mailles marquées
-   * et des mailles non marquées sont susceptibles d'être mis à jour.
-   *
-   * \param update_parent_flag Si true, alors les flags des parents seront
-   * mis à jour. Cela inclut l'activation des mailles parentes.
-   */
-  virtual void coarsen(bool update_parent_flag) = 0;
+  //! Ajoute les paramètres de \a parameters aux paramètres de l'instance
+  void addParameters(const ParameterList& parameters);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,4 +63,4 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
+#endif  

@@ -47,29 +47,37 @@ CartesianMeshNumberingMngInternal(IMesh* mesh)
 , m_converting_numbering_face(true)
 , m_ori_level(0)
 {
-  const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+  {
+    const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+    ConstArrayView<Int64> global_nb_cells_by_direction = m_generation_info->globalNbCells();
 
-  Int64ConstArrayView global_nb_cells_by_direction = m_generation_info->globalNbCells();
-  m_nb_cell_ground.x = static_cast<CartCoordType>(global_nb_cells_by_direction[MD_DirX]);
-  m_nb_cell_ground.y = static_cast<CartCoordType>(global_nb_cells_by_direction[MD_DirY]);
-  m_nb_cell_ground.z = ((m_dimension == 2) ? 1 : static_cast<CartCoordType>(global_nb_cells_by_direction[MD_DirZ]));
+    const Int64x3 nb_cell_ground = {
+      global_nb_cells_by_direction[MD_DirX],
+      global_nb_cells_by_direction[MD_DirY],
+      ((m_dimension == 2) ? 1 : global_nb_cells_by_direction[MD_DirZ])
+    };
 
-  if (m_nb_cell_ground.x <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirX] (should be >0)", m_nb_cell_ground.x);
-  if (m_nb_cell_ground.y <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", m_nb_cell_ground.y);
-  if (m_nb_cell_ground.z <= 0)
-    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", m_nb_cell_ground.z);
+    m_nb_cell_ground.x = static_cast<CartCoordType>(nb_cell_ground.x);
+    m_nb_cell_ground.y = static_cast<CartCoordType>(nb_cell_ground.y);
+    m_nb_cell_ground.z = static_cast<CartCoordType>(nb_cell_ground.z);
 
-  if (m_dimension == 2) {
-    m_latest_cell_uid = m_nb_cell_ground.x * m_nb_cell_ground.y;
-    m_latest_node_uid = (m_nb_cell_ground.x + 1) * (m_nb_cell_ground.y + 1);
-    m_latest_face_uid = (m_nb_cell_ground.x * m_nb_cell_ground.y) * 2 + m_nb_cell_ground.x * 2 + m_nb_cell_ground.y;
-  }
-  else {
-    m_latest_cell_uid = m_nb_cell_ground.x * m_nb_cell_ground.y * m_nb_cell_ground.z;
-    m_latest_node_uid = (m_nb_cell_ground.x + 1) * (m_nb_cell_ground.y + 1) * (m_nb_cell_ground.z + 1);
-    m_latest_face_uid = (m_nb_cell_ground.x + 1) * m_nb_cell_ground.y * m_nb_cell_ground.z + (m_nb_cell_ground.y + 1) * m_nb_cell_ground.z * m_nb_cell_ground.x + (m_nb_cell_ground.z + 1) * m_nb_cell_ground.x * m_nb_cell_ground.y;
+    if (nb_cell_ground.x <= 0)
+      ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirX] (should be >0)", nb_cell_ground.x);
+    if (nb_cell_ground.y <= 0)
+      ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", nb_cell_ground.y);
+    if (nb_cell_ground.z <= 0)
+      ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_ground.z);
+
+    if (m_dimension == 2) {
+      m_latest_cell_uid = nb_cell_ground.x * nb_cell_ground.y;
+      m_latest_node_uid = (nb_cell_ground.x + 1) * (nb_cell_ground.y + 1);
+      m_latest_face_uid = (nb_cell_ground.x * nb_cell_ground.y) * 2 + nb_cell_ground.x * 2 + nb_cell_ground.y;
+    }
+    else {
+      m_latest_cell_uid = nb_cell_ground.x * nb_cell_ground.y * nb_cell_ground.z;
+      m_latest_node_uid = (nb_cell_ground.x + 1) * (nb_cell_ground.y + 1) * (nb_cell_ground.z + 1);
+      m_latest_face_uid = (nb_cell_ground.x + 1) * nb_cell_ground.y * nb_cell_ground.z + (nb_cell_ground.y + 1) * nb_cell_ground.z * nb_cell_ground.x + (nb_cell_ground.z + 1) * nb_cell_ground.x * nb_cell_ground.y;
+    }
   }
 
   m_first_cell_uid_level.add(0);
@@ -96,7 +104,7 @@ CartesianMeshNumberingMngInternal(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_build()
+build()
 {
   m_properties = makeRef(new Properties(*(m_mesh->properties()), "CartesianMeshNumberingMngInternal"));
 }
@@ -105,7 +113,7 @@ _build()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_saveInfosInProperties()
+saveInfosInProperties()
 {
   m_properties->set("Version", 1);
   m_properties->set("FirstCellUIDByLevel", m_first_cell_uid_level);
@@ -121,7 +129,7 @@ _saveInfosInProperties()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMngInternal::
-_recreateFromDump()
+recreateFromDump()
 {
   Int32 v = m_properties->getInt32("Version");
   if (v != 1)

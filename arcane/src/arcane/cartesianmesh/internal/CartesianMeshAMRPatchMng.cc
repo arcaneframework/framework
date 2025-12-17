@@ -30,6 +30,7 @@
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 
+#include "arcane/cartesianmesh/internal/CartesianPatchGroup.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -48,101 +49,6 @@ CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMngIntern
 , m_cmesh(cmesh)
 , m_num_mng(numbering_mng)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshAMRPatchMng::
-flagCellToRefine(ConstArrayView<Int32> cells_lids, const bool clear_old_flags)
-{
-  if (clear_old_flags) {
-    constexpr ItemFlags::FlagType flags_to_remove = (
-      ItemFlags::II_Coarsen | ItemFlags::II_Refine |
-      ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
-      ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive
-      );
-    ENUMERATE_(Cell, icell, m_mesh->allCells()){
-      icell->mutableItemBase().removeFlags(flags_to_remove);
-    }
-  }
-
-  const ItemInfoListView cells(m_mesh->cellFamily());
-  for (const int lid : cells_lids) {
-    Item item = cells[lid];
-    item.mutableItemBase().addFlags(ItemFlags::II_Refine);
-  }
-  _syncFlagCell();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshAMRPatchMng::
-flagCellToCoarsen(ConstArrayView<Int32> cells_lids, const bool clear_old_flags)
-{
-  if (clear_old_flags) {
-    constexpr ItemFlags::FlagType flags_to_remove = (
-      ItemFlags::II_Coarsen | ItemFlags::II_Refine |
-      ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
-      ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive
-      );
-    ENUMERATE_(Cell, icell, m_mesh->allCells()){
-      icell->mutableItemBase().removeFlags(flags_to_remove);
-    }
-  }
-
-  const ItemInfoListView cells(m_mesh->cellFamily());
-  for (const Integer lid : cells_lids) {
-    Item item = cells[lid];
-    item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
-  }
-  _syncFlagCell();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshAMRPatchMng::
-_syncFlagCell() const
-{
-  if (!m_mesh->parallelMng()->isParallel())
-    return;
-
-  VariableCellInteger flag_cells_consistent(VariableBuildInfo(m_mesh, "FlagCellsConsistent"));
-  ENUMERATE_ (Cell, icell, m_mesh->ownCells()) {
-    Cell cell = *icell;
-    flag_cells_consistent[cell] = cell.mutableItemBase().flags();
-    //    debug() << "Send " << cell
-    //            << " -- flag : " << cell.mutableItemBase().flags()
-    //            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
-    //            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-    //    ;
-  }
-
-  flag_cells_consistent.synchronize();
-
-  ENUMERATE_ (Cell, icell, m_mesh->allCells().ghost()) {
-    Cell cell = *icell;
-
-    // On ajoute uniquement les flags qui nous interesse (pour éviter d'ajouter le flag "II_Own" par exemple).
-    // On utilise set au lieu de add puisqu'une maille ne peut être à la fois II_Refine et II_Inactive.
-    if (flag_cells_consistent[cell] & ItemFlags::II_Refine) {
-      cell.mutableItemBase().setFlags(ItemFlags::II_Refine);
-    }
-    if (flag_cells_consistent[cell] & ItemFlags::II_Inactive) {
-      cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
-    }
-    if (flag_cells_consistent[cell] & ItemFlags::II_Coarsen) {
-      cell.mutableItemBase().setFlags(ItemFlags::II_Coarsen);
-    }
-
-    //    debug() << "After Compute " << cell
-    //            << " -- flag : " << cell.mutableItemBase().flags()
-    //            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
-    //            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-    //    ;
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2762,10 +2668,7 @@ createSubLevel()
   }
 
   //! Créé le patch avec les mailles filles
-  {
-    CellGroup parent_cells = m_mesh->allLevelCells(0);
-    m_cmesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
-  }
+  m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
 
   // Recalcule les informations de synchronisation
   // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées

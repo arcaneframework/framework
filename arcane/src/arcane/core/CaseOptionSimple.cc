@@ -35,6 +35,7 @@
 #include "arcane/core/IStandardFunction.h"
 #include "arcane/core/ICaseDocumentVisitor.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,7 +136,7 @@ _search(bool is_phase1)
 
   // Liste des options de la ligne de commande.
   {
-    const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+    const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
     const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
 
     String reference_input = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), velem_name), 1, false);
@@ -662,7 +663,7 @@ _search(bool is_phase1)
   if (!is_phase1)
     return;
 
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
   const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   String full_xpath = String::format("{0}/{1}", rootElement().xpathFullName(), name());

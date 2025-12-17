@@ -103,6 +103,15 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
    */
   void cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchPosition& position) const;
 
+  /*!
+   * \brief Méthode permettant de convertir ce AMRZonePosition en
+   * AMRPatchPosition.
+   *
+   * \param mesh Le maillage cartesien.
+   * \return Le AMRPatchPosition correspondant.
+   */
+  AMRPatchPosition toAMRPatchPosition(ICartesianMesh* mesh) const;
+
  private:
 
   Real3 m_position;

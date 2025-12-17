@@ -31,6 +31,7 @@
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/CaseOptionException.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +53,7 @@ void CaseOptionMultiExtended::
 _search(bool is_phase1)
 {
   ITraceMng* tm = traceMng();
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
   const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
   String full_xpath = String::format("{0}/{1}", rootElement().xpathFullName(), name());
 
