@@ -148,14 +148,17 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
   auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
 
   int max_row_size = 0 ;
+  std::vector<std::size_t> row_size(nrows) ;
   for (int irow = 0; irow < nrows; ++irow) {
-    max_row_size = std::max(max_row_size,kcol[irow + 1] - kcol[irow]) ;
+    int size = kcol[irow + 1] - kcol[irow] ;
+    row_size[irow] = size*block_size ;
+    max_row_size = std::max(max_row_size,size) ;
   }
 
   if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size,max_row_size*block_size,*static_cast<const MPI_Comm*>(pm->getMPIComm())));
+    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size,row_size.data(),*static_cast<const MPI_Comm*>(pm->getMPIComm())));
   else
-    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size, max_row_size*block_size, MPI_COMM_WORLD));
+    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size, row_size.data(), MPI_COMM_WORLD));
 
   return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, max_row_size, values);
 }

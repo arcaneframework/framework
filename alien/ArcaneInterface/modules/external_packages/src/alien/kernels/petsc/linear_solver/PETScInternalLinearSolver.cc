@@ -45,6 +45,7 @@
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
 #include <alien/kernels/petsc/linear_solver/IPETScPC.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
+#include <alien/kernels/petsc/linear_solver/PETScOptionTypes.h>
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 
 

@@ -11,6 +11,29 @@
   <variables/>
 
   <options>
+    <enumeration name="memory-type" type="PETScOptionTypes::eMemoryType" default="Host">
+       <description>Memory Type</description>
+       <enumvalue name="Host" genvalue="PETScOptionTypes::HostMemory">
+          <description>Host Memory type</description>
+       </enumvalue>
+       <enumvalue name="Device" genvalue="PETScOptionTypes::DeviceMemory">
+          <description>Device memorry type</description>
+       </enumvalue>
+       <enumvalue name="Share" genvalue="PETScOptionTypes::ShareMemory">
+          <description>Share memory type</description>
+       </enumvalue>
+    </enumeration>
+    
+    <enumeration name="exec-space" type="PETScOptionTypes::eExecSpace" default="Host">
+       <description>Exec space</description>
+       <enumvalue name="Host" genvalue="PETScOptionTypes::Host">
+          <description>Exec Space on Host</description>
+       </enumvalue>
+       <enumvalue name="Device" genvalue="PETScOptionTypes::Device">
+          <description>Exec on Device</description>
+       </enumvalue>
+    </enumeration>
+  
     <simple name="null-space-constant-opt" type="bool" default="false">
       <description>activate null space constant option</description>
     </simple>

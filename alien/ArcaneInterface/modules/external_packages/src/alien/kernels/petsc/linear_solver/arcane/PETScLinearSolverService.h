@@ -8,6 +8,7 @@
 #include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 #include <alien/core/backend/LinearSolver.h>
+#include <alien/kernels/petsc/linear_solver/PETScOptionTypes.h>
 #include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
 #include <ALIEN/axl/PETScLinearSolver_axl.h>
