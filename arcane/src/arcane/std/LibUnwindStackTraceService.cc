@@ -16,8 +16,9 @@
 #include "arcane/utils/StackTrace.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Process.h"
 #include "arcane/utils/ISymbolizerService.h"
+
+#include "arccore/common/internal/Process.h"
 
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Directory.h"
