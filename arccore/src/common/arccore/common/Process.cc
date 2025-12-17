@@ -14,6 +14,7 @@
 #include "arccore/common/internal/Process.h"
 
 #include "arccore/base/NotImplementedException.h"
+#include "arccore/base/FixedArray.h"
 
 /*
  * NOTE: pour l'instant cette classe n'est implémentée que pour Linux
@@ -98,11 +99,19 @@ execute(ProcessExecArgs& args)
       std::cerr << "Error writing to pipe\n";
     ::close(pipefd_in[1]);
     const int BUF_SIZE = 4096;
-    Byte buf[BUF_SIZE];
-    ssize_t r = 0;
-    // TODO: gérer les interruptions et recommencer si nécessaire
-    while ((r = ::read(pipefd_out[0], buf, BUF_SIZE)) > 0) {
-      args.m_output_bytes.addRange(ByteConstArrayView((Integer)r, buf));
+    FixedArray<Byte, BUF_SIZE + 1> buf;
+    buf[BUF_SIZE] = '\0';
+    ssize_t nb_read = 0;
+    Int32 max_iteration = 1000000;
+    Int32 current_iteration = 0;
+    // Utilise une boucle finie pour éviter les avertissements de coverity/codacy
+    for (Int32 i = 0; i < max_iteration; ++i) {
+      nb_read = ::read(pipefd_out[0], buf.data(), BUF_SIZE);
+      if (nb_read == EINTR)
+        continue;
+      if (nb_read <= 0)
+        break;
+      args.m_output_bytes.addRange(buf.view().subView(0, static_cast<Int32>(nb_read)));
       //::write(STDOUT_FILENO, buf, r);
     }
 
