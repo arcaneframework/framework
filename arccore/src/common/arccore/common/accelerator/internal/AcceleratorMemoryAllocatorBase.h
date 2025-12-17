@@ -134,7 +134,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 {
  public:
 
-  using IMemoryPoolAllocator = Arcane::impl::IMemoryPoolAllocator;
+  using IMemoryPoolAllocator = Arcane::Impl::IMemoryPoolAllocator;
   using BaseClass = AlignedMemoryAllocator;
 
  public:
@@ -212,7 +212,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
   impl::MemoryTracerWrapper m_tracer;
   std::unique_ptr<IUnderlyingAllocator> m_direct_sub_allocator;
-  Arcane::impl::MemoryPool m_memory_pool;
+  Arcane::Impl::MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;
   bool m_use_memory_pool = false;
   String m_allocator_name;
