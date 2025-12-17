@@ -112,8 +112,6 @@ set(ARCANE_SOURCES
   PerfCounterMng.h
   PlatformUtils.cc
   PlatformUtils.h
-  Process.cc
-  Process.h
   Profiling.h
   Property.cc
   Property.h
@@ -186,7 +184,6 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   PerfCounterMng.h
   PlatformUtils.h
-  Process.h
   Ptr.h
   Real2.h
   Real2x2.h

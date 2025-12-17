@@ -33,6 +33,7 @@ set(SOURCES
   NumArray.h
   NumArray.cc
   NumArrayContainer.h
+  Process.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
@@ -43,6 +44,7 @@ set(SOURCES
   internal/MemoryPool.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
+  internal/Process.h
   internal/SpecificMemoryCopyList.h
   internal/HostSpecificMemoryCopy.h
 
