@@ -31,7 +31,7 @@ namespace Arcane::impl
  * \brief Interface d'un allocateur pour un MemoryPool.
  *
  * Cette interface fonctionne à la manière d'un malloc/free à ceci prêt qu'il
- * faut fournir la taille alloué pour un bloc pour la libération de ce dernier.
+ * faut fournir la taille allouée pour un bloc pour la libération de ce dernier.
  * L'utilisateur de cette interface doit donc gérer la conservation de cette
  * information.
  */
@@ -53,7 +53,7 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe pour gérer une liste de zone allouées.
+ * \brief Classe pour gérer une liste de zones allouées.
  *
  * Cette classe utilise une sémantique par référence.
  *
@@ -68,7 +68,14 @@ class ARCCORE_COMMON_EXPORT MemoryPool
  public:
 
   explicit MemoryPool(IMemoryPoolAllocator* allocator, const String& name);
-  ~MemoryPool();
+  ~MemoryPool() override;
+
+ public:
+
+  MemoryPool(const MemoryPool&) = delete;
+  MemoryPool(MemoryPool&&) = delete;
+  MemoryPool& operator=(const MemoryPool&) = delete;
+  MemoryPool& operator=(MemoryPool&&) = delete;
 
  public:
 
@@ -82,7 +89,7 @@ class ARCCORE_COMMON_EXPORT MemoryPool
    * \brief Positionne la taille en octet à partir de laquelle
    * on ne conserve pas un bloc dans le cache.
    *
-   * Cette méthode ne peut être appelé que s'il n'y a aucun bloc dans le
+   * Cette méthode ne peut être appelée que s'il n'y a aucun bloc dans le
    * cache.
    */
   void setMaxCachedBlockSize(size_t v);
@@ -92,7 +99,7 @@ class ARCCORE_COMMON_EXPORT MemoryPool
 
  private:
 
-  std::shared_ptr<Impl> m_p;
+  std::unique_ptr<Impl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
