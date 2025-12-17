@@ -55,6 +55,8 @@
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/internal/SerializeMessageList.h"
 
+#include "arcane_packages.h"
+
 //#define ARCANE_TRACE_MPI
 
 /*---------------------------------------------------------------------------*/
@@ -86,8 +88,10 @@ extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
+#if defined(ARCANE_HAS_PACKAGE_NCCL)
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateNCCLVariableSynchronizerFactory(IParallelMng* mpi_pm);
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -325,11 +329,13 @@ class MpiParallelMngUtilsFactory
       throw NotSupportedException(A_FUNCINFO,"Synchronize implementation V5 is not supported with this version of MPI");
 #endif
     }
+#if defined(ARCANE_HAS_PACKAGE_NCCL)
     else if (m_synchronizer_version == 6){
       if (do_print)
         tm->info() << "Using NCCLSynchronizer";
       generic_factory = arcaneCreateNCCLVariableSynchronizerFactory(mpi_pm);
     }
+#endif
     else{
       if (do_print)
         tm->info() << "Using MpiSynchronizer V1";
