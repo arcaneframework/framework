@@ -45,50 +45,50 @@ std::unique_ptr<MCGInternalLinearSolver::AlienKOpt2MCGKOpt>
 MCGInternalLinearSolver::AlienKOpt2MCGKOpt::AlienKOpt2MCGKOpt()
 {
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, false, false }] =
-      MCGSolver::eKernelType::CPUCBLAS;
+      MCGSolver::eKernelType::CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, true, false }] =
-      MCGSolver::eKernelType::MPI_CPUCBLAS;
+      MCGSolver::eKernelType::MPI_CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, false, true }] =
-      MCGSolver::eKernelType::OMP_CPUCBLAS;
+      MCGSolver::eKernelType::OMP_CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, true, true }] =
-      MCGSolver::eKernelType::MPI_OMP_CPUCBLAS;
+      MCGSolver::eKernelType::MPI_OMP_CPU_CBLAS_BCSR;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, false }] =
-      MCGSolver::eKernelType::CPUAVX;
+      MCGSolver::eKernelType::CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, true, false }] =
-      MCGSolver::eKernelType::MPI_CPUAVX;
+      MCGSolver::eKernelType::MPI_CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, true }] =
-      MCGSolver::eKernelType::OMP_CPUAVX;
+      MCGSolver::eKernelType::OMP_CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, true, true }] =
-      MCGSolver::eKernelType::MPI_OMP_CPUAVX;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX_BCSR;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, false, false }] =
-      MCGSolver::eKernelType::CPUAVX2;
+      MCGSolver::eKernelType::CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, true, false }] =
-      MCGSolver::eKernelType::MPI_CPUAVX2;
+      MCGSolver::eKernelType::MPI_CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, false, true }] =
-      MCGSolver::eKernelType::OMP_CPUAVX2;
+      MCGSolver::eKernelType::OMP_CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, true, true }] =
-      MCGSolver::eKernelType::MPI_OMP_CPUAVX2;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX2_BCSP;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, false, false }] =
-      MCGSolver::eKernelType::CPUAVX512;
+      MCGSolver::eKernelType::CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, true, false }] =
-      MCGSolver::eKernelType::MPI_CPUAVX512;
+      MCGSolver::eKernelType::MPI_CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, false, true }] =
-      MCGSolver::eKernelType::OMP_CPUAVX512;
+      MCGSolver::eKernelType::OMP_CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, true, true }] =
-      MCGSolver::eKernelType::MPI_OMP_CPUAVX512;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX512_BCSP;
 
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BELL, false, false }] =
-      MCGSolver::eKernelType::GPUCUBLASBELL;
+      MCGSolver::eKernelType::GPU_CUBLAS_BELL;
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BELL, true, false }] =
-      MCGSolver::eKernelType::MPI_GPUCUBLASBELL;
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BELL;
 
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSP, false, false }] =
-      MCGSolver::eKernelType::GPUCUBLASBCSP;
+      MCGSolver::eKernelType::GPU_CUBLAS_BCSP;
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSP, true, false }] =
-      MCGSolver::eKernelType::MPI_GPUCUBLASBCSP;
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSP;
 }
 
 MCGSolver::eKernelType
