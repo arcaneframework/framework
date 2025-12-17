@@ -304,22 +304,6 @@ getExeFullPath();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
- *
- * Retourne le chemin complet de la bibliothèque dynamique de nom
- * \a dll_name. \a dll_name doit contenir juste le nom de la bibliothèque
- * sans les extensions spécifiques à la plateforme. Par exemple, sous Linux,
- * il ne faut pas mettre 'libtoto.so' mais juste 'toto'.
- *
- * Retourne une chaîne nulle si le chemin complet ne peut
- * par être déterminé.
- */
-extern "C++" ARCANE_UTILS_EXPORT String
-getLoadedSharedLibraryFullPath(const String& dll_name);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Remplit \a arg_list avec les arguments de la ligne de commande.
  *
  * Cette fonction remplit \a arg_list avec les arguments utilisés dans
