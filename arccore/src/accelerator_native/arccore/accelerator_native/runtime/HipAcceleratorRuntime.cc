@@ -717,10 +717,20 @@ class HipMemoryCopier
 
 } // End namespace Arcane::Accelerator::Hip
 
-namespace 
+using namespace Arcane;
+
+namespace
 {
 Arcane::Accelerator::Hip::HipRunnerRuntime global_hip_runtime;
 Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
+
+void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
+{
+  IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
+  eMemoryResource mem = allocator->memoryResource();
+  mrm->setAllocator(mem, allocator);
+  mrm->setMemoryPool(mem, allocator->memoryPool());
+}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -731,7 +741,6 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
-  using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;
   Arcane::Accelerator::impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
@@ -740,9 +749,9 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_hip_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_hip_memory_allocator);
-  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_hip_memory_allocator);
-  mrm->setAllocator(eMemoryResource::Device, &device_hip_memory_allocator);
+  _setAllocator(&unified_memory_hip_memory_allocator);
+  _setAllocator(&host_pinned_hip_memory_allocator);
+  _setAllocator(&device_hip_memory_allocator);
   mrm->setCopier(&global_hip_memory_copier);
   global_hip_runtime.fillDevices(init_info.isVerbose());
 }
