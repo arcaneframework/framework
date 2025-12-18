@@ -78,9 +78,9 @@ enum eCellNodePosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef Int32 CartCoordType;
-typedef Int32x3 CartCoord3Type;
-typedef Int32x2 CartCoord2Type;
+typedef Int32 CartCoord;
+typedef Int32x3 CartCoord3;
+typedef Int32x2 CartCoord2;
 
 } // End namespace Arcane
 
