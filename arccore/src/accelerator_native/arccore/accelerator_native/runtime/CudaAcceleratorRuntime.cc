@@ -1032,10 +1032,21 @@ class CudaMemoryCopier
 
 } // End namespace Arcane::Accelerator::Cuda
 
+using namespace Arcane;
+
 namespace
 {
-Arcane::Accelerator::Cuda::CudaRunnerRuntime global_cuda_runtime;
-Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
+Accelerator::Cuda::CudaRunnerRuntime global_cuda_runtime;
+Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
+
+void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
+{
+  IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
+  eMemoryResource mem = allocator->memoryResource();
+  mrm->setAllocator(mem, allocator);
+  mrm->setMemoryPool(mem, allocator->memoryPool());
+}
+
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -1046,19 +1057,18 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
-  using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
   global_cuda_runtime.build();
-  Arcane::Accelerator::impl::setUsingCUDARuntime(true);
-  Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
+  Accelerator::impl::setUsingCUDARuntime(true);
+  Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_cuda_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_cuda_memory_allocator);
-  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_cuda_memory_allocator);
-  mrm->setAllocator(eMemoryResource::Device, &device_cuda_memory_allocator);
+  _setAllocator(&unified_memory_cuda_memory_allocator);
+  _setAllocator(&host_pinned_cuda_memory_allocator);
+  _setAllocator(&device_cuda_memory_allocator);
   mrm->setCopier(&global_cuda_memory_copier);
   global_cuda_runtime.fillDevices(init_info.isVerbose());
 }
