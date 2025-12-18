@@ -72,7 +72,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   }
   auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  FixedArray<CartCoordType, 6> min_n_max;
+  FixedArray<CartCoord, 6> min_n_max;
   min_n_max[0] = INT32_MAX;
   min_n_max[1] = INT32_MAX;
   min_n_max[2] = INT32_MAX;
@@ -109,7 +109,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
       if (icell->isOwn())
         nb_cells++;
 
-      CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+      CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
       if (pos.x < min[MD_DirX])
         min[MD_DirX] = pos.x;
       if (pos.x > max[MD_DirX])
@@ -163,7 +163,7 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   AMRPatchPosition position;
   auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  FixedArray<CartCoordType, 6> min_n_max;
+  FixedArray<CartCoord, 6> min_n_max;
   min_n_max[0] = INT32_MAX;
   min_n_max[1] = INT32_MAX;
   min_n_max[2] = INT32_MAX;
@@ -199,7 +199,7 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
       if (icell->isOwn())
         nb_cells++;
 
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
       if (pos.x < min[MD_DirX])
         min[MD_DirX] = pos.x;
       if (pos.x > max[MD_DirX])
