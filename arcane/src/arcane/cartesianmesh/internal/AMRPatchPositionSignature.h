@@ -49,11 +49,11 @@ class AMRPatchPositionSignature
   bool canBeCut() const;
   void compute();
   Real efficacity() const;
-  std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, CartCoordType cut_point) const;
+  std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, CartCoord cut_point) const;
 
-  ConstArrayView<CartCoordType> sigX() const;
-  ConstArrayView<CartCoordType> sigY() const;
-  ConstArrayView<CartCoordType> sigZ() const;
+  ConstArrayView<CartCoord> sigX() const;
+  ConstArrayView<CartCoord> sigY() const;
+  ConstArrayView<CartCoord> sigZ() const;
   AMRPatchPosition patch() const;
   ICartesianMesh* mesh() const;
   bool stopCut() const;
@@ -73,9 +73,9 @@ class AMRPatchPositionSignature
   bool m_have_cells;
   bool m_is_computed;
 
-  UniqueArray<CartCoordType> m_sig_x;
-  UniqueArray<CartCoordType> m_sig_y;
-  UniqueArray<CartCoordType> m_sig_z;
+  UniqueArray<CartCoord> m_sig_x;
+  UniqueArray<CartCoord> m_sig_y;
+  UniqueArray<CartCoord> m_sig_z;
 
   AMRPatchPositionLevelGroup* m_all_patches;
 };

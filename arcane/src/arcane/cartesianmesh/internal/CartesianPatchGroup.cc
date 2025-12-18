@@ -87,8 +87,8 @@ saveInfosInProperties()
     UniqueArray<Int32> level(m_amr_patches_pointer.size());
     UniqueArray<Int32> overlap(m_amr_patches_pointer.size());
     UniqueArray<Int32> index(m_amr_patches_pointer.size());
-    UniqueArray<CartCoordType> min_point(m_amr_patches_pointer.size() * 3);
-    UniqueArray<CartCoordType> max_point(m_amr_patches_pointer.size() * 3);
+    UniqueArray<CartCoord> min_point(m_amr_patches_pointer.size() * 3);
+    UniqueArray<CartCoord> max_point(m_amr_patches_pointer.size() * 3);
 
     for (Integer i = 0; i < m_amr_patches_pointer.size(); ++i) {
       const AMRPatchPosition& position = m_amr_patches_pointer[i]->_internalApi()->positionRef();
@@ -157,8 +157,8 @@ recreateFromDump()
     UniqueArray<Int32> level;
     UniqueArray<Int32> overlap;
     UniqueArray<Int32> index;
-    UniqueArray<CartCoordType> min_point;
-    UniqueArray<CartCoordType> max_point;
+    UniqueArray<CartCoord> min_point;
+    UniqueArray<CartCoord> max_point;
 
     m_properties->get("LevelPatches", level);
     m_properties->get("OverlapSizePatches", overlap);
@@ -292,7 +292,7 @@ addPatch(const AMRZonePosition& zone_position)
 
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
     if (!icell->hasHChildren()) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
       if (position.isInWithOverlap(pos)) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -468,7 +468,7 @@ removeCellsInZone(const AMRZonePosition& zone_to_delete)
 
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
     if (!icell->hasHChildren()) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
       if (patch_position.isIn(pos)) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
       }
@@ -540,7 +540,7 @@ updateLevelsAndAddGroundPatch()
     const Int32 level = patch->position().level();
     // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
     if (level == 0) {
-      const CartCoord3Type max_point = patch->position().maxPoint();
+      const CartCoord3 max_point = patch->position().maxPoint();
       if (m_cmesh->mesh()->dimension() == 2) {
         patch->_internalApi()->positionRef().setMaxPoint({
         numbering->offsetLevelToLevel(max_point.x, level, level - 1),
@@ -712,7 +712,7 @@ refine(bool clear_refine_flag)
     if (level != future_max_level) {
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
-          const CartCoord3Type pos = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoord(*icell), level, level + 1);
+          const CartCoord3 pos = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoord(*icell), level, level + 1);
           for (const auto& patch : all_patches.patches(level)) {
             if (patch.isInWithOverlap(pos, patch.overlapLayerSize() + 1)) {
               icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
@@ -820,7 +820,7 @@ refine(bool clear_refine_flag)
 
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
       if (!icell->hasHChildren()) {
-        const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+        const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
         for (const AMRPatchPosition& patch : all_patches.patches(level)) {
           if (patch.isInWithOverlap(pos)) {
             icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
@@ -901,7 +901,7 @@ refine(bool clear_refine_flag)
 
   for (Int32 level = future_max_level + 1; level > min_level; --level) {
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
 
       bool is_in = false;
       for (const AMRPatchPosition& patch : all_patches.patches(level - 1)) {
@@ -1159,7 +1159,7 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 
   ENUMERATE_ (Cell, icell, cell_group) {
     Cell cell = *icell;
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
 
     if (cell.isOwn() && patch_position.isIn(pos)) {
       inpatch_items_lid.add(cell.localId());
@@ -1215,7 +1215,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
   // p0   |-----|
   // p1    |---|
   // r = {p1_min, p1_max}
-  auto cut_points_p0 = [](CartCoordType p0_min, CartCoordType p0_max, CartCoordType p1_min, CartCoordType p1_max) -> std::pair<CartCoordType, CartCoordType> {
+  auto cut_points_p0 = [](CartCoord p0_min, CartCoord p0_max, CartCoord p1_min, CartCoord p1_max) -> std::pair<CartCoord, CartCoord> {
     std::pair to_return{ -1, -1 };
     if (p1_min > p0_min && p1_min < p0_max) {
       to_return.first = p1_min;
@@ -1231,7 +1231,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 
   UniqueArray<AMRPatchPosition> new_patch_out;
 
-  CartCoord3Type min_point_of_patch_to_exclude(-1, -1, -1);
+  CartCoord3 min_point_of_patch_to_exclude(-1, -1, -1);
 
   // Partie découpe du patch autour de la zone à exclure.
   {
@@ -1437,7 +1437,7 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   ENUMERATE_ (Cell, icell, parent_patch_cell_group) {
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
     if (new_patch_position.isIn(pos)) {
       cells_local_id.add(icell.localId());
     }
@@ -1463,7 +1463,7 @@ _addPatch(const AMRPatchPosition& new_patch_position)
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(new_patch_position.level())) {
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
     if (new_patch_position.isInWithOverlap(pos)) {
       cells_local_id.add(icell.localId());
     }

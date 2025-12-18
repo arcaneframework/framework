@@ -56,7 +56,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * Une position nulle est définie par un level = -2.
    */
   AMRPatchPosition();
-  AMRPatchPosition(Int32 level, CartCoord3Type min_point, CartCoord3Type max_point, Int32 overlap_layer_size);
+  AMRPatchPosition(Int32 level, CartCoord3 min_point, CartCoord3 max_point, Int32 overlap_layer_size);
 
   /*!
    * \brief Constructeur de copie.
@@ -87,14 +87,14 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La position min.
    */
-  CartCoord3Type minPoint() const;
+  CartCoord3 minPoint() const;
 
   /*!
    * \brief Méthode permettant de définir la position min de la boite
    * englobante.
    * \param min_point la position min.
    */
-  void setMinPoint(CartCoord3Type min_point);
+  void setMinPoint(CartCoord3 min_point);
 
   /*!
    * \brief Méthode permettant de récupérer la position max de la boite
@@ -102,14 +102,14 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La position max.
    */
-  CartCoord3Type maxPoint() const;
+  CartCoord3 maxPoint() const;
 
   /*!
    * \brief Méthode permettant de définir la position max de la boite
    * englobante.
    * \param max_point la position max.
    */
-  void setMaxPoint(CartCoord3Type max_point);
+  void setMaxPoint(CartCoord3 max_point);
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de couches de mailles de
@@ -131,14 +131,14 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * englobante en incluant la couche de mailles de recouvrement.
    * \return La position min avec la couche de mailles de recouvrement.
    */
-  CartCoord3Type minPointWithOverlap() const;
+  CartCoord3 minPointWithOverlap() const;
 
   /*!
    * \brief Méthode permettant de récupérer la position max de la boite
    * englobante en incluant la couche de mailles de recouvrement.
    * \return La position max avec la couche de mailles de recouvrement.
    */
-  CartCoord3Type maxPointWithOverlap() const;
+  CartCoord3 maxPointWithOverlap() const;
 
   /*!
    * \brief Méthode permettant de connaitre le nombre de mailles du patch
@@ -162,7 +162,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * \param dim La dimension qui doit être découpée.
    * \return Les deux positions de patch résultant de la découpe.
    */
-  std::pair<AMRPatchPosition, AMRPatchPosition> cut(CartCoordType cut_point, Integer dim) const;
+  std::pair<AMRPatchPosition, AMRPatchPosition> cut(CartCoord cut_point, Integer dim) const;
 
   /*!
    * \brief Méthode permettant de savoir si notre patch peut être fusionné
@@ -232,7 +232,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return La taille du patch.
    */
-  CartCoord3Type length() const;
+  CartCoord3 length() const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
@@ -247,7 +247,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isIn(CartCoordType x, CartCoordType y, CartCoordType z) const;
+  bool isIn(CartCoord x, CartCoord y, CartCoord z) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille est incluse dans ce
@@ -260,7 +260,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isIn(CartCoord3Type coord) const;
+  bool isIn(CartCoord3 coord) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
@@ -272,7 +272,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z) const;
+  bool isInWithOverlap(CartCoord x, CartCoord y, CartCoord z) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille est incluse dans ce
@@ -282,7 +282,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(CartCoord3Type coord) const;
+  bool isInWithOverlap(CartCoord3 coord) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille de position x,y,z est
@@ -295,7 +295,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z, Integer overlap) const;
+  bool isInWithOverlap(CartCoord x, CartCoord y, CartCoord z, Integer overlap) const;
 
   /*!
    * \brief Méthode permettant de savoir si une maille est incluse dans ce
@@ -306,7 +306,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    *
    * \return True si la maille est dans le patch.
    */
-  bool isInWithOverlap(CartCoord3Type coord, Integer overlap) const;
+  bool isInWithOverlap(CartCoord3 coord, Integer overlap) const;
 
   /*!
    * \brief Méthode permettant de savoir si notre patch est en contact avec le
@@ -320,8 +320,8 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
  private:
 
   Int32 m_level;
-  CartCoord3Type m_min_point;
-  CartCoord3Type m_max_point;
+  CartCoord3 m_min_point;
+  CartCoord3 m_max_point;
   Int32 m_overlap_layer_size;
 };
 

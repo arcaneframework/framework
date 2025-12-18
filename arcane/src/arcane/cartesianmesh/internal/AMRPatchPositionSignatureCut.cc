@@ -53,18 +53,18 @@ AMRPatchPositionSignatureCut::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType AMRPatchPositionSignatureCut::
-_cutDim(ConstArrayView<CartCoordType> sig)
+CartCoord AMRPatchPositionSignatureCut::
+_cutDim(ConstArrayView<CartCoord> sig)
 {
   if (sig.size() < MIN_SIZE * 2) {
     return -1;
   }
 
-  CartCoordType cut_point = -1;
-  CartCoordType mid = sig.size() / 2;
+  CartCoord cut_point = -1;
+  CartCoord mid = sig.size() / 2;
 
   {
-    for (CartCoordType i = 0; i < sig.size(); ++i) {
+    for (CartCoord i = 0; i < sig.size(); ++i) {
       if (sig[i] == 0) {
         cut_point = i;
         break;
@@ -80,12 +80,12 @@ _cutDim(ConstArrayView<CartCoordType> sig)
   }
 
   {
-    UniqueArray<CartCoordType> dsec_sig(sig.size(), 0);
+    UniqueArray<CartCoord> dsec_sig(sig.size(), 0);
 
-    CartCoordType max = -1;
-    for (CartCoordType i = 1; i < dsec_sig.size() - 1; ++i) {
+    CartCoord max = -1;
+    for (CartCoord i = 1; i < dsec_sig.size() - 1; ++i) {
       dsec_sig[i] = sig[i + 1] - 2 * sig[i] + sig[i - 1];
-      CartCoordType dif = math::abs(dsec_sig[i - 1] - dsec_sig[i]);
+      CartCoord dif = math::abs(dsec_sig[i - 1] - dsec_sig[i]);
       if (dif > max) {
         cut_point = i;
         max = dif;
@@ -117,9 +117,9 @@ _cutDim(ConstArrayView<CartCoordType> sig)
 std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPositionSignatureCut::
 cut(const AMRPatchPositionSignature& sig)
 {
-  CartCoordType cut_point_x = _cutDim(sig.sigX());
-  CartCoordType cut_point_y = _cutDim(sig.sigY());
-  CartCoordType cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
+  CartCoord cut_point_x = _cutDim(sig.sigX());
+  CartCoord cut_point_y = _cutDim(sig.sigY());
+  CartCoord cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
 
   if (cut_point_x == -1 && cut_point_y == -1 && cut_point_z == -1) {
     return {};

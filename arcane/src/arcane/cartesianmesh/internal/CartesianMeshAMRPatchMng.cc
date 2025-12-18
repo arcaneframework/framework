@@ -176,11 +176,11 @@ refine()
       const Int32 parent_cell_level = parent_cell.level();
       const bool parent_cell_is_own = (parent_cell.owner() == my_rank);
 
-      const CartCoordType parent_coord_x = m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, parent_cell_level);
-      const CartCoordType parent_coord_y = m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, parent_cell_level);
+      const CartCoord parent_coord_x = m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, parent_cell_level);
+      const CartCoord parent_coord_y = m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, parent_cell_level);
 
-      const CartCoordType child_coord_x = m_num_mng->offsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
-      const CartCoordType child_coord_y = m_num_mng->offsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
+      const CartCoord child_coord_x = m_num_mng->offsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
+      const CartCoord child_coord_y = m_num_mng->offsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
 
       const Int32 pattern = m_num_mng->pattern();
 
@@ -298,16 +298,16 @@ refine()
       };
 
       // On itère sur toutes les mailles enfants.
-      for (CartCoordType j = child_coord_y; j < child_coord_y + pattern; ++j) {
-        for (CartCoordType i = child_coord_x; i < child_coord_x + pattern; ++i) {
+      for (CartCoord j = child_coord_y; j < child_coord_y + pattern; ++j) {
+        for (CartCoord i = child_coord_x; i < child_coord_x + pattern; ++i) {
           parent_cells.add(parent_cell.localId());
           total_nb_cells++;
 
-          const Int64 child_cell_uid = m_num_mng->cellUniqueId(CartCoord2Type(i, j), parent_cell_level + 1);
+          const Int64 child_cell_uid = m_num_mng->cellUniqueId(CartCoord2(i, j), parent_cell_level + 1);
           // debug() << "Child -- x : " << i << " -- y : " << j << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-          m_num_mng->cellNodeUniqueIds(CartCoord2Type(i, j), parent_cell_level + 1, child_nodes_uids);
-          m_num_mng->cellFaceUniqueIds(CartCoord2Type(i, j), parent_cell_level + 1, child_faces_uids);
+          m_num_mng->cellNodeUniqueIds(CartCoord2(i, j), parent_cell_level + 1, child_nodes_uids);
+          m_num_mng->cellFaceUniqueIds(CartCoord2(i, j), parent_cell_level + 1, child_faces_uids);
 
           constexpr Integer type_cell = IT_Quad4;
           constexpr Integer type_face = IT_Line2;
@@ -700,8 +700,8 @@ refine()
       const Int64 parent_cell_uid = parent_cell.uniqueId();
       const Int32 parent_cell_level = parent_cell.level();
 
-      const CartCoord3Type parent_coord = m_num_mng->cellUniqueIdToCoord(parent_cell_uid, parent_cell_level);
-      const CartCoord3Type child_coord = m_num_mng->offsetLevelToLevel(parent_coord, parent_cell_level, parent_cell_level + 1);
+      const CartCoord3 parent_coord = m_num_mng->cellUniqueIdToCoord(parent_cell_uid, parent_cell_level);
+      const CartCoord3 child_coord = m_num_mng->offsetLevelToLevel(parent_coord, parent_cell_level, parent_cell_level + 1);
 
       const Int32 pattern = m_num_mng->pattern();
 
@@ -847,17 +847,17 @@ refine()
       };
 
       // On itère sur toutes les mailles enfants.
-      for (CartCoordType k = child_coord.z; k < child_coord.z + pattern; ++k) {
-        for (CartCoordType j = child_coord.y; j < child_coord.y + pattern; ++j) {
-          for (CartCoordType i = child_coord.x; i < child_coord.x + pattern; ++i) {
+      for (CartCoord k = child_coord.z; k < child_coord.z + pattern; ++k) {
+        for (CartCoord j = child_coord.y; j < child_coord.y + pattern; ++j) {
+          for (CartCoord i = child_coord.x; i < child_coord.x + pattern; ++i) {
             parent_cells.add(parent_cell.localId());
             total_nb_cells++;
 
-            const Int64 child_cell_uid = m_num_mng->cellUniqueId(CartCoord3Type(i, j, k), parent_cell_level + 1);
+            const Int64 child_cell_uid = m_num_mng->cellUniqueId(CartCoord3(i, j, k), parent_cell_level + 1);
             // debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-            m_num_mng->cellNodeUniqueIds(CartCoord3Type(i, j, k), parent_cell_level + 1, child_nodes_uids);
-            m_num_mng->cellFaceUniqueIds(CartCoord3Type(i, j, k), parent_cell_level + 1, child_faces_uids);
+            m_num_mng->cellNodeUniqueIds(CartCoord3(i, j, k), parent_cell_level + 1, child_nodes_uids);
+            m_num_mng->cellFaceUniqueIds(CartCoord3(i, j, k), parent_cell_level + 1, child_faces_uids);
 
             constexpr Int64 type_cell = IT_Hexaedron8;
             constexpr Int64 type_face = IT_Quad4;
