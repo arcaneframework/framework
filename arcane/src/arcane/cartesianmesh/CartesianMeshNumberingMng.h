@@ -95,7 +95,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de mailles en X.
    */
-  CartCoordType globalNbCellsX(Int32 level) const;
+  CartCoord globalNbCellsX(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de mailles global en Y d'un niveau.
@@ -103,7 +103,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de mailles en Y.
    */
-  CartCoordType globalNbCellsY(Int32 level) const;
+  CartCoord globalNbCellsY(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de mailles global en Z d'un niveau.
@@ -111,7 +111,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de mailles en Z.
    */
-  CartCoordType globalNbCellsZ(Int32 level) const;
+  CartCoord globalNbCellsZ(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds global en X d'un niveau.
@@ -119,7 +119,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de noeuds en X.
    */
-  CartCoordType globalNbNodesX(Int32 level) const;
+  CartCoord globalNbNodesX(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds global en Y d'un niveau.
@@ -127,7 +127,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de noeuds en Y.
    */
-  CartCoordType globalNbNodesY(Int32 level) const;
+  CartCoord globalNbNodesY(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds global en Z d'un niveau.
@@ -135,7 +135,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de noeuds en Z.
    */
-  CartCoordType globalNbNodesZ(Int32 level) const;
+  CartCoord globalNbNodesZ(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de faces global en X d'un niveau.
@@ -155,7 +155,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de faces en X.
    */
-  CartCoordType globalNbFacesX(Int32 level) const;
+  CartCoord globalNbFacesX(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de faces global en Y d'un niveau.
@@ -175,7 +175,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de faces en Y.
    */
-  CartCoordType globalNbFacesY(Int32 level) const;
+  CartCoord globalNbFacesY(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de faces global en Z d'un niveau.
@@ -194,7 +194,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return Le nombre de faces en Z.
    */
-  CartCoordType globalNbFacesZ(Int32 level) const;
+  CartCoord globalNbFacesZ(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
@@ -244,7 +244,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return La taille de la grille en X.
    */
-  CartCoordType globalNbFacesXCartesianView(Int32 level) const;
+  CartCoord globalNbFacesXCartesianView(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
@@ -255,7 +255,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return La taille de la grille en Y.
    */
-  CartCoordType globalNbFacesYCartesianView(Int32 level) const;
+  CartCoord globalNbFacesYCartesianView(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
@@ -266,7 +266,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau.
    * \return La taille de la grille en Z.
    */
-  CartCoordType globalNbFacesZCartesianView(Int32 level) const;
+  CartCoord globalNbFacesZCartesianView(Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de mailles total dans un niveau.
@@ -337,7 +337,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level_to Le niveau enfant.
    * \return La position de la première fille du noeud/maille parent.
    */
-  CartCoordType offsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const;
+  CartCoord offsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const;
 
   /*!
    * \brief Méthode permettant d'obtenir la position de la première face enfant à partir de la position
@@ -351,7 +351,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level_to Le niveau enfant.
    * \return La position du premier enfant de la face parente.
    */
-  CartCoordType faceOffsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const;
+  CartCoord faceOffsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une maille grâce à son uniqueId.
@@ -360,7 +360,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille.
    * \return La position en X de la maille.
    */
-  CartCoordType cellUniqueIdToCoordX(Int64 uid, Int32 level) const;
+  CartCoord cellUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une maille.
@@ -368,7 +368,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param cell La maille.
    * \return La position en X de la maille.
    */
-  CartCoordType cellUniqueIdToCoordX(Cell cell) const;
+  CartCoord cellUniqueIdToCoordX(Cell cell) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une maille grâce à son uniqueId.
@@ -377,7 +377,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille.
    * \return La position en Y de la maille.
    */
-  CartCoordType cellUniqueIdToCoordY(Int64 uid, Int32 level) const;
+  CartCoord cellUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une maille.
@@ -385,7 +385,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param cell La maille.
    * \return La position en Y de la maille.
    */
-  CartCoordType cellUniqueIdToCoordY(Cell cell) const;
+  CartCoord cellUniqueIdToCoordY(Cell cell) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une maille grâce à son uniqueId.
@@ -394,7 +394,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille.
    * \return La position en Z de la maille.
    */
-  CartCoordType cellUniqueIdToCoordZ(Int64 uid, Int32 level) const;
+  CartCoord cellUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une maille.
@@ -402,7 +402,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param cell La maille.
    * \return La position en Z de la maille.
    */
-  CartCoordType cellUniqueIdToCoordZ(Cell cell) const;
+  CartCoord cellUniqueIdToCoordZ(Cell cell) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud grâce à son uniqueId.
@@ -411,7 +411,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \return La position en X du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordX(Int64 uid, Int32 level) const;
+  CartCoord nodeUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud.
@@ -419,7 +419,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param node Le noeud.
    * \return La position en X du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordX(Node node) const;
+  CartCoord nodeUniqueIdToCoordX(Node node) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud grâce à son uniqueId.
@@ -428,7 +428,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \return La position en Y du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordY(Int64 uid, Int32 level) const;
+  CartCoord nodeUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud.
@@ -436,7 +436,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param node Le noeud.
    * \return La position en Y du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordY(Node node) const;
+  CartCoord nodeUniqueIdToCoordY(Node node) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud grâce à son uniqueId.
@@ -445,7 +445,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \return La position en Z du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordZ(Int64 uid, Int32 level) const;
+  CartCoord nodeUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud.
@@ -453,7 +453,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param node Le noeud.
    * \return La position en Z du noeud.
    */
-  CartCoordType nodeUniqueIdToCoordZ(Node node) const;
+  CartCoord nodeUniqueIdToCoordZ(Node node) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une face grâce à son uniqueId.
@@ -465,7 +465,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la face.
    * \return La position en X de la face.
    */
-  CartCoordType faceUniqueIdToCoordX(Int64 uid, Int32 level) const;
+  CartCoord faceUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une face.
@@ -476,7 +476,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param face La face.
    * \return La position en X de la face.
    */
-  CartCoordType faceUniqueIdToCoordX(Face face) const;
+  CartCoord faceUniqueIdToCoordX(Face face) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une face grâce à son uniqueId.
@@ -488,7 +488,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la face.
    * \return La position en Y de la face.
    */
-  CartCoordType faceUniqueIdToCoordY(Int64 uid, Int32 level) const;
+  CartCoord faceUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une face.
@@ -499,7 +499,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param face La face.
    * \return La position en Y de la face.
    */
-  CartCoordType faceUniqueIdToCoordY(Face face) const;
+  CartCoord faceUniqueIdToCoordY(Face face) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une face grâce à son uniqueId.
@@ -511,7 +511,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la face.
    * \return La position en Z de la face.
    */
-  CartCoordType faceUniqueIdToCoordZ(Int64 uid, Int32 level) const;
+  CartCoord faceUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une face.
@@ -522,7 +522,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param face La face.
    * \return La position en Z de la face.
    */
-  CartCoordType faceUniqueIdToCoordZ(Face face) const;
+  CartCoord faceUniqueIdToCoordZ(Face face) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
@@ -531,7 +531,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille.
    * \return L'uniqueId de la maille.
    */
-  Int64 cellUniqueId(CartCoord3Type cell_coord, Int32 level) const;
+  Int64 cellUniqueId(CartCoord3 cell_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
@@ -540,7 +540,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille.
    * \return L'uniqueId de la maille.
    */
-  Int64 cellUniqueId(CartCoord2Type cell_coord, Int32 level) const;
+  Int64 cellUniqueId(CartCoord2 cell_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
@@ -549,7 +549,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \return L'uniqueId du noeud.
    */
-  Int64 nodeUniqueId(CartCoord3Type node_coord, Int32 level) const;
+  Int64 nodeUniqueId(CartCoord3 node_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
@@ -558,7 +558,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \return L'uniqueId du noeud.
    */
-  Int64 nodeUniqueId(CartCoord2Type node_coord, Int32 level) const;
+  Int64 nodeUniqueId(CartCoord2 node_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
@@ -570,7 +570,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la face.
    * \return L'uniqueId de la face.
    */
-  Int64 faceUniqueId(CartCoord3Type face_coord, Int32 level) const;
+  Int64 faceUniqueId(CartCoord3 face_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
@@ -582,7 +582,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la face.
    * \return L'uniqueId de la face.
    */
-  Int64 faceUniqueId(CartCoord2Type face_coord, Int32 level) const;
+  Int64 faceUniqueId(CartCoord2 face_coord, Int32 level) const;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds dans une maille.
@@ -606,7 +606,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille (et donc des noeuds).
    * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
    */
-  void cellNodeUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellNodeUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
@@ -623,7 +623,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille (et donc des noeuds).
    * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
    */
-  void cellNodeUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellNodeUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
@@ -679,7 +679,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille (et donc des faces).
    * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
    */
-  void cellFaceUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellFaceUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
@@ -696,7 +696,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille (et donc des faces).
    * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
    */
-  void cellFaceUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellFaceUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
@@ -742,7 +742,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille au centre.
    * \param uid [OUT] Les uniqueIds des mailles autour.
    */
-  void cellUniqueIdsAroundCell(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellUniqueIdsAroundCell(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'une maille.
@@ -756,7 +756,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau de la maille au centre.
    * \param uid [OUT] Les uniqueIds des mailles autour.
    */
-  void cellUniqueIdsAroundCell(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellUniqueIdsAroundCell(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
@@ -799,7 +799,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \param uid [OUT] Les uniqueIds des mailles autour.
    */
-  void cellUniqueIdsAroundNode(CartCoord3Type node_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellUniqueIdsAroundNode(CartCoord3 node_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'un noeud.
@@ -813,7 +813,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param level Le niveau du noeud.
    * \param uid [OUT] Les uniqueIds des mailles autour.
    */
-  void cellUniqueIdsAroundNode(CartCoord2Type node_coord, Int32 level, ArrayView<Int64> uid) const;
+  void cellUniqueIdsAroundNode(CartCoord2 node_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour du noeud passée
@@ -875,7 +875,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param child_coord_in_parent La position de l'enfant dans la maille parent.
    * \return L'uniqueId de la maille enfant demandée.
    */
-  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const;
+  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord3 child_coord_in_parent) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
@@ -885,7 +885,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param child_coord_in_parent La position de l'enfant dans la maille parent.
    * \return L'uniqueId de la maille enfant demandée.
    */
-  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord2Type child_coord_in_parent) const;
+  Int64 childCellUniqueIdOfCell(Cell cell, CartCoord2 child_coord_in_parent) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
@@ -905,7 +905,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param child_coord_in_parent La position de l'enfant dans la maille parent.
    * \return La maille enfant demandée.
    */
-  Cell childCellOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const;
+  Cell childCellOfCell(Cell cell, CartCoord3 child_coord_in_parent) const;
 
   /*!
    * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
@@ -915,7 +915,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \param child_coord_in_parent La position de l'enfant dans la maille parent.
    * \return La maille enfant demandée.
    */
-  Cell childCellOfCell(Cell cell, CartCoord2Type child_coord_in_parent) const;
+  Cell childCellOfCell(Cell cell, CartCoord2 child_coord_in_parent) const;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId du parent d'un noeud.
