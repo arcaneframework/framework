@@ -60,6 +60,7 @@ using Arcane::Accelerator::RunQueue;
 class IMemoryResourceMngInternal;
 class IMemoryResourceMng;
 class IMemoryCopier;
+class IMemoryPool;
 
 class IMemoryAllocator;
 class AllocatedMemoryInfo;

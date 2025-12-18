@@ -164,9 +164,8 @@ _setUseMemoryPool(bool is_used)
   if (is_used) {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL_MAX_BLOCK_SIZE", true)) {
       if (v.value() < 0)
-        ARCCORE_FATAL("Invalid value '{0}' for memory pool max block size");
-      size_t block_size = static_cast<size_t>(v.value());
-      m_memory_pool.setMaxCachedBlockSize(block_size);
+        ARCCORE_FATAL("Invalid value '{0}' for memory pool max block size", v.value());
+      m_memory_pool.setMaxCachedBlockSize(v.value());
     }
   }
 }
