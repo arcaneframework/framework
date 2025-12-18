@@ -647,7 +647,6 @@ mergePatches()
 
         if (patch_fusion_0.fusion(patch_fusion_1)) {
           // m_cmesh->traceMng()->info() << "Fusion OK";
-          patch_fusion_1.setLevel(-2); // Devient null.
           index_n_nb_cells[p0].second = patch_fusion_0.nbCells();
 
           UniqueArray<Int32> local_ids;
@@ -705,6 +704,37 @@ refine(bool clear_refine_flag)
   // m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
+  /*
+  {
+    UniqueArray<CartCoord> out(numbering->globalNbCellsY(0) * numbering->globalNbCellsX(0), -1);
+    Array2View av_out(out.data(), numbering->globalNbCellsY(0), numbering->globalNbCellsX(0));
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(0)) {
+      CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+      if (icell->hasHChildren()) {
+        av_out(pos.y, pos.x) = 0;
+      }
+      if (icell->hasFlags(ItemFlags::II_Refine)) {
+        av_out(pos.y, pos.x) = 1;
+      }
+    }
+
+    StringBuilder str = "";
+    for (CartCoord i = 0; i < numbering->globalNbCellsX(0); ++i) {
+      str += "\n";
+      for (CartCoord j = 0; j < numbering->globalNbCellsY(0); ++j) {
+        CartCoord c = av_out(i, j);
+        if (c == 1)
+          str += "[++]";
+        else if (c == 0)
+          str += "[XX]";
+        else
+          str += "[  ]";
+      }
+    }
+    m_cmesh->traceMng()->info() << str;
+  }
+  */
+
   AMRPatchPositionLevelGroup all_patches(future_max_level);
 
   for (Int32 level = future_max_level; level >= min_level; --level) {
@@ -755,21 +785,19 @@ refine(bool clear_refine_flag)
       }
       global_efficacity /= sig_array.size();
       m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
+      UniqueArray<CartCoord> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
+      Array2View av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
         if (icell->level() != level)
           continue;
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
         Integer patch = -1;
         for (Integer i = 0; i < sig_array.size(); ++i) {
           const AMRPatchPositionSignature& elem = sig_array[i];
-          if (elem.patch().isInWithOverlap(pos_x, pos_y, pos_z)) {
-            patch = -2;
-          }
-          if (elem.isIn(pos_x, pos_y, pos_z)) {
+          // if (elem.patch().isInWithOverlap(pos)) {
+          //   patch = -2;
+          // }
+          if (elem.patch().isIn(pos)) {
             if (patch >= 0) {
               ARCANE_FATAL("ABCDEFG -- old : {0} -- new : {1}", patch, i);
             }
@@ -779,14 +807,14 @@ refine(bool clear_refine_flag)
         if (patch == -1 && icell->hasFlags(ItemFlags::II_Refine)) {
           ARCANE_FATAL("Bad Patch");
         }
-        av_out(pos_y, pos_x) = patch;
+        av_out(pos.y, pos.x) = patch;
       }
 
       StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
+      for (CartCoord i = 0; i < numbering->globalNbCellsX(level); ++i) {
         str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
-          Integer c = av_out(i, j);
+        for (CartCoord j = 0; j < numbering->globalNbCellsY(level); ++j) {
+          CartCoord c = av_out(i, j);
           if (c >= 0) {
             str += "[";
             if (c < 10)
@@ -803,10 +831,9 @@ refine(bool clear_refine_flag)
       }
       m_cmesh->traceMng()->info() << str;
     }
-    */
-    ////////////
+  */
+     ////////////
   }
-
 
   {
     clearRefineRelatedFlags();
@@ -831,17 +858,15 @@ refine(bool clear_refine_flag)
 
     /*
     {
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
+      UniqueArray<CartCoord> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
+      Array2View av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
         if (icell->hasHChildren()) {
-          av_out(pos_y, pos_x) = 0;
+          av_out(pos.y, pos.x) = 0;
         }
         if (icell->hasFlags(ItemFlags::II_Refine)) {
-          av_out(pos_y, pos_x) = 1;
+          av_out(pos.y, pos.x) = 1;
         }
         if (icell->hasHChildren() && icell->hasFlags(ItemFlags::II_Refine)) {
           ARCANE_FATAL("Bad refine cell");
@@ -849,10 +874,10 @@ refine(bool clear_refine_flag)
       }
 
       StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
+      for (CartCoord i = 0; i < numbering->globalNbCellsX(level); ++i) {
         str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
-          Integer c = av_out(i, j);
+        for (CartCoord j = 0; j < numbering->globalNbCellsY(level); ++j) {
+          CartCoord c = av_out(i, j);
           if (c == 1)
             str += "[++]";
           else if (c == 0)
@@ -914,29 +939,28 @@ refine(bool clear_refine_flag)
         icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
       }
     }
+
     /*
     {
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
+      UniqueArray<CartCoord> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
+      Array2View av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
       ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level - 1)) {
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
+        CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
         if (icell->hasHChildren()) {
           if (icell->hChild(0).hasFlags(ItemFlags::II_Coarsen)) {
-            av_out(pos_y, pos_x) = 1;
+            av_out(pos.y, pos.x) = 1;
           }
           else {
-            av_out(pos_y, pos_x) = 0;
+            av_out(pos.y, pos.x) = 0;
           }
         }
       }
 
       StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level - 1); ++i) {
+      for (CartCoord i = 0; i < numbering->globalNbCellsX(level - 1); ++i) {
         str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level - 1); ++j) {
-          Integer c = av_out(i, j);
+        for (CartCoord j = 0; j < numbering->globalNbCellsY(level - 1); ++j) {
+          CartCoord c = av_out(i, j);
           if (c == 1)
             str += "[--]";
           else if (c == 0)

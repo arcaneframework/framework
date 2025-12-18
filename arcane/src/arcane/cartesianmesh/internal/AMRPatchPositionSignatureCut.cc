@@ -31,10 +31,6 @@ namespace Arcane
 namespace
 {
   constexpr Integer MIN_SIZE = 1;
-  constexpr Integer TARGET_SIZE = 8;
-  constexpr Real TARGET_SIZE_WEIGHT_IN_EFFICACITY = 1;
-  constexpr Integer MAX_NB_CUT = 6;
-  constexpr Real TARGET_EFFICACITY = 1.0;
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -56,6 +52,7 @@ AMRPatchPositionSignatureCut::
 CartCoord AMRPatchPositionSignatureCut::
 _cutDim(ConstArrayView<CartCoord> sig)
 {
+  // Si le découpage produira des patchs trop petits, on retourne -1.
   if (sig.size() < MIN_SIZE * 2) {
     return -1;
   }
@@ -63,6 +60,10 @@ _cutDim(ConstArrayView<CartCoord> sig)
   CartCoord cut_point = -1;
   CartCoord mid = sig.size() / 2;
 
+  // Partie trou.
+  // On recherche un trou dans la signature.
+  // La signature doit avoir été compressée avant
+  // (AMRPatchPositionSignature::compress()).
   {
     for (CartCoord i = 0; i < sig.size(); ++i) {
       if (sig[i] == 0) {
@@ -72,13 +73,17 @@ _cutDim(ConstArrayView<CartCoord> sig)
     }
 
     if (cut_point == 0) {
-      ARCANE_FATAL("Call compress before");
+      ARCANE_FATAL("Call AMRPatchPositionSignature::compress() before");
     }
     if (cut_point != -1 && cut_point >= MIN_SIZE && sig.size() - cut_point >= MIN_SIZE) {
       return cut_point;
     }
   }
 
+#if 0
+  // Partie dérivée seconde.
+  // Ne produis pas forcément de meilleurs résultats par rapport à la partie
+  // découpe au milieu.
   {
     UniqueArray<CartCoord> dsec_sig(sig.size(), 0);
 
@@ -99,7 +104,9 @@ _cutDim(ConstArrayView<CartCoord> sig)
       return cut_point;
     }
   }
+#endif
 
+  // Partie découpe au milieu.
   {
     cut_point = mid;
 
@@ -117,13 +124,18 @@ _cutDim(ConstArrayView<CartCoord> sig)
 std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPositionSignatureCut::
 cut(const AMRPatchPositionSignature& sig)
 {
+  // On découpe sur les trois dimensions.
   CartCoord cut_point_x = _cutDim(sig.sigX());
   CartCoord cut_point_y = _cutDim(sig.sigY());
   CartCoord cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
 
+  // Si il est impossible de découper sur l'une des dimensions.
   if (cut_point_x == -1 && cut_point_y == -1 && cut_point_z == -1) {
     return {};
   }
+
+  // On ajuste les points de découpes pour les donner à la méthode
+  // AMRPatchPositionSignature::cut().
   if (cut_point_x != -1) {
     cut_point_x += sig.patch().minPoint().x;
   }
@@ -134,7 +146,14 @@ cut(const AMRPatchPositionSignature& sig)
     cut_point_z += sig.patch().minPoint().z;
   }
 
+  // On doit choisir le meilleur point de découpe parmi les trois.
   if (cut_point_x != -1 && cut_point_y != -1 && cut_point_z != -1) {
+
+    // Pour choisir, on découpe, on calcule l'efficacité des patchs issus de
+    // la découpe et on choisit la découpe la plus efficace.
+    // TODO : Les méthodes compute() étant des méthodes collectives faisant
+    //        plusieurs petites réductions, il faudrait optimiser cette partie
+    //        en réunissant les reduces.
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
     {
@@ -213,10 +232,15 @@ cut(const AMRPatchPositionSignature& sig)
       // }
     }
 
-    if (sig.efficacity() > x_efficacity && sig.efficacity() > y_efficacity && sig.efficacity() > z_efficacity) {
-      return {};
+    // Si la découpe n'améliore pas l'efficacité, on return.
+    {
+      Real sig_efficacity = sig.efficacity();
+      if (sig_efficacity > x_efficacity && sig_efficacity > y_efficacity && sig_efficacity > z_efficacity) {
+        return {};
+      }
     }
 
+    // On retourne la meilleure efficacité.
     if (x_efficacity >= y_efficacity && x_efficacity >= z_efficacity && x_efficacity != 0) {
       return { fst_x, snd_x };
     }
@@ -229,6 +253,7 @@ cut(const AMRPatchPositionSignature& sig)
     return { fst_z, snd_z };
   }
 
+  // Même principe qu'au-dessus.
   if (cut_point_x != -1 && cut_point_y != -1) {
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
@@ -281,9 +306,11 @@ cut(const AMRPatchPositionSignature& sig)
       //   sig.mesh()->traceMng()->info() << "Cut() -- Compute Y invalid (too small) -- fst_y.length() : " << fst_y.patch().length() << " -- snd_y.length() : " << snd_y.patch().length();
       // }
     }
-
-    if (sig.efficacity() > x_efficacity && sig.efficacity() > y_efficacity) {
-      return {};
+    {
+      Real sig_efficacity = sig.efficacity();
+      if (sig_efficacity > x_efficacity && sig_efficacity > y_efficacity) {
+        return {};
+      }
     }
 
     if (x_efficacity >= y_efficacity && x_efficacity != 0) {
@@ -371,10 +398,12 @@ cut(const AMRPatchPositionSignature& sig)
 void AMRPatchPositionSignatureCut::
 cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
 {
+  // On inverse in et out à chaque itération.
   UniqueArray<AMRPatchPositionSignature> sig_array_b;
   bool a_a_b_b = false;
-  bool need_cut = true;
 
+  // Tant que la découpe est possible.
+  bool need_cut = true;
   while (need_cut) {
     need_cut = false;
     a_a_b_b = !a_a_b_b;
@@ -382,10 +411,10 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
     UniqueArray<AMRPatchPositionSignature>& array_in = a_a_b_b ? sig_array_a : sig_array_b;
     UniqueArray<AMRPatchPositionSignature>& array_out = a_a_b_b ? sig_array_b : sig_array_a;
 
-    for (Integer i = 0; i < array_in.size(); ++i) {
-      AMRPatchPositionSignature& sig = array_in[i];
+    for (auto& sig : array_in) {
       // sig.mesh()->traceMng()->info() << "Cut() -- i : " << i;
 
+      // Si la découpe est encore possible.
       if (!sig.stopCut()) {
         if (!sig.isComputed()) {
           sig.compute();
@@ -393,6 +422,8 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
         if (sig.canBeCut()) {
           auto [fst, snd] = cut(sig);
 
+          // Si la découpe est valide, on ajoute les deux nouveau patchs dans
+          // le tableau out.
           if (fst.isValid()) {
             need_cut = true;
             array_out.add(fst);
@@ -403,19 +434,27 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
             // sig.mesh()->traceMng()->info() << "\tmin = " << snd.patch().minPoint() << " -- max = " << snd.patch().maxPoint() << " -- length = " << snd.patch().length();
             continue;
           }
-          // sig.mesh()->traceMng()->info() << "Invalid Signature";
+          // Si la découpe ne produit pas de patch valide, on stop la découpe
+          // pour ce patch.
           sig.setStopCut(true);
+          // sig.mesh()->traceMng()->info() << "Invalid Signature";
         }
+        // Si le patch ne peut plus être découpé, on stop la découpe de ce
+        // patch.
         else {
           sig.setStopCut(true);
         }
       }
       // sig.mesh()->traceMng()->info() << "No Update";
       // sig.mesh()->traceMng()->info() << "\tmin = " << sig.patch().minPoint() << " -- max = " << sig.patch().maxPoint();
+      // Si le patch n'a pas pu être découpé, on le conserve dans le
+      // tableau out.
+      // TODO : Bof
       array_out.add(sig);
     }
     array_in.clear();
   }
+
   if (a_a_b_b) {
     sig_array_a.clear();
     sig_array_a = sig_array_b;
