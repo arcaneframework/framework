@@ -118,10 +118,11 @@ fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null)
         //              << " -- Level : " << patch_fusion_1.level()
         //              << " -- NbCells : " << patch_fusion_1.nbCells();
         // }
+
+        // Si la fusion est possible, le patch 0 est agrandi et le patch 1 devient null.
         if (patch_fusion_0.fusion(patch_fusion_1)) {
           // if (tm)
           //   tm->info() << "Fusion OK";
-          patch_fusion_1.setLevel(-2); // Devient null.
           fusion = true;
           break;
         }

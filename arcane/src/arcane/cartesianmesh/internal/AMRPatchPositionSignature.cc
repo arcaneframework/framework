@@ -34,9 +34,13 @@
 namespace Arcane
 {
 
+// On peut jouer avec ces paramètres pour avoir un meilleur raffinement.
+// TODO : Fixer ça n'est peut-être pas la meilleur façon de faire. Les patchs
+//        créés aujourd'hui sont trop nombreux et trop petits mais conviennent
+//        dans la majorité des cas de figures.
 namespace
 {
-constexpr Integer MIN_SIZE = 1;
+  constexpr Integer MIN_SIZE = 1;
   constexpr Integer TARGET_SIZE = 8;
   constexpr Real TARGET_SIZE_WEIGHT_IN_EFFICACITY = 1;
   constexpr Integer MAX_NB_CUT = 6;
@@ -101,6 +105,7 @@ compress()
     return;
   }
 
+  // On cherche la première position où il n'y a plus de zéro.
   CartCoord reduce_x_min = 0;
   if (m_sig_x[0] == 0) {
     for (; reduce_x_min < m_sig_x.size(); ++reduce_x_min) {
@@ -126,6 +131,8 @@ compress()
     }
   }
 
+  // On cherche la première position où il n'y a plus de zéro en partant de la
+  // fin.
   CartCoord reduce_x_max = m_sig_x.size() - 1;
   if (m_sig_x[reduce_x_max] == 0) {
     for (; reduce_x_max >= 0; --reduce_x_max) {
@@ -151,7 +158,9 @@ compress()
     }
   }
 
+  // Si une réduction de taille doit avoir lieu en X.
   if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size()-1) {
+    // Le patch ne peut pas être "plat".
     if (reduce_x_max < reduce_x_min) {
       ARCANE_FATAL("Bad patch X : no refine cell");
     }
@@ -165,6 +174,7 @@ compress()
     m_patch.setMinPoint(patch_min);
     m_patch.setMaxPoint(patch_max);
   }
+
   if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size()-1) {
     if (reduce_y_max < reduce_y_min) {
       ARCANE_FATAL("Bad patch Y : no refine cell");
@@ -179,6 +189,7 @@ compress()
     m_patch.setMinPoint(patch_min);
     m_patch.setMaxPoint(patch_max);
   }
+
   if (m_mesh->mesh()->dimension() == 3 && (reduce_z_min != 0 || reduce_z_max != m_sig_z.size() - 1)) {
     if (reduce_z_max < reduce_z_min) {
       ARCANE_FATAL("Bad patch Z : no refine cell");
@@ -204,6 +215,11 @@ fillSig()
   m_sig_x.fill(0);
   m_sig_y.fill(0);
   m_sig_z.fill(0);
+
+  // Le calcul de la signature se fait en deux fois.
+  // D'abord, on calcule la signature avec les flags II_Refine.
+  // Chaque sous-domaine calcule sa signature locale et une réduction est
+  // faite à la fin.
   ENUMERATE_ (Cell, icell, m_mesh->mesh()->ownLevelCells(m_patch.level())) {
     if (!icell->hasFlags(ItemFlags::II_Refine)) {
       continue;
@@ -223,16 +239,27 @@ fillSig()
   m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
   m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
 
+  // La seconde étape s'effectue uniquement si le patch que nous traitons
+  // n'est pas un patch de dernier niveau.
+  // Pour éviter d'avoir des mailles orphelines, on doit raffiner les mailles
+  // qui auront des enfants. Pour cela, on regarde les patchs du dessus et on
+  // raffine les mailles dessous.
+  // Pour que ça fonctionne, il est donc nécessaire de calculer les patchs de
+  // haut en bas dans la classe qui gère tout ceci.
   if (m_all_patches->maxLevel() > m_patch.level()) {
 
     // Pour que la signature soit valide, il ne faut pas que les patchs de m_all_patches
     // s'intersectent entre eux (pour un même niveau).
+    // On itère sur les patchs "au-dessus" du nôtre.
     for (const auto& elem : m_all_patches->patches(m_patch.level() + 1)) {
+      // On "descend" d'un niveau le patch "au-dessus" afin de pouvoir faire
+      // l'intersection entre notre patch et le patch du dessus.
       AMRPatchPosition patch_down = elem.patchDown(m_mesh->mesh()->dimension());
       if (!m_patch.haveIntersection(patch_down)) {
         continue;
       }
 
+      // Chaque maille dans l'intersection doit être ajoutée dans les signatures.
       CartCoord3 min = patch_down.minPoint() - m_patch.minPoint();
       CartCoord3 max = patch_down.maxPoint() - m_patch.minPoint();
 
@@ -267,6 +294,7 @@ fillSig()
     }
   }
 
+  // Compresser un patch vite ne fonctionnera pas.
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
 }
 
@@ -345,6 +373,12 @@ efficacity() const
     // Sans compression, pas terrible.
     m_mesh->traceMng()->warning() << "Need to be computed";
   }
+
+  // On base le calcul de l'efficacité sur deux choses :
+  // - le ratio maille à raffiner dans le patch sur nombre de mailles du patch,
+  // - la taille de chaque dimension par rapport à la taille cible.
+  // TODO : À peaufiner/réécrire.
+
   Int32 sum = 0;
   for (const Int32 elem : m_sig_x) {
     sum += elem;
