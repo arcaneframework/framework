@@ -27,6 +27,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant de stocker les patchs par niveau.
+ *
+ * Attention : cette classe est utilisé lors de la construction des patchs,
+ * un patch de niveau 0 désigne en faite un futur patch de niveau 1.
+ */
 class AMRPatchPositionLevelGroup
 {
  public:
@@ -39,7 +45,20 @@ class AMRPatchPositionLevelGroup
   Int32 maxLevel() const;
   ConstArrayView<AMRPatchPosition> patches(Int32 level);
   void addPatch(const AMRPatchPosition& patch);
+
+  /*!
+  * \brief Méthode permettant de fusionner tous les patchs d'un certain niveau
+  * qui peuvent l'être.
+  * \param level Le niveau à fusionner.
+  */
   void fusionPatches(Int32 level);
+
+  /*!
+  * \brief Méthode permettant de fusionner un maximum de patch du tableau
+  * passé en paramètre.
+  * \param patch_position [IN/OUT] Le tableau des patchs.
+  * \param remove_null Doit-on supprimer les patchs devenus null ?
+  */
   static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
 
  private:

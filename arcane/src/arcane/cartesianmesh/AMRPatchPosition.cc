@@ -220,7 +220,7 @@ canBeFusion(const AMRPatchPosition& other_patch) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-fusion(const AMRPatchPosition& other_patch)
+fusion(AMRPatchPosition& other_patch)
 {
   if (!canBeFusion(other_patch)) {
     return false;
@@ -249,6 +249,8 @@ fusion(const AMRPatchPosition& other_patch)
   else if (m_max_point.z < max_point.z) {
     m_max_point.z = max_point.z;
   }
+
+  other_patch.setLevel(-2);
 
   return true;
 }

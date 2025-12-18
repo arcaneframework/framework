@@ -179,12 +179,13 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * Une vérification de possibilité de fusion (via \a canBeFusion()) est
    * réalisée avant de fusionner. Si la fusion est impossible, on retourne
    * false. Sinon, on fusionne et on retourne true.
+   * Si fusion, \a other_patch devient null.
    *
    * \param other_patch Le patch avec lequel fusionner.
    * \return true si la fusion à été réalisé, false si la fusion est
    * impossible.
    */
-  bool fusion(const AMRPatchPosition& other_patch);
+  bool fusion(AMRPatchPosition& other_patch);
 
   /*!
    * \brief Méthode permettant de savoir si la position du patch est nulle.
