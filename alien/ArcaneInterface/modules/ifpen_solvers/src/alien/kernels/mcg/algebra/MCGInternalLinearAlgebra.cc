@@ -40,7 +40,7 @@ MCGInternalLinearAlgebra::~MCGInternalLinearAlgebra() {}
 Real
 MCGInternalLinearAlgebra::norm0(const VectorType& x) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   return norm0(vx);
 }
 
@@ -49,7 +49,7 @@ MCGInternalLinearAlgebra::norm0(const VectorType& x) const
 Real
 MCGInternalLinearAlgebra::norm1(const VectorType& x) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   return norm1(vx);
 }
 
@@ -58,14 +58,14 @@ MCGInternalLinearAlgebra::norm1(const VectorType& x) const
 Real
 MCGInternalLinearAlgebra::norm2(const VectorType& x) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   return norm2(vx);
 }
 
 Real
 MCGInternalLinearAlgebra::normInf(const VectorType& x) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   return normInf(vx);
 }
 /*---------------------------------------------------------------------------*/
@@ -74,9 +74,9 @@ void
 MCGInternalLinearAlgebra::mult(
     const MatrixType& a, const VectorType& x, VectorType& r) const
 {
-  const MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>& ma = a.impl()->get<BackEnd::tag::mcgsolver>();
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
-  MCGVector& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
+  const auto& ma = a.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  auto& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
   ALIEN_ASSERT(
       (ma.colSpace() == vx.space() && vx.space() == vr.space()), ("Incompatible spaces"));
   return mult(ma, vx, vr);
@@ -88,8 +88,8 @@ void
 MCGInternalLinearAlgebra::axpy(
     Real alpha, const VectorType& x, VectorType& r) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
-  MCGVector& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  auto& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
   ALIEN_ASSERT((vx.space() == vr.space()), ("Incompatible spaces"));
   return axpy(alpha, vx, vr);
 }
@@ -98,8 +98,8 @@ MCGInternalLinearAlgebra::axpy(
 void
 MCGInternalLinearAlgebra::copy(const VectorType& x, VectorType& r) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
-  MCGVector& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  auto& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
   ALIEN_ASSERT((vx.space() == vr.space()), ("Incompatible spaces"));
   return copy(vx, vr);
 }
@@ -109,8 +109,8 @@ MCGInternalLinearAlgebra::copy(const VectorType& x, VectorType& r) const
 Real
 MCGInternalLinearAlgebra::dot(const VectorType& x, const VectorType& y) const
 {
-  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
-  const MCGVector& vy = y.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  const auto& vy = y.impl()->get<BackEnd::tag::mcgsolver>();
   ALIEN_ASSERT((vx.space() == vy.space()), ("Incompatible space"));
   return dot(vx, vy);
 }

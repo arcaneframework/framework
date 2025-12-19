@@ -16,8 +16,8 @@ namespace Alien {
 class MultiVectorImpl;
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 class MCGMatrix;
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 class MCGVector;
-class MCGgpuVector;
 class MatrixData;
 class MatrixExp;
 class VectorData;
@@ -44,8 +44,8 @@ namespace BackEnd {
 
 template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
 {
-  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>;
-  using vector_type = MCGVector;
+  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>;
+  using vector_type = MCGVector<Real,MCGInternal::eMemoryDomain::Host>;
 
   using options_type = IOptionsMCGSolver;
   using algebra_type = ILinearAlgebra;
@@ -64,8 +64,8 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
 
 template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_gpu>
 {
-  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>;
-  using vector_type = MCGgpuVector;
+  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>;
+  using vector_type = MCGVector<Real,MCGInternal::eMemoryDomain::Device>;
 
   using options_type = IOptionsMCGSolver;
   using algebra_type = ILinearAlgebra;

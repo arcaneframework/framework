@@ -13,6 +13,7 @@
 #include <Common/index.h>
 #include <MCGSolver/LinearSystem/LinearSystem.h>
 #include <MCGSolver/GPULinearSystem/GPULinearSystem.h>
+#include <Common/Utils/Array.h>
 #include <Precond/PrecondEquation.h>
 #include <Solvers/SolverProperty.h>
 
@@ -28,17 +29,19 @@ struct MatVecTypeGen
 {};
 
 template<typename NumT>
-struct MatVecTypeGen<NumT,eMemoryDomain::CPU>
+struct MatVecTypeGen<NumT,eMemoryDomain::Host>
 {
   using MatrixType = MCGSolver::BCSRMatrix<NumT,MCGSolver::Int32SparseIndex>;
   using VectorType = MCGSolver::BVector<NumT>;
+  using VectorEqType = MCGSolver::BVector<MCGSolver::Equation::eType>;
 };
 
 template<typename NumT>
-struct MatVecTypeGen<NumT,eMemoryDomain::GPU>
+struct MatVecTypeGen<NumT,eMemoryDomain::Device>
 {
   using MatrixType = MCGSolver::BCSRgpuMatrix<NumT,MCGSolver::Int32SparseIndex>;
   using VectorType = MCGSolver::GPUBVector<NumT>;
+  using VectorEqType = MCGSolver::GPUBVector<MCGSolver::Equation::eType>;
 };
 
 template<typename NumT,eMemoryDomain Domain>
@@ -46,14 +49,19 @@ class MatrixInternal
 {
  public:
   using MatrixType = typename MatVecTypeGen<NumT,Domain>::MatrixType;
+  using VectorEqType = typename MatVecTypeGen<NumT,Domain>::VectorEqType;
+  template<typename T>
+  using ArrayType = std::conditional_t<Domain==eMemoryDomain::Host,
+    MCGSolver::Array<T>,
+    MCGSolver::ManagedArray<T>>;
 
   bool m_elliptic_split_tag = false;
-  std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
+  std::shared_ptr<VectorEqType> m_equation_type;
 
   MCGSolver::UniqueKey m_key;
   std::shared_ptr<MatrixType> m_matrix;
 
-  std::vector<int> m_elem_perm;
+  ArrayType<int> m_elem_perm;
 };
 
 template<typename NumT,eMemoryDomain Domain>

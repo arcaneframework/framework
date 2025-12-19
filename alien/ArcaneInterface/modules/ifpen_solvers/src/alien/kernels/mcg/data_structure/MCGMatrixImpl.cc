@@ -7,6 +7,6 @@
 #include "MCGMatrixImpl.h"
 
 namespace Alien {
-template class MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>;
-template class MCGMatrix<Real,MCGInternal::eMemoryDomain::GPU>;
+template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>;
+template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>;
 }

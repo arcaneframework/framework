@@ -5,7 +5,7 @@ addSources(alien_ifpen_solvers
         converters/SimpleCSR/SimpleCSR_to_MCG_VectorConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_BCSR_MatrixConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_BCSRgpu_MatrixConverter.cc
-        data_structure/MCGVector.cc
+        data_structure/MCGVectorImpl.cc
         data_structure/MCGMatrixImpl.cc
         )
 

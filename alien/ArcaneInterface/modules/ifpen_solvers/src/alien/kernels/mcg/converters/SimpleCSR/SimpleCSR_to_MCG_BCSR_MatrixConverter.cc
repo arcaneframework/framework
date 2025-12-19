@@ -38,7 +38,7 @@ class SimpleCSR_to_MCG_BCSR_MatrixConverter : public IMatrixConverter
   // const;
 
   void _build(const SimpleCSRMatrix<Real>& sourceImpl,
-    MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>& targetImpl) const;
+    MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>& targetImpl) const;
 };
 
 void
@@ -48,7 +48,7 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::convert(
   const SimpleCSRMatrix<Real>& v =
     cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
   auto& v2 =
-    cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>>(targetImpl, targetBackend());
+    cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>>(targetImpl, targetBackend());
 
   alien_debug([&] {
     cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
@@ -64,7 +64,7 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::convert(
 void
 SimpleCSR_to_MCG_BCSR_MatrixConverter::_build(
     const SimpleCSRMatrix<Real>& sourceImpl,
-    MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>& targetImpl) const
+    MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>& targetImpl) const
 {
   const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
@@ -86,14 +86,14 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::_build(
   }
 
   if (!targetImpl.isInit()) {
-    if (not targetImpl.initMatrix(MCGInternal::eMemoryDomain::CPU,block_size, block_size2, local_size, global_size,
+    if (not targetImpl.initMatrix(MCGInternal::eMemoryDomain::Host,block_size, block_size2, local_size, global_size,
             row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
             partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
     }
   }
 
-  const bool success = targetImpl.initMatrixValues(MCGInternal::eMemoryDomain::CPU,values.unguardedBasePointer());
+  const bool success = targetImpl.initMatrixValues(MCGInternal::eMemoryDomain::Host,values.unguardedBasePointer());
 
   if (not success) {
     throw FatalErrorException(A_FUNCINFO, "Cannot set MCGSolver Matrix Values");

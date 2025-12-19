@@ -80,11 +80,12 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   };
 
   typedef SolverStatus Status;
-  typedef MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU> MatrixType;
-  typedef MCGVector VectorType;
 
-  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::CPU> MCGMatrixType;
-  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::CPU> MCGVectorType;
+  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Host> MCGMatrixType;
+  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Host> MCGVectorType;
+  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Device> MCGDeviceMatrixType;
+  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Device> MCGDeviceVectorType;
+
 
   typedef SimpleCSRMatrix<Real> CSRMatrixType;
   typedef SimpleCSRVector<Real> CSRVectorType;
@@ -141,26 +142,39 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
       const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
+  Integer _solve(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, MCGDeviceVectorType& x,
+      const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
       MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
+  Integer _solve(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0,
+    MCGDeviceVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
-  bool _systemChanged(
-      const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
-  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b,
-      const MCGVectorType& x0, const MCGVectorType& x);
-  bool _matrixChanged(const MCGMatrixType& A);
-  bool _rhsChanged(const MCGVectorType& b);
-  bool _x0Changed(const MCGVectorType& x0);
+  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b) const;
+  bool _systemChanged(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b) const;
 
-  // bool _systemChanged(const MCGMatrixType& A,const MCGVectorType& b,const
-  // MCGVectorType& x0,const MCGVectorType& x);
-  void _registerKey(
-      const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
-  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b,
-      const MCGVectorType& x0, const MCGVectorType& x);
+  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0) const;
+  bool _systemChanged(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0) const;
+
+  bool _matrixChanged(const MCGMatrixType& A) const;
+  bool _matrixChanged(const MCGDeviceMatrixType& A) const;
+
+  bool _rhsChanged(const MCGVectorType& b) const;
+  bool _rhsChanged(const MCGDeviceVectorType& b) const;
+
+  bool _x0Changed(const MCGVectorType& x0) const;
+  bool _x0Changed(const MCGDeviceVectorType& x0) const;
+
+  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b);
+  void _registerKey(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b);
+
+  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0);
+  void _registerKey(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0);
+
+  bool _hostSolver(MCGSolver::eKernelType kernel);
 
   typedef MCGSolver::LinearSystem<double, MCGSolver::Int32SparseIndex> MCGSolverLinearSystem;
+  typedef MCGSolver::GPULinearSystem<double, MCGSolver::Int32SparseIndex> MCGSolverDeviceLinearSystem;
 
  protected:
   std::unique_ptr<MCGSolver::LinearSolver> m_solver;
@@ -181,6 +195,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   MCGSolver::ePrecondType m_precond_opt = MCGSolver::PrecNone;
 
   //! Solver parameters
+  MCGSolver::eKernelType m_kernel = MCGSolver::eKernelType::CPU_CBLAS_BCSR;
   MCGSolver::eKrylovType m_solver_opt = MCGSolver::BiCGS;
   Integer m_max_iteration = 1000;
   Real m_precision = 1e-6;
@@ -216,6 +231,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   std::map<std::string, int> m_dir_enum;
 
   std::unique_ptr<MCGSolverLinearSystem> m_system;
+  std::unique_ptr<MCGSolverDeviceLinearSystem> m_device_system;
 
   MCGSolver::UniqueKey m_A_key;
   int64_t m_A_time_stamp = 0;

@@ -14,9 +14,15 @@
 
 namespace Alien {
 
+template<MCGInternal::eMemoryDomain Domain>
+using AlgebraTraitsType =
+  std::conditional_t<Domain == MCGInternal::eMemoryDomain::Host,
+    AlgebraTraits<BackEnd::tag::mcgsolver>,
+    AlgebraTraits<BackEnd::tag::mcgsolver_gpu>>;
+
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGMatrix<NumT,Domain>::MCGMatrix(const MultiMatrixImpl* multi_impl)
-: IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver>::name())
+: IMatrixImpl(multi_impl, AlgebraTraitsType<Domain>::name())
 {
   m_internal = new MatrixInternal();
 }
@@ -37,12 +43,13 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
 
   m_internal->m_elem_perm.resize(nblocks);
 
-  if constexpr (Domain == MCGInternal::eMemoryDomain::CPU) {
-    if (src_domain == MCGInternal::eMemoryDomain::CPU) {
+  if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
+    if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> CPU
       m_internal->m_matrix =
-        MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::createMatrix(
-          block_size,block_size2,nrow,ncol,nblocks,row_offset,cols,m_internal->m_elem_perm.data());
+        MCGSolver::LinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrix(
+          block_size, block_size2, nrow, ncol, nblocks, row_offset,cols,
+          m_internal->m_elem_perm.data());
     }
     else {
       // GPU -> CPU
@@ -50,14 +57,16 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
     }
   }
   else {
-    if (src_domain == MCGInternal::eMemoryDomain::CPU) {
+    if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
-      throw Alien::FatalErrorException("Init GPU Matrix from CPU datas not implemented");
+      m_internal->m_matrix = MCGSolver::GPULinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrixFromHost(
+        block_size, block_size2, nrow, ncol, nblocks, row_offset, cols,
+        m_internal->m_elem_perm.data());
     }
     else {
       // GPU -> GPU
       m_internal->m_matrix =
-        MCGSolver::GPULinearSystem<double,MCGSolver::Int32SparseIndex>::createMatrix(
+        MCGSolver::GPULinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrix(
           block_size,block_size2,nrow,ncol,nblocks,row_offset,cols,m_internal->m_elem_perm.data());
     }
   }
@@ -71,8 +80,8 @@ template<typename NumT,MCGInternal::eMemoryDomain Domain>
 bool
 MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_domain,Real const* values)
 {
-  if constexpr (Domain == MCGInternal::eMemoryDomain::CPU) {
-    if (src_domain == MCGInternal::eMemoryDomain::CPU) {
+  if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
+    if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> CPU
       MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
            m_internal->m_matrix,values,m_internal->m_elem_perm.data());
@@ -83,7 +92,7 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
     }
   }
   else {
-    if (src_domain == MCGInternal::eMemoryDomain::CPU) {
+    if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
       throw Alien::FatalErrorException("Init GPU Matrix values from CPU datas not implemented");
     }
@@ -114,22 +123,28 @@ MCGMatrix<NumT,Domain>::computeEllipticSplitTags(int equation_num) const
   Integer local_size = dist.localRowSize();
 
   m_internal->m_equation_type =
-      std::make_shared<MCGSolver::BVector<MCGSolver::Equation::eType>>(local_size * equation_num, 1);
-  for (int i = 0; i < local_size * equation_num; ++i)
-    m_internal->m_equation_type->data()[i] =
-        MCGSolver::Equation::NoType; // NoTyp == 0 , Elliptic==1 cf. PrecondEquation.h
+      std::make_shared<typename MatrixInternal::VectorEqType>(local_size * equation_num, 1);
 
-  for (Integer i = 0; i < space.nbField(); ++i) {
-    const UniqueArray<Integer>& indices = space.field(i);
-    if (space.fieldLabel(i) == "Elliptic" and not indices.empty()) {
-      elliptic_split_tag_found = true;
-      for (Integer j = 0; j < indices.size(); ++j) {
-        const Integer index = indices[j];
-        m_internal->m_equation_type->data()[(index - min_local_index) * equation_num] =
-            MCGSolver::Equation::Elliptic; // NoTyp == 0 , Elliptic==1 cf.
-                                           // PrecondEquation.h
+  if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
+    for (int i = 0; i < local_size * equation_num; ++i)
+      m_internal->m_equation_type->data()[i] =
+          MCGSolver::Equation::NoType; // NoTyp == 0 , Elliptic==1 cf. PrecondEquation.h
+
+    for (Integer i = 0; i < space.nbField(); ++i) {
+      const UniqueArray<Integer>& indices = space.field(i);
+      if (space.fieldLabel(i) == "Elliptic" and not indices.empty()) {
+        elliptic_split_tag_found = true;
+        for (Integer j = 0; j < indices.size(); ++j) {
+          const Integer index = indices[j];
+          m_internal->m_equation_type->data()[(index - min_local_index) * equation_num] =
+              MCGSolver::Equation::Elliptic; // NoTyp == 0 , Elliptic==1 cf.
+          // PrecondEquation.h
+        }
       }
     }
+  }
+  else {
+    throw Alien::FatalErrorException("Init GPU Elliptic tag from CPU datas not implemented");
   }
 
   return elliptic_split_tag_found;

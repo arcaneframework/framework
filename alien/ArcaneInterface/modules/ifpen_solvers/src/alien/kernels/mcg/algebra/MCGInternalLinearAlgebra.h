@@ -19,8 +19,8 @@ class MCGInternalLinearAlgebra : public ILinearAlgebra
  private:
   typedef Alien::IMatrix MatrixType;
   typedef Alien::IVector VectorType;
-  typedef MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU> MatrixImpl;
-  typedef MCGVector VectorImpl;
+  typedef MCGMatrix<Real,MCGInternal::eMemoryDomain::Host> MatrixImpl;
+  typedef MCGVector<Real,MCGInternal::eMemoryDomain::Host> VectorImpl;
 
  public:
   MCGInternalLinearAlgebra();

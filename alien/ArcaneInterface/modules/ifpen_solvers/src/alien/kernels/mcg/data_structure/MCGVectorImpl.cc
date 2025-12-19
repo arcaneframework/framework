@@ -3,10 +3,10 @@
 // Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-#pragma once
 
-#include "alien/kernels/mcg/MCGPrecomp.h"
+#include "MCGVectorImpl.h"
 
-BEGIN_MCGINTERNAL_NAMESPACE
-enum class eMemoryDomain { Host = 0, Device = 1 };
-END_MCGINTERNAL_NAMESPACE
+namespace Alien {
+template class MCGVector<Real,MCGInternal::eMemoryDomain::Host>;
+template class MCGVector<Real,MCGInternal::eMemoryDomain::Device>;
+}

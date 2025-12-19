@@ -21,10 +21,11 @@ namespace Alien {
 
 /*---------------------------------------------------------------------------*/
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 class MCGVector : public IVectorImpl
 {
  public:
-  using VectorInternal = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::CPU>;
+  using VectorInternal = MCGInternal::VectorInternal<double,Domain>;
 
  public:
   MCGVector(const MultiVectorImpl* multi_impl);

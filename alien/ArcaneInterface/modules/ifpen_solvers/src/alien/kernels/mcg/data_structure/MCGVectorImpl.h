@@ -12,26 +12,28 @@
 
 namespace Alien {
 
-MCGVector::MCGVector(const MultiVectorImpl* multi_impl)
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
+MCGVector<NumT,Domain>::MCGVector(const MultiVectorImpl* multi_impl)
 : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver>::name())
-{
-  ;
-}
+{}
 
-MCGVector::~MCGVector()
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
+MCGVector<NumT,Domain>::~MCGVector()
 {
   delete m_internal;
 }
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
-MCGVector::init(const VectorDistribution& dist, const bool need_allocate)
+MCGVector<NumT,Domain>::init(const VectorDistribution& dist, const bool need_allocate)
 {
   if (need_allocate)
     allocate();
 }
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
-MCGVector::allocate()
+MCGVector<NumT,Domain>::allocate()
 {
   delete m_internal;
 
@@ -46,8 +48,9 @@ MCGVector::allocate()
   m_internal = new VectorInternal(dist.localSize(), block_size);
 }
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
-MCGVector::setValues(double const* values)
+MCGVector<NumT,Domain>::setValues(double const* values)
 {
   // TODO: perform theses operations at object setup
   const VectorDistribution& dist = this->distribution();
@@ -66,8 +69,9 @@ MCGVector::setValues(double const* values)
     data[i] = values[i];
 }
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
-MCGVector::getValues(double* values) const
+MCGVector<NumT,Domain>::getValues(double* values) const
 {
   // TODO: perform theses operations at object setup
   const VectorDistribution& dist = this->distribution();
@@ -86,8 +90,9 @@ MCGVector::getValues(double* values) const
     values[i] = data[i];
 }
 
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
-MCGVector::update(const MCGVector& v)
+MCGVector<NumT,Domain>::update(const MCGVector& v)
 {
   ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
