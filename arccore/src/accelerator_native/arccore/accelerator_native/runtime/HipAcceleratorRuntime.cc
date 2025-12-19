@@ -660,18 +660,21 @@ fillDevices(bool is_verbose)
     o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
     o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
+    o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
 #if HIP_VERSION_MAJOR >= 6
     o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
     o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
 #endif
+    std::ostringstream device_uuid_ostr;
     {
       hipDevice_t device;
       ARCCORE_CHECK_HIP(hipDeviceGet(&device, i));
       hipUUID device_uuid;
       ARCCORE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      impl::printUUID(o, device_uuid.bytes);
+      impl::printUUID(device_uuid_ostr, device_uuid.bytes);
+      o << device_uuid_ostr.str();
       o << "\n";
     }
 
@@ -684,9 +687,14 @@ fillDevices(bool is_verbose)
     device_info.setDeviceId(DeviceId(i));
     device_info.setName(dp.name);
     device_info.setWarpSize(dp.warpSize);
+    device_info.setUUIDAsString(device_uuid_ostr.str());
     device_info.setSharedMemoryPerBlock(static_cast<Int32>(dp.sharedMemPerBlock));
     device_info.setSharedMemoryPerMultiprocessor(static_cast<Int32>(dp.sharedMemPerMultiprocessor));
     device_info.setSharedMemoryPerBlockOptin(static_cast<Int32>(dp.sharedMemPerBlockOptin));
+    device_info.setTotalConstMemory(static_cast<Int32>(dp.totalConstMem));
+    device_info.setPCIDomainID(dp.pciDomainID);
+    device_info.setPCIBusID(dp.pciBusID);
+    device_info.setPCIDeviceID(dp.pciDeviceID);
     m_device_info_list.addDevice(device_info);
   }
 }
