@@ -181,7 +181,7 @@ class ARCANE_IMPL_EXPORT Application
   template<typename InterfaceType> Ref<InterfaceType>
   _tryCreateService(const StringList& names,String* found_name);
   template<typename InterfaceType> Ref<InterfaceType>
-  _tryCreateServiceUsingInjector(const StringList& names,String* found_name);
+  _tryCreateServiceUsingInjector(const StringList& names,String* found_name, bool has_trace);
   UniqueArray<String> _stringListToArray(const StringList& slist) const;
   void _readCodeConfigurationFile();
 };

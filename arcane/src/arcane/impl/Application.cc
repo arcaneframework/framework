@@ -256,13 +256,16 @@ _tryCreateService(const StringList& names,String* found_name)
  * la liste de nom de services \a names.  Retourne l'instance trouvée
  * si elle existe et remplit \a found_name (si non nul) avec le nom de
  * l'instance. Dès qu'une instance est trouvée, on la retourne.
- * Retourne nulle si aucune instance n'est disponible.
+ * Retourne \a nullptr si aucune instance n'est disponible.
  */
 template<typename InterfaceType> Ref<InterfaceType> Application::
-_tryCreateServiceUsingInjector(const StringList& names,String* found_name)
+_tryCreateServiceUsingInjector(const StringList& names,String* found_name,bool has_trace)
 {
   DependencyInjection::Injector injector;
   injector.fillWithGlobalFactories();
+  // Ajoute une instance de ITraceMng* pour les services qui en ont besoin
+  if (has_trace)
+    injector.bind(m_trace.get());
 
   if (found_name)
     (*found_name) = String();
@@ -438,7 +441,7 @@ build()
     if (arcaneHasThread()){
       StringList names = build_info.threadImplementationServices();
       String found_name;
-      auto sv = _tryCreateServiceUsingInjector<IThreadImplementationService>(names,&found_name);
+      auto sv = _tryCreateServiceUsingInjector<IThreadImplementationService>(names,&found_name, false);
       if (sv.get()){
         m_thread_implementation_service = sv;
         m_thread_implementation = sv->createImplementation();
@@ -464,10 +467,10 @@ build()
 
         StringList names = build_info.taskImplementationServices();
         String found_name;
-        auto sv = _tryCreateServiceUsingInjector<ITaskImplementation>(names,&found_name);
+        auto sv = _tryCreateServiceUsingInjector<ITaskImplementation>(names,&found_name,false);
         if (sv.get()){
           TaskFactoryInternal::setImplementation(sv.get());
-          //m_trace->info() << "Initialize task with nb_thread=" << nb_thread;
+          //std::cout << "Initialize task with nb_thread=" << nb_task_thread << "\n";
           sv->initialize(nb_task_thread);
           m_used_task_service_name = found_name;
           m_task_implementation = sv;
@@ -512,11 +515,17 @@ build()
     
     // Recherche le service utilisé pour la gestion de l'affinité processeur
     {
-      ServiceBuilder<IProcessorAffinityService> sf(this);
-      auto sv = sf.createReference("HWLoc",SB_AllowNull);
-      if (sv.get()){
+      StringList names;
+      names.add("HWLoc");
+      String found_name;
+      auto sv = _tryCreateServiceUsingInjector<IProcessorAffinityService>(names,&found_name,true);
+      if (sv.get()) {
         m_processor_affinity_service = sv;
         platform::setProcessorAffinityService(sv.get());
+      }
+      else {
+        m_trace->info(4) << "Can not find implementation for IProcessorAffinityService "
+                         << "(names=" << _stringListToArray(names) << ").";
       }
     }
 
