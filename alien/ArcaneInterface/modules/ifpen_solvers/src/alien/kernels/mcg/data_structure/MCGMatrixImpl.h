@@ -125,27 +125,41 @@ MCGMatrix<NumT,Domain>::computeEllipticSplitTags(int equation_num) const
   m_internal->m_equation_type =
       std::make_shared<typename MatrixInternal::VectorEqType>(local_size * equation_num, 1);
 
-  if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
-    for (int i = 0; i < local_size * equation_num; ++i)
-      m_internal->m_equation_type->data()[i] =
-          MCGSolver::Equation::NoType; // NoTyp == 0 , Elliptic==1 cf. PrecondEquation.h
+  MCGSolver::ManagedArray<MCGSolver::Equation::eType> equation_type;
 
-    for (Integer i = 0; i < space.nbField(); ++i) {
-      const UniqueArray<Integer>& indices = space.field(i);
-      if (space.fieldLabel(i) == "Elliptic" and not indices.empty()) {
-        elliptic_split_tag_found = true;
-        for (Integer j = 0; j < indices.size(); ++j) {
-          const Integer index = indices[j];
-          m_internal->m_equation_type->data()[(index - min_local_index) * equation_num] =
-              MCGSolver::Equation::Elliptic; // NoTyp == 0 , Elliptic==1 cf.
-          // PrecondEquation.h
-        }
+  MCGSolver::Equation::eType *eq_type = nullptr;
+
+  if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
+    eq_type = m_internal->m_equation_type->data();
+  }
+  else {
+    equation_type.resize(local_size * equation_num);
+    eq_type = equation_type.data();
+  }
+
+  for (int i = 0; i < local_size * equation_num; ++i)
+    eq_type[i] = MCGSolver::Equation::NoType; // NoTyp == 0 , Elliptic==1 cf. PrecondEquation.h
+
+  for (Integer i = 0; i < space.nbField(); ++i) {
+    const UniqueArray<Integer>& indices = space.field(i);
+    if (space.fieldLabel(i) == "Elliptic" and not indices.empty()) {
+      elliptic_split_tag_found = true;
+      for (Integer j = 0; j < indices.size(); ++j) {
+        const Integer index = indices[j];
+        eq_type[(index - min_local_index) * equation_num] = MCGSolver::Equation::Elliptic;
       }
     }
   }
-  else {
-    throw Alien::FatalErrorException("Init GPU Elliptic tag from CPU datas not implemented");
+
+  if (Domain == MCGInternal::eMemoryDomain::Device) {
+    auto err = cudaMemcpyAsync(m_internal->m_equation_type->data(),eq_type,
+      equation_type.size() * sizeof(MCGSolver::Equation::eType), cudaMemcpyHostToDevice, nullptr);
+
+    if (err != cudaSuccess) {
+     throw Alien::FatalErrorException("cudaMemcpyAsync for elliptic_equation tag failed");
+    }
   }
+
 
   return elliptic_split_tag_found;
 }
