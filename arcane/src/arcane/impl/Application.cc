@@ -438,7 +438,7 @@ build()
       }
     }
 
-    if (arcaneHasThread()){
+    {
       StringList names = build_info.threadImplementationServices();
       String found_name;
       auto sv = _tryCreateServiceUsingInjector<IThreadImplementationService>(names,&found_name, false);
@@ -449,9 +449,9 @@ build()
         m_thread_implementation->initialize();
         m_used_thread_service_name = found_name;
       }
-      else{
-        m_trace->info() << "Can not find thread implementation service "
-                        << "(names=" << _stringListToArray(names) << "). Threads are disabled.";
+      else {
+        ARCANE_FATAL("Can not find implementation for 'IThreadImplementation' (names='{0}').",
+                     _stringListToArray(names));
         arcaneSetHasThread(false);
       }
     }
@@ -461,7 +461,7 @@ build()
     m_trace->resetThreadStatus();
 
     // Recherche le service utilisé pour gérer les tâches
-    if (arcaneHasThread()){
+    {
       Integer nb_task_thread = build_info.nbTaskThread();
       if (nb_task_thread>=0){
 
