@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DbgHelpStackTraceService.cc                                 (C) 2000-2019 */
+/* DbgHelpStackTraceService.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'DbgHelp'.             */
 /*---------------------------------------------------------------------------*/
@@ -17,8 +17,10 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/AbstractService.h"
-#include "arcane/ServiceFactory.h"
+#include "arccore/base/internal/DependencyInjection.h"
+
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include <Windows.h>
 #include <winnt.h>
@@ -161,18 +163,24 @@ namespace
 /*!
  * \brief Service de trace des appels de fonctions utilisant 'DbgHelp'.
  */
-class ARCANE_STD_EXPORT DbgHelpStackTraceService
-: public AbstractService
+class DbgHelpStackTraceService
+: public TraceAccessor
 , public IStackTraceService
 {
  public:
 
-  DbgHelpStackTraceService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi) { }
+  explicit DbgHelpStackTraceService(const ServiceBuildInfo& sbi)
+  : TraceAccessor(sbi.application()->traceMng())
+  {
+  }
+  explicit DbgHelpStackTraceService(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
+  }
 
  public:
 
-   void build() override {}
+   void build() {}
 
  public:
 
@@ -218,20 +226,26 @@ stackTraceFunction(int function_index)
 /*!
  * \brief Service de trace des appels de fonctions utilisant la libunwind.
  */
-class ARCANE_STD_EXPORT DbgHelpSymbolizerService
-: public AbstractService
+class DbgHelpSymbolizerService
+: public TraceAccessor
 , public ISymbolizerService
 {
- private:
  public:
-  DbgHelpSymbolizerService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
+
+  explicit DbgHelpSymbolizerService(const ServiceBuildInfo& sbi)
+  : TraceAccessor(sbi.application()->traceMng())
   {}
+  explicit DbgHelpSymbolizerService(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
+  }
 
  public:
-  void build() override {}
+
+  void build() {}
 
  public:
+
   String stackTrace(ConstArrayView<StackFrame> frames) override
   {
     return _getContainer()->getStackSymbols(frames);
@@ -257,6 +271,16 @@ ARCANE_REGISTER_SERVICE(DbgHelpStackTraceService,
 ARCANE_REGISTER_SERVICE(DbgHelpSymbolizerService,
                         ServiceProperty("DbgHelpSymbolizerService",ST_Application),
                         ARCANE_SERVICE_INTERFACE(ISymbolizerService));
+
+ARCANE_DI_REGISTER_PROVIDER(DbgHelpStackTraceService,
+                            DependencyInjection::ProviderProperty("DbgHelpStackTraceService"),
+                            ARCANE_DI_INTERFACES(IStackTraceService),
+                            ARCANE_DI_CONSTRUCTOR(ITraceMng*));
+
+ARCANE_DI_REGISTER_PROVIDER(DbgHelpSymbolizerService,
+                            DependencyInjection::ProviderProperty("DbgHelpSymbolizerService"),
+                            ARCANE_DI_INTERFACES(ISymbolizerService),
+                            ARCANE_DI_CONSTRUCTOR(ITraceMng*));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
