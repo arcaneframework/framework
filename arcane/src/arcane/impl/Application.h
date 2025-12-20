@@ -20,10 +20,12 @@
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/NullThreadMng.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/XmlNode.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/XmlNode.h"
 
 #include "arccore/base/ReferenceCounter.h"
+
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,6 +49,8 @@ class ApplicationBuildInfo;
 class ARCANE_IMPL_EXPORT Application
 : public IApplication
 {
+  class CoreApplication;
+
  public:
 
   explicit Application(IArcaneMain*);
@@ -141,12 +145,12 @@ class ARCANE_IMPL_EXPORT Application
   SessionList m_sessions; //!< Liste des sessions
   ServiceFactoryInfoCollection m_main_service_factory_infos; //!< Tableau des fabriques de service
   ModuleFactoryInfoCollection m_main_module_factory_infos; //!< Tableau des fabriques de module
-  bool m_has_garbage_collector;
+  bool m_has_garbage_collector = false;
   ITraceMngPolicy* m_trace_policy = nullptr;
 
  private:
 
-  bool m_is_init; //!< \e true si déjà initialisé
+  bool m_is_init = false; //!< \e true si déjà initialisé
   UniqueArray<Byte> m_config_bytes; //!< Fichier contenant la configuration
   UniqueArray<Byte> m_user_config_bytes; //!< Fichier contenant la configuration utilisateur
   ScopedPtrT<IXmlDocumentHolder> m_config_document; //!< Arbre DOM de la configuration
@@ -154,25 +158,17 @@ class ARCANE_IMPL_EXPORT Application
   XmlNode m_config_root_element; //!< Elément racine de la configuration
   XmlNode m_user_config_root_element; //!< Elément racine de la configuration utilisateur
   //bool m_is_info_disabled;
-  bool m_is_master;
+  bool m_is_master = false;
   Ref<IPhysicalUnitSystemService> m_physical_unit_system_service;
-  //! Nom du service utilisé pour gérer les threads
-  String m_used_thread_service_name;
-  //! Nom du service utilisé pour gérer les tâches
-  String m_used_task_service_name;
   Ref<IOnlineDebuggerService> m_online_debugger;
   Ref<IProfilingService> m_profiling_service;
 
-  IServiceAndModuleFactoryMng* m_service_and_module_factory_mng;
+  IServiceAndModuleFactoryMng* m_service_and_module_factory_mng = nullptr;
 
   Ref<IProcessorAffinityService> m_processor_affinity_service;
-  Ref<IStackTraceService> m_stack_trace_service;
-  Ref<ISymbolizerService> m_symbolizer_service;
-  Ref<IThreadImplementationService> m_thread_implementation_service;
-  Ref<IThreadImplementation> m_thread_implementation;
   Ref<IPerformanceCounterService> m_performance_counter_service;
   Ref<IParallelSuperMng> m_owned_sequential_parallel_super_mng;
-  Ref<ITaskImplementation> m_task_implementation;
+  std::unique_ptr<CoreApplication> m_core_application;
 
  private:
 
@@ -180,10 +176,8 @@ class ARCANE_IMPL_EXPORT Application
   void _initDataInitialisationPolicy();
   template<typename InterfaceType> Ref<InterfaceType>
   _tryCreateService(const StringList& names,String* found_name);
-  template<typename InterfaceType> Ref<InterfaceType>
-  _tryCreateServiceUsingInjector(const StringList& names,String* found_name, bool has_trace);
-  UniqueArray<String> _stringListToArray(const StringList& slist) const;
   void _readCodeConfigurationFile();
+  void _setCoreServices();
 };
 
 /*---------------------------------------------------------------------------*/
