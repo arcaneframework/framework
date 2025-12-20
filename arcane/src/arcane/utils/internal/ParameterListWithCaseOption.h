@@ -16,13 +16,13 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/ParameterCaseOption.h"
-#include "arcane/utils/ParameterList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ParameterList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,12 +31,50 @@ namespace Arcane
  * du jeu de données.
  */
 class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
-: private ParameterList
 {
+  class Impl;
+
  public:
 
-  using ParameterList::addParameterLine;
-  using ParameterList::getParameterOrNull;
+  //! Construit un dictionnaire
+  ParameterListWithCaseOption();
+  //! Construit un dictionnaire
+  ParameterListWithCaseOption(const ParameterListWithCaseOption& rhs);
+  ~ParameterListWithCaseOption(); //!< Libère les ressources
+
+ public:
+
+  /*!
+   * \brief Récupère le paramètre de nom \a param_name.
+   *
+   * Retourne une chaîne nulle s'il n'y aucun paramètre avec ce nom.
+   *
+   * Si le paramètre est présent plusieurs fois, seule la dernière
+   * valeur est retournée.
+   */
+  String getParameterOrNull(const String& param_name) const;
+
+  /*!
+   * \brief Analyse la ligne \a line.
+   *
+   * La ligne doit avoir une des formes suivantes, avec \a A le
+   * paramètre et \a B la valeur:
+   *
+   * 1. A=B,
+   * 2. A:=B
+   * 3. A+=B,
+   * 4. A-=B
+   *
+   * Dans le cas (1) ou (3), la valeur de l'argument est ajoutée aux
+   * occurences déjà présentes. Dans le cas (2), la valeur de
+   * l'argument remplace toutes les occurences déjà présentes. Dans
+   * le cas (4), l'occurence ayant la valeur \a B est supprimée si elle
+   * était présente et rien ne se produit si elle était absente.
+   *
+   * \retval false si un paramètre a pu être analysé
+   * \retval true sinon.
+   */
+  bool addParameterLine(const String& line);
 
   /*!
    * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
@@ -46,13 +84,14 @@ class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
    * \param language Le langage dans lequel est écrit le jeu de données.
    * \return Un objet de type ParameterCaseOption.
    */
-  ParameterCaseOption getParameterCaseOption(const String& language) const
-  {
-    return _getParameterCaseOption(language);
-  }
+  ParameterCaseOption getParameterCaseOption(const String& language) const;
 
   //! Ajoute les paramètres de \a parameters aux paramètres de l'instance
   void addParameters(const ParameterList& parameters);
+
+ private:
+
+  Impl* m_p = nullptr; //!< Implémentation
 };
 
 /*---------------------------------------------------------------------------*/
