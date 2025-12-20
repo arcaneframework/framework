@@ -400,20 +400,19 @@ build()
     // Recherche le service utilisé pour connaitre la pile d'appel
     bool has_dbghelp = false;
     {
-      ServiceBuilder<IStackTraceService> sf(this);
+      String dbghelp_service_name = "DbgHelpStackTraceService";
+      StringList names;
+      String found_name;
       Ref<IStackTraceService> sv;
       const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
       if (v && v.value() != 0) {
-        sv = sf.createReference("BackwardCppStackTraceService", SB_AllowNull);
+        names.add("BackwardCppStackTraceService");
       }
-      else {
-        sv = sf.createReference("LibUnwind", SB_AllowNull);
-      }
-      if (!sv.get()){
-        sv = sf.createReference("DbgHelpStackTraceService", SB_AllowNull);
-        if (sv.get())
-          has_dbghelp = true;
-      }
+      names.add("LibUnwind");
+      names.add("DbgHelpStackTraceService");
+      sv = _tryCreateServiceUsingInjector<IStackTraceService>(names, &found_name, true);
+      if (found_name == dbghelp_service_name)
+        has_dbghelp = true;
       if (sv.get()) {
         m_stack_trace_service = sv;
         platform::setStackTraceService(sv.get());
@@ -421,20 +420,21 @@ build()
     }
 
     // Recherche le service utilisé pour connaitre les infos sur les symboles
-    // du code source. Pour l'instant on ne supporte que LLVM et on n'active ce service
+    // du code source. Pour l'instant, on ne supporte que LLVM et on n'active ce service
     // que si la variable d'environnement ARCANE_LLVMSYMBOLIZER_PATH est définie.
     {
-      Ref<ISymbolizerService> s;
-      ServiceBuilder<ISymbolizerService> sf(this);
-      if (!platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH").null()){
-        s = sf.createReference("LLVMSymbolizer", SB_AllowNull);
-      }
-      if (!s.get() && has_dbghelp){
-        s = sf.createReference("DbgHelpSymbolizerService", SB_AllowNull);
-      }
-      if (s.get()) {
-        m_symbolizer_service = s;
-        platform::setSymbolizerService(s.get());
+      StringList names;
+      String found_name;
+      Ref<ISymbolizerService> sv;
+
+      if (!platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH").null())
+        names.add("LLVMSymbolizer");
+      if (has_dbghelp)
+        names.add("DbgHelpSymbolizerService");
+      sv = _tryCreateServiceUsingInjector<ISymbolizerService>(names, &found_name, true);
+      if (sv.get()) {
+        m_symbolizer_service = sv;
+        platform::setSymbolizerService(sv.get());
       }
     }
 
