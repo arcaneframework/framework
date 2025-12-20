@@ -93,6 +93,9 @@
 namespace Arcane
 {
 
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneSetPauseOnError(bool v);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -112,9 +115,6 @@ arcaneSetSingletonItemEnumeratorTracer(Ref<IItemEnumeratorTracer> tracer);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" IApplication*
 arcaneCreateApplication(IArcaneMain* am)
 {
@@ -122,6 +122,48 @@ arcaneCreateApplication(IArcaneMain* am)
   sm->build();
   return sm;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  UniqueArray<String>
+  _stringListToArray(const StringList& slist)
+  {
+    UniqueArray<String> a;
+    for (const String& s : slist)
+      a.add(s);
+    return a;
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class Application::CoreApplication
+{
+ public:
+
+  void setTraceMng(ReferenceCounter<ITraceMng> tm) { m_trace = tm; }
+  void setCoreServices(const ApplicationCoreBuildInfo& build_info);
+
+  template <typename InterfaceType> Ref<InterfaceType>
+  tryCreateServiceUsingInjector(const StringList& names, String* found_name, bool has_trace);
+
+ public:
+
+  ReferenceCounter<ITraceMng> m_trace; //!< Gestionnaire de traces
+  Ref<IStackTraceService> m_stack_trace_service;
+  Ref<ISymbolizerService> m_symbolizer_service;
+  Ref<IThreadImplementationService> m_thread_implementation_service;
+  Ref<IThreadImplementation> m_thread_implementation;
+  Ref<ITaskImplementation> m_task_implementation;
+  //! Nom du service utilisé pour gérer les threads
+  String m_used_thread_service_name;
+  //! Nom du service utilisé pour gérer les tâches
+  String m_used_task_service_name;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -136,20 +178,11 @@ Application(IArcaneMain* am)
 , m_local_name("Application")
 , m_arcane_main(am)
 , m_main_factory(am->mainFactory())
-, m_service_mng(nullptr)
-, m_sequential_parallel_super_mng(nullptr)
-, m_trace(nullptr)
-, m_ressource_mng(nullptr)
-, m_io_mng(nullptr)
-, m_configuration_mng(nullptr)
 , m_main_service_factory_infos(am->registeredServiceFactoryInfos())
 , m_main_module_factory_infos(am->registeredModuleFactoryInfos())
 , m_has_garbage_collector(am->hasGarbageCollector())
-, m_trace_policy(nullptr)
-, m_is_init(false)
-, m_is_master(false)
-, m_service_and_module_factory_mng(nullptr)
 {
+  m_core_application = std::make_unique<CoreApplication>();
   // Initialise les threads avec un service qui ne fait rien.
   platform::setThreadImplementationService(&m_null_thread_implementation);
 }
@@ -165,16 +198,16 @@ Application::
 ~Application()
 {
   TaskFactory::terminate();
-  m_task_implementation.reset();
+  m_core_application->m_task_implementation.reset();
 
-  // Supprime les services que l'instance a positionné
+  // Supprime les services que l'instance a positionnée
   if (platform::getProcessorAffinityService()==m_processor_affinity_service.get())
     platform::setProcessorAffinityService(nullptr);
 
-  if (platform::getStackTraceService()==m_stack_trace_service.get())
+  if (platform::getStackTraceService() == m_core_application->m_stack_trace_service.get())
     platform::setStackTraceService(nullptr);
 
-  if (platform::getSymbolizerService()==m_symbolizer_service.get())
+  if (platform::getSymbolizerService() == m_core_application->m_symbolizer_service.get())
     platform::setSymbolizerService(nullptr);
 
   if (platform::getProfilingService()==m_profiling_service.get())
@@ -204,20 +237,8 @@ Application::
 
   // Supprime la référence au gestionnaire de thread. Il faut le faire en dernier car
   // les autres gestionnaires peuvent l'utiliser.
-  if (platform::getThreadImplementationService()==m_thread_implementation.get())
+  if (platform::getThreadImplementationService() == m_core_application->m_thread_implementation.get())
     platform::setThreadImplementationService(nullptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-UniqueArray<String> Application::
-_stringListToArray(const StringList& slist) const
-{
-  UniqueArray<String> a;
-  for( const String& s : slist )
-    a.add(s);
-  return a;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -258,8 +279,8 @@ _tryCreateService(const StringList& names,String* found_name)
  * l'instance. Dès qu'une instance est trouvée, on la retourne.
  * Retourne \a nullptr si aucune instance n'est disponible.
  */
-template<typename InterfaceType> Ref<InterfaceType> Application::
-_tryCreateServiceUsingInjector(const StringList& names,String* found_name,bool has_trace)
+template <typename InterfaceType> Ref<InterfaceType> Application::CoreApplication::
+tryCreateServiceUsingInjector(const StringList& names, String* found_name, bool has_trace)
 {
   DependencyInjection::Injector injector;
   injector.fillWithGlobalFactories();
@@ -283,8 +304,97 @@ _tryCreateServiceUsingInjector(const StringList& names,String* found_name,bool h
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT void
-arcaneSetPauseOnError(bool v);
+void Application::CoreApplication::
+setCoreServices(const ApplicationCoreBuildInfo& build_info)
+{
+
+  // Recherche le service utilisé pour connaitre la pile d'appel
+  bool has_dbghelp = false;
+  {
+    String dbghelp_service_name = "DbgHelpStackTraceService";
+    StringList names;
+    String found_name;
+    Ref<IStackTraceService> sv;
+    const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
+    if (v && v.value() != 0) {
+      names.add("BackwardCppStackTraceService");
+    }
+    names.add("LibUnwind");
+    names.add("DbgHelpStackTraceService");
+    sv = tryCreateServiceUsingInjector<IStackTraceService>(names, &found_name, true);
+    if (found_name == dbghelp_service_name)
+      has_dbghelp = true;
+    if (sv.get()) {
+      m_stack_trace_service = sv;
+      platform::setStackTraceService(sv.get());
+    }
+  }
+
+  // Recherche le service utilisé pour connaitre les infos sur les symboles
+  // du code source. Pour l'instant, on ne supporte que LLVM et on n'active ce service
+  // que si la variable d'environnement ARCANE_LLVMSYMBOLIZER_PATH est définie.
+  {
+    StringList names;
+    String found_name;
+    Ref<ISymbolizerService> sv;
+
+    if (!platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH").null())
+      names.add("LLVMSymbolizer");
+    if (has_dbghelp)
+      names.add("DbgHelpSymbolizerService");
+    sv = tryCreateServiceUsingInjector<ISymbolizerService>(names, &found_name, true);
+    if (sv.get()) {
+      m_symbolizer_service = sv;
+      platform::setSymbolizerService(sv.get());
+    }
+  }
+
+  // Recherche le service implémentant le support du multi-threading.
+  {
+    StringList names = build_info.threadImplementationServices();
+    String found_name;
+    auto sv = tryCreateServiceUsingInjector<IThreadImplementationService>(names, &found_name, false);
+    if (!sv.get())
+      ARCANE_FATAL("Can not find implementation for 'IThreadImplementation' (names='{0}').",
+                   _stringListToArray(names));
+    m_thread_implementation_service = sv;
+    m_thread_implementation = sv->createImplementation();
+    platform::setThreadImplementationService(m_thread_implementation.get());
+    m_thread_implementation->initialize();
+    m_used_thread_service_name = found_name;
+  }
+
+  // Le gestionnaire de thread a pu changer et il faut donc
+  // reinitialiser le gestionnaire de trace.
+  m_trace->resetThreadStatus();
+
+  // Recherche le service utilisé pour gérer les tâches
+  {
+    Integer nb_task_thread = build_info.nbTaskThread();
+    if (nb_task_thread >= 0) {
+
+      StringList names = build_info.taskImplementationServices();
+      String found_name;
+      auto sv = tryCreateServiceUsingInjector<ITaskImplementation>(names, &found_name, false);
+      if (sv.get()) {
+        TaskFactoryInternal::setImplementation(sv.get());
+        sv->initialize(nb_task_thread);
+        m_used_task_service_name = found_name;
+        m_task_implementation = sv;
+      }
+      else
+        ARCANE_FATAL("Can not find task implementation service (names='{0}')."
+                     " Please check if Arcane is configured with Intel TBB library",
+                     _stringListToArray(names));
+    }
+
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_VERBOSE_LEVEL", true))
+      TaskFactory::setVerboseLevel(v.value());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void Application::
 build()
@@ -393,97 +503,11 @@ build()
     m_service_mng = m_main_factory->createServiceMng(this);
 
     String pause_on_error = platform::getEnvironmentVariable("ARCANE_PAUSE_ON_ERROR");
-    if (!pause_on_error.null()){
+    if (!pause_on_error.null())
       arcaneSetPauseOnError(true);
-    }
 
-    // Recherche le service utilisé pour connaitre la pile d'appel
-    bool has_dbghelp = false;
-    {
-      String dbghelp_service_name = "DbgHelpStackTraceService";
-      StringList names;
-      String found_name;
-      Ref<IStackTraceService> sv;
-      const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
-      if (v && v.value() != 0) {
-        names.add("BackwardCppStackTraceService");
-      }
-      names.add("LibUnwind");
-      names.add("DbgHelpStackTraceService");
-      sv = _tryCreateServiceUsingInjector<IStackTraceService>(names, &found_name, true);
-      if (found_name == dbghelp_service_name)
-        has_dbghelp = true;
-      if (sv.get()) {
-        m_stack_trace_service = sv;
-        platform::setStackTraceService(sv.get());
-      }
-    }
-
-    // Recherche le service utilisé pour connaitre les infos sur les symboles
-    // du code source. Pour l'instant, on ne supporte que LLVM et on n'active ce service
-    // que si la variable d'environnement ARCANE_LLVMSYMBOLIZER_PATH est définie.
-    {
-      StringList names;
-      String found_name;
-      Ref<ISymbolizerService> sv;
-
-      if (!platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH").null())
-        names.add("LLVMSymbolizer");
-      if (has_dbghelp)
-        names.add("DbgHelpSymbolizerService");
-      sv = _tryCreateServiceUsingInjector<ISymbolizerService>(names, &found_name, true);
-      if (sv.get()) {
-        m_symbolizer_service = sv;
-        platform::setSymbolizerService(sv.get());
-      }
-    }
-
-    {
-      StringList names = build_info.threadImplementationServices();
-      String found_name;
-      auto sv = _tryCreateServiceUsingInjector<IThreadImplementationService>(names,&found_name, false);
-      if (sv.get()){
-        m_thread_implementation_service = sv;
-        m_thread_implementation = sv->createImplementation();
-        platform::setThreadImplementationService(m_thread_implementation.get());
-        m_thread_implementation->initialize();
-        m_used_thread_service_name = found_name;
-      }
-      else {
-        ARCANE_FATAL("Can not find implementation for 'IThreadImplementation' (names='{0}').",
-                     _stringListToArray(names));
-        arcaneSetHasThread(false);
-      }
-    }
-
-    // Le gestionnaire de thread a pu changer et il faut donc
-    // reinitialiser le gestionnaire de trace.
-    m_trace->resetThreadStatus();
-
-    // Recherche le service utilisé pour gérer les tâches
-    {
-      Integer nb_task_thread = build_info.nbTaskThread();
-      if (nb_task_thread>=0){
-
-        StringList names = build_info.taskImplementationServices();
-        String found_name;
-        auto sv = _tryCreateServiceUsingInjector<ITaskImplementation>(names,&found_name,false);
-        if (sv.get()){
-          TaskFactoryInternal::setImplementation(sv.get());
-          //std::cout << "Initialize task with nb_thread=" << nb_task_thread << "\n";
-          sv->initialize(nb_task_thread);
-          m_used_task_service_name = found_name;
-          m_task_implementation = sv;
-        }
-        else
-          ARCANE_FATAL("Can not find task implementation service (names='{0}')."
-                       " Please check if Arcane is configured with Intel TBB library",
-                       _stringListToArray(names));
-      }
-
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_VERBOSE_LEVEL",true))
-        TaskFactory::setVerboseLevel(v.value());
-    }
+    m_core_application->setTraceMng(m_trace);
+    m_core_application->setCoreServices(applicationBuildInfo());
 
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
       ProfilingRegistry::setProfilingLevel(v.value());
@@ -518,7 +542,7 @@ build()
       StringList names;
       names.add("HWLoc");
       String found_name;
-      auto sv = _tryCreateServiceUsingInjector<IProcessorAffinityService>(names,&found_name,true);
+      auto sv = m_core_application->tryCreateServiceUsingInjector<IProcessorAffinityService>(names, &found_name, true);
       if (sv.get()) {
         m_processor_affinity_service = sv;
         platform::setProcessorAffinityService(sv.get());
@@ -749,13 +773,13 @@ initialize()
   _initDataInitialisationPolicy();
   
   {
-    if (!m_used_thread_service_name.null())
-      m_trace->info() << "Service used for thread management : '" << m_used_thread_service_name << "'";
+    if (!m_core_application->m_used_thread_service_name.null())
+      m_trace->info() << "Service used for thread management : '" << m_core_application->m_used_thread_service_name << "'";
     else
       m_trace->info() << "No thread management active";
 
-    if (!m_used_task_service_name.null()){
-      m_trace->info() << "Service used for task management : '" << m_used_task_service_name
+    if (!m_core_application->m_used_task_service_name.null()) {
+      m_trace->info() << "Service used for task management : '" << m_core_application->m_used_task_service_name
                       << "' (max_task_thread=" << TaskFactory::nbAllowedThread() << ")";
       std::ostringstream ostr;
       TaskFactory::printInfos(ostr);

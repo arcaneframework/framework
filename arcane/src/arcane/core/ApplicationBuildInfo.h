@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationBuildInfo.h                                      (C) 2000-2022 */
+/* ApplicationBuildInfo.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour construire une instance de IApplication.                */
 /*---------------------------------------------------------------------------*/
@@ -26,22 +26,20 @@ class CaseDatasetSource;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour construire une instance de IApplication.
+ * \brief Informations pour initialiser une application.
  */
-class ARCANE_CORE_EXPORT ApplicationBuildInfo
+class ARCANE_CORE_EXPORT ApplicationCoreBuildInfo
 {
-  class Impl;
- public:
-
-  ApplicationBuildInfo();
-  ApplicationBuildInfo(const ApplicationBuildInfo& rhs);
-  ~ApplicationBuildInfo();
-  ApplicationBuildInfo& operator=(const ApplicationBuildInfo& rhs);
+  class CoreImpl;
 
  public:
 
-  void setMessagePassingService(const String& name);
-  String messagePassingService() const;
+  ApplicationCoreBuildInfo();
+  ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs);
+  ~ApplicationCoreBuildInfo();
+  ApplicationCoreBuildInfo& operator=(const ApplicationCoreBuildInfo& rhs);
+
+ public:
 
   void setTaskImplementationService(const String& name);
   void setTaskImplementationServices(const StringList& names);
@@ -53,6 +51,33 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 
   Int32 nbTaskThread() const;
   void setNbTaskThread(Integer v);
+
+ protected:
+
+  CoreImpl* m_core = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations pour construire une instance de IApplication.
+ */
+class ARCANE_CORE_EXPORT ApplicationBuildInfo
+: public ApplicationCoreBuildInfo
+{
+  class Impl;
+
+ public:
+
+  ApplicationBuildInfo();
+  ApplicationBuildInfo(const ApplicationBuildInfo& rhs);
+  ~ApplicationBuildInfo();
+  ApplicationBuildInfo& operator=(const ApplicationBuildInfo& rhs);
+
+ public:
+
+  void setMessagePassingService(const String& name);
+  String messagePassingService() const;
 
   Int32 nbSharedMemorySubDomain() const;
   void setNbSharedMemorySubDomain(Int32 v);
@@ -183,7 +208,7 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
