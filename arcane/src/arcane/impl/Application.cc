@@ -146,7 +146,7 @@ class Application::CoreApplication
  public:
 
   void setTraceMng(ReferenceCounter<ITraceMng> tm) { m_trace = tm; }
-  void setCoreServices(const ApplicationBuildInfo& build_info);
+  void setCoreServices(const ApplicationCoreBuildInfo& build_info);
 
   template <typename InterfaceType> Ref<InterfaceType>
   tryCreateServiceUsingInjector(const StringList& names, String* found_name, bool has_trace);
@@ -305,7 +305,7 @@ tryCreateServiceUsingInjector(const StringList& names, String* found_name, bool 
 /*---------------------------------------------------------------------------*/
 
 void Application::CoreApplication::
-setCoreServices(const ApplicationBuildInfo& build_info)
+setCoreServices(const ApplicationCoreBuildInfo& build_info)
 {
 
   // Recherche le service utilisé pour connaitre la pile d'appel
