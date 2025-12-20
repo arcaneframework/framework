@@ -272,6 +272,7 @@ set(ARCANE_SOURCES
   ObjectImpl.h
   ParameterList.h
   ParameterList.cc
+  ParameterListWithCaseOption.cc
   RangeFunctor.h
   Real2Proxy.h
   Real2x2Proxy.h

@@ -92,10 +92,6 @@ class ARCANE_UTILS_EXPORT ParameterList
  private:
 
   Impl* m_p = nullptr; //!< Implémentation
-
- private:
-
-  ParameterCaseOption _getParameterCaseOption(const String& language) const;
 };
 
 /*---------------------------------------------------------------------------*/
