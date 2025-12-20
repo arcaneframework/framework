@@ -26,11 +26,45 @@ class CaseDatasetSource;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Informations pour initialiser une application.
+ */
+class ARCANE_CORE_EXPORT ApplicationCoreBuildInfo
+{
+  class CoreImpl;
+
+ public:
+
+  ApplicationCoreBuildInfo();
+  ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs);
+  ~ApplicationCoreBuildInfo();
+  ApplicationCoreBuildInfo& operator=(const ApplicationCoreBuildInfo& rhs);
+
+ public:
+
+  void setTaskImplementationService(const String& name);
+  void setTaskImplementationServices(const StringList& names);
+  StringList taskImplementationServices() const;
+
+  void setThreadImplementationService(const String& name);
+  void setThreadImplementationServices(const StringList& names);
+  StringList threadImplementationServices() const;
+
+  Int32 nbTaskThread() const;
+  void setNbTaskThread(Integer v);
+
+ protected:
+
+  CoreImpl* m_core = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Informations pour construire une instance de IApplication.
  */
 class ARCANE_CORE_EXPORT ApplicationBuildInfo
+: public ApplicationCoreBuildInfo
 {
-  class CoreImpl;
   class Impl;
 
  public:
@@ -44,17 +78,6 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 
   void setMessagePassingService(const String& name);
   String messagePassingService() const;
-
-  void setTaskImplementationService(const String& name);
-  void setTaskImplementationServices(const StringList& names);
-  StringList taskImplementationServices() const;
-
-  void setThreadImplementationService(const String& name);
-  void setThreadImplementationServices(const StringList& names);
-  StringList threadImplementationServices() const;
-
-  Int32 nbTaskThread() const;
-  void setNbTaskThread(Integer v);
 
   Int32 nbSharedMemorySubDomain() const;
   void setNbSharedMemorySubDomain(Int32 v);

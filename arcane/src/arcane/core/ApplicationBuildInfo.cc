@@ -179,6 +179,29 @@ class PropertyImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ApplicationCoreBuildInfo::CoreImpl
+{
+ public:
+
+  template <typename T> using Property = PropertyImpl::Property<T>;
+
+  CoreImpl()
+  : m_nb_task_thread(-1)
+  {
+    // Fixe une limite pour le nombre de tâches
+    m_nb_task_thread.setValidator([](Int32& x) { _clamp(x, -1, 512); });
+  }
+
+ public:
+
+  Property<StringList> m_task_implementation_services;
+  Property<StringList> m_thread_implementation_services;
+  Property<Int32> m_nb_task_thread;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ApplicationBuildInfo::Impl
 {
   template <typename T> using Property = PropertyImpl::Property<T>;
@@ -193,13 +216,13 @@ class ApplicationBuildInfo::Impl
     String value;
   };
  public:
+
   Impl()
-  : m_nb_task_thread(-1), m_nb_shared_memory_sub_domain(0),
-    m_nb_replication_sub_domain(0), m_nb_processus_sub_domain(0),
-    m_config_file_name("")
+  : m_nb_shared_memory_sub_domain(0)
+  , m_nb_replication_sub_domain(0)
+  , m_nb_processus_sub_domain(0)
+  , m_config_file_name("")
   {
-    // Fixe une limite pour le nombre de tâches
-    m_nb_task_thread.setValidator([](Int32& x){ _clamp(x,-1,512); });
     // Fixe une limite en dur pour éviter d'avoir trop de sous-domaines
     // en mémoire partagé (le maximum est en général le nombre de coeurs par
     // noeud)
@@ -241,9 +264,6 @@ class ApplicationBuildInfo::Impl
  public:
 
   Property<String> m_message_passing_service;
-  Property<StringList> m_task_implementation_services;
-  Property<StringList> m_thread_implementation_services;
-  Property<Int32> m_nb_task_thread;
   Property<Int32> m_nb_shared_memory_sub_domain;
   Property<Int32> m_nb_replication_sub_domain;
   Property<Int32> m_nb_processus_sub_domain;
@@ -276,6 +296,37 @@ class ApplicationBuildInfo::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ApplicationCoreBuildInfo::
+ApplicationCoreBuildInfo()
+: m_core(new CoreImpl())
+{
+}
+
+ApplicationCoreBuildInfo::
+ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs)
+: m_core(new CoreImpl(*rhs.m_core))
+{
+}
+
+ApplicationCoreBuildInfo& ApplicationCoreBuildInfo::
+operator=(const ApplicationCoreBuildInfo& rhs)
+{
+  if (&rhs != this) {
+    delete m_core;
+    m_core = new CoreImpl(*(rhs.m_core));
+  }
+  return (*this);
+}
+
+ApplicationCoreBuildInfo::
+~ApplicationCoreBuildInfo()
+{
+  delete m_core;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ApplicationBuildInfo::
 ApplicationBuildInfo()
 : m_p(new Impl())
@@ -287,14 +338,16 @@ ApplicationBuildInfo()
 
 ApplicationBuildInfo::
 ApplicationBuildInfo(const ApplicationBuildInfo& rhs)
-: m_p(new Impl(*rhs.m_p))
+: ApplicationCoreBuildInfo(rhs)
+, m_p(new Impl(*rhs.m_p))
 {
 }
 
 ApplicationBuildInfo& ApplicationBuildInfo::
 operator=(const ApplicationBuildInfo& rhs)
 {
-  if (&rhs!=this){
+  ApplicationCoreBuildInfo::operator=(rhs);
+  if (&rhs != this) {
     delete m_p;
     m_p = new Impl(*(rhs.m_p));
   }
@@ -318,7 +371,7 @@ setDefaultValues()
 {
   {
     String str = m_p->getValue({ "ARCANE_NB_TASK" }, "T", String());
-    PropertyImpl::checkSet(m_p->m_nb_task_thread, str);
+    PropertyImpl::checkSet(m_core->m_nb_task_thread, str);
   }
   {
     String str = m_p->getValue({ "ARCANE_NB_THREAD" }, "S", String());
@@ -379,14 +432,14 @@ setDefaultServices()
   {
     String str = m_p->getValue( { "ARCANE_TASK_IMPLEMENTATION" }, "TaskService", "TBB");
     String service_name = str + "TaskImplementation";
-    PropertyImpl::checkSet(m_p->m_task_implementation_services, service_name);
+    PropertyImpl::checkSet(m_core->m_task_implementation_services, service_name);
   }
   {
     StringList list1;
     String thread_str = m_p->getValue( { "ARCANE_THREAD_IMPLEMENTATION" }, "ThreadService" ,"Std");
     list1.add(thread_str+"ThreadImplementationService");
     list1.add("TBBThreadImplementationService");
-    PropertyImpl::checkSet(m_p->m_thread_implementation_services, list1);
+    PropertyImpl::checkSet(m_core->m_thread_implementation_services, list1);
   }
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
@@ -421,61 +474,61 @@ messagePassingService() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setTaskImplementationService(const String& name)
 {
   StringList s;
   s.add(name);
-  m_p->m_task_implementation_services = s;
+  m_core->m_task_implementation_services = s;
 }
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setTaskImplementationServices(const StringList& names)
 {
-  m_p->m_task_implementation_services = names;
+  m_core->m_task_implementation_services = names;
 }
-StringList ApplicationBuildInfo::
+StringList ApplicationCoreBuildInfo::
 taskImplementationServices() const
 {
-  return m_p->m_task_implementation_services;
+  return m_core->m_task_implementation_services;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setThreadImplementationService(const String& name)
 {
   StringList s;
   s.add(name);
-  m_p->m_thread_implementation_services = s;
+  m_core->m_thread_implementation_services = s;
 }
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setThreadImplementationServices(const StringList& names)
 {
-  m_p->m_thread_implementation_services = names;
+  m_core->m_thread_implementation_services = names;
 }
-StringList ApplicationBuildInfo::
+StringList ApplicationCoreBuildInfo::
 threadImplementationServices() const
 {
-  return m_p->m_thread_implementation_services;
+  return m_core->m_thread_implementation_services;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 ApplicationBuildInfo::
+Int32 ApplicationCoreBuildInfo::
 nbTaskThread() const
 {
-  return m_p->m_nb_task_thread;
+  return m_core->m_nb_task_thread;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setNbTaskThread(Int32 v)
 {
-  m_p->m_nb_task_thread = v;
+  m_core->m_nb_task_thread = v;
 }
 
 /*---------------------------------------------------------------------------*/
