@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONPropertyReader.h                                        (C) 2000-2024 */
+/* JSONPropertyReader.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Lecture de propriétés au format JSON.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_JSONPROPERTYREADER_H
-#define ARCANE_UTILS_JSONPROPERTYREADER_H
+#ifndef ARCANE_UTILS_INTERNAL_JSONPROPERTYREADER_H
+#define ARCANE_UTILS_INTERNAL_JSONPROPERTYREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
@@ -19,7 +19,7 @@
  */
 
 #include "arcane/utils/JSONReader.h"
-#include "arcane/utils/Property.h"
+#include "arcane/utils/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

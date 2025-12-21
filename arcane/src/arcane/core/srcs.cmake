@@ -67,6 +67,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
   internal/CartesianMeshAllocateBuildInfoInternal.h
+  internal/ConfigurationPropertyReader.h
   internal/UnstructuredMeshAllocateBuildInfoInternal.h
   internal/IParallelMngInternal.h
   internal/IItemFamilyInternal.h
@@ -481,7 +482,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Concurrency.cc
   Concurrency.h
   Configuration.h
-  ConfigurationPropertyReader.h
   Connectivity.cc
   Connectivity.h
   ConnectivityItemVector.h

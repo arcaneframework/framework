@@ -53,7 +53,6 @@ set(ARCANE_SOURCES
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
-  JSONPropertyReader.h
   JSONReader.cc
   JSONReader.h
   JSONWriter.cc
@@ -112,7 +111,6 @@ set(ARCANE_SOURCES
   PlatformUtils.h
   Profiling.h
   Property.cc
-  Property.h
   PropertyDeclarations.h
   Ptr.cc
   Ptr.h
@@ -321,9 +319,12 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
 
   internal/ApplicationInfoProperties.h
+  internal/JSONPropertyReader.h
   internal/ParameterCaseOption.h
+  internal/ParameterListPropertyReader.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
+  internal/Property.h
   internal/ValueConvertInternal.h
   internal/MemoryBuffer.h
   internal/ParallelLoopOptionsProperties.h
