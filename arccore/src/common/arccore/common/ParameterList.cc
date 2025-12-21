@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ParameterList.h"
-#include "arcane/utils/StringDictionary.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Ref.h"
+#include "arccore/common/ParameterList.h"
+#include "arccore/common/StringDictionary.h"
+#include "arccore/base/String.h"
+#include "arccore/common/Array.h"
+#include "arccore/base/FatalErrorException.h"
+//#include "arccore/common/Ref.h"
 
 #include <algorithm>
 
@@ -70,7 +70,7 @@ class ParameterList::Impl
       return;
 
     if (name.startsWith("//")) {
-      ARCANE_FATAL("Set parameter not supported for ParameterOptions.");
+      ARCCORE_FATAL("Set parameter not supported for ParameterOptions.");
     }
 
     m_parameters_dictionary.add(name,value);
@@ -86,7 +86,7 @@ class ParameterList::Impl
     if (name.empty())
       return;
     if (name.startsWith("//")) {
-      ARCANE_FATAL("Remove parameter not supported for ParameterOptions.");
+      ARCCORE_FATAL("Remove parameter not supported for ParameterOptions.");
     }
     // Si le paramètre \a name avec la valeur \a value est trouvé, le supprime.
     // Dans ce cas, il faudra regarder s'il y a toujours

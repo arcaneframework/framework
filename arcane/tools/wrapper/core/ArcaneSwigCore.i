@@ -74,6 +74,7 @@ namespace Arcane
 #define ARCANE_NOEXCEPT
 
 #define ARCCORE_BASE_EXPORT
+#define ARCCORE_COMMON_EXPORT
 #define ARCANE_EXPR_EXPORT
 #define ARCANE_CORE_EXPORT
 #define ARCANE_UTILS_EXPORT
@@ -472,7 +473,7 @@ namespace Arcane
 %}
 
 %include Ref.i
-%include arcane/utils/CommandLineArguments.h
+%include arccore/common/CommandLineArguments.h
 %include arcane/utils/VersionInfo.h
 %include arcane/utils/ApplicationInfo.h
 
@@ -520,7 +521,7 @@ class IEntryPoint
 %include arcane/core/IMainFactory.h
 %include arcane/core/ApplicationBuildInfo.h
 %include arcane/core/DotNetRuntimeInitialisationInfo.h
-%include arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h
+%include arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h
 
 namespace Arcane
 {
