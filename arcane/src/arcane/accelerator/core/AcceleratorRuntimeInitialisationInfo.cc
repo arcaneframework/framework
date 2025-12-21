@@ -14,7 +14,7 @@
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
 #include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 
-#include "arcane/utils/Property.h"
+#include "arcane/utils/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
