@@ -95,6 +95,8 @@ template<typename... Args> class EventObservable;
 template<typename... Args> class EventObserver;
 template <typename... Args> class EventObservableView;
 
+using StringList = List<String>;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

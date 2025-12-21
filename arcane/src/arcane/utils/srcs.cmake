@@ -22,7 +22,6 @@ set(ARCANE_SOURCES
   BFloat16.h
   Collection.h
   CommandLineArguments.h
-  CommandLineArguments.cc
   Convert.cc
   Convert.h
   ConcurrencyUtils.h
@@ -271,7 +270,6 @@ set(ARCANE_SOURCES
   HashTableMap2.cc
   ObjectImpl.h
   ParameterList.h
-  ParameterList.cc
   ParameterListWithCaseOption.cc
   RangeFunctor.h
   Real2Proxy.h
@@ -296,7 +294,6 @@ set(ARCANE_SOURCES
   String.h
   StringBuilder.h
   StringDictionary.h
-  StringDictionary.cc
   StringList.h
   SHA1HashAlgorithm.h
   SHA1HashAlgorithm.cc
