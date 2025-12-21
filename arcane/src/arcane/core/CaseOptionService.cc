@@ -17,9 +17,8 @@
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ApplicationInfo.h"
-#include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/internal/ParameterCaseOption.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IServiceFactory.h"
@@ -33,7 +32,6 @@
 #include "arcane/core/internal/ICaseOptionListInternal.h"
 #include "arcane/core/internal/StringVariableReplace.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
-#include "arcane/utils/ParameterCaseOption.h"
 
 #include <typeinfo>
 

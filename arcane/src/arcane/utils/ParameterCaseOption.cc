@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ParameterCaseOption.h"
+#include "arcane/utils/internal/ParameterCaseOption.h"
 
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ValueConvert.h"

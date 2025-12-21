@@ -105,7 +105,6 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   ParallelLoopOptions.h
   ParallelLoopOptions.cc
-  ParameterCaseOption.h
   ParameterCaseOption.cc
   PerfCounterMng.cc
   PerfCounterMng.h
@@ -322,6 +321,7 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
 
   internal/ApplicationInfoProperties.h
+  internal/ParameterCaseOption.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h

@@ -10,10 +10,8 @@
 /* Classe permettant d'interroger les paramètres pour savoir si des options  */
 /* du jeu de données doivent être modifiées par ceux-ci.                     */
 /*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_UTILS_PARAMETERCASEOPTION_H
-#define ARCANE_UTILS_PARAMETERCASEOPTION_H
-
+#ifndef ARCANE_UTILS_INTERNAL_PARAMETERCASEOPTION_H
+#define ARCANE_UTILS_INTERNAL_PARAMETERCASEOPTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,13 +30,11 @@ class ParameterOptionElementsCollection;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Classe représentant l'ensemble des paramètres pouvant modifier
  * les options du jeu de données.
  */
-class ARCANE_UTILS_EXPORT
-ParameterCaseOption
+class ARCANE_UTILS_EXPORT ParameterCaseOption
 {
 
  public:
@@ -295,8 +291,8 @@ ParameterCaseOption
 
  private:
 
-  bool m_is_fr;
-  ParameterOptionElementsCollection* m_lines;
+  bool m_is_fr = false;
+  ParameterOptionElementsCollection* m_lines = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

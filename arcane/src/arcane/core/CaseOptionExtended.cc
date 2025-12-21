@@ -15,13 +15,9 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ApplicationInfo.h"
-#include "arcane/utils/CommandLineArguments.h"
-#include "arcane/utils/ParameterList.h"
-#include "arcane/utils/ParameterCaseOption.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/internal/ParameterCaseOption.h"
 
-#include "arcane/core/IApplication.h"
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/CaseOptionError.h"
 #include "arcane/core/ICaseDocumentVisitor.h"
