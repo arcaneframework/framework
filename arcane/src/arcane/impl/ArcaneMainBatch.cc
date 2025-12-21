@@ -32,10 +32,10 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/CStringUtils.h"
 #include "arcane/utils/ITraceMngPolicy.h"
-#include "arcane/utils/Property.h"
-#include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/CriticalSection.h"
+#include "arcane/utils/internal/ParameterListPropertyReader.h"
+#include "arcane/utils/internal/Property.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"

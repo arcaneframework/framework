@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParameterListPropertyReader.h                               (C) 2000-2024 */
+/* ConfigurationPropertyReader.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Lecture de propriétés au format JSON.                                     */
+/* Lecture de propriétés à partir d'un 'IConfiguration'.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_PARAMETERLISTPROPERTYREADER_H
-#define ARCANE_UTILS_PARAMETERLISTPROPERTYREADER_H
+#ifndef ARCANE_CORE_INTERNAL_CONFIGURATIONPROPERTYREADER_H
+#define ARCANE_CORE_INTERNAL_CONFIGURATIONPROPERTYREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
@@ -18,8 +18,8 @@
  * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
  */
 
-#include "arcane/utils/ParameterList.h"
-#include "arcane/utils/Property.h"
+#include "arcane/core/IConfiguration.h"
+#include "arcane/utils/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,43 +29,46 @@ namespace Arcane::properties
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! \internal
-template<typename T, typename PropertyType = T>
-class ParameterListPropertyVisitor
-: public properties::PropertyVisitor<T>
+
+template<typename T>
+class ConfigurationPropertyReader
+: public PropertyVisitor<T>
 {
  public:
-  ParameterListPropertyVisitor(const ParameterList& args,T& instance)
-  : m_args(args), m_instance(instance){}
+  ConfigurationPropertyReader(IConfigurationSection* cs,T& instance)
+  : m_configuration_section(cs), m_instance(instance){}
  private:
-  const ParameterList& m_args;
+  IConfigurationSection* m_configuration_section;
   T& m_instance;
  public:
-  void visit(const properties::PropertySettingBase<T>& s) override
+  void visit(const PropertySettingBase<T>& s) override
   {
-    String param_name = s.setting()->commandLineArgument();
-    if (param_name.null())
+    const String& pname = s.setting()->name();
+    String value = m_configuration_section->value(pname,String());
+    if (value.null())
       return;
-    String param_value = m_args.getParameterOrNull(param_name);
-    //std::cout << "GET_PARAM name='" << param_name << "' value='" << param_value << "'\n";
-    if (param_value.null())
-      return;
-    s.setFromString(param_value,m_instance);
-    //std::cout << "SET_PROP from command line:";
-    //s.print(std::cout,m_instance);
+    s.setFromString(value,m_instance);
+    s.print(std::cout,m_instance);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplit les valeurs de \a instance à partir des paramètres \a args.
+ * \brief Remplit les valeurs de \a instance à partir d'une configuration.
+ *
+ * Les valeurs de la propriété doivent être dans une sous-section
+ * de \a c dont le nom est celui de la classe \a T.
  */
-template<typename T, typename PropertyType = T> inline void
-readFromParameterList(const ParameterList& args,T& instance)
+template<typename T> inline void
+readFromConfiguration(IConfiguration* c,T& instance)
 {
-  ParameterListPropertyVisitor<T,PropertyType> reader(args,instance);
-  PropertyType :: applyPropertyVisitor(reader);
+  if (!c)
+    return;
+  const char* instance_property_name = T :: propertyClassName();
+  ScopedPtrT<IConfigurationSection> cs(c->createSection(instance_property_name));
+  ConfigurationPropertyReader reader(cs.get(),instance);
+  T :: applyPropertyVisitor(reader);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,4 +79,4 @@ readFromParameterList(const ParameterList& args,T& instance)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  

@@ -21,11 +21,11 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/MemoryInfo.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/Property.h"
 #include "arcane/utils/TraceAccessor2.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IProcessorAffinityService.h"
 #include "arcane/utils/IProfilingService.h"
+#include "arcane/utils/internal/Property.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IVariableMng.h"
@@ -77,9 +77,9 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/ObserverPool.h"
-#include "arcane/core/ConfigurationPropertyReader.h"
 #include "arcane/core/parallel/IStat.h"
 
+#include "arcane/core/internal/ConfigurationPropertyReader.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
