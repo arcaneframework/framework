@@ -10,7 +10,7 @@
 /* Options de configuration pour les boucles parallèles en multi-thread.     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_PARALLELLOOPOPTIONSPROPERTIES_H
-#define ARCANE_UTILS_INTERANL_PARALLELLOOPOPTIONSPROPERTIES_H
+#define ARCANE_UTILS_INTERNAL_PARALLELLOOPOPTIONSPROPERTIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
