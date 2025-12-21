@@ -183,7 +183,13 @@ macro(arcane_wrapper_add_swig_target)
 
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY CPLUSPLUS ON)
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY USE_SWIG_DEPENDENCIES TRUE)
-  set_property(SOURCE ${ARGS_SOURCE} PROPERTY INCLUDE_DIRECTORIES ${Arccore_SOURCE_DIR}/src/base ${ARCANE_SRC_PATH} ${ARCANE_DOTNET_WRAPPER_SOURCE_DIR} ${ARGS_INCLUDE_DIRECTORIES})
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY INCLUDE_DIRECTORIES
+    "${Arccore_SOURCE_DIR}/src/common"
+    "${Arccore_SOURCE_DIR}/src/base"
+    "${ARCANE_SRC_PATH}"
+    "${ARCANE_DOTNET_WRAPPER_SOURCE_DIR}"
+    "${ARGS_INCLUDE_DIRECTORIES}"
+  )
   if (UNIX)
     # TODO: regarder si on ne peut pas mettre ce define dans un .i
     set_property(SOURCE ${ARGS_SOURCE} PROPERTY COMPILE_DEFINITIONS "SWIGWORDSIZE64")

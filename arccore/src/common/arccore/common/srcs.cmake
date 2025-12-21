@@ -10,6 +10,8 @@ set(SOURCES
   ArraySimdPadder.h
   Collection.h
   Collection.cc
+  CommandLineArguments.h
+  CommandLineArguments.cc
   CommonGlobal.h
   CommonGlobal.cc
   DataView.h
@@ -34,11 +36,15 @@ set(SOURCES
   NumArray.h
   NumArray.cc
   NumArrayContainer.h
+  ParameterList.h
+  ParameterList.cc
   Process.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
   SpecificMemoryCopy.cc
+  StringDictionary.h
+  StringDictionary.cc
 
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h

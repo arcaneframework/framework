@@ -11,14 +11,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/CommandLineArguments.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/List.h"
-#include "arcane/utils/ParameterList.h"
+#include "arccore/common/CommandLineArguments.h"
+
+#include "arccore/base/String.h"
+#include "arccore/base/PlatformUtils.h"
+
+#include "arccore/common/List.h"
+#include "arccore/common/ParameterList.h"
 
 #include <atomic>
 #include <map>
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
