@@ -1,12 +1,13 @@
 ﻿set(SOURCE_FILES
-  Init.cc
+  TestInit.cc
 )
 
 set(ACCELERATOR_FILES
+  TestReduce1.cc
 )
 
 arccore_add_component_test_executable(accelerator
-  FILES Test${SOURCE_FILES} ${ACCELERATOR_FILES}
+  FILES ${SOURCE_FILES} ${ACCELERATOR_FILES}
 )
 arccore_accelerator_add_source_files(${ACCELERATOR_FILES})
 
