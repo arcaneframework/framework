@@ -32,6 +32,14 @@ class ARCCORE_ACCELERATOR_EXPORT Initializer
  public:
 
   Initializer(bool use_accelerator, Int32 max_allowed_thread);
+
+ public:
+
+  eExecutionPolicy executionPolicy() const { return m_policy; }
+
+ private:
+
+  eExecutionPolicy m_policy = eExecutionPolicy::Sequential;
 };
 
 /*---------------------------------------------------------------------------*/
