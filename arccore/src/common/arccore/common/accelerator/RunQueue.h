@@ -44,7 +44,7 @@ namespace Arcane::Accelerator
  * Le constructeur par défaut construit Une file nulle qui ne peut pas être
  * utilisée pour lancer des commandes. Les seules opérations autorisées sur
  * la file nulle sont isNull(), executionPolicy(), isAcceleratorPolicy(),
- * barrier(), allocationOptions() et memoryRessource().
+ * barrier(), allocationOptions() et memoryResource().
  *
  * Les méthodes de cette classe ne sont pas thread-safe pour une même instance.
  */
@@ -185,7 +185,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
    * La valeur par défaut est eMemoryRessource::UnifiedMemory
    * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
    *
-   * \sa memoryRessource()
+   * \sa memoryResource()
    * \sa allocationOptions()
    *
    * \pre !isNull()
@@ -194,6 +194,8 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
   //! Ressource mémoire utilisée pour les allocations avec cette instance.
   eMemoryResource memoryRessource() const;
+  //! Ressource mémoire utilisée pour les allocations avec cette instance.
+  eMemoryResource memoryResource() const;
   //!@}
 
  public:
