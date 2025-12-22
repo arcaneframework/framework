@@ -77,7 +77,8 @@ getSymbolizerService();
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT ISymbolizerService*
 setSymbolizerService(ISymbolizerService* service);
 
 /*!
@@ -93,7 +94,8 @@ getProcessorAffinityService();
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IProcessorAffinityService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IProcessorAffinityService*
 setProcessorAffinityService(IProcessorAffinityService* service);
 
 /*!
@@ -109,7 +111,8 @@ getProfilingService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IProfilingService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IProfilingService*
 setProfilingService(IProfilingService* service);
 
 /*!
@@ -125,7 +128,8 @@ getOnlineDebuggerService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IOnlineDebuggerService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IOnlineDebuggerService*
 setOnlineDebuggerService(IOnlineDebuggerService* service);
 
 /*!
@@ -141,7 +145,8 @@ getThreadImplementationService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IThreadImplementation*
 setThreadImplementationService(IThreadImplementation* service);
 
 /*!
@@ -149,7 +154,8 @@ setThreadImplementationService(IThreadImplementation* service);
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IPerformanceCounterService*
 setPerformanceCounterService(IPerformanceCounterService* service);
 
 /*!
