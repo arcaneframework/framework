@@ -275,11 +275,13 @@ isDenormalized(Real v);
 extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
 getStackTraceService();
 
-/*! \brief Positionne le service utilisé pour obtenir la pile d'appel.
-  
-  Retourne l'ancien service utilisé.
-*/
-extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
+/*!
+ * \brief Positionne le service utilisé pour obtenir la pile d'appel.
+ *
+ * Retourne l'ancien service utilisé.
+ */
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCCORE_BASE_EXPORT IStackTraceService*
 setStackTraceService(IStackTraceService* service);
 
 /*!
