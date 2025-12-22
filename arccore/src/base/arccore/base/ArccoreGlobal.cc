@@ -85,6 +85,16 @@ void arccoreSetCheck(bool v)
   global_arccore_is_check = v;
 }
 
+extern "C++" ARCCORE_BASE_EXPORT
+bool arccoreIsDebug()
+{
+#ifdef ARCCORE_DEBUG
+  return true;
+#else
+  return false;
+#endif
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
