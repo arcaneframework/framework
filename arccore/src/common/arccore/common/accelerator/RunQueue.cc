@@ -368,6 +368,17 @@ memoryRessource() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+eMemoryResource RunQueue::
+memoryResource() const
+{
+  if (m_p)
+    return m_p->m_memory_ressource;
+  return eMemoryResource::Unknown;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void RunQueue::
 setConcurrentCommandCreation(bool v)
 {

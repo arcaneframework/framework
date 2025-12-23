@@ -16,6 +16,7 @@
 #include "arccore/base/String.h"
 #include "arccore/base/PlatformUtils.h"
 
+#include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 #include "arccore/common/accelerator/internal/RuntimeLoader.h"
 #include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
 
@@ -55,6 +56,14 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
     bool has_accelerator = false;
     init_info.setIsUsingAcceleratorRuntime(true);
     int r = Impl::RuntimeLoader::loadRuntime(init_info, default_runtime_name, library_path, has_accelerator);
+    if (r == 0) {
+      if (impl::isUsingCUDARuntime())
+        m_policy = eExecutionPolicy::CUDA;
+      else if (impl::isUsingHIPRuntime())
+        m_policy = eExecutionPolicy::HIP;
+      else if (impl::isUsingHIPRuntime())
+        m_policy = eExecutionPolicy::SYCL;
+    }
   }
 }
 
