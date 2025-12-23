@@ -108,7 +108,7 @@ class ReduceDeviceInfo
   //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
   DataType* m_device_final_ptr = nullptr;
   //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
-  void* m_host_final_ptr = nullptr;
+  DataType* m_host_final_ptr = nullptr;
   //! Tableau avec une valeur par bloc pour la réduction
   SmallSpan<DataType> m_grid_buffer;
   /*!
@@ -409,7 +409,6 @@ class HostDeviceReducerBase
     // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
     DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
     if (m_memory_impl) {
-      m_memory_impl->copyReduceValueFromDevice();
       final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
       m_memory_impl->release();
       m_memory_impl = nullptr;
@@ -447,7 +446,7 @@ class HostDeviceReducerBase
     dvi.m_grid_buffer = grid_buffer;
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
-    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
+    dvi.m_host_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     dvi.m_current_value = m_local_value;
     dvi.m_identity = m_identity;
     dvi.m_warp_size = m_grid_memory_info.m_warp_size;

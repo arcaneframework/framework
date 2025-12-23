@@ -48,7 +48,6 @@ class ReduceMemoryImpl
   {
     return m_grid_memory_info;
   }
-  void copyReduceValueFromDevice() override;
   void release() override;
 
  private:
