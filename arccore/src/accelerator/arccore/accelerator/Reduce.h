@@ -566,7 +566,8 @@ class HostDeviceReducer2
         my_total = sycl_functor(my_total, grid_buffer[x]);
       // Met le résultat final dans le premier élément du tableau.
       grid_buffer[0] = my_total;
-      *m_host_memory_for_reduced_value = my_total;
+      DataType* final_value_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+      *final_value_ptr = my_total;
       *atomic_counter_ptr = 0;
     }
   }
