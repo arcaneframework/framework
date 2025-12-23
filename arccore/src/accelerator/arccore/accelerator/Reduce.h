@@ -305,7 +305,6 @@ class HostDeviceReducerBase
 
   HostDeviceReducerBase(RunCommand& command)
   : m_host_memory_for_reduced_value(&m_local_value)
-  , m_command(&command)
   {
     //std::cout << String::format("Reduce main host this={0}\n",this); std::cout.flush();
     m_is_master_instance = true;
@@ -378,12 +377,6 @@ class HostDeviceReducerBase
    */
   DataType* m_host_memory_for_reduced_value = nullptr;
   impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
-
- private:
-
-  RunCommand* m_command = nullptr;
-
- protected:
 
   mutable DataType m_local_value;
   DataType* m_atomic_parent_value = nullptr;
