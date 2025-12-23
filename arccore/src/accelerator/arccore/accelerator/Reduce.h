@@ -803,6 +803,12 @@ class Impl::HostDeviceReducerKernelRemainingArg
  public:
 
   template <typename DataType, typename ReduceFunctor>
+  static bool isNeedBarrier(const HostDeviceReducer2<DataType, ReduceFunctor>&)
+  {
+    return true;
+  }
+
+  template <typename DataType, typename ReduceFunctor>
   static void
   execWorkItemAtBeginForHost(HostDeviceReducer2<DataType, ReduceFunctor>&)
   {

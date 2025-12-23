@@ -181,7 +181,7 @@ class DeviceWorkItemBlock
   constexpr __device__ Int32 nbActiveItem() const { return 1; }
 
   //! Récupère le \a index-ème \a WorkItem à gérer
-  __device__ WorkItem activeItem(Int32 index)
+  __device__ WorkItem activeItem([[maybe_unused]] Int32 index)
   {
     // Seulement valide pour index==0
     ARCCORE_CHECK_AT(index, 1);

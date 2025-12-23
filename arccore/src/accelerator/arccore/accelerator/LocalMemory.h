@@ -127,6 +127,12 @@ class LocalMemoryKernelRemainingArg
     delete[] local_memory.m_ptr;
   }
 
+  template <typename T, Int32 Extent> static bool
+  isNeedBarrier(const LocalMemory<T, Extent>&)
+  {
+    return false;
+  }
+
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
   template <typename T, Int32 Extent> static ARCCORE_DEVICE void
   execWorkItemAtBeginForCudaHip(LocalMemory<T, Extent>& local_memory, Int32)

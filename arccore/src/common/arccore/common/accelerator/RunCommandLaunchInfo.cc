@@ -100,7 +100,7 @@ _doEndKernelLaunch()
   m_command._internalNotifyEndLaunchKernel();
 
   impl::RunQueueImpl* q = m_queue_impl;
-  if (!q->isAsync())
+  if (!q->isAsync() || m_is_need_barrier)
     q->_internalBarrier();
 }
 
@@ -214,6 +214,15 @@ _isUseCudaLaunchKernel() const
 {
   // Indique si on utilise cudaLaunchKernel() au lieu de kernel<<<...>>>.
   return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
+_setIsNeedBarrier(bool v)
+{
+  m_is_need_barrier = v;
 }
 
 /*---------------------------------------------------------------------------*/
