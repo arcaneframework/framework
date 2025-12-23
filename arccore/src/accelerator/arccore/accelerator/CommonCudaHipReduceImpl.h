@@ -32,14 +32,13 @@ namespace Arcane::Accelerator::impl
 
 __device__ __forceinline__ unsigned int getThreadId()
 {
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-  (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x;
   return threadId;
 }
 
 __device__ __forceinline__ unsigned int getBlockId()
 {
-  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+  int blockId = blockIdx.x;
   return blockId;
 }
 
@@ -153,7 +152,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
 {
   constexpr Int32 WARP_SIZE = WarpSize;
   constexpr const Int32 MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
-  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  int numThreads = blockDim.x;
 
   int threadId = getThreadId();
 
@@ -225,15 +224,11 @@ template <typename ReduceOperator, Int32 WarpSize, typename T, T identity>
 ARCCORE_DEVICE inline bool
 grid_reduce(T& val, SmallSpan<T> device_mem, unsigned int* device_count)
 {
-  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  int numBlocks = gridDim.x;
+  int numThreads = blockDim.x;
   int wrap_around = numBlocks - 1;
-
-  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
-  (gridDim.x * gridDim.y) * blockIdx.z;
-
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-  (blockDim.x * blockDim.y) * threadIdx.z;
+  int blockId = blockIdx.x;
+  int threadId = threadIdx.x;
 
   T temp = block_reduce<ReduceOperator, WarpSize, T, identity>(val);
 
