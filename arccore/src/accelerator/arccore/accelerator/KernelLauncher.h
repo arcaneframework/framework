@@ -77,6 +77,14 @@ class CudaHipKernelRemainingArgsHelper
     (_doOneAtEnd(index, remaining_args), ...);
   }
 
+  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  template <typename... RemainingArgs> static inline bool
+  isNeedBarrier(const RemainingArgs&... remaining_args)
+  {
+    bool is_need_barrier = (_isOneNeedBarrier(remaining_args) || ...);
+    return is_need_barrier;
+  }
+
  private:
 
   template <typename OneArg> static inline ARCCORE_DEVICE void
@@ -90,6 +98,12 @@ class CudaHipKernelRemainingArgsHelper
   {
     using HandlerType = OneArg::RemainingArgHandlerType;
     HandlerType::execWorkItemAtEndForCudaHip(one_arg, index);
+  }
+  template <typename OneArg> static inline bool
+  _isOneNeedBarrier([[maybe_unused]] const OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    return HandlerType::isNeedBarrier(one_arg);
   }
 };
 
@@ -120,6 +134,14 @@ class SyclKernelRemainingArgsHelper
     (_doOneAtEnd(x, shm_view, remaining_args), ...);
   }
 
+  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  template <typename... RemainingArgs> static inline bool
+  isNeedBarrier(const RemainingArgs&... remaining_args)
+  {
+    bool is_need_barrier = (_isOneNeedBarrier(remaining_args) || ...);
+    return is_need_barrier;
+  }
+
  private:
 
   template <typename OneArg> static void
@@ -139,6 +161,12 @@ class SyclKernelRemainingArgsHelper
       HandlerType::execWorkItemAtEndForSycl(one_arg, x, shm_memory);
     else
       HandlerType::execWorkItemAtEndForSycl(one_arg, x);
+  }
+  template <typename OneArg> static inline bool
+  _isOneNeedBarrier([[maybe_unused]] const OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    return HandlerType::isNeedBarrier(one_arg);
   }
 
 #endif
@@ -316,6 +344,8 @@ class CudaKernelLauncher
     cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
     bool is_cooperative = launch_info._isUseCooperativeLaunch();
     bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
+    bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
     if (use_cuda_launch || is_cooperative)
       _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, bounds, func, other_args...);
     else {
@@ -366,6 +396,8 @@ class HipKernelLauncher
     auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
     Int32 wanted_shared_memory = tbi.sharedMemorySize();
     hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
+    bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
     hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
   }
 };
@@ -396,6 +428,8 @@ class SyclKernelLauncher
   {
     sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
     sycl::event event;
+    bool is_need_barrier = SyclKernelRemainingArgsHelper::isNeedBarrier(remaining_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
     if constexpr (IsAlwaysUseSyclNdItem<LoopBoundType>::value || sizeof...(RemainingArgs) > 0) {
       //TODO: regarder comment convertir \a kernel en un functor
       auto tbi = launch_info._computeKernelLaunchArgs(nullptr);

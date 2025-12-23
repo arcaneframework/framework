@@ -89,6 +89,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
+  bool m_is_need_barrier = false;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
@@ -106,6 +107,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   // Pour test uniquement avec CUDA
   bool _isUseCooperativeLaunch() const;
   bool _isUseCudaLaunchKernel() const;
+  void _setIsNeedBarrier(bool v);
 
  private:
 
