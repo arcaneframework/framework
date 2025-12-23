@@ -50,7 +50,6 @@
 #include <arccore/message_passing/Request.h>
 #include <arccore/message_passing/ISerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
-#include <arccore/serialize/BasicSerializer.h>
 #include <arccore/serialize/ISerializer.h>
 
 #include <arccore/trace/ITraceMng.h>
