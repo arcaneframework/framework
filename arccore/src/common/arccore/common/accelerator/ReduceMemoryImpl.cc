@@ -73,13 +73,22 @@ allocateReduceDataMemory(ConstMemoryView identity_view)
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
 
-  // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
-  // et la zone pointée par \a identity_view n'est pas forcément conservée
-  m_identity_buffer.copy(identity_view.bytes());
-  MemoryCopyArgs copy_args(m_device_memory, m_identity_buffer.span().data(), data_type_size);
-  m_command->internalStream()->copyMemory(copy_args.addAsync());
-
   return m_device_memory;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateMemoryForReduceData(Int32 new_size)
+{
+  m_device_memory_bytes.resize(new_size);
+  m_device_memory = m_device_memory_bytes.data();
+
+  m_host_memory_bytes.resize(new_size);
+  m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
+
+  m_size = new_size;
 }
 
 /*---------------------------------------------------------------------------*/

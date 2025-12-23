@@ -92,16 +92,7 @@ class ReduceMemoryImpl
   void _allocateGridDataMemory();
   void _allocateMemoryForGridDeviceCount();
   void _setReducePolicy();
-  void _allocateMemoryForReduceData(Int32 new_size)
-  {
-    m_device_memory_bytes.resize(new_size);
-    m_device_memory = m_device_memory_bytes.data();
-
-    m_host_memory_bytes.resize(new_size);
-    m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
-
-    m_size = new_size;
-  }
+  void _allocateMemoryForReduceData(Int32 new_size);
 };
 
 /*---------------------------------------------------------------------------*/
