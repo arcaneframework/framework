@@ -58,10 +58,11 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
  public:
 
   /*!
-   * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction et
-   * remplit la zone avec la valeur de \a identity_view.
+   * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction.
+   *
+   * \a data_type_size est la taille de la donnée.
    */
-  virtual void* allocateReduceDataMemory(ConstMemoryView identity_view) = 0;
+  virtual void allocateReduceDataMemory(Int32 data_type_size) = 0;
 
   //! Positionne la taille de la grille GPU (le nombre de blocs)
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;
@@ -75,19 +76,6 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
   //! Libère l'instance.
   virtual void release() = 0;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Alloue la mémoire pour contenir la valeur réduite et positionne
- * sa valeur à \a identity.
- */
-template<typename T> T*
-allocateReduceDataMemory(IReduceMemoryImpl* p,T identity)
-{
-  T* ptr = reinterpret_cast<T*>(p->allocateReduceDataMemory(makeMemoryView(&identity)));
-  return ptr;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

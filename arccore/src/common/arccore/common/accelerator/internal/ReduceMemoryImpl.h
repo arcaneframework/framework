@@ -36,7 +36,7 @@ class ReduceMemoryImpl
 
  public:
 
-  void* allocateReduceDataMemory(ConstMemoryView identity_view) override;
+  void allocateReduceDataMemory(Int32 data_type_size) override;
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
@@ -53,12 +53,6 @@ class ReduceMemoryImpl
  private:
 
   RunCommandImpl* m_command = nullptr;
-
-  //! Pointeur vers la mémoire unifiée contenant la donnée réduite
-  std::byte* m_device_memory = nullptr;
-
-  //! Allocation pour la donnée réduite en mémoire managée
-  UniqueArray<std::byte> m_device_memory_bytes;
 
   //! Allocation pour la donnée réduite en mémoire hôte
   UniqueArray<std::byte> m_host_memory_bytes;
