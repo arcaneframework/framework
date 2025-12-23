@@ -42,7 +42,6 @@ namespace
 ReduceMemoryImpl::
 ReduceMemoryImpl(RunCommandImpl* p)
 : m_command(p)
-, m_device_memory_bytes(_getAllocator(eMemoryResource::Device))
 , m_host_memory_bytes(_getAllocator(eMemoryResource::HostPinned))
 , m_grid_buffer(_getAllocator(eMemoryResource::Device))
 , m_grid_device_count(_getAllocator(eMemoryResource::Device))
@@ -64,22 +63,24 @@ release()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* ReduceMemoryImpl::
-allocateReduceDataMemory(ConstMemoryView identity_view)
+void ReduceMemoryImpl::
+allocateReduceDataMemory(Int32 data_type_size)
 {
-  auto identity_span = identity_view.bytes();
-  Int32 data_type_size = static_cast<Int32>(identity_span.size());
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
+}
 
-  // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
-  // et la zone pointée par \a identity_view n'est pas forcément conservée
-  m_identity_buffer.copy(identity_view.bytes());
-  MemoryCopyArgs copy_args(m_device_memory, m_identity_buffer.span().data(), data_type_size);
-  m_command->internalStream()->copyMemory(copy_args.addAsync());
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  return m_device_memory;
+void ReduceMemoryImpl::
+_allocateMemoryForReduceData(Int32 new_size)
+{
+  m_host_memory_bytes.resize(new_size);
+  m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
+
+  m_size = new_size;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,18 +118,6 @@ _allocateMemoryForGridDeviceCount()
 
   // Initialise cette zone mémoire avec 0.
   MemoryCopyArgs copy_args(ptr, &zero, size);
-  m_command->internalStream()->copyMemory(copy_args);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ReduceMemoryImpl::
-copyReduceValueFromDevice()
-{
-  void* destination = m_grid_memory_info.m_host_memory_for_reduced_value;
-  void* source = m_device_memory;
-  MemoryCopyArgs copy_args(destination, source, m_data_type_size);
   m_command->internalStream()->copyMemory(copy_args);
 }
 

@@ -32,14 +32,13 @@ namespace Arcane::Accelerator::impl
 
 __device__ __forceinline__ unsigned int getThreadId()
 {
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-  (blockDim.x * blockDim.y) * threadIdx.z;
+  int threadId = threadIdx.x;
   return threadId;
 }
 
 __device__ __forceinline__ unsigned int getBlockId()
 {
-  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+  int blockId = blockIdx.x;
   return blockId;
 }
 
@@ -148,12 +147,12 @@ ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 /*---------------------------------------------------------------------------*/
 // Cette implémentation est celle de RAJA
 //! reduce values in block into thread 0
-template <typename ReduceOperator, Int32 WarpSize, typename T>
-ARCCORE_DEVICE inline T block_reduce(T val, T identity)
+template <typename ReduceOperator, Int32 WarpSize, typename T, T identity>
+ARCCORE_DEVICE inline T block_reduce(T val)
 {
   constexpr Int32 WARP_SIZE = WarpSize;
   constexpr const Int32 MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
-  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  int numThreads = blockDim.x;
 
   int threadId = getThreadId();
 
@@ -221,21 +220,17 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
 /*---------------------------------------------------------------------------*/
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename ReduceOperator, Int32 WarpSize, typename T>
+template <typename ReduceOperator, Int32 WarpSize, typename T, T identity>
 ARCCORE_DEVICE inline bool
-grid_reduce(T& val, T identity, SmallSpan<T> device_mem, unsigned int* device_count)
+grid_reduce(T& val, SmallSpan<T> device_mem, unsigned int* device_count)
 {
-  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  int numBlocks = gridDim.x;
+  int numThreads = blockDim.x;
   int wrap_around = numBlocks - 1;
+  int blockId = blockIdx.x;
+  int threadId = threadIdx.x;
 
-  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
-  (gridDim.x * gridDim.y) * blockIdx.z;
-
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-  (blockDim.x * blockDim.y) * threadIdx.z;
-
-  T temp = block_reduce<ReduceOperator, WarpSize>(val, identity);
+  T temp = block_reduce<ReduceOperator, WarpSize, T, identity>(val);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
@@ -263,7 +258,7 @@ grid_reduce(T& val, T identity, SmallSpan<T> device_mem, unsigned int* device_co
       ReduceOperator::apply(temp, device_mem[i]);
     }
 
-    temp = block_reduce<ReduceOperator, WarpSize>(temp, identity);
+    temp = block_reduce<ReduceOperator, WarpSize, T, identity>(temp);
 
     // one thread returns value
     if (threadId == 0) {
@@ -277,13 +272,13 @@ grid_reduce(T& val, T identity, SmallSpan<T> device_mem, unsigned int* device_co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType, typename ReduceOperator>
-ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
+template <typename DataType, typename ReduceOperator, DataType Identity>
+ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void
+_applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 {
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
-  DataType identity = dev_info.m_identity;
   unsigned int* device_count = dev_info.m_device_count;
-  DataType* ptr = dev_info.m_device_final_ptr;
+  DataType* host_pinned_ptr = dev_info.m_host_pinned_final_ptr;
   DataType v = dev_info.m_current_value;
 #if HIP_VERSION_MAJOR >= 7
   // A partir de ROCM 7, il n'est pas possible de savoir à la compilation
@@ -313,16 +308,16 @@ ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDevice
 #if HIP_VERSION_MAJOR >= 7
   bool is_done = false;
   if (warp_size == 64)
-    is_done = grid_reduce<ReduceOperator, 64>(v, identity, grid_buffer, device_count);
+    is_done = grid_reduce<ReduceOperator, 64, DataType, Identity>(v, grid_buffer, device_count);
   else if (warp_size == 32)
-    is_done = grid_reduce<ReduceOperator, 32>(v, identity, grid_buffer, device_count);
+    is_done = grid_reduce<ReduceOperator, 32, DataType, Identity>(v, grid_buffer, device_count);
   else
     assert("Bad warp size (should be 32 or 64)");
 #else
-  bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
+  bool is_done = grid_reduce<ReduceOperator, WARP_SIZE, DataType, Identity>(v, grid_buffer, device_count);
 #endif
   if (is_done) {
-    *ptr = v;
+    *host_pinned_ptr = v;
     // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
     (*device_count) = 0;
   }
@@ -335,7 +330,7 @@ template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFun
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Add>;
-  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -345,7 +340,7 @@ template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFun
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Max>;
-  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -355,7 +350,7 @@ template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFun
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Min>;
-  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
