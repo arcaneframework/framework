@@ -103,8 +103,6 @@ class ReduceDeviceInfo
 
   //! Valeur du thread courant à réduire.
   DataType m_current_value = {};
-  //! Valeur de l'identité pour la réduction
-  DataType m_identity = {};
   //! Pointeur vers la donnée réduite (mémoire HostPinned accessible depuis l'hôte et l'accélérateur)
   DataType* m_host_pinned_final_ptr = nullptr;
   //! Tableau avec une valeur par bloc pour la réduction
@@ -274,7 +272,6 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Opérateur de réduction
  *
@@ -308,15 +305,13 @@ class HostDeviceReducerBase
   {
     //std::cout << String::format("Reduce main host this={0}\n",this); std::cout.flush();
     m_is_master_instance = true;
-    m_identity = ReduceFunctor::identity();
-    m_local_value = m_identity;
-    m_atomic_value = m_identity;
+    m_local_value = ReduceFunctor::identity();
+    m_atomic_value = m_local_value;
     m_atomic_parent_value = &m_atomic_value;
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl) {
       m_memory_impl->allocateReduceDataMemory(sizeof(DataType));
-      //m_host_or_device_memory_for_reduced_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl, m_identity);
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
@@ -329,7 +324,6 @@ class HostDeviceReducerBase
   ARCCORE_HOST_DEVICE HostDeviceReducerBase(const HostDeviceReducerBase& rhs)
   : m_host_memory_for_reduced_value(rhs.m_host_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
-  , m_identity(rhs.m_identity)
   {
 #ifdef ARCCORE_DEVICE_CODE
     m_grid_memory_info = rhs.m_grid_memory_info;
@@ -343,8 +337,8 @@ class HostDeviceReducerBase
     }
     //std::cout << String::format("Reduce: host copy this={0} rhs={1} mem={2} device_count={3}\n",this,&rhs,m_memory_impl,(void*)m_grid_device_count);
     m_atomic_parent_value = rhs.m_atomic_parent_value;
-    m_local_value = rhs.m_identity;
-    m_atomic_value = m_identity;
+    m_local_value = ReduceFunctor::identity();
+    m_atomic_value = m_local_value;
     //std::cout << String::format("Reduce copy host  this={0} parent_value={1} rhs={2}\n",this,(void*)m_parent_value,&rhs); std::cout.flush();
     //if (!rhs.m_is_master_instance)
     //ARCCORE_FATAL("Only copy from master instance is allowed");
@@ -384,8 +378,6 @@ class HostDeviceReducerBase
 
  private:
 
-  DataType m_identity;
-  //bool m_is_allocated = false;
   bool m_is_master_instance = false;
 
  protected:
@@ -436,7 +428,6 @@ class HostDeviceReducerBase
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     dvi.m_current_value = m_local_value;
-    dvi.m_identity = m_identity;
     dvi.m_warp_size = m_grid_memory_info.m_warp_size;
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
 #else
@@ -575,7 +566,7 @@ class HostDeviceReducer2
         my_total = sycl_functor(my_total, grid_buffer[x]);
       // Met le résultat final dans le premier élément du tableau.
       grid_buffer[0] = my_total;
-      *m_host_or_device_memory_for_reduced_value = my_total;
+      *m_host_memory_for_reduced_value = my_total;
       *atomic_counter_ptr = 0;
     }
   }
