@@ -29,6 +29,7 @@ using namespace Arcane::Accelerator;
 
 Int64 _testReduceDirect(RunQueue queue, Int32 nb_value, Int32 nb_loop)
 {
+  std::cout << "Sizeof (ReducerSum2<Int64>) = " << sizeof(ReducerSum2<Int64>) << "\n";
   eMemoryResource mem = queue.memoryResource();
   // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
 
@@ -72,15 +73,29 @@ TEST(ArccoreAccelerator, TestReduceDirect)
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())
     queue.setMemoryRessource(eMemoryResource::Device);
-  Int32 nb_loop = 1000;
+  Int32 nb_loop = 1500;
   if (arccoreIsDebug())
     nb_loop /= 20;
   Int32 nb_value = 1000000;
-  Int64 v = _testReduceDirect(queue, nb_value, nb_loop);
-  Int64 v2 = v /= nb_loop;
   Int64 expected_value = 1000004000000;
-  std::cout << "V=" << v2 << "\n";
-  ASSERT_EQ(v2, expected_value);
+
+  {
+    // Test avec RunQueue synchrone
+    std::cout << "Test Sync\n";
+    Int64 v = _testReduceDirect(queue, nb_value, nb_loop);
+    Int64 v2 = v /= nb_loop;
+    std::cout << "V=" << v2 << "\n";
+    ASSERT_EQ(v2, expected_value);
+  }
+  {
+    // Test avec RunQueue asynchrone
+    std::cout << "Test Asynchronous\n";
+    queue.setAsync(true);
+    Int64 v = _testReduceDirect(queue, nb_value, nb_loop);
+    Int64 v2 = v /= nb_loop;
+    std::cout << "V=" << v2 << "\n";
+    ASSERT_EQ(v2, expected_value);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
