@@ -105,15 +105,14 @@ class ReduceDeviceInfo
   DataType m_current_value = {};
   //! Valeur de l'identité pour la réduction
   DataType m_identity = {};
-  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
-  DataType* m_device_final_ptr = nullptr;
-  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
-  DataType* m_host_final_ptr = nullptr;
+  //! Pointeur vers la donnée réduite (mémoire HostPinned accessible depuis l'hôte et l'accélérateur)
+  DataType* m_host_pinned_final_ptr = nullptr;
   //! Tableau avec une valeur par bloc pour la réduction
   SmallSpan<DataType> m_grid_buffer;
   /*!
    * Pointeur vers une zone mémoire contenant un entier pour indiquer
    * combien il reste de blocs à réduire.
+   * La mémoire associée est allouée sur l'accélérateur.
    */
   unsigned int* m_device_count = nullptr;
 
@@ -175,11 +174,10 @@ class ReduceFunctorSum
 {
  public:
 
-  static ARCCORE_DEVICE DataType
+  static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(DataType* vptr, DataType v)
   {
@@ -206,11 +204,10 @@ class ReduceFunctorMax
 {
  public:
 
-  static ARCCORE_DEVICE DataType
+  static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(DataType* ptr, DataType v)
   {
@@ -241,11 +238,10 @@ class ReduceFunctorMin
 {
  public:
 
-  static ARCCORE_DEVICE DataType
+  static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(DataType* vptr, DataType v)
   {
@@ -308,7 +304,7 @@ class HostDeviceReducerBase
  public:
 
   HostDeviceReducerBase(RunCommand& command)
-  : m_host_or_device_memory_for_reduced_value(&m_local_value)
+  : m_host_memory_for_reduced_value(&m_local_value)
   , m_command(&command)
   {
     //std::cout << String::format("Reduce main host this={0}\n",this); std::cout.flush();
@@ -320,7 +316,8 @@ class HostDeviceReducerBase
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl) {
-      m_host_or_device_memory_for_reduced_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl, m_identity);
+      m_memory_impl->allocateReduceDataMemory(sizeof(DataType));
+      //m_host_or_device_memory_for_reduced_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl, m_identity);
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
@@ -331,7 +328,7 @@ class HostDeviceReducerBase
   HostDeviceReducerBase(const HostDeviceReducerBase& rhs) = default;
 #else
   ARCCORE_HOST_DEVICE HostDeviceReducerBase(const HostDeviceReducerBase& rhs)
-  : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value)
+  : m_host_memory_for_reduced_value(rhs.m_host_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
   , m_identity(rhs.m_identity)
   {
@@ -377,10 +374,9 @@ class HostDeviceReducerBase
   /*!
    * \brief Pointeur vers la donnée qui contiendra la valeur réduite.
    *
-   * Sur accélérateur, cette donnée est allouée sur le device.
-   * Sur CPU, il s'agit de l'adresse de \a m_local_value pour l'instance parente.
+   * Cette valeur est uniquement valide si la réduction a lieu sur l'hôte.
    */
-  DataType* m_host_or_device_memory_for_reduced_value = nullptr;
+  DataType* m_host_memory_for_reduced_value = nullptr;
   impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
 
  private:
@@ -406,8 +402,8 @@ class HostDeviceReducerBase
   {
     if (!m_is_master_instance)
       ARCCORE_FATAL("Final reduce operation is only valid on master instance");
-    // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
-    DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
+
+    DataType* final_ptr = m_host_memory_for_reduced_value;
     if (m_memory_impl) {
       final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
       m_memory_impl->release();
@@ -445,8 +441,7 @@ class HostDeviceReducerBase
     impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
-    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
-    dvi.m_host_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+    dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     dvi.m_current_value = m_local_value;
     dvi.m_identity = m_identity;
     dvi.m_warp_size = m_grid_memory_info.m_warp_size;
@@ -521,7 +516,7 @@ class HostDeviceReducer2
 
   using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
   using BaseClass::m_grid_memory_info;
-  using BaseClass::m_host_or_device_memory_for_reduced_value;
+  using BaseClass::m_host_memory_for_reduced_value;
   using BaseClass::m_local_value;
 
   using RemainingArgHandlerType = Impl::HostDeviceReducerKernelRemainingArg;

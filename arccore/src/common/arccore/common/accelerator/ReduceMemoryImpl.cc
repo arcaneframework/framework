@@ -42,7 +42,6 @@ namespace
 ReduceMemoryImpl::
 ReduceMemoryImpl(RunCommandImpl* p)
 : m_command(p)
-, m_device_memory_bytes(_getAllocator(eMemoryResource::Device))
 , m_host_memory_bytes(_getAllocator(eMemoryResource::HostPinned))
 , m_grid_buffer(_getAllocator(eMemoryResource::Device))
 , m_grid_device_count(_getAllocator(eMemoryResource::Device))
@@ -64,16 +63,12 @@ release()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* ReduceMemoryImpl::
-allocateReduceDataMemory(ConstMemoryView identity_view)
+void ReduceMemoryImpl::
+allocateReduceDataMemory(Int32 data_type_size)
 {
-  auto identity_span = identity_view.bytes();
-  Int32 data_type_size = static_cast<Int32>(identity_span.size());
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
-
-  return m_device_memory;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -82,9 +77,6 @@ allocateReduceDataMemory(ConstMemoryView identity_view)
 void ReduceMemoryImpl::
 _allocateMemoryForReduceData(Int32 new_size)
 {
-  m_device_memory_bytes.resize(new_size);
-  m_device_memory = m_device_memory_bytes.data();
-
   m_host_memory_bytes.resize(new_size);
   m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
 
