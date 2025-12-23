@@ -29,7 +29,6 @@ namespace Arcane::Accelerator::impl
 /*!
  * \internal
  * \brief Interface de la gestion mémoire pour les réductions.
- * \warning API en cours de définition.
  */
 class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
 {
@@ -42,7 +41,11 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
     MutableMemoryView m_grid_memory_values;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
-    //! Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
+    /*!
+     * \brief Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
+     *
+     * Cette mémoire est punaisée et est donc accessible depuis l'accélérateur.
+     */
     void* m_host_memory_for_reduced_value = nullptr;
     //! Taille d'un warp
     Int32 m_warp_size = 64;
@@ -68,14 +71,6 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
 
   //! Informations sur la mémoire utilisée par la réduction
   virtual GridMemoryInfo gridMemoryInfo() = 0;
-
-  /*!
-   * \brief Copie la valeur réduite depuis le device vers l'hote.
-   *
-   * La valeur sera copié de gridMemoryInfo().m_device_memory_for_reduced_value
-   * vers gridMemoryInfo().m_host_memory_for_reduced_value
-   */
-  virtual void copyReduceValueFromDevice() =0;
 
   //! Libère l'instance.
   virtual void release() = 0;

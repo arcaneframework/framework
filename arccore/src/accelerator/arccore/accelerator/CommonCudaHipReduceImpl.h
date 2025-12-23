@@ -283,7 +283,7 @@ ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDevice
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
   DataType identity = dev_info.m_identity;
   unsigned int* device_count = dev_info.m_device_count;
-  DataType* ptr = dev_info.m_device_final_ptr;
+  DataType* host_pinned_ptr = dev_info.m_host_final_ptr;
   DataType v = dev_info.m_current_value;
 #if HIP_VERSION_MAJOR >= 7
   // A partir de ROCM 7, il n'est pas possible de savoir à la compilation
@@ -322,7 +322,7 @@ ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDevice
   bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
 #endif
   if (is_done) {
-    *ptr = v;
+    *host_pinned_ptr = v;
     // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
     (*device_count) = 0;
   }

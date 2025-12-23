@@ -132,18 +132,6 @@ _allocateMemoryForGridDeviceCount()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ReduceMemoryImpl::
-copyReduceValueFromDevice()
-{
-  void* destination = m_grid_memory_info.m_host_memory_for_reduced_value;
-  void* source = m_device_memory;
-  MemoryCopyArgs copy_args(destination, source, m_data_type_size);
-  m_command->internalStream()->copyMemory(copy_args);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command)
 {
