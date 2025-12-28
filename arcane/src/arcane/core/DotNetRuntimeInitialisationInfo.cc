@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/DotNetRuntimeInitialisationInfo.h"
+#include "arcane/core/DotNetRuntimeInitialisationInfo.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/internal/Property.h"
@@ -38,7 +38,7 @@ class DotNetRuntimeInitialisationInfo::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename V> void DotNetRuntimeInitialisationInfo::
+template<typename V> void DotNetRuntimeInitialisationInfoProperties::
 _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
@@ -199,7 +199,7 @@ setEmbeddedRuntime(StringView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(DotNetRuntimeInitialisationInfo,());
+ARCANE_REGISTER_PROPERTY_CLASS(DotNetRuntimeInitialisationInfoProperties,());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
