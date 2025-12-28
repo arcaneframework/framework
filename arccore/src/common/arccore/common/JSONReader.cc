@@ -1,24 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.cc                                               (C) 2000-2023 */
+/* JSONReader.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Lecteur au format JSON.                                                  */
+/* Lecteur au format JSON.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/JSONReader.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/CheckedConvert.h"
+#include "arccore/common/JSONReader.h"
+
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/CheckedConvert.h"
+#include "arccore/base/internal/ConvertInternal.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1
-#include "arcane/utils/internal/json/rapidjson/document.h"
-#include "arcane/utils/internal/json/rapidjson/stringbuffer.h"
+#include "arccore/common/internal/json/rapidjson/document.h"
+#include "arccore/common/internal/json/rapidjson/stringbuffer.h"
 
 #include <iostream>
 
@@ -34,6 +35,7 @@ namespace Arcane
 class JSONKeyValue::Impl
 {
  public:
+
   rapidjson::Value::Member* toMember() const
   {
     return (rapidjson::Value::Member*)(this);
@@ -43,6 +45,7 @@ class JSONKeyValue::Impl
 class JSONValue::Impl
 {
  public:
+
   rapidjson::Value* toValue() const
   {
     return (rapidjson::Value*)(this);
@@ -52,6 +55,7 @@ class JSONValue::Impl
 class JSONWrapperUtils
 {
  public:
+
   static JSONKeyValue build(rapidjson::Value::Member* v)
   {
     return JSONKeyValue((JSONKeyValue::Impl*)(v));
@@ -89,7 +93,7 @@ name() const
     return StringView();
   auto& x = m_p->toMember()->name;
   if (x.IsString())
-    return StringView(Span<const Byte>((const Byte*)x.GetString(),x.GetStringLength()));
+    return StringView(Span<const Byte>((const Byte*)x.GetString(), x.GetStringLength()));
   return StringView();
 }
 
@@ -115,7 +119,7 @@ value() const
     return String();
   auto x = m_p->toValue();
   if (x->IsString())
-    return String(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
+    return String(Span<const Byte>((const Byte*)x->GetString(), x->GetStringLength()));
   return String();
 }
 
@@ -129,7 +133,7 @@ valueAsStringView() const
     return StringView();
   auto x = m_p->toValue();
   if (x->IsString())
-    return StringView(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
+    return StringView(Span<const Byte>((const Byte*)x->GetString(), x->GetStringLength()));
   return StringView();
 }
 
@@ -192,11 +196,11 @@ valueAsReal() const
   std::cout << "TYPE=" << x->GetType() << "\n";
   if (x->IsDouble())
     return x->GetDouble();
-  if (x->GetType()==rapidjson::kStringType){
+  if (x->GetType() == rapidjson::kStringType) {
     // Convertie la chaîne de caractères en un réél
     StringView s = this->valueAsStringView();
     Real r = 0.0;
-    if (!builtInGetValue(r,s))
+    if (!Convert::Impl::StringViewToIntegral::getValue(r, s))
       return r;
   }
   return 0.0;
@@ -212,7 +216,7 @@ keyValueChild(StringView name) const
     return JSONKeyValue();
   auto d = m_p->toValue();
   rapidjson::Value::MemberIterator x = d->FindMember((const char*)(name.bytes().data()));
-  if (x==d->MemberEnd())
+  if (x == d->MemberEnd())
     return JSONKeyValue();
   return JSONWrapperUtils::build(x);
 }
@@ -234,7 +238,7 @@ expectedChild(StringView name) const
 {
   JSONKeyValue k = keyValueChild(name);
   if (!k)
-    ARCANE_FATAL("No key '{0}' found in json document",name);
+    ARCCORE_FATAL("No key '{0}' found in json document", name);
   return k.value();
 }
 
@@ -249,8 +253,8 @@ children() const
   auto d = m_p->toValue();
   JSONValueList values;
   if (!d->IsObject())
-    ARCANE_FATAL("The value has to be of type 'object'");
-  for( auto& x : d->GetObject()){
+    ARCCORE_FATAL("The value has to be of type 'object'");
+  for (auto& x : d->GetObject()) {
     auto y = JSONWrapperUtils::build(&x);
     values.add(y.value());
   }
@@ -268,8 +272,8 @@ valueAsArray() const
   auto d = m_p->toValue();
   JSONValueList values;
   if (!d->IsArray())
-    ARCANE_FATAL("The value has to be of type 'array'");
-  for( rapidjson::SizeType i = 0; i < d->Size(); ++i ){
+    ARCCORE_FATAL("The value has to be of type 'array'");
+  for (rapidjson::SizeType i = 0; i < d->Size(); ++i) {
     rapidjson::Value& x = (*d)[i];
     auto y = JSONWrapperUtils::build(&x);
     values.add(y);
@@ -311,7 +315,7 @@ keyValueChildren() const
     return JSONKeyValueList();
   auto d = m_p->toValue();
   JSONKeyValueList values;
-  for( auto& x : d->GetObject()){
+  for (auto& x : d->GetObject()) {
     auto y = JSONWrapperUtils::build(&x);
     values.add(y);
   }
@@ -327,10 +331,14 @@ keyValueChildren() const
 class JSONDocument::Impl
 {
  public:
-  Impl() : m_document()
+
+  Impl()
+  : m_document()
   {
   }
+
  public:
+
   rapidjson::Document m_document;
 };
 
@@ -352,51 +360,69 @@ JSONDocument::
 
 namespace
 {
-using namespace rapidjson;
+  using namespace rapidjson;
 
-const char*
-_getErrorCodeString(ParseErrorCode c)
-{
-  switch(c) {
-  case kParseErrorNone: return "No error";
-  case kParseErrorDocumentEmpty: return "The document is empty";
-  case kParseErrorDocumentRootNotSingular: return "The document root must not follow by other values";
-  case kParseErrorValueInvalid: return "Invalid value";
-  case kParseErrorObjectMissName: return "Missing a name for object member";
-  case kParseErrorObjectMissColon:  return "Missing a colon after a name of object member";
-  case kParseErrorObjectMissCommaOrCurlyBracket: return "Missing a comma or '}' after an object member";
-  case kParseErrorArrayMissCommaOrSquareBracket: return "Missing a comma or ']' after an array element";
-  case kParseErrorStringUnicodeEscapeInvalidHex: return "Incorrect hex digit after \\u escape in string";
-  case kParseErrorStringUnicodeSurrogateInvalid: return "The surrogate pair in string is invalid";
-  case kParseErrorStringEscapeInvalid: return "Invalid escape character in string";
-  case kParseErrorStringMissQuotationMark: return "Missing a closing quotation mark in string";
-  case kParseErrorStringInvalidEncoding: return "Invalid encoding in string";
-  case kParseErrorNumberTooBig: return "Number too big to be stored in double";
-  case kParseErrorNumberMissFraction: return "Miss fraction part in number";
-  case kParseErrorNumberMissExponent: return "Miss exponent in number";
-  case kParseErrorTermination: return "Parsing was terminated";
-  case kParseErrorUnspecificSyntaxError: return "Unspecific syntax error";
-  default:
+  const char*
+  _getErrorCodeString(ParseErrorCode c)
+  {
+    switch (c) {
+    case kParseErrorNone:
+      return "No error";
+    case kParseErrorDocumentEmpty:
+      return "The document is empty";
+    case kParseErrorDocumentRootNotSingular:
+      return "The document root must not follow by other values";
+    case kParseErrorValueInvalid:
+      return "Invalid value";
+    case kParseErrorObjectMissName:
+      return "Missing a name for object member";
+    case kParseErrorObjectMissColon:
+      return "Missing a colon after a name of object member";
+    case kParseErrorObjectMissCommaOrCurlyBracket:
+      return "Missing a comma or '}' after an object member";
+    case kParseErrorArrayMissCommaOrSquareBracket:
+      return "Missing a comma or ']' after an array element";
+    case kParseErrorStringUnicodeEscapeInvalidHex:
+      return "Incorrect hex digit after \\u escape in string";
+    case kParseErrorStringUnicodeSurrogateInvalid:
+      return "The surrogate pair in string is invalid";
+    case kParseErrorStringEscapeInvalid:
+      return "Invalid escape character in string";
+    case kParseErrorStringMissQuotationMark:
+      return "Missing a closing quotation mark in string";
+    case kParseErrorStringInvalidEncoding:
+      return "Invalid encoding in string";
+    case kParseErrorNumberTooBig:
+      return "Number too big to be stored in double";
+    case kParseErrorNumberMissFraction:
+      return "Miss fraction part in number";
+    case kParseErrorNumberMissExponent:
+      return "Miss exponent in number";
+    case kParseErrorTermination:
+      return "Parsing was terminated";
+    case kParseErrorUnspecificSyntaxError:
+      return "Unspecific syntax error";
+    default:
+      return "Unknown";
+    }
     return "Unknown";
   }
-  return "Unknown";
-}
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const std::byte> bytes,StringView filename)
+parse(Span<const std::byte> bytes, StringView filename)
 {
   using namespace rapidjson;
   Document& d = m_p->m_document;
-  ParseResult r = d.Parse((const char*)bytes.data(),bytes.size());
-  if (d.HasParseError()){
+  ParseResult r = d.Parse((const char*)bytes.data(), bytes.size());
+  if (d.HasParseError()) {
     std::cout << "ERROR: " << d.GetParseError() << "\n";
-    ARCANE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
-                 filename,d.GetParseError(),
-                 r.Offset(),_getErrorCodeString(r.Code()));
+    ARCCORE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
+                  filename, d.GetParseError(),
+                  r.Offset(), _getErrorCodeString(r.Code()));
   }
 }
 
@@ -406,7 +432,7 @@ parse(Span<const std::byte> bytes,StringView filename)
 void JSONDocument::
 parse(Span<const std::byte> bytes)
 {
-  parse(bytes,"(Unknown)");
+  parse(bytes, "(Unknown)");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -422,9 +448,9 @@ parse(Span<const Byte> bytes)
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const Byte> bytes,StringView filename)
+parse(Span<const Byte> bytes, StringView filename)
 {
-  parse(asBytes(bytes),filename);
+  parse(asBytes(bytes), filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -440,8 +466,7 @@ root() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
