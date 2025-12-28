@@ -181,11 +181,15 @@ class ReduceFunctorSum
   {
     return ReduceAtomicSum<DataType>::apply(vptr, v);
   }
+
 #if defined(ARCCORE_COMPILING_SYCL)
   static sycl::plus<DataType> syclFunctor() { return {}; }
 #endif
 
- public:
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = val + v;
+  }
 
   ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
 
@@ -218,6 +222,11 @@ class ReduceFunctorMax
 #if defined(ARCCORE_COMPILING_SYCL)
   static sycl::maximum<DataType> syclFunctor() { return {}; }
 #endif
+
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = v > val ? v : val;
+  }
 
  public:
 
@@ -253,7 +262,10 @@ class ReduceFunctorMin
   static sycl::minimum<DataType> syclFunctor() { return {}; }
 #endif
 
- public:
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = v < val ? v : val;
+  }
 
   ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
 
