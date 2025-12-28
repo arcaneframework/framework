@@ -17,7 +17,7 @@
 // Ce fichier doit être inclus uniquement par 'arcane/accelerator/Reduce.h'
 // et n'est valide que compilé par le compilateur CUDA et HIP
 
-#include "arccore/accelerator/CommonCudaHipAtomicImpl.h"
+#include "arccore/accelerator/AcceleratorGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
