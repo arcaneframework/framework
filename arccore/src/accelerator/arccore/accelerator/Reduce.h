@@ -167,15 +167,20 @@ class ReduceAtomicSum<Int32>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorSum
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorSum<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
   static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
@@ -191,25 +196,26 @@ class ReduceFunctorSum
     val = val + v;
   }
 
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::sumValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorMax
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorMax<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
   static DataType applyAtomicOnHost(DataType* ptr, DataType v)
   {
@@ -228,27 +234,26 @@ class ReduceFunctorMax
     val = v > val ? v : val;
   }
 
- public:
-
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::maxValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorMin
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorMin<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
   static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
@@ -267,11 +272,7 @@ class ReduceFunctorMin
     val = v < val ? v : val;
   }
 
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::minValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
