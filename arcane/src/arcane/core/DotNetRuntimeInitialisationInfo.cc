@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/DotNetRuntimeInitialisationInfo.h"
+#include "arcane/core/internal/DotNetRuntimeInitialisationInfoProperties.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/internal/Property.h"

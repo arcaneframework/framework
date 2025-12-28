@@ -29,6 +29,8 @@
 #include "arcane/utils/internal/JSONPropertyReader.h"
 #include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
 #include "arcane/utils/internal/ApplicationInfoProperties.h"
+#include "arcane/core/internal/DotNetRuntimeInitialisationInfoProperties.h"
+#include "arcane/accelerator/core/internal/AcceleratorRuntimeInitialisationInfoProperties.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"
@@ -336,7 +338,7 @@ init(const CommandLineArguments& args)
       _checkReadConfigFile(runtime_config_file_name);
     properties::readFromParameterList<ApplicationInfo,ApplicationInfoProperties>(args.parameters(),application_info);
     auto& dotnet_info = ArcaneLauncher::dotNetRuntimeInitialisationInfo();
-    properties::readFromParameterList(args.parameters(),dotnet_info);
+    properties::readFromParameterList< DotNetRuntimeInitialisationInfo, DotNetRuntimeInitialisationInfoProperties>(args.parameters(),dotnet_info);
     auto& accelerator_info = ArcaneLauncher::acceleratorRuntimeInitialisationInfo();
     properties::readFromParameterList<AcceleratorRuntimeInitialisationInfo, Accelerator::AcceleratorRuntimeInitialisationInfoProperties>(args.parameters(), accelerator_info);
     ParallelLoopOptions loop_options;
