@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONWriter.cc                                               (C) 2000-2023 */
+/* JSONWriter.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Ecrivain au format JSON.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-#include "arcane/utils/JSONWriter.h"
-#include "arcane/utils/ArrayView.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/common/JSONWriter.h"
+#include "arccore/base/ArrayView.h"
+#include "arccore/base/String.h"
+#include "arccore/base/FatalErrorException.h"
+#include <limits>
 
 // Les deux lignes suivantes permettent d'utiliser des indices sur 64 bits
 // au lieu de 32 par défaut.
@@ -23,10 +23,10 @@
 namespace rapidjson { typedef ::std::size_t SizeType; }
 
 #define RAPIDJSON_HAS_STDSTRING 1
-#include "arcane/utils/internal/json/rapidjson/writer.h"
-#include "arcane/utils/internal/json/rapidjson/prettywriter.h"
-#include "arcane/utils/internal/json/rapidjson/document.h"
-#include "arcane/utils/internal/json/rapidjson/stringbuffer.h"
+#include "arccore/common/internal/json/rapidjson/writer.h"
+#include "arccore/common/internal/json/rapidjson/prettywriter.h"
+#include "arccore/common/internal/json/rapidjson/document.h"
+#include "arccore/common/internal/json/rapidjson/stringbuffer.h"
 
 #include <sstream>
 #include <iomanip>
@@ -43,52 +43,55 @@ namespace Arcane
 class JSONWriter::Impl
 {
  public:
+
   Impl(bool use_hex_float)
-  : m_writer(m_buffer),
-    m_use_hex_float(use_hex_float)
+  : m_writer(m_buffer)
+  , m_use_hex_float(use_hex_float)
   {
-    m_writer.SetIndent(' ',1);
+    m_writer.SetIndent(' ', 1);
     m_writer.SetFormatOptions(rapidjson::kFormatSingleLineArray);
-    m_real_ostr.precision(FloatInfo<Real>::maxDigit());
+    m_real_ostr.precision(std::numeric_limits<Real>::max_digits10);
   }
+
  public:
+
   void writeKey(StringView key)
   {
     Span<const Byte> bytes = key.bytes();
     Int64 size = bytes.size();
-    if (size==0)
-      ARCANE_FATAL("null size");
+    if (size == 0)
+      ARCCORE_FATAL("null size");
     // TODO: regarder s'il faut toujours mettre 'true' et donc faire une copie.
-    m_writer.Key((const char*)bytes.data(),size,true);
+    m_writer.Key((const char*)bytes.data(), size, true);
   }
   void writeStringValue(StringView value)
   {
     Span<const Byte> bytes = value.bytes();
     Int64 size = bytes.size();
-    if (size==0){
+    if (size == 0) {
       m_writer.Null();
       return;
     }
     // TODO: regarder s'il faut toujours mettre 'true' et donc faire une copie.
-    m_writer.String((const char*)bytes.data(),size,true);
+    m_writer.String((const char*)bytes.data(), size, true);
   }
   void writeStringValue(const std::string& value)
   {
     m_writer.String(value);
   }
-  void write(StringView key,const char* v);
-  void write(StringView key,Real v)
+  void write(StringView key, const char* v);
+  void write(StringView key, Real v)
   {
     writeKey(key);
-    if (m_use_hex_float){
+    if (m_use_hex_float) {
       char buf[32];
-      sprintf(buf,"%a",v);
+      sprintf(buf, "%a", v);
       m_writer.String(buf);
     }
     else
       m_writer.Double(v);
   }
-  void write(StringView key,Span<const Real> view)
+  void write(StringView key, Span<const Real> view)
   {
     writeKey(key);
     {
@@ -98,11 +101,11 @@ class JSONWriter::Impl
       // qu'à partir de GCC 5.0 ou visual studio 2015.
       // ostr << std::hexfloat;
       char buf[32];
-      for( Int64 i=0, n=view.size(); i<n; ++i ){
-        if (i!=0)
+      for (Int64 i = 0, n = view.size(); i < n; ++i) {
+        if (i != 0)
           m_real_ostr << ' ';
-        if (m_use_hex_float){
-          sprintf(buf,"%a",view[i]);
+        if (m_use_hex_float) {
+          sprintf(buf, "%a", view[i]);
           m_real_ostr << buf;
         }
         else
@@ -111,7 +114,9 @@ class JSONWriter::Impl
       writeStringValue(m_real_ostr.str());
     }
   }
+
  public:
+
   rapidjson::StringBuffer m_buffer;
   rapidjson::PrettyWriter<rapidjson::StringBuffer> m_writer;
   bool m_use_hex_float;
@@ -167,48 +172,48 @@ writeValue(StringView str)
   m_p->writeStringValue(str);
 }
 void JSONWriter::
-write(StringView key,bool v)
+write(StringView key, bool v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Bool(v);
 }
 void JSONWriter::
-_writeInt64(StringView key,Int64 v)
+_writeInt64(StringView key, Int64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Int64(v);
 }
 void JSONWriter::
-_writeUInt64(StringView key,UInt64 v)
+_writeUInt64(StringView key, UInt64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Uint64(v);
 }
 void JSONWriter::
-write(StringView key,Real v)
+write(StringView key, Real v)
 {
-  m_p->write(key,v);
+  m_p->write(key, v);
 }
 void JSONWriter::
-write(StringView key,StringView str)
+write(StringView key, StringView str)
 {
   m_p->writeKey(key);
   m_p->writeStringValue(str);
 }
 void JSONWriter::
-write(StringView key,const char* v)
+write(StringView key, const char* v)
 {
   m_p->writeKey(key);
   m_p->writeStringValue(StringView(v));
 }
 void JSONWriter::
-write(StringView key,std::string_view v)
+write(StringView key, std::string_view v)
 {
   m_p->writeKey(key);
   m_p->writeStringValue(v);
 }
 void JSONWriter::
-writeIfNotNull(StringView key,const String& str)
+writeIfNotNull(StringView key, const String& str)
 {
   if (str.null())
     return;
@@ -217,29 +222,29 @@ writeIfNotNull(StringView key,const String& str)
 }
 
 void JSONWriter::
-write(StringView key,Span<const Int32> view)
+write(StringView key, Span<const Int32> view)
 {
   m_p->writeKey(key);
   m_p->m_writer.StartArray();
-  for( Int64 i=0, n=view.size(); i<n; ++i )
+  for (Int64 i = 0, n = view.size(); i < n; ++i)
     m_p->m_writer.Int(view[i]);
   m_p->m_writer.EndArray();
 }
 
 void JSONWriter::
-write(StringView key,Span<const Int64> view)
+write(StringView key, Span<const Int64> view)
 {
   m_p->writeKey(key);
   m_p->m_writer.StartArray();
-  for( Int64 i=0, n=view.size(); i<n; ++i )
+  for (Int64 i = 0, n = view.size(); i < n; ++i)
     m_p->m_writer.Int64(view[i]);
   m_p->m_writer.EndArray();
 }
 
 void JSONWriter::
-write(StringView key,Span<const Real> view)
+write(StringView key, Span<const Real> view)
 {
-  m_p->write(key,view);
+  m_p->write(key, view);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,15 +254,14 @@ StringView JSONWriter::
 getBuffer() const
 {
   const Byte* buf_chars = reinterpret_cast<const Byte*>(m_p->m_buffer.GetString());
-  Span<const Byte> bytes(buf_chars,m_p->m_buffer.GetSize());
+  Span<const Byte> bytes(buf_chars, m_p->m_buffer.GetSize());
   return StringView(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

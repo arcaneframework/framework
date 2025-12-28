@@ -24,6 +24,10 @@ set(SOURCES
   IMemoryAllocator.h
   IMemoryPool.h
   IMemoryResourceMng.h
+  JSONReader.cc
+  JSONReader.h
+  JSONWriter.cc
+  JSONWriter.h
   List.h
   MemoryAllocator.cc
   MemoryAllocationArgs.h

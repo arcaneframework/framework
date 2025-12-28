@@ -100,6 +100,17 @@ using StringList = List<String>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class JSONWriter;
+class JSONValue;
+class JSONDocument;
+class JSONValueList;
+class JSONWrapperUtils;
+class JSONKeyValue;
+class JSONKeyValueList;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class DataViewSetter;
 template <typename DataType>
