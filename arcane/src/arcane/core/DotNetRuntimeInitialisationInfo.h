@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,15 +61,6 @@ class ARCANE_CORE_EXPORT DotNetRuntimeInitialisationInfo
  private:
 
   Impl* m_p;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ARCANE_CORE_EXPORT DotNetRuntimeInitialisationInfoProperties
-: public DotNetRuntimeInitialisationInfo
-{
-  ARCANE_DECLARE_PROPERTY_CLASS(DotNetRuntimeInitialisationInfo);
 };
 
 /*---------------------------------------------------------------------------*/
