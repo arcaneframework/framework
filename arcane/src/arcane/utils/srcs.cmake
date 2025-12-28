@@ -53,10 +53,6 @@ set(ARCANE_SOURCES
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
-  JSONReader.cc
-  JSONReader.h
-  JSONWriter.cc
-  JSONWriter.h
   LinearOffsetMap.h
   LinearOffsetMap.cc
   HashAlgorithm.cc

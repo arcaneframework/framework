@@ -70,10 +70,6 @@ using RealN3x3 = NumMatrix<Real,3>;
 /*---------------------------------------------------------------------------*/
 
 class HPReal;
-class JSONWriter;
-class JSONValue;
-class JSONDocument;
-class JSONValueList;
 class CommandLineArguments;
 class ApplicationInfo;
 class VersionInfo;

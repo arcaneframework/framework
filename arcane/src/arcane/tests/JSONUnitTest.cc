@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONUnitTest.cc                                             (C) 2000-2023 */
+/* JSONUnitTest.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Test du lecteur/ecrivain JSON.                                            */
 /*---------------------------------------------------------------------------*/
@@ -24,14 +24,15 @@
 #include "arcane/tests/ArcaneTestGlobal.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1
-#include "arcane/utils/internal/json/rapidjson/writer.h"
-#include "arcane/utils/internal/json/rapidjson/document.h"
-#include "arcane/utils/internal/json/rapidjson/stringbuffer.h"
+#include "arccore/common/internal/json/rapidjson/writer.h"
+#include "arccore/common/internal/json/rapidjson/document.h"
+#include "arccore/common/internal/json/rapidjson/stringbuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,7 @@ class JSONUnitTest
 {
  public:
 
-  JSONUnitTest(const ServiceBuildInfo& cb);
+  explicit JSONUnitTest(const ServiceBuildInfo& cb);
   ~JSONUnitTest();
 
  public:
@@ -213,8 +214,9 @@ _testJSON_Read_1()
   {
     JSONValue v4 = doc_root.child("real_value");
     Real v = v4.valueAsReal();
-    if (v!=(-2.3e-5))
-      ARCANE_FATAL("Bad value for Real = {0}",v);
+    Real expected_value = -2.3e-5;
+    if (v!=expected_value)
+      ARCANE_FATAL("Bad value for Real v={0} expected={1}",v, expected_value);
   }
 
   for( auto& x : doc_root.keyValueChildren() ){
@@ -225,7 +227,7 @@ _testJSON_Read_1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
