@@ -44,42 +44,6 @@ __device__ __forceinline__ unsigned int getBlockId()
 
 constexpr const Int32 MAX_BLOCK_SIZE = 1024;
 
-template <typename T, enum eAtomicOperation>
-class SimpleReduceOperator;
-
-template <typename T>
-class SimpleReduceOperator<T, eAtomicOperation::Add>
-{
- public:
-
-  static ARCCORE_DEVICE inline void apply(T& val, const T v)
-  {
-    val = val + v;
-  }
-};
-
-template <typename T>
-class SimpleReduceOperator<T, eAtomicOperation::Max>
-{
- public:
-
-  static ARCCORE_DEVICE inline void apply(T& val, const T v)
-  {
-    val = v > val ? v : val;
-  }
-};
-
-template <typename T>
-class SimpleReduceOperator<T, eAtomicOperation::Min>
-{
- public:
-
-  static ARCCORE_DEVICE inline void apply(T& val, const T v)
-  {
-    val = v < val ? v : val;
-  }
-};
-
 #if defined(__CUDACC__)
 ARCCORE_DEVICE inline double shfl_xor_sync(double var, int laneMask)
 {
@@ -166,7 +130,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
     // reduce each warp
     for (int i = 1; i < WARP_SIZE; i *= 2) {
       T rhs = impl::shfl_xor_sync(temp, i);
-      ReduceOperator::apply(temp, rhs);
+      ReduceOperator::combine(temp, rhs);
     }
   }
   else {
@@ -177,7 +141,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
       T rhs = impl::shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads) {
-        ReduceOperator::apply(temp, rhs);
+        ReduceOperator::combine(temp, rhs);
       }
     }
   }
@@ -207,7 +171,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
       }
       for (int i = 1; i < WARP_SIZE; i *= 2) {
         T rhs = impl::shfl_xor_sync(temp, i);
-        ReduceOperator::apply(temp, rhs);
+        ReduceOperator::combine(temp, rhs);
       }
     }
 
@@ -255,7 +219,7 @@ grid_reduce(T& val, SmallSpan<T> device_mem, unsigned int* device_count)
     temp = identity;
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      ReduceOperator::apply(temp, device_mem[i]);
+      ReduceOperator::combine(temp, device_mem[i]);
     }
 
     temp = block_reduce<ReduceOperator, WarpSize, T, identity>(temp);
@@ -329,7 +293,7 @@ _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunctorSum<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Add>;
+  using ReduceOperator = ReduceFunctorSum<DataType>;
   _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
@@ -339,7 +303,7 @@ _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunctorMax<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Max>;
+  using ReduceOperator = ReduceFunctorMax<DataType>;
   _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
@@ -349,7 +313,7 @@ _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 template <typename DataType> ARCCORE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunctorMin<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Min>;
+  using ReduceOperator = ReduceFunctorMin<DataType>;
   _applyDeviceGeneric<DataType, ReduceOperator, identity()>(dev_info);
 }
 
