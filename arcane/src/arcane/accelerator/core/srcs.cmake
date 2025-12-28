@@ -24,4 +24,6 @@ set( ARCANE_SOURCES
   RunQueueImpl.h
   RunQueuePool.h
   ViewBuildInfo.h
+
+  internal/AcceleratorRuntimeInitialisationInfoProperties.h
 )

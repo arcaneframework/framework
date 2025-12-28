@@ -5,45 +5,39 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2025 */
+/* DotNetRuntimeInitialisationInfoProperties.h                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime des accélérateurs.          */
+/* Informations pour l'initialisation du runtime '.Net'.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
-#define ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
+#ifndef ARCANE_UTILS_INTERNAL_DOTNETRUNTIMEINITIALISATIONINFOPROPERTIES_H
+#define ARCANE_UTILS_INTERNAL_DOTNETRUNTIMEINITIALISATIONINFOPROPERTIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-#include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/core/DotNetRuntimeInitialisationInfo.h"
+#include "arcane/utils/internal/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Initialise \a runner avec les informations de \a acc_info.
- *
- * Cette fonction appelle Accelerator::Runner::setAsCurrentDevice() après
- * l'initialisation.
- */
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneInitializeRunner(Runner& runner, ITraceMng* tm,
-                       const AcceleratorRuntimeInitialisationInfo& acc_info);
+
+class ARCANE_CORE_EXPORT DotNetRuntimeInitialisationInfoProperties
+: public DotNetRuntimeInitialisationInfo
+{
+  ARCANE_DECLARE_PROPERTY_CLASS(DotNetRuntimeInitialisationInfo);
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
