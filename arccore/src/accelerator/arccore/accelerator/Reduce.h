@@ -177,7 +177,7 @@ class ReduceFunctorSum
   {
     _applyDevice(dev_info);
   }
-  static DataType apply(DataType* vptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
     return ReduceAtomicSum<DataType>::apply(vptr, v);
   }
@@ -207,7 +207,7 @@ class ReduceFunctorMax
   {
     _applyDevice(dev_info);
   }
-  static DataType apply(DataType* ptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* ptr, DataType v)
   {
     std::atomic_ref<DataType> aref(*ptr);
     DataType prev_value = aref.load();
@@ -241,7 +241,7 @@ class ReduceFunctorMin
   {
     _applyDevice(dev_info);
   }
-  static DataType apply(DataType* vptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
     std::atomic_ref<DataType> aref(*vptr);
     DataType prev_value = aref.load();
@@ -399,7 +399,7 @@ class HostDeviceReducerBase
       //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
       //                            this,m_local_value,*m_parent_value);
       //std::cout.flush();
-      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
+      ReduceFunctor::applyAtomicOnHost(m_atomic_parent_value, *final_ptr);
       *final_ptr = *m_atomic_parent_value;
     }
     else {
@@ -438,7 +438,7 @@ class HostDeviceReducerBase
     //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
     //std::cout.flush();
     if (!m_is_master_instance)
-      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
+      ReduceFunctor::applyAtomicOnHost(m_atomic_parent_value, m_local_value);
 
     //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
 #endif
