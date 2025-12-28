@@ -20,7 +20,7 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/PropertyDeclarations.h"
+#include "arcane/utils/internal/PropertyDeclarations.h"
 
 #include <iosfwd>
 #include <functional>
