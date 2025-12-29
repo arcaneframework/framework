@@ -155,7 +155,7 @@ _fillIndexes(NumArray<Int32, MDDim1>& indexes, SmallSpan<const Int32> nb_element
 void MultiMemoryCopyUnitTest::
 executeTest()
 {
-  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy())) {
+  if (isAcceleratorPolicy(m_runner.executionPolicy())) {
     info() << "ExecuteTest1: using accelerator";
     _executeTest1(eMemoryRessource::UnifiedMemory);
     _executeTest1(eMemoryRessource::HostPinned);

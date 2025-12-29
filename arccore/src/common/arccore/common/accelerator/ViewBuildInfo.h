@@ -49,11 +49,11 @@ class ARCCORE_COMMON_EXPORT ViewBuildInfo
 
  private:
 
-  impl::RunQueueImpl* _internalQueue() const { return m_queue_impl; }
+  Impl::RunQueueImpl* _internalQueue() const { return m_queue_impl; }
 
  private:
 
-  impl::RunQueueImpl* m_queue_impl = nullptr;
+  Impl::RunQueueImpl* m_queue_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

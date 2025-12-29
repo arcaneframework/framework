@@ -40,28 +40,28 @@ namespace Arcane::Accelerator
 
 namespace
 {
-  inline impl::IRunnerRuntime*
+  inline Impl::IRunnerRuntime*
   _getRuntimeNoCheck(eExecutionPolicy p)
   {
-    impl::IRunnerRuntime* runtime = nullptr;
+    Impl::IRunnerRuntime* runtime = nullptr;
     switch (p) {
     case eExecutionPolicy::None:
       ARCCORE_FATAL("No runtime for eExecutionPolicy::None");
     case eExecutionPolicy::SYCL:
-      return impl::getSYCLRunQueueRuntime();
+      return Impl::getSYCLRunQueueRuntime();
     case eExecutionPolicy::HIP:
-      return impl::getHIPRunQueueRuntime();
+      return Impl::getHIPRunQueueRuntime();
     case eExecutionPolicy::CUDA:
-      return impl::getCUDARunQueueRuntime();
+      return Impl::getCUDARunQueueRuntime();
     case eExecutionPolicy::Sequential:
-      return impl::getSequentialRunQueueRuntime();
+      return Impl::getSequentialRunQueueRuntime();
     case eExecutionPolicy::Thread:
-      return impl::getThreadRunQueueRuntime();
+      return Impl::getThreadRunQueueRuntime();
     }
     return runtime;
   }
 
-  inline impl::IRunnerRuntime*
+  inline Impl::IRunnerRuntime*
   _getRuntime(eExecutionPolicy p)
   {
     auto* x = _getRuntimeNoCheck(p);
@@ -93,7 +93,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +170,7 @@ _internalPutRunQueueImplInPool(RunQueueImpl* p)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunQueueImpl* RunnerImpl::
+Impl::RunQueueImpl* RunnerImpl::
 _internalCreateOrGetRunQueueImpl()
 {
   _checkIsInit();
@@ -178,9 +178,9 @@ _internalCreateOrGetRunQueueImpl()
   auto pool = getPool();
 
   {
-    impl::RunnerImpl::Lock my_lock(this);
+    Impl::RunnerImpl::Lock my_lock(this);
     if (!pool->empty()) {
-      impl::RunQueueImpl* p = pool->top();
+      Impl::RunQueueImpl* p = pool->top();
       pool->pop();
       return p;
     }
@@ -192,7 +192,7 @@ _internalCreateOrGetRunQueueImpl()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunQueueImpl* RunnerImpl::
+Impl::RunQueueImpl* RunnerImpl::
 _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 {
   _checkIsInit();
@@ -200,9 +200,9 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
   // issue du pool.
   if (bi.isDefault())
     return _internalCreateOrGetRunQueueImpl();
-  impl::IRunnerRuntime* runtime = m_runtime;
+  Impl::IRunnerRuntime* runtime = m_runtime;
   ARCCORE_CHECK_POINTER(runtime);
-  auto* queue = new impl::RunQueueImpl(this, 0, bi);
+  auto* queue = new Impl::RunQueueImpl(this, 0, bi);
   return queue;
 }
 
@@ -215,7 +215,7 @@ createRunQueue(const RunQueueBuildInfo& bi)
   if (!m_runner_impl)
     ARCCORE_FATAL("RunQueueImplStack is not initialized");
   Int32 x = ++m_nb_created;
-  auto* q = new impl::RunQueueImpl(m_runner_impl, x, bi);
+  auto* q = new Impl::RunQueueImpl(m_runner_impl, x, bi);
   q->m_is_in_pool = true;
   return q;
 }
@@ -243,7 +243,7 @@ _createEventWithTimer()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -259,7 +259,7 @@ namespace Arcane::Accelerator
 
 Runner::
 Runner()
-: m_p(std::make_shared<impl::RunnerImpl>())
+: m_p(std::make_shared<Impl::RunnerImpl>())
 {
 }
 
@@ -289,7 +289,7 @@ Runner(eExecutionPolicy p, DeviceId device_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunnerRuntime* Runner::
+Impl::IRunnerRuntime* Runner::
 _internalRuntime() const
 {
   _checkIsInit();
@@ -452,7 +452,7 @@ deviceInfoList(eExecutionPolicy policy)
 {
   if (policy == eExecutionPolicy::None)
     return nullptr;
-  impl::IRunnerRuntime* r = _getRuntime(policy);
+  Impl::IRunnerRuntime* r = _getRuntime(policy);
   return r->deviceInfoList();
 }
 
@@ -580,16 +580,16 @@ getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_a
 {
   if (!runner)
     return ePointerAccessibility::Unknown;
-  return impl::RuntimeStaticInfo::getPointerAccessibility(runner->executionPolicy(), ptr, ptr_attr);
+  return Impl::RuntimeStaticInfo::getPointerAccessibility(runner->executionPolicy(), ptr, ptr_attr);
 }
 
-extern "C++" void impl::
+extern "C++" void Impl::
 arcaneCheckPointerIsAccessible(const Runner* runner, const void* ptr,
                                const char* name, const TraceInfo& ti)
 {
   if (!runner)
     return;
-  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(runner->executionPolicy(), ptr, name, ti);
+  return Impl::RuntimeStaticInfo::checkPointerIsAcccessible(runner->executionPolicy(), ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -598,7 +598,7 @@ arcaneCheckPointerIsAccessible(const Runner* runner, const void* ptr,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::IRunnerRuntime::
+void Impl::IRunnerRuntime::
 _fillPointerAttribute(PointerAttribute& attribute,
                       ePointerMemoryType mem_type,
                       int device, const void* pointer, const void* device_pointer,
@@ -610,7 +610,7 @@ _fillPointerAttribute(PointerAttribute& attribute,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::IRunnerRuntime::
+void Impl::IRunnerRuntime::
 _fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
 {
   attribute = PointerAttribute(pointer);
@@ -619,7 +619,7 @@ _fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Impl::KernelLaunchArgs impl::IRunnerRuntime::
+Impl::KernelLaunchArgs Impl::IRunnerRuntime::
 computeKernalLaunchArgs(const Impl::KernelLaunchArgs& orig_args,
                         [[maybe_unused]] const void* kernel_ptr,
                         [[maybe_unused]] Int64 total_loop_size)

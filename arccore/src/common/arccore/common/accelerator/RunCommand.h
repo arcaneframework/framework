@@ -21,7 +21,7 @@
 
 namespace Arcane::Accelerator
 {
-namespace impl
+namespace Impl
 {
 extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command);
@@ -44,9 +44,9 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
  */
 class ARCCORE_COMMON_EXPORT RunCommand
 {
-  friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  friend Impl::IReduceMemoryImpl* Impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend Impl::RunCommandLaunchInfo;
-  friend impl::RunQueueImpl;
+  friend Impl::RunQueueImpl;
   friend class ViewBuildInfo;
   template<typename T, Int32 Extent> friend class LocalMemory;
 
@@ -129,10 +129,10 @@ class ARCCORE_COMMON_EXPORT RunCommand
  private:
 
   //! \internal
-  impl::RunQueueImpl* _internalQueueImpl() const;
+  Impl::RunQueueImpl* _internalQueueImpl() const;
   Impl::NativeStream _internalNativeStream() const;
-  static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
-  static void _internalDestroyImpl(impl::RunCommandImpl* p);
+  static Impl::RunCommandImpl* _internalCreateImpl(Impl::RunQueueImpl* queue);
+  static void _internalDestroyImpl(Impl::RunCommandImpl* p);
   Int32 _addSharedMemory(Int32 size);
   Int32 _sharedMemory() const;
 
@@ -142,7 +142,7 @@ class ARCCORE_COMMON_EXPORT RunCommand
 
  private:
 
-  impl::RunCommandImpl* m_p;
+  Impl::RunCommandImpl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/

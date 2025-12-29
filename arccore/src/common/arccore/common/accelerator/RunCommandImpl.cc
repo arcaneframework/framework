@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ namespace Arcane::Accelerator::impl
 RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
-, m_use_accelerator(impl::isAcceleratorPolicy(queue->runner()->executionPolicy()))
+, m_use_accelerator(isAcceleratorPolicy(queue->runner()->executionPolicy()))
 {
   _init();
 }
@@ -311,7 +311,7 @@ _notifyDestroyRunCommand()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

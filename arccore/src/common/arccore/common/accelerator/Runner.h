@@ -60,11 +60,11 @@ namespace Arcane::Accelerator
  */
 class ARCCORE_COMMON_EXPORT Runner
 {
-  friend impl::RunQueueImpl;
-  friend impl::RunCommandImpl;
+  friend Impl::RunQueueImpl;
+  friend Impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
-  friend impl::RunnerImpl;
+  friend Impl::RunnerImpl;
 
   friend RunQueue makeQueue(const Runner& runner);
   friend RunQueue makeQueue(const Runner* runner);
@@ -188,12 +188,12 @@ class ARCCORE_COMMON_EXPORT Runner
 
  private:
 
-  impl::IRunnerRuntime* _internalRuntime() const;
-  impl::RunnerImpl* _impl() const { return m_p.get(); }
+  Impl::IRunnerRuntime* _internalRuntime() const;
+  Impl::RunnerImpl* _impl() const { return m_p.get(); }
 
  private:
 
-  std::shared_ptr<impl::RunnerImpl> m_p;
+  std::shared_ptr<Impl::RunnerImpl> m_p;
 
  private:
 

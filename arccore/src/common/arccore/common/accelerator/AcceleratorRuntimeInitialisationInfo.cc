@@ -166,7 +166,7 @@ arccoreInitializeRunner(Accelerator::Runner& runner, ITraceMng* tm,
     ARCCORE_FATAL("Invalid policy eExecutionPolicy::None");
   tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
   tm->info() << "DefaultDataAllocator MemoryResource=" << MemoryUtils::getDefaultDataMemoryResource();
-  if (impl::isAcceleratorPolicy(policy)) {
+  if (isAcceleratorPolicy(policy)) {
     tm->info() << "Using accelerator runtime=" << policy << " device=" << acc_info.deviceId();
     runner.initialize(policy, acc_info.deviceId());
     runner.setAsCurrentDevice();

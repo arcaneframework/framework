@@ -94,7 +94,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
   Int64 m_total_loop_size = 0;
-  impl::RunQueueImpl* m_queue_impl = nullptr;
+  RunQueueImpl* m_queue_impl = nullptr;
 
  private:
 
