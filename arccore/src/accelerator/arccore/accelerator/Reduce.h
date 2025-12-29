@@ -167,47 +167,57 @@ class ReduceAtomicSum<Int32>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorSum
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorSum<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
-  static DataType apply(DataType* vptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
     return ReduceAtomicSum<DataType>::apply(vptr, v);
   }
+
 #if defined(ARCCORE_COMPILING_SYCL)
   static sycl::plus<DataType> syclFunctor() { return {}; }
 #endif
 
- public:
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = val + v;
+  }
 
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::sumValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorMax
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorMax<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
-  static DataType apply(DataType* ptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* ptr, DataType v)
   {
     std::atomic_ref<DataType> aref(*ptr);
     DataType prev_value = aref.load();
@@ -219,29 +229,33 @@ class ReduceFunctorMax
   static sycl::maximum<DataType> syclFunctor() { return {}; }
 #endif
 
- public:
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = v > val ? v : val;
+  }
 
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::maxValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType_>
 class ReduceFunctorMin
 {
+ public:
+
+  using DataType = DataType_;
+  using ThatClass = ReduceFunctorMin<DataType>;
+
  public:
 
   static ARCCORE_DEVICE void
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-    _applyDevice(dev_info);
+    _applyDeviceGeneric<ThatClass>(dev_info);
   }
-  static DataType apply(DataType* vptr, DataType v)
+  static DataType applyAtomicOnHost(DataType* vptr, DataType v)
   {
     std::atomic_ref<DataType> aref(*vptr);
     DataType prev_value = aref.load();
@@ -253,13 +267,12 @@ class ReduceFunctorMin
   static sycl::minimum<DataType> syclFunctor() { return {}; }
 #endif
 
- public:
+  static ARCCORE_DEVICE inline void combine(DataType& val, const DataType v)
+  {
+    val = v < val ? v : val;
+  }
 
-  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
-
- private:
-
-  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return ReduceIdentity<DataType>::minValue(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -399,7 +412,7 @@ class HostDeviceReducerBase
       //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
       //                            this,m_local_value,*m_parent_value);
       //std::cout.flush();
-      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
+      ReduceFunctor::applyAtomicOnHost(m_atomic_parent_value, *final_ptr);
       *final_ptr = *m_atomic_parent_value;
     }
     else {
@@ -438,7 +451,7 @@ class HostDeviceReducerBase
     //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
     //std::cout.flush();
     if (!m_is_master_instance)
-      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
+      ReduceFunctor::applyAtomicOnHost(m_atomic_parent_value, m_local_value);
 
     //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
 #endif
