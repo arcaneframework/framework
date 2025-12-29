@@ -99,7 +99,7 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  impl::RunQueueImpl* q = m_queue_impl;
+  Impl::RunQueueImpl* q = m_queue_impl;
   if (!q->isAsync() || m_is_need_barrier)
     q->_internalBarrier();
 }
@@ -182,7 +182,7 @@ _computeLoopRunInfo()
 KernelLaunchArgs RunCommandLaunchInfo::
 _computeKernelLaunchArgs(const void* func) const
 {
-  impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
+  Impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
 
   return r->computeKernalLaunchArgs(m_kernel_launch_args, func,
                                     totalLoopSize());

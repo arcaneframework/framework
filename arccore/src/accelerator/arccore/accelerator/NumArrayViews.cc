@@ -40,7 +40,7 @@ namespace Arcane::Accelerator
 NumArrayViewBase::
 NumArrayViewBase(const ViewBuildInfo& vbi, Span<const std::byte> bytes)
 {
-  impl::RunQueueImpl* q = vbi._internalQueue();
+  Impl::RunQueueImpl* q = vbi._internalQueue();
   if (q->isAutoPrefetchCommand()) {
     ConstMemoryView mem_view(bytes);
     q->prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());

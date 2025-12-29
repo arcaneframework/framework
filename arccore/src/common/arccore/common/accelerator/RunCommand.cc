@@ -152,7 +152,7 @@ _internalNativeStream() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunQueueImpl* RunCommand::
+Impl::RunQueueImpl* RunCommand::
 _internalQueueImpl() const
 {
   return m_p->m_queue;
@@ -161,17 +161,17 @@ _internalQueueImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunCommandImpl* RunCommand::
-_internalCreateImpl(impl::RunQueueImpl* queue)
+Impl::RunCommandImpl* RunCommand::
+_internalCreateImpl(Impl::RunQueueImpl* queue)
 {
-  return new impl::RunCommandImpl(queue);
+  return new Impl::RunCommandImpl(queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void RunCommand::
-_internalDestroyImpl(impl::RunCommandImpl* p)
+_internalDestroyImpl(Impl::RunCommandImpl* p)
 {
   delete p;
 }

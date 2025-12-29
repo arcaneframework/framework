@@ -57,7 +57,7 @@ class ViewBuildInfo;
 class RunnerInternal;
 enum class eMemoryAdvice;
 
-namespace impl
+namespace Impl
 {
   class RuntimeStaticInfo;
   class IRunnerRuntime;
@@ -71,10 +71,6 @@ namespace impl
   class IRunQueueEventImpl;
   class RunnerImpl;
   class RunQueueImplStack;
-} // namespace impl
-
-namespace Impl
-{
   class KernelLaunchArgs;
   class RunCommandLaunchInfo;
   class NativeStream;
@@ -243,7 +239,7 @@ getPointerAccessibility(T& queue_or_runner_or_policy, const void* ptr, PointerAt
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 using Arcane::Accelerator::isAcceleratorPolicy;
 
@@ -288,7 +284,7 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
   arcaneCheckPointerIsAccessible(&runner, ptr, name, ti);
 }
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -298,7 +294,7 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
  * Lance une exception si ce n'est pas le cas.
  */
 #define ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
-  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
+  ::Arcane::Accelerator::Impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
 
 #define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
   ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))

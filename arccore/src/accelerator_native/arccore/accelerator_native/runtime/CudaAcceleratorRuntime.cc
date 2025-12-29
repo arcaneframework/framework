@@ -504,11 +504,11 @@ class OccupancyMap
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueStream
-: public impl::IRunQueueStream
+: public Impl::IRunQueueStream
 {
  public:
 
-  CudaRunQueueStream(impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
+  CudaRunQueueStream(Impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -525,7 +525,7 @@ class CudaRunQueueStream
 
  public:
 
-  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] Impl::RunCommandImpl& c) override
   {
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     auto kname = c.kernelName();
@@ -536,7 +536,7 @@ class CudaRunQueueStream
 #endif
     return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  void notifyEndLaunchKernel(Impl::RunCommandImpl&) override
   {
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
@@ -597,7 +597,7 @@ class CudaRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  Impl::IRunnerRuntime* m_runtime = nullptr;
   cudaStream_t m_cuda_stream = nullptr;
 };
 
@@ -605,7 +605,7 @@ class CudaRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueEvent
-: public impl::IRunQueueEventImpl
+: public Impl::IRunQueueEventImpl
 {
  public:
 
@@ -624,7 +624,7 @@ class CudaRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) final
+  void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCCORE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
@@ -635,7 +635,7 @@ class CudaRunQueueEvent
     ARCCORE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) final
+  void waitForEvent(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCCORE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
@@ -675,7 +675,7 @@ class CudaRunQueueEvent
 /*---------------------------------------------------------------------------*/
 
 class CudaRunnerRuntime
-: public impl::IRunnerRuntime
+: public Impl::IRunnerRuntime
 {
  public:
 
@@ -703,15 +703,15 @@ class CudaRunnerRuntime
   {
     return eExecutionPolicy::CUDA;
   }
-  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  Impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new CudaRunQueueStream(this, bi);
   }
-  impl::IRunQueueEventImpl* createEventImpl() override
+  Impl::IRunQueueEventImpl* createEventImpl() override
   {
     return new CudaRunQueueEvent(false);
   }
-  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  Impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
     return new CudaRunQueueEvent(true);
   }
@@ -889,7 +889,7 @@ class CudaRunnerRuntime
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
   bool m_use_computed_occupancy = false;
-  impl::DeviceInfoList m_device_info_list;
+  Impl::DeviceInfoList m_device_info_list;
   OccupancyMap m_occupancy_map;
 };
 
@@ -962,7 +962,7 @@ fillDevices(bool is_verbose)
       CUuuid device_uuid;
       ARCCORE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      impl::printUUID(device_uuid_ostr, device_uuid.bytes);
+      Impl::printUUID(device_uuid_ostr, device_uuid.bytes);
       o << device_uuid_ostr.str();
       o << "\n";
     }
@@ -1059,8 +1059,8 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
 {
   using namespace Arcane::Accelerator::Cuda;
   global_cuda_runtime.build();
-  Accelerator::impl::setUsingCUDARuntime(true);
-  Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
+  Accelerator::Impl::setUsingCUDARuntime(true);
+  Accelerator::Impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_cuda_memory_allocator);

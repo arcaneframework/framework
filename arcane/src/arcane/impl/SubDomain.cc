@@ -472,7 +472,7 @@ initialize()
     info() << "DeviceInfo: name=" << device_info.name();
     info() << "DeviceInfo: description=" << device_info.description();
 
-    if (Accelerator::impl::isAcceleratorPolicy(runner.executionPolicy())){
+    if (isAcceleratorPolicy(runner.executionPolicy())){
       m_parallel_mng->_internalApi()->setDefaultRunner(runner);
       m_all_replica_parallel_mng->_internalApi()->setDefaultRunner(runner);
     }

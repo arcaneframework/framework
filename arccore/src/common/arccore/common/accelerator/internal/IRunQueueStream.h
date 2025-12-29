@@ -19,7 +19,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -37,14 +37,14 @@ class ARCCORE_COMMON_EXPORT IRunQueueStream
  public:
 
   //! Notification avant le lancement de la commande
-  virtual void notifyBeginLaunchKernel(impl::RunCommandImpl& command) = 0;
+  virtual void notifyBeginLaunchKernel(RunCommandImpl& command) = 0;
 
   /*!
    * \brief Notification de fin de lancement de la commande.
    *
    * En mode asynchrone, la commande peut continuer à s'exécuter en tâche de fond.
    */
-  virtual void notifyEndLaunchKernel(impl::RunCommandImpl& command) = 0;
+  virtual void notifyEndLaunchKernel(RunCommandImpl& command) = 0;
 
   /*!
    * \brief Bloque jusqu'à ce que toutes les actions associées à cette file

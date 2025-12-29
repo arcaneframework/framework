@@ -28,11 +28,11 @@ namespace Arcane::Accelerator
 class ARCCORE_COMMON_EXPORT RunnerInternal
 {
   friend ::Arcane::Accelerator::Runner;
-  friend ::Arcane::Accelerator::impl::RunnerImpl;
+  friend ::Arcane::Accelerator::Impl::RunnerImpl;
 
  private:
 
-  explicit RunnerInternal(impl::RunnerImpl* p)
+  explicit RunnerInternal(Impl::RunnerImpl* p)
   : m_runner_impl(p)
   {}
 
@@ -71,7 +71,7 @@ class ARCCORE_COMMON_EXPORT RunnerInternal
 
  private:
 
-  impl::RunnerImpl* m_runner_impl = nullptr;
+  Impl::RunnerImpl* m_runner_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

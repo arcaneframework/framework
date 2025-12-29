@@ -27,7 +27,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ class RunCommandImpl
   void notifyBeginLaunchKernel();
   void notifyEndLaunchKernel();
   void notifyEndExecuteKernel();
-  impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
+  Impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
   IRunQueueStream* internalStream() const;
   RunnerImpl* runner() const;
@@ -145,7 +145,7 @@ class RunCommandImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

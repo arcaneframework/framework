@@ -259,11 +259,11 @@ void finalizeHipMemoryAllocators(ITraceMng* tm)
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueStream
-: public impl::IRunQueueStream
+: public Impl::IRunQueueStream
 {
  public:
 
-  HipRunQueueStream(impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
+  HipRunQueueStream(Impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -280,7 +280,7 @@ class HipRunQueueStream
 
  public:
 
-  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] Impl::RunCommandImpl& c) override
   {
 #ifdef ARCCORE_HAS_ROCTX
     auto kname = c.kernelName();
@@ -291,7 +291,7 @@ class HipRunQueueStream
 #endif
     return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  void notifyEndLaunchKernel(Impl::RunCommandImpl&) override
   {
 #ifdef ARCCORE_HAS_ROCTX
     roctxRangePop();
@@ -342,7 +342,7 @@ class HipRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime;
+  Impl::IRunnerRuntime* m_runtime;
   hipStream_t m_hip_stream;
 };
 
@@ -350,7 +350,7 @@ class HipRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueEvent
-: public impl::IRunQueueEventImpl
+: public Impl::IRunQueueEventImpl
 {
  public:
 
@@ -369,7 +369,7 @@ class HipRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) final
+  void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCCORE_CHECK_HIP(hipEventRecord(m_hip_event, rq->trueStream()));
@@ -380,7 +380,7 @@ class HipRunQueueEvent
     ARCCORE_CHECK_HIP(hipEventSynchronize(m_hip_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) final
+  void waitForEvent(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCCORE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
@@ -415,7 +415,7 @@ class HipRunQueueEvent
 /*---------------------------------------------------------------------------*/
 
 class HipRunnerRuntime
-: public impl::IRunnerRuntime
+: public Impl::IRunnerRuntime
 {
  public:
 
@@ -443,15 +443,15 @@ class HipRunnerRuntime
   {
     return eExecutionPolicy::HIP;
   }
-  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  Impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new HipRunQueueStream(this, bi);
   }
-  impl::IRunQueueEventImpl* createEventImpl() override
+  Impl::IRunQueueEventImpl* createEventImpl() override
   {
     return new HipRunQueueEvent(false);
   }
-  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  Impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
     return new HipRunQueueEvent(true);
   }
@@ -591,7 +591,7 @@ class HipRunnerRuntime
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
-  impl::DeviceInfoList m_device_info_list;
+  Impl::DeviceInfoList m_device_info_list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -673,7 +673,7 @@ fillDevices(bool is_verbose)
       hipUUID device_uuid;
       ARCCORE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      impl::printUUID(device_uuid_ostr, device_uuid.bytes);
+      Impl::printUUID(device_uuid_ostr, device_uuid.bytes);
       o << device_uuid_ostr.str();
       o << "\n";
     }
@@ -750,8 +750,8 @@ extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane::Accelerator::Hip;
-  Arcane::Accelerator::impl::setUsingHIPRuntime(true);
-  Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
+  Arcane::Accelerator::Impl::setUsingHIPRuntime(true);
+  Arcane::Accelerator::Impl::setHIPRunQueueRuntime(&global_hip_runtime);
   initializeHipMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_hip_memory_allocator);

@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ class ARCCORE_COMMON_EXPORT HostRunQueueStream
     MemoryUtils::copyHost(args.destination(), args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
-  Impl::NativeStream nativeStream() override { return {}; }
+  NativeStream nativeStream() override { return {}; }
   bool _barrierNoException() override { return false; }
 
  private:

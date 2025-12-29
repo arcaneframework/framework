@@ -777,7 +777,7 @@ _executeTestMemoryCopy()
   info() << "Execute Test MemoryCopy";
   eMemoryRessource source_mem = eMemoryRessource::Host;
   eMemoryRessource dest_mem = eMemoryRessource::Host;
-  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+  if (isAcceleratorPolicy(m_runner.executionPolicy()))
     dest_mem = eMemoryRessource::Device;
 
   const int nb_value = 100000;

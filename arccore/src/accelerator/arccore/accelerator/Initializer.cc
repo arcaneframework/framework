@@ -57,11 +57,11 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
     init_info.setIsUsingAcceleratorRuntime(true);
     int r = Impl::RuntimeLoader::loadRuntime(init_info, default_runtime_name, library_path, has_accelerator);
     if (r == 0) {
-      if (impl::isUsingCUDARuntime())
+      if (Impl::isUsingCUDARuntime())
         m_policy = eExecutionPolicy::CUDA;
-      else if (impl::isUsingHIPRuntime())
+      else if (Impl::isUsingHIPRuntime())
         m_policy = eExecutionPolicy::HIP;
-      else if (impl::isUsingHIPRuntime())
+      else if (Impl::isUsingHIPRuntime())
         m_policy = eExecutionPolicy::SYCL;
     }
   }

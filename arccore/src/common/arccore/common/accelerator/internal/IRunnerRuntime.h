@@ -19,7 +19,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -44,8 +44,8 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
   virtual void barrier() = 0;
   virtual eExecutionPolicy executionPolicy() const = 0;
   virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;
-  virtual impl::IRunQueueEventImpl* createEventImpl() = 0;
-  virtual impl::IRunQueueEventImpl* createEventImplWithTimer() = 0;
+  virtual IRunQueueEventImpl* createEventImpl() = 0;
+  virtual IRunQueueEventImpl* createEventImplWithTimer() = 0;
   virtual void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void setCurrentDevice(DeviceId device_id) = 0;
@@ -59,9 +59,9 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
   virtual void pushProfilerRange([[maybe_unused]] const String& name, [[maybe_unused]] Int32 color_gdb) {}
   virtual void popProfilerRange() {}
   virtual void finalize(ITraceMng*) {}
-  virtual Impl::KernelLaunchArgs computeKernalLaunchArgs(const Impl::KernelLaunchArgs& orig_args,
-                                                         const void* kernel_ptr,
-                                                         Int64 total_loop_size);
+  virtual KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                                   const void* kernel_ptr,
+                                                   Int64 total_loop_size);
 
  protected:
 
@@ -75,7 +75,7 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
