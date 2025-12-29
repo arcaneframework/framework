@@ -50,7 +50,7 @@ class ARCCORE_COMMON_EXPORT ProfileRegion
 
  private:
 
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  Impl::IRunnerRuntime* m_runtime = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

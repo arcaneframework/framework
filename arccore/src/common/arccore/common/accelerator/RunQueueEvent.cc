@@ -30,14 +30,14 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class RunQueueEvent::Impl
+class RunQueueEvent::InternalImpl
 {
  public:
 
-  explicit Impl(impl::IRunQueueEventImpl* p)
+  explicit InternalImpl(Impl::IRunQueueEventImpl* p)
   : m_impl(p)
   {}
-  ~Impl()
+  ~InternalImpl()
   {
     delete m_impl;
   }
@@ -57,7 +57,7 @@ class RunQueueEvent::Impl
 
  public:
 
-  impl::IRunQueueEventImpl* m_impl = nullptr;
+  Impl::IRunQueueEventImpl* m_impl = nullptr;
 
  private:
 
@@ -78,7 +78,7 @@ RunQueueEvent()
 
 RunQueueEvent::
 RunQueueEvent(const Runner& runner)
-: m_p(new Impl(runner._impl()->_createEvent()))
+: m_p(new InternalImpl(runner._impl()->_createEvent()))
 {
 }
 
@@ -153,7 +153,7 @@ hasPendingWork() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunQueueEventImpl* RunQueueEvent::
+Impl::IRunQueueEventImpl* RunQueueEvent::
 _internalEventImpl() const
 {
   ARCCORE_FATAL_IF((!m_p),"Invalid usage of null RunQueueEvent");

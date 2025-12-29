@@ -35,7 +35,7 @@ namespace Arcane::Accelerator
 class ARCCORE_COMMON_EXPORT PointerAttribute
 {
   // Seule cette classe peut construire une instance
-  friend impl::IRunnerRuntime;
+  friend Impl::IRunnerRuntime;
 
  public:
 

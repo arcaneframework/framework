@@ -51,23 +51,23 @@ namespace Arcane::Accelerator
 namespace
 {
   bool global_is_using_cuda_runtime = false;
-  impl::IRunnerRuntime* global_cuda_runqueue_runtime = nullptr;
+  Impl::IRunnerRuntime* global_cuda_runqueue_runtime = nullptr;
   bool global_is_using_hip_runtime = false;
-  impl::IRunnerRuntime* global_hip_runqueue_runtime = nullptr;
+  Impl::IRunnerRuntime* global_hip_runqueue_runtime = nullptr;
   bool global_is_using_sycl_runtime = false;
-  impl::IRunnerRuntime* global_sycl_runqueue_runtime = nullptr;
+  Impl::IRunnerRuntime* global_sycl_runqueue_runtime = nullptr;
 } // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_COMMON_EXPORT bool impl::
+extern "C++" ARCCORE_COMMON_EXPORT bool Impl::
 isUsingCUDARuntime()
 {
   return global_is_using_cuda_runtime;
 }
 
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setUsingCUDARuntime(bool v)
 {
   global_is_using_cuda_runtime = v;
@@ -77,14 +77,14 @@ setUsingCUDARuntime(bool v)
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation CUDA de RunQueue
-extern "C++" ARCCORE_COMMON_EXPORT impl::IRunnerRuntime* impl::
+extern "C++" ARCCORE_COMMON_EXPORT Impl::IRunnerRuntime* Impl::
 getCUDARunQueueRuntime()
 {
   return global_cuda_runqueue_runtime;
 }
 
 //! Positionne l'implémentation CUDA de RunQueue.
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setCUDARunQueueRuntime(IRunnerRuntime* v)
 {
   global_cuda_runqueue_runtime = v;
@@ -93,13 +93,13 @@ setCUDARunQueueRuntime(IRunnerRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_COMMON_EXPORT bool impl::
+extern "C++" ARCCORE_COMMON_EXPORT bool Impl::
 isUsingHIPRuntime()
 {
   return global_is_using_hip_runtime;
 }
 
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setUsingHIPRuntime(bool v)
 {
   global_is_using_hip_runtime = v;
@@ -109,15 +109,15 @@ setUsingHIPRuntime(bool v)
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation HIP de RunQueue
-extern "C++" ARCCORE_COMMON_EXPORT impl::IRunnerRuntime* impl::
+extern "C++" ARCCORE_COMMON_EXPORT Impl::IRunnerRuntime* Impl::
 getHIPRunQueueRuntime()
 {
   return global_hip_runqueue_runtime;
 }
 
 //! Positionne l'implémentation HIP de RunQueue.
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
-setHIPRunQueueRuntime(impl::IRunnerRuntime* v)
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
+setHIPRunQueueRuntime(Impl::IRunnerRuntime* v)
 {
   global_hip_runqueue_runtime = v;
 }
@@ -125,13 +125,13 @@ setHIPRunQueueRuntime(impl::IRunnerRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_COMMON_EXPORT bool impl::
+extern "C++" ARCCORE_COMMON_EXPORT bool Impl::
 isUsingSYCLRuntime()
 {
   return global_is_using_sycl_runtime;
 }
 
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setUsingSYCLRuntime(bool v)
 {
   global_is_using_sycl_runtime = v;
@@ -140,14 +140,14 @@ setUsingSYCLRuntime(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_COMMON_EXPORT impl::IRunnerRuntime* impl::
+extern "C++" ARCCORE_COMMON_EXPORT Impl::IRunnerRuntime* Impl::
 getSYCLRunQueueRuntime()
 {
   return global_hip_runqueue_runtime;
 }
 
-extern "C++" ARCCORE_COMMON_EXPORT void impl::
-setSYCLRunQueueRuntime(impl::IRunnerRuntime* v)
+extern "C++" ARCCORE_COMMON_EXPORT void Impl::
+setSYCLRunQueueRuntime(Impl::IRunnerRuntime* v)
 {
   global_hip_runqueue_runtime = v;
 }
@@ -218,7 +218,7 @@ operator<<(std::ostream& o, ePointerMemoryType mem_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" impl::IRunnerRuntime* impl::
+extern "C++" Impl::IRunnerRuntime* Impl::
 getAcceleratorRunnerRuntime()
 {
   if (isUsingCUDARuntime())
@@ -233,7 +233,7 @@ getAcceleratorRunnerRuntime()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ePointerAccessibility impl::RuntimeStaticInfo::
+ePointerAccessibility Impl::RuntimeStaticInfo::
 getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr)
 {
   // Regarde si le pointeur est accessible pour la politique d'exécution donnée.
@@ -264,7 +264,7 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::RuntimeStaticInfo::
+void Impl::RuntimeStaticInfo::
 checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
                           const char* name, const TraceInfo& ti)
 {
@@ -288,20 +288,20 @@ checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
 extern "C++" ePointerAccessibility
 getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr)
 {
-  return impl::RuntimeStaticInfo::getPointerAccessibility(policy, ptr, ptr_attr);
+  return Impl::RuntimeStaticInfo::getPointerAccessibility(policy, ptr, ptr_attr);
 }
 
-void impl::
+void Impl::
 arcaneCheckPointerIsAccessible(eExecutionPolicy policy, const void* ptr,
                                const char* name, const TraceInfo& ti)
 {
-  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(policy, ptr, name, ti);
+  return Impl::RuntimeStaticInfo::checkPointerIsAcccessible(policy, ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::
+void Impl::
 printUUID(std::ostream& o, char bytes[16])
 {
   static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };

@@ -45,8 +45,8 @@ class ARCCORE_COMMON_EXPORT RunQueueEvent
   friend RunQueueEvent makeEvent(const Runner& runner);
   friend Ref<RunQueueEvent> makeEventRef(const Runner& runner);
   friend RunQueue;
-  friend impl::RunQueueImpl;
-  class Impl;
+  friend Impl::RunQueueImpl;
+  class InternalImpl;
 
  private:
 
@@ -84,11 +84,11 @@ class ARCCORE_COMMON_EXPORT RunQueueEvent
 
  private:
 
-  impl::IRunQueueEventImpl* _internalEventImpl() const;
+  Impl::IRunQueueEventImpl* _internalEventImpl() const;
 
  private:
 
-  AutoRef2<Impl> m_p;
+  AutoRef2<InternalImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

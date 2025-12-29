@@ -27,7 +27,7 @@
 // en mémoire unifiée. A priori le problème se pose avec atomicMin, atomicMax,
 // atomicInc. Par contre atomicAdd a l'air de fonctionner.
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 __device__ __forceinline__ unsigned int getThreadId()
@@ -129,7 +129,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
 
     // reduce each warp
     for (int i = 1; i < WARP_SIZE; i *= 2) {
-      T rhs = impl::shfl_xor_sync(temp, i);
+      T rhs = Impl::shfl_xor_sync(temp, i);
       ReduceOperator::combine(temp, rhs);
     }
   }
@@ -138,7 +138,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
     // reduce each warp
     for (int i = 1; i < WARP_SIZE; i *= 2) {
       int srcLane = threadId ^ i;
-      T rhs = impl::shfl_sync(temp, srcLane);
+      T rhs = Impl::shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads) {
         ReduceOperator::combine(temp, rhs);
@@ -170,7 +170,7 @@ ARCCORE_DEVICE inline T block_reduce(T val)
         temp = ReduceOperator::identity();
       }
       for (int i = 1; i < WARP_SIZE; i *= 2) {
-        T rhs = impl::shfl_xor_sync(temp, i);
+        T rhs = Impl::shfl_xor_sync(temp, i);
         ReduceOperator::combine(temp, rhs);
       }
     }
@@ -291,7 +291,7 @@ _applyDeviceGeneric(const ReduceDeviceInfo<typename ReduceOperator::DataType>& d
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // End namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

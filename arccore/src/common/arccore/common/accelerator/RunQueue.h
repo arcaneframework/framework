@@ -244,7 +244,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  public:
 
-  impl::RunQueueImpl* _internalImpl() const;
+  Impl::RunQueueImpl* _internalImpl() const;
 
  private:
 
@@ -254,13 +254,13 @@ class ARCCORE_COMMON_EXPORT RunQueue
   RunQueue(const Runner& runner, bool);
   //! Créé une file associée à \a runner avec les paramètres \a bi
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
-  explicit RunQueue(impl::RunQueueImpl* p);
+  explicit RunQueue(Impl::RunQueueImpl* p);
 
  private:
 
-  impl::IRunnerRuntime* _internalRuntime() const;
-  impl::IRunQueueStream* _internalStream() const;
-  impl::RunCommandImpl* _getCommandImpl() const;
+  Impl::IRunnerRuntime* _internalRuntime() const;
+  Impl::IRunQueueStream* _internalStream() const;
+  Impl::RunCommandImpl* _getCommandImpl() const;
   Impl::NativeStream _internalNativeStream() const;
   void _checkNotNull() const;
 
@@ -270,7 +270,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  private:
 
-  AutoRef2<impl::RunQueueImpl> m_p;
+  AutoRef2<Impl::RunQueueImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

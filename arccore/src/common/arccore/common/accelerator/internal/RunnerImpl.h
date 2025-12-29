@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -40,8 +40,8 @@ class RunQueueImplStack
 
   bool empty() const { return m_stack.empty(); }
   void pop() { m_stack.pop(); }
-  impl::RunQueueImpl* top() { return m_stack.top(); }
-  void push(impl::RunQueueImpl* v) { m_stack.push(v); }
+  RunQueueImpl* top() { return m_stack.top(); }
+  void push(RunQueueImpl* v) { m_stack.push(v); }
 
  public:
 
@@ -49,7 +49,7 @@ class RunQueueImplStack
 
  private:
 
-  std::stack<impl::RunQueueImpl*> m_stack;
+  std::stack<RunQueueImpl*> m_stack;
   std::atomic<Int32> m_nb_created = -1;
   RunnerImpl* m_runner_impl = nullptr;
 };
@@ -116,7 +116,7 @@ class RunnerImpl
     return static_cast<double>(x) / 1.0e9;
   }
 
-  impl::IRunnerRuntime* runtime() const { return m_runtime; }
+  IRunnerRuntime* runtime() const { return m_runtime; }
   bool isAutoPrefetchCommand() const { return m_is_auto_prefetch_command; }
 
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
@@ -141,7 +141,7 @@ class RunnerImpl
   const eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
   DeviceInfo m_device_info;
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  IRunnerRuntime* m_runtime = nullptr;
   RunQueueImplStack m_run_queue_pool;
   std::mutex m_pool_mutex;
   /*!
@@ -164,7 +164,7 @@ class RunnerImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

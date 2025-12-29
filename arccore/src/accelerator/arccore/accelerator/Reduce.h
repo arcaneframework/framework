@@ -45,7 +45,7 @@ namespace Arcane::impl
 class HostReducerHelper;
 }
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 class KernelReducerHelper;
 
@@ -278,7 +278,7 @@ class ReduceFunctorMin
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -322,7 +322,7 @@ class HostDeviceReducerBase
     m_atomic_value = m_local_value;
     m_atomic_parent_value = &m_atomic_value;
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
-    m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
+    m_memory_impl = Impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl) {
       m_memory_impl->allocateReduceDataMemory(sizeof(DataType));
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
@@ -376,14 +376,14 @@ class HostDeviceReducerBase
 
  protected:
 
-  impl::IReduceMemoryImpl* m_memory_impl = nullptr;
+  Impl::IReduceMemoryImpl* m_memory_impl = nullptr;
   /*!
    * \brief Pointeur vers la donnée qui contiendra la valeur réduite.
    *
    * Cette valeur est uniquement valide si la réduction a lieu sur l'hôte.
    */
   DataType* m_host_memory_for_reduced_value = nullptr;
-  impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
+  Impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
 
   mutable DataType m_local_value;
   DataType* m_atomic_parent_value = nullptr;
@@ -436,7 +436,7 @@ class HostDeviceReducerBase
     DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
     SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
 
-    impl::ReduceDeviceInfo<DataType> dvi;
+    Impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
@@ -634,9 +634,9 @@ template <typename DataType, typename ReduceFunctor> using Reducer = HostDeviceR
  */
 template <typename DataType>
 class ReducerSum
-: public Reducer<DataType, impl::ReduceFunctorSum<DataType>>
+: public Reducer<DataType, Impl::ReduceFunctorSum<DataType>>
 {
-  using BaseClass = Reducer<DataType, impl::ReduceFunctorSum<DataType>>;
+  using BaseClass = Reducer<DataType, Impl::ReduceFunctorSum<DataType>>;
   using BaseClass::m_local_value;
 
  public:
@@ -666,9 +666,9 @@ class ReducerSum
  */
 template <typename DataType>
 class ReducerMax
-: public Reducer<DataType, impl::ReduceFunctorMax<DataType>>
+: public Reducer<DataType, Impl::ReduceFunctorMax<DataType>>
 {
-  using BaseClass = Reducer<DataType, impl::ReduceFunctorMax<DataType>>;
+  using BaseClass = Reducer<DataType, Impl::ReduceFunctorMax<DataType>>;
   using BaseClass::m_local_value;
 
  public:
@@ -701,9 +701,9 @@ class ReducerMax
  */
 template <typename DataType>
 class ReducerMin
-: public Reducer<DataType, impl::ReduceFunctorMin<DataType>>
+: public Reducer<DataType, Impl::ReduceFunctorMin<DataType>>
 {
-  using BaseClass = Reducer<DataType, impl::ReduceFunctorMin<DataType>>;
+  using BaseClass = Reducer<DataType, Impl::ReduceFunctorMin<DataType>>;
   using BaseClass::m_local_value;
 
  public:
@@ -736,9 +736,9 @@ class ReducerMin
  */
 template <typename DataType>
 class ReducerSum2
-: public HostDeviceReducer2<DataType, impl::ReduceFunctorSum<DataType>>
+: public HostDeviceReducer2<DataType, Impl::ReduceFunctorSum<DataType>>
 {
-  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorSum<DataType>>;
+  using BaseClass = HostDeviceReducer2<DataType, Impl::ReduceFunctorSum<DataType>>;
 
  public:
 
@@ -761,9 +761,9 @@ class ReducerSum2
  */
 template <typename DataType>
 class ReducerMax2
-: public HostDeviceReducer2<DataType, impl::ReduceFunctorMax<DataType>>
+: public HostDeviceReducer2<DataType, Impl::ReduceFunctorMax<DataType>>
 {
-  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorMax<DataType>>;
+  using BaseClass = HostDeviceReducer2<DataType, Impl::ReduceFunctorMax<DataType>>;
 
  public:
 
@@ -787,9 +787,9 @@ class ReducerMax2
  */
 template <typename DataType>
 class ReducerMin2
-: public HostDeviceReducer2<DataType, impl::ReduceFunctorMin<DataType>>
+: public HostDeviceReducer2<DataType, Impl::ReduceFunctorMin<DataType>>
 {
-  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorMin<DataType>>;
+  using BaseClass = HostDeviceReducer2<DataType, Impl::ReduceFunctorMin<DataType>>;
 
  public:
 
