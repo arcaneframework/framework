@@ -14,8 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/internal/PropertyDeclarations.h"
+#include "arccore/common/internal/PropertyDeclarations.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 #include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"

@@ -25,7 +25,7 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IProcessorAffinityService.h"
 #include "arcane/utils/IProfilingService.h"
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/internal/Property.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IVariableMng.h"

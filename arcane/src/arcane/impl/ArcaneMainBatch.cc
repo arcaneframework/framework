@@ -35,7 +35,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/CriticalSection.h"
 #include "arcane/utils/internal/ParameterListPropertyReader.h"
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/internal/Property.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"

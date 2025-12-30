@@ -19,7 +19,7 @@
  */
 
 #include "arcane/core/IConfiguration.h"
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

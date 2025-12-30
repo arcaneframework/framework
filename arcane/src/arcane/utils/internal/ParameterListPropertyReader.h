@@ -18,8 +18,8 @@
  * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
  */
 
-#include "arcane/utils/ParameterList.h"
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/ParameterList.h"
+#include "arccore/common/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
