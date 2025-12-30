@@ -28,18 +28,16 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Int64
-_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int32 nb_value, Int32 nb_part, Int32 nb_loop)
+_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
+                  Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async)
 {
-  std::cout << "Sizeof (ReducerSum2<Int64>) = " << sizeof(ReducerSum2<Int64>)
-            << " nb_part=" << nb_part
-            << " nb_value=" << nb_value << "\n";
-
+  queue.setAsync(is_async);
   Int64 total_x = {};
-  double x = Platform::getRealTime();
   if ((nb_value % nb_part) != 0)
     ARCCORE_FATAL("{0} is not a multiple of {1}", nb_value, nb_part);
   Int32 nb_true_value = nb_value / nb_part;
   Int32 offset = nb_true_value;
+  double x = Platform::getRealTime();
   {
     SmallSpan<const Int64> c_view(c);
     for (int j = 0; j < nb_loop; ++j) {
@@ -60,7 +58,10 @@ _testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int
   Int64 nb_byte = c.size() * sizeof(Int64) * nb_loop;
   Real diff = y - x;
   Real nb_giga_byte_second = (static_cast<Real>(nb_byte) / 1.0e9) / diff;
-  std::cout << "** TotalReduceDirect=" << total_x << " GB/s=" << nb_giga_byte_second << " time=" << diff << "\n";
+  std::cout << "** TotalReduceDirect=" << total_x << " async?=" << is_async
+            << " nb_part=" << nb_part << " nb_value=" << nb_value
+            << " nb_thread=" << nb_thread
+            << " GB/s=" << nb_giga_byte_second << " time=" << diff << "\n";
   return total_x;
 }
 
