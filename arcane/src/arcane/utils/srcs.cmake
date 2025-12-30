@@ -313,9 +313,7 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
 
   internal/ApplicationInfoProperties.h
-  internal/JSONPropertyReader.h
   internal/ParameterCaseOption.h
-  internal/ParameterListPropertyReader.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h

@@ -34,7 +34,7 @@
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/CriticalSection.h"
-#include "arcane/utils/internal/ParameterListPropertyReader.h"
+#include "arccore/common/internal/ParameterListPropertyReader.h"
 #include "arccore/common/internal/Property.h"
 
 #include "arcane/impl/ArcaneMain.h"
