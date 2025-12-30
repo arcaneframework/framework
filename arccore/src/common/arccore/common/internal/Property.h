@@ -9,18 +9,14 @@
 /*                                                                           */
 /* Gestion des propriétés.                                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_PROPERTY_H
-#define ARCANE_UTILS_INTERNAL_PROPERTY_H
+#ifndef ARCCORE_COMMON_INTERNAL_PROPERTY_H
+#define ARCCORE_COMMON_INTERNAL_PROPERTY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*
- * NOTE: Les classes de ce fichier sont en cours de mise au point.
- * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
- */
 
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/internal/PropertyDeclarations.h"
+#include "arccore/base/String.h"
+#include "arccore/base/Ref.h"
+#include "arccore/common/internal/PropertyDeclarations.h"
 
 #include <iosfwd>
 #include <functional>
@@ -34,75 +30,81 @@ namespace Arcane::properties
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T,typename DataType>
+template <typename T, typename DataType>
 class PropertySetting;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-class PropertySettingTraits {};
+class PropertySettingTraits
+{};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <>
-class ARCANE_UTILS_EXPORT PropertySettingTraits<String>
+class ARCCORE_COMMON_EXPORT PropertySettingTraits<String>
 {
  public:
+
   typedef StringView InputType;
   typedef String OutputType;
   static InputType fromJSON(const JSONValue& jv);
   static InputType fromString(const String& v);
-  static void print(std::ostream& o,InputType v);
+  static void print(std::ostream& o, InputType v);
   static const char* typeName() { return "String"; }
 };
 
 template <>
-class ARCANE_UTILS_EXPORT PropertySettingTraits<StringList>
+class ARCCORE_COMMON_EXPORT PropertySettingTraits<StringList>
 {
  public:
+
   typedef StringList InputType;
-  typedef StringCollection OutputType;
+  typedef Collection<String> OutputType;
   static InputType fromJSON(const JSONValue& jv);
   static InputType fromString(const String& v);
-  static void print(std::ostream& o,StringCollection v);
+  static void print(std::ostream& o, Collection<String> v);
   static const char* typeName() { return "StringList"; }
 };
 
 template <>
-class ARCANE_UTILS_EXPORT PropertySettingTraits<bool>
+class ARCCORE_COMMON_EXPORT PropertySettingTraits<bool>
 {
  public:
+
   typedef bool InputType;
   typedef bool OutputType;
   static InputType fromJSON(const JSONValue& jv);
   static InputType fromString(const String& v);
-  static void print(std::ostream& o,InputType v);
+  static void print(std::ostream& o, InputType v);
   static const char* typeName() { return "Bool"; }
 };
 
 template <>
-class ARCANE_UTILS_EXPORT PropertySettingTraits<Int32>
+class ARCCORE_COMMON_EXPORT PropertySettingTraits<Int32>
 {
  public:
+
   typedef Int32 InputType;
   typedef Int32 OutputType;
   static InputType fromJSON(const JSONValue& jv);
   static InputType fromString(const String& v);
-  static void print(std::ostream& o,InputType v);
+  static void print(std::ostream& o, InputType v);
   static const char* typeName() { return "Int32"; }
 };
 
 template <>
-class ARCANE_UTILS_EXPORT PropertySettingTraits<Int64>
+class ARCCORE_COMMON_EXPORT PropertySettingTraits<Int64>
 {
  public:
+
   typedef Int64 InputType;
   typedef Int64 OutputType;
   static InputType fromJSON(const JSONValue& jv);
   static InputType fromString(const String& v);
-  static void print(std::ostream& o,InputType v);
+  static void print(std::ostream& o, InputType v);
   static const char* typeName() { return "Int64"; }
 };
 
@@ -111,19 +113,22 @@ class ARCANE_UTILS_EXPORT PropertySettingTraits<Int64>
 /*!
  * \brief Interface d'un paramètre de propriété.
  */
-class ARCANE_UTILS_EXPORT IPropertySetting
+class ARCCORE_COMMON_EXPORT IPropertySetting
 {
  public:
+
   virtual ~IPropertySetting() = default;
+
  public:
+
   //! Nom de la propriété
-  virtual String name() const =0;
+  virtual String name() const = 0;
   //! Type de la propriété
-  virtual String typeName() const =0;
+  virtual String typeName() const = 0;
   //! Nom de l'argument de la ligne de commande (nul si aucun)
-  virtual String commandLineArgument() const =0;
+  virtual String commandLineArgument() const = 0;
   //! Description de la propriété
-  virtual String description() const =0;
+  virtual String description() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -135,39 +140,41 @@ template <typename T>
 class PropertySettingBase
 {
  public:
-  virtual IPropertySetting* setting() =0;
-  virtual const IPropertySetting* setting() const =0;
-  virtual void setFromJSON(const JSONValue& v,T& instance) const =0;
-  virtual void setFromString(const String& v,T& instance) const =0;
-  virtual void print(std::ostream& o, const T& instance) const =0;
+
+  virtual IPropertySetting* setting() = 0;
+  virtual const IPropertySetting* setting() const = 0;
+  virtual void setFromJSON(const JSONValue& v, T& instance) const = 0;
+  virtual void setFromString(const String& v, T& instance) const = 0;
+  virtual void print(std::ostream& o, const T& instance) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class PropertySettingBuilder
 {
  public:
-  PropertySetting<T,String> addString(StringView name)
+
+  PropertySetting<T, String> addString(StringView name)
   {
-    return PropertySetting<T,String>(name);
+    return PropertySetting<T, String>(name);
   }
-  PropertySetting<T,StringList> addStringList(StringView name)
+  PropertySetting<T, StringList> addStringList(StringView name)
   {
-    return PropertySetting<T,StringList>(name);
+    return PropertySetting<T, StringList>(name);
   }
-  PropertySetting<T,bool> addBool(StringView name)
+  PropertySetting<T, bool> addBool(StringView name)
   {
-    return PropertySetting<T,bool>(name);
+    return PropertySetting<T, bool>(name);
   }
-  PropertySetting<T,Int64> addInt64(StringView name)
+  PropertySetting<T, Int64> addInt64(StringView name)
   {
-    return PropertySetting<T,Int64>(name);
+    return PropertySetting<T, Int64>(name);
   }
-  PropertySetting<T,Int32> addInt32(StringView name)
+  PropertySetting<T, Int32> addInt32(StringView name)
   {
-    return PropertySetting<T,Int32>(name);
+    return PropertySetting<T, Int32>(name);
   }
 };
 
@@ -176,11 +183,12 @@ class PropertySettingBuilder
 /*!
  * \brief Interface d'un visiteur sur une propriété.
  */
-class ARCANE_UTILS_EXPORT IPropertyVisitor
+class ARCCORE_COMMON_EXPORT IPropertyVisitor
 {
  public:
+
   virtual ~IPropertyVisitor() = default;
-  virtual void visit(const IPropertySetting* ps) =0;
+  virtual void visit(const IPropertySetting* ps) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -188,73 +196,104 @@ class ARCANE_UTILS_EXPORT IPropertyVisitor
 /*!
  * \brief Classe de base d'un visiteur typé sur une propriété.
  */
-template<typename T>
+template <typename T>
 class PropertyVisitor
 {
  public:
-  virtual void visit(const PropertySettingBase<T>&) =0;
+
+  virtual void visit(const PropertySettingBase<T>&) = 0;
+
  public:
+
   PropertySettingBuilder<T> builder()
   {
     return PropertySettingBuilder<T>();
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class GenericPropertyVisitorWrapper
 : public PropertyVisitor<T>
 {
  public:
-  GenericPropertyVisitorWrapper(IPropertyVisitor* pv) : m_visitor(pv) {}
+
+  GenericPropertyVisitorWrapper(IPropertyVisitor* pv)
+  : m_visitor(pv)
+  {}
+
  public:
+
   void visit(const PropertySettingBase<T>& p) override
   {
     m_visitor->visit(p.setting());
   }
+
  private:
+
   IPropertyVisitor* m_visitor;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T,typename DataType>
+template <typename T, typename DataType>
 class PropertySetting
 : public PropertySettingBase<T>
 , public IPropertySetting
 {
  public:
-  typedef PropertySetting<T,DataType> ThatClass;
+
+  typedef PropertySetting<T, DataType> ThatClass;
   typedef PropertySettingTraits<DataType> SettingsTraits;
   typedef typename SettingsTraits::InputType InputType;
   typedef typename SettingsTraits::OutputType OutputType;
+
  public:
+
   class SetterArg
   {
    public:
-    SetterArg(T& ax,InputType av) : x(ax), v(av){}
+
+    SetterArg(T& ax, InputType av)
+    : x(ax)
+    , v(av)
+    {}
     T& x;
     InputType v;
   };
   class GetterArg
   {
    public:
-    GetterArg(const T& ax) : x(ax){}
+
+    GetterArg(const T& ax)
+    : x(ax)
+    {}
     const T& x;
   };
+
  public:
+
   typedef std::function<void(SetterArg a)> SetterType;
   typedef std::function<OutputType(GetterArg a)> GetterType;
+
  public:
-  PropertySetting(StringView name,GetterType getter,SetterType setter)
-  : m_name(name), m_getter(getter), m_setter(setter) {}
+
+  PropertySetting(StringView name, GetterType getter, SetterType setter)
+  : m_name(name)
+  , m_getter(getter)
+  , m_setter(setter)
+  {}
   PropertySetting(StringView name)
-  : m_name(name), m_getter(nullptr), m_setter(nullptr) {}
+  : m_name(name)
+  , m_getter(nullptr)
+  , m_setter(nullptr)
+  {}
+
  public:
+
   IPropertySetting* setting() final
   {
     return this;
@@ -299,25 +338,25 @@ class PropertySetting
     m_description = arg;
     return (*this);
   }
-  void setInstanceValue(T& instance,InputType value) const
+  void setInstanceValue(T& instance, InputType value) const
   {
-    m_setter(SetterArg(instance,value));
+    m_setter(SetterArg(instance, value));
   }
-  void setFromJSON(const JSONValue& v,T& instance) const override
+  void setFromJSON(const JSONValue& v, T& instance) const override
   {
     InputType x1 = SettingsTraits::fromJSON(v);
-    setInstanceValue(instance,x1);
+    setInstanceValue(instance, x1);
   }
-  void setFromString(const String& v,T& instance) const override
+  void setFromString(const String& v, T& instance) const override
   {
     InputType x1 = SettingsTraits::fromString(v);
-    setInstanceValue(instance,x1);
+    setInstanceValue(instance, x1);
   }
   void print(std::ostream& o, const T& instance) const override
   {
     o << "PROP: name=" << m_name << " V=";
     if (m_getter)
-      SettingsTraits::print(o,m_getter(GetterArg(instance)));
+      SettingsTraits::print(o, m_getter(GetterArg(instance)));
     else
       o << "?";
     o << "\n";
@@ -327,7 +366,9 @@ class PropertySetting
     o.visit(me);
     return o;
   }
+
  private:
+
   String m_name;
   GetterType m_getter;
   SetterType m_setter;
@@ -338,42 +379,48 @@ class PropertySetting
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT PropertySettingsBuildInfo
+class ARCCORE_COMMON_EXPORT PropertySettingsBuildInfo
 {
 };
 
-class ARCANE_UTILS_EXPORT IPropertySettingsInfo
+class ARCCORE_COMMON_EXPORT IPropertySettingsInfo
 {
  public:
+
   virtual ~IPropertySettingsInfo() = default;
+
  public:
-  virtual void applyVisitor(IPropertyVisitor* v) =0;
+
+  virtual void applyVisitor(IPropertyVisitor* v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class PropertySettingsInfo
+template <typename T> class PropertySettingsInfo
 : public IPropertySettingsInfo
 {
  public:
-  PropertySettingsInfo(const PropertySettingsBuildInfo& sbi)
+
+  explicit PropertySettingsInfo([[maybe_unused]] const PropertySettingsBuildInfo& sbi)
   {
-    ARCANE_UNUSED(sbi);
   }
+
  public:
+
   static PropertySettingsInfo*
-  create(const PropertySettingsBuildInfo& sbi,const char* filename,int line)
+  create(const PropertySettingsBuildInfo& sbi, [[maybe_unused]] const char* filename,
+         [[maybe_unused]] int line)
   {
-    ARCANE_UNUSED(filename);
-    ARCANE_UNUSED(line);
     auto x = new PropertySettingsInfo<T>(sbi);
     return x;
   }
+
  public:
+
   void applyVisitor(IPropertyVisitor* pv) override
   {
-    T :: applyPropertyVisitor(pv);
+    T ::applyPropertyVisitor(pv);
   }
 };
 
@@ -382,7 +429,7 @@ template<typename T> class PropertySettingsInfo
 /*!
  * \brief Enregistreur de paramètres de propriétés
  */
-class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
+class ARCCORE_COMMON_EXPORT PropertySettingsRegisterer
 {
  public:
 
@@ -391,8 +438,8 @@ class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
 
  public:
 
-  PropertySettingsRegisterer(CreateFunc func,CreateBuildInfoFunc build_info_func,
-                             const char* name) ARCANE_NOEXCEPT;
+  PropertySettingsRegisterer(CreateFunc func, CreateBuildInfoFunc build_info_func,
+                             const char* name) ARCCORE_NOEXCEPT;
 
  public:
 
@@ -417,7 +464,7 @@ class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
 
  private:
 
-  //! Positionne l'enregistreur précédent 
+  //! Positionne l'enregistreur précédent
   void _setPreviousRegisterer(PropertySettingsRegisterer* s) { m_previous = s; }
 
   //! Positionne l'enregistreur suivant
@@ -433,9 +480,9 @@ class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
  private:
 
   //! Nom de l'enregistreur
-  const char* m_name;
+  const char* m_name = nullptr;
   //! Fonction de création
-  CreateFunc m_create_func;
+  CreateFunc m_create_func = nullptr;
 
  private:
 
@@ -448,15 +495,15 @@ class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
  * \brief Applique un visiteur à tous les 'IPropertySetting' enregistrés
  * via 'PropertySettingsRegisterer'.
  */
-extern "C++" ARCANE_UTILS_EXPORT void
+extern "C++" ARCCORE_COMMON_EXPORT void
 visitAllRegisteredProperties(IPropertyVisitor* visitor);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::properties
+} // namespace Arcane::properties
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

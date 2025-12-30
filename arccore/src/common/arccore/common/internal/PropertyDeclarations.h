@@ -9,25 +9,16 @@
 /*                                                                           */
 /* Déclaration des types et macros pour la gestion des propriétés.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_PROPERTYDECLARATIONS_H
-#define ARCANE_UTILS_INTERNAL_PROPERTYDECLARATIONS_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*
- * NOTE: Les classes de ce fichier sont en cours de mise au point.
- * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
- */
-
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/String.h"
-
+#ifndef ARCCORE_COMMON_INTERNAL_PROPERTYDECLARATIONS_H
+#define ARCCORE_COMMON_INTERNAL_PROPERTYDECLARATIONS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
-{
-class JSONValue;
-}
+#include "arccore/base/String.h"
+#include "arccore/common/CommonGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::properties
 {

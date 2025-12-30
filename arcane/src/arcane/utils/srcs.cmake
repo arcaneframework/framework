@@ -106,7 +106,6 @@ set(ARCANE_SOURCES
   PlatformUtils.cc
   PlatformUtils.h
   Profiling.h
-  Property.cc
   Ptr.cc
   Ptr.h
   Ref.h
@@ -319,8 +318,6 @@ set(ARCANE_SOURCES
   internal/ParameterListPropertyReader.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
-  internal/Property.h
-  internal/PropertyDeclarations.h
   internal/ValueConvertInternal.h
   internal/MemoryBuffer.h
   internal/ParallelLoopOptionsProperties.h

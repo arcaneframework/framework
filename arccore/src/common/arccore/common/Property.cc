@@ -11,14 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/internal/Property.h"
 
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/JSONReader.h"
-#include "arcane/utils/List.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/CheckedConvert.h"
+#include "arccore/base/Ref.h"
+#include "arccore/base/CheckedConvert.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/internal/ConvertInternal.h"
+
+#include "arccore/common/JSONReader.h"
+#include "arccore/common/List.h"
+//#include "arccore/common/ValueConvert.h"
 
 #include <cstdlib>
 
@@ -44,7 +46,7 @@ fromString(const String& v) -> InputType
 }
 
 void PropertySettingTraits<String>::
-print(std::ostream& o,InputType v)
+print(std::ostream& o, InputType v)
 {
   o << v;
 }
@@ -56,7 +58,7 @@ auto PropertySettingTraits<StringList>::
 fromJSON(const JSONValue& jv) -> InputType
 {
   StringList string_list;
-  for(JSONValue jv2 : jv.valueAsArray())
+  for (JSONValue jv2 : jv.valueAsArray())
     string_list.add(jv2.value());
   return string_list;
 }
@@ -70,10 +72,10 @@ fromString(const String& v) -> InputType
 }
 
 void PropertySettingTraits<StringList>::
-print(std::ostream& o,StringCollection v)
+print(std::ostream& o, Collection<String> v)
 {
   bool is_not_first = false;
-  for( String x : v ){
+  for (String x : v) {
     if (is_not_first)
       o << ',';
     o << x;
@@ -87,22 +89,23 @@ print(std::ostream& o,StringCollection v)
 auto PropertySettingTraits<bool>::
 fromJSON(const JSONValue& jv) -> InputType
 {
-  return jv.valueAsInt64()!=0;
+  return jv.valueAsInt64() != 0;
 }
 
 auto PropertySettingTraits<bool>::
 fromString(const String& v) -> InputType
 {
-  if (v=="0" || v=="false")
+  if (v == "0" || v == "false")
     return false;
-  if (v=="1" || v=="true")
+  if (v == "1" || v == "true")
     return true;
-  ARCANE_FATAL("Can not convert '{0}' to type bool "
-               "(valid values are '0', '1', 'true', 'false')",v);
+  ARCCORE_FATAL("Can not convert '{0}' to type bool "
+                "(valid values are '0', '1', 'true', 'false')",
+                v);
 }
 
 void PropertySettingTraits<bool>::
-print(std::ostream& o,InputType v)
+print(std::ostream& o, InputType v)
 {
   o << v;
 }
@@ -120,14 +123,14 @@ auto PropertySettingTraits<Int64>::
 fromString(const String& v) -> InputType
 {
   Int64 read_value = 0;
-  bool is_bad = builtInGetValue(read_value,v);
+  bool is_bad = Convert::Impl::StringViewToIntegral::getValue(read_value, v);
   if (is_bad)
-    ARCANE_FATAL("Can not convert '{0}' to type 'Int64' ",v);
+    ARCCORE_FATAL("Can not convert '{0}' to type 'Int64' ", v);
   return read_value;
 }
 
 void PropertySettingTraits<Int64>::
-print(std::ostream& o,InputType v)
+print(std::ostream& o, InputType v)
 {
   o << v;
 }
@@ -145,14 +148,14 @@ auto PropertySettingTraits<Int32>::
 fromString(const String& v) -> InputType
 {
   Int32 read_value = 0;
-  bool is_bad = builtInGetValue(read_value,v);
+  bool is_bad = Convert::Impl::StringViewToIntegral::getValue(read_value, v);
   if (is_bad)
-    ARCANE_FATAL("Can not convert '{0}' to type 'Int32' ",v);
+    ARCCORE_FATAL("Can not convert '{0}' to type 'Int32' ", v);
   return read_value;
 }
 
 void PropertySettingTraits<Int32>::
-print(std::ostream& o,InputType v)
+print(std::ostream& o, InputType v)
 {
   o << v;
 }
@@ -165,12 +168,12 @@ print(std::ostream& o,InputType v)
 
 namespace
 {
-PropertySettingsRegisterer* global_arcane_first_registerer = nullptr;
-Integer global_arcane_nb_registerer = 0;
-}
+  PropertySettingsRegisterer* global_arcane_first_registerer = nullptr;
+  Integer global_arcane_nb_registerer = 0;
+} // namespace
 
 PropertySettingsRegisterer::
-PropertySettingsRegisterer(CreateFunc func,CreateBuildInfoFunc, const char* name) ARCANE_NOEXCEPT
+PropertySettingsRegisterer(CreateFunc func, CreateBuildInfoFunc, const char* name) ARCCORE_NOEXCEPT
 : m_name(name)
 , m_create_func(func)
 {
@@ -183,14 +186,14 @@ PropertySettingsRegisterer(CreateFunc func,CreateBuildInfoFunc, const char* name
 void PropertySettingsRegisterer::
 _init()
 {
-  if (global_arcane_first_registerer==nullptr){
+  if (global_arcane_first_registerer == nullptr) {
     global_arcane_first_registerer = this;
     _setPreviousRegisterer(nullptr);
     _setNextRegisterer(nullptr);
   }
-  else{
+  else {
     auto* next = global_arcane_first_registerer->nextRegisterer();
-    _setNextRegisterer(global_arcane_first_registerer); 
+    _setNextRegisterer(global_arcane_first_registerer);
     global_arcane_first_registerer = this;
     if (next)
       next->_setPreviousRegisterer(this);
@@ -210,9 +213,9 @@ _init()
       std::abort();
     }
     else if (count > 0) {
-      cout << "Arcane Fatal Error: Registerer '" << m_name
-           << "' breaks registerer registration (inconsistent shortcut)\n";
-      std::abort();      
+      std::cout << "Arcane Fatal Error: Registerer '" << m_name
+                << "' breaks registerer registration (inconsistent shortcut)\n";
+      std::abort();
     }
   }
 }
@@ -242,7 +245,7 @@ Ref<IPropertySettingsInfo> PropertySettingsRegisterer::
 createSettingsInfoRef() const
 {
   IPropertySettingsInfo* s = nullptr;
-  if (m_create_func){
+  if (m_create_func) {
     PropertySettingsBuildInfo sbi;
     s = (m_create_func)(sbi);
   }
@@ -255,11 +258,10 @@ createSettingsInfoRef() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-visitAllRegisteredProperties(IPropertyVisitor* visitor)
+void visitAllRegisteredProperties(IPropertyVisitor* visitor)
 {
   auto* rs = PropertySettingsRegisterer::firstRegisterer();
-  while (rs){
+  while (rs) {
     Ref<IPropertySettingsInfo> si = rs->createSettingsInfoRef();
     si->applyVisitor(visitor);
     rs = rs->nextRegisterer();
@@ -269,7 +271,7 @@ visitAllRegisteredProperties(IPropertyVisitor* visitor)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::properties
+} // namespace Arcane::properties
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

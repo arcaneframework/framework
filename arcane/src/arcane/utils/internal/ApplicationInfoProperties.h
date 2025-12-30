@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ApplicationInfo.h"
-#include "arcane/utils/internal/PropertyDeclarations.h"
+#include "arccore/common/internal/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
