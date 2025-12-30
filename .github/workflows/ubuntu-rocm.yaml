@@ -30,7 +30,7 @@ jobs:
             full_name: 'ubuntu-22.04-rocm-5.7.1'
             rocm-version: '5.7.1'
             amdgpu-package: amdgpu-install_5.7.50701-1_all.deb
-            cmake_specific_args : ''
+            cmake_specific_args : '-DARCCORE_ENABLE_TBB=FALSE'
 
     env:
       # Indicates the CMake build directory where project files and binaries are being produced.
@@ -47,8 +47,9 @@ jobs:
       - name: Setup environment
         shell: 'bash'
         run: |
+          sudo apt-get update
           sudo apt-get install -y ninja-build
-          sudo apt-get install -y apt-utils build-essential iputils-ping libglib2.0-dev libxml2-dev
+          sudo apt-get install -y libtbb-dev libglib2.0-dev
           echo "${RUNNER_TEMP}/local_bin_dir/bin" >> $GITHUB_PATH
           echo "${RUNNER_TEMP}/local_bin_dir/cmake/bin" >> $GITHUB_PATH
           echo Path variable is: ${PATH}
