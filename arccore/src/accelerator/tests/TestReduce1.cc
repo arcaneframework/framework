@@ -27,44 +27,8 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 _testReduceDirect(RunQueue queue, Int32 nb_value, Int32 nb_loop)
-{
-  std::cout << "Sizeof (ReducerSum2<Int64>) = " << sizeof(ReducerSum2<Int64>) << "\n";
-  eMemoryResource mem = queue.memoryResource();
-  // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
-
-  // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-  NumArray<Int64, MDDim1> c(mem);
-  c.resize(nb_value);
-  {
-    auto command = makeCommand(queue);
-    auto out_c = viewOut(command, c);
-    command << RUNCOMMAND_LOOP1(iter, nb_value)
-    {
-      auto [i] = iter();
-      out_c(i) = (i + 2) + (i + 3);
-    };
-  }
-
-  Int64 total_x = {};
-  double x = Platform::getRealTime();
-  {
-    SmallSpan<const Int64> c_view(c);
-    for (int j = 0; j < nb_loop; ++j) {
-      auto command = makeCommand(queue);
-      ReducerSum2<Int64> reducer(command);
-      command << RUNCOMMAND_LOOP1(iter, nb_value, reducer)
-      {
-        reducer.combine(c_view[iter]);
-      };
-      Int64 tx = reducer.reducedValue();
-      total_x += tx;
-    }
-  }
-  double y = Platform::getRealTime();
-  std::cout << "** TotalReduceDirect=" << total_x << " time=" << (y - x) << "\n";
-  return total_x;
-}
+extern "C++" Int64
+_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int32 nb_value, Int32 nb_part, Int32 nb_loop);
 
 TEST(ArccoreAccelerator, TestReduceDirect)
 {
@@ -76,25 +40,45 @@ TEST(ArccoreAccelerator, TestReduceDirect)
   Int32 nb_loop = 1500;
   if (arccoreIsDebug())
     nb_loop /= 20;
+  //nb_loop = 1;
   Int32 nb_value = 1000000;
+  nb_value = 10000000;
   Int64 expected_value = 1000004000000;
+  expected_value = 100000040000000;
+  Int32 nb_thread = 256;
+  Int32 nb_part = 1;
 
+  eMemoryResource mem = queue.memoryResource();
+  NumArray<Int64, MDDim1> host_c(eMemoryResource::Host);
+  host_c.resize(nb_value);
   {
-    // Test avec RunQueue synchrone
-    std::cout << "Test Sync\n";
-    Int64 v = _testReduceDirect(queue, nb_value, nb_loop);
-    Int64 v2 = v /= nb_loop;
-    std::cout << "V=" << v2 << "\n";
-    ASSERT_EQ(v2, expected_value);
+    for (Int32 i = 0; i < nb_value; ++i) {
+      host_c(i) = (i + 2) + (i + 3);
+    };
   }
-  {
-    // Test avec RunQueue asynchrone
-    std::cout << "Test Asynchronous\n";
-    queue.setAsync(true);
-    Int64 v = _testReduceDirect(queue, nb_value, nb_loop);
-    Int64 v2 = v /= nb_loop;
-    std::cout << "V=" << v2 << "\n";
-    ASSERT_EQ(v2, expected_value);
+
+  NumArray<Int64, MDDim1> c(mem);
+  c.copy(host_c);
+
+  for (Int32 k = 1; k < 5; ++k) {
+    {
+      // Test avec RunQueue synchrone
+      std::cout << "Test Sync nb_part=" << nb_part << "\n";
+      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop);
+      Int64 v2 = v / nb_loop;
+      std::cout << "V=" << v2 << "\n";
+      ASSERT_EQ(v2, expected_value);
+    }
+    {
+      // Test avec RunQueue asynchrone
+      std::cout << "Test Asynchronous nb_part=" << nb_part << "\n";
+      queue.setAsync(true);
+      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop);
+      Int64 v2 = v / nb_loop;
+      std::cout << "V=" << v2 << "\n";
+      ASSERT_EQ(v2, expected_value);
+    }
+    nb_part *= 2;
   }
 }
 
