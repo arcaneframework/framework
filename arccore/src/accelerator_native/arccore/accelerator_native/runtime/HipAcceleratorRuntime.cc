@@ -635,9 +635,6 @@ fillDevices(bool is_verbose)
     o << " Runtime version = " << runtime_major << "." << (runtime_minor) << "." << (runtime_version % 100000) << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
-    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
-    o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
-    o << " sharedMemPerBlockOptin = " << dp.sharedMemPerBlockOptin << "\n";
     o << " regsPerBlock = " << dp.regsPerBlock << "\n";
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
@@ -662,6 +659,9 @@ fillDevices(bool is_verbose)
     o << " hasManagedMemory = " << has_managed_memory << "\n";
     o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
 #if HIP_VERSION_MAJOR >= 6
+    o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
+    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
+    o << " sharedMemPerBlockOptin = " << dp.sharedMemPerBlockOptin << "\n";
     o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
     o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
@@ -689,8 +689,10 @@ fillDevices(bool is_verbose)
     device_info.setWarpSize(dp.warpSize);
     device_info.setUUIDAsString(device_uuid_ostr.str());
     device_info.setSharedMemoryPerBlock(static_cast<Int32>(dp.sharedMemPerBlock));
+#if HIP_VERSION_MAJOR >= 6
     device_info.setSharedMemoryPerMultiprocessor(static_cast<Int32>(dp.sharedMemPerMultiprocessor));
     device_info.setSharedMemoryPerBlockOptin(static_cast<Int32>(dp.sharedMemPerBlockOptin));
+#endif
     device_info.setTotalConstMemory(static_cast<Int32>(dp.totalConstMem));
     device_info.setPCIDomainID(dp.pciDomainID);
     device_info.setPCIBusID(dp.pciBusID);
