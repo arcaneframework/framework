@@ -14,8 +14,9 @@
 #include "arcane/utils/ParallelLoopOptions.h"
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/internal/Property.h"
 #include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
+
+#include "arccore/common/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

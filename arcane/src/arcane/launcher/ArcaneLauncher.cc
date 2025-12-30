@@ -24,13 +24,14 @@
 #include "arcane/utils/ParameterList.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ConcurrencyUtils.h"
-#include "arcane/utils/internal/Property.h"
-#include "arcane/utils/internal/ParameterListPropertyReader.h"
-#include "arcane/utils/internal/JSONPropertyReader.h"
 #include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
 #include "arcane/utils/internal/ApplicationInfoProperties.h"
 #include "arcane/core/internal/DotNetRuntimeInitialisationInfoProperties.h"
 #include "arcane/accelerator/core/internal/AcceleratorRuntimeInitialisationInfoProperties.h"
+
+#include "arccore/common/internal/Property.h"
+#include "arccore/common/internal/ParameterListPropertyReader.h"
+#include "arccore/common/internal/JSONPropertyReader.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"

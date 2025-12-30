@@ -43,6 +43,7 @@ set(SOURCES
   ParameterList.h
   ParameterList.cc
   Process.cc
+  Property.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
@@ -52,10 +53,14 @@ set(SOURCES
 
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/JSONPropertyReader.h
   internal/MemoryPool.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
+  internal/ParameterListPropertyReader.h
   internal/Process.h
+  internal/Property.h
+  internal/PropertyDeclarations.h
   internal/SpecificMemoryCopyList.h
   internal/HostSpecificMemoryCopy.h
 

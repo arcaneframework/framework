@@ -16,7 +16,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/internal/Property.h"
+#include "arccore/common/internal/Property.h"
 #include "arcane/utils/internal/ApplicationInfoProperties.h"
 
 /*---------------------------------------------------------------------------*/
