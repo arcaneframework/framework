@@ -53,9 +53,11 @@ set(SOURCES
 
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/JSONPropertyReader.h
   internal/MemoryPool.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
+  internal/ParameterListPropertyReader.h
   internal/Process.h
   internal/Property.h
   internal/PropertyDeclarations.h
