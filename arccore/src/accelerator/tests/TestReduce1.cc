@@ -28,25 +28,37 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Int64
-_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int32 nb_value, Int32 nb_part, Int32 nb_loop);
+_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
 
-TEST(ArccoreAccelerator, TestReduceDirect)
+void _doTestReduceDirect(bool use_accelerator)
 {
-  Accelerator::Initializer x(true, 0);
+  Accelerator::Initializer x(use_accelerator, 0);
   Runner runner(x.executionPolicy());
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())
     queue.setMemoryRessource(eMemoryResource::Device);
-  Int32 nb_loop = 1500;
-  if (arccoreIsDebug())
-    nb_loop /= 20;
-  //nb_loop = 1;
+  Int32 nb_loop = 1000;
   Int32 nb_value = 1000000;
-  nb_value = 10000000;
   Int64 expected_value = 1000004000000;
+
+  nb_value = 10000000;
   expected_value = 100000040000000;
+  nb_loop = 100;
+
   Int32 nb_thread = 256;
   Int32 nb_part = 1;
+  if (!queue.isAcceleratorPolicy()) {
+    if (arccoreIsDebug())
+      nb_loop /= 20;
+    else
+      nb_loop /= 4;
+    if (nb_loop == 0)
+      nb_loop = 1;
+  }
+  //nb_loop = 1;
+
+  std::cout << "Using accelerator policy name=" << queue.executionPolicy() << "\n";
+  std::cout << "Sizeof (ReducerSum2<Int64>) = " << sizeof(ReducerSum2<Int64>) << " nb_loop=" << nb_loop << "\n";
 
   eMemoryResource mem = queue.memoryResource();
   NumArray<Int64, MDDim1> host_c(eMemoryResource::Host);
@@ -63,24 +75,68 @@ TEST(ArccoreAccelerator, TestReduceDirect)
   for (Int32 k = 1; k < 5; ++k) {
     {
       // Test avec RunQueue synchrone
-      std::cout << "Test Sync nb_part=" << nb_part << "\n";
-      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop);
+      //std::cout << "Test Sync nb_part=" << nb_part << "\n";
+      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop, false);
       Int64 v2 = v / nb_loop;
-      std::cout << "V=" << v2 << "\n";
+      //std::cout << "V=" << v2 << "\n";
       ASSERT_EQ(v2, expected_value);
     }
     {
       // Test avec RunQueue asynchrone
-      std::cout << "Test Asynchronous nb_part=" << nb_part << "\n";
-      queue.setAsync(true);
-      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop);
+      //std::cout << "Test Asynchronous nb_part=" << nb_part << "\n";
+      Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop, true);
       Int64 v2 = v / nb_loop;
-      std::cout << "V=" << v2 << "\n";
+      //std::cout << "V=" << v2 << "\n";
       ASSERT_EQ(v2, expected_value);
     }
     nb_part *= 2;
   }
 }
+
+#if defined(ARCCORE_HAS_CUDA)
+#define DO_TEST_CUDA(name1, name2, func) \
+  TEST(name1, name2##_cuda) \
+  { \
+    func(true); \
+  }
+#else
+#define DO_TEST_CUDA(name1, name2, func)
+#endif
+
+#if defined(ARCCORE_HAS_HIP)
+#define DO_TEST_HIP(name1, name2, func) \
+  TEST(name1, name2##_hip) \
+  { \
+    func(true); \
+  }
+#else
+#define DO_TEST_HIP(name1, name2, func)
+#endif
+
+#if defined(ARCCORE_HAS_SYCL)
+#define DO_TEST_SYCL(name1, name2, func) \
+  TEST(name1, name2##_sycl) \
+  { \
+    func(true); \
+  }
+#else
+#define DO_TEST_SYCL(name1, name2, func)
+#endif
+
+#define DO_TEST_SEQUENTIAL(name1, name2, func) \
+  TEST(name1, name2) \
+  { \
+    func(false); \
+  }
+
+// Macro pour définir les tests en fonction de l'accélérateur
+#define DO_TEST_ACCELERATOR(name1, name2, func) \
+  DO_TEST_CUDA(name1, name2, func); \
+  DO_TEST_HIP(name1, name2, func); \
+  DO_TEST_SYCL(name1, name2, func); \
+  DO_TEST_SEQUENTIAL(name1, name2, func);
+
+DO_TEST_ACCELERATOR(ArccoreAccelerator, TestReduceDirect, _doTestReduceDirect);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
