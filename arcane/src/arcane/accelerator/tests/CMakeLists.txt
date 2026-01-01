@@ -51,7 +51,9 @@ target_link_libraries(arcane_accelerator.tests PRIVATE
   "$<TARGET_NAME_IF_EXISTS:arccore_accelerator_sycl_runtime>"
 )
 
-gtest_discover_tests(arcane_accelerator.tests DISCOVERY_TIMEOUT 30)
+if (ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST)
+  gtest_discover_tests(arcane_accelerator.tests DISCOVERY_TIMEOUT 30)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
