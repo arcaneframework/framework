@@ -28,8 +28,8 @@ arcane_register_library(arcane_accelerator OPTIONAL)
 
 # ----------------------------------------------------------------------------
 
-option(ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST "True if we run accelerator googletest. This require GPU driver" ON)
-if (GTEST_FOUND AND ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST)
+option(ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST "True if we run accelerator googletest. This require a GPU driver" ON)
+if (GTEST_FOUND)
   add_subdirectory(tests)
 endif()
 
