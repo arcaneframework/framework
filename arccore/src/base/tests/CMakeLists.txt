@@ -11,5 +11,7 @@ arccore_add_component_test_executable(base
   )
 
 target_link_libraries(arccore_base.tests PUBLIC arccore_base GTest::GTest GTest::Main)
-
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  target_compile_options(arccore_base.tests PRIVATE -fext-numeric-literals)
+endif()
 gtest_discover_tests(arccore_base.tests DISCOVERY_TIMEOUT 30)
