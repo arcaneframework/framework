@@ -39,7 +39,7 @@
       <epsilon>0.01</epsilon>
 
       <linear-solver name="PETScSolver">
-        <exec-space>Device</exec-space>
+        <exec-space>Host</exec-space>
         <memory-type>Host</memory-type>
         <solver name="BiCGStab">
           <num-iterations-max>1000</num-iterations-max>

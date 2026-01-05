@@ -19,7 +19,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>2 2 1</nsd>
+        <nsd>1 1 1</nsd>
         <lx nx="100">1.</lx>
         <ly ny="100">1.</ly>
         <lz nz="10">1.</lz>
@@ -30,6 +30,8 @@
 
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <use-accelerator>true</use-accelerator>
+      <use-usm>false</use-usm>
       <redistribution>false</redistribution>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
@@ -39,7 +41,7 @@
       <epsilon>0.01</epsilon>
 
       <linear-solver name="PETScSolver">
-        <exec-space>Host</exec-space>
+        <exec-space>Device</exec-space>
         <memory-type>Host</memory-type>
         <solver name="BiCGStab">
           <num-iterations-max>1000</num-iterations-max>
