@@ -11,17 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ApplicationBuildInfo.h"
+#include "arcane/core/ApplicationBuildInfo.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/TraceClassConfig.h"
 #include "arcane/utils/ApplicationInfo.h"
 
 #include "arcane/core/CaseDatasetSource.h"
+
+#include "arccore/base/internal/ConvertInternal.h"
 
 #include <functional>
 
@@ -122,7 +123,7 @@ class PropertyImpl
   {
     Int32 v = default_value;
     if (!str_value.null()) {
-      bool is_bad = builtInGetValue(v, str_value);
+      bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
       if (is_bad)
         v = default_value;
     }
@@ -135,7 +136,7 @@ class PropertyImpl
     if (str_value.null())
       return;
     bool v = false;
-    bool is_bad = builtInGetValue(v, str_value);
+    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
     if (!is_bad)
       p.setValue(v);
   }
@@ -146,7 +147,7 @@ class PropertyImpl
     if (str_value.null())
       return;
     Int32 v = 0;
-    bool is_bad = builtInGetValue(v, str_value);
+    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
     if (!is_bad)
       p.setValue(v);
   }
