@@ -12,6 +12,8 @@ addSources(alien_core_solvers
     linear_solver/arcane/AlienLinearSolver.cc
     )
     
+if(ALIEN_USE_SYCL)
 addSources(alien_core_solvers
     linear_solver/arcane/AlienSYCLLinearSolver.cc
     )
+endif()
