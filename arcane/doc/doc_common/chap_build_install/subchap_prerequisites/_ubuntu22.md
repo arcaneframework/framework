@@ -17,6 +17,13 @@ sudo apt install apt-utils build-essential iputils-ping python3 \
   libparmetis-dev libunwind-dev dotnet6 cmake
 ~~~
 
+\note Si TBB est installé via `apt`, il s'agit de la version 2020 qui n'est plus compatible avec %Arcane.
+Il est donc nécessaire, soit d'installer une version plus récente de TBB (2021+), soit de compiler %Arcane avec
+l'option :
+```sh
+ -DARCCORE_ENABLE_TBB=FALSE
+```
+
 ## Installation des packages optionnels
 
 ~~~{sh}
