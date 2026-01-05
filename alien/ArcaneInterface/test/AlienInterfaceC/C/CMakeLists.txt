@@ -7,6 +7,12 @@ addSources(alien_interface_c.exe
            )
            
 
+IF(ALIEN_USE_ACPPSYCL)
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+      target_compile_options(alien_interface_c.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+    ENDIF()
+ENDIF()
+  
 linkLibraries(alien_interface_c.exe
         Boost::boost
         Alien::alien_core
