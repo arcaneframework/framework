@@ -71,7 +71,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 {
  public:
   // clang-format off
-  static const bool                                         on_host_only = false ;
+  static constexpr bool                                     on_host_only = false ;
   typedef BackEnd::tag::sycl                                TagType ;
   typedef ValueT                                            ValueType;
   typedef ValueT                                            value_type ;

@@ -114,7 +114,7 @@ if (ENABLE_CUDA)
 
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80 90)
   endif()
   enable_language(CUDA)
 endif()
@@ -160,6 +160,7 @@ logStatus("Loading components...")
 #ENDIF()
 
 add_subdirectory(modules/options)
+add_subdirectory(modules/core_solvers)
 add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)

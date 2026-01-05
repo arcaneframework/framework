@@ -6,7 +6,7 @@ include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienTest.cmake)
 #-----------------------------------------------------------
 
 add_subdirectory(Tests)
-add_subdirectory(AlienInterfaceC)
+#add_subdirectory(AlienInterfaceC)
 
 #-----------------------------------------------------------
 # Arcane

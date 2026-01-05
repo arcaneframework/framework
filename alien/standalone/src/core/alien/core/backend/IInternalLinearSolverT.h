@@ -4,10 +4,6 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*!
- * \file IInternalLinearSolverT.h
- * \brief IInternalLinearSolverT.h
- */
 #pragma once
 
 #include <arccore/message_passing/MessagePassingGlobal.h>
@@ -25,7 +21,7 @@ namespace Alien
 
 class ILinearAlgebra;
 class SolverStat;
-class SolverStatus;
+struct SolverStatus;
 
 /*!
  * \ingroup core

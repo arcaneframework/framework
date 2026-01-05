@@ -40,8 +40,8 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-      <alien-core-solver>
-	<backend>SYCL</backend>
+      <linear-solver name="AlienCoreSYCLSolver">
+        <backend>SYCL</backend>
         <solver>BCGS</solver>
         <preconditioner>ChebyshevPoly</preconditioner>
         <poly-order>1</poly-order>
@@ -51,7 +51,7 @@
         <tol>1e-8</tol>
         <output-level>3</output-level>
         <asynch>0</asynch>
-      </alien-core-solver>
+      </linear-solver>
       <!--linear-solver name="TrilinosSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>5</max-iteration-num>

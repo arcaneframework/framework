@@ -29,6 +29,7 @@
 
 
     <alien-bench>
+      <redistribution>false</redistribution>
       <use-accelerator>false</use-accelerator>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <diagonal-coefficient>0.01</diagonal-coefficient>
@@ -40,13 +41,13 @@
       <homogeneous>true</homogeneous>
       <zero-rhs>false</zero-rhs>
       <nb-resolutions>1</nb-resolutions>
-      <alien-core-solver>
+      <linear-solver name="AlienCoreSolver">
         <backend>SimpleCSR</backend>
         <solver>BCGS</solver>
         <preconditioner>ILU0</preconditioner>
         <max-iter>1000</max-iter>
         <tol>1.e-12</tol>
         <output-level>1</output-level>
-      </alien-core-solver>
+      </linear-solver>
   </alien-bench>
 </case>

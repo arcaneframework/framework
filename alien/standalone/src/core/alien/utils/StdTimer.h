@@ -1,13 +1,15 @@
-/*
- * StdTimer.h
- *
- *  Created on: Dec 1, 2021
- *      Author: gratienj
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 #include <string>
 #include <map>
 #include <chrono>
+
+#include <format>
 
 namespace Alien
 {
@@ -41,6 +43,11 @@ class StdTimer
   StdTimer() {}
   virtual ~StdTimer() {}
 
+  void reset() {
+    for (auto& iter : m_counters)
+      iter.second = 0. ;
+  }
+
   void add(std::string const& phase, double value)
   {
     auto iter = m_counters.find(phase);
@@ -50,12 +57,21 @@ class StdTimer
       iter->second += value;
   }
 
+  double operator()(std::string const& phase) const
+  {
+    auto iter = m_counters.find(phase);
+    if (iter == m_counters.end())
+      return 0. ;
+    else
+      return iter->second ;
+  }
+
   void printInfo(const std::string& msg) const
   {
     std::cout << "================================" << std::endl;
     std::cout << "PERF INFO : " << msg << std::endl;
     for (auto const& iter : m_counters) {
-      std::cout << iter.first << ":" << iter.second << std::endl;
+      std::cout << std::format("{:10}:{:.3e}\n",iter.first,iter.second);
     }
     std::cout << "================================" << std::endl;
   }
@@ -66,7 +82,7 @@ class StdTimer
     out << "================================" << std::endl;
     out << "PERF INFO : " << std::endl;
     for (auto const& iter : m_counters) {
-      out << iter.first << ":" << iter.second << std::endl;
+      out << std::format("{:10}:{:.3e}\n",iter.first,iter.second);
     }
     out << "================================" << std::endl;
   }
