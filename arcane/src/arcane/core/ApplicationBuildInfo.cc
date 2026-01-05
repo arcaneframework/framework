@@ -1,27 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationBuildInfo.cc                                     (C) 2000-2025 */
+/* ApplicationBuildInfo.cc                                     (C) 2000-2026 */
 /*                                                                           */
 /* Informations pour construire une instance de IApplication.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ApplicationBuildInfo.h"
+#include "arcane/core/ApplicationBuildInfo.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/TraceClassConfig.h"
 #include "arcane/utils/ApplicationInfo.h"
 
-#include "arcane/CaseDatasetSource.h"
+#include "arcane/core/CaseDatasetSource.h"
+
+#include "arccore/base/internal/ConvertInternal.h"
 
 #include <functional>
 
@@ -50,23 +51,23 @@ class PropertyImpl
  public:
 
   template <typename DataType>
-  class Property
+  class FieldProperty
   {
    public:
 
-    explicit Property(DataType default_value)
+    explicit FieldProperty(const DataType& default_value)
     : m_value(default_value)
     , m_default_value(default_value)
     {}
-    Property()
-    : Property(DataType())
+    FieldProperty()
+    : FieldProperty(DataType())
     {}
-    Property<DataType>& operator=(const DataType& v)
+    FieldProperty& operator=(const DataType& v)
     {
       setValue(v);
       return (*this);
     }
-    operator DataType() const { return m_value; }
+    explicit(false) operator DataType() const { return m_value; }
 
    public:
 
@@ -100,15 +101,15 @@ class PropertyImpl
     explicit Int32Value(Int32 v)
     : value(v)
     {}
-    operator Int32() const { return value; }
+    explicit(false) operator Int32() const { return value; }
 
    public:
 
-    Int32Value minValue(Int32 x)
+    Int32Value minValue(Int32 x) const
     {
       return Int32Value(std::max(value, x));
     }
-    Int32Value maxValue(Int32 x)
+    Int32Value maxValue(Int32 x) const
     {
       return Int32Value(std::min(value, x));
     }
@@ -122,35 +123,35 @@ class PropertyImpl
   {
     Int32 v = default_value;
     if (!str_value.null()) {
-      bool is_bad = builtInGetValue(v, str_value);
+      bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
       if (is_bad)
         v = default_value;
     }
     return Int32Value(v);
   }
-  static void checkSet(Property<bool>& p, const String& str_value)
+  static void checkSet(FieldProperty<bool>& p, const String& str_value)
   {
     if (p.isValueSet())
       return;
     if (str_value.null())
       return;
-    bool v = 0;
-    bool is_bad = builtInGetValue(v, str_value);
+    bool v = false;
+    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
     if (!is_bad)
       p.setValue(v);
   }
-  static void checkSet(Property<Int32>& p, const String& str_value)
+  static void checkSet(FieldProperty<Int32>& p, const String& str_value)
   {
     if (p.isValueSet())
       return;
     if (str_value.null())
       return;
     Int32 v = 0;
-    bool is_bad = builtInGetValue(v, str_value);
+    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
     if (!is_bad)
       p.setValue(v);
   }
-  static void checkSet(Property<StringList>& p, const String& str_value)
+  static void checkSet(FieldProperty<StringList>& p, const String& str_value)
   {
     if (p.isValueSet())
       return;
@@ -160,13 +161,13 @@ class PropertyImpl
     s.add(str_value);
     p.setValue(s);
   }
-  static void checkSet(Property<StringList>& p, const StringList& str_values)
+  static void checkSet(FieldProperty<StringList>& p, const StringList& str_values)
   {
     if (p.isValueSet())
       return;
     p.setValue(str_values);
   }
-  static void checkSet(Property<String>& p, const String& str_value)
+  static void checkSet(FieldProperty<String>& p, const String& str_value)
   {
     if (p.isValueSet())
       return;
@@ -183,7 +184,7 @@ class ApplicationCoreBuildInfo::CoreImpl
 {
  public:
 
-  template <typename T> using Property = PropertyImpl::Property<T>;
+  template <typename T> using FieldProperty = PropertyImpl::FieldProperty<T>;
 
   CoreImpl()
   : m_nb_task_thread(-1)
@@ -194,9 +195,9 @@ class ApplicationCoreBuildInfo::CoreImpl
 
  public:
 
-  Property<StringList> m_task_implementation_services;
-  Property<StringList> m_thread_implementation_services;
-  Property<Int32> m_nb_task_thread;
+  FieldProperty<StringList> m_task_implementation_services;
+  FieldProperty<StringList> m_thread_implementation_services;
+  FieldProperty<Int32> m_nb_task_thread;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +205,7 @@ class ApplicationCoreBuildInfo::CoreImpl
 
 class ApplicationBuildInfo::Impl
 {
-  template <typename T> using Property = PropertyImpl::Property<T>;
+  template <typename T> using FieldProperty = PropertyImpl::FieldProperty<T>;
 
  public:
 
@@ -236,7 +237,7 @@ class ApplicationBuildInfo::Impl
   /*!
    * \brief Récupère la valeur d'une option.
    *
-   * L'ordre de récupération est le suivant :
+   * L'ordre de récupération est le suivant:
    * - si \a param_name est non nul, regarde s'il existe une valeur
    * dans \a m_values associée à ce paramètre. Si oui, on retourne cette
    * valeur.
@@ -263,17 +264,17 @@ class ApplicationBuildInfo::Impl
 
  public:
 
-  Property<String> m_message_passing_service;
-  Property<Int32> m_nb_shared_memory_sub_domain;
-  Property<Int32> m_nb_replication_sub_domain;
-  Property<Int32> m_nb_processus_sub_domain;
-  Property<String> m_config_file_name;
-  Property<Int32> m_output_level;
-  Property<Int32> m_verbosity_level;
-  Property<Int32> m_minimal_verbosity_level;
-  Property<bool> m_is_master_has_output_file;
-  Property<String> m_output_directory;
-  Property<String> m_thread_binding_strategy;
+  FieldProperty<String> m_message_passing_service;
+  FieldProperty<Int32> m_nb_shared_memory_sub_domain;
+  FieldProperty<Int32> m_nb_replication_sub_domain;
+  FieldProperty<Int32> m_nb_processus_sub_domain;
+  FieldProperty<String> m_config_file_name;
+  FieldProperty<Int32> m_output_level;
+  FieldProperty<Int32> m_verbosity_level;
+  FieldProperty<Int32> m_minimal_verbosity_level;
+  FieldProperty<bool> m_is_master_has_output_file;
+  FieldProperty<String> m_output_directory;
+  FieldProperty<String> m_thread_binding_strategy;
   UniqueArray<NameValuePair> m_values;
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
