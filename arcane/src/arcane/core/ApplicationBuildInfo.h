@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationBuildInfo.h                                      (C) 2000-2025 */
+/* ApplicationBuildInfo.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Informations pour construire une instance de IApplication.                */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,20 @@ class ARCANE_CORE_EXPORT ApplicationCoreBuildInfo
 
   Int32 nbTaskThread() const;
   void setNbTaskThread(Integer v);
+
+ public:
+
+  void addParameter(const String& name, const String& value);
+  /*!
+   * \brief Analyse les arguments de \a args.
+   *
+   * On ne récupère que les arguments du style *-A,x=b,y=c*.
+   * La méthode setDefaultValues() est appelée à la fin de cette
+   * méthode.
+   */
+  void parseArgumentsAndSetDefaultsValues(const CommandLineArguments& args);
+  virtual void setDefaultValues();
+  virtual void setDefaultServices();
 
  protected:
 
@@ -186,7 +200,6 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 
  public:
 
-  void addParameter(const String& name,const String& value);
   /*!
    * \brief Analyse les arguments de \a args.
    *
@@ -194,7 +207,11 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
    * La méthode setDefaultValues() est appelée à la fin de cette
    * méthode.
    */
-  void parseArguments(const CommandLineArguments& args);
+  ARCANE_DEPRECATED_REASON("Use parseArgumentsAndSetDefaultsValues() instead")
+  void parseArguments(const CommandLineArguments& args)
+  {
+    parseArgumentsAndSetDefaultsValues(args);
+  }
 
  public:
 
@@ -203,8 +220,8 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 
  public:
 
-  void setDefaultValues();
-  void setDefaultServices();
+  void setDefaultValues() override;
+  void setDefaultServices() override;
 
  private:
 

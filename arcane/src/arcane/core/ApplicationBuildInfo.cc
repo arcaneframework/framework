@@ -200,13 +200,22 @@ ApplicationBuildInfo::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setDefaultValues()
 {
   {
     String str = m_core->getValue({ "ARCANE_NB_TASK" }, "T", String());
     PropertyImpl::checkSet(m_core->m_nb_task_thread, str);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ApplicationBuildInfo::
+setDefaultValues()
+{
+  ApplicationCoreBuildInfo::setDefaultValues();
   {
     String str = m_core->getValue({ "ARCANE_NB_THREAD" }, "S", String());
     PropertyImpl::checkSet(m_p->m_nb_shared_memory_sub_domain, str);
@@ -259,10 +268,9 @@ setDefaultValues()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 setDefaultServices()
 {
-  bool has_shm = nbSharedMemorySubDomain()>0;
   {
     String str = m_core->getValue({ "ARCANE_TASK_IMPLEMENTATION" }, "TaskService", "TBB");
     String service_name = str + "TaskImplementation";
@@ -275,6 +283,16 @@ setDefaultServices()
     list1.add("TBBThreadImplementationService");
     PropertyImpl::checkSet(m_core->m_thread_implementation_services, list1);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ApplicationBuildInfo::
+setDefaultServices()
+{
+  ApplicationCoreBuildInfo::setDefaultServices();
+  bool has_shm = nbSharedMemorySubDomain()>0;
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
     String default_service_name = def_name+"ParallelSuperMng";
@@ -533,7 +551,7 @@ threadBindingStrategy(const String& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
+void ApplicationCoreBuildInfo::
 addParameter(const String& name,const String& value)
 {
   m_core->addKeyValue(name, value);
@@ -542,8 +560,8 @@ addParameter(const String& name,const String& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationBuildInfo::
-parseArguments(const CommandLineArguments& command_line_args)
+void ApplicationCoreBuildInfo::
+parseArgumentsAndSetDefaultsValues(const CommandLineArguments& command_line_args)
 {
   // On ne récupère que les arguments du style:
   //   -A,x=b,y=c
