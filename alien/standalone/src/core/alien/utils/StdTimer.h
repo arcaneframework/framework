@@ -9,7 +9,12 @@
 #include <map>
 #include <chrono>
 
+#ifdef __cpp_lib_format
 #include <format>
+#define HAS_FORMAT 1
+#else
+#define HAS_FORMAT 0
+#endif
 
 namespace Alien
 {
@@ -71,7 +76,11 @@ class StdTimer
     std::cout << "================================" << std::endl;
     std::cout << "PERF INFO : " << msg << std::endl;
     for (auto const& iter : m_counters) {
+#if HAS_FORMAT
       std::cout << std::format("{:10}:{:.3e}\n",iter.first,iter.second);
+#else
+      std::cout << iter.first<<":"<<iter.second<<std::endl ;
+#endif
     }
     std::cout << "================================" << std::endl;
   }
@@ -82,7 +91,11 @@ class StdTimer
     out << "================================" << std::endl;
     out << "PERF INFO : " << std::endl;
     for (auto const& iter : m_counters) {
+#if HAS_FORMAT
       out << std::format("{:10}:{:.3e}\n",iter.first,iter.second);
+#else
+      out << iter.first<<":"<<iter.second<<std::endl ;
+#endif
     }
     out << "================================" << std::endl;
   }
