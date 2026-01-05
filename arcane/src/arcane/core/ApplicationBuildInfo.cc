@@ -22,7 +22,7 @@
 
 #include "arcane/core/CaseDatasetSource.h"
 
-#include "arccore/base/internal/ConvertInternal.h"
+#include "arccore/common/internal/FieldProperty.h"
 
 #include <functional>
 
@@ -46,140 +46,6 @@ void _clamp(Int32& x,Int32 min_value,Int32 max_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class PropertyImpl
-{
- public:
-
-  template <typename DataType>
-  class FieldProperty
-  {
-   public:
-
-    explicit FieldProperty(const DataType& default_value)
-    : m_value(default_value)
-    , m_default_value(default_value)
-    {}
-    FieldProperty()
-    : FieldProperty(DataType())
-    {}
-    FieldProperty& operator=(const DataType& v)
-    {
-      setValue(v);
-      return (*this);
-    }
-    explicit(false) operator DataType() const { return m_value; }
-
-   public:
-
-    void setValue(const DataType& v)
-    {
-      if (m_validator) {
-        DataType copy(v);
-        m_validator(copy);
-        m_value = copy;
-      }
-      else
-        m_value = v;
-      m_has_value = true;
-    }
-    DataType value() const { return m_value; }
-    bool isValueSet() const { return m_has_value; }
-    void setValidator(std::function<void(DataType&)>&& func) { m_validator = func; }
-
-   private:
-
-    DataType m_value;
-    DataType m_default_value;
-    bool m_has_value = false;
-    std::function<void(DataType&)> m_validator;
-  };
-
-  class Int32Value
-  {
-   public:
-
-    explicit Int32Value(Int32 v)
-    : value(v)
-    {}
-    explicit(false) operator Int32() const { return value; }
-
-   public:
-
-    Int32Value minValue(Int32 x) const
-    {
-      return Int32Value(std::max(value, x));
-    }
-    Int32Value maxValue(Int32 x) const
-    {
-      return Int32Value(std::min(value, x));
-    }
-
-   public:
-
-    Int32 value;
-  };
-
-  static Int32Value getInt32(const String& str_value, Int32 default_value)
-  {
-    Int32 v = default_value;
-    if (!str_value.null()) {
-      bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
-      if (is_bad)
-        v = default_value;
-    }
-    return Int32Value(v);
-  }
-  static void checkSet(FieldProperty<bool>& p, const String& str_value)
-  {
-    if (p.isValueSet())
-      return;
-    if (str_value.null())
-      return;
-    bool v = false;
-    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
-    if (!is_bad)
-      p.setValue(v);
-  }
-  static void checkSet(FieldProperty<Int32>& p, const String& str_value)
-  {
-    if (p.isValueSet())
-      return;
-    if (str_value.null())
-      return;
-    Int32 v = 0;
-    bool is_bad = Convert::Impl::StringViewToIntegral::getValue(v, str_value);
-    if (!is_bad)
-      p.setValue(v);
-  }
-  static void checkSet(FieldProperty<StringList>& p, const String& str_value)
-  {
-    if (p.isValueSet())
-      return;
-    if (str_value.null())
-      return;
-    StringList s;
-    s.add(str_value);
-    p.setValue(s);
-  }
-  static void checkSet(FieldProperty<StringList>& p, const StringList& str_values)
-  {
-    if (p.isValueSet())
-      return;
-    p.setValue(str_values);
-  }
-  static void checkSet(FieldProperty<String>& p, const String& str_value)
-  {
-    if (p.isValueSet())
-      return;
-    if (str_value.null())
-      return;
-    p.setValue(str_value);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class ApplicationCoreBuildInfo::CoreImpl
 {
  public:
@@ -195,9 +61,25 @@ class ApplicationCoreBuildInfo::CoreImpl
 
  public:
 
+  String getValue(const UniqueArray<String>& env_values, const String& param_name,
+                  const String& default_value)
+  {
+    return m_property_key_values.getValue(env_values, param_name, default_value);
+  }
+  void addKeyValue(const String& name, const String& value)
+  {
+    m_property_key_values.add(name, value);
+  }
+
+ public:
+
   FieldProperty<StringList> m_task_implementation_services;
   FieldProperty<StringList> m_thread_implementation_services;
   FieldProperty<Int32> m_nb_task_thread;
+
+ private:
+
+  PropertyImpl::PropertyKeyValues m_property_key_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -207,15 +89,6 @@ class ApplicationBuildInfo::Impl
 {
   template <typename T> using FieldProperty = PropertyImpl::FieldProperty<T>;
 
- public:
-
-  class NameValuePair
-  {
-   public:
-    NameValuePair(const String& n,const String& v) : name(n), value(v){}
-    String name;
-    String value;
-  };
  public:
 
   Impl()
@@ -234,33 +107,6 @@ class ApplicationBuildInfo::Impl
 
  public:
 
-  /*!
-   * \brief Récupère la valeur d'une option.
-   *
-   * L'ordre de récupération est le suivant:
-   * - si \a param_name est non nul, regarde s'il existe une valeur
-   * dans \a m_values associée à ce paramètre. Si oui, on retourne cette
-   * valeur.
-   * - pour chaque nom \a x de \a env_values, regarde si une variable
-   * d'environnement \a x existe et retourne sa valeur si c'est le cas.
-   * - si aucune des méthodes précédente n'a fonctionné, retourne
-   * la valeur \a default_value.
-   */
-  String getValue(const UniqueArray<String>& env_values, const String& param_name,
-                  const String& default_value)
-  {
-    if (!param_name.null()) {
-      String v = _searchParam(param_name);
-      if (!v.null())
-        return v;
-    }
-    for (const auto& x : env_values) {
-      String ev = platform::getEnvironmentVariable(x);
-      if (!ev.null())
-        return ev;
-    }
-    return default_value;
-  }
 
  public:
 
@@ -275,23 +121,10 @@ class ApplicationBuildInfo::Impl
   FieldProperty<bool> m_is_master_has_output_file;
   FieldProperty<String> m_output_directory;
   FieldProperty<String> m_thread_binding_strategy;
-  UniqueArray<NameValuePair> m_values;
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
   String m_default_message_passing_service;
 
- private:
-
-  String _searchParam(const String& param_name)
-  {
-    String v;
-    // Une option peut être présente plusieurs fois. Prend la dernière.
-    for (const auto& x : m_values) {
-      if (x.name == param_name)
-        v = x.value;
-    }
-    return v;
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -371,54 +204,54 @@ void ApplicationBuildInfo::
 setDefaultValues()
 {
   {
-    String str = m_p->getValue({ "ARCANE_NB_TASK" }, "T", String());
+    String str = m_core->getValue({ "ARCANE_NB_TASK" }, "T", String());
     PropertyImpl::checkSet(m_core->m_nb_task_thread, str);
   }
   {
-    String str = m_p->getValue({ "ARCANE_NB_THREAD" }, "S", String());
+    String str = m_core->getValue({ "ARCANE_NB_THREAD" }, "S", String());
     PropertyImpl::checkSet(m_p->m_nb_shared_memory_sub_domain, str);
   }
   {
-    String str = m_p->getValue({ "ARCANE_NB_REPLICATION" }, "R", String());
+    String str = m_core->getValue({ "ARCANE_NB_REPLICATION" }, "R", String());
     PropertyImpl::checkSet(m_p->m_nb_replication_sub_domain, str);
   }
   {
-    String str = m_p->getValue({ "ARCANE_NB_SUB_DOMAIN" }, "P", String());
+    String str = m_core->getValue({ "ARCANE_NB_SUB_DOMAIN" }, "P", String());
     PropertyImpl::checkSet(m_p->m_nb_processus_sub_domain, str);
   }
   {
-    String str = m_p->getValue( { "ARCANE_OUTPUT_LEVEL" }, "OutputLevel",
-                               String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
+    String str = m_core->getValue({ "ARCANE_OUTPUT_LEVEL" }, "OutputLevel",
+                                  String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
     PropertyImpl::checkSet(m_p->m_output_level, str);
   }
   {
-    String str = m_p->getValue( { "ARCANE_VERBOSITY_LEVEL", "ARCANE_VERBOSE_LEVEL" }, "VerbosityLevel",
-                               String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
+    String str = m_core->getValue({ "ARCANE_VERBOSITY_LEVEL", "ARCANE_VERBOSE_LEVEL" }, "VerbosityLevel",
+                                  String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
     PropertyImpl::checkSet(m_p->m_verbosity_level, str);
   }
   {
-    String str = m_p->getValue( { }, "MinimalVerbosityLevel",
-                               String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
+    String str = m_core->getValue({}, "MinimalVerbosityLevel",
+                                  String::fromNumber(Trace::UNSPECIFIED_VERBOSITY_LEVEL));
     PropertyImpl::checkSet(m_p->m_minimal_verbosity_level, str);
   }
   {
-    String str = m_p->getValue({ "ARCANE_MASTER_HAS_OUTPUT_FILE" }, "MasterHasOutputFile", "0");
+    String str = m_core->getValue({ "ARCANE_MASTER_HAS_OUTPUT_FILE" }, "MasterHasOutputFile", "0");
     PropertyImpl::checkSet(m_p->m_is_master_has_output_file, str);
   }
   {
-    String str = m_p->getValue( { "ARCANE_OUTPUT_DIRECTORY" }, "OutputDirectory",
-                               String());
+    String str = m_core->getValue({ "ARCANE_OUTPUT_DIRECTORY" }, "OutputDirectory",
+                                  String());
     PropertyImpl::checkSet(m_p->m_output_directory, str);
   }
   {
-    String str = m_p->getValue( { }, "CaseDatasetFileName",
-                                String() );
+    String str = m_core->getValue({}, "CaseDatasetFileName",
+                                  String());
     if (!str.null())
       m_p->m_case_dataset_source.setFileName(str);
   }
   {
-    String str = m_p->getValue( { "ARCANE_THREAD_BINDING_STRATEGY" }, "ThreadBindingStrategy",
-                               String());
+    String str = m_core->getValue({ "ARCANE_THREAD_BINDING_STRATEGY" }, "ThreadBindingStrategy",
+                                  String());
     PropertyImpl::checkSet(m_p->m_thread_binding_strategy, str);
   }
 }
@@ -431,13 +264,13 @@ setDefaultServices()
 {
   bool has_shm = nbSharedMemorySubDomain()>0;
   {
-    String str = m_p->getValue( { "ARCANE_TASK_IMPLEMENTATION" }, "TaskService", "TBB");
+    String str = m_core->getValue({ "ARCANE_TASK_IMPLEMENTATION" }, "TaskService", "TBB");
     String service_name = str + "TaskImplementation";
     PropertyImpl::checkSet(m_core->m_task_implementation_services, service_name);
   }
   {
     StringList list1;
-    String thread_str = m_p->getValue( { "ARCANE_THREAD_IMPLEMENTATION" }, "ThreadService" ,"Std");
+    String thread_str = m_core->getValue({ "ARCANE_THREAD_IMPLEMENTATION" }, "ThreadService", "Std");
     list1.add(thread_str+"ThreadImplementationService");
     list1.add("TBBThreadImplementationService");
     PropertyImpl::checkSet(m_core->m_thread_implementation_services, list1);
@@ -449,7 +282,7 @@ setDefaultServices()
     if (m_p->m_default_message_passing_service.null())
       m_p->m_default_message_passing_service = default_service_name;
 
-    String str = m_p->getValue({ "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String());
+    String str = m_core->getValue({ "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String());
     if (!str.null()) {
       String service_name = str + "ParallelSuperMng";
       PropertyImpl::checkSet(m_p->m_message_passing_service, service_name);
@@ -703,7 +536,7 @@ threadBindingStrategy(const String& v)
 void ApplicationBuildInfo::
 addParameter(const String& name,const String& value)
 {
-  m_p->m_values.add(Impl::NameValuePair(name,value));
+  m_core->addKeyValue(name, value);
 }
 
 /*---------------------------------------------------------------------------*/
