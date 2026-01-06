@@ -51,6 +51,7 @@ set(SOURCES
   StringDictionary.h
   StringDictionary.cc
 
+  internal/FieldProperty.h
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
   internal/JSONPropertyReader.h
