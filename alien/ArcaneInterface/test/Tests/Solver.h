@@ -93,6 +93,9 @@
 #ifdef ALIEN_USE_HTSSOLVER
 #include <alien/AlienIFPENSolvers.h>
 #include <alien/kernels/hts/linear_solver/HTSOptionTypes.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+#include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
 #include <alien/kernels/hts/linear_solver/arcane/HTSLinearSolver.h>
 #include <ALIEN/axl/HTSSolver_IOptions.h>
 #include <ALIEN/axl/HTSSolver_StrongOptions.h>
