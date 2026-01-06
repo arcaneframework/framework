@@ -16,13 +16,13 @@ addSources(alien_arcane_tools
   alien/arcane_tools/block/BlockSizes.cc
   )
 
-IF(ALIEN_USE_SYCL)
+if(ALIEN_USE_SYCL)
    addSources(alien_arcane_tools
         alien/arcane_tools/accelerator/ArcaneParallelEngine.h
         alien/arcane_tools/accelerator/ArcaneParallelEngineInternal.h
         alien/arcane_tools/accelerator/ArcaneParallelEngineImplT.h
         alien/arcane_tools/accelerator/ArcaneParallelEngine.cc)
-ENDIF()
+endif()
 
 if(TARGET petsc)
   addSources(alien_arcane_tools 
@@ -34,7 +34,13 @@ endif()
 
 linkLibraries(alien_arcane_tools Alien::alien_core arcane_core)
 
+if(ALIEN_USE_SYCL)
+  linkLibraries(alien_arcane_tools Arccore::arccore_accelerator)
+endif()
+
 commit(alien_arcane_tools)
+
+add_library(Alien::arcane_tools ALIAS alien_arcane_tools)
 
 target_include_directories(alien_arcane_tools PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

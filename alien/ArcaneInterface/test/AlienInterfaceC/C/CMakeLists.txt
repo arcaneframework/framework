@@ -1,18 +1,25 @@
+
+
 createExecutable(alien_interface_c.exe)
 
-set_target_properties(alien_interface_c.exe PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(alien_interface_c.exe PROPERTIES LINKER_LANGUAGE CXX)
 
 addSources(alien_interface_c.exe
            main.c
            )
            
-
+  
 linkLibraries(alien_interface_c.exe
         Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_interface_c
         )
+        
+if (TARGET alien_core_solvers)
+    linkLibraries(alien_interface_c.exe alien_core_solvers)
+endif ()
+
 if (TARGET alien_external_packages)
     linkLibraries(alien_interface_c.exe alien_external_packages)
 endif ()
@@ -33,7 +40,7 @@ commit(alien_interface_c.exe)
 
 createExecutable(alien_interface_with_param_c.exe)
 
-set_target_properties(alien_interface_with_param_c.exe PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(alien_interface_with_param_c.exe PROPERTIES LINKER_LANGUAGE CXX)
 
 addSources(alien_interface_with_param_c.exe
            main_with_parameters.c
@@ -46,7 +53,11 @@ linkLibraries(alien_interface_with_param_c.exe
         Alien::alien_semantic_ref
         alien_interface_c
         )
-        
+
+if (TARGET alien_core_solvers)
+    linkLibraries(alien_interface_with_param_c.exe alien_core_solvers)
+endif ()
+
 if (TARGET alien_external_packages)
     linkLibraries(alien_interface_with_param_c.exe alien_external_packages)
 endif ()

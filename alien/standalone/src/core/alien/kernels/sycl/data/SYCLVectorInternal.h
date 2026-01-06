@@ -1,26 +1,9 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
 #pragma once
 
@@ -89,6 +72,26 @@ class VectorInternal
     auto h_values = m_values.get_host_access();
     for (std::size_t i = 0; i < size; ++i)
       ptr[i] = h_values[i];
+  }
+
+  void copyValuesToDevice(std::size_t size, ValueT* ptr) const
+  {
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    auto access_x = m_values.template get_access<sycl::access::mode::read>(cgh);
+                    std::size_t y_length = size ;
+                    cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                            ptr[i] = access_x[i];
+                                                      });
+                  });
+    queue.wait() ;
   }
 
   void copy(ValueBufferType& src)

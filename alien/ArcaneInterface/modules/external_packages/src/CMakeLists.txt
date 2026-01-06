@@ -59,6 +59,18 @@ if (TARGET Alien::alien_core)
     linkLibraries(alien_external_packages Alien::alien_core)
 endif()
 
+if (TARGET Alien::alien_sycl)
+    linkLibraries(alien_external_packages Alien::alien_sycl)
+endif()
+
+if (TARGET alien_kernel_sycl)
+    linkLibraries(alien_external_packages alien_kernel_sycl)
+endif()
+
+if (TARGET alien_handlers_sycl)
+    linkLibraries(alien_external_packages alien_handlers_sycl)
+endif()
+
 if (TARGET Alien::alien_semantic_ref)
     linkLibraries(alien_external_packages Alien::alien_semantic_ref)
 endif()

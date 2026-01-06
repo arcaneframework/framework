@@ -14,6 +14,12 @@ linkLibraries(alien_test.exe
         Alien::alien_semantic_move
         )
 
+if (TARGET alien_core_solvers)
+    linkLibraries(alien_test.exe
+                  alien_core_solvers
+                 )
+endif ()
+
 if (TARGET alien_external_packages)
     linkLibraries(alien_test.exe
             alien_external_packages
@@ -36,6 +42,22 @@ install(
         RUNTIME DESTINATION bin
 )
 
+
+alien_test(
+            BENCH test
+            NAME alien-core
+            COMMAND alien_test.exe
+            PROCS 4
+            OPTIONS
+            --nx=10
+            --ny=10
+            --solver-package=alien-core
+            --solver=bcgs
+            --precond=ilu0
+            --tol=1.e-10
+            --max-iter=100
+            --builder=1
+          )
 if (TARGET petsc)
     alien_test(
             BENCH test
@@ -122,6 +144,25 @@ if (TARGET mcgsolver)
             --max-iter=1000
             --kernel=cpu_cblas_bcsr
             --output-level=2
+    )
+endif ()
+
+if (TARGET htssolver)
+    alien_test(
+            BENCH test
+            NAME htssolver
+            PROCS 4
+            COMMAND alien_test.exe
+            OPTIONS
+            --nx=10
+            --ny=10
+            --solver-package=htssolver
+            --solver=bicgstab
+            --precond=ilu0
+            --tol=1.e-10
+            --max-iter=100
+            --output-level=2
+            --builder=1
     )
 endif ()
 

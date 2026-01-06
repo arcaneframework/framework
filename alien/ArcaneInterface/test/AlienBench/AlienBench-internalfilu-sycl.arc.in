@@ -38,23 +38,16 @@
       <!--sigma>1000000.</sigma-->
       <epsilon>0.01</epsilon>
 
-     <alien-core-solver>
+     
+      <linear-solver name="AlienCoreSYCLSolver">
         <backend>SYCL</backend>
         <solver>BCGS</solver>
         <preconditioner>FILU0</preconditioner>
-	<filu-solver-niter>3</filu-solver-niter>
+        <filu-solver-niter>3</filu-solver-niter>
         <max-iter>1000</max-iter>
         <tol>1e-8</tol>
         <output-level>2</output-level>
-      </alien-core-solver>
-      <linear-solver name="HypreSolver">
-        <solver>BiCGStab</solver>
-        <num-iterations-max>1000</num-iterations-max>
-        <stop-criteria-value>1e-8</stop-criteria-value>
-        <preconditioner>Euclid</preconditioner>
-        <verbose>true</verbose>
       </linear-solver>
-
     
   </alien-bench>
 </case>

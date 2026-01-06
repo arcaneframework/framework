@@ -1,7 +1,10 @@
 enable_language(Fortran)
+
+find_package(MPI REQUIRED Fortran) # Add Fortran here
+
 createExecutable(alien_interface_fortran.exe)
 
-set_target_properties(alien_interface_fortran.exe PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(alien_interface_fortran.exe PROPERTIES LINKER_LANGUAGE CXX)
 
 addSources(alien_interface_fortran.exe
            Program.f90
@@ -10,15 +13,20 @@ addSources(alien_interface_fortran.exe
 
 
 linkLibraries(alien_interface_fortran.exe
-        mpifort
         Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_interface_c
         )
+
+if(TARGET alien_core_solvers)
+    linkLibraries(alien_interface_fortran.exe alien_core_solvers)
+endif()
+
 if(TARGET alien_external_packages)
     linkLibraries(alien_interface_fortran.exe alien_external_packages)
 endif()
+
 if(TARGET alien_ifpen_solvers)
     linkLibraries(alien_interface_fortran.exe alien_ifpen_solvers)
 endif()
@@ -35,6 +43,8 @@ if (TARGET hpddm)
     linkLibraries(alien_interface_fortran.exe alien_hpddm)
 endif ()
 
+linkLibraries(alien_interface_fortran.exe MPI::MPI_Fortran)
+
 commit(alien_interface_fortran.exe)
 
 createExecutable(alien_interface_fortran_param.exe)
@@ -46,7 +56,6 @@ addSources(alien_interface_fortran_param.exe
            main.c
            )
 
-
 linkLibraries(alien_interface_fortran_param.exe
         mpifort
         Boost::boost
@@ -54,9 +63,11 @@ linkLibraries(alien_interface_fortran_param.exe
         Alien::alien_semantic_ref
         alien_interface_c
         )
+
 if(TARGET alien_external_packages)
     linkLibraries(alien_interface_fortran_param.exe alien_external_packages)
 endif()
+
 if(TARGET alien_ifpen_solvers)
     linkLibraries(alien_interface_fortran_param.exe alien_ifpen_solvers)
 endif()
@@ -72,6 +83,20 @@ endif ()
 if (TARGET hpddm)
     linkLibraries(alien_interface_fortran_param.exe alien_hpddm)
 endif ()
+
+if (TARGET fortran)
+    linkLibraries(alien_interface_fortran_param.exe fortran)
+endif ()
+
+if (TARGET gfortran)
+    linkLibraries(alien_interface_fortran_param.exe gfortran)
+endif ()
+
+if (TARGET mpifort)
+    linkLibraries(alien_interface_fortran_param.exe mpifort)
+endif ()
+
+linkLibraries(alien_interface_fortran_param.exe MPI::MPI_Fortran)
 
 commit(alien_interface_fortran_param.exe)
 

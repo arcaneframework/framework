@@ -1,13 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 #pragma once
 
+#include <vector>
 #include <alien/AlienExternalPackagesPrecomp.h>
 
+#include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/expression/solver/SolverStat.h>
 #include <alien/utils/ObjectWithTrace.h>
@@ -31,9 +33,42 @@ class PETScVector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+class PETScLibrary
+: public ObjectWithTrace
+{
+  public :
+  PETScLibrary(std::vector<Arccore::String> const& petsc_options,
+               bool use_trace,
+               bool exec_on_device,
+               bool use_device_momory) ;
+  virtual ~PETScLibrary() ;
 
-class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETScVector>,
-                                  public ObjectWithTrace
+  BackEnd::Memory::eType getMemoryType() const {
+    return m_memory_type ;
+  }
+
+  BackEnd::Exec::eSpaceType getExecSpace() const {
+    return m_exec_space  ;
+  }
+
+  private:
+  BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
+  BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
+
+  //! Indicateur de l'initialisation globale de PETSc
+  /*! La vision service de Arcane perd le sens de l'initialisation
+   * globale de PETSc.
+   * Cette variable globale permet d'y pallier */
+  bool m_global_initialized = false;
+
+  //! Indicateur du trace-info global pour PETSc
+  bool m_global_want_trace= false;
+
+} ;
+
+class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
+: public IInternalLinearSolver<PETScMatrix, PETScVector>
+, public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -77,6 +112,14 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
   virtual ~PETScInternalLinearSolver();
 
  public:
+
+
+  static bool m_library_plugin_is_initialized ;
+
+  static std::unique_ptr<PETScLibrary> m_library_plugin ;
+
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
+
   //! Initialisation
   void init(int argv, char** argc);
   virtual void init();
@@ -143,15 +186,6 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
  public:
   //! Status
   Status m_status;
-
-  //! Indicateur de l'initialisation globale de PETSc
-  /*! La vision service de Arcane perd le sens de l'initialisation
-   * globale de PETSc.
-   * Cette variable globale permet d'y pallier */
-  static bool m_global_initialized;
-
-  //! Indicateur du trace-info global pour PETSc
-  static bool m_global_want_trace;
 
   VerboseTypes::eChoice m_verbose;
 

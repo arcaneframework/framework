@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -75,9 +75,29 @@ namespace Alien
 
     void copyValuesToHost(std::size_t size, ValueT* ptr)
     {
-      auto h_values = m_values.template get_host_access();
+      auto h_values = m_values.get_host_access();
       for (std::size_t i = 0; i < size; ++i)
         ptr[i] = h_values[i];
+    }
+
+    void copyValuesToDevice(std::size_t size, ValueT* ptr) const
+    {
+      auto env = SYCLEnv::instance() ;
+      auto& queue = env->internal()->queue() ;
+      auto max_num_treads = env->maxNumThreads() ;
+
+      queue.submit( [&](sycl::handler& cgh)
+                    {
+                      auto access_x = m_values.template get_access<sycl::access::mode::read>(cgh);
+                      std::size_t y_length = size ;
+                      cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                        {
+                                                            auto id = itemId.get_id(0);
+                                                            for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                              ptr[i] = access_x[i];
+                                                        });
+                    });
+      queue.wait() ;
     }
 
     //mutable std::vector<ValueType> m_h_values ;
