@@ -33,16 +33,22 @@ if (TARGET GTest::GTest)
         linkLibraries(gtest.refmvhandlers intel)
     endif ()
 
+    if (TARGET alien_core_solvers)
+        linkLibraries(gtest.refmvhandlers
+                      alien_core_solvers
+                     )
+    endif ()
+    
     if (TARGET alien_external_packages)
         linkLibraries(gtest.refmvhandlers
-                alien_external_packages
-                )
+                      alien_external_packages
+                      )
     endif ()
 
     if (TARGET alien_ifpen_solvers)
         linkLibraries(gtest.refmvhandlers
-                alien_ifpen_solvers
-                )
+                      alien_ifpen_solvers
+                      )
     endif ()
 
     linkLibraries(gtest.refmvhandlers

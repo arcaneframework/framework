@@ -74,7 +74,15 @@ struct MatrixInternal
     {
       case BackEnd::Exec::Device:
       {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_USE_CUDA
         return MatType(parallel ? MATMPIAIJCUSPARSE : MATSEQAIJCUSPARSE) ;
+#else
+      throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Matrix Type for CUDA Execution is not available");
+#endif
+#else
+        throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Vector Type for Device Execution is not available");
+#endif
       }
       break ;
       case BackEnd::Exec::Host:

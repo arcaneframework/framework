@@ -66,8 +66,9 @@ class PETScLibrary
 
 } ;
 
-class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETScVector>,
-                                  public ObjectWithTrace
+class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
+: public IInternalLinearSolver<PETScMatrix, PETScVector>
+, public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;

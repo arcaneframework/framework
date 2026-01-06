@@ -122,6 +122,7 @@ PETScLibrary::PETScLibrary(std::vector<Arccore::String> const& petsc_options,
   m_global_initialized = true;
 
   if(exec_on_device) {
+#if PETSC_VERSION_GE(3, 20, 0)
     if(use_device_memory)
     {
       m_memory_type = BackEnd::Memory::Device ;
@@ -132,6 +133,9 @@ PETScLibrary::PETScLibrary(std::vector<Arccore::String> const& petsc_options,
       m_memory_type = BackEnd::Memory::Host ;
       m_exec_space = BackEnd::Exec::Device ;
     }
+#else
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Device Execution is not available");
+#endif
   }
   else
   {

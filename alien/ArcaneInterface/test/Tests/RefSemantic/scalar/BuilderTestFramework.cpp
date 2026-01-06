@@ -1,5 +1,6 @@
 #include <Tests/Options.h>
 
+#include <alien/AlienCoreSolvers.h>
 #include <alien/AlienExternalPackages.h>
 #include <alien/ref/AlienImportExport.h>
 #include <alien/ref/AlienRefSemantic.h>
@@ -20,15 +21,12 @@ main(int argc, char** argv)
 
     // Options pour ce test
     boost::program_options::options_description options;
-    options.add_options()("help", "print usage")(
-        "dump-on-screen", "dump algebraic objects on screen")(
-        "dump-on-file", "dump algebraic objects on file")("size",
-        boost::program_options::value<int>()->default_value(100),
-        "size of problem")("file-name",
-        boost::program_options::value<std::string>()->default_value("System"),
-        "Input filename")("format",
-        boost::program_options::value<std::string>()->default_value("ascii"),
-        " format ascii or hdf5");
+    options.add_options()("help", "print usage")
+                         ("dump-on-screen", "dump algebraic objects on screen")
+                         ("dump-on-file", "dump algebraic objects on file")
+                         ("size",     boost::program_options::value<int>()->default_value(100),"size of problem")
+                         ("file-name",boost::program_options::value<std::string>()->default_value("System"),"Input filename")
+                         ("format",   boost::program_options::value<std::string>()->default_value("ascii")," format ascii or hdf5");
 
     // On récupère les options (+ celles de la configuration des solveurs)
     auto arguments = Environment::options(argc, argv, options);
@@ -76,7 +74,21 @@ main(int argc, char** argv)
 
     tm->info() << "=> Vector Distribution : " << xe.distribution();
 
+    auto solver = Environment::createSolver(arguments);
+    solver->init();
+
+    // Most of solvers should be statically initialized first before using their own Linear Algebra
+
+
 #ifdef ALIEN_USE_PETSC
+
+    // CHECK thta PETSc is intialized
+    auto solver_package = arguments["solver-package"].as<std::string>() ;
+    if(solver_package.compare("petsc")!=0)
+    {
+      // Should initialiezd PETSc
+      Alien::PETScInternalLinearSolver::initializeLibrary() ;
+    }
     if (arguments.count("dump-on-screen")) {
       tm->info() << "dump exact solution xe";
       Alien::dump(xe);
@@ -113,8 +125,6 @@ main(int argc, char** argv)
 
     tm->info() << "* x = A^-1 b";
 
-    auto solver = Environment::createSolver(arguments);
-    solver->init();
     solver->solve(A, b, x);
 
     tm->info() << "* r = Ax - b";

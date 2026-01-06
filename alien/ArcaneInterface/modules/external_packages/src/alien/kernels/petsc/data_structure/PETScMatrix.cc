@@ -101,9 +101,9 @@ PETScMatrix::initMatrix(const int local_size,
 
   switch(exec_space)
   {
-#if PETSC_VERSION_GE(3, 20, 0)
     case BackEnd::Exec::Device:
     {
+#if PETSC_VERSION_GE(3, 20, 0)
       ierr += MatCreate(mpi_comm, &m_internal->m_internal);
       ierr += MatSetSizes(m_internal->m_internal, local_size, local_size, global_size, global_size);
 #ifdef PETSC_HAVE_MATSETBLOCKSIZE
@@ -121,8 +121,10 @@ PETScMatrix::initMatrix(const int local_size,
              m_internal->m_internal, max_diag_size, diag_lineSizes.unguardedBasePointer());
        }
     }
-    break;
+#else
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Matrix Type for Device Execution is not available");
 #endif
+    break;
     case BackEnd::Exec::Host:
     default:
     {

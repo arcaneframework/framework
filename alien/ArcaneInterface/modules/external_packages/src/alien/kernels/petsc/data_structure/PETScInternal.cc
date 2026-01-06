@@ -34,11 +34,19 @@ VectorInternal::VectorInternal(const int local_size,
   {
     case BackEnd::Exec::Device:
     {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_USE_CUDA
       if (m_parallel) { // Use parallel structures
         ierr += VecCreateMPICUDA(comm, local_size, global_size, &m_internal);
       } else {
         ierr += VecCreateSeqCUDA(PETSC_COMM_SELF, local_size, &m_internal);
       }
+#else
+      throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Vector Type for CUDA Execution is not available");
+#endif
+#else
+      throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Vector Type for Device Execution is not available");
+#endif
     }
     break;
     case BackEnd::Exec::Host:
@@ -78,17 +86,23 @@ VectorInternal::VectorInternal(const int local_size,
   int ierr = 0;
   switch(m_exec_space)
   {
-#if PETSC_VERSION_GE(3, 20, 0)
     case BackEnd::Exec::Device:
     {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_USE_CUDA
       if (m_parallel) { // Use parallel structures
         ierr += VecCreateMPICUDA(comm, local_size, global_size, &m_internal);
       } else {
         ierr += VecCreateSeqCUDA(PETSC_COMM_SELF, local_size, &m_internal);
       }
+#else
+      throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC CUDA Vector Type is not available");
+#endif
+#else
+      throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Vector Type for Device Execution is not available");
+#endif
     }
     break ;
-#endif
     case BackEnd::Exec::Host:
     default:
     {
