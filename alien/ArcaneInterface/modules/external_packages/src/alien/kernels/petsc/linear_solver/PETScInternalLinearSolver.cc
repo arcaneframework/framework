@@ -177,6 +177,7 @@ PETScInternalLinearSolver::initializeLibrary(bool exec_on_device, bool use_devic
                                                                      false,
                                                                      exec_on_device,
                                                                      use_device_memory)) ;
+  PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
 }
 
 void
@@ -303,7 +304,6 @@ PETScInternalLinearSolver::init()
         cout()<<"                       use Host Memory";
     }
   });
-  PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
 
   m_verbose = m_options->verbose();
   m_null_space_constant_opt = m_options->nullSpaceConstantOpt() ;
