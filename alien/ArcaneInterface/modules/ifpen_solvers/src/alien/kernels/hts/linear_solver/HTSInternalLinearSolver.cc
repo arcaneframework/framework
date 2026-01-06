@@ -100,7 +100,6 @@ struct HTSInternalLinearSolver::Impl
 
   int m_current_ctx_id = -1;
 
-  Integer m_output_level = 0;
 } ;
 
 /*---------------------------------------------------------------------------*/
@@ -111,6 +110,10 @@ HTSInternalLinearSolver::HTSInternalLinearSolver(
 , m_stater(this)
 {
   m_impl.reset(new Impl) ;
+}
+
+HTSInternalLinearSolver::~HTSInternalLinearSolver()
+{
 }
 
 void
@@ -134,7 +137,7 @@ HTSInternalLinearSolver::init()
   m_impl->m_machine_info.init(m_parallel_mng->commRank() == 0);
 
   m_impl->m_hts_solver.reset(new HartsSolver::HTSSolver());
-  m_impl->m_hts_solver->setMachineInfo(&m_machine_info);
+  m_impl->m_hts_solver->setMachineInfo(&m_impl->m_machine_info);
 
   bool use_simd = m_options->useSimd();
   m_impl->m_runtime_configuration.m_memory_space.m_is_mpi = m_use_mpi;
@@ -151,9 +154,9 @@ HTSInternalLinearSolver::init()
     break;
   }
 #endif
-  m_impl->m_current_ctx_id = m_hts_solver->createNewContext();
+  m_impl->m_current_ctx_id = m_impl->m_hts_solver->createNewContext();
   HartsSolver::HTSSolver::ContextType& context =
-      m_impl->m_hts_solver->getContext(m_current_ctx_id);
+      m_impl->m_hts_solver->getContext(m_impl->m_current_ctx_id);
 
   typedef HartsSolver::MPIInfo MPIEnvType;
   if (m_use_mpi) {
@@ -270,7 +273,7 @@ HTSInternalLinearSolver::solve(
   // GET CURRENT CONTEXT
   //
   HartsSolver::HTSSolver::ContextType& context =
-      m_impl->m_hts_solver->getContext(m_current_ctx_id);
+      m_impl->m_hts_solver->getContext(m_impl->m_current_ctx_id);
   m_impl->m_hts_solver->setCurrentContext(&context);
 
   bool is_parallel = false;
@@ -345,9 +348,9 @@ HTSInternalLinearSolver::solve(
     MCMatrixType matrix(profile);
     matrix.setValues(A.internal()->getDataPtr(), profile_permutation);
     // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
-    Impl::RunOp op(m_impl->m_hts_solver.get(), matrix, b.getDataPtr(), x.getDataPtr(), m_hts_status,
+    Impl::RunOp op(m_impl->m_hts_solver.get(), matrix, b.getDataPtr(), x.getDataPtr(), m_impl->m_hts_status,
         context);
-    HARTS::DispatchRun<Impl::RunOp>(m_runtime_configuration, op);
+    HARTS::DispatchRun<Impl::RunOp>(m_impl->m_runtime_configuration, op);
   } break;
   case 2: {
     typedef HartsSolver::CSRMatrix<Real, 2> MCMatrixType;
@@ -360,11 +363,11 @@ HTSInternalLinearSolver::solve(
     if (is_parallel)
       error = m_impl->m_hts_solver->solveN<2, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
       error = m_impl->m_hts_solver->solveN<2, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   case 3: {
     typedef HartsSolver::CSRMatrix<Real, 3> MCMatrixType;
@@ -377,11 +380,11 @@ HTSInternalLinearSolver::solve(
     if (is_parallel)
       error = m_impl->m_hts_solver->solveN<3, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
       error = m_impl->m_hts_solver->solveN<3, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   case 4: {
     typedef HartsSolver::CSRMatrix<Real, 4> MCMatrixType;
@@ -394,11 +397,11 @@ HTSInternalLinearSolver::solve(
     if (is_parallel)
       error = m_impl->m_hts_solver->solveN<4, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
       error = m_impl->m_hts_solver->solveN<4, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   default:
     break;
@@ -409,8 +412,8 @@ HTSInternalLinearSolver::solve(
   ////////////////////////////////////////////////////
   //
   // ANALIZE STATUS
-  m_status.residual = m_hts_status.residual;
-  m_status.iteration_count = m_hts_status.num_iter;
+  m_status.residual = m_impl->m_hts_status.residual;
+  m_status.iteration_count = m_impl->m_hts_status.num_iter;
 
   if (error == 0) {
     m_status.succeeded = true;
@@ -419,18 +422,18 @@ HTSInternalLinearSolver::solve(
       alien_info([&] {
         cout() << "Resolution info      :";
         cout() << "Resolution status      : OK";
-        cout() << "Residual             : " << m_hts_status.residual;
-        cout() << "Number of iterations : " << m_hts_status.num_iter;
+        cout() << "Residual             : " << m_impl->m_hts_status.residual;
+        cout() << "Number of iterations : " << m_impl->m_hts_status.num_iter;
       });
     }
     return true;
   } else {
     m_status.succeeded = false;
-    m_status.error = m_hts_status.error;
+    m_status.error = m_impl->m_hts_status.error;
     if (m_output_level > 0) {
       alien_info([&] {
         cout() << "Resolution status      : Error";
-        cout() << "Error code             : " << m_hts_status.error;
+        cout() << "Error code             : " << m_impl->m_hts_status.error;
       });
     }
     return false;

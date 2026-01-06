@@ -284,13 +284,13 @@ foreach (REFMVTESTS
    alien_test(
                 BENCH refmvhandlers.scalar
                 NAME ${REFMVTESTS}.alien-core
-                PROCS 4
+                PROCS 1
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
                 OPTIONS
                 --size=100
                 --solver-package=alien-core
                 --solver=bcgs
-                --precond=ilu0
+                --precond=neumannpoly
                 --tol=1.e-10
                 --max-iter=100
              )

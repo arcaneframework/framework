@@ -266,7 +266,7 @@ createSolver(boost::program_options::variables_map& vm)
     // options
     using namespace HTSSolverOptionsNames;
     auto options = std::make_shared<StrongOptionsHTSSolver>(
-        _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
+        _maxIterationNum = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
     return std::make_shared<Alien::HTSLinearSolver>(pm, options);

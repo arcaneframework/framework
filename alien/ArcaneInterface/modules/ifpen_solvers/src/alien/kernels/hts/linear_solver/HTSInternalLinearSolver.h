@@ -41,7 +41,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
       IOptionsHTSSolver* options = nullptr);
 
   /** Destructeur de la classe */
-  virtual ~HTSInternalLinearSolver() {}
+  virtual ~HTSInternalLinearSolver() ;
 
  public:
   //! Initialisation
@@ -98,6 +98,8 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
   struct Impl ;
   std::unique_ptr<Impl> m_impl ;
+
+  Integer m_output_level = 0;
 
   bool m_use_mpi = false;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
