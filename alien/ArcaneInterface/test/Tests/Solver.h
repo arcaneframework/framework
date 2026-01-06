@@ -255,7 +255,7 @@ createSolver(boost::program_options::variables_map& vm)
 #endif
   }
 
-  if (solver_package.compare("hts") == 0) {
+  if (solver_package.compare("htssolver") == 0) {
 #ifdef ALIEN_USE_HTSSOLVER
     std::string solver_type_s = vm["solver"].as<std::string>();
     HTSOptionTypes::eSolver solver_type =
