@@ -284,6 +284,8 @@ PETScInternalLinearSolver::init()
                                                                      use_exec_device,
                                                                      use_mem_device)) ;
 
+  PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
+
   alien_info([&] {
     if(use_exec_device)
       cout()<<"PETSc Initialisation : Exec on Device ";
