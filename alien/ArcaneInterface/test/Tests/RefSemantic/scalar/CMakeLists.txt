@@ -424,7 +424,7 @@ foreach (REFMVTESTS
                 OPTIONS
                 --size=100
                 --solver-package=htssolver
-                --solver=bicgs
+                --solver=bicgstab
                 --precond=ilu0
                 --tol=1.e-10
                 --max-iter=100
