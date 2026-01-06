@@ -1,4 +1,7 @@
 enable_language(Fortran)
+
+find_package(MPI REQUIRED Fortran) # Add Fortran here
+
 createExecutable(alien_interface_fortran.exe)
 
 #set_target_properties(alien_interface_fortran.exe PROPERTIES LINKER_LANGUAGE CXX)
@@ -39,6 +42,8 @@ endif ()
 if (TARGET hpddm)
     linkLibraries(alien_interface_fortran.exe alien_hpddm)
 endif ()
+
+linkLibraries(alien_interface_fortran.exe MPI::MPI_Fortran)
 
 commit(alien_interface_fortran.exe)
 
@@ -90,6 +95,8 @@ endif ()
 if (TARGET mpifort)
     linkLibraries(alien_interface_fortran_param.exe mpifort)
 endif ()
+
+linkLibraries(alien_interface_fortran_param.exe MPI::MPI_Fortran)
 
 commit(alien_interface_fortran_param.exe)
 
