@@ -17,11 +17,11 @@
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
 
-class SimpleCSR_to_MCG_BCSRgpu_MatrixConverter : public IMatrixConverter
+class SimpleCSR_to_MCGGPU_BCSR_MatrixConverter : public IMatrixConverter
 {
  public:
-  SimpleCSR_to_MCG_BCSRgpu_MatrixConverter() = default;
-  virtual ~SimpleCSR_to_MCG_BCSRgpu_MatrixConverter() = default;
+  SimpleCSR_to_MCGGPU_BCSR_MatrixConverter() = default;
+  virtual ~SimpleCSR_to_MCGGPU_BCSR_MatrixConverter() = default;
 
  public:
   BackEndId sourceBackend() const
@@ -43,7 +43,7 @@ class SimpleCSR_to_MCG_BCSRgpu_MatrixConverter : public IMatrixConverter
 };
 
 void
-SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::convert(
+SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SimpleCSRMatrix<Real>& v =
@@ -62,7 +62,7 @@ SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::convert(
 }
 
 void
-SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::_build(
+SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::_build(
     const SimpleCSRMatrix<Real>& sourceImpl,
     MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>& targetImpl) const
 {
@@ -100,4 +100,4 @@ SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::_build(
   }
 }
 
-REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCG_BCSRgpu_MatrixConverter);
+REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCGGPU_BCSR_MatrixConverter);

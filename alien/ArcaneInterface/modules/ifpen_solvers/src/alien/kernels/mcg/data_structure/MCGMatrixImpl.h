@@ -14,15 +14,10 @@
 
 namespace Alien {
 
-template<MCGInternal::eMemoryDomain Domain>
-using AlgebraTraitsType =
-  std::conditional_t<Domain == MCGInternal::eMemoryDomain::Host,
-    AlgebraTraits<BackEnd::tag::mcgsolver>,
-    AlgebraTraits<BackEnd::tag::mcgsolver_gpu>>;
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGMatrix<NumT,Domain>::MCGMatrix(const MultiMatrixImpl* multi_impl)
-: IMatrixImpl(multi_impl, AlgebraTraitsType<Domain>::name())
+: IMatrixImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name())
 {
   m_internal = new MatrixInternal();
 }
@@ -47,7 +42,7 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> CPU
       m_internal->m_matrix =
-        MCGSolver::LinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrix(
+        MCGSolver::LinearSystem<NumT,MCGSolver::Int32SparseIndex>::createMatrix(
           block_size, block_size2, nrow, ncol, nblocks, row_offset,cols,
           m_internal->m_elem_perm.data());
     }
@@ -59,9 +54,11 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
   else {
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
-      m_internal->m_matrix = MCGSolver::GPULinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrixFromHost(
+      m_internal->m_matrix = MCGSolver::GPULinearSystem<NumT,MCGSolver::Int32SparseIndex>::createMatrixFromHost(
         block_size, block_size2, nrow, ncol, nblocks, row_offset, cols,
         m_internal->m_elem_perm.data());
+
+      m_internal->m_val.resize(nblocks*block_size*block_size2);
     }
     else {
       // GPU -> GPU
@@ -83,7 +80,7 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
   if constexpr (Domain == MCGInternal::eMemoryDomain::Host) {
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> CPU
-      MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
+      MCGSolver::LinearSystem<NumT,MCGSolver::Int32SparseIndex>::setMatrixValues(
            m_internal->m_matrix,values,m_internal->m_elem_perm.data());
     }
     else {
@@ -94,10 +91,18 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
   else {
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
-      throw Alien::FatalErrorException("Init GPU Matrix values from CPU datas not implemented");
+      auto error = cudaMemcpyAsync(m_internal->m_val.data(), values, m_internal->m_val.size()*sizeof(NumT),
+        cudaMemcpyHostToDevice, nullptr);
+
+      if (error != cudaSuccess) {
+        throw Alien::FatalErrorException("Cuda Error");
+      }
+
+      MCGSolver::GPULinearSystem<NumT,MCGSolver::Int32SparseIndex>::setMatrixValues(m_internal->m_matrix,
+        m_internal->m_val.data(), m_internal->m_elem_perm.data());
     }
     else {
-      MCGSolver::GPULinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
+      MCGSolver::GPULinearSystem<NumT,MCGSolver::Int32SparseIndex>::setMatrixValues(
           m_internal->m_matrix,values,m_internal->m_elem_perm.data());
     }
   }

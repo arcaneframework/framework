@@ -14,7 +14,7 @@ namespace Alien {
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGVector<NumT,Domain>::MCGVector(const MultiVectorImpl* multi_impl)
-: IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver>::name())
+: IVectorImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name())
 {}
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
@@ -65,8 +65,19 @@ MCGVector<NumT,Domain>::setValues(double const* values)
   assert(dist.localSize() == m_internal->m_vector->size());
 
   double* data = m_internal->m_vector->data();
-  for (int i = 0; i < dist.localSize() * block_size; ++i)
-    data[i] = values[i];
+
+  if constexpr(Domain == MCGInternal::eMemoryDomain::Host) {
+    for (int i = 0; i < dist.localSize() * block_size; ++i)
+      data[i] = values[i];
+  }
+  else {
+    auto err = cudaMemcpyAsync(data, values, dist.localSize() * block_size * sizeof(NumT),
+      cudaMemcpyHostToDevice, nullptr);
+
+    if (err != cudaSuccess) {
+      throw FatalErrorException(A_FUNCINFO, "CUDA Error");
+    }
+  }
 }
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
@@ -86,8 +97,15 @@ MCGVector<NumT,Domain>::getValues(double* values) const
   assert(dist.localSize() == m_internal->m_vector->size());
 
   const double* data = m_internal->m_vector->data();
-  for (int i = 0; i < dist.localSize() * block_size; i++)
-    values[i] = data[i];
+
+  if constexpr(Domain == MCGInternal::eMemoryDomain::Host) {
+    for (int i = 0; i < dist.localSize() * block_size; i++)
+      values[i] = data[i];
+  }
+  else {
+    cudaMemcpy(values, data, dist.localSize() * block_size * sizeof(NumT),
+      cudaMemcpyDeviceToHost);
+  }
 }
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>

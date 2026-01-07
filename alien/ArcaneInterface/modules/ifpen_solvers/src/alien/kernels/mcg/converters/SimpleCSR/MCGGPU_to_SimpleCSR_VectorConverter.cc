@@ -17,42 +17,40 @@
 
 using namespace Alien;
 
-class SimpleCSR_to_MCG_GPUVectorConverter : public IVectorConverter
+class MCGGPU_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
-  SimpleCSR_to_MCG_GPUVectorConverter();
-  virtual ~SimpleCSR_to_MCG_GPUVectorConverter() {}
+  MCGGPU_to_SimpleCSR_VectorConverter();
+  virtual ~MCGGPU_to_SimpleCSR_VectorConverter() {}
 
  public:
   BackEndId sourceBackend() const
   {
-    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
+    return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
   BackEndId targetBackend() const
   {
-    return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
+    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
   void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
-  // void convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl,int i) const;
 };
 
-SimpleCSR_to_MCG_GPUVectorConverter::SimpleCSR_to_MCG_GPUVectorConverter()
-{
-}
+MCGGPU_to_SimpleCSR_VectorConverter::MCGGPU_to_SimpleCSR_VectorConverter()
+{}
 
 void
-SimpleCSR_to_MCG_GPUVectorConverter::convert(
+MCGGPU_to_SimpleCSR_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const SimpleCSRVector<double>& v =
-      cast<SimpleCSRVector<double>>(sourceImpl, sourceBackend());
-  auto& v2 = cast<MCGVector<Real,MCGInternal::eMemoryDomain::Device>>(targetImpl, targetBackend());
+  const auto& v = cast<MCGVector<Real,MCGInternal::eMemoryDomain::Device>>(sourceImpl, sourceBackend());
+  SimpleCSRVector<double>& v2 =
+      cast<SimpleCSRVector<double>>(targetImpl, targetBackend());
 
   alien_debug([&] {
-    cout() << "Converting SimpleCSRVector: " << &v << " to MCGVector on Device" << &v2;
+    cout() << "Converting MCGVector on Device: " << &v << " to SimpleCSRVector " << &v2;
   });
 
-  v2.setValues(v.values().data());
+  v.getValues(v2.values().data());
 }
 
-REGISTER_VECTOR_CONVERTER(SimpleCSR_to_MCG_GPUVectorConverter);
+REGISTER_VECTOR_CONVERTER(MCGGPU_to_SimpleCSR_VectorConverter);

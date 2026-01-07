@@ -20,13 +20,20 @@
 #include <alien/kernels/mcg/MCGPrecomp.h>
 #include <alien/kernels/mcg/data_structure/MemoryDomain.h>
 
-BEGIN_MCGINTERNAL_NAMESPACE
+#include "alien/kernels/mcg/MCGBackEnd.h"
 
-/*---------------------------------------------------------------------------*/
+BEGIN_MCGINTERNAL_NAMESPACE
+  /*---------------------------------------------------------------------------*/
 
 template<typename NumT,eMemoryDomain Domain>
 struct MatVecTypeGen
 {};
+
+template<eMemoryDomain Domain>
+using AlgebraTraitsType =
+  std::conditional_t<Domain == eMemoryDomain::Host,
+    AlgebraTraits<BackEnd::tag::mcgsolver>,
+    AlgebraTraits<BackEnd::tag::mcgsolver_gpu>>;
 
 template<typename NumT>
 struct MatVecTypeGen<NumT,eMemoryDomain::Host>
@@ -62,6 +69,7 @@ class MatrixInternal
   std::shared_ptr<MatrixType> m_matrix;
 
   ArrayType<int> m_elem_perm;
+  ArrayType<NumT> m_val;
 };
 
 template<typename NumT,eMemoryDomain Domain>
