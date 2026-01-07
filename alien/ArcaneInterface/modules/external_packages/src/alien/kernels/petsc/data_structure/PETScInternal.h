@@ -58,11 +58,11 @@ struct MatrixInternal
   ~MatrixInternal()
   {
     if (m_internal) {
-#ifndef PETSC_MATDESTROY_NEW
-      MatDestroy(m_internal);
-#else /* PETSC_MATDESTROY_NEW */
+//#ifndef PETSC_MATDESTROY_NEW
+//      MatDestroy(m_internal);
+//#else /* PETSC_MATDESTROY_NEW */
       MatDestroy(&m_internal);
-#endif /* PETSC_MATDESTROY_NEW */
+//#endif /* PETSC_MATDESTROY_NEW */
     }
   }
 
