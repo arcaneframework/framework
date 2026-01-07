@@ -10,6 +10,8 @@
 #include <alien/kernels/petsc/data_structure/PETScVector.h>
 #include <alien/kernels/petsc/data_structure/PETScMatrix.h>
 
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
+
 #include <alien/core/impl/MultiMatrixImpl.h>
 
 #include <arccore/message_passing/Communicator.h>
