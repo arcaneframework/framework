@@ -6,12 +6,8 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-
 #include <alien/utils/Precomp.h>
-
-#ifdef WIN32
-//#include <alien/utils/WinUtil.h>
-#endif
+#include "alien/AlienExternalPackagesPrecomp.h"
 
 //#define PETSC_DESTROY_NEW
 //#define PETSC_KSPSETPCSIDE_NEW
