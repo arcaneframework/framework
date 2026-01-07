@@ -14,6 +14,7 @@ struct MCGOptionTypes
     CPU_AVX2_BCSP,
     CPU_AVX512_BCSP,
     GPU_CUBLAS_BELL,
-    GPU_CUBLAS_BCSP
+    GPU_CUBLAS_BCSP,
+    GPU_CUBLAS_BCSR,
   };
 };

@@ -123,6 +123,23 @@ if (TARGET mcgsolver)
             --kernel=cpu_cblas_bcsr
             --output-level=2
     )
+
+    alien_test(
+            BENCH test
+            NAME mcgsolver_gpu
+            PROCS 4
+            COMMAND alien_test.exe
+            OPTIONS
+            --nx=10
+            --ny=10
+            --solver-package=mcgsolver
+            --solver=bicgstab
+            --precond=none
+            --tol=1.e-10
+            --max-iter=1000
+            --kernel=gpu_cublas_bcsp
+            --output-level=2
+    )
 endif ()
 
 if (TARGET mtl)

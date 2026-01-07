@@ -59,6 +59,9 @@
             <enumvalue name="GPU_CUBLAS_BCSP" genvalue="MCGOptionTypes::GPU_CUBLAS_BCSP">
                 <description>GPU CUBLAS kernel with block CSP matrix</description>
             </enumvalue>
+            <enumvalue name="GPU_CUBLAS_BCSR" genvalue="MCGOptionTypes::GPU_CUBLAS_BCSR">
+                <description>GPU CUBLAS kernel with block CSR matrix</description>
+            </enumvalue>
         </enumeration>
 
         <enumeration name="solver" type="MCGSolver::eKrylovType" default="BiCGStab">

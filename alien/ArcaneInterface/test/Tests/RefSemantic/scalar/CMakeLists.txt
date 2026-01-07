@@ -385,7 +385,7 @@ foreach (REFMVTESTS
         alien_test(
                 BENCH refmvhandlers.scalar
                 NAME ${REFMVTESTS}.mcgsolver_gpu
-                PROCS 1
+                PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
                 OPTIONS
                 --size=100

@@ -89,6 +89,11 @@ MCGInternalLinearSolver::AlienKOpt2MCGKOpt::AlienKOpt2MCGKOpt()
       MCGSolver::eKernelType::GPU_CUBLAS_BCSP;
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSP, true, false }] =
       MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSP;
+
+  m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSR, false, false }] =
+    MCGSolver::eKernelType::GPU_CUBLAS_BCSR;
+  m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSR, true, false }] =
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSR;
 }
 
 MCGSolver::eKernelType

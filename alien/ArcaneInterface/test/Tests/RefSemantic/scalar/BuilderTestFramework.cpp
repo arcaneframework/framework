@@ -154,7 +154,7 @@ main(int argc, char** argv)
     tm->info() << " => ||r|| = " << norme;
 
     if (normr / normb > arguments["tol"].as<double>())
-      tm->fatal() << "Error, relative residual norm is to high (" << normr << " vs. "
+      tm->fatal() << "Error, relative residual norm is to high (" << normr / normb << " vs. "
                   << arguments["tol"].as<double>() << "\n";
 
     tm->info() << " ";

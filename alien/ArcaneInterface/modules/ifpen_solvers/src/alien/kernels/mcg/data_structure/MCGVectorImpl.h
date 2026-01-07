@@ -103,6 +103,8 @@ MCGVector<NumT,Domain>::getValues(double* values) const
       values[i] = data[i];
   }
   else {
+    cudaStreamSynchronize(nullptr);
+
     cudaMemcpy(values, data, dist.localSize() * block_size * sizeof(NumT),
       cudaMemcpyDeviceToHost);
   }
