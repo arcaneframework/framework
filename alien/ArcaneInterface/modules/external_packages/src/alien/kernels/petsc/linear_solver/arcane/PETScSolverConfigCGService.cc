@@ -48,12 +48,12 @@ PETScSolverConfigCGService::configure(
 
   checkError("Solver set type", KSPSetType(ksp, KSPCG));
   if (options()->right()) {
-#ifndef PETSC_KSPSETPCSIDE_NEW
-    checkError(
-        " Set solver preconditioner side ", KSPSetPreconditionerSide(ksp, PC_RIGHT));
-#else /* PETSC_KSPSETPCSIDE_NEW */
+  //#ifndef PETSC_KSPSETPCSIDE_NEW
+  //  checkError(
+  //      " Set solver preconditioner side ", KSPSetPreconditionerSide(ksp, PC_RIGHT));
+  //#else /* PETSC_KSPSETPCSIDE_NEW */
     checkError(" Set solver preconditioner side ", KSPSetPCSide(ksp, PC_RIGHT));
-#endif /* PETSC_KSPSETPCSIDE_NEW */
+  //#endif /* PETSC_KSPSETPCSIDE_NEW */
     checkError(" Set solver unpreconditioned norm type ",
         KSPSetNormType(ksp, KSP_NORM_UNPRECONDITIONED));
   }
