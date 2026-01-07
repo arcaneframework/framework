@@ -1,10 +1,13 @@
 ﻿set(SOURCE_FILES
+  TestCommon.h
   TestInit.cc
   TestReduce1.cc
+  TestLoop1.cc
 )
 
 set(ACCELERATOR_FILES
   TestReduce_Accelerator.cc
+  TestLoop_Accelerator.cc
 )
 
 arccore_add_component_test_executable(accelerator
