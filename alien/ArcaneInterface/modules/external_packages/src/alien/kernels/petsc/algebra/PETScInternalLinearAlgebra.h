@@ -7,8 +7,7 @@
 #ifndef ALIEN_KERNELS_PETSC_ALGEBRA_PETSCINTERNALLINEARALGEBRA_H
 #define ALIEN_KERNELS_PETSC_ALGEBRA_PETSCINTERNALLINEARALGEBRA_H
 
-#include <alien/AlienExternalPackagesPrecomp.h>
-
+#include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 #include <alien/core/backend/IInternalLinearAlgebraT.h>
 
