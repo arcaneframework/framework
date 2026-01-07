@@ -4,16 +4,13 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include "petscmat.h"
 
-#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
-
-#include "PETScMatrix.h"
-#include "PETScVector.h"
-
-#include <alien/kernels/petsc/data_structure/PETScVector.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
+#include <alien/kernels/petsc/data_structure/PETScVector.h>
+#include <alien/kernels/petsc/data_structure/PETScMatrix.h>
+
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 
 #include <alien/core/impl/MultiMatrixImpl.h>
 
@@ -120,10 +117,11 @@ PETScMatrix::initMatrix(const int local_size,
          ierr += MatSeqAIJSetPreallocation(
              m_internal->m_internal, max_diag_size, diag_lineSizes.unguardedBasePointer());
        }
-    }
 #else
-    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Matrix Type for Device Execution is not available");
+       throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Matrix Type for Device Execution is not available");
+       return false ;
 #endif
+    }
     break;
     case BackEnd::Exec::Host:
     default:
@@ -159,17 +157,16 @@ PETScMatrix::initMatrix(const int local_size,
   return (ierr == 0);
 }
 
-bool
-PETScMatrix::initMatrix(const int local_size,
-                const int local_offset,
-                const int global_size,
-                const int block_size,
-                const int nb_dofs,
-                int const* dof_uids,
-                const int nnz,
-                int* rows,
-                int* cols,
-                const bool parallel)
+bool PETScMatrix::initMatrix(const int local_size,
+                        const int local_offset,
+                        const int global_size,
+                        const int block_size,
+                        const int nb_dofs,
+                        const int* dof_uids,
+                        const int nnz,
+                        int* rows,
+                        int* cols,
+                        const bool parallel)
 {
   int ierr = 0; // code d'erreur de retour
 

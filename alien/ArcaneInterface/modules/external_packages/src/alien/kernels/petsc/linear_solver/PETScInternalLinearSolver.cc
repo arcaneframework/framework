@@ -446,11 +446,11 @@ PETScInternalLinearSolver::solve(
 // L'API devrait permettre de demander au solveur sa capacité de traiter les pbs à une
 // constante près, si oui
 // le prend en charge, sinon demande à l'utilisateur de le prendre en charge
-#ifdef PETSC_GETPCTYPE_NEW
+//#ifdef PETSC_GETPCTYPE_NEW
   PCType pctype;
-#else
-  const PCType pctype;
-#endif
+  //#else
+  //  const PCType pctype;
+  //#endif
   PC pc;
   KSPGetPC(ksp, &pc);
   PCGetType(pc, &pctype);

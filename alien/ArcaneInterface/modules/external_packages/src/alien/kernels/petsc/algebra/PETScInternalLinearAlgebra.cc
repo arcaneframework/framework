@@ -4,10 +4,11 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include "PETScInternalLinearAlgebra.h"
 
+#include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 
+#include "PETScInternalLinearAlgebra.h"
 #include <alien/core/backend/LinearAlgebraT.h>
 #include <alien/data/Space.h>
 #include <alien/kernels/petsc/data_structure/PETScInit.h>
