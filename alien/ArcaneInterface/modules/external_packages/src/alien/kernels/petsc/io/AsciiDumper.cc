@@ -97,11 +97,11 @@ class AsciiDumper::Internal
 
   static void destroyViewer(PetscViewer& viewer)
   {
-#ifndef PETSC_VIEWERDESTROY_NEW
-    PetscViewerDestroy(viewer);
-#else /* PETSC_VIEWERDESTROY_NEW */
+    //#ifndef PETSC_VIEWERDESTROY_NEW
+    //PetscViewerDestroy(viewer);
+    //#else /* PETSC_VIEWERDESTROY_NEW */
     PetscViewerDestroy(&viewer);
-#endif /* PETSC_VIEWERDESTROY_NEW */
+    //#endif /* PETSC_VIEWERDESTROY_NEW */
   }
 
  private:

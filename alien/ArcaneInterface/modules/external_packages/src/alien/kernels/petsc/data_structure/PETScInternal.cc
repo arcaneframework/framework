@@ -134,11 +134,11 @@ VectorInternal::VectorInternal(const int local_size,
 
 VectorInternal::~VectorInternal()
 {
-#ifndef PETSC_DESTROY_NEW
-  VecDestroy(m_internal);
-#else /* PETSC_DESTROY_NEW */
+//#ifndef PETSC_DESTROY_NEW
+//  VecDestroy(m_internal);
+//#else /* PETSC_DESTROY_NEW */
   VecDestroy(&m_internal);
-#endif /* PETSC_DESTROY_NEW */
+//#endif /* PETSC_DESTROY_NEW */
 }
 
 /*---------------------------------------------------------------------------*/
