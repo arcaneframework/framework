@@ -1,4 +1,5 @@
 ﻿set(SOURCE_FILES
+  TestCommon.h
   TestInit.cc
   TestReduce1.cc
 )

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,6 +17,8 @@
 #include "arccore/accelerator/RunCommandLoop.h"
 #include "arccore/accelerator/Reduce.h"
 #include "arccore/accelerator/internal/Initializer.h"
+
+#include "./TestCommon.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,50 +95,7 @@ void _doTestReduceDirect(bool use_accelerator)
   }
 }
 
-#if defined(ARCCORE_HAS_CUDA)
-#define DO_TEST_CUDA(name1, name2, func) \
-  TEST(name1, name2##_cuda) \
-  { \
-    func(true); \
-  }
-#else
-#define DO_TEST_CUDA(name1, name2, func)
-#endif
-
-#if defined(ARCCORE_HAS_HIP)
-#define DO_TEST_HIP(name1, name2, func) \
-  TEST(name1, name2##_hip) \
-  { \
-    func(true); \
-  }
-#else
-#define DO_TEST_HIP(name1, name2, func)
-#endif
-
-#if defined(ARCCORE_HAS_SYCL)
-#define DO_TEST_SYCL(name1, name2, func) \
-  TEST(name1, name2##_sycl) \
-  { \
-    func(true); \
-  }
-#else
-#define DO_TEST_SYCL(name1, name2, func)
-#endif
-
-#define DO_TEST_SEQUENTIAL(name1, name2, func) \
-  TEST(name1, name2) \
-  { \
-    func(false); \
-  }
-
-// Macro pour définir les tests en fonction de l'accélérateur
-#define DO_TEST_ACCELERATOR(name1, name2, func) \
-  DO_TEST_CUDA(name1, name2, func); \
-  DO_TEST_HIP(name1, name2, func); \
-  DO_TEST_SYCL(name1, name2, func); \
-  DO_TEST_SEQUENTIAL(name1, name2, func);
-
-DO_TEST_ACCELERATOR(ArccoreAccelerator, TestReduceDirect, _doTestReduceDirect);
+ARCCORE_TEST_DO_TEST_ACCELERATOR(ArccoreAccelerator, TestReduceDirect, _doTestReduceDirect);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
