@@ -62,6 +62,9 @@
 #include <iterator>
 #include <map>
 
+#include "arcane/core/Timer.h"
+#include "arccore/trace/ITraceMng.h"
+
 //#include <parmetis.h>
 
 /*---------------------------------------------------------------------------*/
@@ -1380,7 +1383,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   Integer nb_node_added = nodes_to_add.size();
   UniqueArray<Int32> nodes_lid(nb_node_added);
 
-  info() << "JustBeforeAdd " << nodes_to_add;
+  // info() << "JustBeforeAdd " << nodes_to_add;
   mesh->modifier()->addNodes(nodes_to_add, nodes_lid.view());
 
   // Edges: Pas de génération d'arrête
@@ -2209,6 +2212,8 @@ void ArcaneBasicMeshSubdividerService::_checkHashNodesFacesCells(IPrimaryMesh* m
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
+  Arcane::Timer total_time(mesh->subDomain(),"TimerSubdividerTotal",Timer::eTimerType::TimerReal);
+  total_time.start();
   //exit(0);
   //_generateOneTetra(mesh);
   std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> pattern_manager;
@@ -2218,6 +2223,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
+
   if (options()->differentElementTypeOutput()) {
     pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
     pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
@@ -2226,18 +2232,43 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     info() << "The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4.";
     info() << "The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8";
   }
+
+  Arcane::Timer timer_subdivide_step(mesh->subDomain(),"TimerSubdivider",Timer::eTimerType::TimerReal);
+  Arcane::Timer timer_renumbering_step(mesh->subDomain(),"TimerRenumbering",Timer::eTimerType::TimerReal);
+  Arcane::Timer timer_renumbering_apply_step(mesh->subDomain(),"TimerRenumberingApply",Timer::eTimerType::TimerReal);
+
+  timer_subdivide_step.start();
+
   for (Integer i = 0; i < options()->nbSubdivision; i++) {
     _refineOnce(mesh, pattern_manager);
     debug() << i << "refine done";
   }
 
+  timer_subdivide_step.stop();
+
+  timer_renumbering_step.start();
+
   // Renumbering Node, Faces, using Cells uids
   _renumberNodesFaces(mesh);
   // * Transform in option <without-renumber-compact>
 
+  timer_renumbering_step.stop();
+
+  timer_renumbering_apply_step.start();
+
   mesh->properties()->setBool("compact",true);
   mesh->properties()->setBool("sort",true);
   mesh->modifier()->endUpdate();
+
+  timer_renumbering_apply_step.stop();
+
+
+  total_time.stop();
+
+  traceMng()->info() << "Timers " << timer_subdivide_step.name() << " " << timer_subdivide_step.totalTime() ;
+  traceMng()->info() << "Timers " << timer_renumbering_step.name() << " " << timer_renumbering_step.totalTime() ;
+  traceMng()->info() << "Timers " << timer_renumbering_apply_step.name() << " " << timer_renumbering_apply_step.totalTime() ;
+  traceMng()->info() << "Timers " << total_time.name() << " " << total_time.totalTime() ;
 
   // VariableList vl;
   //_writeEnsight(mesh,"SubdividerRenumberTests",vl);
