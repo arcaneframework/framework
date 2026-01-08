@@ -1042,9 +1042,7 @@ void ArcaneBasicMeshSubdividerService::_generatePattern3D(IPrimaryMesh* mesh)
 static void _writeEnsight(IMesh* mesh, const String& dirname,
                           const VariableList& variables)
 {
-  const char* debug_env = std::getenv("WRITE_ENSIGHT");
-  if (debug_env == "0")
-    return;
+
   Directory d = mesh->subDomain()->exportDirectory();
   ServiceBuilder<IPostProcessorWriter> spp(mesh->handle());
   auto post_processor = spp.createReference(
