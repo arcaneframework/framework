@@ -110,17 +110,27 @@ PETScVector::getDataPtr()
   }
   else
   {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_HAVE_CUDA
     int ierr = VecCUDAGetArrayWrite(m_internal->m_internal, &petsc_ptr);
+#endif
+#endif
     return petsc_ptr ;
   }
 }
 
 bool PETScVector::restoreDataPtr(PETScVector::ValueType* values_ptr)
 {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_HAVE_CUDA
   int ierr = VecCUDARestoreArrayWrite(m_internal->m_internal, &values_ptr);
   if(ierr !=0)
     throw Arccore::FatalErrorException(A_FUNCINFO, "Error while restore vector data ptr");
-
+#else
+  throw Arccore::FatalErrorException(A_FUNCINFO, "CUDA not available, Cannot restore device vector data ptr");
+  return false ;
+#endif
+#endif
   if (not assemble())
   {
     throw Arccore::FatalErrorException(A_FUNCINFO, "Error while assembling vector data");
