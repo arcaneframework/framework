@@ -49,9 +49,6 @@ loadPackage(NAME FFTW3)
 
 # solveurs
 
-# Needed to use the find_package provided by Arccon
-set (Hypre_USE_CMAKE_CONFIG TRUE)
-
 #loadPackage(NAME Umfpack)
 loadPackage(NAME PETSc)
 loadPackage(NAME SLEPc)

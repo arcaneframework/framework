@@ -35,7 +35,7 @@ VectorInternal::VectorInternal(const int local_size,
     case BackEnd::Exec::Device:
     {
 #if PETSC_VERSION_GE(3, 20, 0)
-#if PETSC_USE_CUDA
+#if PETSC_HAVE_CUDA
       if (m_parallel) { // Use parallel structures
         ierr += VecCreateMPICUDA(comm, local_size, global_size, &m_internal);
       } else {
@@ -89,7 +89,7 @@ VectorInternal::VectorInternal(const int local_size,
     case BackEnd::Exec::Device:
     {
 #if PETSC_VERSION_GE(3, 20, 0)
-#if PETSC_USE_CUDA
+#if PETSC_HAVE_CUDA
       if (m_parallel) { // Use parallel structures
         ierr += VecCreateMPICUDA(comm, local_size, global_size, &m_internal);
       } else {
