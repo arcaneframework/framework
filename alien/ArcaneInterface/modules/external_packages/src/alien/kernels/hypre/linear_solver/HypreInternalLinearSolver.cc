@@ -129,7 +129,7 @@ HypreInternalLinearSolver::initializeLibrary(bool exec_on_device, bool use_devic
   if(Alien::HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
   HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_momory)) ;
 }
- 
+
 void
 HypreInternalLinearSolver::init()
 {
@@ -398,23 +398,44 @@ HypreInternalLinearSolver::solve(
      ! 6 -> symetric Gauss Seidel
      ! 9 -> Gauss Elimination
      ! -1 : default parameter : 3
+     Jacobi sequential-Gauss-Seidel seqboundary-Gauss-Seidel SOR/Jacobi backward-SOR/Jacobi  symmetric-SOR/Jacobi  l1scaled-SOR/Jacobi Gaussian-elimination
        */
-      int relax_type = -1 ;
-      if(m_options->amgRelaxType()=="weigted-jacolbi")
+      int relax_type = 3 ;
+      if(m_options->amgRelaxType()=="Jacobi")
         relax_type = 0 ;
-      if(m_options->amgRelaxType()=="sequential-gauss-seidel")
+      if(m_options->amgRelaxType()=="sequential-Gauss-Seidel")
         relax_type = 1 ;
-      if(m_options->amgRelaxType()=="gauss-seidel-jacobi")
+      if(m_options->amgRelaxType()=="backward-Gauss-Seidel")
+        relax_type = 2 ;
+      if(m_options->amgRelaxType()=="hybrid-Gauss-Seidel")
         relax_type = 3 ;
-      if(m_options->amgRelaxType()=="symetric-gauss-seidel")
+      if(m_options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
+          relax_type = 4 ;
+      if(m_options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
+        relax_type = 5 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 6 ;
-      if(m_options->amgRelaxType()=="gauss-elimination")
+      if(m_options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
+        relax_type = 7 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+        relax_type = 8 ;
+      if(m_options->amgRelaxType()=="l1-Gauss-Seidel")
         relax_type = 9 ;
+      if(m_options->amgRelaxType()=="forward-l1-Gauss-Seidel")
+        relax_type = 13 ;
+      if(m_options->amgRelaxType()=="backward-l1-Gauss-Seidel")
+        relax_type = 14 ;
+      if(m_options->amgRelaxType()=="CG")
+        relax_type = 15 ;
+      if(m_options->amgRelaxType()=="Chebyshev")
+        relax_type = 16 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
+        relax_type = 18 ;
       ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,relax_type) ;
       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
       if(ierr) {
         alien_fatal([&] {
-            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType";
+            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<m_options->amgRelaxType()<<" IERR="<<ierr;
         });
       }
 

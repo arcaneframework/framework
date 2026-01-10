@@ -18,7 +18,7 @@
                <description>Share memory type</description>
             </enumvalue>
       </enumeration>
-    
+
       <enumeration name="exec-space" type="HypreOptionTypes::eExecSpace" default="Host">
             <description>Exec space</description>
             <enumvalue name="Host" genvalue="HypreOptionTypes::Host">
@@ -28,77 +28,83 @@
                <description>Exec on Device</description>
             </enumvalue>
       </enumeration>
-      
+
       <simple name="num-iterations-max" type="integer">
             <description>Maximal number of iterations</description>
       </simple>
-      
+
       <simple name="stop-criteria-value" type="real">
             <description>Requested accuracy</description>
       </simple>
-      
+
       <simple name="iluk-level" type="integer" default="0">
             <description>ilu fill in level</description>
       </simple>
-      
+
       <simple name="ilut-threshold" type="real" default="0.">
             <description>ilut threshold</description>
       </simple>
-      
+
       <simple name="ilut-max-nnz" type="integer" default="0">
             <description>ilut max nnz per row</description>
       </simple>
-      
+
       <simple name="amg-coarsen-type" type="string" default="Falgout">
       <description>
-      Coarsen alg type: 
-      - CLJP 
+      Coarsen alg type:
+      - CLJP
       - Ruge-Stueben
       - modifiedRuge-Stueben
-      - Falgout 
-      - PMIS 
+      - Falgout
+      - PMIS
       - HMIS
       </description>
       </simple>
-    
+
       <simple name="amg-interp-type" type="string" default="classical">
       <description>
       Interpolation type :
-        - classical   
-        - direct 
-        - multipass 
-        - multipass-wts 
-        - ext+i 
-        - ext+i-cc 
-        - standard 
-        - standard-wts   
-        - FF 
-        - FF1 
+        - classical
+        - direct
+        - multipass
+        - multipass-wts
+        - ext+i
+        - ext+i-cc
+        - standard
+        - standard-wts
+        - FF
+        - FF1
       </description>
       </simple>
-    
-      <simple name="amg-relax-type" type="string" default="SOR/Jacobi">
+
+      <simple name="amg-relax-type" type="string" default="gauss-seidel-jacobi">
       <description>
-      Relax type :
-        - Jacobi 
-        - sequential-Gauss-Seidel 
-        - seqboundary-Gauss-Seidel 
-        - SOR/Jacobi 
-        - backward-SOR/Jacobi  
-        - symmetric-SOR/Jacobi  
-        - l1scaled-SOR/Jacobi 
-        - Gaussian-elimination      
-        - CG 
-        - Chebyshev 
-        - FCF-Jacobi 
-        - l1scaled-Jacobi
+      Options de RelaxType
+          0 - Jacobi
+          1 - Gauss-Seidel, séquentiel (parcours avant)
+          2 - Gauss-Seidel, séquentiel (parcours arrière)
+          3 - Gauss-Seidel hybride (parcours avant)
+          4 - Gauss-Seidel hybride (parcours arrière)
+          5 - Gauss-Seidel hybride symétrique
+          6 - Gauss-Seidel hybride, L1 (parcours avant)
+          7 - Gauss-Seidel hybride, L1 (parcours arrière)
+          8 - Gauss-Seidel hybride symétrique, L1
+          9 - Gauss-Seidel, L1 (parcours avant)
+          13 - Gauss-Seidel L1 forward
+          14 - Gauss-Seidel L1 backward
+          15 - CG (non recommandé comme lisseur)
+          16 - Chebyshev
+          18 - Gauss-Seidel hybride L1 (version alternative)
+
+          Utilisation typique
+La valeur par défaut est généralement 3 (Gauss-Seidel hybride forward), qui offre un bon compromis entre efficacité et parallélisme. Pour des problèmes symétriques, 6 ou 8 (versions L1) sont souvent recommandés.
       </description>
       </simple>
-    
+
       <simple name="amg-nodal-coarsen" type="integer" default="1">
       <description>
       Nodal coarsen alg :
-      
+
     1 : Frobenius norm
     2 : sum of absolute values of elements in each block
     3 : largest element in each block (not absolute value)
@@ -106,45 +112,45 @@
     6 : sum of all values in each block
       </description>
       </simple>
-    
+
       <simple name="amg-vec-interp-variant" type="integer" default="2">
       <description>
        Vec Interpolation Variant Algo :
     1 : GM approach 1
     2 : GM approach 2 (to be preferred over 1)
     3 : LN approach
-      
+
       </description>
       </simple>
-        
+
       <simple name="amg-max-levels" type="integer" default="25">
       <description>
           Max coarsening levels
       </description>
       </simple>
-    
+
       <simple name="amg-pmax-elements" type="integer" default="0">
       <description>
           Max elements per row for interpolation operator (0=unlimited)
       </description>
       </simple>
-    
+
       <simple name="amg-strong-threshold" type="real" default="0.15">
             <description>ilut threshold</description>
       </simple>
-      
+
       <simple name="amg-truncfactor" type="real" default="0">
       <description>
           Truncation factor for interpolation (0=no truncation) (None)
       </description>
       </simple>
-      
+
       <simple name="amg-max-row-sum" type="real" default="0.9">
       <description>
           Max row sum
       </description>
       </simple>
-    
+
       <enumeration name="solver" type="HypreOptionTypes::eSolver">
             <description>Solver type</description>
             <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
@@ -190,11 +196,11 @@
                <description>FSAI preconditioner</description>
             </enumvalue>
         </enumeration>
-        
+
         <simple name="verbose" type="bool" default="false">
             <description>Verbosity flag</description>
         </simple>
-        
+
         <simple name="output-level" type="integer" default="0">
             <description>Verbosity level flag</description>
         </simple>

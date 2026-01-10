@@ -21,12 +21,12 @@ if(ALIEN_USE_SYCL)
 endif()
 
 linkLibraries(alien_external_packages petsc)
-  
+
 if(PETSc_USE_PKGCONFIG)
-    if(PKG_PETSC_FOUND) 
+    if(PKG_PETSC_FOUND)
       target_link_options(alien_external_packages PRIVATE ${PKG_PETSC_STATIC_LDFLAGS})
      endif()
-endif()  
+endif()
 
 
 if(USE_AXLSTAR)
@@ -98,7 +98,7 @@ if (TARGET slepc)
 
 endif (TARGET slepc)
 
-if (TARGET hypre)
+if (TARGET petsc::hypre)
   if (USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/hypre/PETScPrecConfigHypreEuclid.axl
@@ -115,11 +115,11 @@ if (TARGET hypre)
              linear_solver/hypre/PETScPrecConfigHypreEuclidService.cc
              linear_solver/hypre/PETScPrecConfigHypreService.cc
             )
-              
-endif (TARGET hypre)
 
-  if (TARGET superlu)
-      if(USE_AXLSTAR)
+endif (TARGET petsc::hypre)
+
+if (TARGET petsc::superlu)
+  if(USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLU.axl
               linear_solver/super_lu/PETScPrecConfigSuperLU.axl
@@ -130,12 +130,12 @@ endif (TARGET hypre)
               INSTALL_GENERATED_FILES
               USER_INSTALL_PREFIX ALIEN
               )
-      endif()
-      addSources(alien_external_packages
+  endif()
+  addSources(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLUService.cc
               linear_solver/super_lu/PETScPrecConfigSuperLUService.cc
               )
-  endif (TARGET superlu)
+endif (TARGET petsc::superlu)
 
 if (TARGET petsc::mumps)
   if(USE_AXLSTAR)
