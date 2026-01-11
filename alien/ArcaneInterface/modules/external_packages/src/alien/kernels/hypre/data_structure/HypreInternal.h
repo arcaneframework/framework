@@ -62,6 +62,14 @@ class MatrixInternal
   bool setMatrixValues(const int nrow, const int* rows, const int* ncols, const int* cols,
       const Arccore::Real* values);
 
+  bool setMatrixValuesFrom(const int nrow,
+                           const int nnz,
+                           const int* rows,
+                           const int* ncols,
+                           const int* cols,
+                           const Arccore::Real* values,
+                           BackEnd::Memory::eType memory);
+
   bool assemble();
 
   BackEnd::Memory::eType getMemoryType() const {

@@ -37,7 +37,7 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary(bool exec_on_device, bool use_device_momory) ;
+  HypreLibrary(bool exec_on_device, bool use_device_momory, int device_id=0) ;
   virtual ~HypreLibrary() ;
 
   BackEnd::Memory::eType getMemoryType() const {
@@ -51,12 +51,13 @@ class HypreLibrary
   private:
   BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
   BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
+  int m_device_id = 0 ;
 } ;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver 
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 : public IInternalLinearSolver<HypreMatrix, HypreVector>
 , public ObjectWithTrace
 {
@@ -74,7 +75,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   static std::unique_ptr<HypreLibrary> m_library_plugin ;
 
-  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false, int device_id=0) ;
 
   virtual void init();
 

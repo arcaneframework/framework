@@ -89,6 +89,22 @@ HypreMatrix::setMatrixValues(const int nrow, const int* rows, const int* ncols,
   return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
 }
 
+bool
+HypreMatrix::setMatrixValuesFrom(const int nrow,
+                                 const int nnz,
+                                 const int* rows,
+                                 const int* ncols,
+                                 const int* cols,
+                                 const Arccore::Real* values,
+                                 BackEnd::Memory::eType memory)
+{
+  if(memory == m_internal->getMemoryType())
+    return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
+  else
+  {
+    return m_internal->setMatrixValuesFrom(nrow, nnz, rows, ncols, cols, values, memory);
+  }
+}
 /*---------------------------------------------------------------------------*/
 
 bool

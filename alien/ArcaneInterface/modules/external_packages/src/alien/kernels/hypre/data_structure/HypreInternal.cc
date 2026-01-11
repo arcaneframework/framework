@@ -6,6 +6,9 @@
 //-----------------------------------------------------------------------------
 #include "HypreInternal.h"
 
+#ifdef ALIEN_USE_CUDA
+#include <cuda_runtime.h>
+#endif
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,6 +79,49 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
   int ierr = HYPRE_IJMatrixSetValues(
       m_internal, nrow, const_cast<int*>(ncols), rows, cols, values);
   return (ierr == 0);
+}
+
+
+bool
+MatrixInternal::setMatrixValuesFrom(const int nrows,
+                                    const int nnz,
+                                    const int* rows,
+                                    const int* ncols,
+                                    const int* cols,
+                                    const Arccore::Real* values,
+                                    BackEnd::Memory::eType memory)
+{
+#ifdef ALIEN_USE_CUDA
+  HYPRE_BigInt *rows_dev;
+  HYPRE_Int *ncols_dev;
+  HYPRE_BigInt *cols_dev;
+  HYPRE_Complex *values_dev;
+
+  cudaMalloc(&rows_dev, nrows * sizeof(HYPRE_BigInt));
+  cudaMalloc(&ncols_dev, nrows * sizeof(HYPRE_Int));
+  cudaMalloc(&cols_dev, nnz * sizeof(HYPRE_BigInt));
+  cudaMalloc(&values_dev, nnz * sizeof(HYPRE_Complex));
+
+  // Copier Host -> Device
+  cudaMemcpy(rows_dev, rows, nrows * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(ncols_dev, ncols, nrows * sizeof(HYPRE_Int), cudaMemcpyHostToDevice);
+  cudaMemcpy(cols_dev, cols, nnz * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(values_dev, values, nnz * sizeof(HYPRE_Complex), cudaMemcpyHostToDevice);
+
+  // Maintenant appeler SetValues avec les données Device
+  HYPRE_IJMatrixSetValues(m_internal, nrows, ncols_dev, rows_dev, cols_dev, values_dev);
+
+  // Libérer la mémoire Device
+  cudaFree(rows_dev);
+  cudaFree(ncols_dev);
+  cudaFree(cols_dev);
+  cudaFree(values_dev);
+#else
+  //int ierr = HYPRE_IJMatrixSetValues(
+  //    m_internal, nrows, const_cast<int*>(ncols), rows, cols, values);
+  return false ;
+#endif
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
