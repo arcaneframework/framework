@@ -20,34 +20,36 @@
       <cartesian>
         <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="10">1.</lx>
-        <ly ny="10">1.</ly>
+        <lx nx="100">1.</lx>
+        <ly ny="100">1.</ly>
         <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>
 
 
-  <alien-bench>
-    <use-accelerator>true</use-accelerator>
-    <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-    <diagonal-coefficient>1.</diagonal-coefficient>
-    <!--lambdax>0.125</lambdax>
-    <lambday>0.25</lambday>
-    <alpha>10.</alpha>
-    <sigma>1000000.</sigma>
-    <epsilon>0.01</epsilon-->
-    <homogeneous>true</homogeneous>
-    <zero-rhs>false</zero-rhs>
-    <nb-resolutions>1</nb-resolutions>
+    <alien-bench>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <redistribution>false</redistribution>
+      <homogeneous>false</homogeneous>
+      <diagonal-coefficient>0.</diagonal-coefficient>
+      <lambdax>0.125</lambdax>
+      <lambday>0.25</lambday>
+      <alpha>10.</alpha>
+      <sigma>1000000.</sigma>
+      <epsilon>0.01</epsilon>
+      <use-accelerator>true</use-accelerator>
+
      <linear-solver name="HypreSolver">
         <exec-space>Device</exec-space>
         <memory-type>Device</memory-type>
         <solver>BiCGStab</solver>
         <num-iterations-max>1000</num-iterations-max>
-        <stop-criteria-value>1e-6</stop-criteria-value>
-        <preconditioner>FSAI</preconditioner>
+        <stop-criteria-value>1e-8</stop-criteria-value>
+        <preconditioner>AMG</preconditioner>
         <verbose>true</verbose>
       </linear-solver>
+
+    
   </alien-bench>
 </case>
