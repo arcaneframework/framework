@@ -37,6 +37,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 {
  public:
   typedef Internal::MatrixInternal MatrixInternal;
+  typedef Arccore::Real ValueType ;
+  typedef int           IndexType ;
 
  public:
   HypreMatrix(const MultiMatrixImpl* multi_impl);
@@ -45,6 +47,26 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
   BackEnd::Memory::eType getMemoryType() const ;
 
   BackEnd::Exec::eSpaceType getExecSpace() const ;
+
+  class CSRView
+  {
+  public:
+    CSRView(HypreMatrix const* parent,
+            BackEnd::Memory::eType,
+            int nrows,
+            int nnz) ;
+
+    virtual ~CSRView() ;
+
+    HypreMatrix const* m_parent = nullptr ;
+    BackEnd::Memory::eType m_memory = BackEnd::Memory::Host ;
+    int m_nrows         = 0 ;
+    int m_nnz           = 0 ;
+    IndexType* m_rows   = nullptr ;
+    IndexType* m_ncols  = nullptr ;
+    IndexType* m_cols   = nullptr ;
+    ValueType* m_values = nullptr ;
+  };
 
  public:
   void clear() {}
@@ -68,6 +90,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
                            BackEnd::Memory::eType memory);
 
   bool assemble();
+
+  CSRView csrView(BackEnd::Memory::eType memory, int nrows, int nnz) ;
 
  public:
   MatrixInternal* internal() { return m_internal; }

@@ -36,6 +36,8 @@ namespace Alien::Internal {
 class MatrixInternal
 {
  public:
+  typedef Arccore::Real ValueType ;
+  typedef int           IndexType ;
   MatrixInternal(const MPI_Comm comm,
                  Alien::BackEnd::Memory::eType memory_type,
                  Alien::BackEnd::Exec::eSpaceType exec_space)
@@ -79,6 +81,30 @@ class MatrixInternal
   BackEnd::Exec::eSpaceType getExecSpace() const {
     return m_exec_space  ;
   }
+
+  void initHostPointer(int nrows,
+                         int nnz,
+                         IndexType** rows,
+                         IndexType** ncols,
+                         IndexType** cols,
+                         ValueType** values) ;
+
+  void freeHostPointer(IndexType* rows,
+                       IndexType* ncols,
+                       IndexType* cols,
+                       ValueType* values) ;
+
+  void initDevicePointer(int nrows,
+                         int nnz,
+                         IndexType** rows,
+                         IndexType** ncols,
+                         IndexType** cols,
+                         ValueType** values) ;
+
+  void freeDevicePointer(IndexType* rows,
+                         IndexType* ncols,
+                         IndexType* cols,
+                         ValueType* values) ;
 
  private:
   matrix_type m_internal;

@@ -86,6 +86,7 @@ HCSR_to_Hypre_MatrixConverter::_build(
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer localOffset = dist.rowOffset();
+  const Arccore::Integer nnz = profile.getNnz();
 
   int ilower = localOffset;
   int iupper = localOffset + localSize - 1;
@@ -117,13 +118,10 @@ HCSR_to_Hypre_MatrixConverter::_build(
     }
 
     {
-      int* ncols_d = nullptr;
-      int* rows_d = nullptr;
-      int* cols_d = nullptr;
-      ValueType* values_d = nullptr ;
-      sourceImpl.initDevicePointers(&ncols_d, &rows_d, &cols_d, &values_d) ;
-      const bool success = targetImpl.setMatrixValues(localSize, rows_d, ncols_d, cols_d, values_d) ;
-      sourceImpl.freeDevicePointers(ncols_d, rows_d, cols_d, values_d) ;
+      //HypreMatrix::CSRView view = targetImpl.csrView(BackEnd::Memory::Device,localSize,nnz) ;
+      HCSRMatrix<Arccore::Real>::CSRView view = sourceImpl.csrView(BackEnd::Memory::Device,localSize,nnz) ;
+      sourceImpl.copyDevicePointers(view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
+      const bool success = targetImpl.setMatrixValues(localSize, view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
     }
   }
   if (not targetImpl.assemble()) {

@@ -55,6 +55,28 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   typedef typename ProfileType::IndexType                   IndexType ;
   // clang-format on
 
+  class CSRView
+  {
+  public:
+    CSRView(HCSRMatrix const* parent,
+            BackEnd::Memory::eType,
+            int nrows,
+            int nnz) ;
+
+    virtual ~CSRView() ;
+
+    HCSRMatrix const* m_parent = nullptr ;
+    BackEnd::Memory::eType m_memory = BackEnd::Memory::Host ;
+    int m_nrows         = 0 ;
+    int m_nnz           = 0 ;
+    IndexType* m_rows   = nullptr ;
+    IndexType* m_ncols  = nullptr ;
+    IndexType* m_cols   = nullptr ;
+    ValueType* m_values = nullptr ;
+  };
+
+
+
  public:
   /** Constructeur de la classe */
   HCSRMatrix() ;
@@ -159,9 +181,13 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   MatrixInternal* internal() { return m_internal.get(); }
 
   MatrixInternal const* internal() const { return m_internal.get(); }
-  
+
+  void allocateDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
   void initDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
   void freeDevicePointers(int* ncols, int* rows, int* cols, ValueType* values) const ;
+  void copyDevicePointers(int* rows, int* ncols, int* cols, ValueType* values) const ;
+
+  CSRView csrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
 
   void initCOODevicePointers(int** dof_uids, int** rows, int** cols, ValueType** values) const ;
   void freeCOODevicePointers(int* dof_uids, int* rows, int* cols, ValueType* values) const ;

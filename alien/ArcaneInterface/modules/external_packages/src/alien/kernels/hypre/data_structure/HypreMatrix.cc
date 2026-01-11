@@ -113,6 +113,45 @@ HypreMatrix::assemble()
   return m_internal->assemble();
 }
 
+HypreMatrix::CSRView::CSRView(HypreMatrix const* parent,
+                              BackEnd::Memory::eType memory,
+                              int nrows,
+                              int nnz)
+: m_parent(parent)
+, m_memory(memory)
+, m_nrows(nrows)
+, m_nnz(nnz)
+{
+  switch(m_memory)
+  {
+    case BackEnd::Memory::Device :
+      m_parent->m_internal->initDevicePointer(m_nrows,m_nnz,&m_rows,&m_ncols,&m_cols,&m_values) ;
+    break ;
+    case BackEnd::Memory::Host :
+    default:
+      m_parent->m_internal->initHostPointer(m_nrows,m_nnz,&m_rows,&m_ncols,&m_cols,&m_values) ;
+    break ;
+
+  }
+}
+HypreMatrix::CSRView::~CSRView()
+{
+  switch(m_memory)
+  {
+    case BackEnd::Memory::Host :
+      m_parent->m_internal->freeHostPointer(m_rows,m_ncols,m_cols,m_values) ;
+    break ;
+    case BackEnd::Memory::Device :
+      m_parent->m_internal->freeDevicePointer(m_rows,m_ncols,m_cols,m_values) ;
+    break ;
+  }
+}
+HypreMatrix::CSRView
+HypreMatrix::csrView(BackEnd::Memory::eType memory, int nrows, int nnz)
+{
+  return CSRView(this,memory, nrows, nnz) ;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

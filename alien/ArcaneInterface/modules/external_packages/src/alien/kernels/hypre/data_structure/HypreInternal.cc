@@ -81,6 +81,67 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
   return (ierr == 0);
 }
 
+void
+MatrixInternal::initHostPointer(int nrows,
+                                int nnz,
+                                IndexType** rows,
+                                IndexType** ncols,
+                                IndexType** cols,
+                                ValueType** values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaMallocHost(rows, nrows * sizeof(HYPRE_BigInt));
+  cudaMallocHost(ncols, nrows * sizeof(HYPRE_Int));
+  cudaMallocHost(cols, nnz * sizeof(HYPRE_BigInt));
+  cudaMallocHost(values, nnz * sizeof(ValueType));
+#endif
+}
+
+void
+MatrixInternal::freeHostPointer(IndexType* rows,
+                                IndexType* ncols,
+                                IndexType* cols,
+                                ValueType* values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaFreeHost(rows);
+  cudaFreeHost(ncols);
+  cudaFreeHost(cols);
+  cudaFreeHost(values);
+#endif
+}
+void
+MatrixInternal::initDevicePointer(int nrows,
+                                  int nnz,
+                                  IndexType** rows,
+                                  IndexType** ncols,
+                                  IndexType** cols,
+                                  ValueType** values)
+{
+  std::cout<<"Hypre MatrixInternal::initDevicePointer"<<nrows<<" "<<nnz<<std::endl ;
+#ifdef ALIEN_USE_CUDA
+  cudaMalloc(rows, nrows * sizeof(IndexType));
+  cudaMalloc(ncols, nrows * sizeof(IndexType));
+  cudaMalloc(cols, nnz * sizeof(IndexType));
+  cudaMalloc(values, nnz * sizeof(ValueType));
+  std::cout<<"Hypre MatrixInternal::initDevicePointer OK"<<std::endl ;
+#endif
+}
+
+void
+MatrixInternal::freeDevicePointer(IndexType* rows,
+                                  IndexType* ncols,
+                                  IndexType* cols,
+                                  ValueType* values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaFree(rows);
+  cudaFree(ncols);
+  cudaFree(cols);
+  cudaFree(values);
+#endif
+}
+
 
 bool
 MatrixInternal::setMatrixValuesFrom(const int nrows,
