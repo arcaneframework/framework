@@ -318,6 +318,8 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    */
   bool haveIntersection(const AMRPatchPosition& other) const;
 
+  bool operator==(const AMRPatchPosition& other) const = default;
+
  private:
 
   Int32 m_level;

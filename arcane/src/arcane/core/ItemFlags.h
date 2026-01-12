@@ -80,6 +80,19 @@ class ARCANE_CORE_EXPORT ItemFlags
     II_Inactive = 1 << 23, //!<  L'entité est inactive //COARSEN_INACTIVE,
     II_CoarsenInactive = 1 << 24, //!< L'entité est inactive et a des enfants tagués pour dé-raffinement
 
+    /*!
+     * \brief [AMR Patch] L'entité est marquée comme étant de recouvrement par
+     * au moins un patch.
+     *
+     * TODO
+     */
+    II_Overlap = 1 << 25,
+
+    /*!
+     * \brief [AMR Patch] TODO
+     */
+    II_InPatch = 1 << 26,
+
     II_UserMark1 = 1 << 30, //!< Marque utilisateur
     II_UserMark2 = 1 << 31 //!< Marque utilisateur
   };
