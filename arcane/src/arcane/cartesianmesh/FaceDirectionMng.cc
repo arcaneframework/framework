@@ -221,7 +221,11 @@ _internalComputeInfos(const CellDirectionMng& cell_dm)
     Int32 lid = iface.itemLocalId();
     Face face = *iface;
     if (face.nbCell() == 1) {
-      if (outer_cells_lid.contains(face.cell(0).localId())) {
+      if (inner_cells_lid.contains(face.cell(0).localId())) {
+        inner_lids.add(lid);
+        inpatch_lids.add(lid);
+      }
+      else if (outer_cells_lid.contains(face.cell(0).localId())) {
         outer_lids.add(lid);
         inpatch_lids.add(lid);
       }

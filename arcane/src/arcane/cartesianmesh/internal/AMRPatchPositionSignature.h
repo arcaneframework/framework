@@ -43,12 +43,12 @@ class AMRPatchPositionSignature
  public:
 
   AMRPatchPositionSignature();
-  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches);
+  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh);
   ~AMRPatchPositionSignature() = default;
 
  private:
 
-  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Int32 nb_cut);
+  AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, Int32 nb_cut);
 
  public:
 
@@ -151,8 +151,6 @@ class AMRPatchPositionSignature
   UniqueArray<CartCoord> m_sig_x;
   UniqueArray<CartCoord> m_sig_y;
   UniqueArray<CartCoord> m_sig_z;
-
-  AMRPatchPositionLevelGroup* m_all_patches;
 };
 
 /*---------------------------------------------------------------------------*/

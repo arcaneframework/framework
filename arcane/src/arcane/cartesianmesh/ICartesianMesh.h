@@ -290,6 +290,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   ARCANE_DEPRECATED_REASON("Y2024: Use Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() instead")
   virtual Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() = 0;
 
+  virtual void computeDirectionsPatchV2(Integer index) = 0;
+
  public:
 
   //! API interne à Arcane

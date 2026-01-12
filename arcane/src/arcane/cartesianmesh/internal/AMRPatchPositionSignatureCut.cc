@@ -450,7 +450,9 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
       // Si le patch n'a pas pu être découpé, on le conserve dans le
       // tableau out.
       // TODO : Bof
-      array_out.add(sig);
+      if (sig.isValid()) {
+        array_out.add(sig);
+      }
     }
     array_in.clear();
   }

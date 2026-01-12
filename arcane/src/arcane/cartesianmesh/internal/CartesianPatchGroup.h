@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "AMRPatchPositionLevelGroup.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 #include "arcane/core/ItemGroup.h"
@@ -81,7 +82,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void mergePatches();
 
-  void refine(bool clear_refine_flag);
+  void refine(Int32 level_to_adapt);
+
+  void beginAdaptMesh(Int32 nb_levels);
+  void finalizeAdaptMesh();
+  void adaptLevel(Int32 level_to_adapt);
 
   void clearRefineRelatedFlags() const;
 
@@ -90,7 +95,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   ConstArrayView<Int32> availableGroupIndex();
 
   void setOverlapLayerSizeTopLevel(Integer size_of_overlap_layer_top_level);
-  Integer overlapLayerSize(Integer level);
+  Int32 overlapLayerSize(Int32 level);
 
  private:
 
@@ -105,11 +110,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void _removeAllPatches();
   void _createGroundPatch();
 
-  void _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
+  Integer _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
 
   void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
-  void _addPatch(const AMRPatchPosition& new_patch_position);
+  Integer _addPatch(const AMRPatchPosition& new_patch_position);
 
  private:
 
@@ -123,7 +128,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Int32 m_index_new_patches;
   UniqueArray<Integer> m_available_group_index;
   Integer m_size_of_overlap_layer_sub_top_level;
-  Integer m_higher_level;
+  Int32 m_higher_level;
+  Int32 m_target_nb_levels;
+  bool m_auto_target_nb_levels;
   Ref<Properties> m_properties;
 };
 

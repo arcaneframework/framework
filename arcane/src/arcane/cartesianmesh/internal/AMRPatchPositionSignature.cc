@@ -59,12 +59,11 @@ AMRPatchPositionSignature()
 , m_numbering(nullptr)
 , m_have_cells(false)
 , m_is_computed(false)
-, m_all_patches(nullptr)
 {
 }
 
 AMRPatchPositionSignature::
-AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches)
+AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh)
 : m_is_null(false)
 , m_patch(patch)
 , m_mesh(cmesh)
@@ -76,11 +75,10 @@ AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, 
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
 , m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
-, m_all_patches(all_patches)
 {}
 
 AMRPatchPositionSignature::
-AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Integer nb_cut)
+AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, Integer nb_cut)
 : m_is_null(false)
 , m_patch(patch)
 , m_mesh(cmesh)
@@ -92,7 +90,6 @@ AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, 
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
 , m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
-, m_all_patches(all_patches)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -235,67 +232,14 @@ fillSig()
     m_sig_z[pos.z - m_patch.minPoint().z]++;
   }
 
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
-
-  // La seconde étape s'effectue uniquement si le patch que nous traitons
-  // n'est pas un patch de dernier niveau.
-  // Pour éviter d'avoir des mailles orphelines, on doit raffiner les mailles
-  // qui auront des enfants. Pour cela, on regarde les patchs du dessus et on
-  // raffine les mailles dessous.
-  // Pour que ça fonctionne, il est donc nécessaire de calculer les patchs de
-  // haut en bas dans la classe qui gère tout ceci.
-  if (m_all_patches->maxLevel() > m_patch.level()) {
-
-    // Pour que la signature soit valide, il ne faut pas que les patchs de m_all_patches
-    // s'intersectent entre eux (pour un même niveau).
-    // On itère sur les patchs "au-dessus" du nôtre.
-    for (const auto& elem : m_all_patches->patches(m_patch.level() + 1)) {
-      // On "descend" d'un niveau le patch "au-dessus" afin de pouvoir faire
-      // l'intersection entre notre patch et le patch du dessus.
-      AMRPatchPosition patch_down = elem.patchDown(m_mesh->mesh()->dimension());
-      if (!m_patch.haveIntersection(patch_down)) {
-        continue;
-      }
-
-      // Chaque maille dans l'intersection doit être ajoutée dans les signatures.
-      CartCoord3 min = patch_down.minPoint() - m_patch.minPoint();
-      CartCoord3 max = patch_down.maxPoint() - m_patch.minPoint();
-
-      CartCoord3 begin;
-      CartCoord3 end;
-
-      begin.x = std::max(min.x, 0);
-      end.x = std::min(max.x, m_sig_x.size());
-
-      begin.y = std::max(min.y, 0);
-      end.y = std::min(max.y, m_sig_y.size());
-
-      if (m_mesh->mesh()->dimension() == 2) {
-        begin.z = 0;
-        end.z = 1;
-      }
-      else {
-        begin.z = std::max(min.z, 0);
-        end.z = std::min(max.z, m_sig_z.size());
-      }
-
-      for (CartCoord k = begin.z; k < end.z; ++k) {
-        for (CartCoord j = begin.y; j < end.y; ++j) {
-          for (CartCoord i = begin.x; i < end.x; ++i) {
-            m_sig_x[i]++;
-            m_sig_y[j]++;
-            m_sig_z[k]++;
-            m_have_cells = true;
-          }
-        }
-      }
-    }
-  }
-
-  // Compresser un patch vite ne fonctionnera pas.
+  // Compresser un patch vide ne fonctionnera pas.
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
+
+  if (m_have_cells) {
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -304,6 +248,9 @@ fillSig()
 bool AMRPatchPositionSignature::
 isValid() const
 {
+  if (!m_have_cells) {
+    return false;
+  }
   if (m_is_null) {
     return false;
   }
@@ -434,7 +381,7 @@ std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPosition
 cut(Integer dim, CartCoord cut_point) const
 {
   auto [fst, snd] = m_patch.cut(cut_point, dim);
-  return {AMRPatchPositionSignature(fst, m_mesh, m_all_patches, m_nb_cut+1), AMRPatchPositionSignature(snd, m_mesh, m_all_patches, m_nb_cut+1)};
+  return { AMRPatchPositionSignature(fst, m_mesh, m_nb_cut + 1), AMRPatchPositionSignature(snd, m_mesh, m_nb_cut + 1) };
 }
 
 /*---------------------------------------------------------------------------*/

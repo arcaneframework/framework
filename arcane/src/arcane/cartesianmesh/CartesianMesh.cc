@@ -207,6 +207,8 @@ class CartesianMeshImpl
   //! API interne à Arcane
   ICartesianMeshInternal* _internalApi() override { return &m_internal_api; }
 
+  void computeDirectionsPatchV2(Integer index) override;
+
  private:
 
   // Implémentation de 'ICartesianMeshInternal'
@@ -751,21 +753,8 @@ _computeDirectionsV2()
   m_connectivity._computeInfos(this);
 
   // Ajoute informations de connectivités pour les patchs AMR
-  // TODO: supporter plusieurs appels à cette méthode ?
   for (Integer patch_index = 1; patch_index < m_patch_group.nbPatch(); ++patch_index) {
-    CellGroup cells = m_patch_group.allCells(patch_index);
-    Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
-    info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
-    {
-      const AMRPatchPosition position = patch->position();
-      info() << "  position min=" << position.minPoint() << " max=" << position.maxPoint() << " level=" << position.level() << " overlapLayerSize=" << position.overlapLayerSize();
-    }
-    patch->_internalComputeNodeCellInformations();
-    auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
-    _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
-    _computeMeshDirectionV2(*patch.get(), MD_DirY, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
-    if (is_3d)
-      _computeMeshDirectionV2(*patch.get(), MD_DirZ, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
+    computeDirectionsPatchV2(patch_index);
   }
 
   // TODO : Voir pour modifier cette méthode.
@@ -773,6 +762,29 @@ _computeDirectionsV2()
   //   checkValid();
 
   _saveInfosInProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+computeDirectionsPatchV2(Integer patch_index)
+{
+  bool is_3d = m_mesh->dimension() == 3;
+
+  CellGroup cells = m_patch_group.allCells(patch_index);
+  Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
+  info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
+  {
+    const AMRPatchPosition position = patch->position();
+    info() << "  position min=" << position.minPoint() << " max=" << position.maxPoint() << " level=" << position.level() << " overlapLayerSize=" << position.overlapLayerSize();
+  }
+  patch->_internalComputeNodeCellInformations();
+  auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
+  _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
+  _computeMeshDirectionV2(*patch.get(), MD_DirY, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
+  if (is_3d)
+    _computeMeshDirectionV2(*patch.get(), MD_DirZ, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -90,6 +90,36 @@ coarseZone(const AMRZonePosition& position) const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRMng::
+beginAdaptMesh(Int32 nb_levels)
+{
+  // On calcule le nombre de mailles de recouvrements pour chaque level.
+  m_cmesh->_internalApi()->cartesianPatchGroup().beginAdaptMesh(nb_levels);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+adaptMesh(Int32 level) const
+{
+  // Tous les niveaux au-dessus de level doivent être supprimés.
+  // Si le nb_levels est différent du précedent, tous les niveaux doivent être recréés.
+  m_cmesh->_internalApi()->cartesianPatchGroup().adaptLevel(level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+endAdaptMesh()
+{
+  m_cmesh->_internalApi()->cartesianPatchGroup().finalizeAdaptMesh();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
 adaptMesh() const
 {
   /*

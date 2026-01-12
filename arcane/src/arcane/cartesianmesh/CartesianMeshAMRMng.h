@@ -103,6 +103,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    */
   void coarseZone(const AMRZonePosition& position) const;
 
+  void beginAdaptMesh(Int32 nb_levels);
+  void adaptMesh(Int32 level) const;
+  void endAdaptMesh();
+
   /*!
    * \brief Méthode permettant d'adapter le raffinement du maillage selon les
    * mailles à raffiner.
