@@ -69,6 +69,8 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
   SolverStat& getSolverStat() { return m_stat; }
   const SolverStat& getSolverStat() const { return m_stat; }
 
+  void startNonLinear() final {}
+
  private:
   bool _solve(MatrixInternal::MTLMatrixType const& A,
       VectorInternal::MTLVectorType const& b, VectorInternal::MTLVectorType& x);

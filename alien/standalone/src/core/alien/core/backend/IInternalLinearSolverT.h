@@ -108,6 +108,8 @@ class IInternalLinearSolver
   {
     return std::shared_ptr<ILinearAlgebra>();
   }
+
+  virtual void startNonLinear() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

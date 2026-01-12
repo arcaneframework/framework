@@ -72,6 +72,8 @@ class InternalLinearSolver
 
   std::shared_ptr<ILinearAlgebra> algebra() const override;
 
+  void startNonLinear() final {}
+
  private:
   Status m_status;
 

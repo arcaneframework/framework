@@ -131,6 +131,8 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
     m_nearnull_space_opt = flag ;
   }
 
+  void startNonLinear() final {}
+
  public:
   void checkError(const Arccore::String& msg, int ierr);
 

@@ -69,6 +69,8 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
   //! Etat du solveur
   void setNullSpaceConstantOption(bool flag);
 
+ void startNonLinear() final {}
+
  private:
   bool _solve();
   // A. Anciaux

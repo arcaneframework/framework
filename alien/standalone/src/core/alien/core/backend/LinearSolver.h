@@ -162,6 +162,15 @@ class LinearSolver : public ILinearSolver
     throw NotImplementedException(A_FUNCINFO);
   }
 
+  /*!
+   * \brief Inform linear solver that a new non-linear resolution starts.
+   * Linear solver can use this information to update some internal datas
+   * in the next call to solve.
+ */
+ virtual void startNonLinear() final {
+   m_solver->startNonLinear();
+ }
+
  private:
   //! The linear solver kernel
   std::unique_ptr<KernelSolver> m_solver;

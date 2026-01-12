@@ -138,6 +138,8 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   void printInfo() const;
 
+  void startNonLinear() final;
+
  private:
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,

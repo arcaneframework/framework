@@ -99,6 +99,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   const SolverStat& getSolverStat() const { return m_stat; }
   SolverStat& getSolverStat() { return m_stat; }
 
+  void startNonLinear() final {}
+
  private:
   Status m_status;
 

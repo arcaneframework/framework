@@ -547,6 +547,8 @@ MCGInternalLinearSolver::printInfo() const
   });
 }
 
+void MCGInternalLinearSolver::startNonLinear() {} // TODO
+
 bool
 MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
 {

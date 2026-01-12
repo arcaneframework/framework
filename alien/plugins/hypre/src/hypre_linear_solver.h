@@ -63,6 +63,8 @@ class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>
 
   std::shared_ptr<ILinearAlgebra> algebra() const final;
 
+  void startNonLinear() final {};
+
  private:
   Status m_status;
 

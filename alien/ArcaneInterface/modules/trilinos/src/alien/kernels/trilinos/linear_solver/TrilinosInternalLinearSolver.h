@@ -93,6 +93,8 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   void printInfo() { internalPrintInfo(); }
   void printCurrentTimeInfo() {}
 
+  void startNonLinear() final {}
+
  private:
   void updateLinearSystem();
   inline void _startPerfCount();
