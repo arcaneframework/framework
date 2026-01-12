@@ -16,15 +16,19 @@ namespace Alien {
 
 template <typename ValueT>
 void HCSRMatrix<ValueT>::
-allocateDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
+allocateDevicePointers(std::size_t nrows,
+                       std::size_t nnz,
+                       int** ncols,
+                       int** rows,
+                       int** cols,
+                       ValueT** values) const
 {
    auto& hypre_profile = m_internal->getHypreProfile(m_local_offset) ;
    auto env = SYCLEnv::instance() ;
    auto max_num_treads = env->maxNumThreads() ;
-   auto nnz = m_profile->getNnz() ;
    auto& queue = env->internal()->queue() ;
-   auto ncols_ptr  = malloc_device<IndexType>(m_local_size, queue);
-   auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
+   auto ncols_ptr  = malloc_device<IndexType>(nrows, queue);
+   auto rows_ptr   = malloc_device<IndexType>(nrows, queue);
    auto cols_ptr   = malloc_device<IndexType>(nnz, queue);
    auto values_ptr = malloc_device<ValueT>(nnz, queue);
 
@@ -91,15 +95,19 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
 
 template <typename ValueT>
 void HCSRMatrix<ValueT>::
-copyDevicePointers(int* rows, int* ncols, int* cols, ValueT* values) const
+copyDevicePointers(std::size_t nrows,
+                   std::size_t nnz,
+                   int* rows,
+                   int* ncols,
+                   int* cols,
+                   ValueT* values) const
 {
    auto& hypre_profile = m_internal->getHypreProfile(m_local_offset) ;
    auto env = SYCLEnv::instance() ;
    auto max_num_treads = env->maxNumThreads() ;
-   auto nnz = m_profile->getNnz() ;
    auto& queue = env->internal()->queue() ;
 
-   std::cout<<"HCSRMatrix::copyDevicePointers"<<m_local_size<<" "<<nnz<<std::endl ;
+   //std::cout<<"HCSRMatrix::copyDevicePointers"<<nrows<<" "<<nnz<<std::endl ;
    queue.submit( [&](sycl::handler& cgh)
                 {
                   auto access_x = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh);
@@ -122,7 +130,7 @@ copyDevicePointers(int* rows, int* ncols, int* cols, ValueT* values) const
                 {
                   auto access_ncols = hypre_profile.m_ncols.template get_access<sycl::access::mode::read>(cgh);
                   auto access_rows  = hypre_profile.m_rows.template get_access<sycl::access::mode::read>(cgh);
-                  auto y_length = m_local_size ;
+                  auto y_length = nrows ;
                   cgh.parallel_for<class init_ptr2>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
                                                     {
                                                         auto id = itemId.get_id(0);
@@ -134,54 +142,16 @@ copyDevicePointers(int* rows, int* ncols, int* cols, ValueT* values) const
                                                     });
                 }) ;
    queue.wait() ;
-   std::cout<<"HCSRMatrix::copyDevicePointers OK"<<std::endl ;
+   //std::cout<<"HCSRMatrix::copyDevicePointers OK"<<std::endl ;
 }
 
 
-template <typename ValueT>
-HCSRMatrix<ValueT>::CSRView::CSRView(HCSRMatrix<ValueT> const* parent,
-                                     BackEnd::Memory::eType memory,
-                                     int nrows,
-                                     int nnz)
-: m_parent(parent)
-, m_memory(memory)
-, m_nrows(nrows)
-, m_nnz(nnz)
-{
-  switch(m_memory)
-  {
-    case BackEnd::Memory::Device :
-      m_parent->allocateDevicePointers(&m_rows,&m_ncols,&m_cols,&m_values) ;
-    break ;
-    case BackEnd::Memory::Host :
-    default:
-      //m_parent->m_internal->initHostPointer(m_nrows,m_nnz,&m_rows,&m_ncols,&m_cols,&m_values) ;
-    break ;
-
-  }
-}
-
 
 template <typename ValueT>
-HCSRMatrix<ValueT>::CSRView::~CSRView()
+HCSRMatrix<ValueT>::HCSRView
+HCSRMatrix<ValueT>::hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const
 {
-  switch(m_memory)
-  {
-    case BackEnd::Memory::Host :
-      //m_parent->m_internal->freeHostPointer(m_rows,m_ncols,m_cols,m_values) ;
-    break ;
-    case BackEnd::Memory::Device :
-      m_parent->freeDevicePointers(m_rows,m_ncols,m_cols,m_values) ;
-    break ;
-  }
-}
-
-
-template <typename ValueT>
-HCSRMatrix<ValueT>::CSRView
-HCSRMatrix<ValueT>::csrView(BackEnd::Memory::eType memory, int nrows, int nnz) const
-{
-  return CSRView(this,memory, nrows, nnz) ;
+  return HCSRView(this,memory, nrows, nnz) ;
 }
 
 

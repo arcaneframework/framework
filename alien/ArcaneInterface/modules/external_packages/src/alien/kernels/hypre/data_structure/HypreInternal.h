@@ -64,14 +64,6 @@ class MatrixInternal
   bool setMatrixValues(const int nrow, const int* rows, const int* ncols, const int* cols,
       const Arccore::Real* values);
 
-  bool setMatrixValuesFrom(const int nrow,
-                           const int nnz,
-                           const int* rows,
-                           const int* ncols,
-                           const int* cols,
-                           const Arccore::Real* values,
-                           BackEnd::Memory::eType memory);
-
   bool assemble();
 
   BackEnd::Memory::eType getMemoryType() const {
@@ -82,29 +74,40 @@ class MatrixInternal
     return m_exec_space  ;
   }
 
-  void initHostPointer(int nrows,
-                         int nnz,
-                         IndexType** rows,
-                         IndexType** ncols,
-                         IndexType** cols,
-                         ValueType** values) ;
+  void allocateHostPointers(std::size_t nrows,
+                            std::size_t nnz,
+                            IndexType** rows,
+                            IndexType** ncols,
+                            IndexType** cols,
+                            ValueType** values) ;
 
-  void freeHostPointer(IndexType* rows,
-                       IndexType* ncols,
-                       IndexType* cols,
-                       ValueType* values) ;
+  void freeHostPointers(IndexType* rows,
+                        IndexType* ncols,
+                        IndexType* cols,
+                        ValueType* values) ;
 
-  void initDevicePointer(int nrows,
-                         int nnz,
-                         IndexType** rows,
-                         IndexType** ncols,
-                         IndexType** cols,
-                         ValueType** values) ;
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) ;
 
-  void freeDevicePointer(IndexType* rows,
-                         IndexType* ncols,
-                         IndexType* cols,
-                         ValueType* values) ;
+  void copyHostToDevicePointers(std::size_t nrows,
+                                std::size_t nnz,
+                                const IndexType* rows_h,
+                                const IndexType* ncols_h,
+                                const IndexType* cols_h,
+                                const ValueType* values_h,
+                                IndexType* rows_d,
+                                IndexType* ncols_d,
+                                IndexType* cols_d,
+                                ValueType* values_d) ;
+
+  void freeDevicePointers(IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) ;
 
  private:
   matrix_type m_internal;

@@ -9,6 +9,7 @@
 
 #include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/core/impl/IMatrixImpl.h>
+#include <alien/handlers/accelerator/HCSRViewT.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +42,9 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
   typedef int           IndexType ;
 
  public:
+
+  typedef HCSRViewT<HypreMatrix> HCSRView ;
+
   HypreMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~HypreMatrix();
 
@@ -48,25 +52,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 
   BackEnd::Exec::eSpaceType getExecSpace() const ;
 
-  class CSRView
-  {
-  public:
-    CSRView(HypreMatrix const* parent,
-            BackEnd::Memory::eType,
-            int nrows,
-            int nnz) ;
-
-    virtual ~CSRView() ;
-
-    HypreMatrix const* m_parent = nullptr ;
-    BackEnd::Memory::eType m_memory = BackEnd::Memory::Host ;
-    int m_nrows         = 0 ;
-    int m_nnz           = 0 ;
-    IndexType* m_rows   = nullptr ;
-    IndexType* m_ncols  = nullptr ;
-    IndexType* m_cols   = nullptr ;
-    ValueType* m_values = nullptr ;
-  };
 
  public:
   void clear() {}
@@ -91,7 +76,30 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 
   bool assemble();
 
-  CSRView csrView(BackEnd::Memory::eType memory, int nrows, int nnz) ;
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** ncols,
+                              IndexType** rows,
+                              IndexType** cols,
+                              ValueType** values) const ;
+
+  void freeDevicePointers(IndexType* ncols,
+                          IndexType* rows,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  void copyHostToDevicePointers(std::size_t nrows,
+                                std::size_t nnz,
+                                const IndexType* rows_h,
+                                const IndexType* ncols_h,
+                                const IndexType* cols_h,
+                                const ValueType* values_h,
+                                IndexType* rows_d,
+                                IndexType* ncols_d,
+                                IndexType* cols_d,
+                                ValueType* values_d) const ;
+
+  HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) ;
 
  public:
   MatrixInternal* internal() { return m_internal; }

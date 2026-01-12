@@ -118,9 +118,8 @@ HCSR_to_Hypre_MatrixConverter::_build(
     }
 
     {
-      //HypreMatrix::CSRView view = targetImpl.csrView(BackEnd::Memory::Device,localSize,nnz) ;
-      HCSRMatrix<Arccore::Real>::CSRView view = sourceImpl.csrView(BackEnd::Memory::Device,localSize,nnz) ;
-      sourceImpl.copyDevicePointers(view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
+      HCSRMatrix<Arccore::Real>::HCSRView view = sourceImpl.hcsrView(BackEnd::Memory::Device,localSize,nnz) ;
+      sourceImpl.copyDevicePointers(localSize, nnz, view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
       const bool success = targetImpl.setMatrixValues(localSize, view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
     }
   }

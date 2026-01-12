@@ -82,12 +82,12 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
 }
 
 void
-MatrixInternal::initHostPointer(int nrows,
-                                int nnz,
-                                IndexType** rows,
-                                IndexType** ncols,
-                                IndexType** cols,
-                                ValueType** values)
+MatrixInternal::allocateHostPointers(std::size_t nrows,
+                                     std::size_t nnz,
+                                     IndexType** rows,
+                                     IndexType** ncols,
+                                     IndexType** cols,
+                                     ValueType** values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaMallocHost(rows, nrows * sizeof(HYPRE_BigInt));
@@ -98,10 +98,10 @@ MatrixInternal::initHostPointer(int nrows,
 }
 
 void
-MatrixInternal::freeHostPointer(IndexType* rows,
-                                IndexType* ncols,
-                                IndexType* cols,
-                                ValueType* values)
+MatrixInternal::freeHostPointers(IndexType* rows,
+                                 IndexType* ncols,
+                                 IndexType* cols,
+                                 ValueType* values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaFreeHost(rows);
@@ -110,29 +110,28 @@ MatrixInternal::freeHostPointer(IndexType* rows,
   cudaFreeHost(values);
 #endif
 }
+
 void
-MatrixInternal::initDevicePointer(int nrows,
-                                  int nnz,
-                                  IndexType** rows,
-                                  IndexType** ncols,
-                                  IndexType** cols,
-                                  ValueType** values)
+MatrixInternal::allocateDevicePointers(std::size_t nrows,
+                                       std::size_t nnz,
+                                       IndexType** rows,
+                                       IndexType** ncols,
+                                       IndexType** cols,
+                                       ValueType** values)
 {
-  std::cout<<"Hypre MatrixInternal::initDevicePointer"<<nrows<<" "<<nnz<<std::endl ;
 #ifdef ALIEN_USE_CUDA
   cudaMalloc(rows, nrows * sizeof(IndexType));
   cudaMalloc(ncols, nrows * sizeof(IndexType));
   cudaMalloc(cols, nnz * sizeof(IndexType));
   cudaMalloc(values, nnz * sizeof(ValueType));
-  std::cout<<"Hypre MatrixInternal::initDevicePointer OK"<<std::endl ;
 #endif
 }
 
 void
-MatrixInternal::freeDevicePointer(IndexType* rows,
-                                  IndexType* ncols,
-                                  IndexType* cols,
-                                  ValueType* values)
+MatrixInternal::freeDevicePointers(IndexType* rows,
+                                   IndexType* ncols,
+                                   IndexType* cols,
+                                   ValueType* values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaFree(rows);
@@ -142,47 +141,28 @@ MatrixInternal::freeDevicePointer(IndexType* rows,
 #endif
 }
 
+;
 
-bool
-MatrixInternal::setMatrixValuesFrom(const int nrows,
-                                    const int nnz,
-                                    const int* rows,
-                                    const int* ncols,
-                                    const int* cols,
-                                    const Arccore::Real* values,
-                                    BackEnd::Memory::eType memory)
+ void
+ MatrixInternal::copyHostToDevicePointers(std::size_t nrows,
+                                          std::size_t nnz,
+                                          const IndexType* rows_h,
+                                          const IndexType* ncols_h,
+                                          const IndexType* cols_h,
+                                          const ValueType* values_h,
+                                          IndexType* rows_d,
+                                          IndexType* ncols_d,
+                                          IndexType* cols_d,
+                                          ValueType* values_d)
 {
+
 #ifdef ALIEN_USE_CUDA
-  HYPRE_BigInt *rows_dev;
-  HYPRE_Int *ncols_dev;
-  HYPRE_BigInt *cols_dev;
-  HYPRE_Complex *values_dev;
-
-  cudaMalloc(&rows_dev, nrows * sizeof(HYPRE_BigInt));
-  cudaMalloc(&ncols_dev, nrows * sizeof(HYPRE_Int));
-  cudaMalloc(&cols_dev, nnz * sizeof(HYPRE_BigInt));
-  cudaMalloc(&values_dev, nnz * sizeof(HYPRE_Complex));
-
   // Copier Host -> Device
-  cudaMemcpy(rows_dev, rows, nrows * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
-  cudaMemcpy(ncols_dev, ncols, nrows * sizeof(HYPRE_Int), cudaMemcpyHostToDevice);
-  cudaMemcpy(cols_dev, cols, nnz * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
-  cudaMemcpy(values_dev, values, nnz * sizeof(HYPRE_Complex), cudaMemcpyHostToDevice);
-
-  // Maintenant appeler SetValues avec les données Device
-  HYPRE_IJMatrixSetValues(m_internal, nrows, ncols_dev, rows_dev, cols_dev, values_dev);
-
-  // Libérer la mémoire Device
-  cudaFree(rows_dev);
-  cudaFree(ncols_dev);
-  cudaFree(cols_dev);
-  cudaFree(values_dev);
-#else
-  //int ierr = HYPRE_IJMatrixSetValues(
-  //    m_internal, nrows, const_cast<int*>(ncols), rows, cols, values);
-  return false ;
+  cudaMemcpy(rows_d, rows_h, nrows * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(ncols_d, ncols_h, nrows * sizeof(HYPRE_Int), cudaMemcpyHostToDevice);
+  cudaMemcpy(cols_d, cols_h, nnz * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(values_d, values_h, nnz * sizeof(HYPRE_Complex), cudaMemcpyHostToDevice);
 #endif
-  return true;
 }
 
 /*---------------------------------------------------------------------------*/

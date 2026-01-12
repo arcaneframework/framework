@@ -13,7 +13,9 @@
 
 #include <alien/data/ISpace.h>
 
+
 #include <alien/kernels/sycl/SYCLPrecomp.h>
+#include <alien/handlers/accelerator/HCSRViewT.h>
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 #include <alien/kernels/sycl/data/SYCLDistStructInfo.h>
@@ -55,25 +57,7 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   typedef typename ProfileType::IndexType                   IndexType ;
   // clang-format on
 
-  class CSRView
-  {
-  public:
-    CSRView(HCSRMatrix const* parent,
-            BackEnd::Memory::eType,
-            int nrows,
-            int nnz) ;
-
-    virtual ~CSRView() ;
-
-    HCSRMatrix const* m_parent = nullptr ;
-    BackEnd::Memory::eType m_memory = BackEnd::Memory::Host ;
-    int m_nrows         = 0 ;
-    int m_nnz           = 0 ;
-    IndexType* m_rows   = nullptr ;
-    IndexType* m_ncols  = nullptr ;
-    IndexType* m_cols   = nullptr ;
-    ValueType* m_values = nullptr ;
-  };
+  typedef HCSRViewT<HCSRMatrix<ValueType>>                  HCSRView ;
 
 
 
@@ -182,12 +166,31 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
 
   MatrixInternal const* internal() const { return m_internal.get(); }
 
-  void allocateDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
-  void initDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
-  void freeDevicePointers(int* ncols, int* rows, int* cols, ValueType* values) const ;
-  void copyDevicePointers(int* rows, int* ncols, int* cols, ValueType* values) const ;
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) const ;
 
-  CSRView csrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
+  void initDevicePointers(IndexType** ncols,
+                          IndexType** rows,
+                          IndexType** cols,
+                          ValueType** values) const ;
+
+  void freeDevicePointers(IndexType* ncols,
+                          IndexType* rows,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  void copyDevicePointers(std::size_t nrows,
+                          std::size_t nnz,
+                          IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
 
   void initCOODevicePointers(int** dof_uids, int** rows, int** cols, ValueType** values) const ;
   void freeCOODevicePointers(int* dof_uids, int* rows, int* cols, ValueType* values) const ;

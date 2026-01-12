@@ -102,7 +102,15 @@ HypreMatrix::setMatrixValuesFrom(const int nrow,
     return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
   else
   {
-    return m_internal->setMatrixValuesFrom(nrow, nnz, rows, ncols, cols, values, memory);
+#if NEED_COPY_DATA
+    HCSRView view = csrView(BackEnd::Memory::Device,nrows,nnz) ;
+    m_internal->copyValuesHostToDevice(nrow, nnz,
+                                       rows, ncols, cols, values,
+                                       view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
+    return m_internal->setMatrixValues(nrow, view.m_rows, view.m_ncols, view.m_cols, view.m_values, memory);
+#else
+    return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
+#endif
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -113,43 +121,29 @@ HypreMatrix::assemble()
   return m_internal->assemble();
 }
 
-HypreMatrix::CSRView::CSRView(HypreMatrix const* parent,
-                              BackEnd::Memory::eType memory,
-                              int nrows,
-                              int nnz)
-: m_parent(parent)
-, m_memory(memory)
-, m_nrows(nrows)
-, m_nnz(nnz)
+void HypreMatrix::allocateDevicePointers(std::size_t nrows,
+                                         std::size_t nnz,
+                                         HypreMatrix::IndexType** rows,
+                                         HypreMatrix::IndexType** ncols,
+                                         HypreMatrix::IndexType** cols,
+                                         HypreMatrix::ValueType** values) const
 {
-  switch(m_memory)
-  {
-    case BackEnd::Memory::Device :
-      m_parent->m_internal->initDevicePointer(m_nrows,m_nnz,&m_rows,&m_ncols,&m_cols,&m_values) ;
-    break ;
-    case BackEnd::Memory::Host :
-    default:
-      m_parent->m_internal->initHostPointer(m_nrows,m_nnz,&m_rows,&m_ncols,&m_cols,&m_values) ;
-    break ;
+  m_internal->allocateDevicePointers(nrows, nnz, rows, ncols, cols, values) ;
+}
 
-  }
-}
-HypreMatrix::CSRView::~CSRView()
+void HypreMatrix::freeDevicePointers(HypreMatrix::IndexType* rows,
+                                     HypreMatrix::IndexType* ncols,
+                                     HypreMatrix::IndexType* cols,
+                                     HypreMatrix::ValueType* values) const
 {
-  switch(m_memory)
-  {
-    case BackEnd::Memory::Host :
-      m_parent->m_internal->freeHostPointer(m_rows,m_ncols,m_cols,m_values) ;
-    break ;
-    case BackEnd::Memory::Device :
-      m_parent->m_internal->freeDevicePointer(m_rows,m_ncols,m_cols,m_values) ;
-    break ;
-  }
+  m_internal->freeDevicePointers(rows, ncols, cols, values) ;
+
 }
-HypreMatrix::CSRView
-HypreMatrix::csrView(BackEnd::Memory::eType memory, int nrows, int nnz)
+
+HypreMatrix::HCSRView
+HypreMatrix::hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz)
 {
-  return CSRView(this,memory, nrows, nnz) ;
+  return HCSRView(this,memory, nrows, nnz) ;
 }
 
 /*---------------------------------------------------------------------------*/
