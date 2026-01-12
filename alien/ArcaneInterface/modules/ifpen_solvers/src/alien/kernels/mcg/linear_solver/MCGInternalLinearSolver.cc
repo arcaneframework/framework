@@ -511,14 +511,12 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 }
 
 const Alien::SolverStatus&
-MCGInternalLinearSolver::getStatus() const
-{
+MCGInternalLinearSolver::getStatus() const {
   return m_status;
 }
 
 void
-MCGInternalLinearSolver::printInfo() const
-{
+MCGInternalLinearSolver::printInfo() const {
   double total_solve_time = m_solve_timer.getElapse() + m_system_timer.getElapse();
   alien_info([&] {
     cout() << "\n|----------------------------------------------------|\n"
@@ -547,11 +545,12 @@ MCGInternalLinearSolver::printInfo() const
   });
 }
 
-void MCGInternalLinearSolver::startNonLinear() {} // TODO
+void MCGInternalLinearSolver::startNonLinear() {
+  m_solver->startNonLinear();
+}
 
 bool
-MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
-{
+MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
 #if 0
   if(m_logger)
     m_logger->start(eStep::solve);
