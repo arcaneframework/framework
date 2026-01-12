@@ -16,6 +16,30 @@ namespace Alien {
 
 template <typename ValueT>
 void HCSRMatrix<ValueT>::
+allocateDevicePointers(std::size_t nrows,
+                       std::size_t nnz,
+                       int** ncols,
+                       int** rows,
+                       int** cols,
+                       ValueT** values) const
+{
+   auto& hypre_profile = m_internal->getHypreProfile(m_local_offset) ;
+   auto env = SYCLEnv::instance() ;
+   auto max_num_treads = env->maxNumThreads() ;
+   auto& queue = env->internal()->queue() ;
+   auto ncols_ptr  = malloc_device<IndexType>(nrows, queue);
+   auto rows_ptr   = malloc_device<IndexType>(nrows, queue);
+   auto cols_ptr   = malloc_device<IndexType>(nnz, queue);
+   auto values_ptr = malloc_device<ValueT>(nnz, queue);
+
+   *values = values_ptr ;
+   *cols   = cols_ptr ;
+   *ncols  = ncols_ptr ;
+   *rows   = rows_ptr ;
+}
+
+template <typename ValueT>
+void HCSRMatrix<ValueT>::
 initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
 {
    auto& hypre_profile = m_internal->getHypreProfile(m_local_offset) ;
@@ -27,7 +51,7 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
    auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
    auto cols_ptr   = malloc_device<IndexType>(nnz, queue);
    auto values_ptr = malloc_device<ValueT>(nnz, queue);
-  
+
    queue.submit( [&](sycl::handler& cgh)
                 {
                   auto access_x = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh);
@@ -44,7 +68,7 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
                                                     });
                 });
    queue.wait() ;
-  
+
 
    queue.submit( [&](sycl::handler& cgh)
                 {
@@ -62,12 +86,74 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
                                                     });
                 }) ;
    queue.wait() ;
-  
+
    *values = values_ptr ;
    *cols   = cols_ptr ;
    *ncols  = ncols_ptr ;
    *rows   = rows_ptr ;
 }
+
+template <typename ValueT>
+void HCSRMatrix<ValueT>::
+copyDevicePointers(std::size_t nrows,
+                   std::size_t nnz,
+                   int* rows,
+                   int* ncols,
+                   int* cols,
+                   ValueT* values) const
+{
+   auto& hypre_profile = m_internal->getHypreProfile(m_local_offset) ;
+   auto env = SYCLEnv::instance() ;
+   auto max_num_treads = env->maxNumThreads() ;
+   auto& queue = env->internal()->queue() ;
+
+   //std::cout<<"HCSRMatrix::copyDevicePointers"<<nrows<<" "<<nnz<<std::endl ;
+   queue.submit( [&](sycl::handler& cgh)
+                {
+                  auto access_x = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh);
+                  auto access_cols = m_internal->m_cols.template get_access<sycl::access::mode::read>(cgh);
+                  auto y_length = nnz ;
+                  cgh.parallel_for<class init_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                    {
+                                                        auto id = itemId.get_id(0);
+                                                        for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                        {
+                                                          values[i] = access_x[i];
+                                                          cols[i]   = access_cols[i];
+                                                        }
+                                                    });
+                });
+   queue.wait() ;
+
+
+   queue.submit( [&](sycl::handler& cgh)
+                {
+                  auto access_ncols = hypre_profile.m_ncols.template get_access<sycl::access::mode::read>(cgh);
+                  auto access_rows  = hypre_profile.m_rows.template get_access<sycl::access::mode::read>(cgh);
+                  auto y_length = nrows ;
+                  cgh.parallel_for<class init_ptr2>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                    {
+                                                        auto id = itemId.get_id(0);
+                                                        for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                        {
+                                                          ncols[i] = access_ncols[i];
+                                                          rows[i]  = access_rows[i];
+                                                        }
+                                                    });
+                }) ;
+   queue.wait() ;
+   //std::cout<<"HCSRMatrix::copyDevicePointers OK"<<std::endl ;
+}
+
+
+
+template <typename ValueT>
+HCSRMatrix<ValueT>::HCSRView
+HCSRMatrix<ValueT>::hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const
+{
+  return HCSRView(this,memory, nrows, nnz) ;
+}
+
 
 
 template <typename ValueT>
@@ -152,7 +238,7 @@ initCOODevicePointers(int** dof_uids, int** rows, int** cols, ValueT** values) c
 
 template <typename ValueT>
 void HCSRMatrix<ValueT>::freeDevicePointers(int* ncols, int* rows, int* cols, ValueT* values) const
-{  
+{
   auto env = SYCLEnv::instance() ;
   auto& queue = env->internal()->queue() ;
   sycl::free(values,queue) ;

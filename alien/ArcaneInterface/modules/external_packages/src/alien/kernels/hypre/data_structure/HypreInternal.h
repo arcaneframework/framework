@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,6 +36,8 @@ namespace Alien::Internal {
 class MatrixInternal
 {
  public:
+  typedef Arccore::Real ValueType ;
+  typedef int           IndexType ;
   MatrixInternal(const MPI_Comm comm,
                  Alien::BackEnd::Memory::eType memory_type,
                  Alien::BackEnd::Exec::eSpaceType exec_space)
@@ -71,6 +73,41 @@ class MatrixInternal
   BackEnd::Exec::eSpaceType getExecSpace() const {
     return m_exec_space  ;
   }
+
+  void allocateHostPointers(std::size_t nrows,
+                            std::size_t nnz,
+                            IndexType** rows,
+                            IndexType** ncols,
+                            IndexType** cols,
+                            ValueType** values) ;
+
+  void freeHostPointers(IndexType* rows,
+                        IndexType* ncols,
+                        IndexType* cols,
+                        ValueType* values) ;
+
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) ;
+
+  void copyHostToDevicePointers(std::size_t nrows,
+                                std::size_t nnz,
+                                const IndexType* rows_h,
+                                const IndexType* ncols_h,
+                                const IndexType* cols_h,
+                                const ValueType* values_h,
+                                IndexType* rows_d,
+                                IndexType* ncols_d,
+                                IndexType* cols_d,
+                                ValueType* values_d) ;
+
+  void freeDevicePointers(IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) ;
 
  private:
   matrix_type m_internal;

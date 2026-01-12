@@ -45,7 +45,7 @@
           <num-iterations-max>1000</num-iterations-max>
           <stop-criteria-value>1e-8</stop-criteria-value>
            <preconditioner name="GAMG">
-              <gamg-type>classicla</gamg-type>
+              <gamg-type>classical</gamg-type>
               <gamg-threshold>0.15</gamg-threshold>
               <gamg-max-levels>25</gamg-max-levels>
               <gamg-agg-nsmooths>1</gamg-agg-nsmooths>
@@ -55,6 +55,6 @@
          </solver>
        </linear-solver>
 
-    
+
   </alien-bench>
 </case>

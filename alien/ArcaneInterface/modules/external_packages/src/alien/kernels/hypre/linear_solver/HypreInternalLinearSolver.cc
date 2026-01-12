@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -50,11 +50,13 @@ bool HypreInternalLinearSolver::m_library_plugin_is_initialized = false ;
 
 std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
 
-HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory)
+HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int device_id)
 {
-  // NOTE: A partir de la 2.29, on peut utiliser
-  // HYPRE_Initialize() et tester si l'initialisation
-  // a déjà été faite via HYPRE_Initialized().
+  if(exec_on_device)
+  {
+    m_device_id = device_id ;
+    //hypre_SetDevice(m_device_id, nullptr);
+  }
 #if HYPRE_RELEASE_NUMBER >= 22900
   if (!HYPRE_Initialized()){
     HYPRE_Initialize();
@@ -63,12 +65,18 @@ HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory)
   HYPRE_Init();
 #endif
 #if HYPRE_RELEASE_NUMBER >= 22700
-  if(exec_on_device) {
+  if(exec_on_device)
+  {
+    m_exec_space = BackEnd::Exec::Device ;
     if(use_device_memory)
     {
       m_memory_type = BackEnd::Memory::Device ;
-      m_exec_space = BackEnd::Exec::Device ;
       HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+    }
+    else
+    {
+      m_memory_type = BackEnd::Memory::Host ;
+      HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
     }
     /* setup AMG on GPUs */
     HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
@@ -124,12 +132,14 @@ HypreInternalLinearSolver::~HypreInternalLinearSolver()
 
 /*---------------------------------------------------------------------------*/
 void
-HypreInternalLinearSolver::initializeLibrary(bool exec_on_device, bool use_device_momory)
+HypreInternalLinearSolver::initializeLibrary(bool exec_on_device,
+                                             bool use_device_memory,
+                                             Integer device_id)
 {
   if(Alien::HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
-  HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_momory)) ;
+  HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_memory,device_id)) ;
 }
- 
+
 void
 HypreInternalLinearSolver::init()
 {
@@ -137,9 +147,8 @@ HypreInternalLinearSolver::init()
 #ifdef HYPRE_USING_CUDA
   if(m_options->execSpace() == HypreOptionTypes::Device)
   {
-    //hypre_SetDevice(m_gpu_device_id,nullptr);
       if(m_options->memoryType() == HypreOptionTypes::DeviceMemory)
-        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,true)) ;
+        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,true,m_gpu_device_id)) ;
       else
         HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,false)) ;
       alien_info([&] {
@@ -398,23 +407,44 @@ HypreInternalLinearSolver::solve(
      ! 6 -> symetric Gauss Seidel
      ! 9 -> Gauss Elimination
      ! -1 : default parameter : 3
+     Jacobi sequential-Gauss-Seidel seqboundary-Gauss-Seidel SOR/Jacobi backward-SOR/Jacobi  symmetric-SOR/Jacobi  l1scaled-SOR/Jacobi Gaussian-elimination
        */
-      int relax_type = -1 ;
-      if(m_options->amgRelaxType()=="weigted-jacolbi")
+      int relax_type = 3 ;
+      if(m_options->amgRelaxType()=="Jacobi")
         relax_type = 0 ;
-      if(m_options->amgRelaxType()=="sequential-gauss-seidel")
+      if(m_options->amgRelaxType()=="sequential-Gauss-Seidel")
         relax_type = 1 ;
-      if(m_options->amgRelaxType()=="gauss-seidel-jacobi")
+      if(m_options->amgRelaxType()=="backward-Gauss-Seidel")
+        relax_type = 2 ;
+      if(m_options->amgRelaxType()=="hybrid-Gauss-Seidel")
         relax_type = 3 ;
-      if(m_options->amgRelaxType()=="symetric-gauss-seidel")
+      if(m_options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
+          relax_type = 4 ;
+      if(m_options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
+        relax_type = 5 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 6 ;
-      if(m_options->amgRelaxType()=="gauss-elimination")
+      if(m_options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
+        relax_type = 7 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+        relax_type = 8 ;
+      if(m_options->amgRelaxType()=="l1-Gauss-Seidel")
         relax_type = 9 ;
+      if(m_options->amgRelaxType()=="forward-l1-Gauss-Seidel")
+        relax_type = 13 ;
+      if(m_options->amgRelaxType()=="backward-l1-Gauss-Seidel")
+        relax_type = 14 ;
+      if(m_options->amgRelaxType()=="CG")
+        relax_type = 15 ;
+      if(m_options->amgRelaxType()=="Chebyshev")
+        relax_type = 16 ;
+      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
+        relax_type = 18 ;
       ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,relax_type) ;
       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
       if(ierr) {
         alien_fatal([&] {
-            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType";
+            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<m_options->amgRelaxType()<<" IERR="<<ierr;
         });
       }
 

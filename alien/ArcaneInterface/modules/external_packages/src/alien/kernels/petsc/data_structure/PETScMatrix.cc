@@ -201,7 +201,7 @@ bool PETScMatrix::initMatrix(const int local_size,
     ierr += ISLocalToGlobalMappingDestroy(&m_petsc_map);
   }
 
-  ierr += MatSetPreallocationCOOLocal(m_internal->m_internal, nnz, rows, cols);
+  ierr += MatSetPreallocationCOO(m_internal->m_internal, nnz, rows, cols);
 
   return (ierr == 0);
 }

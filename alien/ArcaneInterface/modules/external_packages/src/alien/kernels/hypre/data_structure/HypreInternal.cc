@@ -1,11 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 #include "HypreInternal.h"
 
+#ifdef ALIEN_USE_CUDA
+#include <cuda_runtime.h>
+#endif
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,6 +79,90 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
   int ierr = HYPRE_IJMatrixSetValues(
       m_internal, nrow, const_cast<int*>(ncols), rows, cols, values);
   return (ierr == 0);
+}
+
+void
+MatrixInternal::allocateHostPointers(std::size_t nrows,
+                                     std::size_t nnz,
+                                     IndexType** rows,
+                                     IndexType** ncols,
+                                     IndexType** cols,
+                                     ValueType** values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaMallocHost(rows, nrows * sizeof(HYPRE_BigInt));
+  cudaMallocHost(ncols, nrows * sizeof(HYPRE_Int));
+  cudaMallocHost(cols, nnz * sizeof(HYPRE_BigInt));
+  cudaMallocHost(values, nnz * sizeof(ValueType));
+#endif
+}
+
+void
+MatrixInternal::freeHostPointers(IndexType* rows,
+                                 IndexType* ncols,
+                                 IndexType* cols,
+                                 ValueType* values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaFreeHost(rows);
+  cudaFreeHost(ncols);
+  cudaFreeHost(cols);
+  cudaFreeHost(values);
+#endif
+}
+
+void
+MatrixInternal::allocateDevicePointers(std::size_t nrows,
+                                       std::size_t nnz,
+                                       IndexType** rows,
+                                       IndexType** ncols,
+                                       IndexType** cols,
+                                       ValueType** values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaMalloc(rows, nrows * sizeof(IndexType));
+  cudaMalloc(ncols, nrows * sizeof(IndexType));
+  cudaMalloc(cols, nnz * sizeof(IndexType));
+  cudaMalloc(values, nnz * sizeof(ValueType));
+#endif
+}
+
+void
+MatrixInternal::freeDevicePointers(IndexType* rows,
+                                   IndexType* ncols,
+                                   IndexType* cols,
+                                   ValueType* values)
+{
+#ifdef ALIEN_USE_CUDA
+  cudaFree(rows);
+  cudaFree(ncols);
+  cudaFree(cols);
+  cudaFree(values);
+#endif
+}
+
+;
+
+ void
+ MatrixInternal::copyHostToDevicePointers(std::size_t nrows,
+                                          std::size_t nnz,
+                                          const IndexType* rows_h,
+                                          const IndexType* ncols_h,
+                                          const IndexType* cols_h,
+                                          const ValueType* values_h,
+                                          IndexType* rows_d,
+                                          IndexType* ncols_d,
+                                          IndexType* cols_d,
+                                          ValueType* values_d)
+{
+
+#ifdef ALIEN_USE_CUDA
+  // Copier Host -> Device
+  cudaMemcpy(rows_d, rows_h, nrows * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(ncols_d, ncols_h, nrows * sizeof(HYPRE_Int), cudaMemcpyHostToDevice);
+  cudaMemcpy(cols_d, cols_h, nnz * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+  cudaMemcpy(values_d, values_h, nnz * sizeof(HYPRE_Complex), cudaMemcpyHostToDevice);
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
