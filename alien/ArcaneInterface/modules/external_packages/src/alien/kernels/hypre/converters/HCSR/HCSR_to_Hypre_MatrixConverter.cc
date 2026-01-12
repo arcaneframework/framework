@@ -120,7 +120,9 @@ HCSR_to_Hypre_MatrixConverter::_build(
     {
       HCSRMatrix<Arccore::Real>::HCSRView view = sourceImpl.hcsrView(BackEnd::Memory::Device,localSize,nnz) ;
       sourceImpl.copyDevicePointers(localSize, nnz, view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
-      const bool success = targetImpl.setMatrixValues(localSize, view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
+      if (not targetImpl.setMatrixValues(localSize, view.m_rows, view.m_ncols, view.m_cols, view.m_values)) {
+        throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre setMatrixValues failed");
+      }
     }
   }
   if (not targetImpl.assemble()) {
