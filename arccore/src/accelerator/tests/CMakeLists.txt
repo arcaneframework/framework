@@ -3,6 +3,7 @@
   TestInit.cc
   TestReduce1.cc
   TestLoop1.cc
+  TestMemoryBandwidth.cc
 )
 
 set(ACCELERATOR_FILES
