@@ -8,6 +8,7 @@
 
 set(ACCELERATOR_FILES
   TestReduce_Accelerator.cc
+  TestReduceGridStride_Accelerator.cc
   TestLoop_Accelerator.cc
 )
 

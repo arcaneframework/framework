@@ -30,7 +30,11 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Int64
-_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread, Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
+_testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
+                  Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
+extern "C++" Int64
+_testReduceGridStride(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
+                      Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
 
 void _doTestReduceDirect(bool use_accelerator)
 {
@@ -74,21 +78,31 @@ void _doTestReduceDirect(bool use_accelerator)
   NumArray<Int64, MDDim1> c(mem);
   c.copy(host_c);
 
+  nb_part = 1;
   for (Int32 k = 1; k < 5; ++k) {
     {
-      // Test avec RunQueue synchrone
-      //std::cout << "Test Sync nb_part=" << nb_part << "\n";
       Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop, false);
       Int64 v2 = v / nb_loop;
-      //std::cout << "V=" << v2 << "\n";
       ASSERT_EQ(v2, expected_value);
     }
     {
-      // Test avec RunQueue asynchrone
-      //std::cout << "Test Asynchronous nb_part=" << nb_part << "\n";
       Int64 v = _testReduceDirect(queue, c, nb_thread, nb_value, nb_part, nb_loop, true);
       Int64 v2 = v / nb_loop;
-      //std::cout << "V=" << v2 << "\n";
+      ASSERT_EQ(v2, expected_value);
+    }
+    nb_part *= 2;
+  }
+
+  nb_part = 1;
+  for (Int32 k = 1; k < 5; ++k) {
+    {
+      Int64 v = _testReduceGridStride(queue, c, nb_thread, nb_value, nb_part, nb_loop, false);
+      Int64 v2 = v / nb_loop;
+      ASSERT_EQ(v2, expected_value);
+    }
+    {
+      Int64 v = _testReduceGridStride(queue, c, nb_thread, nb_value, nb_part, nb_loop, true);
+      Int64 v2 = v / nb_loop;
       ASSERT_EQ(v2, expected_value);
     }
     nb_part *= 2;

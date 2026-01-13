@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2025 */
+/* RunCommandLoop.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une commande.                         */
 /*---------------------------------------------------------------------------*/
@@ -94,17 +94,31 @@ namespace Arcane::Accelerator::Impl
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
 doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
+  using namespace Arcane::Accelerator::Impl;
+
   // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  using namespace Arcane::Accelerator::Impl;
-
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < bounds.nbElement()) {
-    body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+  if constexpr (requires{bounds.nbGridStride();}){
+    // Test expérimental pour utiliser un pas de la taille
+    // de la grille. Le nombre de pas est donné par bounds.nbGridStride().
+    Int32 nb_grid_stride = bounds.nbGridStride();
+    Int32 offset = blockDim.x * gridDim.x;
+    for( Int32 k=0; k<nb_grid_stride; ++k ){
+      Int32 true_i = i + (offset * k);
+      if (true_i < bounds.nbTotalValue()) {
+        body(arcaneGetLoopIndexCudaHip(bounds, true_i), remaining_args...);
+      }
+    }
+  }
+  else{
+    if (i < bounds.nbElement()) {
+      body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+    }
   }
   CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
