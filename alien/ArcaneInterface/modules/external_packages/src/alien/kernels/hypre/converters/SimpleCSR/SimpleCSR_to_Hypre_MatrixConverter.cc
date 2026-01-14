@@ -20,29 +20,12 @@
 
 #include <arccore/collections/Array2.h>
 
+#include "SimpleCSR_to_Hypre_MatrixConverter.h"
+
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
 
 /*---------------------------------------------------------------------------*/
-
-class SimpleCSR_to_Hypre_MatrixConverter : public IMatrixConverter
-{
- public:
-  SimpleCSR_to_Hypre_MatrixConverter();
-  virtual ~SimpleCSR_to_Hypre_MatrixConverter() {}
- public:
-  BackEndId sourceBackend() const
-  {
-    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
-  }
-  BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::hypre>::name(); }
-  void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
-  void _build(
-      const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const;
-  void _buildBlock(
-      const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const;
-};
-
 /*---------------------------------------------------------------------------*/
 
 SimpleCSR_to_Hypre_MatrixConverter::SimpleCSR_to_Hypre_MatrixConverter()
@@ -72,6 +55,22 @@ SimpleCSR_to_Hypre_MatrixConverter::convert(
     _build(v, v2);
 }
 
+void
+SimpleCSR_to_Hypre_MatrixConverter::convert(
+    const SimpleCSRMatrix<Arccore::Real>& source, HypreMatrix& target) const
+{
+  alien_debug([&] {
+    cout() << "Converting SimpleCSRMatrix: " << &source << " to HypreMatrix " << &target;
+  });
+  if (target.block())
+    _buildBlock(source, target);
+  else if (target.vblock())
+    throw Arccore::FatalErrorException(
+        A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
+  else
+    _build(source, target);
+
+}
 /*---------------------------------------------------------------------------*/
 
 void

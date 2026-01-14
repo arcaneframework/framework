@@ -1,14 +1,9 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*---------------------------------------------------------------------------*/
-/* SimpleCSRInternalLinearAlgebra.h                            (C) 2000-2023 */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 #pragma once
 
@@ -121,6 +116,10 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void aypx(Real alpha, Vector& y, const Vector& x) const;
   void copy(const Vector& x, Vector& r) const;
 
+  void axpy(Real alpha, const Vector& x,Integer stride_x,Vector& r,Integer stride_r) const;
+  void aypx(Real alpha, Vector& y, Integer stride_y, const Vector& x,Integer stride_x) const;
+  void copy(const Vector& x, Integer stride_x, Vector& r, Integer stride_r) const;
+
   Real dot(const Vector& x, const Vector& y) const;
   void dot(const Vector& x, const Vector& y, FutureType& res) const;
 
@@ -144,6 +143,8 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   {
     return precond.solve(*this, x, y);
   }
+
+  Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
 
   static ResourceType const& resource(Matrix const& A);
 

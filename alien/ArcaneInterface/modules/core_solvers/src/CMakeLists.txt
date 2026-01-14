@@ -100,7 +100,11 @@ if (TARGET Alien::alien_semantic_ref)
     linkLibraries(alien_core_solvers Alien::alien_semantic_ref)
 endif()
 
-linkLibraries(alien_core_solvers 
+if (TARGET Alien::external_packages)
+    linkLibraries(alien_core_solvers Alien::external_packages)
+endif()
+
+linkLibraries(alien_core_solvers
               Boost::program_options
               BLAS::BLAS)
 
