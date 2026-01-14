@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandImpl.h                                            (C) 2000-2025 */
+/* RunCommandImpl.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation de la gestion d'une commande sur accélérateur.             */
 /*---------------------------------------------------------------------------*/
@@ -132,6 +132,9 @@ class RunCommandImpl
 
   //! Taille de la mémoire partagée à allouer
   Int32 m_shared_memory_size = 0;
+
+  //! Nombre de pas de décomposition de la boucle
+  Int32 m_nb_stride = 1;
 
  private:
 

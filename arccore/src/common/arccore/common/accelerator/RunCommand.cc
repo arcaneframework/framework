@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2025 */
+/* RunCommand.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -109,6 +109,18 @@ addNbThreadPerBlock(Int32 v)
   if (v > 0 && v < 32)
     v = 32;
   m_p->m_nb_thread_per_block = v;
+  return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommand& RunCommand::
+addNbStride(Int32 v)
+{
+  if (v < 0)
+    v = 1;
+  m_p->m_nb_stride = v;
   return *this;
 }
 
@@ -243,6 +255,15 @@ Int32 RunCommand::
 _sharedMemory() const
 {
   return m_p->m_shared_memory_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 RunCommand::
+nbStride() const
+{
+  return m_p->m_nb_stride;
 }
 
 /*---------------------------------------------------------------------------*/

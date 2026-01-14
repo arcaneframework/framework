@@ -48,6 +48,7 @@ set(SOURCES
   SmallArray.h
   SmallArray.cc
   SpecificMemoryCopy.cc
+  StridedLoopRanges.h
   StringDictionary.h
   StringDictionary.cc
 

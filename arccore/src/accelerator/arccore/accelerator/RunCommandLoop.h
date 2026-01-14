@@ -14,10 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec l'existant
-//#include "arcane/utils/ConcurrencyUtils.h"
-
 #include "arccore/common/SequentialFor.h"
+#include "arccore/common/StridedLoopRanges.h"
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/concurrency/ParallelFor.h"
 #include "arccore/accelerator/KernelLauncher.h"
@@ -103,19 +101,19 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if constexpr (requires{bounds.nbGridStride();}){
+  if constexpr (requires { bounds.nbStride(); }) {
     // Test expérimental pour utiliser un pas de la taille
-    // de la grille. Le nombre de pas est donné par bounds.nbGridStride().
-    Int32 nb_grid_stride = bounds.nbGridStride();
+    // de la grille. Le nombre de pas est donné par bounds.nbStride().
+    Int32 nb_grid_stride = bounds.nbStride();
     Int32 offset = blockDim.x * gridDim.x;
-    for( Int32 k=0; k<nb_grid_stride; ++k ){
+    for (Int32 k = 0; k < nb_grid_stride; ++k) {
       Int32 true_i = i + (offset * k);
-      if (true_i < bounds.nbTotalValue()) {
+      if (true_i < bounds.nbOriginalElement()) {
         body(arcaneGetLoopIndexCudaHip(bounds, true_i), remaining_args...);
       }
     }
   }
-  else{
+  else {
     if (i < bounds.nbElement()) {
       body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
     }
@@ -197,20 +195,28 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
   Int64 vsize = bounds.nbElement();
   if (vsize == 0)
     return;
+#if defined(ARCCORE_EXPERIMENTAL_GRID_STRIDE) && defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+  using TrueLoopBoundType = Impl::StridedLoopRanges<LoopBoundType>;
+  TrueLoopBoundType bounds2(command.nbStride(), bounds);
+  Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue());
+#else
+  using TrueLoopBoundType = LoopBoundType;
+  [[maybe_unused]] const TrueLoopBoundType& bounds2 = bounds;
   Impl::RunCommandLaunchInfo launch_info(command, vsize);
-  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+#endif
   launch_info.beginExecute();
+  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
-                             launch_info, func, bounds, other_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doDirectGPULambdaArrayBounds2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                             launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
-                            launch_info, func, bounds, other_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doDirectGPULambdaArrayBounds2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                            launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoDirectSYCLLambdaArrayBounds < LoopBoundType, Lambda, RemainingArgs... > {}),
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoDirectSYCLLambdaArrayBounds<LoopBoundType, Lambda, RemainingArgs...>{}),
                              launch_info, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
