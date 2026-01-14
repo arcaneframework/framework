@@ -197,7 +197,7 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
     return;
 #if defined(ARCCORE_EXPERIMENTAL_GRID_STRIDE) && defined(ARCCORE_COMPILING_CUDA_OR_HIP)
   using TrueLoopBoundType = Impl::StridedLoopRanges<LoopBoundType>;
-  TrueLoopBoundType bounds2(ARCCORE_TEST_STRIDE, bounds);
+  TrueLoopBoundType bounds2(command.nbStride(), bounds);
   Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue());
 #else
   using TrueLoopBoundType = LoopBoundType;

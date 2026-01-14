@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.h                                                (C) 2000-2025 */
+/* RunCommand.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -94,6 +94,20 @@ class ARCCORE_COMMON_EXPORT RunCommand
    * de l'accélérateur. En général c'est au moins 32.
    */
   RunCommand& addNbThreadPerBlock(Int32 v);
+
+  /*!
+   * \brief Positionne le nombre de pas pour la décomposition de la boucle
+   * sur accélérateur.
+   *
+   * La valeur par défaut est 1, ce qui indique qu'on ne décompose pas
+   * la boucle.
+   *
+   * \warning API EXPERIMENTALE. A UTILISER UNIQUEMENT DANS ARCANE
+   */
+  RunCommand& addNbStride(Int32 v);
+
+  //! Nombre de pas de décomposition de la boucle
+  Int32 nbStride() const;
 
   //! Informations pour les traces
   const TraceInfo& traceInfo() const;

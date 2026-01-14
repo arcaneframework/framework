@@ -133,6 +133,9 @@ class RunCommandImpl
   //! Taille de la mémoire partagée à allouer
   Int32 m_shared_memory_size = 0;
 
+  //! Nombre de pas de décomposition de la boucle
+  Int32 m_nb_stride = 1;
+
  private:
 
   void _freePools();

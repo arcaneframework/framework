@@ -227,6 +227,7 @@ _reset()
   m_has_living_run_command = false;
   m_may_be_put_in_pool = false;
   m_shared_memory_size = 0;
+  m_nb_stride = 1;
 }
 
 /*---------------------------------------------------------------------------*/

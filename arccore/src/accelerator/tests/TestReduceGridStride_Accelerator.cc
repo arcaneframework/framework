@@ -15,7 +15,6 @@
 #include "arccore/common/NumArray.h"
 
 #define ARCCORE_EXPERIMENTAL_GRID_STRIDE
-#define ARCCORE_TEST_STRIDE 4
 
 namespace Arcane
 {
@@ -53,6 +52,7 @@ _testReduceGridStride(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
       auto command = makeCommand(queue);
       ReducerSum2<Int64> reducer(command);
       command.addNbThreadPerBlock(nb_thread);
+      command.addNbStride(nb_part);
       command << RUNCOMMAND_LOOP1(iter, nb_value, reducer)
       {
         reducer.combine(c_view[iter]);
