@@ -15,39 +15,10 @@
 #include "arccore/common/NumArray.h"
 
 #define ARCCORE_EXPERIMENTAL_GRID_STRIDE
+#define ARCCORE_TEST_STRIDE 4
 
 namespace Arcane
 {
-class StridedLoop
-: public SimpleForLoopRanges<1>
-{
- public:
-
-  using BaseClass = SimpleForLoopRanges<1>;
-  using LoopIndexType = Arcane::MDIndex<1>;
-
- public:
-
-  StridedLoop(Int32 nb_grid_stride, Int32 nb_value)
-  : BaseClass(std::array<Int32, 1>{ (nb_value + (nb_grid_stride - 1)) / nb_grid_stride })
-  , m_nb_grid_stride(nb_grid_stride)
-  , m_nb_value(nb_value)
-  {
-  }
-  constexpr Int32 nbGridStride() const { return m_nb_grid_stride; }
-  constexpr Int32 nbTotalValue() const { return m_nb_value; }
-
- public:
-
-  Int32 m_nb_grid_stride = 0;
-  Int32 m_nb_value = 0;
-};
-
-ARCCORE_HOST_DEVICE MDIndex<1>
-arcaneGetLoopIndexCudaHip([[maybe_unused]] StridedLoop loop_bounds, Int32 index)
-{
-  return MDIndex<1>(index);
-}
 
 } // namespace Arcane
 
@@ -82,8 +53,7 @@ _testReduceGridStride(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
       auto command = makeCommand(queue);
       ReducerSum2<Int64> reducer(command);
       command.addNbThreadPerBlock(nb_thread);
-      StridedLoop strided_loop(nb_part, nb_value);
-      command << RUNCOMMAND_LOOP(iter, strided_loop, reducer)
+      command << RUNCOMMAND_LOOP1(iter, nb_value, reducer)
       {
         reducer.combine(c_view[iter]);
       };
