@@ -21,6 +21,7 @@
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
@@ -39,6 +40,7 @@ class CartesianMeshPatch;
 /*---------------------------------------------------------------------------*/
 
 class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
+: public TraceAccessor
 {
  public:
 
@@ -82,9 +84,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void mergePatches();
 
-  void refine(Int32 level_to_adapt);
-
-  void beginAdaptMesh(Int32 nb_levels);
+  void beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first);
   void finalizeAdaptMesh();
   void adaptLevel(Int32 level_to_adapt);
 
@@ -98,6 +98,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Int32 overlapLayerSize(Int32 level);
 
  private:
+
+  void _increaseOverlapSizeLevel(Int32 level_to_increate, Int32 new_size);
+  void _reduceOverlapSizeLevel(Int32 level_to_reduce, Int32 new_size);
+
+  void _updateHigherLevel();
+
+  void _changeOverlapSizeLevel(Int32 level, Int32 previous_higher_level, Int32 new_higher_level);
 
   void _removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
 
@@ -127,10 +134,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Integer> m_patches_to_delete;
   Int32 m_index_new_patches;
   UniqueArray<Integer> m_available_group_index;
-  Integer m_size_of_overlap_layer_sub_top_level;
+  Integer m_size_of_overlap_layer_top_level;
   Int32 m_higher_level;
   Int32 m_target_nb_levels;
-  bool m_auto_target_nb_levels;
+  Int32 m_latest_call_level;
   Ref<Properties> m_properties;
 };
 
