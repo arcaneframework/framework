@@ -25,6 +25,10 @@
 
 #include <concepts>
 
+#if defined(ARCCORE_EXPERIMENTAL_GRID_STRIDE)
+#include "arccore/common/StridedLoopRanges.h"
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,11 +38,10 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Conteneur contenant les informations pour la boucle accélérateur
- * sur les entités.
+ * \brief Informations pour la boucle accélérateur sur les entités.
  */
 template <typename TraitsType_>
-class ItemLocalIdsContainer
+class ItemLocalIdsLoopRanges
 {
  public:
 
@@ -47,8 +50,9 @@ class ItemLocalIdsContainer
 
  public:
 
-  explicit ItemLocalIdsContainer(SmallSpan<const Int32> ids) : m_ids(ids){}
+  explicit ItemLocalIdsLoopRanges(SmallSpan<const Int32> ids) : m_ids(ids){}
   constexpr SmallSpan<const Int32> ids() const { return m_ids; }
+  constexpr Int64 nbElement() const { return m_ids.size(); }
 
  public:
 
@@ -60,13 +64,9 @@ class ItemLocalIdsContainer
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
-template <typename ContainerType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(ContainerType container, Lambda func, RemainingArgs... remaining_args)
+template <typename LoopBoundsType, typename Lambda, typename... RemainingArgs> __global__ void
+doIndirectGPULambda2(LoopBoundsType bounds, Lambda func, RemainingArgs... remaining_args)
 {
-  using BuilderType = ContainerType::BuilderType;
-  using LocalIdType = BuilderType::ValueType;
-  SmallSpan<const Int32> ids = container.ids();
-
   // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -74,10 +74,35 @@ doIndirectGPULambda2(ContainerType container, Lambda func, RemainingArgs... rema
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < ids.size()) {
-    LocalIdType lid(ids[i]);
-    body(BuilderType::create(i, lid), remaining_args...);
+
+  if constexpr (requires { bounds.nbStride(); }) {
+    // Test expérimental pour utiliser un pas de la taille
+    // de la grille. Le nombre de pas est donné par bounds.nbStride().
+    using BuilderType = LoopBoundsType::LoopBoundType::BuilderType;
+    using LocalIdType = BuilderType::ValueType;
+    Int32 nb_grid_stride = bounds.nbStride();
+    Int32 offset = blockDim.x * gridDim.x;
+    Int64 nb_item = bounds.nbOriginalElement();
+    SmallSpan<const Int32> ids = bounds.originalLoop().ids();
+    for (Int32 k = 0; k < nb_grid_stride; ++k) {
+      Int32 true_i = i + (offset * k);
+      if (true_i < nb_item) {
+        LocalIdType lid(ids[true_i]);
+        body(BuilderType::create(true_i, lid), remaining_args...);
+      }
+    }
   }
+  else {
+    using BuilderType = LoopBoundsType::BuilderType;
+    using LocalIdType = BuilderType::ValueType;
+
+    SmallSpan<const Int32> ids = bounds.ids();
+    if (i < ids.size()) {
+      LocalIdType lid(ids[i]);
+      body(BuilderType::create(i, lid), remaining_args...);
+    }
+  }
+
   CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
@@ -382,23 +407,34 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   if (vsize == 0)
     return;
   using ItemType = typename TraitsType::ItemType;
-  Impl::RunCommandLaunchInfo launch_info(command, vsize);
-  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.beginExecute();
+  using LoopBoundType = Impl::ItemLocalIdsLoopRanges<TraitsType>;
   [[maybe_unused]] SmallSpan<const Int32> ids = items.localIds();
-  using ContainerType = Impl::ItemLocalIdsContainer<TraitsType>;
-  [[maybe_unused]] ContainerType container(ids);
+  [[maybe_unused]] LoopBoundType bounds(ids);
+
+#if defined(ARCCORE_EXPERIMENTAL_GRID_STRIDE) && defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+  using TrueLoopBoundType = Impl::StridedLoopRanges<LoopBoundType>;
+  TrueLoopBoundType bounds2(command.nbStride(), bounds);
+  Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue());
+#else
+  using TrueLoopBoundType = LoopBoundType;
+  [[maybe_unused]] const TrueLoopBoundType& bounds2 = bounds;
+  Impl::RunCommandLaunchInfo launch_info(command, vsize);
+#endif
+
+  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+
+  launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2 < ContainerType, Lambda, RemainingArgs... >),
-                             launch_info, func, container, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                             launch_info, func, bounds2, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((Impl::doIndirectGPULambda2 < ContainerType, Lambda, RemainingArgs... >),
-                            launch_info, func, container, remaining_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doIndirectGPULambda2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                            launch_info, func, bounds2, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoIndirectSYCLLambda < TraitsType, Lambda, RemainingArgs... > {}),
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoIndirectSYCLLambda<TraitsType, Lambda, RemainingArgs...>{}),
                              launch_info, func, ids, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:

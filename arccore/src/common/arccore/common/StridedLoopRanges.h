@@ -68,13 +68,13 @@ class StridedLoopRangesBase
 /*!
  * \brief Classe pour gérer la décomposition d'une boucle en plusieurs parties.
  */
-template <typename LoopBoundType>
+template <typename LoopBoundType_>
 class StridedLoopRanges
 : public StridedLoopRangesBase
 {
  public:
 
-  using LoopIndexType = typename LoopBoundType::LoopIndexType;
+  using LoopBoundType = LoopBoundType_;
 
  public:
 
@@ -93,7 +93,7 @@ class StridedLoopRanges
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename LoopBoundType> ARCCORE_HOST_DEVICE StridedLoopRanges<LoopBoundType>::LoopIndexType
+template <typename LoopBoundType> ARCCORE_HOST_DEVICE LoopBoundType::LoopIndexType
 arcaneGetLoopIndexCudaHip(StridedLoopRanges<LoopBoundType> loop_bounds, Int32 index)
 {
   return arcaneGetLoopIndexCudaHip(loop_bounds.originalLoop(), index);
