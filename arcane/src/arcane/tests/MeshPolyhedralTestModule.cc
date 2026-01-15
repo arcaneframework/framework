@@ -46,7 +46,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   void init()
   {
     auto mesh_handle = subDomain()->defaultMeshHandle();
-    if (mesh_handle.hasMesh()) {
+    if (mesh_handle.hasMesh() && !options()->readOnly) {
       info() << "-- Mesh name: " << mesh()->name();
       _testKind(mesh());
       _testDimensions(mesh());
