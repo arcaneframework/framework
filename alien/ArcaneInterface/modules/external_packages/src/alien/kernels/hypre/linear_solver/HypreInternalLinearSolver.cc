@@ -191,17 +191,57 @@ HypreInternalLinearSolver::updateParallelMng(
 }
 
 /*---------------------------------------------------------------------------*/
-
-void
-HypreInternalLinearSolver::end()
-{
-  ;
-}
-
 /*---------------------------------------------------------------------------*/
 
+
+/*---------------------------------------------------------------------------*/
+struct HypreInternalLinearSolver::Impl
+: public ObjectWithTrace
+{
+  int output_level = 0 ;
+  std::string solver_name = "undefined";
+  std::string precond_name = "undefined";
+
+  HYPRE_Solver solver = nullptr;
+  HYPRE_Solver preconditioner = nullptr;
+
+  // acces aux fonctions du preconditionneur
+  HYPRE_PtrToParSolverFcn precond_solve_function = nullptr;
+  HYPRE_PtrToParSolverFcn precond_setup_function = nullptr;
+  int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
+
+  int (*solver_set_print_level_function)(HYPRE_Solver, int) = nullptr;
+  int (*solver_set_tol_function)(HYPRE_Solver, double) = nullptr;
+  int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn,
+      HYPRE_PtrToParSolverFcn, HYPRE_Solver) = nullptr;
+  int (*solver_setup_function)(
+      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+  int (*solver_solve_function)(
+      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+  int (*solver_get_num_iterations_function)(HYPRE_Solver, int*) = nullptr;
+  int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double*) = nullptr;
+  int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
+
+
+  HYPRE_ParCSRMatrix par_a;
+  HYPRE_ParVector    par_rhs;
+  HYPRE_ParVector    par_x;
+
+  bool m_initialized = false ;
+  bool m_is_setup = false ;
+
+  void checkError(const Arccore::String& msg, int ierr, int skipError = 0) const;
+  void init(IOptionsHypreSolver* options, MPI_Comm comm);
+  void setUp(const HYPRE_IJMatrix& ij_matrix);
+  void setUp(const HYPRE_IJVector& ij_b,
+             HYPRE_IJVector& ij_x);
+  bool solve();
+  void getStatus(Status& status);
+  void end();
+} ;
+
 void
-HypreInternalLinearSolver::checkError(
+HypreInternalLinearSolver::Impl::checkError(
     const Arccore::String& msg, int ierr, int skipError) const
 {
   if (ierr != 0 and (ierr & ~skipError) != 0) {
@@ -213,48 +253,19 @@ HypreInternalLinearSolver::checkError(
   }
 }
 
-/*---------------------------------------------------------------------------*/
 
-bool
-HypreInternalLinearSolver::solve(
-    const HypreMatrix& A, const HypreVector& b, HypreVector& x)
+void
+HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm comm)
 {
   using namespace Alien;
   using namespace Alien::Internal;
 
-  const HYPRE_IJMatrix& ij_matrix = A.internal()->internal();
-  const HYPRE_IJVector& bij_vector = b.internal()->internal();
-  HYPRE_IJVector& xij_vector = x.internal()->internal();
-
-// Macro "pratique" en attendant de trouver mieux
-#ifdef VALUESTRING
-#error Already defined macro VALUESTRING
-#endif
-#define VALUESTRING(option) ((option).enumValues()->nameOfValue((option)(), ""))
-
-  // Construction du système linéaire à résoudre au format
-  // Le builder connait la strcuture interne garce au visiteur de l'init
-
-  int output_level = m_options->outputLevel() ;
-  if(m_options->verbose())
+  int output_level = options->outputLevel() ;
+  if(options->verbose())
     output_level = std::min(1,output_level);
 
-  HYPRE_Solver solver = nullptr;
-  HYPRE_Solver preconditioner = nullptr;
-
-  // acces aux fonctions du preconditionneur
-  HYPRE_PtrToParSolverFcn precond_solve_function = NULL;
-  HYPRE_PtrToParSolverFcn precond_setup_function = NULL;
-  int (*precond_destroy_function)(HYPRE_Solver) = NULL;
-
-  HYPRE_ClearAllErrors() ;
-
-  auto pm = A.getParallelMng()->communicator();
-  MPI_Comm comm = (pm.isValid())
-      ? static_cast<const MPI_Comm>(pm)
-      : MPI_COMM_WORLD;
-  std::string precond_name = "undefined";
-  switch (m_options->preconditioner()) {
+  switch (options->preconditioner())
+  {
   case HypreOptionTypes::NoPC:
     precond_name = "none";
     // precond_destroy_function = NULL;
@@ -288,17 +299,17 @@ HypreInternalLinearSolver::solve(
       !  11-> one-pass Ruge-Stueben coarsening on each processor, no boundary treatment (not recommended!)
        */
       int coarsening_opt = 8 ;
-      if(m_options->amgCoarsenType()=="PMIS")
+      if(options->amgCoarsenType()=="PMIS")
         coarsening_opt = 8 ;
-      if(m_options->amgCoarsenType()=="CLJP")
+      if(options->amgCoarsenType()=="CLJP")
         coarsening_opt = 0 ;
-      if(m_options->amgCoarsenType()=="Ruge-Stueben")
+      if(options->amgCoarsenType()=="Ruge-Stueben")
         coarsening_opt = 1 ;
-      if(m_options->amgCoarsenType()=="Falgout")
+      if(options->amgCoarsenType()=="Falgout")
         coarsening_opt = 6 ;
-      if(m_options->amgCoarsenType()=="HMIS")
+      if(options->amgCoarsenType()=="HMIS")
         coarsening_opt = 10 ;
-      if(m_options->amgCoarsenType()=="One-Pass-Ruge-Stueben")
+      if(options->amgCoarsenType()=="One-Pass-Ruge-Stueben")
         coarsening_opt = 11 ;
 
       /*
@@ -330,34 +341,34 @@ HypreInternalLinearSolver::solve(
         - FF1
        */
       int interpolation_type = 7;
-      if(m_options->amgInterpType()=="classical")
+      if(options->amgInterpType()=="classical")
         interpolation_type = 0 ;
-      if(m_options->amgInterpType()=="ls-interpolation")
+      if(options->amgInterpType()=="ls-interpolation")
         interpolation_type = 1 ;
-      if(m_options->amgInterpType()=="classical-hyperbolic-pde")
+      if(options->amgInterpType()=="classical-hyperbolic-pde")
         interpolation_type = 2 ;
-      if(m_options->amgInterpType()=="direct")
+      if(options->amgInterpType()=="direct")
         interpolation_type = 3 ;
-      if(m_options->amgInterpType()=="multipass")
+      if(options->amgInterpType()=="multipass")
         interpolation_type = 4 ;
-      if(m_options->amgInterpType()=="multipass-wts")
+      if(options->amgInterpType()=="multipass-wts")
         interpolation_type = 5 ;
-      if(m_options->amgInterpType()=="ext+i")
+      if(options->amgInterpType()=="ext+i")
         interpolation_type = 6 ;
-      if(m_options->amgInterpType()=="ext+i-cc")
+      if(options->amgInterpType()=="ext+i-cc")
         interpolation_type = 7;
-      if(m_options->amgInterpType()=="standard")
+      if(options->amgInterpType()=="standard")
         interpolation_type = 10;
-      if(m_options->amgInterpType()=="standard-wts")
+      if(options->amgInterpType()=="standard-wts")
         interpolation_type = 11;
-      if(m_options->amgInterpType()=="FF")
+      if(options->amgInterpType()=="FF")
         interpolation_type = 12;
-      if(m_options->amgInterpType()=="FF1")
+      if(options->amgInterpType()=="FF1")
         interpolation_type = 13;
 
-      double strong_threshold = m_options->amgStrongThreshold() ;
-      int max_levels = m_options->amgMaxLevels() ;
-      double max_row_sum = m_options->amgMaxRowSum() ;
+      double strong_threshold = options->amgStrongThreshold() ;
+      int max_levels = options->amgMaxLevels() ;
+      double max_row_sum = options->amgMaxRowSum() ;
       int ierr = 0;
       ierr = HYPRE_BoomerAMGSetMaxIter(preconditioner,1) ;
       if( ierr == HYPRE_ERROR_CONV){
@@ -410,41 +421,41 @@ HypreInternalLinearSolver::solve(
      Jacobi sequential-Gauss-Seidel seqboundary-Gauss-Seidel SOR/Jacobi backward-SOR/Jacobi  symmetric-SOR/Jacobi  l1scaled-SOR/Jacobi Gaussian-elimination
        */
       int relax_type = 3 ;
-      if(m_options->amgRelaxType()=="Jacobi")
+      if(options->amgRelaxType()=="Jacobi")
         relax_type = 0 ;
-      if(m_options->amgRelaxType()=="sequential-Gauss-Seidel")
+      if(options->amgRelaxType()=="sequential-Gauss-Seidel")
         relax_type = 1 ;
-      if(m_options->amgRelaxType()=="backward-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-Gauss-Seidel")
         relax_type = 2 ;
-      if(m_options->amgRelaxType()=="hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="hybrid-Gauss-Seidel")
         relax_type = 3 ;
-      if(m_options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
           relax_type = 4 ;
-      if(m_options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
         relax_type = 5 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 6 ;
-      if(m_options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
         relax_type = 7 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 8 ;
-      if(m_options->amgRelaxType()=="l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-Gauss-Seidel")
         relax_type = 9 ;
-      if(m_options->amgRelaxType()=="forward-l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="forward-l1-Gauss-Seidel")
         relax_type = 13 ;
-      if(m_options->amgRelaxType()=="backward-l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-l1-Gauss-Seidel")
         relax_type = 14 ;
-      if(m_options->amgRelaxType()=="CG")
+      if(options->amgRelaxType()=="CG")
         relax_type = 15 ;
-      if(m_options->amgRelaxType()=="Chebyshev")
+      if(options->amgRelaxType()=="Chebyshev")
         relax_type = 16 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
         relax_type = 18 ;
       ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,relax_type) ;
       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
       if(ierr) {
         alien_fatal([&] {
-            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<m_options->amgRelaxType()<<" IERR="<<ierr;
+            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<options->amgRelaxType()<<" IERR="<<ierr;
         });
       }
 
@@ -584,7 +595,7 @@ HypreInternalLinearSolver::solve(
       int max_iter = 1 ;
       double tol = 0. ;
       int reordering = 0 ;
-      int fill = m_options->ilukLevel() ;
+      int fill = options->ilukLevel() ;
       int print_level = 3 ;
       checkError("Hypre ILUK preconditioner Type SetUp    ", HYPRE_ILUSetType(preconditioner, ilu_type)); /* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
       checkError("Hypre ILUK preconditioner Max Iter      ", HYPRE_ILUSetMaxIter(preconditioner, max_iter));
@@ -608,8 +619,8 @@ HypreInternalLinearSolver::solve(
       int max_iter = 1 ;
       double tol = 0. ;
       int reordering = 0 ;
-      double threshold = m_options->ilutThreshold() ;
-      int max_nnz_row = m_options->ilutMaxNnz() ;
+      double threshold = options->ilutThreshold() ;
+      int max_nnz_row = options->ilutMaxNnz() ;
       int print_level = 3 ;
       checkError("Hypre ILUT preconditioner Type SetUp      ", HYPRE_ILUSetType(preconditioner, ilu_type)); /* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
       checkError("Hypre ILUT preconditioner Max Iter        ", HYPRE_ILUSetMaxIter(preconditioner, max_iter));
@@ -648,25 +659,11 @@ HypreInternalLinearSolver::solve(
     break;
   }
 
-  // acces aux fonctions du solveur
-  // int (*solver_set_logging_function)(HYPRE_Solver,int) = NULL;
-  int (*solver_set_print_level_function)(HYPRE_Solver, int) = NULL;
-  int (*solver_set_tol_function)(HYPRE_Solver, double) = NULL;
-  int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn,
-      HYPRE_PtrToParSolverFcn, HYPRE_Solver) = NULL;
-  int (*solver_setup_function)(
-      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = NULL;
-  int (*solver_solve_function)(
-      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = NULL;
-  int (*solver_get_num_iterations_function)(HYPRE_Solver, int*) = NULL;
-  int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double*) = NULL;
-  int (*solver_destroy_function)(HYPRE_Solver) = NULL;
+  int max_it = options->numIterationsMax();
+  double rtol = options->stopCriteriaValue();
 
-  int max_it = m_options->numIterationsMax();
-  double rtol = m_options->stopCriteriaValue();
-
-  std::string solver_name = "undefined";
-  switch (m_options->solver()) {
+  switch (options->solver())
+  {
   case HypreOptionTypes::AMG:
     {
       solver_name = "amg";
@@ -688,17 +685,17 @@ HypreInternalLinearSolver::solve(
       !  11-> one-pass Ruge-Stueben coarsening on each processor, no boundary treatment (not recommended!)
        */
       int coarsening_opt = 8 ;
-      if(m_options->amgCoarsenType()=="PMIS")
+      if(options->amgCoarsenType()=="PMIS")
         coarsening_opt = 8 ;
-      if(m_options->amgCoarsenType()=="CLJP")
+      if(options->amgCoarsenType()=="CLJP")
         coarsening_opt = 0 ;
-      if(m_options->amgCoarsenType()=="Ruge-Stueben")
+      if(options->amgCoarsenType()=="Ruge-Stueben")
         coarsening_opt = 1 ;
-      if(m_options->amgCoarsenType()=="Falgout")
+      if(options->amgCoarsenType()=="Falgout")
         coarsening_opt = 6 ;
-      if(m_options->amgCoarsenType()=="HMIS")
+      if(options->amgCoarsenType()=="HMIS")
         coarsening_opt = 10 ;
-      if(m_options->amgCoarsenType()=="One-Pass-Ruge-Stueben")
+      if(options->amgCoarsenType()=="One-Pass-Ruge-Stueben")
         coarsening_opt = 11 ;
 
       /*
@@ -730,34 +727,34 @@ HypreInternalLinearSolver::solve(
         - FF1
        */
       int interpolation_type = 7;
-      if(m_options->amgInterpType()=="classical")
+      if(options->amgInterpType()=="classical")
         interpolation_type = 0 ;
-      if(m_options->amgInterpType()=="ls-interpolation")
+      if(options->amgInterpType()=="ls-interpolation")
         interpolation_type = 1 ;
-      if(m_options->amgInterpType()=="classical-hyperbolic-pde")
+      if(options->amgInterpType()=="classical-hyperbolic-pde")
         interpolation_type = 2 ;
-      if(m_options->amgInterpType()=="direct")
+      if(options->amgInterpType()=="direct")
         interpolation_type = 3 ;
-      if(m_options->amgInterpType()=="multipass")
+      if(options->amgInterpType()=="multipass")
         interpolation_type = 4 ;
-      if(m_options->amgInterpType()=="multipass-wts")
+      if(options->amgInterpType()=="multipass-wts")
         interpolation_type = 5 ;
-      if(m_options->amgInterpType()=="ext+i")
+      if(options->amgInterpType()=="ext+i")
         interpolation_type = 6 ;
-      if(m_options->amgInterpType()=="ext+i-cc")
+      if(options->amgInterpType()=="ext+i-cc")
         interpolation_type = 7;
-      if(m_options->amgInterpType()=="standard")
+      if(options->amgInterpType()=="standard")
         interpolation_type = 10;
-      if(m_options->amgInterpType()=="standard-wts")
+      if(options->amgInterpType()=="standard-wts")
         interpolation_type = 11;
-      if(m_options->amgInterpType()=="FF")
+      if(options->amgInterpType()=="FF")
         interpolation_type = 12;
-      if(m_options->amgInterpType()=="FF1")
+      if(options->amgInterpType()=="FF1")
         interpolation_type = 13;
 
-      double strong_threshold = m_options->amgStrongThreshold() ;
-      int max_levels = m_options->amgMaxLevels() ;
-      double max_row_sum = m_options->amgMaxRowSum() ;
+      double strong_threshold = options->amgStrongThreshold() ;
+      int max_levels = options->amgMaxLevels() ;
+      double max_row_sum = options->amgMaxRowSum() ;
       int ierr = 0;
       ierr = HYPRE_BoomerAMGSetMaxLevels(solver,max_levels) ;
       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
@@ -792,41 +789,41 @@ HypreInternalLinearSolver::solve(
      Jacobi sequential-Gauss-Seidel seqboundary-Gauss-Seidel SOR/Jacobi backward-SOR/Jacobi  symmetric-SOR/Jacobi  l1scaled-SOR/Jacobi Gaussian-elimination
        */
       int relax_type = 3 ;
-      if(m_options->amgRelaxType()=="Jacobi")
+      if(options->amgRelaxType()=="Jacobi")
         relax_type = 0 ;
-      if(m_options->amgRelaxType()=="sequential-Gauss-Seidel")
+      if(options->amgRelaxType()=="sequential-Gauss-Seidel")
         relax_type = 1 ;
-      if(m_options->amgRelaxType()=="backward-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-Gauss-Seidel")
         relax_type = 2 ;
-      if(m_options->amgRelaxType()=="hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="hybrid-Gauss-Seidel")
         relax_type = 3 ;
-      if(m_options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-hybrid-Gauss-Seidel")
           relax_type = 4 ;
-      if(m_options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="symetric-hybrid-Gauss-Seidel")
         relax_type = 5 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 6 ;
-      if(m_options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-l1-hybrid-Gauss-Seidel")
         relax_type = 7 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel")
         relax_type = 8 ;
-      if(m_options->amgRelaxType()=="l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="l1-Gauss-Seidel")
         relax_type = 9 ;
-      if(m_options->amgRelaxType()=="forward-l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="forward-l1-Gauss-Seidel")
         relax_type = 13 ;
-      if(m_options->amgRelaxType()=="backward-l1-Gauss-Seidel")
+      if(options->amgRelaxType()=="backward-l1-Gauss-Seidel")
         relax_type = 14 ;
-      if(m_options->amgRelaxType()=="CG")
+      if(options->amgRelaxType()=="CG")
         relax_type = 15 ;
-      if(m_options->amgRelaxType()=="Chebyshev")
+      if(options->amgRelaxType()=="Chebyshev")
         relax_type = 16 ;
-      if(m_options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
+      if(options->amgRelaxType()=="l1-hybrid-Gauss-Seidel-v2")
         relax_type = 18 ;
       ierr = HYPRE_BoomerAMGSetRelaxType(solver,relax_type) ;
       if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
       if(ierr) {
         alien_fatal([&] {
-            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<m_options->amgRelaxType()<<" IERR="<<ierr;
+            cout() << "Error while calling HYPRE_BoomerAMGSetRelaxType : "<<options->amgRelaxType()<<" IERR="<<ierr;
         });
       }
 
@@ -1050,11 +1047,22 @@ HypreInternalLinearSolver::solve(
     checkError("Hypre " + solver_name + " solver SetPrintLevel",
         (*solver_set_print_level_function)(solver, 3));
   }
+  m_initialized = true ;
+}
 
-  HYPRE_ParCSRMatrix par_a;
-  HYPRE_ParVector par_rhs, par_x;
+
+
+void
+HypreInternalLinearSolver::Impl::setUp(const HYPRE_IJMatrix& ij_matrix)
+{
   checkError(
       "Hypre Matrix GetObject", HYPRE_IJMatrixGetObject(ij_matrix, (void**)&par_a));
+}
+
+void
+HypreInternalLinearSolver::Impl::setUp(const HYPRE_IJVector& bij_vector,
+                                        HYPRE_IJVector& xij_vector)
+{
   checkError("Hypre RHS Vector GetObject",
       HYPRE_IJVectorGetObject(bij_vector, (void**)&par_rhs));
   checkError("Hypre Unknown Vector GetObject",
@@ -1062,25 +1070,97 @@ HypreInternalLinearSolver::solve(
 
   checkError("Hypre " + solver_name + " solver Setup",
       (*solver_setup_function)(solver, par_a, par_rhs, par_x));
+  m_is_setup = true ;
+}
+
+bool
+HypreInternalLinearSolver::Impl::solve()
+{
+  assert(m_is_setup) ;
   int code = (*solver_solve_function)(solver, par_a, par_rhs, par_x) ;
-  m_status.succeeded = (code==0 || code==HYPRE_ERROR_CONV);
+  return (code==0 || code==HYPRE_ERROR_CONV);
+}
 
-  checkError("Hypre " + solver_name + " solver GetNumIterations",
-      (*solver_get_num_iterations_function)(solver, &m_status.iteration_count));
+void HypreInternalLinearSolver::Impl::getStatus(Status& status)
+{
+   checkError("Hypre " + solver_name + " solver GetNumIterations",
+      (*solver_get_num_iterations_function)(solver, &status.iteration_count));
   checkError("Hypre " + solver_name + " solver GetFinalResidual",
-      (*solver_get_final_relative_residual_function)(solver, &m_status.residual));
+      (*solver_get_final_relative_residual_function)(solver, &status.residual));
+}
 
+void
+HypreInternalLinearSolver::Impl::end()
+{
   checkError(
       "Hypre " + solver_name + " solver Destroy", (*solver_destroy_function)(solver));
   if (precond_destroy_function)
     checkError("Hypre " + precond_name + " preconditioner Destroy",
         (*precond_destroy_function)(preconditioner));
-
-  return m_status.succeeded;
-
-#undef VALUESTRING
 }
 
+void
+HypreInternalLinearSolver::init(const HypreMatrix& A)
+{
+  const HYPRE_IJMatrix& ij_matrix = A.internal()->internal();
+  HYPRE_ClearAllErrors() ;
+
+  auto pm = m_parallel_mng->communicator();
+  MPI_Comm comm = (pm.isValid())
+      ? static_cast<const MPI_Comm>(pm)
+      : MPI_COMM_WORLD;
+
+  if(m_impl.get())
+  {
+    m_impl->end() ;
+  }
+  m_impl.reset(new Impl);
+  m_impl->init(m_options,comm);
+  m_impl->setUp(ij_matrix);
+}
+
+bool
+HypreInternalLinearSolver::solve(const HypreMatrix& A,
+                                 const HypreVector& b,
+                                 HypreVector& x)
+{
+  const HYPRE_IJMatrix& ij_matrix = A.internal()->internal();
+  const HYPRE_IJVector& bij_vector = b.internal()->internal();
+  HYPRE_IJVector& xij_vector = x.internal()->internal();
+  init(A) ;
+  m_impl->setUp(ij_matrix) ;
+  m_impl->setUp(bij_vector,xij_vector) ;
+  m_status.succeeded = m_impl->solve() ;
+  m_impl->getStatus(m_status) ;
+  m_impl->end() ;
+  m_impl.reset() ;
+  return m_status.succeeded;
+
+}
+
+bool
+HypreInternalLinearSolver::solve(const HypreVector& b,
+                                 HypreVector& x)
+{
+  const HYPRE_IJVector& bij_vector = b.internal()->internal();
+  HYPRE_IJVector& xij_vector = x.internal()->internal();
+  assert(m_impl.get()!=nullptr) ;
+  assert(m_impl->m_initialized) ;
+  if(!m_impl->m_is_setup)
+    m_impl->setUp(bij_vector,xij_vector) ;
+  m_status.succeeded = m_impl->solve() ;
+  return m_status.succeeded;
+}
+
+void
+HypreInternalLinearSolver::end()
+{
+  if(m_impl.get())
+  {
+    m_impl->end();
+    m_impl.reset();
+  }
+}
 /*---------------------------------------------------------------------------*/
 
 const Alien::SolverStatus&

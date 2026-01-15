@@ -12,6 +12,7 @@
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
 #include <alien/core/backend/KernelSolverT.h>
+#include <alien/core/backend/LinearSolver.h>
 
 namespace Alien
 {
@@ -93,7 +94,7 @@ class KernelAMGSolverT
   using SolverMatrixType  = typename AlgebraTraits<AMGSolverTagT>::matrix_type;
   using SolverVectorType  = typename AlgebraTraits<AMGSolverTagT>::vector_type;
   using SolverAlgebraType = typename AlgebraTraits<AMGSolverTagT>::algebra_type;
-  using AMGSolverType     = typename AlgebraTraits<AMGSolverTagT>::solver_type;
+  using AMGSolverType     = KernelSolverT<AMGSolverTagT>;
 
   using MatrixConvType     = MatrixConverterT<TagT,AMGSolverTagT> ;
   using VectorConvFromType = VectorConverterT<TagT,AMGSolverTagT> ;
@@ -120,7 +121,13 @@ class KernelAMGSolverT
     : BaseSolverType()
     , m_algebra(alg)
     {
-      m_amg_solver = dynamic_cast<AMGSolverType*>(solver) ;
+      auto solver_ptr = dynamic_cast<Alien::LinearSolver<AMGSolverTagT>*>(solver) ;
+      if(solver_ptr)
+        m_amg_solver = dynamic_cast<AMGSolverType*>(solver_ptr->implem()) ;
+      else
+        m_amg_solver = dynamic_cast<AMGSolverType*>(solver) ;
+      assert(m_amg_solver) ;
+
       const BackEndId backend_id        = AlgebraTraits<TagT>::name() ;
       const BackEndId solver_backend_id = AlgebraTraits<AMGSolverTagT>::name() ;
       m_matrix_converter =
@@ -143,30 +150,48 @@ class KernelAMGSolverT
   }
 
   //! Initialize the linear solver
-  void init(MatrixType const& A) {
+  void init(MatrixType const& A)
+  {
     m_matrix = &A ;
+    if(m_solver_matrix.get()==nullptr)
+    {
+      auto ptr = new SolverMatrixType(m_matrix->impls()) ;
+      m_solver_matrix.reset(ptr) ;
+    }
     m_matrix_converter->convert(A, *m_solver_matrix);
-    //m_amg_solver->init(*m_solver_matrix) ;
+    m_amg_solver->init(*m_solver_matrix) ;
   }
 
 
   bool solve(const VectorType& b, VectorType& x)
   {
+    if(m_solver_b.get()==nullptr)
+    {
+      auto ptr =  new SolverVectorType(nullptr) ;
+      ptr->init(AlgebraType::resource(*m_matrix),true) ;
+      m_solver_b.reset(ptr) ;
+    }
     m_vector_converter_from->convert(b, *m_solver_b);
-    m_amg_solver->solve(*m_solver_matrix,*m_solver_b,*m_solver_x) ;
+    if(m_solver_x.get()==nullptr)
+    {
+      auto ptr =  new SolverVectorType(nullptr) ;
+      ptr->init(AlgebraType::resource(*m_matrix),true) ;
+      m_solver_x.reset(ptr) ;
+    }
+    m_amg_solver->solve(*m_solver_b,*m_solver_x) ;
     m_vector_converter_to->convert(*m_solver_x,x);
     return true ;
   }
  private:
-  AlgebraType&        m_algebra ;
-  AMGSolverType*      m_amg_solver = nullptr;
-  MatrixType const*   m_matrix = nullptr ;
-  SolverMatrixType*   m_solver_matrix = nullptr;
-  SolverVectorType*   m_solver_b = nullptr;
-  SolverVectorType*   m_solver_x = nullptr;
-  MatrixConvType*     m_matrix_converter = nullptr ;
-  VectorConvFromType* m_vector_converter_from = nullptr ;
-  VectorConvToType*   m_vector_converter_to = nullptr ;
+  AlgebraType&                      m_algebra ;
+  AMGSolverType*                    m_amg_solver = nullptr;
+  MatrixType const*                 m_matrix = nullptr ;
+  std::unique_ptr<SolverMatrixType> m_solver_matrix;
+  std::unique_ptr<SolverVectorType> m_solver_b;
+  std::unique_ptr<SolverVectorType> m_solver_x;
+  MatrixConvType*                   m_matrix_converter = nullptr ;
+  VectorConvFromType*               m_vector_converter_from = nullptr ;
+  VectorConvToType*                 m_vector_converter_to = nullptr ;
 };
 
 } // namespace Alien

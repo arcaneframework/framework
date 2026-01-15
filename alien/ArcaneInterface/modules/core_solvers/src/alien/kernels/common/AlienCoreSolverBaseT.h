@@ -360,7 +360,83 @@ class AlienCoreSolverBaseT
               solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
           }
         }
+        break ;          case AlienCoreSolverOptionTypes::AMG:
+        {
+          ILinearSolver* amg_solver = m_options->amgSolver() ;
+          auto amg_backend_name = amg_solver->getBackEndName();
+          this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+          if(amg_backend_name=="hypre")
+          {
+#ifdef ALIEN_USE_HYPRE
+            using AMGBackEndType  = Alien::BackEnd::tag::hypre ;
+            using AMGSolverType   = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackEndType> ;
+            using PrecondType     = Alien::AMGPreconditioner<AlgebraType,MatrixType,VectorType,AMGSolverType>  ;
+
+            auto proxy_amg_solver = AMGSolverType{alg,amg_solver} ;
+            PrecondType precond{alg,matrixA,&proxy_amg_solver,traceMng()} ;
+            {
+              Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
+              precond.init() ;
+            }
+            {
+              Alien::StdTimer::Sentry ts(m_timer,"Solve");
+              if(asynch==0)
+                solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              else
+                solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+            }
+#endif
+          }
+        }
         break ;
+        case AlienCoreSolverOptionTypes::CxrAMG:
+        {
+          ILinearSolver* amg_solver = m_options->amgSolver() ;
+          auto amg_backend_name = amg_solver->getBackEndName();
+          this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+          if(amg_backend_name=="hypre")
+          {
+#ifdef ALIEN_USE_HYPRE
+            using AMGBackendType   = Alien::BackEnd::tag::hypre ;
+            using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
+            using CxrSolverType    = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
+            using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
+            using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
+                                                              MatrixType,
+                                                              VectorType,
+                                                              CxrSolverType,
+                                                              CxrOpType,
+                                                              RelaxSolverType> ;
+
+            auto cxr_op = CxrOpType(matrixA) ;
+            cxr_op.computeCxrMatrix(alg) ;
+            auto& cxr_matrix = cxr_op.getCxrMatrix() ;
+
+            auto cxr_solver = CxrSolverType{alg,amg_solver} ;
+            auto relax_solver = RelaxSolverType{alg,matrixA,traceMng()} ;
+
+            auto precond = CxrPrecondType{alg,
+                                          matrixA,
+                                          &cxr_op,
+                                          &cxr_solver,
+                                          &relax_solver,
+                                          traceMng()} ;
+            {
+              Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
+              precond.init() ;
+            }
+            {
+              Alien::StdTimer::Sentry ts(m_timer,"Solve");
+              if(asynch==0)
+                solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              else
+                solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+            }
+#endif
+          }
+        }
+        break ;
+
       case AlienCoreSolverOptionTypes::Diag:
       default:
         {

@@ -68,7 +68,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreVector : public IVectorImpl
 
  public:
   void init(const VectorDistribution& dist, const bool need_allocate);
-  void allocate();
+  void allocate(const VectorDistribution& dist);
 
   void free() {}
   void clear() {}

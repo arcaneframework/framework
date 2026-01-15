@@ -62,18 +62,20 @@ HypreVector::init(const VectorDistribution& dist, const bool need_allocate)
     m_block_size = 1;
   m_offset = dist.offset();
   if (need_allocate)
-    allocate();
+  {
+    allocate(dist);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-HypreVector::allocate()
+HypreVector::allocate(const VectorDistribution& dist)
 {
   delete m_internal;
   auto memory_type = HypreInternalLinearSolver::m_library_plugin->getMemoryType() ;
   auto exec_space = HypreInternalLinearSolver::m_library_plugin->getExecSpace() ;
-  const VectorDistribution& dist = this->distribution();
+  //const VectorDistribution& dist = this->distribution();
   auto pm = dist.parallelMng()->communicator();
   if (pm.isValid()) {
     m_internal =

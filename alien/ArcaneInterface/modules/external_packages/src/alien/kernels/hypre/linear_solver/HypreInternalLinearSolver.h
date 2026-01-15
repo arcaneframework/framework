@@ -13,9 +13,11 @@
 #include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/core/backend/KernelSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 #include <alien/AlienExternalPackagesPrecomp.h>
 
+#include <alien/kernels/hypre/HypreBackEnd.h>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,6 +61,7 @@ class HypreLibrary
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 : public IInternalLinearSolver<HypreMatrix, HypreVector>
+, public KernelSolverT<BackEnd::tag::hypre>
 , public ObjectWithTrace
 {
  public:
@@ -77,7 +80,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false, int device_id=0) ;
 
-  virtual void init();
+  void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
 
@@ -85,8 +88,16 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   Arccore::String getBackEndName() const { return "hypre"; }
 
+  void init(HypreMatrix const& A) ;
+
+  void start() {
+
+  }
+
   //! Résolution du système linéaire
   bool solve(const HypreMatrix& A, const HypreVector& b, HypreVector& x);
+
+  bool solve(const HypreVector& b, HypreVector& x);
 
   //! Indicateur de support de résolution parallèle
   bool hasParallelSupport() const { return true; }
@@ -101,6 +112,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   SolverStat& getSolverStat() { return m_stat; }
 
  private:
+  struct Impl ;
+
+  std::unique_ptr<Impl> m_impl ;
+
   Status m_status;
 
   Integer m_gpu_device_id = 0 ;
@@ -109,8 +124,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   IOptionsHypreSolver* m_options;
 
- private:
-  void checkError(const Arccore::String& msg, int ierr, int skipError = 0) const;
 };
 
 /*---------------------------------------------------------------------------*/
