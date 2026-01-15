@@ -600,9 +600,9 @@ offsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const
     return coord;
   }
   if (level_from < level_to) {
-    return coord * m_pattern * (level_to - level_from);
+    return coord * static_cast<CartCoord>(std::pow(m_pattern, (level_to - level_from)));
   }
-  return coord / (m_pattern * (level_from - level_to));
+  return coord / static_cast<CartCoord>(std::pow(m_pattern, (level_from - level_to)));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -615,9 +615,9 @@ offsetLevelToLevel(CartCoord3 coord, Int32 level_from, Int32 level_to) const
     return coord;
   }
   if (level_from < level_to) {
-    return coord * (m_pattern * (level_to - level_from));
+    return coord * static_cast<CartCoord>(std::pow(m_pattern, (level_to - level_from)));
   }
-  return coord / ((m_pattern * (level_from - level_to)));
+  return coord / static_cast<CartCoord>(std::pow(m_pattern, (level_from - level_to)));
 }
 
 /*---------------------------------------------------------------------------*/
