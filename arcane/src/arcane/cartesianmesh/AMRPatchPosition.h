@@ -69,6 +69,10 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 
  public:
 
+  bool operator==(const AMRPatchPosition& other) const = default;
+
+ public:
+
   /*!
    * \brief Méthode permettant de récupérer le niveau du patch.
    * \return Le niveau du patch.
@@ -201,9 +205,12 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * supérieur.
    *
    * \param dim La dimension du maillage.
+   * \param higher_level Le plus haut niveau de raffinement du maillage.
+   * \param overlap_layer_size_top_level Le nombre de couches de mailles de
+   * recouvrement pour les patchs du plus haut niveau de raffinement.
    * \return Un \a AMRPatchPosition de niveau supérieur.
    */
-  AMRPatchPosition patchUp(Integer dim) const;
+  AMRPatchPosition patchUp(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const;
 
   /*!
    * \brief Méthode permettant de créer un \a AMRPatchPosition pour le niveau
@@ -223,9 +230,12 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    * patch.patchUp(patch.patchDown(X)) != patch.
    *
    * \param dim La dimension du maillage.
+   * \param higher_level Le plus haut niveau de raffinement du maillage.
+   * \param overlap_layer_size_top_level Le nombre de couches de mailles de
+   * recouvrement pour les patchs du plus haut niveau de raffinement.
    * \return Un \a AMRPatchPosition de niveau inférieur.
    */
-  AMRPatchPosition patchDown(Integer dim) const;
+  AMRPatchPosition patchDown(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const;
 
   /*!
    * \brief Méthode permettant de connaitre la taille du patch (en nombre de
@@ -318,7 +328,28 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
    */
   bool haveIntersection(const AMRPatchPosition& other) const;
 
-  bool operator==(const AMRPatchPosition& other) const = default;
+  /*!
+   * \brief Méthode permettant de calculer le nombre de couches de mailles de
+   * recouvrement pour un niveau donné.
+   *
+   * \param level Le niveau demandé.
+   * \param higher_level Le plus haut niveau de raffinement.
+   * \param overlap_layer_size_top_level Le nombre de couches pour le plus
+   * haut niveau de raffinement.
+   * \return Le nombre de couches de mailles de recouvrement pour le niveau
+   * demandé.
+   */
+  static Int32 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level);
+
+  /*!
+   * \brief Méthode permettant de calculer le nombre de couches de mailles de
+   * recouvrement pour notre patch.
+   *
+   * \param higher_level Le plus haut niveau de raffinement.
+   * \param overlap_layer_size_top_level Le nombre de couches pour le plus
+   * haut niveau de raffinement.
+   */
+  void computeOverlapLayerSize(Int32 higher_level, Int32 overlap_layer_size_top_level);
 
  private:
 

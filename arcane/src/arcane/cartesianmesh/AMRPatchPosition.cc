@@ -268,7 +268,7 @@ isNull() const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchUp(Integer dim) const
+patchUp(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level + 1);
@@ -279,7 +279,7 @@ patchUp(Integer dim) const
   else {
     p.setMaxPoint(m_max_point * 2);
   }
-  p.setOverlapLayerSize(m_overlap_layer_size * 2);
+  p.computeOverlapLayerSize(higher_level, overlap_layer_size_top_level);
   return p;
 }
 
@@ -287,7 +287,7 @@ patchUp(Integer dim) const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchDown(Integer dim) const
+patchDown(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level - 1);
@@ -298,7 +298,7 @@ patchDown(Integer dim) const
   else {
     p.setMaxPoint({ static_cast<CartCoord>(std::ceil(m_max_point.x / 2.)), static_cast<CartCoord>(std::ceil(m_max_point.y / 2.)), static_cast<CartCoord>(std::ceil(m_max_point.z / 2.)) });
   }
-  p.setOverlapLayerSize((m_overlap_layer_size / 2) + 1);
+  p.computeOverlapLayerSize(higher_level, overlap_layer_size_top_level);
   return p;
 }
 
@@ -384,6 +384,54 @@ haveIntersection(const AMRPatchPosition& other) const
   (other.maxPoint().x > minPoint().x && maxPoint().x > other.minPoint().x) &&
   (other.maxPoint().y > minPoint().y && maxPoint().y > other.minPoint().y) &&
   (other.maxPoint().z > minPoint().z && maxPoint().z > other.minPoint().z));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * Suite :
+ * Soit m le plus haut niveau de raffinement (higher_level),
+ * Soit C(m) le nombre de couches au niveau m (overlap_layer_size_top_level),
+ * Pour tout C(m) entier pair positif :
+ * C(m-1) = (int(C(m)/4)+1)*2
+ */
+Int32 AMRPatchPosition::
+computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
+{
+  if (level < 0 || level > higher_level) {
+    ARCANE_FATAL("Level doesn't exist");
+  }
+  if (level == higher_level) {
+    return overlap_layer_size_top_level;
+  }
+
+  Int32 nb_overlap_cells = overlap_layer_size_top_level;
+
+  // Pour éviter des tours de boucle inutiles.
+  if (nb_overlap_cells == 0) {
+    return 2;
+  }
+  if (nb_overlap_cells == 2) {
+    return 2;
+  }
+  for (Integer m = higher_level; m > level; --m) {
+    if (nb_overlap_cells == 4) {
+      return 4;
+    }
+    nb_overlap_cells = ((nb_overlap_cells / 4) + 1) * 2;
+  }
+
+  return nb_overlap_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRPatchPosition::
+computeOverlapLayerSize(Int32 higher_level, Int32 overlap_layer_size_top_level)
+{
+  m_overlap_layer_size = computeOverlapLayerSize(m_level, higher_level, overlap_layer_size_top_level);
 }
 
 /*---------------------------------------------------------------------------*/
