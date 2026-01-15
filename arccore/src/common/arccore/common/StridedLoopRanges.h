@@ -42,8 +42,8 @@ class StridedLoopRangesBase
 
   StridedLoopRangesBase(Int32 nb_stride, Int64 nb_orig_element)
   : m_stride_value((nb_orig_element + (nb_stride - 1)) / nb_stride)
-  , m_nb_stride(nb_stride)
   , m_nb_original_element(nb_orig_element)
+  , m_nb_stride(nb_stride)
   {
   }
 
