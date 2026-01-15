@@ -33,14 +33,39 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Conteneur contenant les informations pour la boucle accélérateur
+ * sur les entités.
+ */
+template <typename TraitsType_>
+class ItemLocalIdsContainer
+{
+ public:
+
+  using TraitsType = TraitsType_;
+  using BuilderType = TraitsType::BuilderType;
+
+ public:
+
+  explicit ItemLocalIdsContainer(SmallSpan<const Int32> ids) : m_ids(ids){}
+  constexpr SmallSpan<const Int32> ids() const { return m_ids; }
+
+ public:
+
+  SmallSpan<const Int32> m_ids;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
-template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs> __global__ void
+doIndirectGPULambda2(ContainerType container, Lambda func, RemainingArgs... remaining_args)
 {
-  using BuilderType = TraitsType::BuilderType;
+  using BuilderType = ContainerType::BuilderType;
   using LocalIdType = BuilderType::ValueType;
+  SmallSpan<const Int32> ids = container.ids();
 
   // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
@@ -361,14 +386,16 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();
   [[maybe_unused]] SmallSpan<const Int32> ids = items.localIds();
+  using ContainerType = Impl::ItemLocalIdsContainer<TraitsType>;
+  [[maybe_unused]] ContainerType container(ids);
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2 < TraitsType, Lambda, RemainingArgs... >),
-                             launch_info, func, ids, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doIndirectGPULambda2 < ContainerType, Lambda, RemainingArgs... >),
+                             launch_info, func, container, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((Impl::doIndirectGPULambda2 < TraitsType, Lambda, RemainingArgs... >),
-                            launch_info, func, ids, remaining_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doIndirectGPULambda2 < ContainerType, Lambda, RemainingArgs... >),
+                            launch_info, func, container, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
     ARCCORE_KERNEL_SYCL_FUNC((Impl::DoIndirectSYCLLambda < TraitsType, Lambda, RemainingArgs... > {}),
