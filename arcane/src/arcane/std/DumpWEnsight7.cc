@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DumpWEnsight7.cc                                            (C) 2000-2024 */
+/* DumpWEnsight7.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Exportations des fichiers au format Ensight7 gold.                        */
 /*---------------------------------------------------------------------------*/
@@ -244,13 +244,13 @@ class DumpWEnsight7
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nsided"));
         }
       }
-      // Add polygons handled in general polyhedral mesh : no types defined
+      // Add polygons handled in general polyhedral mesh: no types defined
       Int32 type_id = ItemTypeMng::nbBasicItemType();
       if (item_type_mng->hasGeneralCells(m_group.mesh())) {
         if (!m_is_polygonal_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
             ItemWithNodes item = iitem->toItemWithNodes();
-            if (item.nbNode() == item.itemBase().nbEdge()) { // polygon found // todo do not use internal, but how ?
+            if (item.nbNode() == item.itemBase().nbEdge()) { // polygon found
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nsided"));
             }
@@ -313,7 +313,7 @@ class DumpWEnsight7
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nfaced"));
         }
       }
-      // Add polyhedra handled in general polyhedral mesh : no types defined
+      // Add polyhedra handled in general polyhedral mesh: no types defined
       if (item_type_mng->hasGeneralCells(m_group.mesh())) {
         if (!m_is_polyhedral_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
@@ -331,7 +331,7 @@ class DumpWEnsight7
         }
       }
       // if extra types are used, init a EnsightPart map to optimize GroupPartInfo fill
-      if (ItemTypeMng::nbBuiltInItemType() < ItemTypeMng::nbBasicItemType()){
+      if (ItemTypeMng::nbBuiltInItemType() < ItemTypeMng::nbBasicItemType() || item_type_mng->hasGeneralCells(m_group.mesh())) {
         _initPartMap();
       }
     }
@@ -897,7 +897,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     if (!grp.isOwn()) // Si possible, prend le groupe d'éléments propres
       grp = grp.own();
     // Depuis la 7.6 de Ensight, les groupes vides sont autorisés
-    // et ils sont nécessaire lorsque le maillage évolue au cours du temps
+    // et ils sont nécessaires lorsque le maillage évolue au cours du temps
     //if (grp.empty()) // Le groupe est vide
     //continue;
     GroupPartInfo* gpi = new GroupPartInfo(grp, partid, m_use_degenerated_hexa);
@@ -906,38 +906,29 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
 
     GroupPartInfo& current_grp = *gpi;
     // Il faut maintenant déterminer combien d'éléments de chaque type
-    // ensight (tria3,hexa8,...) on a dans le groupe.
-    // two versions : if extra item types are added switch to an optimized version
-    // (a large amount of type may be added, equal to number of elements)
+    // ensight (tria3, hexa8, ...) on a dans le groupe.
+    // two versions: if extra item types are added switch to an optimized version
+    // (a large amount of types may be added, equal to the number of elements)
     if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // no extra type
     {
       debug(Trace::High) << "Using standard group part building algo";
-      auto nb_basic_item_types = grp.mesh()->itemTypeMng()->nbBasicItemType();
-      for (Integer z = 0; z < current_grp.nbType(); ++z) {
-        EnsightPart& type_info = current_grp.typeInfo(z);
-        Array<Item>& items = type_info.items();
-        Integer nb_of_type = 0;
-        Integer type_to_seek = type_info.type();
-        if (type_to_seek < nb_basic_item_types) { // "classical type"
+      if (!grp.mesh()->itemTypeMng()->hasGeneralCells(grp.mesh())) {// classical types
+        for (Integer z = 0; z < current_grp.nbType(); ++z) {
+          EnsightPart& type_info = current_grp.typeInfo(z);
+          Array<Item>& items = type_info.items();
+          Integer nb_of_type = 0;
+          Integer type_to_seek = type_info.type();
           ENUMERATE_ITEM (i2, grp) {
             const Item& e = *i2;
             if (e.type() == type_to_seek)
               ++nb_of_type;
           }
-        }
-        else { // general items
-          ENUMERATE_ITEM (i2, grp) {
-            const Item& e = *i2;
-            if (current_grp.generalItemTypeId(e) == type_to_seek)
-              ++nb_of_type;
-          }
-        }
-        items.resize(nb_of_type);
-        debug(Trace::High) << "Group " << grp.name() << " has "
-                           << nb_of_type << " items of type " << type_info.name();
-        Integer index = 0;
-        if (type_to_seek < nb_basic_item_types) { // "classical type"
-          ENUMERATE_ITEM (iz, grp) {
+          items.resize(nb_of_type);
+          debug(Trace::High) << "Group " << grp.name() << " has "
+                             << nb_of_type << " items of type " << type_info.name();
+          Integer index = 0;
+          ENUMERATE_ITEM (iz, grp)
+          {
             Item mi = *iz;
             if (mi.type() == type_to_seek) {
               ItemWithNodes e = mi.toItemWithNodes();
@@ -946,15 +937,16 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
             }
           }
         }
-        else { // general items
-          ENUMERATE_ITEM (iz, grp) {
-            Item mi = *iz;
-            if (current_grp.generalItemTypeId(mi) == type_to_seek) {
-              ItemWithNodes e = mi.toItemWithNodes();
-              items[index] = e;
-              ++index;
-            }
-          }
+      }
+      else {// polyhedral mesh items
+        ENUMERATE_ITEM (i2, grp) {
+          const Item& item = *i2;
+          auto item_type = current_grp.generalItemTypeId(item);
+          EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
+          if (!ensight_part)
+            continue ;
+          ItemWithNodes item_wn = item.toItemWithNodes();
+          ensight_part->items().add(item_wn);
         }
       }
     }
