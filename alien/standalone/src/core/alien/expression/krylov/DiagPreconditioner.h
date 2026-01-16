@@ -48,6 +48,11 @@ class DiagPreconditioner
   //! operator preparation
   void init()
   {
+    if constexpr (requires{m_matrix.blockSize();}) {
+      auto block_size = m_matrix.blockSize() ;
+      if(block_size>1)
+        m_inv_diag.setBlockSize(block_size) ;
+    }
     m_algebra.allocate(AlgebraType::resource(m_matrix), m_inv_diag);
     m_algebra.assign(m_inv_diag, 1.);
     m_algebra.computeInvDiag(m_matrix, m_inv_diag);

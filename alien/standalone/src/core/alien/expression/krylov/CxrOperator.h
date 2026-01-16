@@ -19,6 +19,7 @@ public:
 
   CxrOperator(MatrixT const& matrix)
   : m_matrix(matrix)
+  , m_cxr_matrix(matrix.impls()->clone())
   {}
 
   virtual ~CxrOperator()

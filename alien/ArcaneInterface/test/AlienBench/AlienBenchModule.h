@@ -69,6 +69,19 @@ class AlienBenchModule : public ArcaneAlienBenchObject
              Alien::Vector& coordZ,
              Alien::Matrix& matrixA);
 
+  void _test(Timer& pbuild_timer,
+             CellGroup& areaU,
+             CellCellGroup& cell_cell_connection,
+             CellCellGroup& all_cell_cell_connection,
+             Arccore::UniqueArray<Arccore::Integer>& allUindex,
+             Alien::BlockVector& vectorB,
+             Alien::BlockVector& vectorBB,
+             Alien::BlockVector& vectorX,
+             Alien::Vector& coordX,
+             Alien::Vector& coordY,
+             Alien::Vector& coordZ,
+             Alien::BlockMatrix& matrixA);
+
   void _fillSystemCPU(Timer& pbuild_timer,
                       CellCellGroup& cell_cell_connection,
                       CellCellGroup& all_cell_cell_connection,
@@ -77,6 +90,16 @@ class AlienBenchModule : public ArcaneAlienBenchObject
                       Alien::Vector& vectorBB,
                       Alien::Vector& vectorX,
                       Alien::Matrix& matrixA) ;
+
+
+  void _fillSystemCPU(Timer& pbuild_timer,
+                      CellCellGroup& cell_cell_connection,
+                      CellCellGroup& all_cell_cell_connection,
+                      Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                      Alien::BlockVector& vectorB,
+                      Alien::BlockVector& vectorBB,
+                      Alien::BlockVector& vectorX,
+                      Alien::BlockMatrix& matrixA) ;
 
 #ifdef ALIEN_USE_SYCL
   void _testSYCLWithUSM( Timer& pbuild_timer,
@@ -158,10 +181,10 @@ class AlienBenchModule : public ArcaneAlienBenchObject
   Arcane::Accelerator::RunQueue* m_default_queue         = nullptr;
 
 
+  VariableCellInt16 m_cell_is_own; //!< Numéro du sous-domaine associé à la maille
   UnstructuredMeshConnectivityView m_connectivity_view;
   UniqueArray<Integer> m_cell_cell_connection_index;
   UniqueArray<Integer> m_cell_cell_connection_offset;
-  VariableCellInt16 m_cell_is_own; //!< Numéro du sous-domaine associé à la maille
 #endif
 };
 

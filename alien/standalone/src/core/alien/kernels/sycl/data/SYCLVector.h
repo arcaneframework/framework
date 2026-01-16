@@ -54,7 +54,7 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
 
   Integer getAllocSize() const
   {
-    return m_local_size;
+    return Integer(m_local_size);
   }
 
   void allocate();

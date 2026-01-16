@@ -221,19 +221,15 @@ class AlienCoreSolverBaseT
                                                                 CxrOpType,
                                                                 RelaxSolverType> ;
 
-              auto cxr_op = CxrOpType(matrixA) ;
-              cxr_op.computeCxrMatrix(alg) ;
-              auto& cxr_matrix = cxr_op.getCxrMatrix() ;
-
-              auto cxr_solver = CxrSolverType{alg,amg_solver} ;
+              auto cxr_op       = CxrOpType(matrixA) ;
+              auto cxr_solver   = CxrSolverType{alg,amg_solver} ;
               auto relax_solver = RelaxSolverType{alg,matrixA,traceMng()} ;
-
-              auto precond = CxrPrecondType{alg,
-                                            matrixA,
-                                            &cxr_op,
-                                            &cxr_solver,
-                                            &relax_solver,
-                                            traceMng()} ;
+              auto precond      = CxrPrecondType{alg,
+                                                 matrixA,
+                                                 &cxr_op,
+                                                 &cxr_solver,
+                                                 &relax_solver,
+                                                 traceMng()} ;
               {
                 Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
                 precond.init() ;
@@ -400,7 +396,7 @@ class AlienCoreSolverBaseT
             using AMGBackendType   = Alien::BackEnd::tag::hypre ;
             using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
             using CxrSolverType    = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
-            using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
+            using RelaxSolverType  = Alien::DiagPreconditioner<AlgebraType> ;
             using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
                                                               MatrixType,
                                                               VectorType,
@@ -409,11 +405,8 @@ class AlienCoreSolverBaseT
                                                               RelaxSolverType> ;
 
             auto cxr_op = CxrOpType(matrixA) ;
-            cxr_op.computeCxrMatrix(alg) ;
-            auto& cxr_matrix = cxr_op.getCxrMatrix() ;
-
             auto cxr_solver = CxrSolverType{alg,amg_solver} ;
-            auto relax_solver = RelaxSolverType{alg,matrixA,traceMng()} ;
+            auto relax_solver = RelaxSolverType{alg,matrixA} ;
 
             auto precond = CxrPrecondType{alg,
                                           matrixA,

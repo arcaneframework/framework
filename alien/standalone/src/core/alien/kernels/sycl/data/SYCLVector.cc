@@ -111,7 +111,7 @@ namespace Alien
                                                           for (auto i = id; i < y_length; i += itemId.get_range()[0])
                                                           {
                                                             values_ptr[i] = access_x[i];
-                                                            rows_ptr[i] = i ;
+                                                            rows_ptr[i] = IndexType(i) ;
                                                           }
                                                       });
                   });
@@ -150,7 +150,7 @@ namespace Alien
                                                           for (auto i = id; i < y_length; i += itemId.get_range()[0])
                                                           {
                                                             values_ptr[i] = 0.;
-                                                            rows_ptr[i] = i ;
+                                                            rows_ptr[i] = IndexType(i) ;
                                                           }
                                                       });
                   });
@@ -184,7 +184,7 @@ namespace Alien
                                                           for (auto i = id; i < y_length; i += itemId.get_range()[0])
                                                           {
                                                             values_ptr[i] = access_x[i];
-                                                            rows_ptr[i] = i ;
+                                                            rows_ptr[i] = IndexType(i) ;
                                                           }
                                                       });
                   });

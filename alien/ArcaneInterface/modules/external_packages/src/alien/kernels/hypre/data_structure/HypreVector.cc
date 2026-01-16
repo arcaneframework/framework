@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -60,6 +60,23 @@ HypreVector::init(const VectorDistribution& dist, const bool need_allocate)
     throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
   else
     m_block_size = 1;
+  m_offset = dist.offset();
+  if (need_allocate)
+  {
+    allocate(dist);
+  }
+}
+
+void
+HypreVector::init(const VectorDistribution& dist, Integer block_size, const bool need_allocate)
+{
+  const Block* block = this->block();
+  if (this->block())
+    m_block_size *= block->size();
+  else if (this->vblock())
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
+  else
+    m_block_size = block_size;
   m_offset = dist.offset();
   if (need_allocate)
   {

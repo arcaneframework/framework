@@ -20,6 +20,7 @@
 
 #include <alien/core/block/VBlockOffsets.h>
 #include <alien/core/impl/IVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/data/ISpace.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
@@ -51,6 +52,28 @@ class SimpleCSRVector : public IVectorImpl
   , m_local_size(0)
   , m_vblock(nullptr)
   {}
+
+  Integer blockSize() const
+  {
+    if (block())
+    {
+       return block()->size();
+    }
+    else if (vblock()) {
+      return -1 ;
+    }
+    else {
+      return 1 ;
+    }
+  }
+
+  void setBlockSize(Integer block_size)
+  {
+    if(this->m_multi_impl)
+      const_cast<MultiVectorImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+    else
+      m_own_block_size = block_size ;
+  }
 
   void allocate()
   {
@@ -125,7 +148,31 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size);
+      m_values.resize(m_local_size*m_own_block_size);
+      m_values.fill(ValueT());
+    }
+  }
+
+  void init(const VectorDistribution& dist,
+            Integer block_size,
+            const bool need_allocate)
+  {
+    alien_debug([&] { cout() << "Initializing SimpleCSRVector " << this; });
+    setBlockSize(block_size) ;
+    if (this->m_multi_impl) {
+      if (this->vblock()) {
+        delete m_vblock;
+        m_vblock = new VBlockImpl(*this->vblock(), this->distribution());
+      }
+      m_local_size = this->scalarizedLocalSize();
+    }
+    else {
+      // Not associated vector
+      m_own_distribution = dist;
+      m_local_size = m_own_distribution.localSize();
+    }
+    if (need_allocate) {
+      m_values.resize(m_local_size*m_own_block_size);
       m_values.fill(ValueT());
     }
   }
@@ -185,6 +232,7 @@ class SimpleCSRVector : public IVectorImpl
  private:
   mutable UniqueArray<ValueT> m_values;
   Integer m_local_size = 0;
+  Integer m_own_block_size = 1 ;
   mutable VBlockImpl* m_vblock = nullptr;
   VectorDistribution m_own_distribution;
 };

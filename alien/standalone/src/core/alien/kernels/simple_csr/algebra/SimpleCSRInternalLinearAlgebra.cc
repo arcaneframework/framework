@@ -7,6 +7,7 @@
 
 
 #include <cmath>
+#include <tuple>
 
 #include "SimpleCSRInternalLinearAlgebra.h"
 #include <alien/utils/Precomp.h>
@@ -63,15 +64,15 @@ SimpleCSRInternalLinearAlgebra::~SimpleCSRInternalLinearAlgebra()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-SimpleCSRInternalLinearAlgebra::ResourceType const&
+SimpleCSRInternalLinearAlgebra::ResourceType
 SimpleCSRInternalLinearAlgebra::resource(Matrix const& A)
 {
-  return A.distribution().rowDistribution();
+  return std::make_tuple(&A.distribution().rowDistribution(),A.blockSize());
 }
 
-void SimpleCSRInternalLinearAlgebra::allocate(ResourceType const& resource, Vector& v)
+void SimpleCSRInternalLinearAlgebra::allocate(ResourceType resource, Vector& v)
 {
-  v.init(resource, true);
+  v.init(*std::get<0>(resource),std::get<1>(resource), true);
 }
 
 void SimpleCSRInternalLinearAlgebra::free(Vector& v)
@@ -219,11 +220,11 @@ void SimpleCSRInternalLinearAlgebra::axpy(Real alpha,
 
 /*---------------------------------------------------------------------------*/
 
-void SimpleCSRInternalLinearAlgebra::aypx(Real alpha,
-                                          CSRVector& y,
-                                          Integer stride_y,
-                                          const CSRVector& x,
-                                          Integer stride_x) const
+void SimpleCSRInternalLinearAlgebra::aypx([[maybe_unused]] Real alpha,
+                                          [[maybe_unused]] CSRVector& y,
+                                          [[maybe_unused]] Integer stride_y,
+                                          [[maybe_unused]] const CSRVector& x,
+                                          [[maybe_unused]] Integer stride_x) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");

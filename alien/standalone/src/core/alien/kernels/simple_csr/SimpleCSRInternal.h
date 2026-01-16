@@ -73,6 +73,7 @@ class MatrixInternal
     {
       Integer stride2 = block_size2*block_size2 ;
       Integer offset2 = 0 ;
+      m_values.resize(nb_blocks) ;
       for(Integer ib=0;ib<nb_blocks;++ib)
       {
         m_values[ib] = values2[offset2];
@@ -85,6 +86,7 @@ class MatrixInternal
       Integer stride2 = block_size2*block_size2 ;
       Integer offset1 = 0 ;
       Integer offset2 = 0 ;
+      m_values.resize(nb_blocks*stride1) ;
       for(Integer ib=0;ib<nb_blocks;++ib)
       {
         for(Integer i=0;i<block_size1;++i)

@@ -321,7 +321,6 @@ class SimpleCSRMatrix : public IMatrixImpl
       m_matrix.copy(matrix.m_matrix);
     else
     {
-      allocate() ;
       auto nb_blocks = matrix.getCSRProfile().getNnz() + 1 ;
       m_matrix.copy(matrix.m_matrix,blockSize(),matrix.blockSize(),nb_blocks) ;
     }

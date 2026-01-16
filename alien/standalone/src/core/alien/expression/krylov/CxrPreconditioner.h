@@ -44,8 +44,9 @@ namespace Alien
 
     virtual ~CxrPreconditioner() {}
 
-     void init()
+    void init()
     {
+      m_cxr_op->computeCxrMatrix(m_algebra) ;
       auto& cxr_matrix = m_cxr_op->getCxrMatrix() ;
       if(m_relax_solver)
         m_relax_solver->init() ;
@@ -71,7 +72,7 @@ namespace Alien
       // solve A.Y=X
       if(m_relax_solver)
       {
-        m_relax_solver->solve(y,x);
+        m_relax_solver->solve(alg,y,x);
 
         // X_Cpr = A11.Y1 + A12.Y2
         m_cxr_op->apply(alg,x,m_x_Cxr);

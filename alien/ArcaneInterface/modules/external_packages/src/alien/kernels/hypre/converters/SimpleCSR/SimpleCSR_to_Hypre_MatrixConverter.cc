@@ -46,7 +46,7 @@ SimpleCSR_to_Hypre_MatrixConverter::convert(
   alien_debug([&] {
     cout() << "Converting SimpleCSRMatrix: " << &v << " to HypreMatrix " << &v2;
   });
-  if (targetImpl->block())
+  if (targetImpl->block() && targetImpl->block()->size()>1)
     _buildBlock(v, v2);
   else if (targetImpl->vblock())
     throw Arccore::FatalErrorException(
@@ -62,7 +62,7 @@ SimpleCSR_to_Hypre_MatrixConverter::convert(
   alien_debug([&] {
     cout() << "Converting SimpleCSRMatrix: " << &source << " to HypreMatrix " << &target;
   });
-  if (target.block())
+  if (source.blockSize()>1)
     _buildBlock(source, target);
   else if (target.vblock())
     throw Arccore::FatalErrorException(

@@ -168,7 +168,7 @@ class KernelAMGSolverT
     if(m_solver_b.get()==nullptr)
     {
       auto ptr =  new SolverVectorType(nullptr) ;
-      ptr->init(AlgebraType::resource(*m_matrix),true) ;
+      ptr->init(AlgebraType::resource(*m_matrix) ,true) ;
       m_solver_b.reset(ptr) ;
     }
     m_vector_converter_from->convert(b, *m_solver_b);

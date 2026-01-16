@@ -49,7 +49,7 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
  public:
   typedef BackEnd::tag::simplecsr BackEndType;
 
-  typedef VectorDistribution ResourceType;
+  typedef std::tuple<VectorDistribution const*,Integer> ResourceType;
 
   class NullValueException
   : public Exception::NumericException
@@ -146,12 +146,12 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
 
   Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
 
-  static ResourceType const& resource(Matrix const& A);
+  static ResourceType resource(Matrix const& A);
 
-  void allocate(ResourceType const& resource, Vector& v);
+  void allocate(ResourceType resource, Vector& v);
 
   template <typename T0, typename... T>
-  void allocate(ResourceType const& resource, T0& v0, T&... args)
+  void allocate(ResourceType resource, T0& v0, T&... args)
   {
     allocate(resource, v0);
     allocate(resource, args...);
