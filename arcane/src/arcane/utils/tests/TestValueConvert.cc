@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/internal/ValueConvertInternal.h"
 
 #include "arccore/base/internal/ConvertInternal.h"
@@ -220,6 +221,25 @@ TEST(ValueConvert, Basic)
   _testReal2Convert(false);
   _testReal3Convert(true);
   _testReal3Convert(false);
+
+  EXPECT_THROW(arcaneCheckArraySize(-5),ArgumentException);
+  {
+    unsigned long long x1 = 123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x1), ArgumentException);
+    long long x2 = 123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x2), ArgumentException);
+    long long x3 = -123456789012345;
+    EXPECT_THROW(arcaneCheckArraySize(x3), ArgumentException);
+    long x4 = -1234567;
+    EXPECT_THROW(arcaneCheckArraySize(x4), ArgumentException);
+
+    long x5 = 1234567;
+    ASSERT_EQ(arcaneCheckArraySize(x5), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned long long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<long long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned long>(x5)), x5);
+    ASSERT_EQ(arcaneCheckArraySize(static_cast<unsigned int>(x5)), x5);
+  }
 }
 
 TEST(ValueConvert, TryParse)

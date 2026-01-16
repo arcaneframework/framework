@@ -27,31 +27,32 @@ namespace Arcane
 /*!
  * \brief Intervalle d'itération pour une boucle.
  */
+template<typename IndexType_>
 class ForLoopRange
 {
  public:
 
   //! Créé un interval entre *[lower_bound,lower_bound+size[*
-  ForLoopRange(Int32 lower_bound, Int32 size)
+  ForLoopRange(IndexType_ lower_bound, IndexType_ size)
   : m_lower_bound(lower_bound)
   , m_size(size)
   {}
   //! Créé un interval entre *[0,size[*
-  explicit(false) ForLoopRange(Int32 size)
+  explicit(false) ForLoopRange(IndexType_ size)
   : m_lower_bound(0)
   , m_size(size)
   {}
 
  public:
 
-  constexpr Int32 lowerBound() const { return m_lower_bound; }
-  constexpr Int32 size() const { return m_size; }
-  constexpr Int32 upperBound() const { return m_lower_bound + m_size; }
+  constexpr IndexType_ lowerBound() const { return m_lower_bound; }
+  constexpr IndexType_ size() const { return m_size; }
+  constexpr IndexType_ upperBound() const { return m_lower_bound + m_size; }
 
  private:
 
-  Int32 m_lower_bound;
-  Int32 m_size;
+  IndexType_ m_lower_bound;
+  IndexType_ m_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -188,7 +189,7 @@ makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
 
 //! Créé un intervalle d'itération dans ℕ.
 inline ComplexForLoopRanges<1>
-makeLoopRanges(ForLoopRange n1)
+makeLoopRanges(ForLoopRange<Int32> n1)
 {
   using BoundsType = ComplexForLoopRanges<1>::ArrayBoundsType;
   using ArrayExtentType = BoundsType::ArrayExtentType;
@@ -200,7 +201,7 @@ makeLoopRanges(ForLoopRange n1)
 
 //! Créé un intervalle d'itération dans ℕ².
 inline ComplexForLoopRanges<2>
-makeLoopRanges(ForLoopRange n1, ForLoopRange n2)
+makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2)
 {
   using BoundsType = ComplexForLoopRanges<2>::ArrayBoundsType;
   using ArrayExtentType = BoundsType::ArrayExtentType;
@@ -212,7 +213,7 @@ makeLoopRanges(ForLoopRange n1, ForLoopRange n2)
 
 //! Créé un intervalle d'itération dans ℕ³.
 inline ComplexForLoopRanges<3>
-makeLoopRanges(ForLoopRange n1, ForLoopRange n2, ForLoopRange n3)
+makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3)
 {
   using BoundsType = ComplexForLoopRanges<3>::ArrayBoundsType;
   using ArrayExtentType = BoundsType::ArrayExtentType;
@@ -224,7 +225,7 @@ makeLoopRanges(ForLoopRange n1, ForLoopRange n2, ForLoopRange n3)
 
 //! Créé un intervalle d'itération dans ℕ⁴.
 inline ComplexForLoopRanges<4>
-makeLoopRanges(ForLoopRange n1, ForLoopRange n2, ForLoopRange n3, ForLoopRange n4)
+makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3, ForLoopRange<Int32> n4)
 {
   using BoundsType = ComplexForLoopRanges<4>::ArrayBoundsType;
   using ArrayExtentType = BoundsType::ArrayExtentType;

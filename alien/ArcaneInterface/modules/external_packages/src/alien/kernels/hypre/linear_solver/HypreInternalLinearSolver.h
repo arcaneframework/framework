@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary(bool exec_on_device, bool use_device_momory) ;
+  HypreLibrary(bool exec_on_device, bool use_device_momory, int device_id=0) ;
   virtual ~HypreLibrary() ;
 
   BackEnd::Memory::eType getMemoryType() const {
@@ -51,12 +51,13 @@ class HypreLibrary
   private:
   BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
   BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
+  int m_device_id = 0 ;
 } ;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver 
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 : public IInternalLinearSolver<HypreMatrix, HypreVector>
 , public ObjectWithTrace
 {
@@ -74,7 +75,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   static std::unique_ptr<HypreLibrary> m_library_plugin ;
 
-  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false, int device_id=0) ;
 
   virtual void init();
 

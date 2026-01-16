@@ -89,25 +89,17 @@ bool arcaneIsDebug()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Par défaut on a toujours le support des threads
-namespace
-{
-  bool global_arcane_has_thread = true;
-}
-
 extern "C++" ARCANE_UTILS_EXPORT
 bool arcaneHasThread()
 {
-  return global_arcane_has_thread;
+  return true;
 }
 
 extern "C++" ARCANE_UTILS_EXPORT
-void arcaneSetHasThread(bool v)
+void arcaneSetHasThread([[maybe_unused]] bool v)
 {
-  if (!v){
-    global_arcane_has_thread = v;
-    return;
-  }
+  if (!v)
+    std::cout << "WARNING: disabling thread via arcaneSetHasThread() is no longer available.\n";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,11 +108,9 @@ void arcaneSetHasThread(bool v)
 extern "C++" ARCANE_UTILS_EXPORT
 Int64 arcaneCurrentThread()
 {
-  if (arcaneHasThread()){
-    IThreadImplementation* ti = platform::getThreadImplementationService();
-    if (ti)
-      return ti->currentThread();
-  }
+  IThreadImplementation* ti = platform::getThreadImplementationService();
+  if (ti)
+    return ti->currentThread();
   return 0;
 }
 
@@ -130,13 +120,13 @@ Int64 arcaneCurrentThread()
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneSetPauseOnError(bool v)
 {
-  Arccore::arccoreSetPauseOnError(v);
+  arccoreSetPauseOnError(v);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneDebugPause(const char* msg)
 {
-  Arccore::arccoreDebugPause(msg);
+  arccoreDebugPause(msg);
 }
 
 /*---------------------------------------------------------------------------*/

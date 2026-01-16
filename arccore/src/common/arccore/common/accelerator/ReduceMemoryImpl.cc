@@ -1,0 +1,139 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* ReduceMemoryImpl.cc                                         (C) 2000-2025 */
+/*                                                                           */
+/* Gestion de la mémoire pour les réductions.                                */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arccore/common/accelerator/internal/ReduceMemoryImpl.h"
+
+#include "arccore/base/CheckedConvert.h"
+#include "arccore/base/PlatformUtils.h"
+
+#include "arccore/common/MemoryUtils.h"
+#include "arccore/common/accelerator/Runner.h"
+#include "arccore/common/accelerator/Memory.h"
+#include "arccore/common/accelerator/internal/IRunQueueStream.h"
+#include "arccore/common/accelerator/internal/RunCommandImpl.h"
+#include "arccore/common/accelerator/internal/RunnerImpl.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Impl
+{
+namespace
+{
+  IMemoryAllocator* _getAllocator(eMemoryResource r)
+  {
+    return MemoryUtils::getAllocator(r);
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReduceMemoryImpl::
+ReduceMemoryImpl(RunCommandImpl* p)
+: m_command(p)
+, m_host_memory_bytes(_getAllocator(eMemoryResource::HostPinned))
+, m_grid_buffer(_getAllocator(eMemoryResource::Device))
+, m_grid_device_count(_getAllocator(eMemoryResource::Device))
+{
+  _allocateMemoryForReduceData(128);
+  _allocateMemoryForGridDeviceCount();
+  m_grid_memory_info.m_warp_size = p->runner()->deviceInfo().warpSize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+release()
+{
+  m_command->releaseReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+allocateReduceDataMemory(Int32 data_type_size)
+{
+  m_data_type_size = data_type_size;
+  if (data_type_size > m_size)
+    _allocateMemoryForReduceData(data_type_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateMemoryForReduceData(Int32 new_size)
+{
+  m_host_memory_bytes.resize(new_size);
+  m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
+
+  m_size = new_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateGridDataMemory()
+{
+  // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
+  // entre les blocs se chevauchent
+  Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
+  if (total_size <= m_grid_memory_info.m_grid_memory_values.bytes().size())
+    return;
+
+  m_grid_buffer.resize(total_size);
+
+  auto mem_view = makeMutableMemoryView(m_grid_buffer.span());
+  m_grid_memory_info.m_grid_memory_values = mem_view;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateMemoryForGridDeviceCount()
+{
+  // Alloue sur le device la mémoire contenant le nombre de blocs restant à traiter
+  // Il s'agit d'un seul entier non signé.
+  Int64 size = sizeof(unsigned int);
+  const unsigned int zero = 0;
+  m_grid_device_count.resize(1);
+  auto* ptr = m_grid_device_count.data();
+
+  m_grid_memory_info.m_grid_device_count = ptr;
+
+  // Initialise cette zone mémoire avec 0.
+  MemoryCopyArgs copy_args(ptr, &zero, size);
+  m_command->internalStream()->copyMemory(copy_args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" IReduceMemoryImpl*
+internalGetOrCreateReduceMemoryImpl(RunCommand* command)
+{
+  return command->m_p->getOrCreateReduceMemoryImpl();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

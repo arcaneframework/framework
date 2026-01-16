@@ -45,11 +45,11 @@ class IBufferCopier
 
  public:
 
-  virtual void copyFromBufferAsync(Int32ConstArrayView indexes,
+  virtual void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                                    ConstMemoryView buffer,
                                    MutableMemoryView var_value) = 0;
 
-  virtual void copyToBufferAsync(Int32ConstArrayView indexes,
+  virtual void copyToBufferAsync(ConstArrayView<Int32> indexes,
                                  MutableMemoryView buffer,
                                  ConstMemoryView var_value) = 0;
 
@@ -72,7 +72,7 @@ class DirectBufferCopier
 {
  public:
 
-  void copyFromBufferAsync(Int32ConstArrayView indexes,
+  void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                            ConstMemoryView buffer,
                            MutableMemoryView var_value) override
   {
@@ -80,7 +80,7 @@ class DirectBufferCopier
     MemoryUtils::copyWithIndexedSource(var_value, buffer, indexes, q);
   }
 
-  void copyToBufferAsync(Int32ConstArrayView indexes,
+  void copyToBufferAsync(ConstArrayView<Int32> indexes,
                          MutableMemoryView buffer,
                          ConstMemoryView var_value) override
   {
@@ -104,24 +104,24 @@ class TableBufferCopier
 {
  public:
 
-  TableBufferCopier(GroupIndexTable* table)
+  explicit TableBufferCopier(GroupIndexTable* table)
   : m_table(table)
   {}
 
-  void copyFromBufferAsync(Int32ConstArrayView indexes,
+  void copyFromBufferAsync(ConstArrayView<Int32> indexes,
                            ConstMemoryView buffer,
                            MutableMemoryView var_value) override
   {
-    UniqueArray<Int32> final_indexes;
+    UniqueArray<Int32> final_indexes(MemoryUtils::getDefaultDataAllocator());
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyFromBufferAsync(final_indexes, buffer, var_value);
   }
 
-  void copyToBufferAsync(Int32ConstArrayView indexes,
+  void copyToBufferAsync(ConstArrayView<Int32> indexes,
                          MutableMemoryView buffer,
                          ConstMemoryView var_value) override
   {
-    UniqueArray<Int32> final_indexes;
+    UniqueArray<Int32> final_indexes(MemoryUtils::getDefaultDataAllocator());
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyToBufferAsync(final_indexes, buffer, var_value);
   }
@@ -131,7 +131,7 @@ class TableBufferCopier
 
  private:
 
-  GroupIndexTable* m_table;
+  GroupIndexTable* m_table = nullptr;
   DirectBufferCopier m_base_copier;
 
  private:
@@ -139,6 +139,8 @@ class TableBufferCopier
   void _buildFinalIndexes(Array<Int32>& final_indexes, ConstArrayView<Int32> orig_indexes)
   {
     // TODO: faire cette allocation qu'une seule fois et la conserver.
+    // Regarder pour allouer sur le device si on est sur GPU (dans ce cas il
+    // faudrait lancer le code suivant aussi sur le device)
     GroupIndexTable& table = *m_table;
     Int32 n = orig_indexes.size();
     final_indexes.resize(n);

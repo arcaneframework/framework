@@ -365,36 +365,8 @@ function(arcane_add_arccon_packages target visibility)
         list(APPEND ARCANE_PUBLIC_FOUND_PACKAGES ${package})
       endif()
       target_link_libraries(${target} ${visibility} ${_PKG})
-
-      # Récupère les bibliothèques définies dans le package.
-      # TODO: ne traiter que les répertoires correspondants aux bibliothèques
-      # dynamiques.
-      # NOTE: Ce mécanisme est obsolète (2023) et n'est actif que
-      # si ARCANE_ADD_RPATH_TO_LIBS est défini. Ce n'est normalement
-      # plus le cas. On le laisse temporairement pour des raisons
-      # de compatibilité
-      get_target_property(_LIB ${_PKG} INTERFACE_LINK_LIBRARIES)
-      foreach(lib ${_LIB})
-        #message(STATUS "LIB::${lib}")
-        get_filename_component(_LIB_PATH ${lib} DIRECTORY)
-        if (_LIB_PATH)
-          list(APPEND _RPATH_LIST ${_LIB_PATH})
-        endif()
-      endforeach()
     endif()
   endforeach()
-  # TODO: regarder plutôt sur quelles plateforme il faut le
-  # faire au lieu de juste retirer windows.
-  if (NOT WIN32 AND (_RPATH_LIST) AND ARCANE_ADD_RPATH_TO_LIBS)
-    list(REMOVE_DUPLICATES _RPATH_LIST)
-    # Les répertoires systèmes ne doivent pas être dans le rpath
-    set(_REMOVED_DIRS "/lib" "/lib64" "/usr/lib" "/usr/lib64")
-    list(REMOVE_ITEM _RPATH_LIST ${_REMOVED_DIRS})
-    foreach(path ${_RPATH_LIST})
-      #message(STATUS "Add rpath '${path}' to target '${target}'")
-      target_link_libraries(${target} PUBLIC "-Wl,-rpath,${path}")
-    endforeach()
-  endif()
   set(ARCANE_PUBLIC_FOUND_PACKAGES ${ARCANE_PUBLIC_FOUND_PACKAGES} CACHE STRING "List of public external packages founds" FORCE)
 endfunction()
 
@@ -476,24 +448,7 @@ endfunction()
 # Indique que les fichiers passés en argument doivent être compilés avec le support accélérateur
 # correspondant.
 macro(arcane_accelerator_add_source_files)
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
-    foreach(_x ${ARGN})
-      message(STATUS "Add CUDA language to file '${_x}'")
-      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
-    endforeach()
-  endif()
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
-    foreach(_x ${ARGN})
-      message(STATUS "Add HIP language to file '${_x}'")
-      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
-    endforeach()
-  endif()
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    foreach(_x ${ARGN})
-      message(STATUS "Add SYCL language to file '${_x}'")
-      set_source_files_properties(${_x} PROPERTIES COMPILE_OPTIONS "${ARCANE_CXX_SYCL_FLAGS}")
-    endforeach()
-  endif()
+  arccore_accelerator_add_source_files(${ARGN})
 endmacro()
 
 # ----------------------------------------------------------------------------

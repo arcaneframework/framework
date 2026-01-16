@@ -50,6 +50,146 @@ check_required_components(Arccore)
 set(Arccore_FOUND YES)
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Support pour les accélérateurs.
+#
+# La variable 'ARCCORE_HAS_ACCELERATOR' est définie si Arccore a été compilée avec
+# le support des accélérateurs. Dans ce cas, il est possible d'utiliser la macro
+# 'arccore_enable_cuda' ou 'arccore_enable_rocmhip' pour rechercher les différents composants nécessaires.
+
+set(ARCCORE_HAS_ACCELERATOR "@ARCCORE_HAS_ACCELERATOR@" CACHE BOOL "Is Arccore compiled with Accelerator support?" FORCE)
+set(ARCCORE_HAS_CUDA "@ARCCORE_HAS_CUDA@" CACHE BOOL "Is Arccore compiled with CUDA support?" FORCE)
+set(ARCCORE_HAS_HIP "@ARCCORE_HAS_HIP@" CACHE BOOL "Is Arccore compiled with ROCM/HIP support?" FORCE)
+set(ARCCORE_HAS_SYCL "@ARCCORE_HAS_SYCL@" CACHE BOOL "Is Arccore compiled with SYCK support?" FORCE)
+set(ARCCORE_CUDA_COMPILER_HINT "@CMAKE_CUDA_COMPILER@")
+set(ARCCORE_HIP_COMPILER_HINT "@CMAKE_HIP_COMPILER@")
+set(ARCCORE_HIP_DIR_HINT "@Hip_DIR@")
+set(ARCCORE_DEFAULT_HIP_ARCHITECTURES "@CMAKE_HIP_ARCHITECTURES@" CACHE STRING "Default GPU architectures?" FORCE)
+set(ARCCORE_HAS_ACCELERATOR_API TRUE CACHE BOOL "True if Arccore has accelerator API" FORCE)
+
+# ----------------------------------------------------------------------------
+
+macro(arccore_internal_enable_cuda)
+  if (ARCCORE_HAS_CUDA)
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+    # La commande 'enable_language(CUDA)' a besoin que la variable
+    # d'environnement 'CUDACXX' ou la variable cmake 'CMAKE_CUDA_COMPILER'
+    # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
+    # utilisé pour compiler Arccore.
+    if(NOT DEFINED ENV{CUDACXX} AND NOT CMAKE_CUDA_COMPILER)
+      set(CMAKE_CUDA_COMPILER "${ARCCORE_CUDA_COMPILER_HINT}")
+    endif()
+    message(STATUS "ArccoreCUDA: CMAKE_CUDA_COMPILER = ${CMAKE_CUDA_COMPILER}")
+
+    enable_language(CUDA)
+    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 75 CACHE STRING "Default architectures" FORCE)
+    endif()
+
+    find_package(CUDAToolkit REQUIRED)
+  else()
+    message(FATAL_ERROR "Can not enable CUDA because Arcccore is not compiled with CUDA support")
+  endif()
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+macro(arccore_internal_enable_hip)
+  if (ARCCORE_HAS_HIP)
+    # La commande 'enable_language(HIP)' a besoin que la variable
+    # d'environnement 'HIPCXX' ou la variable cmake 'CMAKE_HIP_COMPILER'
+    # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
+    # utilisé pour compiler Arccore.
+    if(NOT DEFINED ENV{HIPCXX} AND NOT CMAKE_HIP_COMPILER)
+      set(CMAKE_HIP_COMPILER "${ARCCORE_HIP_COMPILER_HINT}")
+    endif()
+    message(STATUS "ArccoreHIP: CMAKE_HIP_COMPILER = ${CMAKE_HIP_COMPILER}")
+
+    # Il faut au moins la version 3.21 de CMake pour HIP
+    enable_language(HIP)
+    if (NOT CMAKE_HIP_ARCHITECTURES)
+      set(CMAKE_HIP_ARCHITECTURES ${ARCCORE_DEFAULT_HIP_ARCHITECTURES} CACHE STRING "Default architectures" FORCE)
+    endif()
+
+    # Il faut ajouter dans CMAKE_MODULE_PATH le chemin ou se trouve ROCM.
+    # On suppose que Hip_ROOT a été positionné lors du configure de Arccore et qu'il
+    # est dans ${ROCM_ROOT}/hip/lib/cmake/hip.
+    set(_SAVED_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+    if (ARCCORE_HIP_DIR_HINT)
+      # NOTE: Cette commande 'cmake_path' n'existe qu'à partir de CMake 3.20
+      cmake_path(GET ARCCORE_HIP_DIR_HINT PARENT_PATH _path_result1)
+      cmake_path(GET _path_result1 PARENT_PATH _path_result2)
+      cmake_path(GET _path_result2 PARENT_PATH _path_result)
+      if (_path_result)
+        list(APPEND CMAKE_PREFIX_PATH "${_path_result}")
+      endif()
+      message(STATUS "Computed CMAKE_PREFIX_PATH for Hip : ${CMAKE_PREFIX_PATH}")
+    endif()
+    find_package(Hip REQUIRED "${ARCCORE_HIP_DIR_HINT}")
+    set(CMAKE_PREFIX_PATH ${_SAVED_CMAKE_PREFIX_PATH})
+  else()
+    message(FATAL_ERROR "Can not enable HIP because Arccore is not compiled with HIP support")
+  endif()
+endmacro()
+
+# ----------------------------------------------------------------------------
+# Macro pour activer le support des accélérateurs.
+# A utiliser avant les autres commandes 'arccore_accelerator_...'
+macro(arccore_accelerator_enable)
+  if (ARCCORE_HAS_CUDA)
+    arccore_internal_enable_cuda()
+  endif()
+  if (ARCCORE_HAS_HIP)
+    arccore_internal_enable_hip()
+  endif()
+endmacro()
+
+# Active les accélérateurs si Arccore a été compilé avec ce support
+if(ARCCORE_HAS_ACCELERATOR_API)
+  arccore_accelerator_enable()
+endif()
+
+# ----------------------------------------------------------------------------
+# Indique que les fichiers passés en argument doivent être compilés avec
+# le support accélérateur correspondant.
+function(arccore_accelerator_add_source_files)
+  if (ARCCORE_HAS_CUDA)
+    foreach(_x ${ARGN})
+      message(STATUS "Add CUDA language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
+    endforeach()
+  endif()
+  if (ARCCORE_HAS_HIP)
+    foreach(_x ${ARGN})
+      message(STATUS "Add HIP language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
+    endforeach()
+  endif()
+endfunction()
+
+# ----------------------------------------------------------------------------
+# Ajoute à la cible 'target_name' les informations nécessaires pour utiliser
+# les accélérateurs. Il faut avoir appeler 'arccore_enable_accelerator' avant.
+function(arccore_accelerator_add_to_target target_name)
+  if (NOT target_name)
+    message(FATAL_ERROR "Invalid null argument 'target_name' (${target_name}) to 'arccore_accelerator_add_to_target' function")
+  endif()
+  target_link_libraries(${target_name} PUBLIC Arccore::arccore_accelerator)
+  if (ARCCORE_HAS_CUDA)
+    set_property(TARGET ${target_name} PROPERTY CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES})
+  endif()
+  if (ARCCORE_HAS_HIP)
+    set_property(TARGET ${target_name} PROPERTY HIP_ARCHITECTURES ${CMAKE_HIP_ARCHITECTURES})
+  endif()
+  if (ARCCORE_HAS_SYCL)
+    # Nothing specific to do
+  endif()
+endfunction()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil

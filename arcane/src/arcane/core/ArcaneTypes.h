@@ -378,8 +378,13 @@ static const Int16 IT_Quad9 = 46;
 //! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
 static const Int16 IT_Hexaedron27 = 47;
 
+//! Ligne d'ordre 3
+static const Int16 IT_Line4 = 48;
+//! Triangle d'ordre 3. EXPERIMENTAL !
+static const Int16 IT_Triangle10 = 49;
+
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 48;
+static const Integer NB_BASIC_ITEM_TYPE = 50;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
@@ -475,16 +480,6 @@ template<typename ItemTypeT, typename DataTypeT>
 class SharedMeshVariableScalarRefT;
 template<typename DataTypeT>
 class SharedItemVariableScalarRefT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename DataType>
-class DataViewSetter;
-template <typename DataType>
-class DataViewGetter;
-template <typename DataType>
-class DataViewGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

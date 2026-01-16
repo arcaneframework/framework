@@ -26,7 +26,7 @@
 #include "arcane/utils/StringList.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include "arccore/base/StringUtils.h"
 
@@ -103,7 +103,6 @@ namespace platform
   ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
-  IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
 }
@@ -165,26 +164,6 @@ setProfilingService(IProfilingService* service)
 {
   IProfilingService* old_service = global_profiling_service;
   global_profiling_service = service;
-  return old_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-getDynamicLibraryLoader()
-{
-  return global_dynamic_library_loader;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader* platform::
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll)
-{
-  IDynamicLibraryLoader* old_service = global_dynamic_library_loader;
-  global_dynamic_library_loader = idll;
   return old_service;
 }
 
@@ -440,61 +419,6 @@ getExeFullPath()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" String platform::
-getLoadedSharedLibraryFullPath(const String& dll_name)
-{
-  String full_path;
-  if (dll_name.null())
-    return full_path;
-#if defined(ARCANE_OS_LINUX)
-  {
-    std::ifstream ifile("/proc/self/maps");
-    String v;
-    String true_name = "lib" + dll_name + ".so";
-    while (ifile.good()){
-      ifile >> v;
-      Span<const Byte> vb = v.bytes();
-      if (vb.size()>0 && vb[0]=='/'){
-        if (v.endsWith(true_name)){
-          full_path = v;
-          //std::cout << "V='" << v << "'\n";
-          break;
-        }
-      }
-    }
-  }
-#elif defined(ARCANE_OS_WIN32)
-  HMODULE hModule = GetModuleHandleA(dll_name.localstr());
-  if (!hModule)
-    return full_path;
-  TCHAR dllPath[_MAX_PATH];
-  GetModuleFileName(hModule, dllPath, _MAX_PATH);
-  full_path = StringView(dllPath);
-#elif defined(ARCANE_OS_MACOS)
-  {
-    String true_name = "lib" + dll_name + ".dylib";
-    uint32_t count = _dyld_image_count();
-    for (uint32_t i = 0; i < count; i++) {
-      const char* image_name = _dyld_get_image_name(i);
-      if (image_name) {
-        String image_path(image_name);
-        if (image_path.endsWith(true_name)) {
-          full_path = image_path;
-          break;
-        }
-      }
-    }
-  }
-#else
-  throw NotSupportedException(A_FUNCINFO);
-//#error "platform::getSymbolFullPath() not implemented for this platform"
-#endif
-  return full_path;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" void platform::
 fillCommandLineArguments(StringList& arg_list)
 {
@@ -552,25 +476,6 @@ fillCommandLineArguments(StringList& arg_list)
   }
 #else
   ARCANE_THROW(NotImplementedException, "not implemented for this platform");
-#endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
-getPageSize()
-{
-#if defined(ARCCORE_OS_WIN32)
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  return si.dwPageSize;
-#elif defined(ARCANE_OS_LINUX)
-  return ::sysconf(_SC_PAGESIZE);
-#else
-#warning "getPageSize() not implemented for your platform. Default is 4096"
-  Int64 page_size = 4096;
-  return page_size;
 #endif
 }
 

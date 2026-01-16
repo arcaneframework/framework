@@ -76,9 +76,9 @@ if(ALIEN_USE_SYCL)
                            SOURCES AlienBenchSYCL.cc)
     ENDIF()
     IF(ALIEN_USE_ACPPSYCL)
-      IF(CMAKE_COMPILER_IS_GNUCXX)
+      #IF(CMAKE_COMPILER_IS_GNUCXX)
         target_compile_options(alien_bench.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
-      ENDIF()
+      #ENDIF()
       IF(ALIEN_USE_HIP)
         set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
         target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
@@ -99,12 +99,17 @@ if (TARGET intel)
     linkLibraries(alien_bench.exe intel)
 endif ()
 
+#        arcane_full
 linkLibraries(alien_bench.exe
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_arcane_tools
         arcane_full
         )
+
+if (TARGET  alien_core_solvers)
+    linkLibraries(alien_bench.exe alien_core_solvers)
+endif ()
 
 if (TARGET  alien_external_packages)
     linkLibraries(alien_bench.exe alien_external_packages)
@@ -140,6 +145,23 @@ if(TARGET COMPOSYX::composyx)
   commit(test_composyx.exe)
 endif()
 
+if (TARGET petsc)
+if (TARGET CUDA::cudart)
+createExecutable(test_petsc_cuda.exe)
+
+addSources(test_petsc_cuda.exe test_petsc.cpp)
+linkLibraries(test_petsc_cuda.exe mpi)
+
+linkLibraries(test_petsc_cuda.exe 
+              Boost::program_options)
+
+linkLibraries(test_petsc_cuda.exe petsc)
+linkLibraries(test_petsc_cuda.exe CUDA::cudart)
+
+commit(test_petsc_cuda.exe)
+endif()
+endif()
+          
 if(ALIEN_USE_SYCL)
 if (TARGET hypre)
 if (TARGET CUDA::cudart)
@@ -179,13 +201,13 @@ if(ALIEN_USE_SYCL)
         set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
         target_compile_options(alien_hypre_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
       ENDIF()
-       IF(ALIEN_USE_CUDA)
+      IF(ALIEN_USE_CUDA)
          #set(ACPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
          #target_compile_options(alien_hypre_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
          #target_link_options(alien_hypre_sycl.exe PRIVATE ${ACPP_FLAGS})
-       ENDIF()
-       target_compile_definitions(alien_hypre_sycl.exe PRIVATE USE_ACPPSYCL)
-        add_sycl_to_target(TARGET  alien_hypre_sycl.exe
+      ENDIF()
+      target_compile_definitions(alien_hypre_sycl.exe PRIVATE USE_ACPPSYCL)
+      add_sycl_to_target(TARGET  alien_hypre_sycl.exe
                            SOURCES hypre_sycl.cpp)
     ENDIF()
      
@@ -197,8 +219,17 @@ linkLibraries(alien_hypre_sycl.exe
               Boost::program_options)
 
 linkLibraries(alien_hypre_sycl.exe hypre)
+if (TARGET  alien_external_packages)
+    linkLibraries(alien_hypre_sycl.exe alien_external_packages)
+endif ()
 
+if (TARGET intel)
+    linkLibraries(alien_hypre_sycl.exe intel)
+endif ()
+
+if(TARGET CUDA::cudart)
 linkLibraries(alien_hypre_sycl.exe CUDA::cudart)
+endif()
 
 if(ALIEN_USE_SYCL)
     IF(ALIEN_USE_ACPPSYCL)
@@ -228,11 +259,14 @@ list(APPEND ALIEN_EXAMPLE_FILES
 if (TARGET petsc)
     configure_file(AlienBench.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.arc COPYONLY)
     configure_file(AlienBench-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-4P.arc COPYONLY)
+    configure_file(AlienBench-petsc-gamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-gamg.arc COPYONLY)
+    configure_file(AlienBench-petsc-gamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-gamg-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.arc
             AlienBench-4P.arc
-            AlienBench-petsc-spai.arc
+            AlienBench-petsc-gamg.arc
+            AlienBench-petsc-gamg-4P.arc
             )
 
     if (TARGET petsc::spai)
@@ -362,6 +396,24 @@ if (TARGET petsc)
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+    alien_test(
+            BENCH bench.petsc-gamg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-petsc-gamg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.petsc.gamg
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-petsc-gamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+            
     if(TARGET petsc::spai)
         alien_test(
                 BENCH bench.petsc-spai

@@ -77,7 +77,8 @@ getSymbolizerService();
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT ISymbolizerService*
 setSymbolizerService(ISymbolizerService* service);
 
 /*!
@@ -93,7 +94,8 @@ getProcessorAffinityService();
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IProcessorAffinityService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IProcessorAffinityService*
 setProcessorAffinityService(IProcessorAffinityService* service);
 
 /*!
@@ -109,7 +111,8 @@ getProfilingService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IProfilingService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IProfilingService*
 setProfilingService(IProfilingService* service);
 
 /*!
@@ -125,7 +128,8 @@ getOnlineDebuggerService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IOnlineDebuggerService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IOnlineDebuggerService*
 setOnlineDebuggerService(IOnlineDebuggerService* service);
 
 /*!
@@ -141,31 +145,17 @@ getThreadImplementationService();
  * 
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IThreadImplementation*
 setThreadImplementationService(IThreadImplementation* service);
-
-/*!
- * \brief Service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Peut retourner \c nullptr si le chargement dynamique n'est pas disponible.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-getDynamicLibraryLoader();
-
-/*!
- * \brief Positionne le service utilisé pour charger dynamiquement des bibliothèques.
- * 
- * Retourne l'ancien service utilisé.
- */
-extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
-setDynamicLibraryLoader(IDynamicLibraryLoader* idll);
 
 /*!
  * \brief Positionne le service utilisé pour gérer les compteurs interne du processeur.
  *
  * Retourne l'ancien service utilisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService*
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IPerformanceCounterService*
 setPerformanceCounterService(IPerformanceCounterService* service);
 
 /*!
@@ -320,22 +310,6 @@ getExeFullPath();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
- *
- * Retourne le chemin complet de la bibliothèque dynamique de nom
- * \a dll_name. \a dll_name doit contenir juste le nom de la bibliothèque
- * sans les extensions spécifiques à la plateforme. Par exemple, sous Linux,
- * il ne faut pas mettre 'libtoto.so' mais juste 'toto'.
- *
- * Retourne une chaîne nulle si le chemin complet ne peut
- * par être déterminé.
- */
-extern "C++" ARCANE_UTILS_EXPORT String
-getLoadedSharedLibraryFullPath(const String& dll_name);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Remplit \a arg_list avec les arguments de la ligne de commande.
  *
  * Cette fonction remplit \a arg_list avec les arguments utilisés dans
@@ -346,14 +320,6 @@ getLoadedSharedLibraryFullPath(const String& dll_name);
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 fillCommandLineArguments(StringList& arg_list);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Taille des pages du système hôte en octets
- */
-extern "C++" ARCANE_UTILS_EXPORT Int64
-getPageSize();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

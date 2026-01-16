@@ -705,6 +705,8 @@ _initTypes()
   // Il faut le faire au début de la lecture et ne plus en ajouter après.
   _addArcaneTypeInfo(ITI_Vertex, MSH_PNT);
   _addArcaneTypeInfo(ITI_Line2, MSH_LIN_2);
+  _addArcaneTypeInfo(ITI_Line3, MSH_LIN_3);
+  _addArcaneTypeInfo(ITI_Line4, MSH_LIN_4);
   _addArcaneTypeInfo(ITI_Cell3D_Line2, MSH_LIN_2);
   _addArcaneTypeInfo(ITI_Triangle3, MSH_TRI_3);
   _addArcaneTypeInfo(ITI_Cell3D_Triangle3, MSH_TRI_3);
@@ -715,6 +717,7 @@ _initTypes()
   _addArcaneTypeInfo(ITI_Pentaedron6, MSH_PRI_6);
   _addArcaneTypeInfo(ITI_Pyramid5, MSH_PYR_5);
   _addArcaneTypeInfo(ITI_Triangle6, MSH_TRI_6);
+  _addArcaneTypeInfo(ITI_Triangle10, MSH_TRI_10);
   {
     FixedArray<Int16, 10> x({ 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 });
     _addArcaneTypeInfo(ITI_Tetraedron10, MSH_TET_10, x.view());

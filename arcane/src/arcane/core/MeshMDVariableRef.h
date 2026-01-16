@@ -21,6 +21,7 @@
 #include "arcane/core/DataView.h"
 
 #include "arcane/core/MeshVariableArrayRef.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

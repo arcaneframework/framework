@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.cc                                                  (C) 2000-2025 */
+/* Convert.cc                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -55,14 +55,8 @@ StringView _removeLeadingSpaces(StringView s, Int64 pos)
   // Supprime les espaces potentiels
   for (; pos < nb_byte; ++pos) {
     int charv = static_cast<unsigned char>(bytes[pos]);
-    // Visual Studio 2017 or less
-#if defined(_MSC_VER) && _MSC_VER <= 1916
-    if (std::isspace(charv, std::locale()) != 0)
+    if (std::isspace(charv) == 0)
       break;
-#else
-    if (!std::isspace(charv) != 0)
-      break;
-#endif
   }
   return s.subView(pos, nb_byte);
 }
@@ -257,6 +251,20 @@ getValue(long long& v, StringView s)
   char* ptr2 = 0;
   v = ::strtoll(ptr, &ptr2, 0);
   return (ptr2 != (ptr + s.length()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool StringViewToIntegral::
+getValue(bool& v, StringView s)
+{
+  v = false;
+  int x = 0;
+  if (getValue(x, s))
+    return true;
+  v = (x != 0);
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

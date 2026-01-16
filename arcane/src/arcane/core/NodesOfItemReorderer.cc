@@ -27,6 +27,39 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // TODO: fusionner avec la version d'ordre 1
+// Seulement implémenté pour les arêtes
+bool NodesOfItemReorderer::
+_reorderOrder3(ConstArrayView<Int64> nodes_uid,
+               ArrayView<Int64> sorted_nodes_uid,
+               [[maybe_unused]] bool has_center_node)
+{
+  // \a true s'il faut réorienter les faces pour que leur orientation
+  // soit indépendante du partitionnement du maillage initial.
+
+  Int32 nb_node = nodes_uid.size();
+
+  // Traite uniquement le cas des arêtes d'ordre 3 qui ont donc 4 noeuds
+  if (nb_node != 4)
+    ARCANE_THROW(NotImplementedException, "Node reordering for 2D type of order 3 or more");
+
+  if (nodes_uid[0] < nodes_uid[1]) {
+    // Rien à faire
+    sorted_nodes_uid[0] = nodes_uid[0];
+    sorted_nodes_uid[1] = nodes_uid[1];
+    sorted_nodes_uid[2] = nodes_uid[2];
+    sorted_nodes_uid[3] = nodes_uid[3];
+    return false;
+  }
+  sorted_nodes_uid[0] = nodes_uid[1];
+  sorted_nodes_uid[1] = nodes_uid[0];
+  sorted_nodes_uid[2] = nodes_uid[3];
+  sorted_nodes_uid[3] = nodes_uid[2];
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: fusionner avec la version d'ordre 1
 bool NodesOfItemReorderer::
 _reorderOrder2(ConstArrayView<Int64> nodes_uid,
                ArrayView<Int64> sorted_nodes_uid, bool has_center_node)
@@ -129,8 +162,10 @@ reorder(ItemTypeId type_id, ConstArrayView<Int64> nodes_uids)
   Int32 order = iti->order();
   Int32 nb_node = nodes_uids.size();
   m_work_sorted_nodes.resize(nb_node);
-  if (order > 2)
-    ARCANE_THROW(NotImplementedException, "node reordering for type of order 3 or mode");
+  if (order > 3)
+    ARCANE_THROW(NotImplementedException, "Node reordering for type of order 4 or more");
+  if (order == 3)
+    return _reorderOrder3(nodes_uids, m_work_sorted_nodes, iti->hasCenterNode());
   if (order == 2)
     return _reorderOrder2(nodes_uids, m_work_sorted_nodes, iti->hasCenterNode());
   return MeshUtils::reorderNodesOfFace(nodes_uids, m_work_sorted_nodes);

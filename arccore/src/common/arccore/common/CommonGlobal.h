@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonGlobal.h                                              (C) 2000-2025 */
+/* CommonGlobal.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Définitions globales de la composante 'Common' de 'Arccore'.              */
 /*---------------------------------------------------------------------------*/
@@ -60,6 +60,7 @@ using Arcane::Accelerator::RunQueue;
 class IMemoryResourceMngInternal;
 class IMemoryResourceMng;
 class IMemoryCopier;
+class IMemoryPool;
 
 class IMemoryAllocator;
 class AllocatedMemoryInfo;
@@ -78,6 +79,44 @@ template <typename DataType> class AbstractArray;
 template <typename DataType> class UniqueArray;
 template <typename DataType> class SharedArray;
 using Arccore::ArrayTraits;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> class EnumeratorT;
+template<typename T> class ListEnumeratorT;
+
+template<typename T> class Collection;
+template<typename T> class List;
+
+class EventObservableBase;
+class EventObserverBase;
+template<typename... Args> class EventObservable;
+template<typename... Args> class EventObserver;
+template <typename... Args> class EventObservableView;
+
+using StringList = List<String>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class JSONWriter;
+class JSONValue;
+class JSONDocument;
+class JSONValueList;
+class JSONWrapperUtils;
+class JSONKeyValue;
+class JSONKeyValueList;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+class DataViewSetter;
+template <typename DataType>
+class DataViewGetter;
+template <typename DataType>
+class DataViewGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -151,6 +190,28 @@ static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
 
 extern "C++" ARCCORE_COMMON_EXPORT std::ostream&
 operator<<(std::ostream& o, eMemoryResource r);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille du padding pour les index dans les opérations SIMD.
+ *
+ * Afin d'avoir le même code quel que soit le mécanisme de vectorisation
+ * utilisé, cette valeur est fixe et correspond au plus grand vecteur SIMD.
+ *
+ * \sa arcanedoc_simd
+ */
+static const Integer SIMD_PADDING_SIZE = 8;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Impl
+{
+class StridedLoopRangesBase;
+template <typename LoopRangesType>
+class StridedLoopRanges;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

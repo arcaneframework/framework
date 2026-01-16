@@ -24,7 +24,7 @@
 #include "arcane/core/Item.h"
 #include "arcane/core/MathUtils.h"
 
-#include "arcane/accelerator/hip/HipAccelerator.h"
+#include "arccore/accelerator_native/HipAccelerator.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
@@ -235,7 +235,7 @@ extern "C" int arcaneTestHip3()
 {
   std::cout << "TEST_HIP_3\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* hip_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
+  IMemoryAllocator* hip_allocator = Arcane::MemoryUtils::getAllocator(Arcane::eMemoryResource::UnifiedMemory);
   IMemoryAllocator* hip_allocator2 = Arcane::MemoryUtils::getDefaultDataAllocator();
   if (!hip_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");

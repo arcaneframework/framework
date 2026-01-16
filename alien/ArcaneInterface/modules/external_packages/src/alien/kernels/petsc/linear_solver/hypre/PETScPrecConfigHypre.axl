@@ -52,6 +52,12 @@ HYPRE BoomerAMG Options
   <variables/>
 
   <options>
+    <simple name="output-level" type="integer" default="0">
+      <description>
+          Output level
+      </description>
+    </simple>
+
     <simple name="field-split-mode" type="bool" default="false">
       <description>Work around problem if Hypre is used inside a FieldSplit preconditioner</description>
     </simple>
@@ -127,16 +133,41 @@ HYPRE BoomerAMG Options
       
       </description>
     </simple>
-        
+
+    
+    <simple name="max-levels" type="integer" default="25">
+      <description>
+          Max coarsening levels
+      </description>
+    </simple>
+    
     <simple name="pmax-elements" type="integer" default="0">
       <description>
           Max elements per row for interpolation operator (0=unlimited)
       </description>
     </simple>
     
-    <simple name="truncfactor" type="real" default="0">
+    <simple name="amg-tol" type="real" default="0">
+      <description>
+          AMG tol
+      </description>
+    </simple>
+    
+    <simple name="trunc-factor" type="real" default="0">
       <description>
           Truncation factor for interpolation (0=no truncation) (None)
+      </description>
+    </simple>
+    
+    <simple name="max-row-sum" type="real" default="0.9">
+      <description>
+          Max row sum
+      </description>
+    </simple>
+    
+    <simple name="strong-threshold" type="real" default="0.15">
+      <description>
+          Strong threshold
       </description>
     </simple>
     

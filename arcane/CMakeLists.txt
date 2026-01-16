@@ -164,12 +164,6 @@ if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   endif()
 endif()
 
-# Indique si on ajoute automatiquement dans le rpath les chemins des bibliothèques
-# dynamiques. Ce mode existe historiquement pour contourner des problèmes avec
-# d'anciennes versions de CMake (pré 3.10) mais ne devrait plus être nécessaire.
-# Il faudrait donc le supprimer.
-option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" OFF)
-
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -929,88 +923,28 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
-
-# Pour des raisons de compatibilité avec les configurations 2021, on
-# regarde d'abord si ARCANE_WANT_CUDA est défini
-if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
-  set (ARCANE_ACCELERATOR_MODE "CUDA")
-endif()
-
-# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
-# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
-  set (ARCANE_ACCELERATOR_MODE "CUDA" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set (ARCANE_ACCELERATOR_MODE "ROCM" )
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
-  set (ARCANE_ACCELERATOR_MODE "SYCL" )
-endif()
-
-if(DEFINED ARCANE_ACCELERATOR_MODE)
-  if (NOT ARCANE_HAS_CXX20)
-    message(FATAL_ERROR "Arcane Accelerator API requires C++20. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
-  endif()
-
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
-    set (ARCANE_WANT_CUDA TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME cuda)
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-    set (ARCANE_WANT_HIP TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME hip)
-    # TODO: vérifier qu'on utilise bien 'hipcc'
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
-    set (ARCANE_WANT_SYCL TRUE)
-    set (ARCANE_ACCELERATOR_RUNTIME sycl)
-  else()
-    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
-  endif()
-  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
-  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
-  set (ARCANE_HAS_ACCELERATOR TRUE)
-  message(STATUS "Arcane has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
-endif()
-
-# ----------------------------------------------------------------------------
+# Le choix du runtime accélérateur est maintenant dans Arccore (2025/11)
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (NOT ARCANE_ACCELERATOR_RUNTIME)
-    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
-  endif()
+  # Les macros ARCANE_WANT* sont utilisées uniquement pour spécifier
+  # le runtime utilisé dans 'arcane_core_config'. A terme il faudra
+  # utiliser ce qui est dans Arccore.
   if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
-    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
+    set (ARCANE_WANT_HIP TRUE)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
-    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
-    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
-
-    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
-    endif()
     if (NOT CMAKE_CUDA_HOST_COMPILER)
       set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
     enable_language(CUDA)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    # Rien à faire de spécial pour SYCL.
-  else()
-    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+    set (ARCANE_WANT_CUDA TRUE)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCANE_WANT_SYCL TRUE)
   endif()
-  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME})
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
-if (ARCANE_HAS_ACCELERATOR_API)
-  add_subdirectory(src/arcane/accelerator)
-endif()
+add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR)
   add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME}/runtime)
@@ -1036,8 +970,9 @@ if (NOT ARCANE_DEFAULT_PARTITIONER)
   set (ARCANE_DEFAULT_PARTITIONER "Auto")
 endif()
 
+set(ARCANE_INTERNAL_MESH_PARTITIONER "ArcaneGeometricMeshPartitioner")
 message(STATUS "Wanted Default Partitioner is '${ARCANE_DEFAULT_PARTITIONER}'")
-if(MPI_FOUND)
+if (MPI_FOUND)
   set(PARTITIONER_FOUND FALSE)
   if(ARCANE_DEFAULT_PARTITIONER STREQUAL "Auto")
     message(STATUS "Automatic detection of Default Partitioner in the following order: 'Metis', 'Zoltan', 'PTScotch'")
@@ -1049,6 +984,8 @@ if(MPI_FOUND)
       set(ARCANE_DEFAULT_PARTITIONER "Zoltan")
     elseif(PTScotch_FOUND)
       set(ARCANE_DEFAULT_PARTITIONER "PTScotch")
+    else()
+      set(ARCANE_DEFAULT_PARTITIONER ${ARCANE_INTERNAL_MESH_PARTITIONER})
     endif()
     message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
   elseif(ARCANE_DEFAULT_PARTITIONER STREQUAL "Metis")
@@ -1063,23 +1000,30 @@ if(MPI_FOUND)
     if(NOT Zoltan_FOUND)
       MESSAGE(FATAL_ERROR "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not available") 
     endif()
+  elseif(ARCANE_DEFAULT_PARTITIONER STREQUAL "${ARCANE_INTERNAL_MESH_PARTITIONER}")
+    # Always available
   else()
     if(Parmetis_FOUND OR PTScotch_FOUND OR Zoltan_FOUND)
-      message(FATAL_ERROR "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not allowed : choose between Metis, PTScotch, Zoltan or Auto")
+      message(FATAL_ERROR
+        "Default Partitioner '${ARCANE_DEFAULT_PARTITIONER}' is not allowed :"
+        " choose between Metis, PTScotch, Zoltan, ${ARCANE_INTERNAL_MESH_PARTITIONER} or Auto")
     endif()
   endif()
-  if(Parmetis_FOUND OR TARGET PTScotch_FOUND OR Zoltan_FOUND)
-    message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
-    message(STATUS "Setting PARTITIONER_FOUND to TRUE")
-    set(PARTITIONER_FOUND TRUE)
-    set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_DEFAULT_PARTITIONER}" CACHE STRING "Default partitioner" FORCE)
-    set(ARCANE_DEFAULT_PARTITIONER_IS_METIS FALSE)
-    if(ARCANE_DEFAULT_PARTITIONER STREQUAL Metis)
-      set(ARCANE_DEFAULT_PARTITIONER_IS_METIS TRUE)
-    endif()
-    set(ARCANE_DEFAULT_PARTITIONER_IS_METIS "${ARCANE_DEFAULT_PARTITIONER_IS_METIS}" CACHE STRING "Is Metis the default partitioner?" FORCE)
-  endif()
+else()
+  # Ce partitionneur est toujours disponible, même si MPI ne l'est pas
+  set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_INTERNAL_MESH_PARTITIONER}")
 endif()
+
+message(STATUS "'${ARCANE_DEFAULT_PARTITIONER}' is your default partitioner")
+message(STATUS "Setting PARTITIONER_FOUND to TRUE")
+set(PARTITIONER_FOUND TRUE)
+set(ARCANE_DEFAULT_PARTITIONER "${ARCANE_DEFAULT_PARTITIONER}" CACHE STRING "Default partitioner" FORCE)
+set(ARCANE_DEFAULT_PARTITIONER_IS_METIS FALSE)
+if(ARCANE_DEFAULT_PARTITIONER STREQUAL Metis)
+  set(ARCANE_DEFAULT_PARTITIONER_IS_METIS TRUE)
+endif()
+set(ARCANE_DEFAULT_PARTITIONER_IS_METIS "${ARCANE_DEFAULT_PARTITIONER_IS_METIS}" CACHE STRING "Is Metis the default partitioner?" FORCE)
+string(TOUPPER ${ARCANE_DEFAULT_PARTITIONER} ARCANE_UPPER_DEFAULT_PARTITIONER)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1258,12 +1202,13 @@ function(arcane_gen_core_config_file filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_STD_UNORDEREDMAP ARCANE_USE_STD_UNORDEREDMAP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_ARCANEMPI ARCANE_HAS_ARCANEMPI)
 
-  SET(_STR "${_STR}#define METIS_DEFAULT_PARTITIONER 1\n")
-  SET(_STR "${_STR}#define PTSCOTCH_DEFAULT_PARTITIONER 2\n")
-  SET(_STR "${_STR}#define ZOLTAN_DEFAULT_PARTITIONER 3\n")
-  Set(_STR "${_STR}#define ARCANE_DEFAULT_PARTITIONER_STR \"${ARCANE_DEFAULT_PARTITIONER}\"\n")
-  STRING(TOUPPER ${ARCANE_DEFAULT_PARTITIONER} ARCANE_DEFAULT_PARTITIONER)
-  SET(_STR "${_STR}#ifndef ARCANE_DEFAULT_PARTITIONER\n#define ARCANE_DEFAULT_PARTITIONER ${ARCANE_DEFAULT_PARTITIONER}_DEFAULT_PARTITIONER\n#endif\n")
+  #SET(_STR "${_STR}#define METIS_DEFAULT_PARTITIONER 1\n")
+  #SET(_STR "${_STR}#define PTSCOTCH_DEFAULT_PARTITIONER 2\n")
+  #SET(_STR "${_STR}#define ZOLTAN_DEFAULT_PARTITIONER 3\n")
+  #SET(_STR "${_STR}#define ARCANEGEOMETRIC_DEFAULT_PARTITIONER 4\n")
+  #Set(_STR "${_STR}#define ARCANE_DEFAULT_PARTITIONER_STR \"${ARCANE_DEFAULT_PARTITIONER}\"\n")
+  STRING(TOUPPER ${ARCANE_UPPER_DEFAULT_PARTITIONER} ARCANE_DEFAULT_PARTITIONER)
+  #SET(_STR "${_STR}#ifndef ARCANE_DEFAULT_PARTITIONER\n#define ARCANE_DEFAULT_PARTITIONER ${ARCANE_UPPER_DEFAULT_PARTITIONER}_DEFAULT_PARTITIONER\n#endif\n")
   SET(_STR "${_STR}#endif // ARCANE_CORE_CONFIG_H\n")
   ARCANE_WRITE_CONFIG_STR(${_STR} ${filename})
 endfunction()
@@ -1294,6 +1239,9 @@ function(arcane_gen_package_config_file filename)
   ARCANE_WRITE_CONFIG_STR(${_STR} ${filename})
 endfunction()
 
+# Fichier de configuration interne à Arcane
+# Contient le nom de certaines configurations comme le runtime accélérateur
+# ou le partitionneur par défaut 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/arcane_internal_config.h.in ${CMAKE_BINARY_DIR}/arcane_internal_config.h)
 
 # ----------------------------------------------------------------------------

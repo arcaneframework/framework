@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/ITimeLoopService.h"
 #include "arcane/core/ITimeLoop.h"

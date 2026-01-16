@@ -5,10 +5,7 @@ set( ARCANE_SOURCES
   AcceleratorUtils.h
   AsyncRunQueuePool.h
   Atomic.h
-  CommonCudaHipReduceImpl.h
-  CommonCudaHipAtomicImpl.h
   CommonUtils.h
-  CommonUtils.cc
   GenericFilterer.h
   GenericPartitioner.h
   GenericReducer.h
@@ -19,19 +16,13 @@ set( ARCANE_SOURCES
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
-  MemoryCopier.cc
-  MultiThreadAlgo.h
-  MultiThreadAlgo.cc
   NumArray.h
   NumArrayViews.h
-  NumArrayViews.cc
   Reduce.h
   RunCommand.h
   RunCommandEnumerate.h
   RunCommandLaunchInfo.h
   RunCommandLaunch.h
-  RunCommandLaunch.cc
-  RunCommandLaunchImpl.h
   RunCommandLoop.h
   RunCommandMaterialEnumerate.cc
   RunCommandMaterialEnumerate.h
@@ -40,19 +31,13 @@ set( ARCANE_SOURCES
   RunQueueImpl.h
   RunQueueInternal.h
   Filter.h
-  Filterer.cc
   Partitioner.h
-  Partitioner.cc
   Scan.h
-  ScanImpl.h
-  Scan.cc
   Sort.h
-  Sort.cc
   SpanViews.h
   VariableViews.h
   VariableViews.cc
   Views.h
   ViewsCommon.h
   WorkGroupLoopRange.h
-  WorkGroupLoopRange.cc
 )

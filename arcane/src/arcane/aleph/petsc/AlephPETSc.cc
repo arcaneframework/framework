@@ -701,8 +701,13 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
 
   switch(reason){
 #if !PETSC_VERSION_(3,0,0)
+#if PETSC_VERSION_GE(3,24,0)
+  case(KSP_CONVERGED_RTOL_NORMAL_EQUATIONS):{break;}
+  case(KSP_CONVERGED_ATOL_NORMAL_EQUATIONS):{break;}
+#else
   case(KSP_CONVERGED_RTOL_NORMAL):{break;}
   case(KSP_CONVERGED_ATOL_NORMAL):{break;}
+#endif
 #endif
   case(KSP_CONVERGED_RTOL):{break;}
   case(KSP_CONVERGED_ATOL):{break;}

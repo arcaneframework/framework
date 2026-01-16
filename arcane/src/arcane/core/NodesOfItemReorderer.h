@@ -59,6 +59,8 @@ class ARCANE_CORE_EXPORT NodesOfItemReorderer
 
   static bool _reorderOrder2(ConstArrayView<Int64> nodes_uids,
                              ArrayView<Int64> sorted_nodes_uids, bool has_center_node);
+  static bool _reorderOrder3(ConstArrayView<Int64> nodes_uids,
+                             ArrayView<Int64> sorted_nodes_uids, bool has_center_node);
 
  private:
 

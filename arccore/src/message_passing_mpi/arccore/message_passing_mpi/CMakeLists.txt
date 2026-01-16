@@ -2,7 +2,7 @@
 
 if(NOT MPI_FOUND)
   message(FATAL_ERROR "'MPI' is not available."
-    " Add -DARCCORE_USE_MPI=NO to cmake configuration to compile without MPI."
+    " Add -DARCCORE_ENABLE_MPI=OFF to cmake configuration to compile without MPI."
   )
 endif()
 
@@ -11,7 +11,7 @@ if (NOT WIN32)
   if (MPI_CXX_VERSION)
     if (MPI_CXX_VERSION VERSION_LESS "3.1")
       message(FATAL_ERROR "MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required."
-        " Add -DARCCORE_USE_MPI=NO to cmake configuration to compile without MPI."
+        " Add -DARCCORE_ENABLE_MPI=NO to cmake configuration to compile without MPI."
       )
     endif()
   endif()

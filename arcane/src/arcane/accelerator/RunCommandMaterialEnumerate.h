@@ -24,6 +24,8 @@
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
+#include "arccore/common/HostKernelRemainingArgsHelper.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -490,7 +492,7 @@ class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+#if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 /*
  * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
  */
@@ -500,14 +502,14 @@ doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remai
   auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(i, remaining_args...);
+  Impl::CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < items.size()) {
     body(items[i], remaining_args...);
   }
-  Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(i, remaining_args...);
+  Impl::CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
 
-#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+#endif // ARCANE_COMPILING_CUDA_OR_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -527,11 +529,11 @@ class DoMatContainerSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtBegin(x, shm_view, remaining_args...);
+    Impl::SyclKernelRemainingArgsHelper::applyAtBegin(x, shm_view, remaining_args...);
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    Impl::KernelRemainingArgsHelper::applyRemainingArgsAtEnd(x, shm_view, remaining_args...);
+    Impl::SyclKernelRemainingArgsHelper::applyAtEnd(x, shm_view, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
@@ -558,12 +560,12 @@ void _doConstituentItemsLambda(Int32 base_index, Int32 size, ContainerType items
   auto privatizer = Impl::privatize(func);
   auto& body = privatizer.privateCopy();
 
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtBegin(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   Int32 last_value = base_index + size;
   for (Int32 i = base_index; i < last_value; ++i) {
     body(items[i], remaining_args...);
   }
-  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyRemainingArgsAtEnd(remaining_args...);
+  ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -640,16 +642,16 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
-                     func, items, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
+                              launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
-                    func, items, remaining_args...);
+    ARCCORE_KERNEL_HIP_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
+                            launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
-                     func, items, remaining_args...);
+    ARCCORE_KERNEL_SYCL_FUNC((impl::DoMatContainerSYCLLambda < ContainerType, Lambda, RemainingArgs... > {}),
+                             launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
     _doConstituentItemsLambda(0, vsize, items, func, remaining_args...);
@@ -661,11 +663,10 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
                       });
     break;
   default:
-    ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
+    ARCCORE_FATAL("Invalid execution policy '{0}'", exec_policy);
   }
   launch_info.endExecute();
 }
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -790,7 +791,7 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 #define RUNCOMMAND_MAT_ENUMERATE(ConstituentItemNameType, iter_name, env_or_mat_container, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedConstituentItemEnumeratorLoop<ConstituentItemNameType>(env_or_mat_container __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandConstituentItemEnumeratorTraitsT<ConstituentItemNameType>::IteratorValueType iter_name \
-                                        __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+                                        __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

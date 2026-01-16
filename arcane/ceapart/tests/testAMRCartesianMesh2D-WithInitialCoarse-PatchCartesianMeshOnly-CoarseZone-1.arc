@@ -60,13 +60,17 @@
       <length>4.0 2.0</length>
     </coarse-zone-2d>
 
-    <expected-number-of-cells-in-patchs>16 56 48</expected-number-of-cells-in-patchs>
+    <!--    <expected-number-of-cells-in-patchs>16 56 48</expected-number-of-cells-in-patchs>-->
+    <expected-number-of-cells-in-patchs>16 48 8 16 16 16</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>bc99948909b1c4499d164c6da40dcad9</nodes-uid-hash>
-    <faces-uid-hash>f4914df7549e82882fc28849b89c8b5f</faces-uid-hash>
+    <!-- Hash avant renumérotation niveau 0. -->
+    <!--    <faces-uid-hash>f4914df7549e82882fc28849b89c8b5f</faces-uid-hash>-->
+    <faces-uid-hash>b05ddde6c89024bed01b3ec7f61d43e8</faces-uid-hash>
     <cells-uid-hash>6e75535e29f9cb664058906a6e54c0a6</cells-uid-hash>
-    <nodes-direction-hash>5e18f929f56e0edbabb140483a8f89bd</nodes-direction-hash>
-    <faces-direction-hash>e8dfa7dff4817150ea2250834667d8c3</faces-direction-hash>
-    <cells-direction-hash>48966f7b215624d47a310508bcaf28b5</cells-direction-hash>
+    <nodes-direction-hash>aadacb309fd2f436af0c8fd4959af8e7</nodes-direction-hash>
+    <!--    <faces-direction-hash>9897ea6879fa40978a487931568562cf</faces-direction-hash>-->
+    <faces-direction-hash>75e27b65937b33641399ea4c3d1cd3e0</faces-direction-hash>
+    <cells-direction-hash>4d240366d0b76e05b254e0da4ead19ef</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>

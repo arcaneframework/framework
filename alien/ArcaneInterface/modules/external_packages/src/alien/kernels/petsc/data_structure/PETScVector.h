@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,6 +9,7 @@
 #include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/core/impl/IVectorImpl.h>
+#include <alien/core/backend/BackEnd.h>
 #include <alien/data/ISpace.h>
 #include <alien/distribution/VectorDistribution.h>
 
@@ -29,21 +30,31 @@ class PETScVector : public IVectorImpl
 {
  public:
   typedef PETScInternal::VectorInternal VectorInternal;
+  typedef Integer                       IndexType;
+  typedef Integer                       UIDIndexType;
+  typedef Integer                       LIDIndexType;
+  typedef double                        ValueType ;
 
  public:
   PETScVector(const MultiVectorImpl* multi_impl);
 
   virtual ~PETScVector();
 
+  BackEnd::Memory::eType getMemoryType() const ;
+
+  BackEnd::Exec::eSpaceType getExecSpace() const ;
+
  public:
-  void init(const VectorDistribution& dist, const bool need_allocate,
-      Arccore::Integer block_size = 1);
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
   void free() {}
   void clear() {}
 
- private:
+  ValueType* getDataPtr() ;
+  bool restoreDataPtr(ValueType* values_ptr) ;
+
+ public:
   bool setValues(const int nrow, const double* values);
   bool setBlockValues(const int nrow, const int block_size, const double* values);
 
@@ -71,7 +82,7 @@ class PETScVector : public IVectorImpl
   */
   // void update(const __NewSolverTemplate__Vector & v) { /* YOUR CODE IN .cc */ }
 
- private:
+ public:
   bool assemble();
 
  private:

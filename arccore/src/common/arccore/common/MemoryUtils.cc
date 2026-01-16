@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtils.cc                                              (C) 2000-2025 */
+/* MemoryUtils.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
@@ -14,55 +14,52 @@
 #include "arccore/common/MemoryUtils.h"
 
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/common/MemoryAllocationOptions.h"
 #include "arccore/common/internal/SpecificMemoryCopyList.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryResourceMng.h"
 
 // Pour std::memmove
 #include <cstring>
 
 // TODO: ajouter statistiques sur les tailles de 'datatype' utilisées.
 
+/*!
+ * \file MemoryUtils.h
+ *
+ * \brief Fonctions utilitaires de gestion mémoire.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane::impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IndexedCopyTraits
-{
- public:
-
-  using InterfaceType = ISpecificMemoryCopy;
-  template <typename DataType, typename Extent> using SpecificType = SpecificMemoryCopy<DataType, Extent>;
-  using RefType = SpecificMemoryCopyRef<IndexedCopyTraits>;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::impl
 
 namespace Arcane
 {
 using RunQueue = Accelerator::RunQueue;
+using Impl::ISpecificMemoryCopyList;
+using Impl::GlobalMemoryCopyList;
+
+/*!
+ * \namespace MemoryUtils
+ *
+ * \brief Fonctions utilitaires de gestion mémoire.
+ */
+
+namespace
+{
+  IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
+  MemoryResourceMng global_default_data_memory_resource_mng;
+  IMemoryRessourceMng* global_data_memory_resource_mng = nullptr;
+  eMemoryResource global_data_memory_resource = eMemoryResource::Host;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-  impl::SpecificMemoryCopyList<impl::IndexedCopyTraits> global_copy_list;
-  impl::ISpecificMemoryCopyList* default_global_copy_list = nullptr;
-
-  impl::ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
+  ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
   {
-    if (queue && !default_global_copy_list)
-      ARCCORE_FATAL("No instance of copier is available for RunQueue");
-    if (default_global_copy_list && queue)
-      return default_global_copy_list;
-    return &global_copy_list;
+    return GlobalMemoryCopyList::getDefault(queue);
   }
   Int32 _checkDataTypeSize(const TraceInfo& trace, Int32 data_size1, Int32 data_size2)
   {
@@ -75,12 +72,165 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::ISpecificMemoryCopyList::
-setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr)
+eMemoryResource MemoryUtils::
+getDefaultDataMemoryResource()
 {
-  if (!default_global_copy_list) {
-    default_global_copy_list = ptr;
-  }
+  return global_data_memory_resource;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryResource MemoryUtils::
+getMemoryResourceFromName(const String& name)
+{
+  eMemoryResource v = eMemoryResource::Unknown;
+  if (name.null())
+    return v;
+  if (name == "Device")
+    v = eMemoryResource::Device;
+  else if (name == "Host")
+    v = eMemoryResource::Host;
+  else if (name == "HostPinned")
+    v = eMemoryResource::HostPinned;
+  else if (name == "UnifiedMemory")
+    v = eMemoryResource::UnifiedMemory;
+  else
+    ARCCORE_FATAL("Invalid name '{0}' for memory resource. Valid names are "
+                  "'Device', 'Host', 'HostPinned' or 'UnifieMemory'.",
+                  name);
+  return v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+setDefaultDataMemoryResource(eMemoryResource v)
+{
+  global_data_memory_resource = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryRessourceMng* MemoryUtils::
+setDataMemoryResourceMng(IMemoryRessourceMng* mng)
+{
+  ARCCORE_CHECK_POINTER(mng);
+  IMemoryRessourceMng* old = global_data_memory_resource_mng;
+  global_data_memory_resource_mng = mng;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryRessourceMng* MemoryUtils::
+getDataMemoryResourceMng()
+{
+  IMemoryRessourceMng* a = global_data_memory_resource_mng;
+  if (!a)
+    return &global_default_data_memory_resource_mng;
+  return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getAcceleratorHostMemoryAllocator()
+{
+  return global_accelerator_host_memory_allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
+{
+  IMemoryAllocator* old = global_accelerator_host_memory_allocator;
+  global_accelerator_host_memory_allocator = a;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCCORE_COMMON_EXPORT IMemoryAllocator* MemoryUtils::
+getDefaultDataAllocator()
+{
+  return getDataMemoryResourceMng()->getAllocator(getDefaultDataMemoryResource());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getDeviceOrHostAllocator()
+{
+  IMemoryRessourceMng* mrm = getDataMemoryResourceMng();
+  IMemoryAllocator* a = mrm->getAllocator(eMemoryResource::Device, false);
+  if (a)
+    return a;
+  return mrm->getAllocator(eMemoryResource::Host);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getDefaultDataAllocator(eMemoryLocationHint hint)
+{
+  return MemoryAllocationOptions(getDefaultDataAllocator(), hint);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getAllocatorForMostlyReadOnlyData()
+{
+  return getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryUtils::
+getAllocator(eMemoryResource mem_resource)
+{
+  return getDataMemoryResourceMng()->getAllocator(mem_resource);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getAllocationOptions(eMemoryResource mem_resource)
+{
+  return MemoryAllocationOptions(getAllocator(mem_resource));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryPool* MemoryUtils::
+getMemoryPoolOrNull(eMemoryResource mem_resource)
+{
+  return getDataMemoryResourceMng()->getMemoryPoolOrNull(mem_resource);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copy(MutableMemoryView destination, eMemoryResource destination_mem,
+     ConstMemoryView source, eMemoryResource source_mem, const RunQueue* queue)
+{
+  IMemoryRessourceMng* mrm = getDataMemoryResourceMng();
+  mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,7 +247,7 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
   Int64 destination_size = b_destination.size();
   if (source_size > destination_size)
     ARCCORE_FATAL("Destination is too small source_size={0} destination_size={1}",
-                 source_size, destination_size);
+                  source_size, destination_size);
   auto* destination_data = b_destination.data();
   auto* source_data = b_source.data();
   ARCCORE_CHECK_POINTER(destination_data);
@@ -110,7 +260,7 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
 
 void MemoryUtils::
 copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
-                    Span<const Int32> indexes)
+                               Span<const Int32> indexes)
 {
   copyWithIndexedDestination(destination, source, indexes.smallView(), nullptr);
 }
@@ -120,7 +270,7 @@ copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView so
 
 void MemoryUtils::
 copyWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
-                SmallSpan<const Int32> indexes, RunQueue* queue)
+                           SmallSpan<const Int32> indexes, RunQueue* queue)
 {
 
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
@@ -173,7 +323,7 @@ fill(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 
 void MemoryUtils::
 copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
-                  Span<const Int32> indexes)
+                          Span<const Int32> indexes)
 {
   copyWithIndexedSource(destination, source, indexes.smallView(), nullptr);
 }
@@ -183,8 +333,8 @@ copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 void MemoryUtils::
 copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
-              SmallSpan<const Int32> indexes,
-              RunQueue* queue)
+                      SmallSpan<const Int32> indexes,
+                      RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, source.datatypeSize(), destination.datatypeSize());
 
@@ -206,7 +356,7 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 void MemoryUtils::
 copyWithIndexedDestination(MutableMultiMemoryView destination, ConstMemoryView source,
-                SmallSpan<const Int32> indexes, RunQueue* queue)
+                           SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
@@ -249,7 +399,7 @@ fill(MutableMultiMemoryView destination, ConstMemoryView source, RunQueue* queue
 
 void MemoryUtils::
 copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source,
-              SmallSpan<const Int32> indexes, RunQueue* queue)
+                      SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
@@ -275,7 +425,7 @@ arccorePrintSpecificMemoryStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

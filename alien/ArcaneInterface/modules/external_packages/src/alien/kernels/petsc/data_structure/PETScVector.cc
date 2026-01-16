@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,10 +11,12 @@
  */
 
 #include <alien/kernels/petsc/PETScBackEnd.h>
+
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
 
+#include <arccore/message_passing/Communicator.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {
@@ -32,11 +34,19 @@ PETScVector::PETScVector(const MultiVectorImpl* multi_impl)
 PETScVector::~PETScVector()
 {}
 
+BackEnd::Memory::eType PETScVector::getMemoryType() const {
+  return  PETScInternalLinearSolver::m_library_plugin->getMemoryType() ;
+}
+
+BackEnd::Exec::eSpaceType PETScVector::getExecSpace() const {
+  return  PETScInternalLinearSolver::m_library_plugin->getExecSpace() ;
+}
+
 /*---------------------------------------------------------------------------*/
 
 void
 PETScVector::init([[maybe_unused]] const VectorDistribution& dist,
-                  const bool need_allocate, [[maybe_unused]] Arccore::Integer block_size)
+                  const bool need_allocate)
 {
   if (need_allocate)
     allocate();
@@ -47,12 +57,13 @@ PETScVector::init([[maybe_unused]] const VectorDistribution& dist,
 void
 PETScVector::allocate()
 {
-  const VectorDistribution& dist = this->distribution();
+  auto memory_type = PETScInternalLinearSolver::m_library_plugin->getMemoryType() ;
+  auto exec_space = PETScInternalLinearSolver::m_library_plugin->getExecSpace() ;
 
+  const VectorDistribution& dist = this->distribution();
   Arccore::MessagePassing::Mpi::MpiMessagePassingMng*
   mpi_pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(dist.parallelMng()) ;
   MPI_Comm comm ;
-
   if(mpi_pm && mpi_pm->getMPIComm())
     comm = *mpi_pm->getMPIComm() ;
   else
@@ -67,26 +78,83 @@ PETScVector::allocate()
                                           this->scalarizedGlobalSize(),
                                           block_size,
                                           dist.isParallel(),
-                                          comm));
+                                          comm,
+                                          memory_type,
+                                          exec_space));
   }
   else
   {
-      m_internal.reset(new VectorInternal(this->scalarizedLocalSize(), this->scalarizedOffset(),
-                                          this->scalarizedGlobalSize(), dist.isParallel(),comm));
+      m_internal.reset(new VectorInternal(this->scalarizedLocalSize(),
+                                          this->scalarizedOffset(),
+                                          this->scalarizedGlobalSize(),
+                                          dist.isParallel(),
+                                          comm,
+                                          memory_type,
+                                          exec_space));
   }
 }
 
 /*---------------------------------------------------------------------------*/
+
+PETScVector::ValueType*
+PETScVector::getDataPtr()
+{
+  if (m_internal->m_internal == nullptr)
+    return nullptr;
+
+  PetscScalar* petsc_ptr = nullptr;
+  if(m_internal->memoryOnHost())
+  {
+    int ierr = VecGetArray(m_internal->m_internal, &petsc_ptr);
+    return petsc_ptr ;
+  }
+  else
+  {
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_HAVE_CUDA
+    int ierr = VecCUDAGetArrayWrite(m_internal->m_internal, &petsc_ptr);
+#endif
+#endif
+    return petsc_ptr ;
+  }
+}
+
+bool PETScVector::restoreDataPtr(PETScVector::ValueType* values_ptr)
+{
+#if PETSC_VERSION_GE(3, 20, 0)
+#if PETSC_HAVE_CUDA
+  int ierr = VecCUDARestoreArrayWrite(m_internal->m_internal, &values_ptr);
+  if(ierr !=0)
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while restore vector data ptr");
+#else
+  throw Arccore::FatalErrorException(A_FUNCINFO, "CUDA not available, Cannot restore device vector data ptr");
+  return false ;
+#endif
+#endif
+  if (not assemble())
+  {
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while assembling vector data");
+    return false;
+  }
+  return true ;
+}
 
 bool
 PETScVector::setValues(const int nrow, const int* rows, const double* values)
 {
   if (m_internal->m_internal == nullptr)
     return false;
-  int ierr = VecSetValues(m_internal->m_internal,
-      nrow, // nb de valeurs
-      rows, values, INSERT_VALUES);
-  return (ierr == 0);
+  if(m_internal->memoryOnHost())
+  {
+    int ierr = VecSetValues(m_internal->m_internal,
+        nrow, // nb de valeurs
+        rows, values, INSERT_VALUES);
+    return (ierr == 0);
+  }
+  else
+  {
+    return false;
+  }
 }
 
 bool

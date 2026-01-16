@@ -55,6 +55,7 @@ set(SOURCES
   ForLoopTraceInfo.cc
   GenericRegisterer.h
   GenericRegisterer.cc
+  GlibDynamicLibraryLoader.cc
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
@@ -113,6 +114,7 @@ set(SOURCES
   Functor.cc
 
   internal/ConvertInternal.h
+  internal/IDynamicLibraryLoader.h
   internal/StringImpl.h
   internal/DependencyInjection.h
   internal/ProfilingInternal.h

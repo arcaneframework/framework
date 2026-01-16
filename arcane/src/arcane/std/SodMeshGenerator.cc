@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SodMeshGenerator.cc                                         (C) 2000-2024 */
+/* SodMeshGenerator.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Service de génération d'un maillage à-la 'sod'.                           */
 /*---------------------------------------------------------------------------*/
@@ -567,7 +567,7 @@ generateMesh(IPrimaryMesh* mesh)
       info()<< "[SodMeshGenerator::generateMesh]  max_y=" << max_y;
     }
     const Real max_z = zdelta * Convert::toReal(total_para_cell_z);
-    groups_builder.generateGroups(mesh,Real3::null(),Real3(max_x,max_y,max_z),middle_x,middle_height);
+    groups_builder.generateGroups(mesh, Real3::null(), Real3(max_x, max_y, max_z), middle_x, middle_height, true);
   }
 
   bool is_random = !math::isNearlyZero(m_random_coef);

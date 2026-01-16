@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2025 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2026 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélérateurs.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#define ARCCORE_EXPERIMENTAL_GRID_STRIDE
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -48,6 +50,8 @@
 
 #include "arcane/tests/TypesSimpleHydro.h"
 #include "arcane/tests/accelerator/SimpleHydroAccelerator_axl.h"
+
+#include "arccore/common/IMemoryPool.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -192,7 +196,7 @@ class SimpleHydroAcceleratorService
 
   SimpleHydro::SimpleHydroModuleBase* m_module = nullptr;
   //! Indice de chaque nœud dans la maille
-  UniqueArray<Int16> m_node_index_in_cells;
+  UniqueArray<Int8> m_node_index_in_cells;
 
   Runner m_runner;
   RunQueue m_default_queue;
@@ -204,10 +208,10 @@ class SimpleHydroAcceleratorService
 
   void _computePressureForces();
   void _computePseudoViscosityForces();
+  void _computeNodeIndexInCells();
 
  private:
 
-  void _computeNodeIndexInCells();
   void _doTestInit() const;
 };
 
@@ -266,6 +270,12 @@ void SimpleHydroAcceleratorService::
 hydroExit()
 {
   info() << "Hydro exit entry point";
+  if (m_default_queue.isAcceleratorPolicy()) {
+    IMemoryPool* pool = MemoryUtils::getMemoryPoolOrNull(eMemoryResource::UnifiedMemory);
+    if (pool) {
+      info() << "UnifiedMemoryPool allocated=" << pool->totalAllocated() << " cache=" << pool->totalCached();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -751,6 +761,7 @@ computeDeltaT()
 
   {
     auto command = makeCommand(m_default_queue);
+    command.addNbStride(16);
     ax::ReducerMin2<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
     auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);
@@ -990,31 +1001,40 @@ hydroInit()
 void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
-  info() << "ComputeNodeIndexInCells";
+  info() << "ComputeNodeIndexInCells with accelerator";
   // Un nœud est connecté au maximum à MAX_NODE_CELL mailles
-  // Calcul pour chaque nœud son index dans chacune des
+  // Calcule pour chaque nœud son index dans chacune des
   // mailles à laquelle il est connecté.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
   m_node_index_in_cells.resize(MAX_NODE_CELL*nb_node);
-  m_node_index_in_cells.fill(-1);
+
   auto node_cell_cty = m_connectivity_view.nodeCell();
   auto cell_node_cty = m_connectivity_view.cellNode();
-  ENUMERATE_NODE(inode,nodes){
-    NodeLocalId node = *inode;
-    Int32 index = 0;
+
+  auto command = makeCommand(m_default_queue);
+  auto inout_node_index_in_cells = m_node_index_in_cells.span();
+
+  command << RUNCOMMAND_ENUMERATE(Node,node,nodes)
+  {
     Int32 first_pos = node.localId() * MAX_NODE_CELL;
+
+    Int32 index = 0;
     for( CellLocalId cell : node_cell_cty.cells(node) ){
-      Int16 node_index_in_cell = 0;
+      Int8 node_index_in_cell = 0;
       for( NodeLocalId cell_node : cell_node_cty.nodes(cell) ){
         if (cell_node==node)
           break;
         ++node_index_in_cell;
       }
-      m_node_index_in_cells[first_pos + index] = node_index_in_cell;
+      inout_node_index_in_cells[first_pos + index] = node_index_in_cell;
       ++index;
     }
-  }
+
+    // Remplit avec la valeur nulle les derniers éléments
+    for( ; index<MAX_NODE_CELL; ++index )
+      inout_node_index_in_cells[first_pos + index] = -1;
+  };
 }
 
 /*---------------------------------------------------------------------------*/

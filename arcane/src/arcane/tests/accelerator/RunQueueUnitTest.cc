@@ -23,7 +23,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
-#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arccore/common/accelerator/internal/RunQueueImpl.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/SpanViews.h"
@@ -69,6 +69,7 @@ class RunQueueUnitTest
   void _executeTest3(bool use_pooling);
   void _executeTest4();
   void _executeTest5();
+  void _executeTest6();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -112,6 +113,7 @@ executeTest()
     _executeTest3(true);
   _executeTest4();
   _executeTest5();
+  _executeTest6();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -414,6 +416,48 @@ _executeTest5()
 
   host_array.copy(array2);
   vc.areEqual(host_array.to1DSpan(), ref_array2.span(), "Array2");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTest6()
+{
+  bool use_async = false;
+  bool use_concurrent = false;
+  bool use_no_launch_command = false;
+
+  // Lance un kernel vide pour évaluer le coup du lancement.
+  auto queue = makeQueue(m_runner);
+  int nb_iteration = 1000000;
+  if (queue.isAcceleratorPolicy())
+    nb_iteration = 1000;
+  if (arcaneIsDebug())
+    nb_iteration /= 100;
+  if (use_async)
+    queue.setAsync(true);
+  if (use_concurrent)
+    queue.setConcurrentCommandCreation(use_concurrent);
+  Int64 xbegin = platform::getRealTimeNS();
+  for (int i = 0; i < nb_iteration; ++i) {
+    auto command = makeCommand(queue);
+    if (!use_no_launch_command)
+      command << RUNCOMMAND_SINGLE(){};
+  }
+  Int64 xend = platform::getRealTimeNS();
+  queue.barrier();
+  Int64 xend2 = platform::getRealTimeNS();
+  std::cout << "Time "
+            << (use_async ? "ASYNC " : "SYNC  ")
+            << (use_concurrent ? " CONCURRENT " : "            ")
+            << (use_no_launch_command ? " NOLAUNCH " : "   LAUNCH ");
+
+  std::cout << "Time1 (us) = " << std::setw(6) << (xend - xbegin) / 1000 << " Time2=" << std::setw(6) << (xend2 - xbegin) / 1000;
+  std::cout << "  Time1/Iter (ns) = " << std::setw(6) << (xend - xbegin) / nb_iteration << " Time2=" << std::setw(6) << (xend2 - xbegin) / nb_iteration;
+  std::cout << "\n";
+  queue._internalImpl()->dumpStats(std::cout);
+  std::cout << "\n";
 }
 
 /*---------------------------------------------------------------------------*/

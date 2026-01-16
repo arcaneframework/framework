@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,6 +49,59 @@ namespace Alien {
 // Compile HTSLinearSolver.
 // template class ALIEN_IFPEN_SOLVERS_EXPORT LinearSolver<BackEnd::tag::htssolver>;
 
+struct HTSInternalLinearSolver::Impl
+{
+  struct RunOp
+  {
+    typedef HartsSolver::CSRMatrix<Real, 1> MatrixType;
+    typedef MatrixType::VectorDataType VectorDataType;
+    HartsSolver::HTSSolver* m_solver;
+    MatrixType& m_A;
+    VectorDataType const* m_b;
+    VectorDataType* m_x;
+    HartsSolver::HTSSolver::Status& m_status;
+    HartsSolver::HTSSolver::ContextType& m_context;
+
+    RunOp(HartsSolver::HTSSolver* solver, HartsSolver::CSRMatrix<Real, 1>& A,
+        const double* b, double* x, HartsSolver::HTSSolver::Status& status,
+        HartsSolver::HTSSolver::ContextType& context)
+    : m_solver(solver)
+    , m_A(A)
+    , m_b(b)
+    , m_x(x)
+    , m_status(status)
+    , m_context(context)
+    {
+    }
+
+    template <bool is_mpi, bool use_simd, HARTS::eThreadEnvType th_env> void run()
+    {
+      m_solver->solve<is_mpi, use_simd, th_env>(m_A, m_b, m_x, m_status, m_context);
+    }
+  };
+
+  std::unique_ptr<HartsSolver::HTSSolver> m_hts_solver;
+  RunTimeSystem::MachineInfo m_machine_info;
+  HARTS::Runtime::Configuration m_runtime_configuration;
+  // HartsSolver::MPIInfo*        m_mpi_info     = nullptr;
+
+  // Status m_status;
+  HartsSolver::HTSSolver::Status m_hts_status;
+
+
+  //! Solver parameters
+  Integer m_max_iteration = 0;
+  Real m_precision = 0.;
+
+  // multithread options
+  bool m_use_thread = false;
+  Integer m_num_thread = 1;
+  HARTS::eThreadEnvType m_thread_env_type = HARTS::PTh;
+
+  int m_current_ctx_id = -1;
+
+} ;
+
 /*---------------------------------------------------------------------------*/
 HTSInternalLinearSolver::HTSInternalLinearSolver(
     Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsHTSSolver* options)
@@ -56,13 +109,18 @@ HTSInternalLinearSolver::HTSInternalLinearSolver(
 , m_options(options)
 , m_stater(this)
 {
+  m_impl.reset(new Impl) ;
+}
+
+HTSInternalLinearSolver::~HTSInternalLinearSolver()
+{
 }
 
 void
 HTSInternalLinearSolver::init(int argc, char const** argv)
 {
 #ifdef ALIEN_USE_HTSSOLVER
-  m_hts_solver.reset(new HartsSolver::HTSSolver());
+  m_impl->m_hts_solver.reset(new HartsSolver::HTSSolver());
 #endif
 }
 
@@ -76,29 +134,29 @@ HTSInternalLinearSolver::init()
 
 #ifdef ALIEN_USE_HTSSOLVER
   m_use_mpi = m_parallel_mng->commSize() > 1;
-  m_machine_info.init(m_parallel_mng->commRank() == 0);
+  m_impl->m_machine_info.init(m_parallel_mng->commRank() == 0);
 
-  m_hts_solver.reset(new HartsSolver::HTSSolver());
-  m_hts_solver->setMachineInfo(&m_machine_info);
+  m_impl->m_hts_solver.reset(new HartsSolver::HTSSolver());
+  m_impl->m_hts_solver->setMachineInfo(&m_impl->m_machine_info);
 
   bool use_simd = m_options->useSimd();
-  m_runtime_configuration.m_memory_space.m_is_mpi = m_use_mpi;
-  m_runtime_configuration.m_execution_space.m_use_simd = use_simd;
+  m_impl->m_runtime_configuration.m_memory_space.m_is_mpi = m_use_mpi;
+  m_impl->m_runtime_configuration.m_execution_space.m_use_simd = use_simd;
   switch (m_options->threadEnvType()) {
   case 0:
-    m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::PTh;
+    m_impl->m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::PTh;
     break;
   case 1:
-    m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::OpenMP;
+    m_impl->m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::OpenMP;
     break;
   default:
-    m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::PTh;
+    m_impl->m_runtime_configuration.m_execution_space.m_thread_env_type = HARTS::PTh;
     break;
   }
 #endif
-  m_current_ctx_id = m_hts_solver->createNewContext();
+  m_impl->m_current_ctx_id = m_impl->m_hts_solver->createNewContext();
   HartsSolver::HTSSolver::ContextType& context =
-      m_hts_solver->getContext(m_current_ctx_id);
+      m_impl->m_hts_solver->getContext(m_impl->m_current_ctx_id);
 
   typedef HartsSolver::MPIInfo MPIEnvType;
   if (m_use_mpi) {
@@ -110,60 +168,60 @@ HTSInternalLinearSolver::init()
     context.set<MPIEnvType>(HartsSolver::HTSSolver::Context::MPIEnv, mpi_env);
   }
 
-  m_hts_solver->setCurrentContext(&context);
+  m_impl->m_hts_solver->setCurrentContext(&context);
 
-  m_hts_solver->setParameter<int>("output", m_output_level);
-  m_hts_solver->setParameter<int>("parallel-trace", m_options->parallelTrace());
+  m_impl->m_hts_solver->setParameter<int>("output", m_output_level);
+  m_impl->m_hts_solver->setParameter<int>("parallel-trace", m_options->parallelTrace());
 
   if (m_options->normalizeOpt())
-    m_hts_solver->setParameter<int>("normalize-opt", 1);
-  m_hts_solver->setParameter<int>("max-iteration", m_options->maxIterationNum());
-  m_hts_solver->setParameter<double>("tol", m_options->stopCriteriaValue());
-  m_hts_solver->setParameter<int>("solver", (int)m_options->solver());
-  m_hts_solver->setParameter<int>("precond-type", (int)m_options->preconditioner());
+    m_impl->m_hts_solver->setParameter<int>("normalize-opt", 1);
+  m_impl->m_hts_solver->setParameter<int>("max-iteration", m_options->maxIterationNum());
+  m_impl->m_hts_solver->setParameter<double>("tol", m_options->stopCriteriaValue());
+  m_impl->m_hts_solver->setParameter<int>("solver", (int)m_options->solver());
+  m_impl->m_hts_solver->setParameter<int>("precond-type", (int)m_options->preconditioner());
   switch (m_options->preconditioner()) {
   case HTSOptionTypes::Poly:
   case HTSOptionTypes::Chebyshev:
-    m_hts_solver->setParameter<double>("poly-factor", m_options->polyFactor());
-    m_hts_solver->setParameter<double>(
+    m_impl->m_hts_solver->setParameter<double>("poly-factor", m_options->polyFactor());
+    m_impl->m_hts_solver->setParameter<double>(
         "poly-eigenvalue-ratio", m_options->polyEigenvalueRatio());
-    m_hts_solver->setParameter<double>(
+    m_impl->m_hts_solver->setParameter<double>(
         "poly-eigenvalue-max", m_options->polyEigenvalueMax());
-    m_hts_solver->setParameter<double>(
+    m_impl->m_hts_solver->setParameter<double>(
         "poly-eigenvalue-min", m_options->polyEigenvalueMin());
 
-    m_hts_solver->setParameter<int>("poly-degree", m_options->polyDegree());
-    m_hts_solver->setParameter<int>(
+    m_impl->m_hts_solver->setParameter<int>("poly-degree", m_options->polyDegree());
+    m_impl->m_hts_solver->setParameter<int>(
         "poly-factor-max-iter", m_options->polyFactorMaxIter());
     break;
   case HTSOptionTypes::ILU0FP:
-    m_hts_solver->setParameter<int>("ilufp-factor-niter", m_options->ilufpFactorNiter());
-    m_hts_solver->setParameter<int>("ilufp-solver-niter", m_options->ilufpSolverNiter());
-    m_hts_solver->setParameter<double>("ilufp-tol", m_options->ilufpTol());
+    m_impl->m_hts_solver->setParameter<int>("ilufp-factor-niter", m_options->ilufpFactorNiter());
+    m_impl->m_hts_solver->setParameter<int>("ilufp-solver-niter", m_options->ilufpSolverNiter());
+    m_impl->m_hts_solver->setParameter<double>("ilufp-tol", m_options->ilufpTol());
     break;
   case HTSOptionTypes::Cpr:
   case HTSOptionTypes::DDMLPC:
     if (m_options->mlOpt().size() > 0) {
       auto const& opt = m_options->mlOpt()[0];
-      m_hts_solver->setParameter<int>("ml-output", opt->output());
-      m_hts_solver->setParameter<int>("ml", opt->algo());
-      m_hts_solver->setParameter<int>("ml-iter", opt->iter());
-      m_hts_solver->setParameter<double>("ml-tol", opt->tol());
-      m_hts_solver->setParameter<int>("ml-nev", opt->nev());
-      m_hts_solver->setParameter<int>("ml-evtype", opt->evtype());
-      m_hts_solver->setParameter<double>("ml-evbound", opt->evbound());
-      m_hts_solver->setParameter<double>("ml-evtol", opt->evtol());
-      m_hts_solver->setParameter<int>("ml-ev-max-iter", opt->evMaxIter());
-      m_hts_solver->setParameter<int>("ml-coarse-op", opt->coarseOp());
-      m_hts_solver->setParameter<int>("ml-solver", opt->solver());
-      m_hts_solver->setParameter<int>("ml-solver-iter", opt->solverIter());
-      m_hts_solver->setParameter<double>("ml-solver-tol", opt->solverTol());
-      m_hts_solver->setParameter<int>("ml-solver-nev", opt->solverNev());
-      m_hts_solver->setParameter<int>("ml-coarse-solver", opt->coarseSolver());
-      m_hts_solver->setParameter<int>("ml-coarse-solver-ntile", opt->coarseSolverNtile());
-      m_hts_solver->setParameter<int>("ml-neumann-cor", opt->neumannCor());
-      m_hts_solver->setParameter<int>("ilu-level", m_options->iluLevel());
-      m_hts_solver->setParameter<double>("ilu-drop-tol", m_options->iluDropTol());
+      m_impl->m_hts_solver->setParameter<int>("ml-output", opt->output());
+      m_impl->m_hts_solver->setParameter<int>("ml", opt->algo());
+      m_impl->m_hts_solver->setParameter<int>("ml-iter", opt->iter());
+      m_impl->m_hts_solver->setParameter<double>("ml-tol", opt->tol());
+      m_impl->m_hts_solver->setParameter<int>("ml-nev", opt->nev());
+      m_impl->m_hts_solver->setParameter<int>("ml-evtype", opt->evtype());
+      m_impl->m_hts_solver->setParameter<double>("ml-evbound", opt->evbound());
+      m_impl->m_hts_solver->setParameter<double>("ml-evtol", opt->evtol());
+      m_impl->m_hts_solver->setParameter<int>("ml-ev-max-iter", opt->evMaxIter());
+      m_impl->m_hts_solver->setParameter<int>("ml-coarse-op", opt->coarseOp());
+      m_impl->m_hts_solver->setParameter<int>("ml-solver", opt->solver());
+      m_impl->m_hts_solver->setParameter<int>("ml-solver-iter", opt->solverIter());
+      m_impl->m_hts_solver->setParameter<double>("ml-solver-tol", opt->solverTol());
+      m_impl->m_hts_solver->setParameter<int>("ml-solver-nev", opt->solverNev());
+      m_impl->m_hts_solver->setParameter<int>("ml-coarse-solver", opt->coarseSolver());
+      m_impl->m_hts_solver->setParameter<int>("ml-coarse-solver-ntile", opt->coarseSolverNtile());
+      m_impl->m_hts_solver->setParameter<int>("ml-neumann-cor", opt->neumannCor());
+      m_impl->m_hts_solver->setParameter<int>("ilu-level", m_options->iluLevel());
+      m_impl->m_hts_solver->setParameter<double>("ilu-drop-tol", m_options->iluDropTol());
     }
     break;
   case HTSOptionTypes::AMGPC:
@@ -173,15 +231,15 @@ HTSInternalLinearSolver::init()
     break;
   }
   if (m_options->useThread())
-    m_hts_solver->setParameter<int>("use-thread", 1);
-  m_hts_solver->setParameter<int>("nb-threads", m_options->nbThreads());
-  m_hts_solver->setParameter<int>("nb-part", m_options->nbPart());
-  m_hts_solver->setParameter<int>("nb-subpart", m_options->nbSubpart());
-  m_hts_solver->setParameter<int>("metis", m_options->metis());
-  m_hts_solver->setParameter<int>("smetis", m_options->smetis());
-  m_hts_solver->setParameter<int>("sendrecv-opt", m_options->sendrecvOpt());
-  m_hts_solver->setParameter<int>("pqueue", m_options->pqueue());
-  m_hts_solver->setParameter<int>("affinity-mode", m_options->affinityMode());
+    m_impl->m_hts_solver->setParameter<int>("use-thread", 1);
+  m_impl->m_hts_solver->setParameter<int>("nb-threads", m_options->nbThreads());
+  m_impl->m_hts_solver->setParameter<int>("nb-part", m_options->nbPart());
+  m_impl->m_hts_solver->setParameter<int>("nb-subpart", m_options->nbSubpart());
+  m_impl->m_hts_solver->setParameter<int>("metis", m_options->metis());
+  m_impl->m_hts_solver->setParameter<int>("smetis", m_options->smetis());
+  m_impl->m_hts_solver->setParameter<int>("sendrecv-opt", m_options->sendrecvOpt());
+  m_impl->m_hts_solver->setParameter<int>("pqueue", m_options->pqueue());
+  m_impl->m_hts_solver->setParameter<int>("affinity-mode", m_options->affinityMode());
 }
 
 void
@@ -215,8 +273,8 @@ HTSInternalLinearSolver::solve(
   // GET CURRENT CONTEXT
   //
   HartsSolver::HTSSolver::ContextType& context =
-      m_hts_solver->getContext(m_current_ctx_id);
-  m_hts_solver->setCurrentContext(&context);
+      m_impl->m_hts_solver->getContext(m_impl->m_current_ctx_id);
+  m_impl->m_hts_solver->setCurrentContext(&context);
 
   bool is_parallel = false;
   auto* parallel_mng = A.distribution().parallelMng();
@@ -290,9 +348,9 @@ HTSInternalLinearSolver::solve(
     MCMatrixType matrix(profile);
     matrix.setValues(A.internal()->getDataPtr(), profile_permutation);
     // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
-    RunOp op(m_hts_solver.get(), matrix, b.getDataPtr(), x.getDataPtr(), m_hts_status,
+    Impl::RunOp op(m_impl->m_hts_solver.get(), matrix, b.getDataPtr(), x.getDataPtr(), m_impl->m_hts_status,
         context);
-    HARTS::DispatchRun<RunOp>(m_runtime_configuration, op);
+    HARTS::DispatchRun<Impl::RunOp>(m_impl->m_runtime_configuration, op);
   } break;
   case 2: {
     typedef HartsSolver::CSRMatrix<Real, 2> MCMatrixType;
@@ -303,13 +361,13 @@ HTSInternalLinearSolver::solve(
         (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
     // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
     if (is_parallel)
-      error = m_hts_solver->solveN<2, true>(matrix,
+      error = m_impl->m_hts_solver->solveN<2, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
-      error = m_hts_solver->solveN<2, false>(matrix,
+      error = m_impl->m_hts_solver->solveN<2, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   case 3: {
     typedef HartsSolver::CSRMatrix<Real, 3> MCMatrixType;
@@ -320,13 +378,13 @@ HTSInternalLinearSolver::solve(
         (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
     // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
     if (is_parallel)
-      error = m_hts_solver->solveN<3, true>(matrix,
+      error = m_impl->m_hts_solver->solveN<3, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
-      error = m_hts_solver->solveN<3, false>(matrix,
+      error = m_impl->m_hts_solver->solveN<3, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   case 4: {
     typedef HartsSolver::CSRMatrix<Real, 4> MCMatrixType;
@@ -337,13 +395,13 @@ HTSInternalLinearSolver::solve(
         (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
     // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
     if (is_parallel)
-      error = m_hts_solver->solveN<4, true>(matrix,
+      error = m_impl->m_hts_solver->solveN<4, true>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
     else
-      error = m_hts_solver->solveN<4, false>(matrix,
+      error = m_impl->m_hts_solver->solveN<4, false>(matrix,
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
-          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_hts_status, context);
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
   default:
     break;
@@ -354,8 +412,8 @@ HTSInternalLinearSolver::solve(
   ////////////////////////////////////////////////////
   //
   // ANALIZE STATUS
-  m_status.residual = m_hts_status.residual;
-  m_status.iteration_count = m_hts_status.num_iter;
+  m_status.residual = m_impl->m_hts_status.residual;
+  m_status.iteration_count = m_impl->m_hts_status.num_iter;
 
   if (error == 0) {
     m_status.succeeded = true;
@@ -364,18 +422,18 @@ HTSInternalLinearSolver::solve(
       alien_info([&] {
         cout() << "Resolution info      :";
         cout() << "Resolution status      : OK";
-        cout() << "Residual             : " << m_hts_status.residual;
-        cout() << "Number of iterations : " << m_hts_status.num_iter;
+        cout() << "Residual             : " << m_impl->m_hts_status.residual;
+        cout() << "Number of iterations : " << m_impl->m_hts_status.num_iter;
       });
     }
     return true;
   } else {
     m_status.succeeded = false;
-    m_status.error = m_hts_status.error;
+    m_status.error = m_impl->m_hts_status.error;
     if (m_output_level > 0) {
       alien_info([&] {
         cout() << "Resolution status      : Error";
-        cout() << "Error code             : " << m_hts_status.error;
+        cout() << "Error code             : " << m_impl->m_hts_status.error;
       });
     }
     return false;

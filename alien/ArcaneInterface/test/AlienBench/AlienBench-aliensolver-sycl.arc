@@ -40,13 +40,13 @@
     <homogeneous>true</homogeneous>
     <zero-rhs>false</zero-rhs>
     <nb-resolutions>1</nb-resolutions>
-    <alien-core-solver>
+    <linear-solver name="AlienCoreSYCLSolver">
       <backend>SYCL</backend>
       <solver>BCGS</solver>
       <preconditioner>Diag</preconditioner>
       <max-iter>1000</max-iter>
       <tol>1.e-6</tol>
       <output-level>1</output-level>
-    </alien-core-solver>
+    </linear-solver>
   </alien-bench>
 </case>

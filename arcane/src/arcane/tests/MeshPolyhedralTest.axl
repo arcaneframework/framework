@@ -5,6 +5,7 @@
     <entry-point method-name="init" name="Init" where="init" property="none" />
   </entry-points>
   <options>
+    <simple name="read-only" type="bool" default="false"/>
     <complex name="mesh-size" minOccurs="0" type="MeshSizeType">
       <simple name="nb-cells" type="integer"/>
       <simple name="nb-faces" type="integer"/>

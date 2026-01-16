@@ -8,10 +8,11 @@
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 
+#include <alien/AlienCoreSolvers.h>
 #if defined ALIEN_USE_MTL4 || defined ALIEN_USE_PETSC || defined ALIEN_USE_HYPRE
 #include <alien/AlienExternalPackages.h>
 #endif
-#if defined ALIEN_USE_IFPSOLVER || defined ALIEN_USE_MCGSOLVER
+#if defined ALIEN_USE_IFPSOLVER || defined ALIEN_USE_MCGSOLVER || defined ALIEN_USE_HTSSOLVER
 #include <alien/AlienIFPENSolvers.h>
 #endif
 #include <alien/move/AlienMoveSemantic.h>
@@ -28,23 +29,22 @@ main(int argc, char** argv)
 
     using namespace boost::program_options;
     options_description desc;
-    desc.add_options()("help", "produce help")("file",
-        value<std::string>()->default_value("SystemFile.txt"),
-        "system imput file")("nrows", value<int>()->default_value(0), "nrow")("nx",
-        value<int>()->default_value(10), "nx")("ny", value<int>()->default_value(10),
-        "ny")("nbth", value<int>()->default_value(1), "number of threads")(
-        "solver-package", value<std::string>()->default_value("petsc"),
-        "solver package name")("solver", value<std::string>()->default_value("bicgs"),
-        "solver algo name")("precond", value<std::string>()->default_value("none"),
-        "preconditioner id diag ilu ddml poly")(
-        "max-iter", value<int>()->default_value(1000), "max iterations")(
-        "tol", value<double>()->default_value(1.e-10), "solver tolerance")(
-        "niter", value<int>()->default_value(1), "nb of tests for perf measure")(
-        "sym", value<int>()->default_value(1), "0->nsym, 1->sym")("kernel",
-        value<std::string>()->default_value("mcgkernel"),
-        "mcgsolver kernel name")("builder", value<int>()->default_value(0),
-        "matrix builder type 0->direct 1->profile 2->stream")(
-        "output-level", value<int>()->default_value(0), "output level");
+    desc.add_options()("help", "produce help")
+                      ("file",         value<std::string>()->default_value("SystemFile.txt"),"system imput file")
+                      ("nrows",        value<int>()->default_value(0),              "nrow")
+                      ("nx",           value<int>()->default_value(10),             "nx")
+                      ("ny",           value<int>()->default_value(10),             "ny")
+                      ("nbth",         value<int>()->default_value(1),              "number of threads")
+                      ("solver-package", value<std::string>()->default_value("petsc"),"solver package name")
+                      ("solver",       value<std::string>()->default_value("bicgs"),"solver algo name")
+                      ("precond",      value<std::string>()->default_value("none"), "preconditioner id diag ilu ddml poly")
+                      ("max-iter",     value<int>()->default_value(1000),           "max iterations")
+                      ("tol",          value<double>()->default_value(1.e-10),      "solver tolerance")
+                      ("niter",        value<int>()->default_value(1),              "nb of tests for perf measure")
+                      ("sym",          value<int>()->default_value(1),              "0->nsym, 1->sym")
+                      ("kernel",       value<std::string>()->default_value("mcgkernel"),"mcgsolver kernel name")
+                      ("builder",      value<int>()->default_value(0),              "matrix builder type 0->direct 1->profile 2->stream")
+                      ("output-level", value<int>()->default_value(0),              "output level");
     variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);

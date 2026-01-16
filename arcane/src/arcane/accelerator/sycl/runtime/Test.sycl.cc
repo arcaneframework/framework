@@ -1,22 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Test.sycl.cc                                                (C) 2000-2024 */
+/* Test.sycl.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Fichier contenant les tests pour l'implémentation SYCL.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include "arccore/accelerator_native/SyclAccelerator.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/Scan.h"
 
 #include "arcane/utils/NumArray.h"
 
@@ -26,7 +27,6 @@ using namespace Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 // Test Appel pure SYCL
 extern "C" int arcaneTestSycl1()
 {
@@ -226,6 +226,9 @@ extern "C" int arcaneTestSycl4()
   return 0;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C" void arcaneTestSycl5()
 {
   Runner runner(eExecutionPolicy::SYCL);
@@ -248,4 +251,111 @@ extern "C" void arcaneTestSycl5()
       inout_data[i] *= 4;
     };
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C" void arcaneTestSycl6()
+{
+  Runner runner(eExecutionPolicy::SYCL);
+  RunQueue queue{ makeQueue(runner) };
+  //constexpr int N = 63;
+  //constexpr int N = 139;
+  //constexpr int N = 256;
+  constexpr int N = 4789;
+  // A TESTER
+  //constexpr int N = 16900;
+  //constexpr int N = 1000000;
+  NumArray<Int64, MDDim1> data(N);
+  NumArray<Int64, MDDim1> out_data(N);
+  NumArray<Int64, MDDim1> expected_inclusive_data(N);
+  NumArray<Int64, MDDim1> expected_exclusive_data(N);
+
+  Int64 total = 0;
+  Int64 total_exclusive = 7;
+  for (int i = 0; i < N; i++) {
+    expected_exclusive_data[i] = total_exclusive;
+    data[i] = (i + 2);
+    total += data[i];
+    total_exclusive += data[i];
+    expected_inclusive_data[i] = total;
+  }
+
+  Arcane::Accelerator::Impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
+  scanner.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
+
+  const bool do_verbose = (N < 256);
+  for (int i = 0; i < N; i++) {
+    bool is_bad = out_data[i] != expected_inclusive_data[i];
+    if (do_verbose || is_bad)
+      std::cout << "OUT_INCL=" << i << " v=" << out_data[i] << " expected=" << expected_inclusive_data[i] << "\n";
+    if (is_bad)
+      ARCANE_FATAL("Bad value");
+  }
+  std::cout << "FINAL OUT_INCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_inclusive_data[N - 1] << "\n";
+
+  Arcane::Accelerator::Impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
+  scanner2.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
+
+  for (int i = 0; i < N; i++) {
+    bool is_bad = out_data[i] != expected_exclusive_data[i];
+    if (do_verbose || is_bad)
+      std::cout << "OUT_EXCL=" << i << " v=" << out_data[i] << " expected=" << expected_exclusive_data[i] << "\n";
+    if (is_bad)
+      ARCANE_FATAL("Bad value");
+  }
+  std::cout << "FINAL OUT_EXCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_exclusive_data[N - 1] << "\n";
+}
+
+extern "C" void arcaneTestSycl7()
+{
+  Runner runner(eExecutionPolicy::SYCL);
+  RunQueue queue{ makeQueue(runner) };
+  constexpr int N = 63;
+  //constexpr int N = 139;
+  //constexpr int N = 256;
+  //constexpr int N = 4789;
+  // A TESTER
+  //constexpr int N = 16900;
+  //constexpr int N = 1000000;
+  NumArray<Int64, MDDim1> data(N);
+  NumArray<Int64, MDDim1> out_data(N);
+  NumArray<Int64, MDDim1> expected_inclusive_data(N);
+  NumArray<Int64, MDDim1> expected_exclusive_data(N);
+
+  Int64 total = 0;
+  Int64 total_exclusive = 7;
+  for (int i = 0; i < N; i++) {
+    expected_exclusive_data[i] = total_exclusive;
+    data[i] = (i + 2);
+    total += data[i];
+    total_exclusive += data[i];
+    expected_inclusive_data[i] = total;
+  }
+
+  Arcane::Accelerator::Impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
+  scanner.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
+
+  const bool do_verbose = (N < 256);
+  for (int i = 0; i < N; i++) {
+    bool is_bad = out_data[i] != expected_inclusive_data[i];
+    if (do_verbose || is_bad)
+      std::cout << "OUT_INCL=" << i << " v=" << out_data[i] << " expected=" << expected_inclusive_data[i] << "\n";
+    if (is_bad)
+      ARCANE_FATAL("Bad value");
+  }
+  std::cout << "FINAL OUT_INCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_inclusive_data[N - 1] << "\n";
+
+  Arcane::Accelerator::Impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
+  scanner2.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
+
+  for (int i = 0; i < N; i++) {
+    bool is_bad = out_data[i] != expected_exclusive_data[i];
+    if (do_verbose || is_bad)
+      std::cout << "OUT_EXCL=" << i << " v=" << out_data[i] << " expected=" << expected_exclusive_data[i] << "\n";
+    if (is_bad)
+      ARCANE_FATAL("Bad value");
+  }
+  std::cout << "FINAL OUT_EXCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_exclusive_data[N - 1] << "\n";
 }

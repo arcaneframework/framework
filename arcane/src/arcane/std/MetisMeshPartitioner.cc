@@ -19,22 +19,24 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FloatingPointExceptionSentry.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Service.h"
-#include "arcane/Timer.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 #include "arcane/std/MeshPartitionerBase.h"
 #include "arcane/std/MetisMeshPartitioner_axl.h"
+
+#include "arcane_internal_config.h"
 
 // Au cas où on utilise mpich2 ou openmpi pour éviter d'inclure le C++
 #define MPICH_SKIP_MPICXX

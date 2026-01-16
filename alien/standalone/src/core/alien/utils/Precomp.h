@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -50,7 +50,6 @@
 #include <arccore/message_passing/Request.h>
 #include <arccore/message_passing/ISerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
-#include <arccore/serialize/BasicSerializer.h>
 #include <arccore/serialize/ISerializer.h>
 
 #include <arccore/trace/ITraceMng.h>

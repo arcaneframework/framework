@@ -18,7 +18,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 #include "arccore/message_passing/Request.h"
-#include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/internal/SerializeMessageList.h"
 #include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
 
 #include "arccore/serialize/BasicSerializer.h"

@@ -46,18 +46,6 @@ template<typename T> class MultiArray2;
 template<typename DataType> class UniqueMultiArray2;
 template<typename DataType> class SharedMultiArray2;
 
-template<typename T> class EnumeratorT;
-template<typename T> class ListEnumeratorT;
-
-template<typename T> class Collection;
-template<typename T> class List;
-
-class EventObservableBase;
-class EventObserverBase;
-template<typename... Args> class EventObservable;
-template<typename... Args> class EventObserver;
-template <typename... Args> class EventObservableView;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -82,10 +70,6 @@ using RealN3x3 = NumMatrix<Real,3>;
 /*---------------------------------------------------------------------------*/
 
 class HPReal;
-class JSONWriter;
-class JSONValue;
-class JSONDocument;
-class JSONValueList;
 class CommandLineArguments;
 class ApplicationInfo;
 class VersionInfo;
@@ -124,7 +108,7 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 
 // Pour compatibilité avec l'existant (à supprimer après la version 3.8)
-using LoopRange = ForLoopRange;
+template<typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
 template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
 template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
 

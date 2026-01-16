@@ -20,6 +20,7 @@
 // mais cela permet de vérifier qu'ils compilent
 #include "arccore/common/HostKernelRemainingArgsHelper.h"
 #include "arccore/common/SequentialFor.h"
+#include "arccore/common/DataView.h"
 
 #include <iostream>
 

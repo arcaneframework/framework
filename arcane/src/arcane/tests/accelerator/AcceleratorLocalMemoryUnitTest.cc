@@ -61,6 +61,7 @@ class AcceleratorLocalMemoryUnitTest
 
   void _executeTest1();
   void _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element);
+  void _doTestEmpty();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,6 +107,8 @@ executeTest()
 void AcceleratorLocalMemoryUnitTest::
 _executeTest1()
 {
+  _doTestEmpty();
+
   // Tests avec un nombre de bloc et une taille d'un bloc.
   _doTest(32, 149);
   _doTest(32 * 4, 137);
@@ -116,6 +119,20 @@ _executeTest1()
   // Tests avec un nombre d'éléments qui n'est pas un multiple de la taille d'un bloc.
   _doTest(0, 1023);
   _doTest(0, 1023 * 1023);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorLocalMemoryUnitTest::
+_doTestEmpty()
+{
+  auto command = makeCommand(m_queue);
+  ax::WorkGroupLoopRange loop_range;
+  command << RUNCOMMAND_LAUNCH(work_group_context, loop_range)
+  {
+    ARCANE_UNUSED(work_group_context);
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -151,7 +168,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
          << " group_size=" << group_size
          << " total_nb_element=" << loop_range.nbElement();
 
-  ax::LocalMemory<Int64, 33> local_data_int64(command, 33);
+  ax::LocalMemory<Int64, 33> local_data_int64(command);
   ax::LocalMemory<Int32> local_data_int32(command, 50);
   const Int32 out_array_size = nb_group;
 
@@ -189,7 +206,14 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
       auto work_item = work_group.activeItem(g);
       Int32 i = work_item.linearIndex();
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
-      ax::doAtomicAdd(&local_span_int32[i % local_span_int64.size()], 10);
+      ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
+#if !defined(ARCCORE_DEVICE_CODE)
+      if constexpr (!work_group.isDevice()) {
+        Int32 expected_linear_index = work_group.activeItem(0).linearIndex() + g;
+        if (i != work_group.activeItem(0).linearIndex() + g)
+          ARCANE_FATAL("Bad value for linear index i={0} expected={1}", i, expected_linear_index);
+      }
+#endif
     }
 
     // Pour tester le 'constexpr' uniquement sur le device

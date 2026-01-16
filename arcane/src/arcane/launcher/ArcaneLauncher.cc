@@ -17,10 +17,7 @@
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/GeneralHelp.h"
 
-#include "arcane/utils/Property.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/JSONPropertyReader.h"
-#include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Exception.h"
@@ -29,6 +26,12 @@
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
 #include "arcane/utils/internal/ApplicationInfoProperties.h"
+#include "arcane/core/internal/DotNetRuntimeInitialisationInfoProperties.h"
+#include "arcane/accelerator/core/internal/AcceleratorRuntimeInitialisationInfoProperties.h"
+
+#include "arccore/common/internal/Property.h"
+#include "arccore/common/internal/ParameterListPropertyReader.h"
+#include "arccore/common/internal/JSONPropertyReader.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"
@@ -336,9 +339,9 @@ init(const CommandLineArguments& args)
       _checkReadConfigFile(runtime_config_file_name);
     properties::readFromParameterList<ApplicationInfo,ApplicationInfoProperties>(args.parameters(),application_info);
     auto& dotnet_info = ArcaneLauncher::dotNetRuntimeInitialisationInfo();
-    properties::readFromParameterList(args.parameters(),dotnet_info);
+    properties::readFromParameterList< DotNetRuntimeInitialisationInfo, DotNetRuntimeInitialisationInfoProperties>(args.parameters(),dotnet_info);
     auto& accelerator_info = ArcaneLauncher::acceleratorRuntimeInitialisationInfo();
-    properties::readFromParameterList(args.parameters(),accelerator_info);
+    properties::readFromParameterList<AcceleratorRuntimeInitialisationInfo, Accelerator::AcceleratorRuntimeInitialisationInfoProperties>(args.parameters(), accelerator_info);
     ParallelLoopOptions loop_options;
     properties::readFromParameterList<ParallelLoopOptions,ParallelLoopOptionsProperties>(args.parameters(),loop_options);
     TaskFactory::setDefaultParallelLoopOptions(loop_options);

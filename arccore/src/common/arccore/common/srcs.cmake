@@ -4,25 +4,120 @@ set(SOURCES
   AlignedMemoryAllocator.h
   ArrayDebugInfo.h
   Array.h
+  Array.cc
   ArrayMetaData.h
   ArrayTraits.h
-  Array.cc
+  ArraySimdPadder.h
+  Collection.h
+  Collection.cc
+  CommandLineArguments.h
+  CommandLineArguments.cc
   CommonGlobal.h
   CommonGlobal.cc
+  DataView.h
   DefaultMemoryAllocator.h
+  Event.h
+  Event.cc
+  ExceptionUtils.h
+  ExceptionUtils.cc
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
+  IMemoryPool.h
   IMemoryResourceMng.h
+  JSONReader.cc
+  JSONReader.h
+  JSONWriter.cc
+  JSONWriter.h
+  List.h
   MemoryAllocator.cc
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
+  MemoryPool.cc
+  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
+  NumArray.h
+  NumArray.cc
+  NumArrayContainer.h
+  ParameterList.h
+  ParameterList.cc
+  Process.cc
+  Property.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
+  SpecificMemoryCopy.cc
+  StridedLoopRanges.h
+  StringDictionary.h
+  StringDictionary.cc
+
+  internal/FieldProperty.h
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/JSONPropertyReader.h
+  internal/MemoryPool.h
+  internal/MemoryResourceMng.h
+  internal/MemoryUtilsInternal.h
+  internal/ParameterListPropertyReader.h
+  internal/Process.h
+  internal/Property.h
+  internal/PropertyDeclarations.h
   internal/SpecificMemoryCopyList.h
+  internal/HostSpecificMemoryCopy.h
+
+  accelerator/CommonAcceleratorGlobal.h
+  accelerator/AcceleratorRuntimeInitialisationInfo.h
+  accelerator/AcceleratorRuntimeInitialisationInfo.cc
+  accelerator/AcceleratorCore.cc
+  accelerator/AcceleratorMemoryAllocatorBase.cc
+  accelerator/AcceleratorMng.cc
+  accelerator/IAcceleratorMng.h
+  accelerator/DeviceId.h
+  accelerator/DeviceInfo.h
+  accelerator/DeviceInfoList.h
+  accelerator/DeviceMemoryInfo.h
+  accelerator/IReduceMemoryImpl.h
+  accelerator/IDeviceInfoList.h
+  accelerator/KernelLaunchArgs.h
+  accelerator/NativeStream.h
+  accelerator/Memory.h
+  accelerator/Memory.cc
+  accelerator/MemoryTracer.cc
+  accelerator/PointerAttribute.h
+  accelerator/ProfileRegion.h
+  accelerator/ProfileRegion.cc
+  accelerator/ReduceMemoryImpl.cc
+  accelerator/Runner.h
+  accelerator/Runner.cc
+  accelerator/RunCommand.h
+  accelerator/RunCommand.cc
+  accelerator/RunCommandImpl.cc
+  accelerator/RunCommandLaunchInfo.cc
+  accelerator/RunCommandLaunchInfo.h
+  accelerator/RunQueue.h
+  accelerator/RunQueue.cc
+  accelerator/RunQueueBuildInfo.h
+  accelerator/RunQueueEvent.h
+  accelerator/RunQueueEvent.cc
+  accelerator/RunQueueImpl.cc
+  accelerator/RunQueuePool.h
+  accelerator/RunQueuePool.cc
+  accelerator/RunQueueRuntime.cc
+  accelerator/RuntimeLoader.cc
+  accelerator/ViewBuildInfo.h
+
+  accelerator/internal/AcceleratorMemoryAllocatorBase.h
+  accelerator/internal/IRunnerRuntime.h
+  accelerator/internal/AcceleratorCoreGlobalInternal.h
+  accelerator/internal/IRunQueueStream.h
+  accelerator/internal/IRunQueueEventImpl.h
+  accelerator/internal/MemoryTracer.h
+  accelerator/internal/RunCommandImpl.h
+  accelerator/internal/RunQueueImpl.h
+  accelerator/internal/RuntimeLoader.h
+  accelerator/internal/ReduceMemoryImpl.h
+  accelerator/internal/RegisterRuntimeInfo.h
+  accelerator/internal/RunnerImpl.h
+  accelerator/internal/RunnerInternal.h
 )

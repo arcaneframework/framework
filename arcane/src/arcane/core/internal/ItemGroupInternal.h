@@ -33,6 +33,90 @@ class ItemGroupImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Gestion des sous-parties d'un groupe suivant le type de ses éléments.
+ *
+ * Cette classe permet de récupérer la sous-partie d'un groupe correspondante
+ * à un type basique (entité dont ItemTypeId est inférieur à NB_BASIC_ITEM_TYPE.
+ *
+ * Il existe deux implémentations de cette fonctionnalité.
+ *
+ * La première version, qui est obsolète et plus utilisé par défaut,
+ * utilise un ItemGroup par type d'entité. La seconde utilise juste un tableau
+ * de ItemLocalId pour chaque partie. De plus, si tous les éléments du groupe
+ * sont de même type (par exemple un IT_Quad4 si on utilise un maillage
+ * cartésien 2D), alors on utilise directement la liste des localId() de
+ * l'instance.
+ */
+class ItemGroupSubPartsByType
+{
+ public:
+
+  explicit ItemGroupSubPartsByType(ItemGroupInternal* igi);
+
+ public:
+
+  void setImpl(ItemGroupImpl* group_impl) { m_group_impl = group_impl; }
+  void clear()
+  {
+    m_children_by_type.clear();
+    m_children_by_type_ids.clear();
+  }
+  void applyOperation(IItemOperationByBasicType* operation);
+  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
+
+  void _computeChildrenByTypeV1();
+
+ private:
+
+  void _initChildrenByTypeV2();
+  void _computeChildrenByTypeV2();
+  void _initChildrenByTypeV1();
+
+ private:
+
+  //! Vrai si on utilise la version 2 de la gestion pour applyOperation().
+  bool m_use_v2_for_apply_operation = true;
+
+  /*!
+   * \brief Liste des localId() par type d'entité.
+   *
+   * Ce champ est utilisé avec la version 2.
+   */
+  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
+
+  /*!
+   * \brief Liste des fils de ce groupe par type d'entité.
+   *
+   * Ce champ est utilisé avec la version 1 qui demande
+   * de créer un groupe par sous-type.
+   */
+  UniqueArray<ItemGroupImpl*> m_children_by_type;
+
+  /*!
+   * \brief Indique le type des entités du groupe.
+   *
+   * Si différent de IT_NullType, cela signifie que toutes
+   * les entités du groupe sont du même type et donc il n'est
+   * pas nécessaire de calculer le localId() des entités par type.
+   * On utilise dans ce cas directement le groupe en paramètre
+   * des applyOperation().
+   */
+  ItemTypeId m_unique_children_type{ IT_NullType };
+
+  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
+  Int64 m_children_by_type_ids_computed_timestamp = -1;
+
+  bool m_is_debug_apply_operation = false;
+
+  ItemGroupInternal* m_group_internal = nullptr;
+
+  //! A supprimer quand la version V1 sera supprimée
+  ItemGroupImpl* m_group_impl = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \internal
  * \brief Implémentation de la classe ItemGroupImpl.
  *
@@ -148,7 +232,7 @@ class ItemGroupInternal
 
   void setNeedRecompute()
   {
-    // NOTE: normalement il ne faudrait mettre cette valeur à 'true' que pour
+    // NOTE: normalement, il ne faudrait mettre cette valeur à 'true' que pour
     // les groupes recalculés (qui ont un parent ou pour lequel 'm_compute_functor' n'est
     // pas nul). Cependant, cette méthode est aussi appelé sur le groupe de toutes les entités
     // et peut-être d'autres groupes.
@@ -216,7 +300,6 @@ class ItemGroupInternal
   std::map<Integer, ItemGroupImpl*> m_level_cell_group; //!< Groupe des mailles de niveau
   std::map<Integer, ItemGroupImpl*> m_own_level_cell_group; //!< Groupe des mailles propres de niveau
 
-  UniqueArray<ItemGroupImpl*> m_children_by_type; //!< Liste des fils de ce groupe par type d'entité
   //@}
   std::map<String, AutoRefT<ItemGroupImpl>> m_sub_groups; //!< Ensemble de tous les sous-groupes
   bool m_need_recompute = false; //!< Vrai si le groupe doit être recalculé
@@ -230,7 +313,7 @@ class ItemGroupInternal
   Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
   // Anciennement dans DynamicMeshKindInfo
-  Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
+  UniqueArray<Int32> m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
 
   std::map<const void*, IItemGroupObserver*> m_observers; //!< Observers du groupe
   bool m_observer_need_info = false; //!< Synthése de besoin de observers en informations de transition
@@ -243,10 +326,6 @@ class ItemGroupInternal
 
  public:
 
-  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
-
- private:
-
   UniqueArray<Int32> m_local_buffer{ MemoryUtils::getAllocatorForMostlyReadOnlyData() };
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
@@ -256,39 +335,15 @@ class ItemGroupInternal
   bool m_is_print_apply_simd_padding = false;
   bool m_is_print_stack_apply_simd_padding = false;
 
- private:
-
-  // TODO: Mettre cela dans une classe spécifique ce qui permettra
-  // de l'utiliser par exemple pour ItemVector
-
-  //! Gestion pour applyOperation() Version 2
-  //@{
-  bool m_use_v2_for_apply_operation = true;
-
  public:
-
-  //! Liste des localId() par type d'entité.
-  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
-
-  /*!
-   * \brief Indique le type des entités du groupe.
-   *
-   * Si différent de IT_NullType, cela signifie que toutes
-   * les entités du groupe sont du même type et donc on il n'est
-   * pas nécessaire de calculer le localId() des entités par type.
-   * On utilise dans ce cas directement le groupe en paramètre
-   * des applyOperation().
-   */
-  ItemTypeId m_unique_children_type{ IT_NullType };
-
-  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
-  Int64 m_children_by_type_ids_computed_timestamp = -1;
-
-  bool m_is_debug_apply_operation = false;
-  //@}
 
   //! Mutex pour protéger la mise à jour.
   CheckNeedUpdateMutex m_check_need_update_mutex;
+
+ public:
+
+  //! Sous-partie d'un groupe en fonction de son type
+  ItemGroupSubPartsByType m_sub_parts_by_type;
 
  private:
 

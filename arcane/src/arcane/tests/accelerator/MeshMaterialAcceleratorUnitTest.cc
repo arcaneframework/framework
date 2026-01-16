@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2025 */
+/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2026 */
 /*                                                                           */
 /* Service de test unitaire du support accélérateurs des matériaux/milieux.  */
 /*---------------------------------------------------------------------------*/
@@ -441,6 +441,8 @@ _executeTest1(Integer nb_z, EnvCellVectorView env1)
       {
         out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
       };
+      out_a = {};
+      in_b = {};
     }
   }
 

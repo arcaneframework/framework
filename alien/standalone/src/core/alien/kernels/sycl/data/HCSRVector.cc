@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,6 +40,33 @@ HCSRVector<ValueT>::dataPtr() const
   queue.wait() ;
   return values ;
 }
+
+
+template <typename ValueT>
+void
+HCSRVector<ValueT>::copyValuesTo(ValueType* values) const
+{
+  if(m_internal.get()==nullptr)
+    return ;
+
+  auto env = SYCLEnv::instance() ;
+  auto& queue = env->internal()->queue() ;
+  auto max_num_treads = env->maxNumThreads() ;
+
+  queue.submit( [&](sycl::handler& cgh)
+                {
+                  auto access_x = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh);
+                  std::size_t y_length = m_local_size ;
+                  cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                    {
+                                                        auto id = itemId.get_id(0);
+                                                        for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                          values[i] = access_x[i];
+                                                    });
+                });
+  queue.wait() ;
+}
+
 template <typename ValueT>
 void HCSRVector<ValueT>::initDevicePointers(int** rows, ValueType** values) const
 {
@@ -80,7 +107,6 @@ void HCSRVector<ValueT>::freeDevicePointers(int* rows, ValueType* values) const
   sycl::free(values,queue) ;
   sycl::free(rows,queue) ;
 }
-
 
 template class HCSRVector<Real>;
 

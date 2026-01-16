@@ -275,11 +275,13 @@ isDenormalized(Real v);
 extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
 getStackTraceService();
 
-/*! \brief Positionne le service utilisé pour obtenir la pile d'appel.
-  
-  Retourne l'ancien service utilisé.
-*/
-extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
+/*!
+ * \brief Positionne le service utilisé pour obtenir la pile d'appel.
+ *
+ * Retourne l'ancien service utilisé.
+ */
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCCORE_BASE_EXPORT IStackTraceService*
 setStackTraceService(IStackTraceService* service);
 
 /*!
@@ -364,6 +366,31 @@ getCompilerId();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille des pages du système hôte en octets
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+getPageSize();
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
+ *
+ * Retourne le chemin complet de la bibliothèque dynamique de nom
+ * \a dll_name. \a dll_name doit contenir juste le nom de la bibliothèque
+ * sans les extensions spécifiques à la plateforme. Par exemple, sous Linux,
+ * il ne faut pas mettre 'libtoto.so' mais juste 'toto'.
+ *
+ * Retourne une chaîne nulle si le chemin complet ne peut
+ * par être déterminé.
+ */
+extern "C++" ARCCORE_BASE_EXPORT String
+getLoadedSharedLibraryFullPath(const String& dll_name);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 }
 
@@ -408,6 +435,7 @@ using Arcane::Platform::timeToHourMinuteSecond;
 using Arcane::Platform::isDenormalized;
 using Arcane::Platform::safeStringCopy;
 using Arcane::Platform::sleep;
+using Arcane::Platform::getPageSize;
 
 using Arcane::Platform::enableFloatingException;
 using Arcane::Platform::isFloatingExceptionEnabled;
@@ -421,6 +449,8 @@ using Arcane::Platform::dumpStackTrace;
 
 using Arcane::Platform::getConsoleHasColor;
 using Arcane::Platform::getCompilerId;
+
+using Arcane::Platform::getLoadedSharedLibraryFullPath;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

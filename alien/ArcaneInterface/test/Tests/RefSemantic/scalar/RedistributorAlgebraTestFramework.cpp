@@ -12,6 +12,7 @@
 #include <alien/kernels/redistributor/Redistributor.h>
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
 #include <alien/kernels/hypre/algebra/HypreLinearAlgebra.h>
@@ -184,6 +185,7 @@ main(int argc, char** argv)
     tm->info() << "SimpleCSRLinearAlgebra2 OK";
 #ifdef ALIEN_USE_PETSC
     tm->info() << "Testing PETScLinearAlgebra";
+    Alien::PETScInternalLinearSolver::initializeLibrary() ;
     Alien::PETScLinearAlgebra petscAlg(Aa.distribution().parallelMng());
     testAlgebra(algebraName::petsc, petscAlg, Aa, bb, xx);
     tm->info() << "PETScLinearAlgebra OK";

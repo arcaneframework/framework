@@ -150,6 +150,47 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #define ARCCORE_DEVICE
 #endif
 
+#if defined(ARCCORE_HAS_CUDA) && defined(__CUDACC__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de CUDA et qu'on utilise le compilateur CUDA.
+ */
+#define ARCCORE_COMPILING_CUDA
+//! \deprecated
+#define ARCANE_COMPILING_CUDA
+#endif
+#if defined(ARCCORE_HAS_HIP) && defined(__HIP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de HIP et qu'on utilise le compilateur HIP.
+ */
+#define ARCCORE_COMPILING_HIP
+//! \deprecated
+#define ARCANE_COMPILING_HIP
+#endif
+
+#if defined(ARCCORE_HAS_SYCL)
+#  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de SYCL et qu'on utilise le compilateur SYCL.
+ */
+#    define ARCCORE_COMPILING_SYCL
+//! \deprecated
+#    define ARCANE_COMPILING_SYCL
+#  endif
+#endif
+
+#if defined(ARCCORE_COMPILING_CUDA) || defined(ARCCORE_COMPILING_HIP)
+/*!
+ * \brief Macro pour indiquer qu'on compile avec le support
+ * de CUDA ou de HIP.
+ */
+#define ARCCORE_COMPILING_CUDA_OR_HIP
+//! \deprecated
+#define ARCANE_COMPILING_CUDA_OR_HIP
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -355,6 +396,17 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Macros pour l'attribut [[no_unique_address]]
+// Avec VS2022, cet attribut n'est pas pris en compte et il faut
+// utiliser [[msvc::no_unique_address]]
+#ifdef _MSC_VER
+#define ARCCORE_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define ARCCORE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Support pour l'alignement.
 // le C++11 utilise le mot clé alignas pour spécifier l'alignement.
@@ -450,22 +502,46 @@ arccoreSetPauseOnError(bool v);
  * \brief Macro pour envoyer une exception avec formattage.
  *
  * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés formatter un message d'erreur via la
+ * la macro sont utilisés pour formatter un message d'erreur via la
  * méthode String::format().
  */
-#define ARCCORE_THROW(exception_class,...)                           \
+#define ARCCORE_THROW(exception_class,...) \
   throw exception_class (A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
+
+/*!
+ * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ *
+ * \a exception_class est le type de l'exception. Les arguments suivants de
+ * la macro sont utilisés pour formatter un message d'erreur via la
+ * méthode String::format().
+ *
+ * \sa ARCCORE_THROW
+ */
+#define ARCCORE_THROW_IF(cond, exception_class, ...) \
+  if (cond) [[unlikely]] \
+    ARCCORE_THROW(exception_class,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Macro envoyant une exception FatalErrorException.
  *
- * Les arguments de la macro sont utilisés formatter un message
+ * Les arguments de la macro sont utilisés pour formatter un message
  * d'erreur via la méthode String::format().
  */
 #define ARCCORE_FATAL(...)\
-  throw Arccore::FatalErrorException(A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
+  ARCCORE_THROW(::Arccore::FatalErrorException,__VA_ARGS__)
+
+/*!
+ * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ *
+ * Les arguments de la macro sont utilisés pour formatter un message
+ * d'erreur via la méthode String::format().
+ *
+ * \sa ARCCORE_FATAL
+ */
+#define ARCCORE_FATAL_IF(cond, ...) \
+  ARCCORE_THROW_IF(cond, ::Arccore::FatalErrorException,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -695,6 +771,17 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
  */
 #define ARCCORE_CHECK_POINTER2(ptr,text)\
   arccoreThrowIfNull(ptr,#ptr,text)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Les macros suivantes permettent de de créer un identifiant en suffixant
+// le numéro de ligne du fichier. Cela permet d'avoir un identifiant unique
+// pour un fichier et est utilisé par exemple pour générer des noms
+// de variable globale pour l'enregistrement des services.
+// La macro a utiliser est ARCANE_JOIN_WITH_LINE(name).
+#define ARCCORE_JOIN_HELPER2(a,b) a ## b
+#define ARCCORE_JOIN_HELPER(a,b) ARCCORE_JOIN_HELPER2(a,b)
+#define ARCCORE_JOIN_WITH_LINE(a) ARCCORE_JOIN_HELPER(a,__LINE__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

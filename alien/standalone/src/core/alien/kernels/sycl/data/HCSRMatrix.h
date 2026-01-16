@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,7 +13,9 @@
 
 #include <alien/data/ISpace.h>
 
+
 #include <alien/kernels/sycl/SYCLPrecomp.h>
+#include <alien/handlers/accelerator/HCSRViewT.h>
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 #include <alien/kernels/sycl/data/SYCLDistStructInfo.h>
@@ -54,6 +56,10 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
 
   typedef typename ProfileType::IndexType                   IndexType ;
   // clang-format on
+
+  typedef HCSRViewT<HCSRMatrix<ValueType>>                  HCSRView ;
+
+
 
  public:
   /** Constructeur de la classe */
@@ -159,9 +165,35 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   MatrixInternal* internal() { return m_internal.get(); }
 
   MatrixInternal const* internal() const { return m_internal.get(); }
-  
-  void initDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
-  void freeDevicePointers(int* ncols, int* rows, int* cols, ValueType* values) const ;
+
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) const ;
+
+  void initDevicePointers(IndexType** ncols,
+                          IndexType** rows,
+                          IndexType** cols,
+                          ValueType** values) const ;
+
+  void freeDevicePointers(IndexType* ncols,
+                          IndexType* rows,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  void copyDevicePointers(std::size_t nrows,
+                          std::size_t nnz,
+                          IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
+
+  void initCOODevicePointers(int** dof_uids, int** rows, int** cols, ValueType** values) const ;
+  void freeCOODevicePointers(int* dof_uids, int* rows, int* cols, ValueType* values) const ;
 
  private:
   class IsLocal
@@ -182,7 +214,7 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   };
 
 
-  void sortGhostCols(ConstArrayView<Integer> offset)
+  void sortGhostCols([[maybe_unused]] ConstArrayView<Integer> offset)
   {
     //TODO
     /*

@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/trace/TimeMetric.h"
-#include "arccore/trace/ITimeMetricCollector.h"
+#include "arccore/trace/internal/TimeMetric.h"
+#include "arccore/trace/internal/ITimeMetricCollector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

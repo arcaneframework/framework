@@ -1,19 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include "PETScInternalLinearAlgebra.h"
 
+#include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 
+#include "PETScInternalLinearAlgebra.h"
 #include <alien/core/backend/LinearAlgebraT.h>
 #include <alien/data/Space.h>
 #include <alien/kernels/petsc/data_structure/PETScInit.h>
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
 #include <alien/kernels/petsc/data_structure/PETScMatrix.h>
 #include <alien/kernels/petsc/data_structure/PETScVector.h>
+
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
@@ -34,9 +37,9 @@ PETScInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* p
 PETScInternalLinearAlgebra::PETScInternalLinearAlgebra(
     Arccore::MessagePassing::IMessagePassingMng* pm)
 {
-  PETScInternal::initPETSc();
-  // Devrait faire le PETScInitialize qui est actuellement dans le solveur
-  // Attention, cette initialisation serait globale et non restreinte à cet objet
+  if(not PETScInternalLinearSolver::m_library_plugin_is_initialized)
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Library should be initialized first");
+
   if (pm != nullptr)
   {
     auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(pm);

@@ -12,7 +12,7 @@
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/NumericTypes.h"
-#include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arccore/common/internal/MemoryUtilsInternal.h"
 
 #include <random>
 

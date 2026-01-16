@@ -86,14 +86,23 @@ if(ALIEN_USE_SYCL)
                           SOURCES test_combine_mvhandler_sycl.cpp)
     ENDIF()
     IF(ALIEN_USE_ACPPSYCL)
+      IF(CMAKE_COMPILER_IS_GNUCXX)
+        target_compile_options(test_sycl.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+      ENDIF()
       target_compile_definitions(test_sycl.exe PRIVATE USE_ACPPSYCL)
       add_sycl_to_target(TARGET  test_sycl.exe
                          SOURCES test_sycl.cpp)
-                         
+
+      IF(CMAKE_COMPILER_IS_GNUCXX)
+        target_compile_options(test_mvhandler_sycl.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+      ENDIF()
       target_compile_definitions(test_mvhandler_sycl.exe PRIVATE USE_ACPPSYCL)
       add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
                          SOURCES test_mvhandler_sycl.cpp)
 
+      IF(CMAKE_COMPILER_IS_GNUCXX)
+        target_compile_options(test_combine_mvhandler_sycl.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+      ENDIF()
       target_compile_definitions(test_combine_mvhandler_sycl.exe PRIVATE USE_ACPPSYCL)
       add_sycl_to_target(TARGET  test_combine_mvhandler_sycl.exe
                          SOURCES test_combine_mvhandler_sycl.cpp)
@@ -154,6 +163,9 @@ if(ALIEN_USE_SYCL)
                         SOURCES test_krylov.cpp)
   ENDIF()
   IF(ALIEN_USE_ACPPSYCL)
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+      target_compile_options(krylov_example.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+    ENDIF()
     target_compile_definitions(krylov_example.exe PRIVATE USE_ACPPSYCL)
     add_sycl_to_target(TARGET  krylov_example.exe
                         SOURCES test_krylov.cpp)

@@ -27,6 +27,11 @@
 #include <mutex>
 #include <new>
 
+// NOTE:
+// Cette implémentation n'est plus l'implémentation par défaut depuis fin 2025.
+// L'implémentation par défaut est maintenant celle utilise la STL.
+// Si tout est OK on pourra supprimer cette implémentation fin 2026 par exemple.
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

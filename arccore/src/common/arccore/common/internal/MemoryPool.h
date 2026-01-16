@@ -1,0 +1,110 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* MemoryPool.h                                                (C) 2000-2025 */
+/*                                                                           */
+/* Classe pour gérer une liste de zone allouées.                             */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
+#define ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arccore/common/IMemoryPool.h"
+
+#include <memory>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interface d'un allocateur pour un MemoryPool.
+ *
+ * Cette interface fonctionne à la manière d'un malloc/free à ceci prêt qu'il
+ * faut fournir la taille allouée pour un bloc pour la libération de ce dernier.
+ * L'utilisateur de cette interface doit donc gérer la conservation de cette
+ * information.
+ */
+class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
+{
+ public:
+
+  virtual ~IMemoryPoolAllocator() = default;
+
+ public:
+
+  //! Alloue un bloc pour \a size octets
+  virtual void* allocateMemory(size_t size) = 0;
+  //! Libère le bloc situé à l'adresse \a address contenant \a size octets
+  virtual void freeMemory(void* address, size_t size) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe pour gérer une liste de zones allouées.
+ *
+ * Cette classe utilise une sémantique par référence.
+ *
+ * L'allocateur passé en argument du constructeur doit rester valide
+ * durant toute la vie de l'instance.
+ */
+class ARCCORE_COMMON_EXPORT MemoryPool
+: public IMemoryPool
+, public IMemoryPoolAllocator
+{
+  class Impl;
+
+ public:
+
+  explicit MemoryPool(IMemoryPoolAllocator* allocator, const String& name);
+  ~MemoryPool() override;
+
+ public:
+
+  MemoryPool(const MemoryPool&) = delete;
+  MemoryPool(MemoryPool&&) = delete;
+  MemoryPool& operator=(const MemoryPool&) = delete;
+  MemoryPool& operator=(MemoryPool&&) = delete;
+
+ public:
+
+  void* allocateMemory(size_t size) override;
+  void freeMemory(void* ptr, size_t size) override;
+  void dumpStats(std::ostream& ostr);
+  void dumpFreeMap(std::ostream& ostr);
+  String name() const;
+
+  //! Implémentation de IMemoryPool
+  //@{
+  void setMaxCachedBlockSize(Int32 v) override;
+  void freeCachedMemory() override;
+  size_t totalAllocated() const override;
+  size_t totalCached() const override;
+  //@}
+
+ private:
+
+  std::unique_ptr<Impl> m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

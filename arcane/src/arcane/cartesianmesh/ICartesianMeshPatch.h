@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
@@ -25,6 +26,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ICartesianMeshPatchInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
  * \brief Interface d'un patch AMR d'un maillage cartésien.
@@ -37,11 +44,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
 
   //! Groupe de mailles du patch
   virtual CellGroup cells() =0;
+  virtual CellGroup inPatchCells() = 0;
 
   //! TODO
   virtual Integer index() = 0;
-  virtual Integer level() = 0;
-  virtual void setLevel(Integer level) = 0;
 
   //! Liste des mailles dans la direction \a dir
   virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
@@ -63,6 +69,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
 
   //! Effectue des vérifications sur la validité de l'instance.
   virtual void checkValid() const =0;
+
+  virtual AMRPatchPosition position() const = 0;
+
+  virtual ICartesianMeshPatchInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

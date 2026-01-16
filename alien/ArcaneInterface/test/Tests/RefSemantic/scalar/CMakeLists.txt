@@ -27,6 +27,12 @@ macro(compile_test BUILDER)
             Alien::alien_semantic_ref
             )
 
+    if (TARGET alien_core_solvers)
+        linkLibraries(refmvhandlers.Scalar${BUILDER}
+                alien_core_solvers
+                )
+    endif ()
+    
     if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Scalar${BUILDER}
                 alien_external_packages
@@ -84,10 +90,16 @@ linkLibraries(refmvhandlers.ScalarRedistributor
         Alien::alien_semantic_ref
         )
 
+if (TARGET alien_core_solvers)
+    linkLibraries(refmvhandlers.ScalarRedistributor
+                  alien_core_solvers
+                 )
+endif ()
+
 if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributor
-            alien_external_packages
-            )
+                  alien_external_packages
+                 )
 endif ()
 
 if (TARGET alien_ifpen_solvers)
@@ -130,6 +142,11 @@ linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
         Alien::alien_semantic_ref
         )
 
+if (TARGET alien_core_solvers)
+    linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
+            alien_core_solvers
+            )
+endif ()
 if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
             alien_external_packages
@@ -264,6 +281,20 @@ foreach (REFMVTESTS
         Profiled
         Stream)
 
+   alien_test(
+                BENCH refmvhandlers.scalar
+                NAME ${REFMVTESTS}.alien-core
+                PROCS 1
+                COMMAND refmvhandlers.Scalar${REFMVTESTS}
+                OPTIONS
+                --size=100
+                --solver-package=alien-core
+                --solver=bcgs
+                --precond=neumannpoly
+                --tol=1.e-10
+                --max-iter=100
+             )
+        
     if (TARGET petsc)
         alien_test(
                 BENCH refmvhandlers.scalar
@@ -379,6 +410,24 @@ foreach (REFMVTESTS
                 --tol=1.e-10
                 --max-iter=100
                 --kernel=cpu_cblas_bcsr
+                --output-level=2
+        )
+
+    endif ()
+
+    if (TARGET htssolver)
+        alien_test(
+                BENCH refmvhandlers.scalar
+                NAME ${REFMVTESTS}.htssolver
+                PROCS 4
+                COMMAND refmvhandlers.Scalar${REFMVTESTS}
+                OPTIONS
+                --size=100
+                --solver-package=htssolver
+                --solver=bicgstab
+                --precond=ilu0
+                --tol=1.e-10
+                --max-iter=100
                 --output-level=2
         )
 

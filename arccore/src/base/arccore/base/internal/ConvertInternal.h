@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConvertInternal.h                                           (C) 2000-2025 */
+/* ConvertInternal.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,8 @@ class ARCCORE_BASE_EXPORT StringViewToDoubleConverter
  * \brief Classe pour convertir une 'StringView' en un type intégral.
  *
  * Les méthode getValue() sont similaires dans leur sémantique aux
- * functions builtInGetValue() de Arcane.
+ * functions builtInGetValue() de Arcane à une exception près: elles
+ * initialisent l'argument avec la valeur 0 ou false même en cas d'erreur.
  */
 class ARCCORE_BASE_EXPORT StringViewToIntegral
 {
@@ -98,6 +99,7 @@ class ARCCORE_BASE_EXPORT StringViewToIntegral
   static bool getValue(int& v, StringView s);
   static bool getValue(long& v, StringView s);
   static bool getValue(long long& v, StringView s);
+  static bool getValue(bool& v, StringView s);
 };
 
 /*---------------------------------------------------------------------------*/

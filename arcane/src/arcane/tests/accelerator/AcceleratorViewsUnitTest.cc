@@ -536,6 +536,7 @@ _executeTestReal2x2()
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
     auto inout_cell1_real2x2 = viewInOut(command, m_cell1_real2x2);
+    auto out_cell1_real2x2 = viewOut(command, m_cell1_real2x2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -545,6 +546,7 @@ _executeTestReal2x2()
       ref_v[1][0] = 3.0 + v;
       ref_v[0][1] = 4.0 + v;
       ref_v[1][1] = 5.0 + v;
+      out_cell1_real2x2[vi][0].setX(ref_v[0][0]);
       inout_cell1_real2x2[vi].setXX(ref_v[0][0]);
       inout_cell1_real2x2[vi].setYX(ref_v[1][0]);
       inout_cell1_real2x2[vi].setXY(ref_v[0][1]);
@@ -552,6 +554,27 @@ _executeTestReal2x2()
     };
   }
   _checkResultReal2x2(2.0);
+
+  {
+    auto queue = makeQueue(m_runner);
+    auto command = makeCommand(queue);
+    auto out_cell1_real2x2 = viewOut(command, m_cell1_real2x2);
+
+    command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
+    {
+      Real v = static_cast<Real>(vi.localId());
+      Real2x2 ref_v;
+      ref_v[0][0] = 3.0 + v;
+      ref_v[1][0] = 4.0 + v;
+      ref_v[0][1] = 5.0 + v;
+      ref_v[1][1] = 6.0 + v;
+      out_cell1_real2x2[vi][0].setX(ref_v[0][0]);
+      out_cell1_real2x2[vi][1].setX(ref_v[1][0]);
+      out_cell1_real2x2[vi][0].setY(ref_v[0][1]);
+      out_cell1_real2x2[vi][1].setY(ref_v[1][1]);
+    };
+  }
+  _checkResultReal2x2(3.0);
 
   {
     auto queue = makeQueue(m_runner);
@@ -754,7 +777,7 @@ _executeTestMemoryCopy()
   info() << "Execute Test MemoryCopy";
   eMemoryRessource source_mem = eMemoryRessource::Host;
   eMemoryRessource dest_mem = eMemoryRessource::Host;
-  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+  if (isAcceleratorPolicy(m_runner.executionPolicy()))
     dest_mem = eMemoryRessource::Device;
 
   const int nb_value = 100000;
