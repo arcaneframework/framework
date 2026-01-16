@@ -94,7 +94,7 @@
            <description>FILU0 tolerance</description>
          </simple>
 
-         <service-instance name="amg-solver" type="Alien::ILinearSolver">
+         <service-instance name="amg-solver" type="Alien::ILinearSolver" minOccurs="0" maxOccurs="1">
             <description>AMG linear solver instance</description>
          </service-instance>
    </options>

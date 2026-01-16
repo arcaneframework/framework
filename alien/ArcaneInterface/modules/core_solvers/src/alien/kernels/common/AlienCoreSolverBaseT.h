@@ -175,7 +175,9 @@ class AlienCoreSolverBaseT
           break ;
           case AlienCoreSolverOptionTypes::AMG:
           {
-            ILinearSolver* amg_solver = m_options->amgSolver() ;
+            ILinearSolver* amg_solver = nullptr ;
+            if(m_options->amgSolver().size()>0)
+              amg_solver = m_options->amgSolver()[0] ;
             auto amg_backend_name = amg_solver->getBackEndName();
             this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
             if(amg_backend_name=="hypre")
@@ -204,7 +206,9 @@ class AlienCoreSolverBaseT
           break ;
           case AlienCoreSolverOptionTypes::CxrAMG:
           {
-            ILinearSolver* amg_solver = m_options->amgSolver() ;
+            ILinearSolver* amg_solver = nullptr ;
+            if(m_options->amgSolver().size()>0)
+              amg_solver = m_options->amgSolver()[0] ;
             auto amg_backend_name = amg_solver->getBackEndName();
             this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
             if(amg_backend_name=="hypre")
@@ -358,7 +362,9 @@ class AlienCoreSolverBaseT
         }
         break ;          case AlienCoreSolverOptionTypes::AMG:
         {
-          ILinearSolver* amg_solver = m_options->amgSolver() ;
+          ILinearSolver* amg_solver = nullptr ;
+          if(m_options->amgSolver().size()>0)
+            amg_solver = m_options->amgSolver()[0] ;
           auto amg_backend_name = amg_solver->getBackEndName();
           this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
           if(amg_backend_name=="hypre")
@@ -387,7 +393,9 @@ class AlienCoreSolverBaseT
         break ;
         case AlienCoreSolverOptionTypes::CxrAMG:
         {
-          ILinearSolver* amg_solver = m_options->amgSolver() ;
+          ILinearSolver* amg_solver = nullptr ;
+          if(m_options->amgSolver().size()>0)
+            amg_solver = m_options->amgSolver()[0] ;
           auto amg_backend_name = amg_solver->getBackEndName();
           this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
           if(amg_backend_name=="hypre")
@@ -396,7 +404,8 @@ class AlienCoreSolverBaseT
             using AMGBackendType   = Alien::BackEnd::tag::hypre ;
             using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
             using CxrSolverType    = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
-            using RelaxSolverType  = Alien::DiagPreconditioner<AlgebraType> ;
+            //using RelaxSolverType  = Alien::DiagPreconditioner<AlgebraType> ;
+            using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
             using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
                                                               MatrixType,
                                                               VectorType,

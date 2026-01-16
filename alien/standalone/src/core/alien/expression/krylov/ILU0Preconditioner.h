@@ -23,7 +23,9 @@
  */
 
 #pragma once
-
+#if defined (ALIEN_USE_EIGEN3) && !defined(ALIEN_USE_SYCL)
+#include <Eigen/Dense>
+#endif
 #include <alien/handlers/scalar/CSRModifierViewT.h>
 
 namespace Alien
@@ -52,6 +54,10 @@ class LUFactorisationAlgo
   {
     m_is_parallel = matrix.isParallel();
     m_alloc_size = matrix.getAllocSize();
+    if constexpr (requires{matrix.blockSize();})
+      m_block_size = matrix.blockSize();
+    else
+      m_block_size = 1 ;
     m_distribution = matrix.distribution();
     m_lu_matrix.reset(matrix.cloneTo(nullptr));
     m_profile = &m_lu_matrix->getProfile();
@@ -64,7 +70,15 @@ class LUFactorisationAlgo
   void init(AlgebraT& algebra, MatrixT const& matrix)
   {
     baseInit(algebra, matrix);
-    factorize(*m_lu_matrix);
+    if(m_block_size==1)
+      factorize(*m_lu_matrix);
+    else
+#if defined (ALIEN_USE_EIGEN3) && !defined (ALIEN_USE_SYCL)
+      blockFactorize(*m_lu_matrix);
+#else
+    throw Arccore::FatalErrorException(
+            A_FUNCINFO, "Eigen is required for BlockILU factorization");
+#endif
     m_work.clear();
   }
 
@@ -230,21 +244,265 @@ class LUFactorisationAlgo
     }
   }
 
+#if defined (ALIEN_USE_EIGEN3) && !defined (ALIEN_USE_SYCL)
+  inline auto inv(Eigen::Map<Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic>>const & block) const
+  {
+    assert(block.determinant()!=0) ;
+    return block.inverse() ;
+  }
+
+  void blockFactorize(MatrixT& matrix, bool bjacobi = true)
+  {
+    /*
+       *
+         For i = 1, . . . ,N Do:
+            For k = 1, . . . , i - 1 and if (i, k) 2 NZ(A) Do:
+                Compute aik := aik/akk
+                For j = k + 1, . . . and if (i, j) 2 NZ(A), Do:
+                   compute aij := aij - aik.ak,j.
+                EndFor
+            EndFor
+         EndFor
+       *
+       */
+    using namespace Eigen;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2DView = Eigen::Map<Block2D> ;
+
+    int N = m_block_size;
+    int N2 = N*N;
+
+    m_bjacobi = bjacobi;
+    CSRModifierViewT<MatrixT> modifier(matrix);
+
+    // clang-format off
+    auto nrows  = modifier.nrows() ;
+    auto kcol   = modifier.kcol() ;
+    auto dcol   = modifier.dcol() ;
+    auto cols   = modifier.cols() ;
+    auto values = modifier.data() ;
+
+    Block2D aik(N,N) ;
+    // clang-format on
+    if (m_is_parallel) {
+      auto& local_row_size = matrix.getDistStructInfo().m_local_row_size;
+      if (m_bjacobi) {
+        for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
+        {
+          for (int k = kcol[irow]; k < dcol[irow]; ++k) // k=1 ->i-1
+          {
+            int krow = cols[k];
+            //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
+            //values[k] = aik;
+            aik = Block2DView(values+k*N2,N,N) * inv(Block2DView(values+dcol[krow]*N2,N,N)) ;
+            Block2DView(values+k*N2,N,N) = aik ;
+            for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
+              m_work[cols[l]] = l;
+            for (int j = k + 1; j < kcol[krow] + local_row_size[irow]; ++j) // j=k+1->n
+            {
+              int jcol = cols[j];
+              int kj = m_work[jcol];
+              if (kj != -1) {
+                //values[j] -= aik * values[kj]; // aij = aij - aik*akj
+                Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+              }
+            }
+            for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
+              m_work[cols[l]] = -1;
+          }
+        }
+      }
+      else {
+        typename LUSendRecvTraits<TagType>::matrix_op_type op(matrix, m_distribution, m_work);
+        op.recvLowerNeighbLUData(values);
+        int first_upper_ghost_index = matrix.getDistStructInfo().m_first_upper_ghost_index;
+        for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
+        {
+          for (int k = kcol[irow]; k < dcol[irow]; ++k) // k=1 ->i-1
+          {
+            int krow = cols[k];
+            //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
+            //values[k] = aik;
+            aik = Block2DView(values+k*N2,N,N) * inv(Block2DView(values+dcol[krow]*N2,N,N)) ;
+            for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
+              m_work[cols[l]] = l;
+            for (int j = k + 1; j < kcol[irow] + local_row_size[irow]; ++j) // j=k+1->n
+            {
+              int jcol = cols[j];
+              int kj = m_work[jcol];
+              if (kj != -1) {
+                //values[j] -= aik * values[kj]; // aij = aij - aik*akj
+                Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+              }
+            }
+            for (int j = kcol[irow] + local_row_size[irow]; j < kcol[irow + 1]; ++j) // j=k+1->n
+            {
+              int jcol = cols[j];
+              int kj = m_work[jcol];
+              if ((kj != -1) && (jcol >= first_upper_ghost_index)) {
+                //values[j] -= aik * values[kj]; // aij = aij - aik*akj
+                Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+              }
+            }
+            for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
+              m_work[cols[l]] = -1;
+          }
+        }
+        op.sendUpperNeighbLUData(values);
+      }
+    }
+    else {
+      for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
+      {
+        for (int k = kcol[irow]; k < dcol[irow]; ++k) // k=1 ->i-1
+        {
+          int krow = cols[k];
+          //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
+          //values[k] = aik;
+          aik = Block2DView(values+k*N2,N,N) * inv(Block2DView(values+dcol[krow]*N2,N,N)) ;
+          Block2DView(values+k*N2,N,N) = aik ;
+          for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
+            m_work[cols[l]] = l;
+          for (int j = k + 1; j < kcol[irow + 1]; ++j) // j=k+1->n
+          {
+            int jcol = cols[j];
+            int kj = m_work[jcol];
+            if (kj != -1) {
+              //values[j] -= aik * values[kj]; // aij = aij - aik*akj
+              Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+            }
+          }
+          for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
+            m_work[cols[l]] = -1;
+        }
+      }
+    }
+  }
+
+  void blockSolveL(ValueType const* y, ValueType* x) const
+  {
+    using namespace Eigen;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2DView = Eigen::Map<Block2D> ;
+    using Block1D     = Eigen::Matrix<ValueType,Dynamic,1> ;
+    using Block1DView = Eigen::Map<Block1D> ;
+
+    int N = m_block_size ;
+    int N2 = N*N;
+
+
+    Block1D val(N);
+
+    CSRConstViewT<MatrixT> view(*m_lu_matrix);
+    // clang-format off
+    auto nrows  = view.nrows() ;
+    auto kcol   = view.kcol() ;
+    auto dcol   = view.dcol() ;
+    auto cols   = view.cols() ;
+    auto values = view.data() ;
+    // clang-format on
+
+    for (std::size_t irow = 0; irow < nrows; ++irow) {
+      //ValueType val = y[irow];
+      val = Block1DView(const_cast<ValueType*>(y+irow*N),N) ;
+      for (int k = kcol[irow]; k < dcol[irow]; ++k)
+      {
+        //val -= values[k] * x[cols[k]];
+        val -= Block2DView(const_cast<ValueType*>(values+k*N2),N,N) * Block1DView(x+cols[k]*N,N) ;
+      }
+      //x[irow] = val;
+      Block1DView(x+irow*N,N) = val ;
+    }
+  }
+
+  void blockSolveU(ValueType const* y, ValueType* x) const
+  {
+    using namespace Eigen;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2DView = Eigen::Map<Block2D> ;
+    using Block1D     = Eigen::Matrix<ValueType,Dynamic,1> ;
+    using Block1DView = Eigen::Map<Block1D> ;
+
+    int N = m_block_size;
+    int N2 = N*N;
+
+    Block1D val(N);
+
+    CSRConstViewT<MatrixT> view(*m_lu_matrix);
+    // clang-format off
+    auto nrows  = view.nrows() ;
+    auto kcol   = view.kcol() ;
+    auto dcol   = view.dcol() ;
+    auto cols   = view.cols() ;
+    auto values = view.data() ;
+    // clang-format on
+    if (m_is_parallel) {
+      auto& local_row_size = m_lu_matrix->getDistStructInfo().m_local_row_size;
+      for (int irow = (int)nrows - 1; irow > -1; --irow) {
+        int dk = dcol[irow];
+        //ValueType val = y[irow];
+        val = Block1DView(const_cast<ValueType*>(y+irow*N),N) ;
+        for (int k = dk + 1; k < kcol[irow] + local_row_size[irow]; ++k) {
+          //val -= values[k] * x[cols[k]];
+          val -= Block2DView(const_cast<ValueType*>(values+k*N2),N,N) * Block1DView(x+cols[k]*N,N) ;
+        }
+        //x[irow] = val / values[dk];
+        Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
+      }
+    }
+    else {
+      for (int irow = (int)nrows - 1; irow > -1; --irow) {
+        int dk = dcol[irow];
+        //ValueType val = y[irow];
+        val = Block1DView(const_cast<ValueType*>(y+irow*N),N) ;
+        for (int k = dk + 1; k < kcol[irow + 1]; ++k) {
+          //val -= values[k] * x[cols[k]];
+          val -= Block2DView(const_cast<ValueType*>(values+k*N2),N,N) * Block1DView(x+cols[k]*N,N) ;
+        }
+        //x[irow] = val / values[dk];
+        Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
+      }
+    }
+  }
+
+#endif
+
   template <typename AlgebraT>
   void solve([[maybe_unused]] AlgebraT& algebra, VectorType const& y, VectorType& x) const
   {
+    if(m_block_size==1)
+    {
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //     L.X1 = Y
+      //
+      solveL(y.data(), m_x.data());
 
-    //////////////////////////////////////////////////////////////////////////
-    //
-    //     L.X1 = Y
-    //
-    solveL(y.data(), m_x.data());
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //     U.X = X1
+      //
+      solveU(m_x.data(), x.data());
+    }
+    else
+    {
+#if defined(ALIEN_USE_EIGEN3) && !defined(ALIEN_USE_SYCL)
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //     L.X1 = Y
+      //
+      blockSolveL(y.data(), m_x.data());
 
-    //////////////////////////////////////////////////////////////////////////
-    //
-    //     U.X = X1
-    //
-    solveU(m_x.data(), x.data());
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //     U.X = X1
+      //
+      blockSolveU(m_x.data(), x.data());
+#else
+      throw Arccore::FatalErrorException(
+              A_FUNCINFO, "Eigen is required for BlockILU resolution");
+#endif
+    }
   }
 
   const MatrixType& getLUMatrix() const
@@ -255,6 +513,7 @@ class LUFactorisationAlgo
  protected:
   // clang-format off
   std::unique_ptr<MatrixType>   m_lu_matrix ;
+  int                           m_block_size                  = 1;
   ProfileType const*            m_profile                     = nullptr;
   mutable VectorType            m_x ;
 
