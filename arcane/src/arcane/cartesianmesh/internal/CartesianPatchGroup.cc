@@ -783,8 +783,8 @@ adaptLevel(Int32 level_to_adapt)
   }
   Trace::Setter mci(traceMng(), "CartesianPatchGroup");
 
-  if (level_to_adapt >= m_target_nb_levels || level_to_adapt < 0) {
-    ARCANE_FATAL("Bad target nb levels -- Level to adapt : {0} -- Target nb levels : {1}", level_to_adapt, m_target_nb_levels);
+  if (level_to_adapt + 1 >= m_target_nb_levels || level_to_adapt < 0) {
+    ARCANE_FATAL("Bad level to adapt -- Level to adapt : {0} (creating level {1}) -- Max nb levels : {2}", level_to_adapt, level_to_adapt + 1, m_target_nb_levels);
   }
 
   if (level_to_adapt < m_latest_call_level) {
@@ -1291,7 +1291,7 @@ setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
     Int32 new_overlap_size = AMRPatchPosition::computeOverlapLayerSize(level, m_higher_level, new_size_of_overlap_layer_top_level);
 
     if (old_overlap_size == new_overlap_size) {
-      return;
+      continue;
     }
     if (old_overlap_size < new_overlap_size) {
       _increaseOverlapSizeLevel(level, new_overlap_size);
@@ -1300,6 +1300,7 @@ setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
       _reduceOverlapSizeLevel(level, new_overlap_size);
     }
   }
+  m_size_of_overlap_layer_top_level = new_size_of_overlap_layer_top_level;
 }
 
 /*---------------------------------------------------------------------------*/

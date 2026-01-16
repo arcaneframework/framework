@@ -400,7 +400,7 @@ Int32 AMRPatchPosition::
 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
 {
   if (level < 0 || level > higher_level) {
-    ARCANE_FATAL("Level doesn't exist");
+    ARCANE_FATAL("Level {0} doesn't exist (higher_level={1})", level, higher_level);
   }
   if (level == higher_level) {
     return overlap_layer_size_top_level;
