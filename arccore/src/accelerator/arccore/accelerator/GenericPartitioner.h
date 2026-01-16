@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericPartitioner.h                                        (C) 2000-2025 */
+/* GenericPartitioner.h                                        (C) 2000-2026 */
 /*                                                                           */
 /* Algorithme de partitionnement de liste.                                   */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -326,7 +326,7 @@ class GenericPartitionerIf
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -340,12 +340,12 @@ namespace Arcane::Accelerator
  * ou trois parties selon un critère fixé par l'utilisateur.
  */
 class GenericPartitioner
-: private impl::GenericPartitionerBase
+: private Impl::GenericPartitionerBase
 {
  public:
 
   explicit GenericPartitioner(const RunQueue& queue)
-  : impl::GenericPartitionerBase(queue)
+  : Impl::GenericPartitionerBase(queue)
   {
     _allocate();
   }
@@ -371,11 +371,11 @@ class GenericPartitioner
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericPartitionerBase* base_ptr = this;
-    impl::GenericPartitionerIf gf;
+    Impl::GenericPartitionerBase* base_ptr = this;
+    Impl::GenericPartitionerIf gf;
 
-    impl::IndexIterator input_iter;
-    impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
+    Impl::IndexIterator input_iter;
+    Impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
     gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 
@@ -402,8 +402,8 @@ class GenericPartitioner
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericPartitionerBase* base_ptr = this;
-    impl::GenericPartitionerIf gf;
+    Impl::GenericPartitionerBase* base_ptr = this;
+    Impl::GenericPartitionerIf gf;
     gf.apply(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
   }
 
@@ -437,12 +437,12 @@ class GenericPartitioner
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericPartitionerBase* base_ptr = this;
-    impl::GenericPartitionerIf gf;
-    impl::IndexIterator input_iter;
-    impl::SetterLambdaIterator<Setter1Lambda> setter1_wrapper(setter1_lambda);
-    impl::SetterLambdaIterator<Setter2Lambda> setter2_wrapper(setter2_lambda);
-    impl::SetterLambdaIterator<UnselectedSetterLambda> unselected_setter_wrapper(unselected_setter_lambda);
+    Impl::GenericPartitionerBase* base_ptr = this;
+    Impl::GenericPartitionerIf gf;
+    Impl::IndexIterator input_iter;
+    Impl::SetterLambdaIterator<Setter1Lambda> setter1_wrapper(setter1_lambda);
+    Impl::SetterLambdaIterator<Setter2Lambda> setter2_wrapper(setter2_lambda);
+    Impl::SetterLambdaIterator<UnselectedSetterLambda> unselected_setter_wrapper(unselected_setter_lambda);
     gf.apply3(*base_ptr, nb_value, input_iter, setter1_wrapper, setter2_wrapper,
               unselected_setter_wrapper, select1_lambda, select2_lambda, trace_info);
   }
@@ -478,8 +478,8 @@ class GenericPartitioner
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericPartitionerBase* base_ptr = this;
-    impl::GenericPartitionerIf gf;
+    Impl::GenericPartitionerBase* base_ptr = this;
+    Impl::GenericPartitionerIf gf;
     gf.apply3(*base_ptr, nb_value, input_iter, first_output_iter, second_output_iter,
               unselected_iter, select1_lambda, select2_lambda, trace_info);
   }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SpecificMemoryCopyList.h                                    (C) 2000-2025 */
+/* SpecificMemoryCopyList.h                                    (C) 2000-2026 */
 /*                                                                           */
 /* Classe template pour gérer des fonctions spécialisées de copie mémoire.   */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -353,7 +353,7 @@ class SpecificMemoryCopyRef
  private:
 
   ISpecificMemoryCopy* m_specialized_copier = nullptr;
-  SpecificType<std::byte, ExtentValue<DynExtent>> m_generic_copier;
+  SpecificType<std::byte, impl::ExtentValue<DynExtent>> m_generic_copier;
   ISpecificMemoryCopy* m_used_copier = nullptr;
 };
 
@@ -398,7 +398,7 @@ class ARCCORE_COMMON_EXPORT GlobalMemoryCopyList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

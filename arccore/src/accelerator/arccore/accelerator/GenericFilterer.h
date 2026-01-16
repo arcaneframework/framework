@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericFilterer.h                                           (C) 2000-2025 */
+/* GenericFilterer.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Algorithme de filtrage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 //#define ARCCORE_USE_SCAN_ONEDPL
 
@@ -218,10 +218,10 @@ class GenericFilteringFlag
 #endif
 #if defined(ARCCORE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
-      impl::IndexIterator iter2(0);
+      Impl::IndexIterator iter2(0);
       auto filter_lambda = [=](Int32 input_index) -> bool { return flag[input_index] != 0; };
       auto setter_lambda = [=](Int32 input_index, Int32 output_index) { output[output_index] = input[input_index]; };
-      impl::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
+      Impl::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
       SyclGenericFilteringImpl::apply(s, nb_item, iter2, out, filter_lambda);
     } break;
 #endif
@@ -357,7 +357,7 @@ class GenericFilteringIf
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -368,7 +368,7 @@ namespace Arcane::Accelerator
  * \brief Algorithme générique de filtrage sur accélérateur.
  */
 class GenericFilterer
-: private impl::GenericFilteringBase
+: private Impl::GenericFilteringBase
 {
 
  public:
@@ -434,8 +434,8 @@ class GenericFilterer
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringFlag<InputDataType, FlagType, OutputDataType> gf;
+    Impl::GenericFilteringBase* base_ptr = this;
+    Impl::GenericFilteringFlag<InputDataType, FlagType, OutputDataType> gf;
     gf.apply(*base_ptr, input, output, flag);
   }
 
@@ -486,8 +486,8 @@ class GenericFilterer
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
+    Impl::GenericFilteringBase* base_ptr = this;
+    Impl::GenericFilteringIf gf;
     gf.apply<false>(*base_ptr, nb_value, input.data(), output.data(), select_lambda, trace_info);
   }
 
@@ -506,8 +506,8 @@ class GenericFilterer
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
+    Impl::GenericFilteringBase* base_ptr = this;
+    Impl::GenericFilteringIf gf;
     gf.apply<true>(*base_ptr, nb_value, input_output.data(), input_output.data(), select_lambda, trace_info);
   }
 
@@ -528,8 +528,8 @@ class GenericFilterer
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
+    Impl::GenericFilteringBase* base_ptr = this;
+    Impl::GenericFilteringIf gf;
     gf.apply<false>(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
   }
 
@@ -573,10 +573,10 @@ class GenericFilterer
     if (_checkEmpty(nb_value))
       return;
     _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
-    impl::IndexIterator input_iter;
-    impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
+    Impl::GenericFilteringBase* base_ptr = this;
+    Impl::GenericFilteringIf gf;
+    Impl::IndexIterator input_iter;
+    Impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
     gf.apply<false>(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 

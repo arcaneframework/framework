@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryTracer.cc                                             (C) 2000-2025 */
+/* MemoryTracer.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Utilitaires pour tracer les accès mémoire entre l'accélérateur et l'hôte. */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 class MemoryTracerMng
@@ -127,7 +127,7 @@ traceDeallocate(const AllocatedMemoryInfo& mem_info, const MemoryAllocationArgs&
       ostr << " stack=" << s;
     }
   }
-  impl::MemoryTracer::notifyMemoryFree(ptr, args.arrayName(), s, 0);
+  MemoryTracer::notifyMemoryFree(ptr, args.arrayName(), s, 0);
   if (m_trace_level >= 2) {
     ostr << "\n";
     std::cout << ostr.str();
@@ -156,7 +156,7 @@ traceAllocate(void* p, size_t new_size, MemoryAllocationArgs args)
     }
   }
   Span<const std::byte> bytes(reinterpret_cast<std::byte*>(p), new_size);
-  impl::MemoryTracer::notifyMemoryAllocation(bytes, args.arrayName(), s, 0);
+  MemoryTracer::notifyMemoryAllocation(bytes, args.arrayName(), s, 0);
   if (m_trace_level >= 2) {
     ostr << "\n";
     std::cout << ostr.str();
@@ -166,7 +166,7 @@ traceAllocate(void* p, size_t new_size, MemoryAllocationArgs args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonUtils.h                                               (C) 2000-2025 */
+/* CommonUtils.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions/Classes utilitaires communes à tout les runtimes.               */
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 /*!
  * \brief Classe pour gérer la conservation d'une lambda dans un itérateur.
@@ -489,7 +489,7 @@ class SetterLambdaIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -500,9 +500,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
-template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
-template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
+template <typename DataType> using ScannerSumOperator = Impl::SumOperator<DataType>;
+template <typename DataType> using ScannerMaxOperator = Impl::MaxOperator<DataType>;
+template <typename DataType> using ScannerMinOperator = Impl::MinOperator<DataType>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
