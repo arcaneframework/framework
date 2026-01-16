@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Atomic.h                                                    (C) 2000-2025 */
+/* Atomic.h                                                    (C) 2000-2026 */
 /*                                                                           */
 /* Opérations atomiques.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -32,9 +32,9 @@ namespace Arcane::Accelerator
 //! Liste des types supportant les opérations atomiques.
 template <typename T>
 concept AcceleratorAtomicConcept = std::same_as<T, Real> || std::same_as<T, Int32> || std::same_as<T, Int64>;
-}
+} // namespace Arcane::Accelerator
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 template <enum eAtomicOperation Operation>
@@ -164,7 +164,7 @@ class AtomicImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -182,7 +182,7 @@ doAtomic(DataType* ptr, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  return impl::AtomicImpl::doAtomic<DataType, Operation>(ptr, v);
+  return Impl::AtomicImpl::doAtomic<DataType, Operation>(ptr, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -198,7 +198,7 @@ doAtomic(const DataViewGetterSetter<DataType>& view, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  return impl::AtomicImpl::doAtomic<DataType, Operation>(view, v);
+  return Impl::AtomicImpl::doAtomic<DataType, Operation>(view, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,7 +214,7 @@ doAtomicAdd(const DataViewGetterSetter<DataType>& view, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  return impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(view, v);
+  return Impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(view, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -230,7 +230,7 @@ doAtomicAdd(DataType* ptr, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  return impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(ptr, v);
+  return Impl::AtomicImpl::doAtomic<DataType, eAtomicOperation::Add>(ptr, v);
 }
 
 /*---------------------------------------------------------------------------*/

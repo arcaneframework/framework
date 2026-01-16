@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.h                                                  (C) 2000-2025 */
+/* NumArray.h                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques.                    */
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ concept NumArrayDataTypeConcept = std::is_trivially_copyable_v<T>;
  */
 template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArray
-: private impl::NumArrayBaseCommon
+: private Impl::NumArrayBaseCommon
 {
  public:
 
@@ -68,7 +68,7 @@ class NumArray
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   using ConstMDSpanType = MDSpan<const DataType, ExtentsType, LayoutPolicy>;
   using MDSpanType = MDSpan<DataType, ExtentsType, LayoutPolicy>;
-  using ArrayWrapper = impl::NumArrayContainer<DataType>;
+  using ArrayWrapper = Impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename MDSpanType::ArrayBoundsIndexType;
   using value_type = DataType;
   using LayoutPolicyType = LayoutPolicy;

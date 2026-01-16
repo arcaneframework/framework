@@ -211,7 +211,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
  private:
 
-  impl::MemoryTracerWrapper m_tracer;
+  Impl::MemoryTracerWrapper m_tracer;
   std::unique_ptr<IUnderlyingAllocator> m_direct_sub_allocator;
   Arcane::Impl::MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;
