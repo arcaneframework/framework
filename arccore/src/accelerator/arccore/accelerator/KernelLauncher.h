@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KernelLauncher.h                                            (C) 2000-2025 */
+/* KernelLauncher.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Gestion du lancement des noyaux de calcul sur accélérateur.               */
 /*---------------------------------------------------------------------------*/
@@ -193,97 +193,6 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{ item };
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
-
-template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
-{
-  using BuilderType = TraitsType::BuilderType;
-  using LocalIdType = BuilderType::ValueType;
-
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < ids.size()) {
-    LocalIdType lid(ids[i]);
-    body(BuilderType::create(i, lid), remaining_args...);
-  }
-  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
-}
-
-template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
-{
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < vsize) {
-    body(i, remaining_args...);
-  }
-  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif // ARCCORE_COMPILING_CUDA_OR_HIP
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCCORE_COMPILING_SYCL)
-
-//! Boucle 1D avec indirection
-template <typename TraitsType, typename Lambda, typename... RemainingArgs>
-class DoIndirectSYCLLambda
-{
- public:
-
-  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
-                  SmallSpan<const Int32> ids, Lambda func,
-                  RemainingArgs... remaining_args) const
-  {
-    using BuilderType = TraitsType::BuilderType;
-    using LocalIdType = BuilderType::ValueType;
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x.get_global_id(0));
-    SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
-    if (i < ids.size()) {
-      LocalIdType lid(ids[i]);
-      body(BuilderType::create(i, lid), remaining_args...);
-    }
-    SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
-  }
-  void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
-  {
-    using BuilderType = TraitsType::BuilderType;
-    using LocalIdType = BuilderType::ValueType;
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x);
-    if (i < ids.size()) {
-      LocalIdType lid(ids[i]);
-      body(BuilderType::create(i, lid));
-    }
-  }
-};
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

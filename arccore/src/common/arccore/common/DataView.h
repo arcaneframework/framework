@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataView.h                                                  (C) 2000-2025 */
+/* DataView.h                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Vues sur des données des variables.                                       */
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 class AtomicImpl;
 }
@@ -242,7 +242,7 @@ class DataViewGetterSetter
 {
   using BaseType = DataViewSetter<DataType>;
   using BaseType::m_ptr;
-  friend class Arcane::Accelerator::impl::AtomicImpl;
+  friend class Arcane::Accelerator::Impl::AtomicImpl;
 
  public:
 

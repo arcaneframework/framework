@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMemoryAllocatorBase.h                            (C) 2000-2025 */
+/* AcceleratorMemoryAllocatorBase.h                            (C) 2000-2026 */
 /*                                                                           */
 /* Classe de base d'un allocateur spécifique pour accélérateur.              */
 /*---------------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
  private:
 
-  impl::MemoryTracerWrapper m_tracer;
+  Impl::MemoryTracerWrapper m_tracer;
   std::unique_ptr<IUnderlyingAllocator> m_direct_sub_allocator;
   Arcane::Impl::MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;

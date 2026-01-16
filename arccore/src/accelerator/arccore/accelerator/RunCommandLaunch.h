@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunch.h                                          (C) 2000-2025 */
+/* RunCommandLaunch.h                                          (C) 2000-2026 */
 /*                                                                           */
 /* RunCommand pour le parallélisme hiérarchique.                             */
 /*---------------------------------------------------------------------------*/
@@ -71,11 +71,11 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
  */
 #if defined(ARCCORE_COMPILING_SYCL)
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(auto iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 #else
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 #endif
 

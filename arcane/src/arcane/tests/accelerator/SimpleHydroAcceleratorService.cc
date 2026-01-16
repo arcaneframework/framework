@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2025 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2026 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélérateurs.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#define ARCCORE_EXPERIMENTAL_GRID_STRIDE
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -48,6 +50,8 @@
 
 #include "arcane/tests/TypesSimpleHydro.h"
 #include "arcane/tests/accelerator/SimpleHydroAccelerator_axl.h"
+
+#include "arccore/common/IMemoryPool.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -266,6 +270,12 @@ void SimpleHydroAcceleratorService::
 hydroExit()
 {
   info() << "Hydro exit entry point";
+  if (m_default_queue.isAcceleratorPolicy()) {
+    IMemoryPool* pool = MemoryUtils::getMemoryPoolOrNull(eMemoryResource::UnifiedMemory);
+    if (pool) {
+      info() << "UnifiedMemoryPool allocated=" << pool->totalAllocated() << " cache=" << pool->totalCached();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -751,6 +761,7 @@ computeDeltaT()
 
   {
     auto command = makeCommand(m_default_queue);
+    command.addNbStride(16);
     ax::ReducerMin2<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
     auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);

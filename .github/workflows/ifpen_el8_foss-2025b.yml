@@ -1,4 +1,4 @@
-name: IFPEN el9 gimkl/2021b
+name: IFPEN el8 foss/2025b
 
 on:
   #push:
@@ -33,8 +33,9 @@ env:
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
-  # For intel MPI to fix errors appearing in July 2023
-  I_MPI_SHM_LMT: shm
+  # OpenMPI
+  OMPI_MCA_rmaps_base_oversubscribe: true
+  PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
   # To remove test output directory to reduce disk usage
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
@@ -45,7 +46,7 @@ jobs:
     runs-on: [self-hosted, m-1]
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/ifpen-arcenv-gimkl-2021b-el9:latest
+      image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2025b-el8:latest
       options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -64,8 +65,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ifpen-el9-gimkl-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ifpen-el9-gimkl-2021b-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-el8-foss-2025b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el8-foss-2025b-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
@@ -116,17 +117,7 @@ jobs:
           (success() || failure()) &&
           steps.build.outcome == 'success'
         shell: bash
-        run: |
-           # Force using intel-mpi 2021.16
-           chmod -R u+w ${EBROOTIMPI}
-           mv ${EBROOTIMPI} ${EBROOTIMPI}.old
-           ln -s /opt/intel-mpi ${EBROOTIMPI}
-           ln -s latest ${EBROOTIMPI}/mpi/2021.4.0
-           # Check intel-mpi version
-           which mpiexec
-           mpiexec --version
-           # Run test
-           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
       - name: Upload test artifact
         id: upload-test-artifact

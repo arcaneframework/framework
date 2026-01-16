@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericScanner.h                                            (C) 2000-2025 */
+/* GenericScanner.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Algorithme de 'scan' pour les accélérateurs.                              */
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -178,7 +178,7 @@ class ScannerImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -234,7 +234,7 @@ class Scanner
   static void _applyArray(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, const Operator& op)
   {
     ARCCORE_CHECK_POINTER(queue);
-    impl::ScannerImpl scanner(*queue);
+    Impl::ScannerImpl scanner(*queue);
     const Int32 nb_item = input.size();
     if (output.size() != nb_item)
       ARCCORE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
@@ -406,9 +406,9 @@ class GenericScanner
                        const Operator& op_lambda,
                        const TraceInfo& trace_info)
   {
-    impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
+    Impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
-    impl::ScannerImpl scanner(m_queue);
+    Impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
     _checkBarrier();
   }
@@ -425,7 +425,7 @@ class GenericScanner
       ARCCORE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
     auto* input_data = input.data();
     auto* output_data = output.data();
-    impl::ScannerImpl scanner(m_queue);
+    Impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_item, input_data, output_data, initial_value, op, trace_info);
     _checkBarrier();
   }
