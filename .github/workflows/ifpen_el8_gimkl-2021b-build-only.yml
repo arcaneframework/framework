@@ -1,10 +1,10 @@
 name: IFPEN el8 gimkl/2021b build only
 
 on:
-  push:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  pull_request:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  #push:
+  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  #pull_request:
+  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
     inputs:
       ctest_options:
