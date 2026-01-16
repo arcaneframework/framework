@@ -249,7 +249,7 @@ class CartesianMeshImpl
   void _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir,
                                CellGroup all_cells,
                                CellGroup in_patch_cells,
-                               CellGroup overall_cells,
+                               CellGroup overlap_cells,
                                NodeGroup all_nodes);
 
   void _applyRefine(const AMRZonePosition &position);
@@ -781,17 +781,17 @@ computeDirectionsPatchV2(Integer patch_index)
   }
   patch->_internalComputeNodeCellInformations();
   auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
-  _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
-  _computeMeshDirectionV2(*patch.get(), MD_DirY, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
+  _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overlapCells(patch_index), patch_nodes);
+  _computeMeshDirectionV2(*patch.get(), MD_DirY, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overlapCells(patch_index), patch_nodes);
   if (is_3d)
-    _computeMeshDirectionV2(*patch.get(), MD_DirZ, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overallCells(patch_index), patch_nodes);
+    _computeMeshDirectionV2(*patch.get(), MD_DirZ, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overlapCells(patch_index), patch_nodes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup all_cells, CellGroup in_patch_cells, CellGroup overall_cells, NodeGroup all_nodes)
+_computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup all_cells, CellGroup in_patch_cells, CellGroup overlap_cells, NodeGroup all_nodes)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
   IItemFamily* face_family = m_mesh->faceFamily();
@@ -850,7 +850,7 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
 
     cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell, prev_cell);
   }
-  cell_dm._internalComputeCellGroups(all_cells, in_patch_cells, overall_cells);
+  cell_dm._internalComputeCellGroups(all_cells, in_patch_cells, overlap_cells);
   face_dm._internalComputeInfos(cell_dm);
   node_dm._internalComputeInfos(cell_dm, all_nodes);
 }

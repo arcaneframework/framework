@@ -68,7 +68,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   CellGroup allCells(Integer index);
   CellGroup inPatchCells(Integer index);
-  CellGroup overallCells(Integer index);
+  CellGroup overlapCells(Integer index);
 
   void clear();
 
@@ -85,7 +85,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void mergePatches();
 
   void beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first);
-  void finalizeAdaptMesh();
+  void endAdaptMesh();
   void adaptLevel(Int32 level_to_adapt);
 
   void clearRefineRelatedFlags() const;
@@ -127,7 +127,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   UniqueArray<CellGroup> m_amr_patch_cell_groups_all;
   UniqueArray<CellGroup> m_amr_patch_cell_groups_inpatch;
-  UniqueArray<CellGroup> m_amr_patch_cell_groups_overall;
+  UniqueArray<CellGroup> m_amr_patch_cell_groups_overlap;
   UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;

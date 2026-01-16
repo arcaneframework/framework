@@ -115,7 +115,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * Cette méthode est la première d'un trio de méthodes nécessaires pour
    * raffiner le maillage :
    * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
-   * - \a void adaptMesh(Int32 level_to_adapt)
+   * - \a void adaptLevel(Int32 level_to_adapt)
    * - \a void endAdaptMesh()
    *
    * Cette première méthode va permettre de préparer le maillage au
@@ -160,7 +160,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    *   // Va faire ses calculs et mettre des flags II_Refine sur les mailles
    *   // du niveau level.
    *   computeInLevel(level);
-   *   amr_mng.adaptMesh(level);
+   *   amr_mng.adaptLevel(level);
    * }
    * amr_mng.endAdaptMesh();
    * ```
@@ -184,7 +184,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * Cette méthode est la seconde d'un trio de méthodes nécessaires pour
    * raffiner le maillage :
    * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
-   * - \a void adaptMesh(Int32 level_to_adapt)
+   * - \a void adaptLevel(Int32 level_to_adapt)
    * - \a void endAdaptMesh()
    *
    * Cette seconde méthode va permettre de raffiner le maillage niveau par
@@ -227,7 +227,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    *
    * \param level_to_adapt Le niveau à adapter.
    */
-  void adaptMesh(Int32 level_to_adapt) const;
+  void adaptLevel(Int32 level_to_adapt) const;
 
   /*!
    * \brief Méthode permettant de terminer le raffinement du maillage.
@@ -241,7 +241,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * Cette méthode est la troisième d'un trio de méthodes nécessaires pour
    * raffiner le maillage :
    * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
-   * - \a void adaptMesh(Int32 level_to_adapt)
+   * - \a void adaptLevel(Int32 level_to_adapt)
    * - \a void endAdaptMesh()
    *
    * Cette troisième méthode va permettre de terminer le raffinement du
@@ -311,7 +311,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    *
    * Cette méthode peut être utile après plusieurs appels à \a refineZone() et à
    * \a coarseZone(). En revanche, un appel à cette méthode est inutile après
-   * un appel à \a adaptMesh() car \a adaptMesh() s'en occupe.
+   * un appel à \a adaptLevel() car \a adaptLevel() s'en occupe.
    */
   void mergePatches() const;
 
