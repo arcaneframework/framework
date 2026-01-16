@@ -75,7 +75,7 @@ if (TARGET Alien::alien_semantic_ref)
     linkLibraries(alien_external_packages Alien::alien_semantic_ref)
 endif()
 
-linkLibraries(alien_external_packages 
+linkLibraries(alien_external_packages
               Boost::program_options
               BLAS::BLAS)
 
@@ -86,6 +86,8 @@ target_include_directories(alien_external_packages PUBLIC
         $<INSTALL_INTERFACE:include>)
 
 commit(alien_external_packages)
+
+add_library(Alien::external_packages ALIAS alien_external_packages)
 
 install(DIRECTORY alien
         DESTINATION include

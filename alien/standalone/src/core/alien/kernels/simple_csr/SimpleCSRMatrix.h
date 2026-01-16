@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -154,6 +154,26 @@ class SimpleCSRMatrix : public IMatrixImpl
       return total_size;
   }
 
+  Integer blockSize() const
+  {
+    if (block())
+    {
+       return block()->size();
+    }
+    else if (vblock()) {
+      return -1 ;
+    }
+    else {
+      return 1 ;
+    }
+  }
+
+  void setBlockSize(Integer block_size)
+  {
+    if(this->m_multi_impl)
+      const_cast<MultiMatrixImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+  }
+
   IMessagePassingMng* getParallelMng()
   {
     return m_parallel_mng;
@@ -297,7 +317,13 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_myrank = matrix.m_myrank;
     m_parallel_mng = matrix.m_parallel_mng;
     m_trace = matrix.m_trace;
-    m_matrix.copy(matrix.m_matrix);
+    if(blockSize()==matrix.blockSize())
+      m_matrix.copy(matrix.m_matrix);
+    else
+    {
+      auto nb_blocks = matrix.getCSRProfile().getNnz() + 1 ;
+      m_matrix.copy(matrix.m_matrix,blockSize(),matrix.blockSize(),nb_blocks) ;
+    }
     m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
   }
 

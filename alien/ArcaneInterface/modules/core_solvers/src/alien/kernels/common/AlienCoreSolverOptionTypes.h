@@ -28,6 +28,8 @@ struct AlienCoreSolverOptionTypes
     ChebyshevPoly,
     ILU0,
     FILU0,
+    AMG,
+    CxrAMG
   };
 };
 

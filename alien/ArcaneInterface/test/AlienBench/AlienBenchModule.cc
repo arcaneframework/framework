@@ -189,17 +189,22 @@ AlienBenchModule::test()
     description<<" EPSILON="<<options()->epsilon();
   }
 
-  Alien::Vector vectorB(m_vdist);
-  Alien::Vector vectorBB(m_vdist);
-  Alien::Vector vectorX(m_vdist);
+  auto coordX   = Alien::Vector(m_vdist);
+  auto coordY   = Alien::Vector(m_vdist);
+  auto coordZ   = Alien::Vector(m_vdist);
 
-  Alien::Vector coordX(m_vdist);
-  Alien::Vector coordY(m_vdist);
-  Alien::Vector coordZ(m_vdist);
+  auto vectorB  = Alien::Vector(m_vdist);
+  auto vectorBB = Alien::Vector(m_vdist);
+  auto vectorX  = Alien::Vector(m_vdist);
 
-  Alien::Matrix matrixA(m_mdist); // local matrix for exact measure without side effect
-                                  // (however, you can reuse a matrix with several
-                                  // builder)
+  auto matrixA = Alien::Matrix(m_mdist);
+
+  auto block_size = options()->blockSize() ;
+  Alien::Block block(block_size);
+  auto blockVectorB  = Alien::BlockVector(block,m_vdist);
+  auto blockVectorBB = Alien::BlockVector(block,m_vdist);
+  auto blockVectorX  = Alien::BlockVector(block,m_vdist);
+  auto blockMatrixA  = Alien::BlockMatrix(block,m_mdist);
 
   info() << "USE ACCELERATOR "<<m_use_accelerator;
 #ifdef ALIEN_USE_SYCL
@@ -239,19 +244,39 @@ AlienBenchModule::test()
 #endif
   {
     info() << " CPU ASSEMPBLY ";
-
-  _test(pbuild_timer,
-        areaU,
-        cell_cell_connection,
-        all_cell_cell_connection,
-        allUIndex,
-        vectorB,
-        vectorBB,
-        vectorX,
-        coordX,
-        coordY,
-        coordZ,
-        matrixA) ;
+    auto block_size = options()->blockSize() ;
+     if(block_size==1)
+     {
+       Alien::Block block(block_size);
+        _test(pbuild_timer,
+              areaU,
+              cell_cell_connection,
+              all_cell_cell_connection,
+              allUIndex,
+              vectorB,
+              vectorBB,
+              vectorX,
+              coordX,
+              coordY,
+              coordZ,
+              matrixA) ;
+     }
+     else
+     {
+                                       // builder)
+       _test(pbuild_timer,
+             areaU,
+             cell_cell_connection,
+             all_cell_cell_connection,
+             allUIndex,
+             blockVectorB,
+             blockVectorBB,
+             blockVectorX,
+             coordX,
+             coordY,
+             coordZ,
+             blockMatrixA) ;
+     }
   }
 
 
@@ -336,7 +361,7 @@ AlienBenchModule::test()
     }
 #endif
 #endif
-    
+
 
     if (not solver->hasParallelSupport() and m_parallel_mng->commSize() > 1) {
       info() << "Current solver has not a parallel support for solving linear system : "
@@ -372,14 +397,29 @@ AlienBenchModule::test()
           else
 #endif
           {
-            _fillSystemCPU(pbuild_timer,
-                           cell_cell_connection,
-                           all_cell_cell_connection,
-                           allUIndex,
-                           vectorB,
-                           vectorBB,
-                           vectorX,
-                           matrixA) ;
+            if(block_size==1)
+            {
+              _fillSystemCPU(pbuild_timer,
+                             cell_cell_connection,
+                             all_cell_cell_connection,
+                             allUIndex,
+                             vectorB,
+                             vectorBB,
+                             vectorX,
+                             matrixA) ;
+            }
+            else
+            {
+              _fillSystemCPU(pbuild_timer,
+                             cell_cell_connection,
+                             all_cell_cell_connection,
+                             allUIndex,
+                             blockVectorB,
+                             blockVectorBB,
+                             blockVectorX,
+                             blockMatrixA) ;
+
+            }
           }
         }
 
@@ -405,14 +445,17 @@ AlienBenchModule::test()
 #endif
         Timer::Sentry ts(&psolve_timer);
         info()<<"START RESOLUTION";
-        solver->solve(matrixA, vectorB, vectorX);
+        if(block_size==1)
+          solver->solve(matrixA, vectorB, vectorX);
+        else
+          solver->solve(blockMatrixA, blockVectorB, blockVectorX);
         info()<<"END RESOLUTION";
       }
       Alien::SolverStatus status = solver->getStatus();
 
       if (status.succeeded) {
         info()<<"RESOLUTION SUCCEED";
-        
+
         Alien::VectorReader reader(vectorX);
         ENUMERATE_CELL (icell, areaU.own()) {
           const Integer iIndex = allUIndex[icell->localId()];
@@ -658,7 +701,192 @@ AlienBenchModule::_test(Timer& pbuild_timer,
     Alien::LocalVectorWriter vx(vectorX);
     vx = 0. ;
   }
+}
 
+void
+AlienBenchModule::_test(Timer& pbuild_timer,
+                        CellGroup& areaU,
+                        CellCellGroup& cell_cell_connection,
+                        CellCellGroup& all_cell_cell_connection,
+                        Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                        Alien::BlockVector& vectorB,
+                        Alien::BlockVector& vectorBB,
+                        Alien::BlockVector& vectorX,
+                        Alien::Vector& coordX,
+                        Alien::Vector& coordY,
+                        Alien::Vector& coordZ,
+                        Alien::BlockMatrix& matrixA)
+{
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // VECTOR BUILDING AND FILLING
+  //
+  auto block_size = matrixA.block().size() ;
+  info() << "Building & initializing vector b";
+  info() << "Space size = " << m_vdist.globalSize()
+         << ", local size= " << m_vdist.localSize()
+         << ", block_size  " << block_size;
+
+  {
+      ENUMERATE_CELL (icell, areaU)
+      {
+        Real3 x;
+        for (Arcane::Node node : icell->nodes()) {
+          x += m_node_coord[node];
+        }
+        x /= icell->nbNode();
+        m_cell_center[icell] = x;
+        m_u[icell] = funcn(x);
+        m_k[icell] = funck(x);
+      }
+  }
+
+  {
+    // Builder du vecteur
+    Alien::BlockVectorWriter writer(vectorX);
+    Alien::VectorWriter x(coordX);
+    Alien::VectorWriter y(coordY);
+    Alien::VectorWriter z(coordZ);
+
+    ENUMERATE_CELL(icell,areaU.own())
+    {
+      const Integer iIndex = allUIndex[icell->localId()];
+      writer[iIndex].fill(m_u[icell]) ;
+      x[iIndex] = m_cell_center[icell].x ;
+      y[iIndex] = m_cell_center[icell].y ;
+      z[iIndex] = m_cell_center[icell].z ;
+    }
+  }
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // MATRIX BUILDING AND FILLING
+  //
+
+  {
+    Timer::Sentry ts(&pbuild_timer);
+    {
+      Alien::MatrixProfiler profiler(matrixA);
+      ///////////////////////////////////////////////////////////////////////////
+      //
+      // DEFINE PROFILE
+      //
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        const Integer iIndex = allUIndex[cell.localId()];
+        profiler.addMatrixEntry(iIndex, allUIndex[cell.localId()]);
+        ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+        {
+          const Cell& subcell = *isubcell;
+          profiler.addMatrixEntry(iIndex, allUIndex[subcell.localId()]);
+        }
+      }
+    }
+    {
+      Alien::ProfiledBlockMatrixBuilder builder(matrixA, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
+
+      Alien::UniqueArray2<double> zero(block_size, block_size);
+      Alien::UniqueArray2<double> id(block_size, block_size);
+      Alien::UniqueArray2<double> diagB(block_size, block_size);
+      for (int k = 0; k < block_size; ++k)
+      {
+        diagB[k][k] = 1;
+        id[k][k] = 1;
+        if (k - 1 >= 0)
+          diagB[k][k - 1] = -1;
+        if (k + 1 < block_size)
+          diagB[k][k + 1] = -1;
+      }
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        double diag = dii(cell);
+
+        Integer i = allUIndex[cell.localId()];
+        for (int k = 0; k < block_size; ++k)
+        {
+          diagB[k][k] = diag;
+        }
+        builder(i, i) += diagB ;
+        ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+        {
+          const Cell& subcell = *isubcell;
+          double off_diag = fij(cell, subcell);
+          Integer j = allUIndex[subcell.localId()];
+          id[0][0] = off_diag ;
+          builder(i, j) -= id;
+          builder(i, i) += id;
+        }
+      }
+      if (options()->sigma() > 0.)
+      {
+        m_sigma = options()->sigma();
+        auto xCmax = Real3{ 0.25, 0.25, 0.25 };
+        auto xCmin = Real3{ 0.75, 0.75, 0.55 };
+        ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
+        {
+          const Cell& cell = *icell;
+          Real3 xC = m_cell_center[icell];
+          Real3 xDmax = xC - xCmax;
+          Real3 xDmin = xC - xCmin;
+          m_s[cell] = 0;
+          if (xDmax.normL2() < options()->epsilon()) {
+            m_s[cell] = 1.;
+            Integer i = allUIndex[cell.localId()];
+            info() << "MATRIX TRANSFO SIGMAMAX " << i;
+            if (cell.isOwn())
+            {
+              id[0][0] = m_sigma;
+              builder(i, i) = id ;
+            }
+            ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+            {
+              const Cell& subcell = *isubcell;
+              if (subcell.isOwn()) {
+                Integer j = allUIndex[subcell.localId()];
+                builder(j, i) = zero;
+              }
+            }
+          }
+          if (xDmin.normL2() < options()->epsilon()) {
+            m_s[cell] = -1.;
+            Integer i = allUIndex[cell.localId()];
+            info() << "MATRIX TRANSFO SIGMA MIN" << i;
+
+            if (cell.isOwn())
+            {
+              id[0][0] = 1. / m_sigma;
+              builder(i, i) = id ;
+            }
+            ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+            {
+              const Cell& subcell = *isubcell;
+              if (subcell.isOwn()) {
+                Integer j = allUIndex[subcell.localId()];
+                builder(j, i) = zero;
+              }
+            }
+          }
+        }
+      }
+      builder.finalize();
+    }
+  }
+  {
+    Alien::SimpleCSRLinearAlgebra csrAlg;
+    csrAlg.mult(matrixA, vectorX, vectorB);
+    csrAlg.mult(matrixA, vectorX, vectorBB);
+    Real normeb = csrAlg.norm2(vectorB);
+    std::cout << "||b||=" << normeb<<std::endl;
+  }
+  {
+    Alien::LocalBlockVectorWriter vx(vectorX);
+    vx = 0. ;
+  }
 }
 
 
@@ -704,7 +932,8 @@ AlienBenchModule::_fillSystemCPU( Timer& pbuild_timer,
         Real3 xDmax = xC - xCmax;
         Real3 xDmin = xC - xCmin;
         m_s[cell] = 0;
-        if (xDmax.normL2() < options()->epsilon()) {
+        if (xDmax.normL2() < options()->epsilon())
+        {
           m_s[cell] = 1.;
           Integer i = allUIndex[cell.localId()];
           info() << "MATRIX TRANSFO SIGMAMAX " << i;
@@ -713,13 +942,15 @@ AlienBenchModule::_fillSystemCPU( Timer& pbuild_timer,
           ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
           {
             const Cell& subcell = *isubcell;
-            if (subcell.isOwn()) {
+            if (subcell.isOwn())
+            {
               Integer j = allUIndex[subcell.localId()];
               builder(j, i) = 0.;
             }
           }
         }
-        if (xDmin.normL2() < options()->epsilon()) {
+        if (xDmin.normL2() < options()->epsilon())
+        {
           m_s[cell] = -1.;
           Integer i = allUIndex[cell.localId()];
           info() << "MATRIX TRANSFO SIGMA MIN" << i;
@@ -747,8 +978,128 @@ AlienBenchModule::_fillSystemCPU( Timer& pbuild_timer,
     Alien::LocalVectorWriter vb(vectorB);
     Alien::LocalVectorWriter vx(vectorX);
     for (Integer i = 0; i < m_vdist.localSize(); ++i) {
-      vx[i] = 0.;
+      vx[i] = 0;
       vb[i] = reader[i];
+    }
+  }
+}
+
+void
+AlienBenchModule::_fillSystemCPU( Timer& pbuild_timer,
+                                  CellCellGroup& cell_cell_connection,
+                                  CellCellGroup& all_cell_cell_connection,
+                                  Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                                  Alien::BlockVector& vectorB,
+                                  Alien::BlockVector& vectorBB,
+                                  Alien::BlockVector& vectorX,
+                                  Alien::BlockMatrix& matrixA)
+{
+  {
+    Timer::Sentry ts(&pbuild_timer);
+    auto block_size = matrixA.block().size() ;
+    Alien::ProfiledBlockMatrixBuilder builder(
+        matrixA, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
+
+    Alien::UniqueArray2<double> zero(block_size, block_size);
+    Alien::UniqueArray2<double> id(block_size, block_size);
+    Alien::UniqueArray2<double> diagB(block_size, block_size);
+    for (int k = 0; k < block_size; ++k)
+    {
+      diagB[k][k] = 1;
+      id[k][k] = 1;
+      if (k - 1 >= 0)
+        diagB[k][k - 1] = -1;
+      if (k + 1 < block_size)
+        diagB[k][k + 1] = -1;
+    }
+
+    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+    {
+      const Cell& cell = *icell;
+      double diag = dii(cell);
+
+      Integer i = allUIndex[cell.localId()];
+      for (int k = 0; k < block_size; ++k)
+      {
+        diagB[k][k] = diag;
+      }
+      builder(i, i) += diagB ;
+      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+      {
+        const Cell& subcell = *isubcell;
+        double off_diag = fij(cell, subcell);
+        Integer j = allUIndex[subcell.localId()];
+        id[0][0] = off_diag ;
+        builder(i, j) -= id;
+        builder(i, i) += id;
+      }
+    }
+    if (options()->sigma() > 0.)
+    {
+      m_sigma = options()->sigma();
+      auto xCmax = Real3{ 0.25, 0.25, 0.25 };
+      auto xCmin = Real3{ 0.75, 0.75, 0.55 };
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        Real3 xC = m_cell_center[icell];
+        Real3 xDmax = xC - xCmax;
+        Real3 xDmin = xC - xCmin;
+        m_s[cell] = 0;
+        if (xDmax.normL2() < options()->epsilon())
+        {
+          m_s[cell] = 1.;
+          Integer i = allUIndex[cell.localId()];
+          info() << "MATRIX TRANSFO SIGMAMAX " << i;
+          if (cell.isOwn())
+          {
+            id[0][0] = m_sigma ;
+            builder(i, i) = id;
+          }
+          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+          {
+            const Cell& subcell = *isubcell;
+            if (subcell.isOwn())
+            {
+              Integer j = allUIndex[subcell.localId()];
+              builder(j, i) = zero;
+            }
+          }
+        }
+        if (xDmin.normL2() < options()->epsilon())
+        {
+          m_s[cell] = -1.;
+          Integer i = allUIndex[cell.localId()];
+          info() << "MATRIX TRANSFO SIGMA MIN" << i;
+
+          if (cell.isOwn())
+          {
+            id[0][0] = 1. / m_sigma ;
+            builder(i, i) = id;
+          }
+          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+          {
+            const Cell& subcell = *isubcell;
+            if (subcell.isOwn())
+            {
+              Integer j = allUIndex[subcell.localId()];
+              builder(j, i) = zero;
+            }
+          }
+        }
+      }
+    }
+    builder.finalize();
+  }
+
+  // Réinitialisation de vectorX
+  {
+    Alien::LocalBlockVectorReader reader(vectorBB);
+    Alien::LocalBlockVectorWriter vb(vectorB);
+    Alien::LocalBlockVectorWriter vx(vectorX);
+    for (Integer i = 0; i < m_vdist.localSize(); ++i) {
+      vx[i].fill(0.);
+      vb[i].copy(reader[i]);
     }
   }
 }

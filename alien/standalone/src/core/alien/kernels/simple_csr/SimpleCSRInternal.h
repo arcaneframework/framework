@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -60,6 +60,42 @@ class MatrixInternal
   void copy(const MatrixInternal<T>& internal)
   {
     m_values.copy(internal.getValues());
+    m_profile->copy(internal.getCSRProfile());
+  }
+
+  template <typename T>
+  void copy(const MatrixInternal<T>& internal, Integer block_size1, Integer block_size2, Integer nb_blocks)
+  {
+    auto const& values2 = internal.getValues() ;
+    if(block_size1==block_size2)
+      m_values.copy(values2);
+    else if(block_size1==1)
+    {
+      Integer stride2 = block_size2*block_size2 ;
+      Integer offset2 = 0 ;
+      m_values.resize(nb_blocks) ;
+      for(Integer ib=0;ib<nb_blocks;++ib)
+      {
+        m_values[ib] = values2[offset2];
+        offset2 += stride2 ;
+      }
+    }
+    else
+    {
+      Integer stride1 = block_size1*block_size1 ;
+      Integer stride2 = block_size2*block_size2 ;
+      Integer offset1 = 0 ;
+      Integer offset2 = 0 ;
+      m_values.resize(nb_blocks*stride1) ;
+      for(Integer ib=0;ib<nb_blocks;++ib)
+      {
+        for(Integer i=0;i<block_size1;++i)
+          for(Integer j=0;j<block_size1;++j)
+            m_values[offset1 + i*block_size1+j] = values2[offset2+ i*block_size2+j];
+        offset1 += stride1 ;
+        offset2 += stride2 ;
+      }
+    }
     m_profile->copy(internal.getCSRProfile());
   }
 

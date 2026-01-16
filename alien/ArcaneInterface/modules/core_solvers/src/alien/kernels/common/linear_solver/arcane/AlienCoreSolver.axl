@@ -8,35 +8,35 @@
         <simple name="output-level" type="integer" default="0">
             <description>solver output level</description>
         </simple>
-         
+
         <enumeration name="backend" type="AlienCoreSolverOptionTypes::eBackEnd" default="SimpleCSR">
           <description>Backend definition</description>
           <enumvalue name="SimpleCSR" genvalue="AlienCoreSolverOptionTypes::SimpleCSR">
             <description>SimpleCSR backend</description>
           </enumvalue>
-          
+
           <enumvalue name="SYCL" genvalue="AlienCoreSolverOptionTypes::SYCL">
             <description>SYCL backend</description>
           </enumvalue>
         </enumeration>
-        
+
         <enumeration name="solver" type="AlienCoreSolverOptionTypes::eSolver" default="BCGS">
           <description>Solveur type</description>
-          
+
           <enumvalue name="BCGS" genvalue="AlienCoreSolverOptionTypes::BCGS">
             <description>BiCGStab Solver</description>
           </enumvalue>
-          
+
           <enumvalue name="CG" genvalue="AlienCoreSolverOptionTypes::CG">
             <description>CG Solver</description>
           </enumvalue>
         </enumeration>
-        
-        
+
+
         <simple name="asynch" type="integer" default="1">
             <description>enable async mode with future</description>
         </simple>
-       
+
         <enumeration name="preconditioner" type="AlienCoreSolverOptionTypes::ePreconditioner" default="Diag">
             <description>type def preconditionnement</description>
             <enumvalue name="Diag" genvalue="AlienCoreSolverOptionTypes::Diag">
@@ -54,38 +54,48 @@
             <enumvalue name="FILU0" genvalue="AlienCoreSolverOptionTypes::FILU0">
                 <description>0th order ILU preconditioner FixedPoint</description>
             </enumvalue>
+            <enumvalue name="AMG" genvalue="AlienCoreSolverOptionTypes::AMG">
+                <description>AMG preconditioner with External AMG solver</description>
+            </enumvalue>
+            <enumvalue name="CxrAMG" genvalue="AlienCoreSolverOptionTypes::CxrAMG">
+                <description>Cxr Preconditioner with external AMG solver</description>
+            </enumvalue>
         </enumeration>
-        
+
          <simple name="max-iter" type="integer" default="1000">
            <description>nb ML iter</description>
          </simple>
-         
+
          <simple name="tol" type="real" default="1.e-6">
            <description>Solver tolerance</description>
          </simple>
-         
+
          <simple name="poly-factor" type="real" default="0.5">
            <description>Polynomial preconditioner factor</description>
          </simple>
-         
+
          <simple name="poly-order" type="integer" default="3">
            <description>Polynomial preconditioner order</description>
          </simple>
-         
+
          <simple name="poly-factor-max-iter" type="integer" default="10">
            <description>Polynomial preconditioner factor max iteration</description>
          </simple>
-         
+
          <simple name="filu-factor-niter" type="integer" default="0">
            <description>FILU0 factorization nb iterations</description>
          </simple>
-         
+
          <simple name="filu-solver-niter" type="integer" default="3">
            <description>FILU0 solver nb iterations</description>
          </simple>
-         
+
          <simple name="filu-tol" type="real" default="1.e-6">
            <description>FILU0 tolerance</description>
          </simple>
+
+         <service-instance name="amg-solver" type="Alien::ILinearSolver" minOccurs="0" maxOccurs="1">
+            <description>AMG linear solver instance</description>
+         </service-instance>
    </options>
 </service>

@@ -33,7 +33,8 @@
       <redistribution>false</redistribution>
       <use-accelerator>false</use-accelerator>
       <homogeneous>true</homogeneous>
-      <diagonal-coefficient>0.</diagonal-coefficient>
+      <block-size>2</block-size>
+      <diagonal-coefficient>10.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -586,8 +586,21 @@ void SimpleCSRMatrixMultT<ValueT>::computeInvDiag(VectorType& y) const
   auto cols   = view.cols() ;
   auto values = view.data() ;
   // clang-format on
-  for (Integer irow = 0; irow < nrows; ++irow)
-    y_ptr[irow] = 1. / values[dcol[irow]];
+  if(m_matrix_impl.blockSize()==1)
+  {
+    for (Integer irow = 0; irow < nrows; ++irow)
+      y_ptr[irow] = 1. / values[dcol[irow]];
+  }
+  else
+  {
+    Integer block_size = m_matrix_impl.blockSize();
+    Integer block2_size = block_size*block_size ;
+    for (Integer irow = 0; irow < nrows; ++irow)
+    {
+      for(Integer ieq=0;ieq<block_size;++ieq)
+        y_ptr[irow*block_size+ieq] = 1. / values[dcol[irow]*block2_size+ieq*block_size+ieq];
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

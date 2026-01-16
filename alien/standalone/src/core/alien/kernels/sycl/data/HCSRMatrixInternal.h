@@ -109,7 +109,7 @@ namespace Alien
         env->internal()->queue().submit([&](sycl::handler& cgh)
                                          {
                                            auto access_x = m_values.template get_access<sycl::access::mode::read_write>(cgh);
-                                           cgh.fill(access_x,ValueT()) ;
+                                           cgh.fill(access_x,value) ;
                                          }) ;
     }
 

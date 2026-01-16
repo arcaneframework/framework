@@ -1,26 +1,10 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+
 
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Request.h"
@@ -141,7 +125,7 @@ Real SYCLInternalLinearAlgebra::norm2(const SYCLVector<Real>& vx) const
   return std::sqrt(m_internal->dot(vx.internal()->values(), vx.internal()->values()));
 }
 
-Real SYCLInternalLinearAlgebra::normInf(const SYCLVector<Real>& vx) const
+Real SYCLInternalLinearAlgebra::normInf([[maybe_unused]] const SYCLVector<Real>& vx) const
 {
 #ifdef ALIEN_USE_PERF_TIMER
   SentryType s(m_timer, "SYCL-NORMINF");
@@ -231,6 +215,44 @@ void SYCLInternalLinearAlgebra::copy(const SYCLVector<Real>& vx, SYCLVector<Real
   SentryType s(m_timer, "SYCL-COPY");
 #endif
   m_internal->copy(vx.internal()->values(), vr.internal()->values());
+}
+
+
+void SYCLInternalLinearAlgebra::axpy(Real alpha,
+                                     const SYCLVector<Real>& vx,
+                                     Integer stride_x,
+                                     SYCLVector<Real>& vr,
+                                     Integer stride_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-AXPY");
+#endif
+  m_internal->axpy(alpha, vx.internal()->values(), stride_x, vr.internal()->values(), stride_r);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void SYCLInternalLinearAlgebra::aypx(Real alpha ALIEN_UNUSED_PARAM,
+                                     SYCLVector<Real>& y ALIEN_UNUSED_PARAM,
+                                     Integer stride_y ALIEN_UNUSED_PARAM,
+                                     const SYCLVector<Real>& x ALIEN_UNUSED_PARAM,
+                                     Integer stride_x ALIEN_UNUSED_PARAM) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::aypx not implemented");
+}
+
+/*---------------------------------------------------------------------------*/
+
+void SYCLInternalLinearAlgebra::copy(const SYCLVector<Real>& vx,
+                                     Integer stride_x,
+                                     SYCLVector<Real>& vr,
+                                     Integer stride_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-COPY");
+#endif
+  m_internal->copy(vx.internal()->values(), stride_x, vr.internal()->values(), stride_r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -348,7 +370,7 @@ Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLVector<Real>& vx) const
   return std::sqrt(m_internal->dot(vx.internal()->values(), vx.internal()->values()));
 }
 
-Real SYCLInternalLinearAlgebraExpr::normInf(const SYCLVector<Real>& vx) const
+Real SYCLInternalLinearAlgebraExpr::normInf([[maybe_unused]] const SYCLVector<Real>& vx) const
 {
 #ifdef ALIEN_USE_PERF_TIMER
   SentryType s(m_timer, "SYCL-NORMINF");
@@ -372,9 +394,12 @@ const SYCLBEllPackMatrix<Real>& ma, const UniqueArray<Real>& vx, UniqueArray<Rea
 
 /*---------------------------------------------------------------------------*/
 
-void SYCLInternalLinearAlgebraExpr::axpy(Real alpha, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+void SYCLInternalLinearAlgebraExpr::axpy([[maybe_unused]] Real alpha,
+                                         [[maybe_unused]] const UniqueArray<Real>& vx,
+                                         [[maybe_unused]] UniqueArray<Real>& vr) const
 {
-  //cblas::axpy(vx.size(), alpha, dataPtr(vx), 1, dataPtr(vr), 1);
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::axpy not implemented");
 }
 
 void SYCLInternalLinearAlgebraExpr::axpy(Real alpha, const SYCLVector<Real>& vx, SYCLVector<Real>& vy) const
@@ -384,7 +409,7 @@ void SYCLInternalLinearAlgebraExpr::axpy(Real alpha, const SYCLVector<Real>& vx,
 
 /*---------------------------------------------------------------------------*/
 
-void SYCLInternalLinearAlgebraExpr::aypx(Real alpha, UniqueArray<Real>& vy, UniqueArray<Real> const& vx) const
+void SYCLInternalLinearAlgebraExpr::aypx([[maybe_unused]] Real alpha, [[maybe_unused]] UniqueArray<Real>& vy, [[maybe_unused]] UniqueArray<Real> const& vx) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::aypx not implemented");
@@ -399,10 +424,11 @@ void SYCLInternalLinearAlgebraExpr::aypx(Real alpha ALIEN_UNUSED_PARAM,
 
 /*---------------------------------------------------------------------------*/
 
-void SYCLInternalLinearAlgebraExpr::copy(
-const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+void SYCLInternalLinearAlgebraExpr::copy([[maybe_unused]] const UniqueArray<Real>& vx,
+                                         [[maybe_unused]] UniqueArray<Real>& vr) const
 {
-  //cblas::copy(vx.size(), dataPtr(vx), 1, dataPtr(vr), 1);
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::copy not implemented");
 }
 
 void SYCLInternalLinearAlgebraExpr::copy(const SYCLVector<Real>& vx, SYCLVector<Real>& vy) const
@@ -412,10 +438,11 @@ void SYCLInternalLinearAlgebraExpr::copy(const SYCLVector<Real>& vx, SYCLVector<
 
 /*---------------------------------------------------------------------------*/
 
-Real SYCLInternalLinearAlgebraExpr::dot(
-Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+Real SYCLInternalLinearAlgebraExpr::dot([[maybe_unused]]
+Integer local_size, [[maybe_unused]] const UniqueArray<Real>& vx, [[maybe_unused]] const UniqueArray<Real>& vy) const
 {
-  return 0.; //cblas::dot(local_size, dataPtr(vx), 1, dataPtr(vy), 1);
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::dot not implemented");
 }
 
 Real SYCLInternalLinearAlgebraExpr::dot(const SYCLVector<Real>& vx, const SYCLVector<Real>& vy) const
@@ -423,25 +450,25 @@ Real SYCLInternalLinearAlgebraExpr::dot(const SYCLVector<Real>& vx, const SYCLVe
   return m_internal->dot(vx.internal()->values(), vy.internal()->values());
 }
 
-Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLBEllPackMatrix<Real>& a) const
+Real SYCLInternalLinearAlgebraExpr::norm2([[maybe_unused]] const SYCLBEllPackMatrix<Real>& a) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::notm2 not implemented");
 }
 
-void SYCLInternalLinearAlgebraExpr::copy(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+void SYCLInternalLinearAlgebraExpr::copy([[maybe_unused]] const SYCLBEllPackMatrix<Real>& a, [[maybe_unused]] SYCLBEllPackMatrix<Real>& r) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::copy not implemented");
 }
 
-void SYCLInternalLinearAlgebraExpr::add(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+void SYCLInternalLinearAlgebraExpr::add([[maybe_unused]] const SYCLBEllPackMatrix<Real>& a, [[maybe_unused]] SYCLBEllPackMatrix<Real>& r) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::add not implemented");
 }
 
-void SYCLInternalLinearAlgebraExpr::scal(Real alpha, SYCLBEllPackMatrix<Real>& a) const
+void SYCLInternalLinearAlgebraExpr::scal([[maybe_unused]] Real alpha, [[maybe_unused]] SYCLBEllPackMatrix<Real>& a) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::scal not implemented");

@@ -29,26 +29,31 @@
 
 
     <alien-bench>
-      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-      <redistribution>false</redistribution>
       <use-accelerator>false</use-accelerator>
-      <homogeneous>true</homogeneous>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <diagonal-coefficient>0.</diagonal-coefficient>
+      <homogeneous>true</homogeneous>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
-
-     <linear-solver name="HypreSolver">
-        <solver>BiCGStab</solver>
-        <num-iterations-max>1000</num-iterations-max>
-        <stop-criteria-value>1e-8</stop-criteria-value>
+      <zero-rhs>false</zero-rhs>
+      <nb-resolutions>1</nb-resolutions>
+      <linear-solver name="AlienCoreSolver">
+        <backend>SimpleCSR</backend>
+        <solver>BCGS</solver>
         <preconditioner>AMG</preconditioner>
-        <verbose>true</verbose>
+        <amg-solver name="HypreSolver">
+           <solver>AMG</solver>
+           <preconditioner>None</preconditioner>
+           <num-iterations-max>1</num-iterations-max>
+           <stop-criteria-value>1e-8</stop-criteria-value>
+           <verbose>true</verbose>
+        </amg-solver>
+        <max-iter>1000</max-iter>
+        <tol>1.e-8</tol>
         <output-level>2</output-level>
       </linear-solver>
-
-    
   </alien-bench>
 </case>

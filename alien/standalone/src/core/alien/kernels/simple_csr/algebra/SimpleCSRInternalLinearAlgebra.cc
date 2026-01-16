@@ -1,28 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+
 
 #include <cmath>
+#include <tuple>
 
 #include "SimpleCSRInternalLinearAlgebra.h"
 #include <alien/utils/Precomp.h>
@@ -79,15 +64,15 @@ SimpleCSRInternalLinearAlgebra::~SimpleCSRInternalLinearAlgebra()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-SimpleCSRInternalLinearAlgebra::ResourceType const&
+SimpleCSRInternalLinearAlgebra::ResourceType
 SimpleCSRInternalLinearAlgebra::resource(Matrix const& A)
 {
-  return A.distribution().rowDistribution();
+  return std::make_tuple(&A.distribution().rowDistribution(),A.blockSize());
 }
 
-void SimpleCSRInternalLinearAlgebra::allocate(ResourceType const& resource, Vector& v)
+void SimpleCSRInternalLinearAlgebra::allocate(ResourceType resource, Vector& v)
 {
-  v.init(resource, true);
+  v.init(*std::get<0>(resource),std::get<1>(resource), true);
 }
 
 void SimpleCSRInternalLinearAlgebra::free(Vector& v)
@@ -221,6 +206,37 @@ void SimpleCSRInternalLinearAlgebra::copy(const CSRVector& vx, CSRVector& vr) co
   CBLASMPIKernel::copy(vx.distribution(), vx, vr);
 }
 
+void SimpleCSRInternalLinearAlgebra::axpy(Real alpha,
+                                          const CSRVector& vx,
+                                          Integer stride_x,
+                                          CSRVector& vr,
+                                          Integer stride_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-AXPY");
+#endif
+  CBLASMPIKernel::axpy(vx.distribution(), alpha, vx, stride_x, vr, stride_r);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void SimpleCSRInternalLinearAlgebra::aypx([[maybe_unused]] Real alpha,
+                                          [[maybe_unused]] CSRVector& y,
+                                          [[maybe_unused]] Integer stride_y,
+                                          [[maybe_unused]] const CSRVector& x,
+                                          [[maybe_unused]] Integer stride_x) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+}
+
+void SimpleCSRInternalLinearAlgebra::copy(const Vector& vx,
+                                          Integer stride_x,
+                                          Vector& vr,
+                                          Integer stride_r) const
+{
+  CBLASMPIKernel::copy(vx.distribution(), vx, stride_x, vr, stride_r);
+}
 /*---------------------------------------------------------------------------*/
 
 Real SimpleCSRInternalLinearAlgebra::dot(const CSRVector& vx, const CSRVector& vy) const
@@ -281,6 +297,15 @@ void SimpleCSRInternalLinearAlgebra::assign(CSRVector& vx, Real alpha) const
 #endif
   CBLASMPIKernel::assign(vx.distribution(), alpha, vx);
 }
+
+Integer SimpleCSRInternalLinearAlgebra::computeCxr(const CSRMatrix& a, CSRMatrix& cxr_a) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  cxr_a.copy(a) ;
+  return block_size ;
+}
+
 
 SimpleCSRInternalLinearAlgebraExpr::SimpleCSRInternalLinearAlgebraExpr()
 : IInternalLinearAlgebraExpr<CSRMatrix, CSRVector>()

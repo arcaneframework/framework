@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -222,7 +222,7 @@ class SYCLLUSendRecvOp
     auto nrows  = modifier.nrows() ;
     auto nnz    = modifier.nnz() ;
     auto kcol   = modifier.kcol() ;
-    auto dcol   = modifier.dcol() ;
+    //auto dcol   = modifier.dcol() ;
     auto cols   = modifier.cols() ;
     //auto values = modifier.data() ;
     // clang-format on
@@ -254,7 +254,7 @@ class SYCLLUSendRecvOp
       int icount = 0;
       int icount2 = 0;
       for (int i = m_recv_info.m_ids_offset[ineighb]; i < m_recv_info.m_ids_offset[ineighb + 1]; ++i) {
-        int irow = i - nrows;
+        auto irow = i - nrows;
         int int_row_size = ibuffer[icount++];
         int ext_row_size = ibuffer[icount++];
         for (int conn_k = m_recv_connectivity_ids_ptr[irow]; conn_k < m_recv_connectivity_ids_ptr[irow + 1]; ++conn_k) {
@@ -325,9 +325,9 @@ class SYCLLUSendRecvOp
   const Alien::SimpleCSRInternal::CommInfo&    m_send_info;
   const Alien::SimpleCSRInternal::CommInfo&    m_recv_info;
 #ifdef USE_SYCL_USM
-  std::vector<ValueT*>                         m_send_lu_buffer;   
+  std::vector<ValueT*>                         m_send_lu_buffer;
   std::vector<ValueT*>                         m_recv_lu_buffer;
-  std::vector<int*>                            m_send_lu_ibuffer;   
+  std::vector<int*>                            m_send_lu_ibuffer;
   std::vector<int*>                            m_recv_lu_ibuffer;
 #else
   std::vector<std::vector<ValueType>>          m_send_lu_buffer;
