@@ -1,0 +1,148 @@
+name: IFPEN el8 foss/2021b build only
+
+on:
+  push:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  pull_request:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  workflow_dispatch:
+    inputs:
+      ctest_options:
+        description: 'CTest options'
+        required: false
+        default: ''
+
+env:
+  # Framework directories
+  #BUILD_DIR: /__w/framework/framework/build
+  #INSTALL_DIR: /__w/framework/framework/install
+  #SOURCE_DIR: /__w/framework/framework/source
+  #EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
+  BUILD_DIR: /tmp/framewok-build
+  INSTALL_DIR: /tmp/framework-install
+  SOURCE_DIR: "/__w/framework/framework/source-${{ github.run_id }}"
+  # ccache
+  CCACHE_COMPRESS: true
+  CCACHE_COMPRESSLEVEL: 6
+  CCACHE_MAXSIZE: 5G
+  #CCACHE_DIR: '/__w/framework/framework/ccache'
+  CCACHE_DIR: '/tmp/framework-ccache'
+  # CMake
+  CM_BUILD_OPTS: "-j16"
+  CM_BUILD_TYPE: Release
+  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+  # CTest
+  CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
+  # OpenMPI
+  OMPI_MCA_rmaps_base_oversubscribe: true
+  # To remove test output directory to reduce disk usage
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
+
+jobs:
+
+  build:
+    name: build and test
+    runs-on: [self-hosted, m-1]
+    timeout-minutes: 120
+    container:
+      image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2021b-el8:latest
+      options: --user root  # Avoid to match github UID in container.
+    strategy:
+      fail-fast: false
+
+    steps:
+
+      # ccache
+
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ifpen-el8-foss-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el8-foss-2021b-${{ env.CM_BUILD_TYPE }}-
+
+      # Installation
+
+      - name: Checkout
+        id: checkout
+        if: |
+          (success() || failure())
+        uses: actions/checkout@v5
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
+
+      - name: Modules information
+        id: modules_information
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
+        shell: bash
+        run: module --terse list 2>&1 | sort
+
+      - name: Configure
+        id: configure
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
+        shell: bash
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+
+      - name: Build
+        id: build
+        if: |
+          (success() || failure()) &&
+          steps.configure.outcome == 'success'
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        id: install
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        shell: bash
+        run: cmake --install ${{ env.BUILD_DIR }}
+
+      #- name: Test
+      #  id: test
+      #  if: |
+      #    (success() || failure()) &&
+      #    steps.build.outcome == 'success'
+      #  shell: bash
+      #  run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+
+      #- name: Upload test artifact
+      #  id: upload-test-artifact
+      #  uses: actions/upload-artifact@v4
+      #  if: |
+      #    (success() || failure()) &&
+      #    steps.test.outcome == 'failure'
+      #  with:
+      #    name: test-artifact
+      #    path: ${{ env.BUILD_DIR }}/Testing
+      #    retention-days: 1
+      #    include-hidden-files: true
+
+      - name: Save cache
+        id: save-cache
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
+
+      - name: Clean
+        id: clean
+        if: always()
+        run: |
+           rm -rf ${{ env.SOURCE_DIR }}
+           ls -l /__w/framework/framework
