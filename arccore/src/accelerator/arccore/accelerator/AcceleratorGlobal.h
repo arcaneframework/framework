@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2025 */
+/* AcceleratorGlobal.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ enum class eAtomicOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -90,22 +90,22 @@ getBadPolicyMessage(eExecutionPolicy policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
 #define ARCCORE_FATAL_NO_HIP_COMPILATION() \
-  ARCCORE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
+  ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
 
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
 #define ARCCORE_FATAL_NO_CUDA_COMPILATION() \
-  ARCCORE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
+  ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
 
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec SYCL
 #define ARCCORE_FATAL_NO_SYCL_COMPILATION() \
-  ARCCORE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
+  ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

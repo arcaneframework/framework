@@ -145,7 +145,7 @@ class AtomicImpl
   doAtomic(DataType* ptr, DataType value)
   {
 #if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
-    return impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
+    return Impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
 #elif defined(ARCCORE_DEVICE_TARGET_SYCL)
     return SyclAtomic<Operation>::apply(ptr, value);
 #else
