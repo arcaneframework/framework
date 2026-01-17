@@ -4,6 +4,7 @@ set(SOURCES
   ConcurrencyUtils.cc
   ITaskImplementation.h
   IThreadImplementation.h
+  IThreadImplementationService.h
   IThreadBarrier.h
   ParallelFor.h
   Mutex.h
