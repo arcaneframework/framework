@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.h                                             (C) 2000-2025 */
+/* PlatformUtils.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -62,24 +62,6 @@ extern "C++" ARCANE_UTILS_EXPORT void platformTerminate();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Service utilisé pour obtenir des informations
- * sur les symboles du code source.
- *
- * Peut retourner nul si aucun service n'est disponible.
- */
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService*
-getSymbolizerService();
-
-/*!
- * \brief Positionne le service pour obtenir des informations
- * sur les symboles du code source.
- *
- * Retourne l'ancien service utilisé.
- */
-extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT ISymbolizerService*
-setSymbolizerService(ISymbolizerService* service);
 
 /*!
  * \brief Service utilisé pour la gestion de l'affinité des processeurs.

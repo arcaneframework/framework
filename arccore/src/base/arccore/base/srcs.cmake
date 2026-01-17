@@ -61,6 +61,7 @@ set(SOURCES
   IndexOutOfRangeException.h
   Int128.h
   IStackTraceService.h
+  ISymbolizerService.h
   IObserver.h
   IObservable.h
   IRangeFunctor.h

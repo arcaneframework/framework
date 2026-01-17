@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2025 */
+/* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -100,31 +100,10 @@ namespace Arcane
 namespace platform
 {
   IOnlineDebuggerService* global_online_debugger_service = nullptr;
-  ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService* platform::
-getSymbolizerService()
-{
-  return global_symbolizer_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService* platform::
-setSymbolizerService(ISymbolizerService* service)
-{
-  ISymbolizerService* old_service = global_symbolizer_service;
-  global_symbolizer_service = service;
-  return old_service;
 }
 
 /*---------------------------------------------------------------------------*/
