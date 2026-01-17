@@ -130,6 +130,13 @@ HypreInternalLinearSolver::~HypreInternalLinearSolver()
   ;
 }
 
+void
+HypreInternalLinearSolver::updateParallelMng(
+    Arccore::MessagePassing::IMessagePassingMng* pm)
+{
+  m_parallel_mng = pm;
+}
+
 /*---------------------------------------------------------------------------*/
 void
 HypreInternalLinearSolver::initializeLibrary(bool exec_on_device,
@@ -182,13 +189,6 @@ HypreInternalLinearSolver::init()
 }
 
 /*---------------------------------------------------------------------------*/
-
-void
-HypreInternalLinearSolver::updateParallelMng(
-    Arccore::MessagePassing::IMessagePassingMng* pm ALIEN_UNUSED_PARAM)
-{
-  ;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
