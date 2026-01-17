@@ -603,11 +603,11 @@ if (TARGET htssolver)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH bench.htssamg
+            BENCH bench.htsamg
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
-            OPTIONS AlienBench-htssamg.arc
+            OPTIONS AlienBench-htsamg.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
@@ -621,11 +621,11 @@ if (TARGET htssolver)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH bench.htssamg
+            BENCH bench.htsamg
             NAME parallel
             PROCS 4
             COMMAND alien_bench.exe
-            OPTIONS AlienBench-htssamg-4P.arc
+            OPTIONS AlienBench-htsamg-4P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
