@@ -32,6 +32,7 @@
 
 
     <alien-bench>
+      <redistribution>false</redistribution>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
