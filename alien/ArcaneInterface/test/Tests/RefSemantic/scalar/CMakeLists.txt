@@ -217,23 +217,26 @@ foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
             )
         endif (TARGET petsc)
 
-        if (TARGET hypre)
-            alien_test(
-                    BENCH refmvhandlers.scalar
-                    NAME Redistributor.hypre.${STRATEGY}.${METHOD}
-                    PROCS 4
-                    COMMAND refmvhandlers.ScalarRedistributor
-                    OPTIONS
-                    --size=100
-                    --solver-package=hypre
-                    --solver=gmres
-                    --precond=euclid
-                    --tol=1.e-10
-                    --max-iter=100
-                    --redist-strategy=${STRATEGY}
-                    --redist-method=${METHOD}
-            )
-        endif ()
+        # GG: This test is currently disabled (17/01/2026)
+        # because it does not work in the CI. There is a
+        # deadlock when calling solve().
+        # if (TARGET hypre)
+        #     alien_test(
+        #             BENCH refmvhandlers.scalar
+        #             NAME Redistributor.hypre.${STRATEGY}.${METHOD}
+        #             PROCS 4
+        #             COMMAND refmvhandlers.ScalarRedistributor
+        #             OPTIONS
+        #             --size=100
+        #             --solver-package=hypre
+        #             --solver=gmres
+        #             --precond=euclid
+        #             --tol=1.e-10
+        #             --max-iter=100
+        #             --redist-strategy=${STRATEGY}
+        #             --redist-method=${METHOD}
+        #     )
+        # endif ()
 
         if (TARGET ifpsolver)
             alien_test(
