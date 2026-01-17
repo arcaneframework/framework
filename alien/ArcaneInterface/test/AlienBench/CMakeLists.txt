@@ -92,7 +92,7 @@ if(ALIEN_USE_SYCL)
        add_sycl_to_target(TARGET  alien_bench.exe
                            SOURCES AlienBenchSYCL.cc)
     ENDIF()
-     
+
 ENDIF()
 
 if (TARGET intel)
@@ -152,7 +152,7 @@ createExecutable(test_petsc_cuda.exe)
 addSources(test_petsc_cuda.exe test_petsc.cpp)
 linkLibraries(test_petsc_cuda.exe mpi)
 
-linkLibraries(test_petsc_cuda.exe 
+linkLibraries(test_petsc_cuda.exe
               Boost::program_options)
 
 linkLibraries(test_petsc_cuda.exe petsc)
@@ -161,7 +161,7 @@ linkLibraries(test_petsc_cuda.exe CUDA::cudart)
 commit(test_petsc_cuda.exe)
 endif()
 endif()
-          
+
 if(ALIEN_USE_SYCL)
 if (TARGET hypre)
 if (TARGET CUDA::cudart)
@@ -210,12 +210,12 @@ if(ALIEN_USE_SYCL)
       add_sycl_to_target(TARGET  alien_hypre_sycl.exe
                            SOURCES hypre_sycl.cpp)
     ENDIF()
-     
+
 ENDIF()
 
 linkLibraries(alien_hypre_sycl.exe mpi)
 
-linkLibraries(alien_hypre_sycl.exe 
+linkLibraries(alien_hypre_sycl.exe
               Boost::program_options)
 
 linkLibraries(alien_hypre_sycl.exe hypre)
@@ -233,7 +233,7 @@ endif()
 
 if(ALIEN_USE_SYCL)
     IF(ALIEN_USE_ACPPSYCL)
-        linkLibraries(alien_hypre_sycl.exe 
+        linkLibraries(alien_hypre_sycl.exe
                       Boost::fiber Boost::context)
     ENDIF()
 ENDIF()
@@ -330,6 +330,20 @@ if (TARGET ifpsolver)
             )
 endif ()
 
+if (TARGET htssolver)
+    configure_file(AlienBench-hts.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts.arc COPYONLY)
+    configure_file(AlienBench-hts-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts-2P.arc COPYONLY)
+    configure_file(AlienBench-htsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg.arc COPYONLY)
+    configure_file(AlienBench-htsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg-4P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-hts.arc
+            AlienBench-hts-2P.arc
+            AlienBench-htsamg.arc
+            AlienBench-htsamg-4P.arc
+            )
+endif ()
+
 if(TARGET COMPOSYX::composyx)
 
     configure_file(AlienBench-composyx.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx.arc COPYONLY)
@@ -413,7 +427,7 @@ if (TARGET petsc)
             OPTIONS AlienBench-petsc-gamg-4P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-            
+
     if(TARGET petsc::spai)
         alien_test(
                 BENCH bench.petsc-spai
@@ -455,7 +469,7 @@ if (TARGET hypre)
             OPTIONS AlienBench-hypre-2P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-            
+
 if(ALIEN_USE_SYCL)
     alien_test(
             BENCH bench.hypre.ilu
@@ -465,7 +479,7 @@ if(ALIEN_USE_SYCL)
             OPTIONS AlienBench-hypreilu.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-     
+
     alien_test(
             BENCH bench.hypre.fsai
             NAME seq
@@ -484,7 +498,7 @@ if(ALIEN_USE_SYCL)
             OPTIONS AlienBench-hypreilu-sycl.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-     
+
     alien_test(
             BENCH bench.hypre.fsai.sycl
             NAME seq
@@ -573,6 +587,45 @@ if (TARGET ifpsolver)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-ifpsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif ()
+
+if (TARGET htssolver)
+
+    alien_test(
+            BENCH bench.hts
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hts.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htssamg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htssamg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.hts
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hts-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htssamg
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htssamg-4P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
