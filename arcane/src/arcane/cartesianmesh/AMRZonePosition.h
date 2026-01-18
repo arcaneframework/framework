@@ -107,6 +107,9 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
    * \brief Méthode permettant de convertir ce AMRZonePosition en
    * AMRPatchPosition.
    *
+   * \warning La taille de la couche de mailles de recouvrement n'est pas
+   * correctement défini ! À faire après l'appel à cette méthode.
+   *
    * \param mesh Le maillage cartesien.
    * \return Le AMRPatchPosition correspondant.
    */

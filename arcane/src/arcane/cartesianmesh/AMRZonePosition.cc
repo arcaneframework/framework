@@ -240,7 +240,9 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
   position.setLevel(level_r);
 
-  mesh->traceMng()->info() << "Position test -- Min : " << position.minPoint() << " -- Max : " << position.maxPoint() << " -- Level : " << position.level();
+  // Attention : Pas assez d'infos pour mettre le bon overlapSize !
+
+  //mesh->traceMng()->info() << "Position test -- Min : " << position.minPoint() << " -- Max : " << position.maxPoint() << " -- Level : " << position.level();
 
   return position;
 }
