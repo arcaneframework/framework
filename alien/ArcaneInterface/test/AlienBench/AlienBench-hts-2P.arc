@@ -11,18 +11,15 @@
       <variable>U</variable>
       <variable>X</variable>
       <variable>K</variable>
+      <variable>S</variable>
     </output>
   </arcane-post-processing>
 
   <mesh>
-    <!--file internal-partition='true'>cube3D.vt2</file-->
-     <!--file internal-partition='true'>tube5x5x100.vtk</file-->
-     <!--file internal-partition='true'>tube2x2x4.vtk</file-->
-     
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>2 2 1</nsd>
+        <nsd>2 1 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
         <lz nz="10">1.</lz>
@@ -32,20 +29,25 @@
 
 
     <alien-bench>
-	    <redistribution>false</redistribution>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <redistribution>false</redistribution>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
+      <homogeneous>true</homogeneous>
+      <zero-rhs>false</zero-rhs>
+      <nb-resolutions>1</nb-resolutions>
 
-
-      <linear-solver name="IFPSolver">
-          <num-iterations-max>1000</num-iterations-max>
-          <stop-criteria-value>1e-8</stop-criteria-value>
-          <precond-option>AMG</precond-option>
-           <output>1</output>
+      <linear-solver name="HTSSolver">
+        <solver>BiCGStab</solver>
+        <max-iteration-num>1000</max-iteration-num>
+        <stop-criteria-value>1e-8</stop-criteria-value>
+        <preconditioner>ILU0</preconditioner>
+        <output>1</output>
+        <nb-subpart>1</nb-subpart>
       </linear-solver>
 
     
