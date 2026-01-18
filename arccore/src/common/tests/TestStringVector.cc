@@ -8,9 +8,12 @@
 #include <gtest/gtest.h>
 
 #include "arccore/common/StringVector.h"
+
 #include "arccore/base/String.h"
 
-using namespace Arccore;
+#include "arccore/common/List.h"
+
+using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,4 +50,27 @@ TEST(StringVector, Misc1)
 
   v3 = v2;
   ASSERT_EQ(v3.size(), 0);
+
+  // Test conversion vers/depuis StringList.
+  {
+    StringList sl3 = v3.toStringList();
+    ASSERT_EQ(sl3.count(), 0);
+
+    StringList sl4 = v4.toStringList();
+    ASSERT_EQ(sl4.count(), 2);
+    ASSERT_EQ(sl4.count(), v4.size());
+    ASSERT_EQ(sl4[0], v4[0]);
+    ASSERT_EQ(sl4[1], v4[1]);
+
+    StringVector v5(sl3);
+    ASSERT_EQ(v5.size(), 0);
+    StringList sl5 = v5.toStringList();
+    ASSERT_EQ(sl5.count(), 0);
+
+    StringVector v6(sl4);
+    ASSERT_EQ(v6.size(), 2);
+    ASSERT_EQ(sl4.count(), v6.size());
+    ASSERT_EQ(sl4[0], v6[0]);
+    ASSERT_EQ(sl4[1], v6[1]);
+  }
 }

@@ -37,6 +37,7 @@ class ARCCORE_COMMON_EXPORT StringVector
  public:
 
   StringVector() = default;
+  explicit StringVector(const StringList& string_list);
   StringVector(const StringVector& rhs);
   StringVector(StringVector&& rhs) noexcept;
   StringVector& operator=(const StringVector& rhs);
@@ -50,6 +51,9 @@ class ARCCORE_COMMON_EXPORT StringVector
   void add(const String& str);
   //! Retourne la i-ème chaîne de caractères
   String operator[](Int32 index) const;
+
+  //! Converti l'instance en 'StringList'
+  StringList toStringList() const;
 
  private:
 
