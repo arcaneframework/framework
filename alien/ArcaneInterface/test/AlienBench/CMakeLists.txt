@@ -417,6 +417,7 @@ alien_test(
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+if(TARGET eigen3)
 alien_test(
             BENCH bench.aliensolver-ilu0-b2
             NAME seq
@@ -425,6 +426,7 @@ alien_test(
             OPTIONS AlienBench-aliensolver-ilu0-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
 
 alien_test(
             BENCH bench.aliensolver-ilu0
@@ -444,6 +446,7 @@ alien_test(
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+if(TARGET eigen3)
 alien_test(
             BENCH bench.aliensolver-cheb-bs2
             NAME seq
@@ -452,6 +455,7 @@ alien_test(
             OPTIONS AlienBench-aliensolver-cheb-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
 
 alien_test(
             BENCH bench.aliensolver-cheb
@@ -472,6 +476,7 @@ alien_test(
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+if(TARGET eigen3)
 alien_test(
             BENCH bench.aliensolver-cxramg
             NAME seq
@@ -480,6 +485,7 @@ alien_test(
             OPTIONS AlienBench-aliensolver-cxramg-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
 endif()
 
 if (TARGET petsc)
