@@ -2,6 +2,7 @@ set(SOURCES
   ConcurrencyGlobal.h
   ConcurrencyGlobal.cc
   ConcurrencyUtils.cc
+  ConcurrencyApplication.cc
   ITaskImplementation.h
   IThreadImplementation.h
   IThreadImplementationService.h
@@ -15,5 +16,7 @@ set(SOURCES
   StdThreadImplementation.cc
   Task.h
   TaskFactory.h
+
+  internal/ConcurrencyApplication.h
   internal/TaskFactoryInternal.h
 )

@@ -59,7 +59,7 @@ if (ARCCORE_ENABLE_TBB)
   target_link_libraries(arccore_concurrency PRIVATE arccon::TBB)
 endif()
 
-target_link_libraries(arccore_concurrency PUBLIC arccore_base)
+target_link_libraries(arccore_concurrency PUBLIC arccore_trace arccore_base)
 
 find_package(Threads)
 if (TARGET Threads::Threads)
