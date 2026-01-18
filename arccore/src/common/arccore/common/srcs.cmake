@@ -51,6 +51,8 @@ set(SOURCES
   StridedLoopRanges.h
   StringDictionary.h
   StringDictionary.cc
+  StringVector.h
+  StringVector.cc
 
   internal/FieldProperty.h
   internal/IMemoryResourceMngInternal.h
