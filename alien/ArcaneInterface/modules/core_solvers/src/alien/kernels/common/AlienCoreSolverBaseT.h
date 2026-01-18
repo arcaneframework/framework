@@ -130,7 +130,7 @@ class AlienCoreSolverBaseT
         {
           case AlienCoreSolverOptionTypes::ChebyshevPoly:
           {
-              this->traceMng()->info()<<"CHEBYSHEV PRECONDITIONER";
+              if(this->traceMng()) this->traceMng()->info()<<"CHEBYSHEV PRECONDITIONER";
               double polynom_factor          = m_options->polyFactor() ;
               int    polynom_order           = m_options->polyOrder() ;
               int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
@@ -153,7 +153,7 @@ class AlienCoreSolverBaseT
           break;
           case AlienCoreSolverOptionTypes::NeumannPoly:
           {
-            this->traceMng()->info()<<"NEUMANN PRECONDITIONER";
+            if(this->traceMng()) this->traceMng()->info()<<"NEUMANN PRECONDITIONER";
             double polynom_factor          = m_options->polyFactor() ;
             int    polynom_order           = m_options->polyOrder() ;
             int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
@@ -179,7 +179,7 @@ class AlienCoreSolverBaseT
             if(m_options->amgSolver().size()>0)
               amg_solver = m_options->amgSolver()[0] ;
             auto amg_backend_name = amg_solver->getBackEndName();
-            this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+            if(this->traceMng()) this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
             if(amg_backend_name=="hypre")
             {
 #ifdef ALIEN_USE_HYPRE
@@ -210,7 +210,7 @@ class AlienCoreSolverBaseT
             if(m_options->amgSolver().size()>0)
               amg_solver = m_options->amgSolver()[0] ;
             auto amg_backend_name = amg_solver->getBackEndName();
-            this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+            if(this->traceMng()) this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
             if(amg_backend_name=="hypre")
             {
 #ifdef ALIEN_USE_HYPRE
@@ -252,7 +252,7 @@ class AlienCoreSolverBaseT
           case AlienCoreSolverOptionTypes::Diag:
           default:
           {
-            this->traceMng()->info()<<"DIAG PRECONDITIONER";
+            if(this->traceMng()) this->traceMng()->info()<<"DIAG PRECONDITIONER";
             typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
             PrecondType      precond{alg,matrixA} ;
             {
@@ -280,7 +280,7 @@ class AlienCoreSolverBaseT
       {
       case AlienCoreSolverOptionTypes::ChebyshevPoly:
        {
-         this->traceMng()->info()<<"CHEBYSHEV PRECONDITIONER";
+         if(this->traceMng()) this->traceMng()->info()<<"CHEBYSHEV PRECONDITIONER";
           double polynom_factor          = m_options->polyFactor() ;
           int    polynom_order           = m_options->polyOrder() ;
           int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
@@ -303,7 +303,7 @@ class AlienCoreSolverBaseT
        break ;
       case AlienCoreSolverOptionTypes::NeumannPoly:
         {
-          this->traceMng()->info()<<"NEUMANN PRECONDITIONER";
+          if(this->traceMng()) this->traceMng()->info()<<"NEUMANN PRECONDITIONER";
           double polynom_factor          = m_options->polyFactor() ;
           int    polynom_order           = m_options->polyOrder() ;
           int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
@@ -325,7 +325,7 @@ class AlienCoreSolverBaseT
         break ;
       case AlienCoreSolverOptionTypes::ILU0:
         {
-          this->traceMng()->info()<<"ILU0 PRECONDITIONER";
+          if(this->traceMng()) this->traceMng()->info()<<"ILU0 PRECONDITIONER";
           typedef Alien::ILU0Preconditioner<AlgebraType> PrecondType ;
           PrecondType precond{alg,matrixA,traceMng()} ;
           {
@@ -342,7 +342,7 @@ class AlienCoreSolverBaseT
         break ;
       case AlienCoreSolverOptionTypes::FILU0:
         {
-          this->traceMng()->info()<<"FILU0 PRECONDITIONER";
+          if(this->traceMng()) this->traceMng()->info()<<"FILU0 PRECONDITIONER";
           typedef Alien::FILU0Preconditioner<AlgebraType> PrecondType ;
           PrecondType precond{alg,matrixA,traceMng()} ;
           precond.setParameter("nb-factor-iter",m_options->filuFactorNiter()) ;
@@ -366,7 +366,7 @@ class AlienCoreSolverBaseT
           if(m_options->amgSolver().size()>0)
             amg_solver = m_options->amgSolver()[0] ;
           auto amg_backend_name = amg_solver->getBackEndName();
-          this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+          if(this->traceMng()) this->traceMng()->info()<<"AMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
           if(amg_backend_name=="hypre")
           {
 #ifdef ALIEN_USE_HYPRE
@@ -397,7 +397,7 @@ class AlienCoreSolverBaseT
           if(m_options->amgSolver().size()>0)
             amg_solver = m_options->amgSolver()[0] ;
           auto amg_backend_name = amg_solver->getBackEndName();
-          this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
+          if(this->traceMng()) this->traceMng()->info()<<"CxrAMG PRECONDITIONER - BackEnd : "<<amg_backend_name;
           if(amg_backend_name=="hypre")
           {
 #ifdef ALIEN_USE_HYPRE
@@ -442,7 +442,7 @@ class AlienCoreSolverBaseT
       case AlienCoreSolverOptionTypes::Diag:
       default:
         {
-          this->traceMng()->info()<<"DIAG PRECONDITIONER";
+          if(this->traceMng()) this->traceMng()->info()<<"DIAG PRECONDITIONER";
           typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
           PrecondType      precond{alg,matrixA} ;
           {
@@ -462,7 +462,7 @@ class AlienCoreSolverBaseT
     }
     break ;
     default :
-      this->traceMng()->fatal()<<"unknown solver";
+      if(this->traceMng()) this->traceMng()->fatal()<<"unknown solver";
     }
 
     if(stop_criteria.getStatus())
@@ -486,13 +486,16 @@ class AlienCoreSolverBaseT
           cout() << "Residual             : " << m_status.residual;
           cout() << "Number of iterations : " << m_status.iteration_count;
         });
-        m_timer.printInfo(traceMng()->info().file(),"\nAlienCoreSolver Perf INFO :") ;
+        if(traceMng())
+          m_timer.printInfo(traceMng()->info().file(),"\nAlienCoreSolver Perf INFO :") ;
+        else
+          m_timer.printInfo("\nAlienCoreSolver Perf INFO :") ;
       }
       return true;
     }
     else
     {
-      this->traceMng()->info()<<"Solver convergence failed";
+      if(this->traceMng()) this->traceMng()->info()<<"Solver convergence failed";
       m_status.succeeded = false;
       m_status.error = 1;
       m_total_iter_num += m_status.iteration_count ;
@@ -504,6 +507,7 @@ class AlienCoreSolverBaseT
           cout() << "Resolution status      : Error";
           cout() << "Error code             : " << m_status.error;
         });
+        if(this->traceMng())
         m_timer.printInfo(traceMng()->info().file(),"AlienCoreSolver Perf INFO :") ;
       }
       return false;
@@ -549,7 +553,7 @@ class AlienCoreSolverBaseT
       cout() << "|---------------------------------------------|";
       cout();
     });
-    if(m_output_level>0)
+    if(m_output_level>0 && traceMng())
       m_timer.printInfo(traceMng()->info().file(),"AlienCoreSolver Perf INFO :") ;
   }
   void printCurrentTimeInfo() {}

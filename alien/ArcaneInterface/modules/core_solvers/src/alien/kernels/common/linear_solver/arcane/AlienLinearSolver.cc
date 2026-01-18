@@ -22,6 +22,7 @@ AlienLinearSolver::AlienLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 , Alien::AlienCoreLinearSolver(
       sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 {
+  Alien::setTraceMng(Arcane::TraceAccessor::traceMng());
 }
 #endif
 
