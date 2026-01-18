@@ -457,7 +457,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 et 2 : Mailles de recouvrements (overallCells)
+   * 1 et 2 : Mailles de recouvrements (overlapCells)
    * 3 : Mailles externes (outerCells)
    * 4 : Mailles internes (innerCells)
    *
@@ -465,13 +465,13 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
    * patchs.
    */
-  CellGroup overallCells() const;
+  CellGroup overlapCells() const;
 
   /*!
    * \brief Groupe de toutes les mailles du patch dans la direction.
    *
    * Regroupe toutes les mailles qui ne sont ni de recouvrement, ni fantôme.
-   * (`innerCells() + outerCells()` ou simplement `!overallCells()`)
+   * (`innerCells() + outerCells()` ou simplement `!overlapCells()`)
    */
   CellGroup inPatchCells() const;
 
@@ -596,7 +596,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * Suppose que init() a été appelé.
    */
   void _internalComputeInnerAndOuterItems(const ItemGroup& items);
-  void _internalComputeCellGroups(const CellGroup& all_cells, const CellGroup& in_patch_cells, const CellGroup& overall_cells);
+  void _internalComputeCellGroups(const CellGroup& all_cells, const CellGroup& in_patch_cells, const CellGroup& overlap_cells);
 
   /*!
    * \internal

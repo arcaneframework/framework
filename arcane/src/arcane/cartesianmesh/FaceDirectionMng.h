@@ -160,7 +160,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 et 2 : Mailles de recouvrements (overallCells)
+   * 1 et 2 : Mailles de recouvrements (overlapCells)
    * 3 : Mailles externes (outerCells)
    * 4 : Mailles internes (innerCells)
    *
@@ -168,13 +168,13 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
    * patchs.
    */
-  FaceGroup overallFaces() const;
+  FaceGroup overlapFaces() const;
 
   /*!
    * \brief Groupe de toutes les faces du patch dans la direction.
    *
    * Ce sont toutes les faces qui n'ont pas deux mailles de recouvrement.
-   * (`innerFaces() + outerFaces()` ou simplement `!overallFaces()`)
+   * (`innerFaces() + outerFaces()` ou simplement `!overlapFaces()`)
    *
    * \warning Les faces au bord du domaine (ayant donc une seule
    * maille "outer") sont incluses dans ce groupe. Il ne faut donc pas supposer
