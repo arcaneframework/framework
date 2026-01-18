@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.h                                               (C) 2000-2025 */
+/* Application.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation IApplication.                                              */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +40,7 @@ class IServiceAndModuleFactoryMng;
 class IProcessorAffinityService;
 class ISymbolizerService;
 class ApplicationBuildInfo;
+class ConcurrencyApplication;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -168,7 +169,7 @@ class ARCANE_IMPL_EXPORT Application
   Ref<IProcessorAffinityService> m_processor_affinity_service;
   Ref<IPerformanceCounterService> m_performance_counter_service;
   Ref<IParallelSuperMng> m_owned_sequential_parallel_super_mng;
-  std::unique_ptr<CoreApplication> m_core_application;
+  std::unique_ptr<ConcurrencyApplication> m_core_application;
 
  private:
 
