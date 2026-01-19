@@ -623,6 +623,8 @@ set(ARCANE_ORIGINAL_SOURCES
   SimdItem.h
   SimdMathUtils.h
   SimpleProperty.h
+  SimpleHTMLMeshAMRPatchExporter.cc
+  SimpleHTMLMeshAMRPatchExporter.h
   SimpleSVGMeshExporter.cc
   SimpleSVGMeshExporter.h
   SimpleTableInternal.h

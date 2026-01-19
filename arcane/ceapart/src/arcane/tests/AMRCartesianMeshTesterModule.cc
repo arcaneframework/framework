@@ -39,6 +39,7 @@
 #include "arcane/core/IPostProcessorWriter.h"
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/SimpleSVGMeshExporter.h"
+#include "arcane/core/SimpleHTMLMeshAMRPatchExporter.h"
 #include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
@@ -413,6 +414,10 @@ _processPatches()
   if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
                  nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
+
+  SimpleHTMLMeshAMRPatchExporter amr_exporter;
+  Directory directory = subDomain()->exportDirectory();
+
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -462,12 +467,18 @@ _processPatches()
     // Exporte le patch au format SVG
     if (dimension==2 && options()->dumpSvg()){
       String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
-      Directory directory = subDomain()->exportDirectory();
       String full_filename = directory.file(filename);
       std::ofstream ofile(full_filename.localstr());
       SimpleSVGMeshExporter exporter(ofile);
       exporter.write(patch_cells);
+      amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
     }
+  }
+  {
+    String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
+    String amr_full_filename = directory.file(amr_filename);
+    std::ofstream amr_ofile(amr_full_filename.localstr());
+    amr_exporter.write(amr_ofile);
   }
 }
 
