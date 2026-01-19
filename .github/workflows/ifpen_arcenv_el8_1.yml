@@ -30,7 +30,7 @@ env:
   # CMake
   CM_BUILD_OPTS: "-j16"
   CM_BUILD_TYPE: Release
-  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+  #CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # OpenMPI
