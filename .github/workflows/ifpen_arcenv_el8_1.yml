@@ -80,12 +80,12 @@ jobs:
           submodules: true
 
       - name: Versions information
-        id: modules_information
+        id: versions_information
         if: |
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cat /VERSIONS
+        run: cat /VERSIONS.txt
 
       - name: Configure
         id: configure
