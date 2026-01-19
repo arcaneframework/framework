@@ -139,6 +139,19 @@ setOverlapLayerSizeTopLevel(Int32 new_size) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void CartesianMeshAMRMng::
+disableOverlapLayer()
+{
+  auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
+  if (amr_type == eMeshAMRKind::Cell) {
+    return;
+  }
+  m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer CartesianMeshAMRMng::
 reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) const
 {

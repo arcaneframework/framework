@@ -1075,48 +1075,6 @@ adaptLevel(Int32 level_to_adapt)
             << " -- overlapLayerSize : " << patch.overlapLayerSize();
   }
 
-  // On ajoute les flags sur les mailles des patchs.
-  // TODO : A nettoyer (partie faite par _addPatch() maintenant).
-  // ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_adapt + 1)) {
-  //   bool in_overlap = false;
-  //   bool in_patch = false;
-  //
-  //   // Si une maille est dans un patch, elle prend le flag II_InPatch.
-  //   // Si une maille est une maille de recouvrement pour un patch, elle prend
-  //   // le flag II_Overlap.
-  //   // Comme son nom l'indique, une maille de recouvrement peut recouvrir un
-  //   // autre patch. Donc une maille peut être à la fois II_InPatch et
-  //   // II_Overlap.
-  //   const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
-  //   for (const AMRPatchPosition& patch : all_patches) {
-  //     if (patch.isIn(pos)) {
-  //       in_patch = true;
-  //     }
-  //     else if (patch.isInWithOverlap(pos)) {
-  //       in_overlap = true;
-  //     }
-  //     if (in_patch && in_overlap) {
-  //       break;
-  //     }
-  //   }
-  //   if (in_patch && in_overlap) {
-  //     icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
-  //     icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
-  //   }
-  //   else if (in_overlap) {
-  //     icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
-  //     icell->mutableItemBase().removeFlags(ItemFlags::II_InPatch); //Au cas où.
-  //   }
-  //   else if (in_patch) {
-  //     icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
-  //     icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap); //Au cas où.
-  //   }
-  //   else {
-  //     icell->mutableItemBase().removeFlags(ItemFlags::II_InPatch); //Au cas où.
-  //     icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap); //Au cas où.
-  //   }
-  // }
-
   {
     //   UniqueArray<CartCoord> out(numbering->globalNbCellsY(level_to_adapt + 1) * numbering->globalNbCellsX(level_to_adapt + 1), -1);
     //   Array2View av_out(out.data(), numbering->globalNbCellsY(level_to_adapt + 1), numbering->globalNbCellsX(level_to_adapt + 1));
@@ -1685,10 +1643,17 @@ availableGroupIndex()
 void CartesianPatchGroup::
 setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
 {
-  // On s'assure que la taille fournie par l'utilisateur est un multiple de
-  // pattern (2 aujourd'hui).
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
-  Int32 new_size_of_overlap_layer_top_level = size_of_overlap_layer_top_level + (size_of_overlap_layer_top_level % numbering->pattern());
+
+  Int32 new_size_of_overlap_layer_top_level = 0;
+  // La valeur -1 est une valeur spéciale qui permet de désactiver les mailles
+  // de recouvrement.
+  if (size_of_overlap_layer_top_level == -1)
+    new_size_of_overlap_layer_top_level = -1;
+  else
+    // On s'assure que la taille fournie par l'utilisateur est un multiple de
+    // pattern (2 aujourd'hui).
+    new_size_of_overlap_layer_top_level = size_of_overlap_layer_top_level + (size_of_overlap_layer_top_level % numbering->pattern());
 
   if (new_size_of_overlap_layer_top_level == m_size_of_overlap_layer_top_level) {
     return;

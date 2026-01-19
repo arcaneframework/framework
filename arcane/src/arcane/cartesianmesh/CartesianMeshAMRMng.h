@@ -284,6 +284,19 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
   void setOverlapLayerSizeTopLevel(Int32 new_size) const;
 
   /*!
+   * \brief Méthode permettant de désactiver les couches de mailles de
+   * recouvrement (et de les détruire si présentes).
+   *
+   * \warning Sans cette couche, il peut y avoir plus d'un niveau de
+   * raffinement entre deux mailles. C'est à l'utilisateur de gérer lui-même
+   * cette contrainte.
+   *
+   * \note Pour réactiver ces couches, un appel à
+   * \a setOverlapLayerSizeTopLevel() est suffisant.
+   */
+  void disableOverlapLayer();
+
+  /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
    * de mailles fantômes sur un niveau de raffinement défini.
    *

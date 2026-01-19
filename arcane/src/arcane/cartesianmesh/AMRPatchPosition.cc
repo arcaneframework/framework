@@ -399,6 +399,9 @@ haveIntersection(const AMRPatchPosition& other) const
 Int32 AMRPatchPosition::
 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
 {
+  if (overlap_layer_size_top_level == -1) {
+    return 0;
+  }
   if (level < 0 || level > higher_level) {
     ARCANE_FATAL("Level {0} doesn't exist (higher_level={1})", level, higher_level);
   }
