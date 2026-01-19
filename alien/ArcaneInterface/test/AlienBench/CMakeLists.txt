@@ -250,10 +250,28 @@ endif ()
 
 configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
 configure_file(AlienBench-aliensolver.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0-2P.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0-bs2.arc COPYONLY)
+configure_file(AlienBench-aliensolver-filu0.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-filu0.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb-2P.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb-bs2.arc COPYONLY)
+configure_file(AlienBench-aliensolver-amg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-amg.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cxramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cxramg-bs2.arc COPYONLY)
 
 list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.config
             AlienBench-aliensolver.arc
+            AlienBench-aliensolver-ilu0.arc
+            AlienBench-aliensolver-ilu0-2P.arc
+            AlienBench-aliensolver-ilu0-bs2.arc
+            AlienBench-aliensolver-filu0.arc
+            AlienBench-aliensolver-cheb.arc
+            AlienBench-aliensolver-cheb-2P.arc
+            AlienBench-aliensolver-cheb-bs2.arc
+            AlienBench-aliensolver-amg.arc
+            AlienBench-aliensolver-cxramg.arc
             )
 
 if (TARGET petsc)
@@ -389,6 +407,86 @@ alien_test(
             OPTIONS AlienBench-aliensolver.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+alien_test(
+            BENCH bench.aliensolver-ilu0
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-ilu0-b2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+
+alien_test(
+            BENCH bench.aliensolver-ilu0
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+alien_test(
+            BENCH bench.aliensolver-cheb
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-cheb-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+
+alien_test(
+            BENCH bench.aliensolver-cheb
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET hypre)
+alien_test(
+            BENCH bench.aliensolver-amg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-amg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-cxramg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cxramg-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+endif()
 
 if (TARGET petsc)
 

@@ -29,12 +29,11 @@
 
 
     <alien-bench>
-      <redistribution>false</redistribution>
       <use-accelerator>false</use-accelerator>
-      <block-size>2</block-size>
+      <redistribution>false</redistribution>
       <homogeneous>true</homogeneous>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-      <diagonal-coefficient>10</diagonal-coefficient>
+      <diagonal-coefficient>0.01</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
@@ -45,7 +44,7 @@
       <linear-solver name="AlienCoreSolver">
         <backend>SimpleCSR</backend>
         <solver>BCGS</solver>
-        <preconditioner>ILU0</preconditioner>
+        <preconditioner>FILU0</preconditioner>
         <max-iter>1000</max-iter>
         <tol>1.e-12</tol>
         <output-level>1</output-level>

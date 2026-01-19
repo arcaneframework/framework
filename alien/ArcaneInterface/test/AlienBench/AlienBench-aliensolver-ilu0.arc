@@ -31,15 +31,14 @@
     <alien-bench>
       <redistribution>false</redistribution>
       <use-accelerator>false</use-accelerator>
-      <block-size>2</block-size>
-      <homogeneous>true</homogeneous>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-      <diagonal-coefficient>10</diagonal-coefficient>
-      <lambdax>0.125</lambdax>
+      <diagonal-coefficient>0.01</diagonal-coefficient>
+      <!--lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
       <sigma>1000000.</sigma>
-      <epsilon>0.01</epsilon>
+      <epsilon>0.01</epsilon-->
+      <homogeneous>true</homogeneous>
       <zero-rhs>false</zero-rhs>
       <nb-resolutions>1</nb-resolutions>
       <linear-solver name="AlienCoreSolver">
