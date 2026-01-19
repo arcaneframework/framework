@@ -161,7 +161,7 @@ jobs:
         with:
           verbose: true
           fail_ci_if_error: true
-          file: ${{ env.CT_RESULT_DIR }}/results.xml
+          files: ${{ env.CT_RESULT_DIR }}/results.xml
           report_type: test_results
 
       - name: Display disks infos
