@@ -474,7 +474,7 @@ _processPatches()
       amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
     }
   }
-  {
+  if (dimension == 2 && options()->dumpSvg()) {
     String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
     String amr_full_filename = directory.file(amr_filename);
     std::ofstream amr_ofile(amr_full_filename.localstr());

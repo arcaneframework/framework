@@ -59,6 +59,7 @@ class SimpleHTMLMeshAMRPatchExporter::Impl
 
   Real m_font_size = 0;
   bool m_has_ground = false;
+  bool m_has_patch = false;
   StringBuilder m_header_svg{};
   StringBuilder m_patches{};
 };
@@ -72,6 +73,9 @@ class SimpleHTMLMeshAMRPatchExporter::Impl
 void SimpleHTMLMeshAMRPatchExporter::Impl::
 addPatch(const CartesianPatch& patch)
 {
+  if (patch.position().isNull()) {
+    return;
+  }
   if (patch.level() == 0) {
     if (m_has_ground) {
       ARCANE_FATAL("Ground patch already wrote");
@@ -85,6 +89,7 @@ addPatch(const CartesianPatch& patch)
   m_patches += String::format("<g class='level-{0}' id='patch-{1}'>\n", level, index);
   _writePatch(patch);
   m_patches += "</g>\n";
+  m_has_patch = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,6 +98,9 @@ addPatch(const CartesianPatch& patch)
 void SimpleHTMLMeshAMRPatchExporter::Impl::
 write(ostream& ofile)
 {
+  if (!m_has_patch) {
+    return;
+  }
   if (!m_has_ground) {
     ARCANE_FATAL("Need ground patch to write");
   }
