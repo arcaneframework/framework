@@ -75,39 +75,39 @@ jobs:
             echo "::endgroup::"
           
             HASH_MERGE=$(git log --merges --oneline --ancestry-path --pretty=format:"%h" "${{ env.COMMON_COMMIT }}..${{ env.MY_COMMIT }}")
+          
             echo "::group::Commands to fix it (local) :"
-
             echo "# Checkout your branch and :"
             echo "ORIGINAL_BRANCH=\$(git branch --show-current)"
-            echo "git pull\n"
-          
+            echo "git pull"
+            echo " "
             echo "# Fetch latest version of main."
-            echo "git fetch origin main:main\n"
-          
+            echo "git fetch origin main:main"
+            echo " "
             echo "# Goto commit before merge."
-            echo "git checkout ${HASH_MERGE}~\n"
-          
+            echo "git checkout ${HASH_MERGE}~"
+            echo " "
             echo "# Create tmp branch at commit."
-            echo "git switch -c tmp-remove-merge\n"
-          
+            echo "git switch -c tmp-remove-merge"
+            echo " "
             echo "# Rebase tmp branch to main."
-            echo "git rebase main\n"
-          
+            echo "git rebase main"
+            echo " "
             echo "# Put commits after merge in HEAD of tmp branch (if you have)."
-            echo "git cherry-pick \"${HASH_MERGE}..${{ env.MY_COMMIT }}\"\n"
-          
+            echo "git cherry-pick \"${HASH_MERGE}..${{ env.MY_COMMIT }}\""
+            echo " "
             echo "# Checkout original branch (you can replace hash with the name of your branch)."
-            echo "git checkout \${ORIGINAL_BRANCH}\n"
-          
+            echo "git checkout \${ORIGINAL_BRANCH}"
+            echo " "
             echo "# Reset original branch to HEAD of tmp branch."
-            echo "git reset --hard tmp-remove-merge\n"
-          
+            echo "git reset --hard tmp-remove-merge"
+            echo " "
             echo "# Delete tmp branch."
-            echo "git branch -d tmp-remove-merge\n"
-          
+            echo "git branch -d tmp-remove-merge"
+            echo " "
             echo "# Check new branch before git push -f !"
-          
             echo "::endgroup::"
+          
             exit 1
           fi
 
