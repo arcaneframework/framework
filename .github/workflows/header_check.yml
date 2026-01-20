@@ -61,6 +61,7 @@ jobs:
           echo "COMMON_COMMIT=${COMMON_COMMIT}" >> $GITHUB_ENV
 
       - name: Merge detection
+        id: merge-detection
         if: "${{ env.MY_COMMIT != env.PARENT_BRANCH }}"
         shell: bash
         run: |
@@ -68,14 +69,16 @@ jobs:
           
           git log --merges --oneline --ancestry-path "${{env.COMMON_COMMIT}}..${{env.MY_COMMIT}}" > merge.log
           if [ -s merge.log ]; then
-            echo "::warning::Merge main into your branch detected."
+            echo "::error::Merge main into your branch detected."
             echo "::group::Commit :"
             cat merge.log
             echo "::endgroup::"
+            exit 1
           fi
 
       - name: Check files
-        if: "${{ env.MY_COMMIT != env.PARENT_BRANCH }}"
+        id: check-files
+        if: "${{ always() && env.MY_COMMIT != env.PARENT_BRANCH }}"
         shell: bash
         run: |
           cd ${{ env.ARCANE_SOURCE_DIR }}
@@ -91,14 +94,14 @@ jobs:
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Error details of Check files step
-        if: failure()
+        if: ${{ failure() && steps.check-files.conclusion == 'failure' }}
         shell: bash
         run: |
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Upload the logs artifact
         uses: actions/upload-artifact@v6
-        if: failure()
+        if: ${{ failure() && steps.check-files.conclusion == 'failure' }}
         with:
           name: Header Check Logs
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
