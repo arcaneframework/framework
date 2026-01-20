@@ -79,32 +79,32 @@ jobs:
 
             echo "# Checkout your branch and :"
             echo "ORIGINAL_BRANCH=\$(git branch --show-current)"
-            echo "git pull"
-            echo ""
+            echo "git pull\n"
+          
             echo "# Fetch latest version of main."
-            echo "git fetch origin main:main"
-            echo ""
+            echo "git fetch origin main:main\n"
+          
             echo "# Goto commit before merge."
-            echo "git checkout ${HASH_MERGE}~"
-            echo ""
+            echo "git checkout ${HASH_MERGE}~\n"
+          
             echo "# Create tmp branch at commit."
-            echo "git switch -c tmp-remove-merge"
-            echo ""
+            echo "git switch -c tmp-remove-merge\n"
+          
             echo "# Rebase tmp branch to main."
-            echo "git rebase main"
-            echo ""
+            echo "git rebase main\n"
+          
             echo "# Put commits after merge in HEAD of tmp branch (if you have)."
-            echo "git cherry-pick \"${HASH_MERGE}..${{ env.MY_COMMIT }}\""
-            echo ""
+            echo "git cherry-pick \"${HASH_MERGE}..${{ env.MY_COMMIT }}\"\n"
+          
             echo "# Checkout original branch (you can replace hash with the name of your branch)."
-            echo "git checkout \${ORIGINAL_BRANCH}"
-            echo ""
+            echo "git checkout \${ORIGINAL_BRANCH}\n"
+          
             echo "# Reset original branch to HEAD of tmp branch."
-            echo "git reset --hard tmp-remove-merge"
-            echo ""
+            echo "git reset --hard tmp-remove-merge\n"
+          
             echo "# Delete tmp branch."
-            echo "git branch -d tmp-remove-merge"
-            echo ""
+            echo "git branch -d tmp-remove-merge\n"
+          
             echo "# Check new branch before git push -f !"
           
             echo "::endgroup::"
