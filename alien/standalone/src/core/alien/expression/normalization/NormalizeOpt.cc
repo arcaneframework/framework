@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -127,10 +127,9 @@ void NormalizeOpt::Op::multInvDiag<1>()
 template <Integer N>
 void NormalizeOpt::Op::multInvDiag()
 {
-#ifdef ALIEN_USE_EIGEN2
+#ifdef ALIEN_USE_EIGEN3
   if (m_algo == EigenLU) {
     using namespace Eigen;
-    using namespace std;
     typedef Eigen::Matrix<Real, N, N, RowMajor> MatrixType;
     typedef Eigen::Matrix<Real, N, 1> VectorType;
     const Integer NxN = N * N;
@@ -138,17 +137,17 @@ void NormalizeOpt::Op::multInvDiag()
     // cout<<"MULT INV DIAG B"<<m_equations_num<<endl;
     UniqueArray<Real> block(NxN);
     UniqueArray<Real> vect(N);
-    Map<MatrixType> m(block.begin(), N, N);
-    Map<VectorType> v(vect.begin(), N);
+    Map<MatrixType> m(block.data());
+    Map<VectorType> v(vect.data());
     if (m_diag_first) {
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         Integer off = m_row_offset[irow];
 
-        Map<MatrixType> diag(&m_matrix[off * NxN], N, N);
+        Map<MatrixType> diag(&m_matrix[off * NxN]);
         if (diag.determinant() == 0) {
-          cout << "Non inversible diagonal : row=" << irow << endl;
-          cout << " DIAG :" << endl;
-          cout << diag << endl;
+          std::cout << "Non inversible diagonal : row=" << irow << std::endl;
+          std::cout << " DIAG :" << std::endl;
+          std::cout << diag << std::endl;
         }
         MatrixType inv_diag = diag.inverse();
         // TOCHECK : to be removed ?
@@ -158,7 +157,7 @@ void NormalizeOpt::Op::multInvDiag()
         // OFF DIAGONAL treatment
         for (Integer col = off + 1; col < m_row_offset[irow + 1]; ++col) {
           block.copy(ArrayView<Real>(NxN, &m_matrix[col * NxN]));
-          Map<MatrixType> matrix(&m_matrix[col * NxN], N, N);
+          Map<MatrixType> matrix(&m_matrix[col * NxN]);
           matrix = inv_diag * m;
           // TOCHECK : to be removed ?
           // matrix = lu.solve(m) ;
@@ -166,7 +165,7 @@ void NormalizeOpt::Op::multInvDiag()
 
         // RHS treatment
         vect.copy(ArrayView<Real>(N, &m_rhs[irow * N]));
-        Map<VectorType> rhs(&m_rhs[irow * N], N);
+        Map<VectorType> rhs(&m_rhs[irow * N]);
         rhs = inv_diag * v;
         // TOCHECK : to be removed
         // rhs = lu.solve(v) ;
@@ -181,11 +180,11 @@ void NormalizeOpt::Op::multInvDiag()
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         Integer off = m_upper_diag_offset[irow];
 
-        Map<MatrixType> diag(&m_matrix[off * NxN], N, N);
+        Map<MatrixType> diag(&m_matrix[off * NxN]);
         if (diag.determinant() == 0) {
-          cout << "Non inversible diagonal : row=" << irow << endl;
-          cout << " DIAG :" << endl;
-          cout << diag << endl;
+          std::cout << "Non inversible diagonal : row=" << irow << std::endl;
+          std::cout << " DIAG :" << std::endl;
+          std::cout << diag << std::endl;
         }
         MatrixType inv_diag = diag.inverse();
         // TOCHECK : to be removed ?
@@ -195,7 +194,7 @@ void NormalizeOpt::Op::multInvDiag()
         // OFF DIAGONAL treatment
         for (Integer col = m_row_offset[irow]; col < off; ++col) {
           block.copy(ArrayView<Real>(NxN, &m_matrix[col * NxN]));
-          Map<MatrixType> matrix(&m_matrix[col * NxN], N, N);
+          Map<MatrixType> matrix(&m_matrix[col * NxN]);
           matrix = inv_diag * m;
           // TOCHECK : to be removed ?
           // matrix = lu.solve(m) ;
@@ -203,7 +202,7 @@ void NormalizeOpt::Op::multInvDiag()
         // skip diagonal block
         for (Integer col = off + 1; col < m_row_offset[irow + 1]; ++col) {
           block.copy(ArrayView<Real>(NxN, &m_matrix[col * NxN]));
-          Map<MatrixType> matrix(&m_matrix[col * NxN], N, N);
+          Map<MatrixType> matrix(&m_matrix[col * NxN]);
           matrix = inv_diag * m;
           // TOCHECK : to be removed ?
           // matrix = lu.solve(m) ;
@@ -211,7 +210,7 @@ void NormalizeOpt::Op::multInvDiag()
 
         // RHS treatment
         vect.copy(ArrayView<Real>(N, &m_rhs[irow * N]));
-        Map<VectorType> rhs(&m_rhs[irow * N], N);
+        Map<VectorType> rhs(&m_rhs[irow * N]);
         rhs = inv_diag * v;
         // TOCHECK : to be removed ?
         // rhs = lu.solve(v) ;

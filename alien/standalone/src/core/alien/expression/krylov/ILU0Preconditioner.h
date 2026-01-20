@@ -228,7 +228,7 @@ class LUFactorisationAlgo
   }
 
 #if defined (ALIEN_USE_EIGEN3) && !defined (ALIEN_USE_SYCL)
-  inline auto inv(Eigen::Map<Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic>>const & block) const
+  inline auto inv(Eigen::Map<Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>const & block) const
   {
     assert(block.determinant()!=0) ;
     return block.inverse() ;
@@ -249,7 +249,7 @@ class LUFactorisationAlgo
        *
        */
     using namespace Eigen;
-    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> ;
     using Block2DView = Eigen::Map<Block2D> ;
 
     int N = m_block_size;
@@ -365,7 +365,7 @@ class LUFactorisationAlgo
   void blockSolveL(ValueType const* y, ValueType* x) const
   {
     using namespace Eigen;
-    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> ;
     using Block2DView = Eigen::Map<Block2D> ;
     using Block1D     = Eigen::Matrix<ValueType,Dynamic,1> ;
     using Block1DView = Eigen::Map<Block1D> ;
@@ -401,7 +401,7 @@ class LUFactorisationAlgo
   void blockSolveU(ValueType const* y, ValueType* x) const
   {
     using namespace Eigen;
-    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic> ;
+    using Block2D     = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> ;
     using Block2DView = Eigen::Map<Block2D> ;
     using Block1D     = Eigen::Matrix<ValueType,Dynamic,1> ;
     using Block1DView = Eigen::Map<Block1D> ;
