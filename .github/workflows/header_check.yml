@@ -69,9 +69,43 @@ jobs:
           
           git log --merges --oneline --ancestry-path "${{env.COMMON_COMMIT}}..${{env.MY_COMMIT}}" > merge.log
           if [ -s merge.log ]; then
-            echo "::error::Merge main into your branch detected."
+            echo "::error::Merge main into your branch detected. Use rebase instead (see commands to fix it in this section)."
             echo "::group::Commit :"
             cat merge.log
+            echo "::endgroup::"
+          
+            HASH_MERGE=$(git log --merges --oneline --ancestry-path --pretty=format:"%h" "${{env.COMMON_COMMIT}}..${{env.MY_COMMIT}}")
+            echo "::group::Commands to fix it (local) :"
+
+            echo "# Fetch latest version of main."
+            echo "git fetch origin main:main"
+            echo ""
+            echo "# Goto commit before merge."
+            echo "git checkout ${HASH_MERGE}~"
+            echo ""
+            echo "# Pull branch."
+            echo "git pull"
+            echo ""
+            echo "# Create tmp branch at commit."
+            echo "git switch -c tmp-remove-merge"
+            echo ""
+            echo "# Rebase tmp branch to main."
+            echo "git rebase main"
+            echo ""
+            echo "# Put commits after merge in HEAD of tmp branch."
+            echo "git cherry-pick \"${HASH_MERGE}..${{env.MY_COMMIT}}\""
+            echo ""
+            echo "# Checkout original branch."
+            echo "git checkout $(git rev-parse --abbrev-ref HEAD)"
+            echo ""
+            echo "# Reset original branch to HEAD of tmp branch."
+            echo "git reset --hard tmp-remove-merge"
+            echo ""
+            echo "# Delete tmp branch."
+            echo "git branch -d tmp-remove-merge"
+            echo ""
+            echo "# Check new branch before git push -f !"
+          
             echo "::endgroup::"
             exit 1
           fi
