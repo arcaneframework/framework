@@ -10,5 +10,4 @@ set(SOURCES
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
   StringVector.h
-  StringVector.cc
 )
