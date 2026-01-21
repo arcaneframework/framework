@@ -179,7 +179,7 @@ class SimpleCSRVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedLocalSize();
     else
-      return m_own_distribution.localSize();
+      return m_own_distribution.localSize()*m_own_block_size;
   }
 
   Arccore::Integer scalarizedGlobalSize() const override
@@ -187,7 +187,7 @@ class SimpleCSRVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedGlobalSize();
     else
-      return m_own_distribution.globalSize();
+      return m_own_distribution.globalSize()*m_own_block_size;
   }
 
   Arccore::Integer scalarizedOffset() const override
@@ -195,7 +195,7 @@ class SimpleCSRVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedOffset();
     else
-      return m_own_distribution.offset();
+      return m_own_distribution.offset()*m_own_block_size;
   }
 
   const VBlockImpl& vblockImpl() const { return *m_vblock; }
