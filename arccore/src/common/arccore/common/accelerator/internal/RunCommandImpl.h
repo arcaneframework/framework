@@ -113,6 +113,9 @@ class RunCommandImpl
   ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;
 
   //! Indique si la commande s'exécute sur accélérateur
+  const eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
+
+  //! Indique si la commande s'exécute sur accélérateur
   const bool m_use_accelerator = false;
 
   /*!

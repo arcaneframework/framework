@@ -54,6 +54,16 @@ RunCommand::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Politique d'exécution de la commande
+eExecutionPolicy RunCommand::
+executionPolicy() const
+{
+  return m_p->m_execution_policy;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 const TraceInfo& RunCommand::
 traceInfo() const
 {
@@ -118,9 +128,12 @@ addNbThreadPerBlock(Int32 v)
 RunCommand& RunCommand::
 addNbStride(Int32 v)
 {
-  if (v < 0)
-    v = 1;
-  m_p->m_nb_stride = v;
+  // On ne gère le pas de grille que sur accélérateur.
+  if (m_p->m_use_accelerator){
+    if (v < 0)
+      v = 1;
+    m_p->m_nb_stride = v;
+  }
   return *this;
 }
 

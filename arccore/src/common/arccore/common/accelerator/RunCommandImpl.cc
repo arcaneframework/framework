@@ -40,7 +40,8 @@ namespace Arcane::Accelerator::Impl
 RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
-, m_use_accelerator(isAcceleratorPolicy(queue->runner()->executionPolicy()))
+, m_execution_policy(queue->runner()->executionPolicy())
+, m_use_accelerator(isAcceleratorPolicy(m_execution_policy))
 {
   _init();
 }
