@@ -35,7 +35,7 @@ namespace Impl
 
 class WorkGroupLoopRange;
 class WorkGroupLoopContext;
-class HostWorkItemGroup;
+class HostWorkItemBlock;
 class SyclDeviceWorkItemBlock;
 class DeviceWorkItemBlock;
 class SyclWorkGroupLoopContext;
@@ -45,38 +45,6 @@ class SyclDeviceCooperativeWorkItemGrid;
 class CooperativeWorkGroupLoopRange;
 class SyclCooperativeWorkGroupLoopContext;
 class WorkGroupLoopContextBase;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Représente un WorkItem dans le parallélisme hiérarchique.
- */
-class WorkItem
-{
-  friend WorkGroupLoopContext;
-  friend SyclDeviceWorkItemBlock;
-  friend DeviceWorkItemBlock;
-  friend HostWorkItemGroup;
-
-  friend CooperativeHostWorkItemGrid;
-  friend SyclDeviceCooperativeWorkItemGrid;
-
- private:
-
-  //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE WorkItem(Int32 loop_index)
-  : m_loop_index(loop_index)
-  {}
-
- public:
-
-  //! Index linéaire entre 0 et WorkGroupLoopRange::nbElement()
-  constexpr Int32 linearIndex() const { return m_loop_index; }
-
- private:
-
-  Int32 m_loop_index = 0;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -232,14 +200,14 @@ class SyclDeviceIndexes
 /*!
  * \brief Gère un groupe de WorkItem dans un WorkGroupLoopRange pour l'hôte.
  */
-class HostWorkItemGroup
+class HostWorkItemBlock
 {
   friend WorkGroupLoopContextBase;
 
  private:
 
   //! Constructeur pour l'hôte
-  constexpr ARCCORE_HOST_DEVICE HostWorkItemGroup(Int32 loop_index, Int32 group_index,
+  constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index,
                                                   Int32 group_size, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_group_size(group_size)
@@ -363,7 +331,7 @@ class WorkGroupLoopContextBase
   __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(m_total_size); }
 #else
   //! Groupe courant
-  HostWorkItemGroup group() const { return HostWorkItemGroup(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
+  HostWorkItemBlock group() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
 
  protected:
