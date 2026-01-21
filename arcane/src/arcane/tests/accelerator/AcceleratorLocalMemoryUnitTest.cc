@@ -186,11 +186,12 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
   {
     auto work_group = work_group_context.group();
+    auto work_item = work_group_context.workItem();
     auto local_span_int32 = local_data_int32.span();
     auto local_span_int64 = local_data_int64.span();
 
     // Le WorkItem 0 du groupe initialise la mémoire partagée
-    const bool is_rank0 = (work_group.activeWorkItemRankInGroup() == 0);
+    const bool is_rank0 = (work_item.rankInGroup() == 0);
     if (is_rank0) {
       local_span_int32.fill(0);
       local_span_int64.fill(0);
@@ -201,7 +202,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
     // Traite chaque indice de la boucle géré par le WorkItem.
     // Il va ajouter des valeurs à la mémoire partagée.
-    for ( Int32 i : work_group.indexes() ) {
+    for ( Int32 i : work_item.indexes() ) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
     }

@@ -45,6 +45,7 @@ class SyclDeviceCooperativeWorkItemGrid;
 class CooperativeWorkGroupLoopRange;
 class SyclCooperativeWorkGroupLoopContext;
 class WorkGroupLoopContextBase;
+class SyclWorkGroupLoopContextBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,33 +198,25 @@ class SyclDeviceIndexes
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère un groupe de WorkItem dans un WorkGroupLoopRange pour l'hôte.
+ * \brief Gère pour l'hôte un WorkItem dans un WorkGroupLoopRange ou
+ * CooperativeWorkGroupLoopRange.
  */
-class HostWorkItemBlock
+class HostWorkItem
 {
   friend WorkGroupLoopContextBase;
 
  private:
 
   //! Constructeur pour l'hôte
-  constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 loop_index, Int32 group_index,
-                                                  Int32 group_size, Int32 nb_active_item)
+  constexpr ARCCORE_HOST_DEVICE HostWorkItem(Int32 loop_index, Int32 nb_active_item)
   : m_loop_index(loop_index)
-  , m_group_size(group_size)
-  , m_group_index(group_index)
   , m_nb_active_item(nb_active_item)
   {}
 
  public:
 
-  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
-  constexpr Int32 groupRank() const { return m_group_index; }
-
-  //! Nombre de WorkItem dans un WorkGroup.
-  constexpr Int32 groupSize() const { return m_group_size; }
-
   //! Rang du WorkItem actif dans son WorkGroup.
-  constexpr Int32 activeWorkItemRankInGroup() const { return 0; }
+  constexpr Int32 rankInGroup() const { return 0; }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return false; }
@@ -234,21 +227,94 @@ class HostWorkItemBlock
     return HostIndexes(m_loop_index, m_nb_active_item);
   }
 
+ private:
+
+  Int32 m_loop_index = 0;
+  Int32 m_nb_active_item = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gère pour l'hôte un groupe de WorkItem dans un WorkGroupLoopRange
+ * ou un CooperativeWorkGroupLoopRange.
+ */
+class HostWorkItemBlock
+{
+  friend WorkGroupLoopContextBase;
+
+ private:
+
+  //! Constructeur pour l'hôte
+  constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 group_index, Int32 group_size)
+  : m_group_size(group_size)
+  , m_group_index(group_index)
+  {}
+
+ public:
+
+  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
+  constexpr Int32 groupRank() const { return m_group_index; }
+
+  //! Nombre de WorkItem dans un WorkGroup.
+  constexpr Int32 groupSize() const { return m_group_size; }
+
+  //! Indique si on s'exécute sur un accélérateur
+  static constexpr bool isDevice() { return false; }
+
   //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
   void barrier() {}
 
  private:
 
-  Int32 m_loop_index = 0;
   Int32 m_group_size = 0;
   Int32 m_group_index = 0;
-  Int32 m_nb_active_item = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gère pour un device CUDA ou HIP un WorkItem dans un
+ * WorkGroupLoopRange ou un CooperativeWorkGroupLoopRange.
+ */
+class DeviceWorkItem
+{
+  friend WorkGroupLoopContextBase;
+
+ private:
+
+  /*!
+   * \brief Constructeur pour le device.
+   *
+   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
+   * récupéré via cooperative_groups::this_thread_block()
+   */
+  explicit __device__ DeviceWorkItem(Int64 total_size)
+  : m_thread_block(cooperative_groups::this_thread_block())
+  , m_total_size(total_size)
+  {}
+
+ public:
+
+  //! Rang du WorkItem dans son WorkGroup.
+  __device__ Int32 rankInGroup() const { return m_thread_block.thread_index().x; }
+
+  //! Indique si on s'exécute sur un accélérateur
+  static constexpr __device__ bool isDevice() { return true; }
+
+  constexpr __device__ DeviceIndexes indexes() const { return DeviceIndexes(m_total_size); }
+
+ private:
+
+  // TODO A supprimer
+  cooperative_groups::thread_block m_thread_block;
+  Int64 m_total_size = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -267,9 +333,8 @@ class DeviceWorkItemBlock
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_thread_block()
    */
-  explicit __device__ DeviceWorkItemBlock(Int64 total_size)
+  explicit __device__ DeviceWorkItemBlock()
   : m_thread_block(cooperative_groups::this_thread_block())
-  , m_total_size(total_size)
   {}
 
  public:
@@ -280,22 +345,17 @@ class DeviceWorkItemBlock
   //! Nombre de WorkItem dans un WorkGroup.
   __device__ Int32 groupSize() { return m_thread_block.group_dim().x; }
 
-  //! Rang du WorkItem actif dans son WorkGroup.
-  __device__ Int32 activeWorkItemRankInGroup() const { return m_thread_block.thread_index().x; }
-
   //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
   __device__ void barrier() { m_thread_block.sync(); }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
 
-  constexpr __device__ DeviceIndexes indexes() const { return DeviceIndexes(m_total_size); }
-
  private:
 
   cooperative_groups::thread_block m_thread_block;
-  Int64 m_total_size = 0;
 };
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -327,10 +387,14 @@ class WorkGroupLoopContextBase
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(m_total_size); }
+  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(); }
+  //! WorkItem actif. Pour CUDA/ROCM, il s'agit d'un thread.
+  __device__ DeviceWorkItem workItem() const { return DeviceWorkItem(m_total_size); }
 #else
   //! Groupe courant
-  HostWorkItemBlock group() const { return HostWorkItemBlock(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
+  HostWorkItemBlock group() const { return HostWorkItemBlock(m_group_index, m_group_size); }
+  //! WorkItem actif
+  HostWorkItem workItem() const { return HostWorkItem(m_loop_index, m_nb_active_item); }
 #endif
 
  protected:
@@ -377,6 +441,9 @@ class WorkGroupLoopContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPILING_SYCL)
+
 /*
  * Implémentation pour SYCL.
  *
@@ -397,21 +464,54 @@ class WorkGroupLoopContext
  * TODO: regarder si avec la macro SYCL_DEVICE_ONLY il n'est pas possible
  * d'avoir le même type comportant des champs différents
  */
-#if defined(ARCCORE_COMPILING_SYCL)
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gère pour un device Sycl un WorkItem dans un WorkGroupLoopRange
+ * ou un CooperativeWorkGroupLoopRange.
+ */
+class SyclDeviceWorkItem
+{
+  friend SyclWorkGroupLoopContextBase;
+
+ private:
+
+  explicit SyclDeviceWorkItem(sycl::nd_item<1> nd_item, Int64 total_size)
+  : m_nd_item(nd_item)
+  , m_total_size(total_size)
+  {
+  }
+
+ public:
+
+  //! Rang du WorkItem actif dans le WorkGroup.
+  Int32 rankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
+
+  //! Indique si on s'exécute sur un accélérateur
+  static constexpr bool isDevice() { return true; }
+
+  SyclDeviceIndexes indexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
+
+ private:
+
+  sycl::nd_item<1> m_nd_item;
+  Int64 m_total_size = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour un device Sycl.
  */
 class SyclDeviceWorkItemBlock
 {
-  friend SyclWorkGroupLoopContext;
-  friend SyclCooperativeWorkGroupLoopContext;
+  friend SyclWorkGroupLoopContextBase;
 
  private:
 
-  explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> nd_item)
   : m_nd_item(nd_item)
-  , m_total_size(total_size)
   {
   }
 
@@ -423,40 +523,33 @@ class SyclDeviceWorkItemBlock
   //! Nombre de WorkItem dans un WorkGroup.
   Int32 groupSize() { return static_cast<Int32>(m_nd_item.get_local_range(0)); }
 
-  //! Rang du WorkItem actif dans le WorkGroup.
-  Int32 activeWorkItemRankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
-
   //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
   void barrier() { m_nd_item.barrier(); }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
 
-  SyclDeviceIndexes indexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
-
  private:
 
   sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Contexte d'exécution d'une WorkGroupLoopRange pour Sycl.
+ * \brief Contexte d'exécution d'un WorkGroupLoopRange pour Sycl.
  *
- * Cette classe est utilisée uniquement pour la polique d'exécution eAcceleratorPolicy::SYCL.
+ * Cette classe est utilisée uniquement pour la polique
+ * d'exécution eAcceleratorPolicy::SYCL.
  */
-class SyclWorkGroupLoopContext
+class SyclWorkGroupLoopContextBase
 {
   friend WorkGroupLoopRange;
-  friend SyclWorkGroupLoopContext arcaneGetLoopIndexSycl(const WorkGroupLoopRange& loop_range,
-                                                         sycl::nd_item<1> id);
 
- private:
+ protected:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> n, Int64 total_size)
+  explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, Int64 total_size)
   : m_nd_item(n)
   , m_total_size(total_size)
   {
@@ -465,13 +558,43 @@ class SyclWorkGroupLoopContext
  public:
 
   //! Groupe courant
-  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item, m_total_size); }
+  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item); }
 
- private:
+  //! WorkItem courant
+  SyclDeviceWorkItem workItem() const { return SyclDeviceWorkItem(m_nd_item, m_total_size); }
+
+ protected:
 
   sycl::nd_item<1> m_nd_item;
   Int64 m_total_size = 0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Contexte d'exécution d'un WorkGroupLoopRange pour Sycl.
+ *
+ * Cette classe est utilisée uniquement pour la polique
+ * d'exécution eAcceleratorPolicy::SYCL.
+ */
+class SyclWorkGroupLoopContext
+: public SyclWorkGroupLoopContextBase
+{
+  friend WorkGroupLoopRange;
+  friend SyclWorkGroupLoopContext arcaneGetLoopIndexSycl(const WorkGroupLoopRange& loop_range,
+                                                         sycl::nd_item<1> id);
+
+ private:
+
+  // Ce constructeur n'est utilisé que sur le device
+  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  : SyclWorkGroupLoopContextBase(nd_item, total_size)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif // ARCCORE_COMPILING_SYCL
 
