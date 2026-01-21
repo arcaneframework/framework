@@ -183,10 +183,10 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     loop_options.setGrainSize(nb_group / 4);
     command.setParallelLoopOptions(loop_options);
   }
-  command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
+  command << RUNCOMMAND_LAUNCH(context, loop_range, local_data_int32, local_data_int64)
   {
-    auto work_group = work_group_context.group();
-    auto work_item = work_group_context.workItem();
+    auto work_block = context.block();
+    auto work_item = context.workItem();
     auto local_span_int32 = local_data_int32.span();
     auto local_span_int64 = local_data_int64.span();
 
@@ -198,7 +198,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     }
 
     // S'assure que tous les WorkItem du bloc attendent l'initialisation
-    work_group.barrier();
+    work_block.barrier();
 
     // Traite chaque indice de la boucle géré par le WorkItem.
     // Il va ajouter des valeurs à la mémoire partagée.
@@ -208,18 +208,18 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     }
 
     // Pour tester le 'constexpr' uniquement sur le device
-    if constexpr (work_group.isDevice()) {
+    if constexpr (work_block.isDevice()) {
       if (is_rank0)
         ax::doAtomicAdd(&local_span_int32[0], 2);
     }
 
     // S'assure que tous les WorkItem ont terminé l'ajout atomique.
-    work_group.barrier();
+    work_block.barrier();
 
     // Le WorkItem 0 recopie le tableau partagé dans le tableau de sortie
     // à l'indice correspondant à son groupe.
     if (is_rank0) {
-      Int32 group_index = work_group.groupRank();
+      Int32 group_index = work_block.groupRank();
       for (Int32 s : local_span_int32)
         out_span[group_index] += s;
       for (Int64 s : local_span_int64)

@@ -387,12 +387,12 @@ class WorkGroupLoopContextBase
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(); }
+  __device__ DeviceWorkItemBlock block() const { return DeviceWorkItemBlock(); }
   //! WorkItem actif. Pour CUDA/ROCM, il s'agit d'un thread.
   __device__ DeviceWorkItem workItem() const { return DeviceWorkItem(m_total_size); }
 #else
   //! Groupe courant
-  HostWorkItemBlock group() const { return HostWorkItemBlock(m_group_index, m_group_size); }
+  HostWorkItemBlock block() const { return HostWorkItemBlock(m_group_index, m_group_size); }
   //! WorkItem actif
   HostWorkItem workItem() const { return HostWorkItem(m_loop_index, m_nb_active_item); }
 #endif
@@ -558,7 +558,7 @@ class SyclWorkGroupLoopContextBase
  public:
 
   //! Groupe courant
-  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item); }
+  SyclDeviceWorkItemBlock block() const { return SyclDeviceWorkItemBlock(m_nd_item); }
 
   //! WorkItem courant
   SyclDeviceWorkItem workItem() const { return SyclDeviceWorkItem(m_nd_item, m_total_size); }
