@@ -545,7 +545,7 @@ void AMRCartesianMeshTesterModule::
 _initAMR()
 {
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
-  amr_mng.setOverlapLayerSizeTopLevel(0);
+  amr_mng.setOverlapLayerSizeTopLevel(options()->overlapLayerSizeTopLevel());
 
   // Regarde si on dé-raffine le maillage initial
   if (options()->coarseAtInit()){
