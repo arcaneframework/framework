@@ -90,8 +90,20 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
   cells_local_id.clear();
-  ENUMERATE_ (Cell, icell, mesh->mesh()->allActiveCells()) {
+
+  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
+  // les mailles sous les mailles de recouvrement (et non les mailles de
+  // recouvrement).
+  ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
+    if (!cell.hasFlags(ItemFlags::II_InPatch)) {
+      continue;
+    }
+    if (cell.hasHChildren()) {
+      if (cell.hChild(0).hasFlags(ItemFlags::II_InPatch)) {
+        continue;
+      }
+    }
     Real3 center;
     for (const Node node : cell.nodes())
       center += nodes_coord[node];
@@ -180,9 +192,21 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   const Real3 min_pos = m_position;
   const Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
+  Int64 d_cell_level = -1;
 
-  ENUMERATE_ (Cell, icell, mesh->mesh()->allActiveCells()) {
+  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
+  // les mailles sous les mailles de recouvrement (et non les mailles de
+  // recouvrement).
+  ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
+    if (!cell.hasFlags(ItemFlags::II_InPatch)) {
+      continue;
+    }
+    if (cell.hasHChildren()) {
+      if (cell.hChild(0).hasFlags(ItemFlags::II_InPatch)) {
+        continue;
+      }
+    }
     Real3 center;
     for (const Node node : cell.nodes())
       center += nodes_coord[node];
@@ -191,10 +215,12 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
     bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
     bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !m_is_3d;
     if (is_inside_x && is_inside_y && is_inside_z) {
-      if (level == -1)
+      if (level == -1) {
         level = cell.level();
+        d_cell_level = cell.uniqueId();
+      }
       else if (level != cell.level())
-        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, cell.level(), cell.uniqueId());
+        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- CellUID before : {1} -- Cell Level : {2} -- CellUID : {3}", level, d_cell_level, cell.level(), cell.uniqueId());
 
       if (icell->isOwn())
         nb_cells++;
