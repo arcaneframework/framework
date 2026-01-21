@@ -14,13 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/CheckedConvert.h"
-#include "arccore/base/ForLoopRanges.h"
-
-#include "arccore/common/accelerator/NativeStream.h"
-#include "arccore/common/accelerator/RunCommandLaunchInfo.h"
-
-#include "arccore/accelerator/AcceleratorUtils.h"
+#include "arccore/common/CommonGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +30,7 @@ namespace Arcane::Accelerator::Impl
 /*!
  * \brief Classe pour gérer la décomposition d'une boucle en plusieurs parties.
  */
-class StridedLoopRangesBase
+class ARCCORE_COMMON_EXPORT StridedLoopRangesBase
 {
  public:
 
