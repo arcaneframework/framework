@@ -183,7 +183,6 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     loop_options.setGrainSize(nb_group / 4);
     command.setParallelLoopOptions(loop_options);
   }
-
   command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
   {
     auto work_group = work_group_context.group();
@@ -200,20 +199,11 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     // S'assure que tous les WorkItem du bloc attendent l'initialisation
     work_group.barrier();
 
-    // Traite chaque WorkItem qui va ajouter des valeurs à la mémoire partagée.
-    // NOTE: Sur accélérateur, nbItem() vaut toujours 1.
-    for (Int32 g = 0; g < work_group.nbActiveItem(); ++g) {
-      auto work_item = work_group.activeItem(g);
-      Int32 i = work_item.linearIndex();
+    // Traite chaque indice de la boucle géré par le WorkItem.
+    // Il va ajouter des valeurs à la mémoire partagée.
+    for ( Int32 i : work_group.indexes() ) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
-#if !defined(ARCCORE_DEVICE_CODE)
-      if constexpr (!work_group.isDevice()) {
-        Int32 expected_linear_index = work_group.activeItem(0).linearIndex() + g;
-        if (i != work_group.activeItem(0).linearIndex() + g)
-          ARCANE_FATAL("Bad value for linear index i={0} expected={1}", i, expected_linear_index);
-      }
-#endif
     }
 
     // Pour tester le 'constexpr' uniquement sur le device

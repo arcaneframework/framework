@@ -28,7 +28,7 @@ namespace Impl
 
 class CooperativeWorkGroupLoopRange;
 class CooperativeWorkGroupLoopContext;
-class HostCooperativeWorkItemGrid;
+class CooperativeHostWorkItemGrid;
 class SyclDeviceCooperativeWorkItemBlock;
 class DeviceCooperativeWorkItemGrid;
 class SyclCooperativeWorkGroupLoopContext;
@@ -43,7 +43,7 @@ class SyclCooperativeWorkGroupLoopContext;
  * Cette classe possède juste en plus une méthode gridBarrier() qui effectue
  * une barrière sur l'ensemble des threads participants en mode multi-thread.
  */
-class HostCooperativeWorkItemGrid
+class CooperativeHostWorkItemGrid
 {
   friend CooperativeWorkGroupLoopContext;
   friend SyclDeviceCooperativeWorkItemBlock;
@@ -52,7 +52,7 @@ class HostCooperativeWorkItemGrid
  private:
 
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE HostCooperativeWorkItemGrid(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
+  explicit constexpr ARCCORE_HOST_DEVICE CooperativeHostWorkItemGrid(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_group_size(group_size)
   , m_group_index(group_index)
@@ -86,17 +86,9 @@ class HostCooperativeWorkItemGrid
     // le même std::thread.
   }
 
-  //! Nombre de \a WorkItem à gérer dans l'itération
-  constexpr Int32 nbActiveItem() const { return m_nb_active_item; }
-
-  //! Récupère le \a index-ème \a WorkItem à gérer
-  WorkItem activeItem(Int32 index) const
-  {
-    ARCCORE_CHECK_AT(index, m_nb_active_item);
-    return WorkItem(m_loop_index + index);
-  }
-
   constexpr Int32 gridDim() const { return 1; }
+
+  constexpr HostIndexes indexes() const { return HostIndexes(m_loop_index,m_nb_active_item); }
 
  private:
 
@@ -147,19 +139,6 @@ class DeviceCooperativeWorkItemGroup
   //! Bloque tant que tous les \a CooperativeWorkItem du groupe ne sont pas arrivés ici.
   __device__ void barrier() { m_thread_block.sync(); }
 
-#if 0
-  //! Nombre de \a CooperativeWorkItem à gérer dans l'itération
-  constexpr __device__ Int32 nbActiveItem() const { return 1; }
-
-  //! Récupère le \a index-ème \a CooperativeWorkItem à gérer
-  __device__ CooperativeWorkItem activeItem([[maybe_unused]] Int32 index)
-  {
-    // Seulement valide pour index==0
-    ARCCORE_CHECK_AT(index, 1);
-    return CooperativeWorkItem(blockDim.x * blockIdx.x + threadIdx.x);
-  }
-#endif
-
  private:
 
   cooperative_groups::thread_block m_thread_block;
@@ -209,18 +188,6 @@ class DeviceCooperativeWorkItemGrid
   static constexpr __device__ bool isDevice() { return true; }
 
   __device__ Int32 gridDim() const { return m_grid_group.group_dim().x; }
-#if 0
-  //! Nombre de \a WorkItem à gérer dans l'itération
-  constexpr __device__ Int32 nbActiveItem() const { return 1; }
-
-  //! Récupère le \a index-ème \a WorkItem à gérer
-  __device__ WorkItem activeItem([[maybe_unused]] Int32 index)
-  {
-    // Seulement valide pour index==0
-    ARCCORE_CHECK_AT(index, 1);
-    return WorkItem(blockDim.x * blockIdx.x + threadIdx.x);
-  }
-#endif
 
  private:
 
@@ -251,17 +218,20 @@ class CooperativeWorkGroupLoopContext
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  explicit constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
+  explicit constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item, Int64 total_size)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
   , m_nb_active_item(nb_active_item)
+  , m_total_size(total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext() {}
+  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(Int64 total_size)
+  : m_total_size(total_size)
+  {}
 
  public:
 
@@ -270,7 +240,7 @@ class CooperativeWorkGroupLoopContext
   __device__ DeviceCooperativeWorkItemGrid group() const { return DeviceCooperativeWorkItemGrid(); }
 #else
   //! Groupe courant
-  HostCooperativeWorkItemGrid group() const { return HostCooperativeWorkItemGrid(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
+  CooperativeHostWorkItemGrid group() const { return CooperativeHostWorkItemGrid(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
 
  private:
@@ -279,6 +249,7 @@ class CooperativeWorkGroupLoopContext
   Int32 m_group_index = 0;
   Int32 m_group_size = 0;
   Int32 m_nb_active_item = 0;
+  Int64 m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -339,17 +310,6 @@ class SyclDeviceCooperativeWorkItemGrid
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
 
-  //! Nombre de \a CooperativeWorkItem à gérer dans l'itération
-  constexpr Int32 nbActiveItem() const { return 1; }
-
-  //! Récupère le \a index-ème \a CooperativeWorkItem à gérer
-  WorkItem activeItem(Int32 index)
-  {
-    // Seulement valide pour index==0
-    ARCCORE_CHECK_AT(index, 1);
-    return WorkItem(static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0)));
-  }
-
  private:
 
   sycl::nd_item<1> m_nd_item;
@@ -371,8 +331,9 @@ class SyclCooperativeWorkGroupLoopContext
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> n)
-  : m_nd_item(n)
+  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  : m_nd_item(nd_item)
+  , m_total_size(total_size)
   {
   }
 
@@ -384,6 +345,7 @@ class SyclCooperativeWorkGroupLoopContext
  private:
 
   sycl::nd_item<1> m_nd_item;
+  Int64 m_total_size = 0;
 };
 
 #endif // ARCCORE_COMPILING_SYCL

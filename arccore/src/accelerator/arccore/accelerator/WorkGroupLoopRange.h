@@ -40,7 +40,7 @@ class SyclDeviceWorkItemBlock;
 class DeviceWorkItemBlock;
 class SyclWorkGroupLoopContext;
 
-class HostCooperativeWorkItemGrid;
+class CooperativeHostWorkItemGrid;
 class SyclDeviceCooperativeWorkItemGrid;
 class CooperativeWorkGroupLoopRange;
 
@@ -56,7 +56,7 @@ class WorkItem
   friend DeviceWorkItemBlock;
   friend HostWorkItemGroup;
 
-  friend HostCooperativeWorkItemGrid;
+  friend CooperativeHostWorkItemGrid;
   friend SyclDeviceCooperativeWorkItemGrid;
 
  private:
@@ -78,10 +78,159 @@ class WorkItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class HostIndexes
+{
+  class HostWorkItemIterator
+  {
+   public:
+
+    explicit constexpr HostWorkItemIterator(Int32 loop_index)
+    : m_loop_index(loop_index)
+    {}
+    constexpr Int32 operator*() const { return m_loop_index; }
+    HostWorkItemIterator& operator++()
+    {
+      ++m_loop_index;
+      return (*this);
+    }
+    friend bool operator!=(HostWorkItemIterator a, HostWorkItemIterator b)
+    {
+      return a.m_loop_index != b.m_loop_index;
+    }
+
+   private:
+
+    Int32 m_loop_index = 0;
+  };
+
+ public:
+
+  constexpr HostIndexes(Int32 loop_index, Int32 nb_active_item)
+  : m_loop_index(loop_index)
+  , m_nb_active_item(nb_active_item)
+  {}
+
+ public:
+
+  constexpr HostWorkItemIterator begin() const { return HostWorkItemIterator(m_loop_index); }
+  constexpr HostWorkItemIterator end() const { return HostWorkItemIterator(m_loop_index + m_nb_active_item); }
+
+ private:
+
+  Int32 m_loop_index = 0;
+  Int32 m_nb_active_item = 0;
+};
+
+class DeviceIndexesBase
+{
+ public:
+
+  class DeviceWorkItemIterator
+  {
+   public:
+
+    explicit constexpr DeviceWorkItemIterator(Int32 loop_index, Int32 grid_size)
+    : m_loop_index(loop_index)
+    , m_grid_size(grid_size)
+    {}
+    constexpr Int32 operator*() const { return m_loop_index; }
+    ARCCORE_HOST_DEVICE DeviceWorkItemIterator& operator++()
+    {
+      m_loop_index += m_grid_size;
+      return (*this);
+    }
+    friend constexpr bool operator!=(DeviceWorkItemIterator a, DeviceWorkItemIterator b)
+    {
+      return a.m_loop_index != b.m_loop_index;
+    }
+
+   private:
+
+    Int32 m_loop_index = 0;
+    Int32 m_grid_size = 0;
+  };
+
+  class DeviceWorkItemSentinel
+  {
+   public:
+
+    explicit constexpr DeviceWorkItemSentinel(Int64 total_size)
+    : m_total_size(total_size)
+    {}
+    friend constexpr bool operator!=(DeviceWorkItemIterator a, DeviceWorkItemSentinel b)
+    {
+      return *a < b.m_total_size;
+    }
+
+   private:
+
+    Int64 m_total_size = 0;
+  };
+};
+
+#if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+
+class DeviceIndexes
+: public DeviceIndexesBase
+{
+ public:
+
+  explicit constexpr DeviceIndexes(Int64 total_size)
+  : m_total_size(total_size)
+  {}
+
+ public:
+
+  __device__ DeviceWorkItemIterator begin() const
+  {
+    return DeviceWorkItemIterator(blockDim.x * blockIdx.x + threadIdx.x, blockDim.x * gridDim.x);
+  }
+  constexpr __device__ DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
+
+ private:
+
+  Int64 m_total_size = 0;
+};
+
+#endif
+
+#if defined(ARCCORE_COMPILING_SYCL)
+class SyclDeviceIndexes
+: public DeviceIndexesBase
+{
+ public:
+
+  SyclDeviceIndexes(sycl::nd_item<1> nd_item, Int64 total_size)
+  : m_nd_item(nd_item)
+  , m_total_size(total_size)
+  {}
+
+ public:
+
+  DeviceWorkItemIterator begin() const
+  {
+    Int32 index = static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0));
+    // TODO: à vérifier si c'est bien la taille de la grille.
+    Int32 grid_size = static_cast<Int32>(m_nd_item.get_local_range(0) * m_nd_item.get_global_range(0));
+    return DeviceWorkItemIterator(index, grid_size);
+  }
+  constexpr DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
+
+ private:
+
+  sycl::nd_item<1> m_nd_item;
+  Int64 m_total_size = 0;
+};
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Gère un groupe de WorkItem dans un WorkGroupLoopRange pour l'hôte.
  *
- * Contraitement à l'exécution sur accélérateur ou un seul WorkItem est
+ * Contrairement à l'exécution sur accélérateur ou un seul WorkItem est
  * actif, l'hôte doit gérer un ensemble de WorkItem.
  *
  * Pour l'hôte, un bloc de WorkItem correspond toujours à l'ensemble
@@ -120,18 +269,14 @@ class HostWorkItemGroup
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return false; }
 
+  //! Indexes de la boucle gérés par ce WorkItem
+  constexpr HostIndexes indexes() const
+  {
+    return HostIndexes(m_loop_index, m_nb_active_item);
+  }
+
   //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
   void barrier() {}
-
-  //! Nombre de \a WorkItem à gérer dans l'itération
-  constexpr Int32 nbActiveItem() const { return m_nb_active_item; }
-
-  //! Récupère le \a index-ème \a WorkItem à gérer
-  WorkItem activeItem(Int32 index) const
-  {
-    ARCCORE_CHECK_AT(index, m_nb_active_item);
-    return WorkItem(m_loop_index + index);
-  }
 
  private:
 
@@ -163,8 +308,9 @@ class DeviceWorkItemBlock
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_thread_block()
    */
-  explicit __device__ DeviceWorkItemBlock()
+  explicit __device__ DeviceWorkItemBlock(Int64 total_size)
   : m_thread_block(cooperative_groups::this_thread_block())
+    , m_total_size(total_size)
   {}
 
  public:
@@ -184,21 +330,17 @@ class DeviceWorkItemBlock
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
 
-  //! Nombre de \a WorkItem à gérer dans l'itération
-  constexpr __device__ Int32 nbActiveItem() const { return 1; }
-
-  //! Récupère le \a index-ème \a WorkItem à gérer
-  __device__ WorkItem activeItem([[maybe_unused]] Int32 index)
-  {
-    // Seulement valide pour index==0
-    ARCCORE_CHECK_AT(index, 1);
-    Int32 base_linear_index = blockDim.x * blockIdx.x + threadIdx.x;
-    return WorkItem(base_linear_index);
-  }
+  //__device__ DeviceWorkItemIterator begin() const
+  // {
+  //return DeviceWorkItemIterator(blockDim.x * blockIdx.x + threadIdx.x, blockDim.x * gridDim.x);
+  //}
+  //constexpr __device__ DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
+  constexpr __device__ DeviceIndexes indexes() const { return DeviceIndexes(m_total_size); }
 
  private:
 
   cooperative_groups::thread_block m_thread_block;
+  Int64 m_total_size = 0;
 };
 #endif
 
@@ -222,23 +364,26 @@ class WorkGroupLoopContext
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
+  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item, Int64 total_size)
   : m_loop_index(loop_index)
   , m_group_index(group_index)
   , m_group_size(group_size)
   , m_nb_active_item(nb_active_item)
+  , m_total_size(total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext() {}
+  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext(Int64 total_size)
+  : m_total_size(total_size)
+  {}
 
  public:
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(); }
+  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(m_total_size); }
 #else
   //! Groupe courant
   HostWorkItemGroup group() const { return HostWorkItemGroup(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
@@ -250,6 +395,7 @@ class WorkGroupLoopContext
   Int32 m_group_index = 0;
   Int32 m_group_size = 0;
   Int32 m_nb_active_item = 0;
+  Int64 m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -285,8 +431,9 @@ class SyclDeviceWorkItemBlock
 
  private:
 
-  explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> n)
-  : m_nd_item(n)
+  explicit SyclDeviceWorkItemBlock(sycl::nd_item<1> nd_item, Int64 total_size)
+  : m_nd_item(nd_item)
+  , m_total_size(total_size)
   {
   }
 
@@ -307,20 +454,12 @@ class SyclDeviceWorkItemBlock
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
 
-  //! Nombre de \a WorkItem à gérer dans l'itération
-  constexpr Int32 nbActiveItem() const { return 1; }
-
-  //! Récupère le \a index-ème \a WorkItem à gérer
-  WorkItem activeItem(Int32 index)
-  {
-    // Seulement valide pour index==0
-    ARCCORE_CHECK_AT(index, 1);
-    return WorkItem(static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0)));
-  }
+  SyclDeviceIndexes indexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
 
  private:
 
   sycl::nd_item<1> m_nd_item;
+  Int64 m_total_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -339,19 +478,21 @@ class SyclWorkGroupLoopContext
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> n)
+  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> n, Int64 total_size)
   : m_nd_item(n)
+  , m_total_size(total_size)
   {
   }
 
  public:
 
   //! Groupe courant
-  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item); }
+  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item, m_total_size); }
 
  private:
 
   sycl::nd_item<1> m_nd_item;
+  Int64 m_total_size = 0;
 };
 
 #endif // ARCCORE_COMPILING_SYCL
