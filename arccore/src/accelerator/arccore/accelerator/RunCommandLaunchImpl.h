@@ -35,15 +35,15 @@ namespace Arcane::Accelerator
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
 inline constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext
-arcaneGetLoopIndexCudaHip([[maybe_unused]] const WorkGroupLoopRange& loop_range)
+arcaneGetLoopIndexCudaHip(const WorkGroupLoopRange& loop_range)
 {
-  return WorkGroupLoopContext();
+  return WorkGroupLoopContext(loop_range.nbElement());
 }
 
 inline constexpr ARCCORE_HOST_DEVICE CooperativeWorkGroupLoopContext
-arcaneGetLoopIndexCudaHip([[maybe_unused]] const CooperativeWorkGroupLoopRange& loop_range)
+arcaneGetLoopIndexCudaHip(const CooperativeWorkGroupLoopRange& loop_range)
 {
-  return CooperativeWorkGroupLoopContext();
+  return CooperativeWorkGroupLoopContext(loop_range.nbElement());
 }
 
 #endif
@@ -69,17 +69,17 @@ namespace Impl
 } // namespace Impl
 
 inline SyclWorkGroupLoopContext
-arcaneGetLoopIndexSycl([[maybe_unused]] const WorkGroupLoopRange& loop_range,
+arcaneGetLoopIndexSycl(const WorkGroupLoopRange& loop_range,
                        sycl::nd_item<1> id)
 {
-  return SyclWorkGroupLoopContext(id);
+  return SyclWorkGroupLoopContext(id, loop_range.nbElement());
 }
 
 inline SyclCooperativeWorkGroupLoopContext
-arcaneGetLoopIndexSycl([[maybe_unused]] const CooperativeWorkGroupLoopRange& loop_range,
+arcaneGetLoopIndexSycl(const CooperativeWorkGroupLoopRange& loop_range,
                        sycl::nd_item<1> id)
 {
-  return SyclCooperativeWorkGroupLoopContext(id);
+  return SyclCooperativeWorkGroupLoopContext(id, loop_range.nbElement());
 }
 
 #endif
@@ -120,7 +120,7 @@ class WorkGroupSequentialForHelper
       // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
       // un multiple de \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
-      func(LoopIndexType(loop_index, i, group_size, nb_active), remaining_args...);
+      func(LoopIndexType(loop_index, i, group_size, nb_active, bounds.nbElement()), remaining_args...);
       loop_index += group_size;
     }
 

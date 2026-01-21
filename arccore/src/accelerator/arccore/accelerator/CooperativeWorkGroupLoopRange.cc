@@ -22,15 +22,6 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CooperativeWorkGroupLoopRange::
-CooperativeWorkGroupLoopRange(Int32 total_size, Int32 nb_group, Int32 block_size)
-: m_total_size(total_size)
-, m_nb_group(nb_group)
-, m_group_size(block_size)
-{
-  m_last_group_size = (total_size - (block_size * (nb_group - 1)));
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
