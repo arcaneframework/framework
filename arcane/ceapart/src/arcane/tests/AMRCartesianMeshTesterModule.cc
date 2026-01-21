@@ -1013,14 +1013,25 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
         Integer pos_final = i + 1 + (dir * nb_items_per_dir);
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
-        if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+        // En AMR classique, il ne peut pas y avoir une maille dans deux
+        // patchs différents (pas de mailles de recouvrement).
+        if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::Cell) {
+          if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
+            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+          }
+          if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
+            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+          }
+          own_cells_uid_around_cells[pos_pred] = uid_pred;
+          own_cells_uid_around_cells[pos_succ] = uid_succ;
         }
-        if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+        // En AMR par patch, une maille II_Overlap n'a pas forcément les mêmes
+        // voisins pour un patch ou pour un autre.
+        // On retire les vérifications (pour l'instant) (si modif, changement de hash !).
+        else {
+          own_cells_uid_around_cells[pos_pred] = std::max(own_cells_uid_around_cells[pos_pred], uid_pred);
+          own_cells_uid_around_cells[pos_succ] = std::max(own_cells_uid_around_cells[pos_succ], uid_succ);
         }
-        own_cells_uid_around_cells[pos_pred] = uid_pred;
-        own_cells_uid_around_cells[pos_succ] = uid_succ;
         return;
       }
     }
