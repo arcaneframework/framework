@@ -61,6 +61,7 @@
       <position>2.0 2.0</position>
       <length>1.0 1.0</length>
     </coarse-zone-2d>
+    <overlap-layer-size-top-level>0</overlap-layer-size-top-level>
 
     <!--    <expected-number-of-cells-in-patchs>25 32</expected-number-of-cells-in-patchs>-->
     <expected-number-of-cells-in-patchs>25 8 8 8 8</expected-number-of-cells-in-patchs>

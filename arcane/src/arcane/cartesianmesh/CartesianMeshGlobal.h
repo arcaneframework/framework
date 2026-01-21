@@ -55,6 +55,7 @@ class CartesianPatchGroup;
 class ICartesianMeshAMRPatchMng;
 class ICartesianMeshNumberingMngInternal;
 class ICartesianMeshPatchInternal;
+class SimpleHTMLMeshAMRPatchExporter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,9 +79,14 @@ enum eCellNodePosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Représente une coordonnée d'un élément dans la grille cartésienne (en X ou en Y ou en Z).
 typedef Int32 CartCoord;
-typedef Int32x3 CartCoord3;
+
+//! Représente les coordonnées 2D d'un élément dans la grille cartésienne {x, y}.
 typedef Int32x2 CartCoord2;
+
+//! Représente les coordonnées 3D d'un élément dans la grille cartésienne {x, y, z}.
+typedef Int32x3 CartCoord3;
 
 } // End namespace Arcane
 

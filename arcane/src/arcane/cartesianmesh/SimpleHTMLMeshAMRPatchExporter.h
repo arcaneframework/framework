@@ -18,6 +18,8 @@
 
 #include "arcane/core/ItemTypes.h"
 
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
 #include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
