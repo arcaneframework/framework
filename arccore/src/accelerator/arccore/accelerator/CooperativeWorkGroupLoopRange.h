@@ -21,81 +21,35 @@
 
 namespace Arcane::Accelerator
 {
-namespace Impl
-{
-  class CooperativeWorkGroupSequentialForHelper;
-} // namespace Impl
-
-class CooperativeWorkGroupLoopRange;
-class CooperativeWorkGroupLoopContext;
-class CooperativeHostWorkItemGrid;
-class SyclDeviceCooperativeWorkItemBlock;
-class DeviceCooperativeWorkItemGrid;
-class SyclCooperativeWorkGroupLoopContext;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère un groupe de WorkItem dans un
+ * \brief Gère une grille de WorkItem dans un
  * CooperativeWorkGroupLoopRange pour l'hôte.
  *
- * Le fonctionnement est identique à HostWorkItemGroup.
- * Cette classe possède juste en plus une méthode gridBarrier() qui effectue
+ * Cette classe possède juste une méthode barrier() qui effectue
  * une barrière sur l'ensemble des threads participants en mode multi-thread.
  */
 class CooperativeHostWorkItemGrid
 {
   friend CooperativeWorkGroupLoopContext;
-  friend SyclDeviceCooperativeWorkItemBlock;
-  friend DeviceCooperativeWorkItemGrid;
 
  private:
 
   //! Constructeur pour l'hôte
-  explicit constexpr ARCCORE_HOST_DEVICE CooperativeHostWorkItemGrid(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item)
-  : m_loop_index(loop_index)
-  , m_group_size(group_size)
-  , m_group_index(group_index)
-  , m_nb_active_item(nb_active_item)
+  explicit CooperativeHostWorkItemGrid()
   {}
 
  public:
 
-  //! Rang du groupe du CooperativeWorkItem dans la liste des CooperativeWorkGroup.
-  constexpr Int32 groupRank() const { return m_group_index; }
-
-  //! Nombre de CooperativeWorkItem dans un CooperativeWorkGroup.
-  constexpr Int32 groupSize() const { return m_group_size; }
-
-  //! Rang du CooperativeWorkItem actif dans son CooperativeWorkGroup.
-  constexpr Int32 activeCooperativeWorkItemRankInGroup() const { return 0; }
-
-  //! Indique si on s'exécute sur un accélérateur
-  static constexpr bool isDevice() { return false; }
-
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
-  void gridBarrier()
+  void barrier()
   {
     // TODO: A implementer pour le multi-threading via std::barrier()
   }
 
-  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
-  void groupBarrier()
-  {
-    // Rien à faire car les WorkItem d'un groupe sont exécutés par
-    // le même std::thread.
-  }
-
-  constexpr Int32 gridDim() const { return 1; }
-
-  constexpr HostIndexes indexes() const { return HostIndexes(m_loop_index,m_nb_active_item); }
-
  private:
-
-  Int32 m_loop_index = 0;
-  Int32 m_group_size = 0;
-  Int32 m_group_index = 0;
-  Int32 m_nb_active_item = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,48 +60,7 @@ class CooperativeHostWorkItemGrid
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère un bloc de CooperativeWorkItem dans un
- * CooperativeWorkGroupLoopRange pour un device CUDA ou ROCM.
- */
-class DeviceCooperativeWorkItemGroup
-{
-  friend CooperativeWorkGroupLoopContext;
-
- private:
-
-  /*!
-   * \brief Constructeur pour le device.
-   *
-   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
-   * récupéré via cooperative_groups::this_grid()
-   */
-  explicit __device__ DeviceCooperativeWorkItemGroup()
-  : m_thread_block(cooperative_groups::this_thread_block())
-  {}
-
- public:
-
-  //! Rang du groupe du CooperativeWorkItem dans la liste des CooperativeWorkGroup.
-  __device__ Int32 groupRank() const { return m_thread_block.group_index().x; }
-
-  //! Nombre de CooperativeWorkItem dans un CooperativeWorkGroup.
-  __device__ Int32 groupSize() { return m_thread_block.group_dim().x; }
-
-  //! Rang du CooperativeWorkItem actif dans son CooperativeWorkGroup.
-  __device__ Int32 activeCooperativeWorkItemRankInGroup() const { return m_thread_block.thread_index().x; }
-
-  //! Bloque tant que tous les \a CooperativeWorkItem du groupe ne sont pas arrivés ici.
-  __device__ void barrier() { m_thread_block.sync(); }
-
- private:
-
-  cooperative_groups::thread_block m_thread_block;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Gère un bloc de CooperativeWorkItem dans un
+ * \brief Gère la grille de CooperativeWorkItem dans un
  * CooperativeWorkGroupLoopRange pour un device CUDA ou ROCM.
  */
 class DeviceCooperativeWorkItemGrid
@@ -164,35 +77,16 @@ class DeviceCooperativeWorkItemGrid
    */
   explicit __device__ DeviceCooperativeWorkItemGrid()
   : m_grid_group(cooperative_groups::this_grid())
-  , m_thread_block(cooperative_groups::this_thread_block())
   {}
 
  public:
 
-  //! Rang du groupe du CooperativeWorkItem dans la liste des WorkGroup.
-  __device__ Int32 groupRank() const { return m_thread_block.group_index().x; }
-
-  //! Nombre de WorkItem dans un WorkGroup.
-  __device__ Int32 groupSize() { return m_thread_block.group_dim().x; }
-
-  //! Rang du WorkItem actif dans son WorkGroup.
-  __device__ Int32 activeWorkItemRankInGroup() const { return m_thread_block.thread_index().x; }
-
   //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
-  __device__ void gridBarrier() { m_grid_group.sync(); }
-
-  //! Bloque tant que tous les \a CooperativeWorkItem du groupe ne sont pas arrivés ici.
-  __device__ void blockBarrier() { m_thread_block.sync(); }
-
-  //! Indique si on s'exécute sur un accélérateur
-  static constexpr __device__ bool isDevice() { return true; }
-
-  __device__ Int32 gridDim() const { return m_grid_group.group_dim().x; }
+  __device__ void barrier() { m_grid_group.sync(); }
 
  private:
 
   cooperative_groups::grid_group m_grid_group;
-  cooperative_groups::thread_block m_thread_block;
 };
 
 #endif
@@ -237,10 +131,14 @@ class CooperativeWorkGroupLoopContext
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceCooperativeWorkItemGrid group() const { return DeviceCooperativeWorkItemGrid(); }
+  __device__ DeviceCooperativeWorkItemGrid grid() const { return DeviceCooperativeWorkItemGrid{}; }
+  //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
+  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(m_total_size); }
 #else
   //! Groupe courant
-  CooperativeHostWorkItemGrid group() const { return CooperativeHostWorkItemGrid(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
+  CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
+  //! Groupe courant
+  HostWorkItemGroup group() const { return HostWorkItemGroup(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
 
  private:
@@ -256,28 +154,11 @@ class CooperativeWorkGroupLoopContext
 /*---------------------------------------------------------------------------*/
 /*
  * Implémentation pour SYCL.
- *
- * L'équivalent de \a cooperative_groups::thread_group() avec SYCL
- * est le \a sycl::nd_item<1>. Il est plus compliqué à utiliser pour deux
- * raisons:
- *
- * - il n'y a pas dans SYCL un équivalent de
- * \a cooperative_groups::this_thread_block(). Il faut utiliser la valeur
- * de \a sycl::nb_item<1> passé en argument du noyau de calcul.
- * - il n'y a pas de constructeurs par défaut pour \a sycl::nb_item<1>.
- *
- * Pour contourner ces deux problèmes, on utilise un type spécifique pour
- * gérer les noyaux en SYCL. Heureusement, il est possible d'utiliser les
- * lambda template avec SYCL. On utilise donc deux types pour gérer
- * les noyaux selon qu'on s'exécute sur le device SYCL ou sur l'hôte.
- *
- * TODO: regarder si avec la macro SYCL_DEVICE_ONLY il n'est pas possible
- * d'avoir le même type comportant des champs différents
  */
 #if defined(ARCCORE_COMPILING_SYCL)
 
 /*!
- * \brief Gère un bloc de WorkItem dans un CooperativeWorkGroupLoopRange pour un device Sycl.
+ * \brief Gère la grille de WorkItem dans un CooperativeWorkGroupLoopRange pour un device Sycl.
  */
 class SyclDeviceCooperativeWorkItemGrid
 {
@@ -292,23 +173,8 @@ class SyclDeviceCooperativeWorkItemGrid
 
  public:
 
-  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
-  Int32 groupRank() const { return static_cast<Int32>(m_nd_item.get_group(0)); }
-
-  //! Nombre de WorkItem dans un WorkGroup.
-  Int32 groupSize() { return static_cast<Int32>(m_nd_item.get_local_range(0)); }
-
-  //! Rang du WorkItem actif dans le WorkGroup.
-  Int32 activeWorkItemRankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
-
   //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
-  void groupBarrier() { m_nd_item.barrier(); }
-
-  //! Bloque tant que tous les \a CooperativeWorkItem du groupe ne sont pas arrivés ici.
-  void gridBarrier() { /* Not Yet Implemented */ }
-
-  //! Indique si on s'exécute sur un accélérateur
-  static constexpr bool isDevice() { return true; }
+  void barrier() { /* Not Yet Implemented */ }
 
  private:
 
@@ -339,8 +205,11 @@ class SyclCooperativeWorkGroupLoopContext
 
  public:
 
+  //! Grille courante
+  SyclDeviceCooperativeWorkItemGrid grid() const { return SyclDeviceCooperativeWorkItemGrid(m_nd_item); }
+
   //! Groupe courant
-  SyclDeviceCooperativeWorkItemGrid group() const { return SyclDeviceCooperativeWorkItemGrid(m_nd_item); }
+  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item, m_total_size); }
 
  private:
 

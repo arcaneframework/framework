@@ -39,10 +39,11 @@ class HostWorkItemGroup;
 class SyclDeviceWorkItemBlock;
 class DeviceWorkItemBlock;
 class SyclWorkGroupLoopContext;
-
+class CooperativeWorkGroupLoopContext;
 class CooperativeHostWorkItemGrid;
 class SyclDeviceCooperativeWorkItemGrid;
 class CooperativeWorkGroupLoopRange;
+class SyclCooperativeWorkGroupLoopContext;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -244,6 +245,7 @@ class HostWorkItemGroup
   friend WorkGroupLoopContext;
   friend SyclDeviceWorkItemBlock;
   friend DeviceWorkItemBlock;
+  friend CooperativeWorkGroupLoopContext;
 
  private:
 
@@ -299,6 +301,7 @@ class HostWorkItemGroup
 class DeviceWorkItemBlock
 {
   friend WorkGroupLoopContext;
+  friend CooperativeWorkGroupLoopContext;
 
  private:
 
@@ -310,7 +313,7 @@ class DeviceWorkItemBlock
    */
   explicit __device__ DeviceWorkItemBlock(Int64 total_size)
   : m_thread_block(cooperative_groups::this_thread_block())
-    , m_total_size(total_size)
+  , m_total_size(total_size)
   {}
 
  public:
@@ -330,11 +333,6 @@ class DeviceWorkItemBlock
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
 
-  //__device__ DeviceWorkItemIterator begin() const
-  // {
-  //return DeviceWorkItemIterator(blockDim.x * blockIdx.x + threadIdx.x, blockDim.x * gridDim.x);
-  //}
-  //constexpr __device__ DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
   constexpr __device__ DeviceIndexes indexes() const { return DeviceIndexes(m_total_size); }
 
  private:
@@ -428,6 +426,7 @@ class WorkGroupLoopContext
 class SyclDeviceWorkItemBlock
 {
   friend SyclWorkGroupLoopContext;
+  friend SyclCooperativeWorkGroupLoopContext;
 
  private:
 

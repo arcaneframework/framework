@@ -45,9 +45,9 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread
       auto loop_range = makeCooperativeWorkGroupLoopRange(command, nb_group, group_size);
       command << RUNCOMMAND_LAUNCH(iter, loop_range)
       {
-        auto x = iter.group();
+        auto x = iter.grid();
         //printf("X=%d\n", x.gridDim());
-        x.gridBarrier();
+        x.barrier();
         //Int32 i = iter;
       };
     }
