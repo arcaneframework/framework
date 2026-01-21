@@ -14,12 +14,80 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/accelerator/WorkGroupLoopRange.h"
-
 #include "arccore/common/SequentialFor.h"
+#include "arccore/common/StridedLoopRanges.h"
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/concurrency/ParallelFor.h"
+
+#include "arccore/accelerator/WorkGroupLoopRange.h"
+#include "arccore/accelerator/CooperativeWorkGroupLoopRange.h"
 #include "arccore/accelerator/KernelLauncher.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+
+inline constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext
+arcaneGetLoopIndexCudaHip([[maybe_unused]] const WorkGroupLoopRange& loop_range)
+{
+  return WorkGroupLoopContext();
+}
+
+inline constexpr ARCCORE_HOST_DEVICE CooperativeWorkGroupLoopContext
+arcaneGetLoopIndexCudaHip([[maybe_unused]] const CooperativeWorkGroupLoopRange& loop_range)
+{
+  return CooperativeWorkGroupLoopContext();
+}
+
+#endif
+
+#if defined(ARCCORE_COMPILING_SYCL)
+
+namespace Impl
+{
+  // Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
+  // comme argument avec 'WorkGroupLoopRange.
+  template <>
+  class IsAlwaysUseSyclNdItem<StridedLoopRanges<WorkGroupLoopRange>>
+  : public std::true_type
+  {
+  };
+  // Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
+  // comme argument avec 'CooperativeWorkGroupLoopRange.
+  template <>
+  class IsAlwaysUseSyclNdItem<StridedLoopRanges<CooperativeWorkGroupLoopRange>>
+  : public std::true_type
+  {
+  };
+} // namespace Impl
+
+inline SyclWorkGroupLoopContext
+arcaneGetLoopIndexSycl([[maybe_unused]] const WorkGroupLoopRange& loop_range,
+                       sycl::nd_item<1> id)
+{
+  return SyclWorkGroupLoopContext(id);
+}
+
+inline SyclCooperativeWorkGroupLoopContext
+arcaneGetLoopIndexSycl([[maybe_unused]] const CooperativeWorkGroupLoopRange& loop_range,
+                       sycl::nd_item<1> id)
+{
+  return SyclCooperativeWorkGroupLoopContext(id);
+}
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,10 +107,11 @@ class WorkGroupSequentialForHelper
  public:
 
   //! Applique le fonctor \a func sur une boucle séqentielle.
-  template <typename Lambda, typename... RemainingArgs> static void
-  apply(Int32 begin_index, Int32 nb_loop, WorkGroupLoopRange bounds,
+  template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> static void
+  apply(Int32 begin_index, Int32 nb_loop, LoopBoundType bounds,
         const Lambda& func, RemainingArgs... remaining_args)
   {
+    using LoopIndexType = LoopBoundType::LoopIndexType;
     ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
     const Int32 group_size = bounds.groupSize();
     Int32 loop_index = begin_index * group_size;
@@ -51,7 +120,7 @@ class WorkGroupSequentialForHelper
       // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
       // un multiple de \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
-      func(WorkGroupLoopContext(loop_index, i, group_size, nb_active), remaining_args...);
+      func(LoopIndexType(loop_index, i, group_size, nb_active), remaining_args...);
       loop_index += group_size;
     }
 
@@ -59,29 +128,29 @@ class WorkGroupSequentialForHelper
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
+// On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ static void
 doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
   // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   //auto privatizer = privatize(func);
   //auto& body = privatizer.privateCopy();
 
+  //using LoopIndexType = LoopBoundType::LoopBoundType::LoopIndexType;
+
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < bounds.nbElement()) {
-    // NOTE: les arguments bounds et i ne sont pas utilisés dans arcaneGetLoopIndexCudaHip()
-    func(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+  if (i < bounds.nbOriginalElement()) {
+    func(arcaneGetLoopIndexCudaHip(bounds.originalLoop()), remaining_args...);
   }
   CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
-}
+};
 
 #endif
 
@@ -98,9 +167,9 @@ class doHierarchicalLaunchSycl
   {
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
-    if (i < bounds.nbElement()) {
+    if (i < bounds.nbOriginalElement()) {
       // Si possible, on passe \a x en argument
-      func(arcaneGetLoopIndexSycl(bounds, x), remaining_args...);
+      func(arcaneGetLoopIndexSycl(bounds.originalLoop(), x), remaining_args...);
     }
     SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
   }
@@ -127,26 +196,30 @@ template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> vo
 _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
                       const Lambda& func, const RemainingArgs&... other_args)
 {
-  Int64 vsize = bounds.nbElement();
-  if (vsize == 0)
+  Int64 nb_orig_element = bounds.nbElement();
+  if (nb_orig_element == 0)
     return;
-  using TrueLoopBoundType = LoopBoundType;
-  [[maybe_unused]] const TrueLoopBoundType& bounds2 = bounds;
-  Impl::RunCommandLaunchInfo launch_info(command, vsize);
+  const eExecutionPolicy exec_policy = command.executionPolicy();
+  using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
+  TrueLoopBoundType bounds2(bounds);
+  if (isAcceleratorPolicy(exec_policy)) {
+    bounds2.setNbStride(command.nbStride());
+  }
+
+  Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue(), bounds.isCooperativeLaunch());
   launch_info.beginExecute();
-  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((Impl::doHierarchicalLaunchCudaHip<LoopBoundType, Lambda, RemainingArgs...>),
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doHierarchicalLaunchCudaHip<TrueLoopBoundType, Lambda, RemainingArgs...>),
                              launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((Impl::doHierarchicalLaunchCudaHip<LoopBoundType, Lambda, RemainingArgs...>),
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doHierarchicalLaunchCudaHip<TrueLoopBoundType, Lambda, RemainingArgs...>),
                             launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((Impl::doHierarchicalLaunchSycl<LoopBoundType, Lambda, RemainingArgs...>{}),
-                             launch_info, func, bounds, other_args...);
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::doHierarchicalLaunchSycl<TrueLoopBoundType, Lambda, RemainingArgs...>{}),
+                             launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arccoreSequentialFor(bounds, func, other_args...);
@@ -260,6 +333,34 @@ arccoreSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const Remain
  */
 template <typename Lambda, typename... RemainingArgs> void
 arccoreParallelFor(WorkGroupLoopRange bounds, ForLoopRunInfo run_info,
+                   const Lambda& func, const RemainingArgs&... remaining_args)
+{
+  auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
+    Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
+  };
+  arccoreParallelFor(0, bounds.nbGroup(), run_info, sub_func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Applique le fonctor \a func sur une boucle séqentielle.
+ */
+template <typename Lambda, typename... RemainingArgs> void
+arccoreSequentialFor(CooperativeWorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
+{
+  Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Applique le fonctor \a func sur une boucle parallèle.
+ */
+template <typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(CooperativeWorkGroupLoopRange bounds, ForLoopRunInfo run_info,
                    const Lambda& func, const RemainingArgs&... remaining_args)
 {
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {

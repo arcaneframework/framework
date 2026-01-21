@@ -256,7 +256,7 @@ class CudaKernelLauncher
     bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
     launch_info._setIsNeedBarrier(is_need_barrier);
     if (use_cuda_launch || is_cooperative)
-      _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, bounds, func, other_args...);
+      _applyKernelCUDAVariadic(is_cooperative, tbi, s, kernel_ptr, bounds, func, other_args...);
     else {
       kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(bounds, func, other_args...);
     }
@@ -266,14 +266,13 @@ class CudaKernelLauncher
 
   template <typename... KernelArgs> static inline void
   _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
-                           cudaStream_t& s, Int32 shared_memory,
-                           const void* kernel_ptr, KernelArgs... args)
+                           cudaStream_t& s, const void* kernel_ptr, KernelArgs... args)
   {
     void* all_args[] = { (reinterpret_cast<void*>(&args))... };
     if (is_cooperative)
-      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
     else
-      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
   }
 };
 
@@ -307,7 +306,23 @@ class HipKernelLauncher
     hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
     bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
     launch_info._setIsNeedBarrier(is_need_barrier);
-    hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
+    bool is_cooperative = launch_info._isUseCooperativeLaunch();
+    if (is_cooperative) {
+      _applyCooperativeKernel(tbi, s, kernel_ptr, bounds, func, other_args...);
+    }
+    else
+      hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
+  }
+
+ private:
+
+  template <typename... KernelArgs> static inline void
+  _applyCooperativeKernel(const KernelLaunchArgs& tbi, hipStream_t& s,
+                          const void* kernel_ptr, KernelArgs... args)
+  {
+    void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+    // TODO: Regarder tester le code retour
+    (void)hipLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
   }
 };
 

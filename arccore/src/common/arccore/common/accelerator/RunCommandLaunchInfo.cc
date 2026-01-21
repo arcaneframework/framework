@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.cc                                     (C) 2000-2025 */
+/* RunCommandLaunchInfo.cc                                     (C) 2000-2026 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -32,10 +32,8 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunCommandLaunchInfo::
-RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
-: m_command(command)
-, m_total_loop_size(total_loop_size)
+void RunCommandLaunchInfo::
+_init()
 {
   m_queue_impl = m_command._internalQueueImpl();
   m_exec_policy = m_queue_impl->executionPolicy();
@@ -45,6 +43,29 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
     _computeInitialKernelLaunchArgs();
     m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommandLaunchInfo::
+RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
+: m_command(command)
+, m_total_loop_size(total_loop_size)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommandLaunchInfo::
+RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative)
+: m_command(command)
+, m_total_loop_size(total_loop_size)
+, m_is_cooperative_launch(is_cooperative)
+{
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +225,7 @@ bool RunCommandLaunchInfo::
 _isUseCooperativeLaunch() const
 {
   // Indique si on utilise cudaLaunchCooperativeKernel()
-  return false;
+  return m_is_cooperative_launch;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

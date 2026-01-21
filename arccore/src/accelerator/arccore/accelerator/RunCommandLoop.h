@@ -456,7 +456,7 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
  * Cette macro permet d'ajouter des arguments. Ces arguments peuvent être
  * des valeurs à réduire (telles que les classes Arcane::Accelerator::ReducerSum2,
  * Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2) ou des données
- * en mémoire locale (via la classe Arcane::Accelerator::RunCommandLocalMemory).
+ * en mémoire locale (via la classe Arcane::Accelerator::LocalMemory).
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \

@@ -12,6 +12,8 @@ set(SOURCES
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
+  CooperativeWorkGroupLoopRange.h
+  CooperativeWorkGroupLoopRange.cc
   GenericFilterer.h
   GenericFilterer.cc
   GenericPartitioner.h

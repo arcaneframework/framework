@@ -57,6 +57,29 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé un intervalle d'itération pour la commande \a command.
+ *
+ * Créé un intervalle pour \a nb_group de taille \a group_size.
+ * Le nombre total d'éléments est donc égal à `nb_group * group_size`.
+ */
+extern "C++" ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
+makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé un intervalle d'itération pour la commande \a command.
+ *
+ * Créé un intervalle contenant \a nb_element, répartis en \a nb_group de taille \a group_size.
+ * Si \a nb_group et \a group_size sont nuls, une taille de bloc par défaut sera choisie en
+ * fonction de l'accélérateur et \a nb_group sera calculé automatiquement.
+ */
+extern "C++" ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
+makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
 
@@ -69,15 +92,21 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
 // une lambda template et le type de l'itérateur est un paramètre template
 
 /*!
- * \brief Macro pour lancer une commande utilisant le parallélisme hiérarchique.
+ * \brief Macro pour lancer une commande utilisant le parallélisme
+ * hiérarchique, éventuellement coopératif.
  *
- * \a bounds doit être une instance de Arcane::Accelerator::WorkGroupLoopRange.
+ * \a bounds doit être une instance de type Arcane::Accelerator::WorkGroupLoopRange
+ * ou Arcane::Accelerator::CooperativeWorkGroupLoopRange.
+ *
  * La création de ces instances se fait via l'appel à
- * Arcane::Accelerator::makeWorkGroupLoopRange().
+ * Arcane::Accelerator::makeWorkGroupLoopRange() ou
+ * Arcane::Accelerator::makeCooperativeWorkGroupLoopRange().
  *
- * \a iter_name sera du type Arcane::Accelerator::WorkGroupLoopContext sauf
+ * \a iter_name sera du type Arcane::Accelerator::WorkGroupLoopContext ou
+ * Arcane::Accelerator::CooperativeWorkGroupLoopContext (sauf
  * pour la politique d'exécution Arcane::Accelerator::eExecutionPolicy::SYCL
- * où il sera du type Arcane::Accelerator::SyclWorkGroupLoopContext.
+ * où le type est template et est différent si on s'exécute sur l'hôte ou
+ * sur l'accélérateur).
  */
 #if defined(ARCCORE_COMPILING_SYCL)
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \

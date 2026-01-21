@@ -14,13 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/CheckedConvert.h"
-#include "arccore/base/ForLoopRanges.h"
-
-#include "arccore/common/accelerator/NativeStream.h"
-#include "arccore/common/accelerator/RunCommandLaunchInfo.h"
-
-#include "arccore/accelerator/AcceleratorUtils.h"
+#include "arccore/common/CommonGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,14 +30,20 @@ namespace Arcane::Accelerator::Impl
 /*!
  * \brief Classe pour gérer la décomposition d'une boucle en plusieurs parties.
  */
-class StridedLoopRangesBase
+class ARCCORE_COMMON_EXPORT StridedLoopRangesBase
 {
  public:
 
-  StridedLoopRangesBase(Int32 nb_stride, Int64 nb_orig_element)
+  constexpr StridedLoopRangesBase(Int32 nb_stride, Int64 nb_orig_element)
   : m_stride_value((nb_orig_element + (nb_stride - 1)) / nb_stride)
   , m_nb_original_element(nb_orig_element)
   , m_nb_stride(nb_stride)
+  {
+  }
+  constexpr StridedLoopRangesBase(Int64 nb_orig_element)
+  : m_stride_value(nb_orig_element)
+  , m_nb_original_element(nb_orig_element)
+  , m_nb_stride(1)
   {
   }
 
@@ -53,6 +53,8 @@ class StridedLoopRangesBase
   constexpr Int64 nbOriginalElement() const { return m_nb_original_element; }
   constexpr Int64 strideValue() const { return m_stride_value; }
 
+  void setNbStride(Int32 nb_stride) { _setNbStride(nb_stride); }
+
  private:
 
   //! Valeur du pas
@@ -61,6 +63,14 @@ class StridedLoopRangesBase
   Int64 m_nb_original_element = 0;
   //! Nombre de pas
   Int32 m_nb_stride = 0;
+
+ private:
+
+  void _setNbStride(Int32 nb_stride)
+  {
+    m_nb_stride = nb_stride;
+    m_stride_value = (m_nb_original_element + (nb_stride - 1)) / nb_stride;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -80,6 +90,11 @@ class StridedLoopRanges
 
   StridedLoopRanges(Int32 nb_grid_stride, const LoopBoundType& orig_loop)
   : StridedLoopRangesBase(nb_grid_stride, orig_loop.nbElement())
+  , m_orig_loop(orig_loop)
+  {
+  }
+  StridedLoopRanges(const LoopBoundType& orig_loop)
+  : StridedLoopRangesBase(orig_loop.nbElement())
   , m_orig_loop(orig_loop)
   {
   }

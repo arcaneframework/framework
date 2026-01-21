@@ -48,7 +48,7 @@ class ARCCORE_COMMON_EXPORT RunCommand
   friend Impl::RunCommandLaunchInfo;
   friend Impl::RunQueueImpl;
   friend class ViewBuildInfo;
-  template<typename T, Int32 Extent> friend class LocalMemory;
+  template <typename T, Int32 Extent> friend class LocalMemory;
 
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -69,6 +69,9 @@ class ARCCORE_COMMON_EXPORT RunCommand
   RunCommand& operator=(RunCommand&&) = delete;
 
  public:
+
+  //! Politique d'exécution de la commande
+  eExecutionPolicy executionPolicy() const;
 
   /*!
    * \brief Positionne le informations de trace.
@@ -97,10 +100,12 @@ class ARCCORE_COMMON_EXPORT RunCommand
 
   /*!
    * \brief Positionne le nombre de pas pour la décomposition de la boucle
-   * sur accélérateur.
+   * sur accélérateur/
    *
    * La valeur par défaut est 1, ce qui indique qu'on ne décompose pas
-   * la boucle.
+   * la boucle. Cette méthode ne fait rien si la commande ne s'exécute
+   * pas sur accélérateur. Cette valeur n'est utilisée que pour les boucles
+   * classiques (RUNCOMMAND_LOOP()) ou sur les entités (RUNCOMMAND_ENUMERATE()).
    *
    * \warning API EXPERIMENTALE. A UTILISER UNIQUEMENT DANS ARCANE
    */
