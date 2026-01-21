@@ -181,8 +181,7 @@ class SyclDeviceIndexes
   DeviceWorkItemIterator begin() const
   {
     Int32 index = static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0));
-    // TODO: à vérifier si c'est bien la taille de la grille.
-    Int32 grid_size = static_cast<Int32>(m_nd_item.get_local_range(0) * m_nd_item.get_global_range(0));
+    Int32 grid_size = static_cast<Int32>(m_nd_item.get_local_range(0) * m_nd_item.get_group_range(0));
     return DeviceWorkItemIterator(index, grid_size);
   }
   constexpr DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
