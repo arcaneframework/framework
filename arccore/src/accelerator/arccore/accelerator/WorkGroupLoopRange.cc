@@ -22,8 +22,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-WorkGroupLoopRange::
-WorkGroupLoopRange(Int32 total_size, Int32 nb_group, Int32 block_size)
+WorkGroupLoopRangeBase::
+WorkGroupLoopRangeBase(Int32 total_size, Int32 nb_group, Int32 block_size)
 : m_total_size(total_size)
 , m_nb_group(nb_group)
 , m_group_size(block_size)

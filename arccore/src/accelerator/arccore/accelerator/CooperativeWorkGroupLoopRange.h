@@ -75,7 +75,7 @@ class DeviceCooperativeWorkItemGrid
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_grid()
    */
-  explicit __device__ DeviceCooperativeWorkItemGrid()
+  __device__ DeviceCooperativeWorkItemGrid()
   : m_grid_group(cooperative_groups::this_grid())
   {}
 
@@ -88,6 +88,9 @@ class DeviceCooperativeWorkItemGrid
 
   cooperative_groups::grid_group m_grid_group;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif
 
@@ -102,6 +105,7 @@ class DeviceCooperativeWorkItemGrid
  * permet de particulariser le traitement de la commande.
  */
 class CooperativeWorkGroupLoopContext
+: public WorkGroupLoopContextBase
 {
   // Pour accéder aux constructeurs
   friend CooperativeWorkGroupLoopRange;
@@ -112,19 +116,16 @@ class CooperativeWorkGroupLoopContext
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  explicit constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item, Int64 total_size)
-  : m_loop_index(loop_index)
-  , m_group_index(group_index)
-  , m_group_size(group_size)
-  , m_nb_active_item(nb_active_item)
-  , m_total_size(total_size)
+  constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index,
+                                            Int32 group_size, Int32 nb_active_item, Int64 total_size)
+  : WorkGroupLoopContextBase(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
   explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(Int64 total_size)
-  : m_total_size(total_size)
+  : WorkGroupLoopContextBase(total_size)
   {}
 
  public:
@@ -132,22 +133,10 @@ class CooperativeWorkGroupLoopContext
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
   __device__ DeviceCooperativeWorkItemGrid grid() const { return DeviceCooperativeWorkItemGrid{}; }
-  //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceWorkItemBlock group() const { return DeviceWorkItemBlock(m_total_size); }
 #else
   //! Groupe courant
   CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
-  //! Groupe courant
-  HostWorkItemGroup group() const { return HostWorkItemGroup(m_loop_index, m_group_index, m_group_size, m_nb_active_item); }
 #endif
-
- private:
-
-  Int32 m_loop_index = 0;
-  Int32 m_group_index = 0;
-  Int32 m_group_size = 0;
-  Int32 m_nb_active_item = 0;
-  Int64 m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -237,6 +226,7 @@ class SyclCooperativeWorkGroupLoopContext
  * et être un multiple de 32.
  */
 class ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
+: public WorkGroupLoopRangeBase
 {
  private:
 
@@ -263,30 +253,11 @@ class ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
    * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a group_size.
    * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
    */
-  CooperativeWorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size);
+  CooperativeWorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size)
+  : WorkGroupLoopRangeBase(total_nb_element, nb_group, group_size)
+  {}
 
  public:
-
-  //! Nombre d'éléments à traiter
-  constexpr Int32 nbElement() const { return m_total_size; }
-  //! Taille d'un groupe
-  constexpr Int32 groupSize() const { return m_group_size; }
-  //! Nombre de groupes
-  constexpr Int32 nbGroup() const { return m_nb_group; }
-  //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastGroupSize() const { return m_last_group_size; }
-  //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr Int32 nbActiveItem(Int32 i) const
-  {
-    return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
-  }
-
- private:
-
-  Int32 m_total_size = 0;
-  Int32 m_nb_group = 0;
-  Int32 m_group_size = 0;
-  Int32 m_last_group_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
