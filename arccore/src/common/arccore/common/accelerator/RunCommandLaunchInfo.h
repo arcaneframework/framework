@@ -46,6 +46,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
  public:
 
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
+  RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative);
   ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
@@ -90,6 +91,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
   bool m_is_need_barrier = false;
+  bool m_is_cooperative_launch = false;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
@@ -116,6 +118,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
   // \a sycl_event_ptr est de type 'sycl::event*'.
   void _addSyclEvent(void* sycl_event_ptr);
+  void _init();
 };
 
 /*---------------------------------------------------------------------------*/
