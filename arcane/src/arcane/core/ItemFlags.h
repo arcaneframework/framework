@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFlags.h                                                 (C) 2000-2025 */
+/* ItemFlags.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Drapeaux contenant les caractéristiques d'une entité.                     */
 /*---------------------------------------------------------------------------*/
@@ -82,14 +82,12 @@ class ARCANE_CORE_EXPORT ItemFlags
 
     /*!
      * \brief [AMR Patch] L'entité est marquée comme étant de recouvrement par
-     * au moins un patch.
-     *
-     * TODO
+     * au moins un patch AMR.
      */
     II_Overlap = 1 << 25,
 
     /*!
-     * \brief [AMR Patch] TODO
+     * \brief [AMR Patch] L'entité est marqué comme étant dans un patch AMR.
      */
     II_InPatch = 1 << 26,
 
