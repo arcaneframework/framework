@@ -107,6 +107,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void _changeOverlapSizeLevel(Int32 level, Int32 previous_higher_level, Int32 new_higher_level);
 
   void _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups);
+  void _updatePatchFlagsOfCellsGroundLevel();
 
   void _checkPatchesAndMesh();
 

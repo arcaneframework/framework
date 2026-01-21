@@ -628,6 +628,7 @@ updateLevelsAndAddGroundPatch()
   old_ground.computeOverlapLayerSize(m_higher_level + 1, m_size_of_overlap_layer_top_level);
 
   _addPatch(old_ground);
+  _updatePatchFlagsOfCellsGroundLevel();
   _updateHigherLevel();
 
 #ifdef ARCANE_CHECK
@@ -1007,8 +1008,7 @@ adaptLevel(Int32 level_to_adapt)
       const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
       for (const AMRPatchPositionSignature& patch_signature : sig_array) {
         if (patch_signature.patch().isInWithOverlap(pos)) {
-          // TODO Quand le patch ground sera un patch classique, retirer level_to_adapt!=0.
-          if (level_to_adapt != 0 && !icell->hasFlags(ItemFlags::II_InPatch) && !icell->hasFlags(ItemFlags::II_Overlap)) {
+          if (!icell->hasFlags(ItemFlags::II_InPatch) && !icell->hasFlags(ItemFlags::II_Overlap)) {
             ARCANE_FATAL("Internal error -- Refine algo error -- Pos : {0}", pos);
           }
           icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
@@ -1410,8 +1410,8 @@ _changeOverlapSizeLevel(Int32 level, Int32 previous_higher_level, Int32 new_high
 void CartesianPatchGroup::
 _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups)
 {
-  // Le niveau ground n'a pas besoin des flags II_InPatch | II_Overlap.
   if (level == 0) {
+    _updatePatchFlagsOfCellsGroundLevel();
     return;
   }
 
@@ -1493,6 +1493,17 @@ _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
+_updatePatchFlagsOfCellsGroundLevel()
+{
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(0)) {
+    icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
 _checkPatchesAndMesh()
 {
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
@@ -1509,9 +1520,9 @@ _checkPatchesAndMesh()
     }
   }
   {
-    for (Int32 level = 1; level < m_higher_level; ++level) {
+    for (Int32 level = 0; level < m_higher_level; ++level) {
       Int32 check_overlap = overlapLayerSize(level);
-      for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+      for (Integer p = 0; p < m_amr_patches_pointer.size(); ++p) {
         auto& position = m_amr_patches_pointer[p]->_internalApi()->positionRef();
         if (position.level() == level) {
           if (check_overlap == -1) {
@@ -1529,16 +1540,13 @@ _checkPatchesAndMesh()
     // II_UserMark2 = II_InPatch
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
       Integer level = icell->level();
-      if (level == 0) {
-        continue;
-      }
 
       bool in_overlap = false;
       bool in_patch = false;
 
       const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
 
-      for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+      for (Integer p = 0; p < m_amr_patches_pointer.size(); ++p) {
         auto& patch = m_amr_patches_pointer[p]->_internalApi()->positionRef();
         if (patch.level() != level) {
           continue;
@@ -1572,10 +1580,6 @@ _checkPatchesAndMesh()
       }
     }
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-      Integer level = icell->level();
-      if (level == 0) {
-        continue;
-      }
       if (icell->hasFlags(ItemFlags::II_UserMark1)) {
         if (!icell->hasFlags(ItemFlags::II_Overlap)) {
           ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark1 but not II_Overlap -- CellUID : {0}", icell->uniqueId());
@@ -1684,6 +1688,9 @@ setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
 Int32 CartesianPatchGroup::
 overlapLayerSize(Int32 level)
 {
+  if (level == 0) {
+    return 0;
+  }
   // Deux cas :
   // - on est dans une phase de raffinement (beginAdaptMesh()), on doit donc
   //   considérer que le niveau le plus haut est m_target_nb_levels-1,
@@ -1792,6 +1799,7 @@ _createGroundPatch()
     patch->_internalApi()->positionRef().setMinPoint({ 0, 0, 0 });
     patch->_internalApi()->positionRef().setMaxPoint({ numbering->globalNbCellsX(0), numbering->globalNbCellsY(0), numbering->globalNbCellsZ(0) });
     patch->_internalApi()->positionRef().setLevel(0);
+    _updatePatchFlagsOfCellsGroundLevel();
   }
 
   _addPatchInstance(patch);

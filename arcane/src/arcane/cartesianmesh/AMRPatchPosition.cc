@@ -399,14 +399,19 @@ haveIntersection(const AMRPatchPosition& other) const
 Int32 AMRPatchPosition::
 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
 {
+  // Si le top level est à -1, les mailles de recouvrement sont désactivées.
   if (overlap_layer_size_top_level == -1) {
     return 0;
   }
-  if (level < 0 || level > higher_level) {
-    ARCANE_FATAL("Level {0} doesn't exist (higher_level={1})", level, higher_level);
+  // Le niveau 0 n'a jamais de couches.
+  if (level == 0) {
+    return 0;
   }
   if (level == higher_level) {
     return overlap_layer_size_top_level;
+  }
+  if (level < 0 || level > higher_level) {
+    ARCANE_FATAL("Level {0} doesn't exist (higher_level={1})", level, higher_level);
   }
 
   Int32 nb_overlap_cells = overlap_layer_size_top_level;
