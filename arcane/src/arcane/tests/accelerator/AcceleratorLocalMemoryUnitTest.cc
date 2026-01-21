@@ -202,7 +202,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
     // Traite chaque indice de la boucle géré par le WorkItem.
     // Il va ajouter des valeurs à la mémoire partagée.
-    for ( Int32 i : work_item.indexes() ) {
+    for ( Int32 i : work_item.linearIndexes() ) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
     }

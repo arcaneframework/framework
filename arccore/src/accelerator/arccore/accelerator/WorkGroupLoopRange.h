@@ -222,7 +222,7 @@ class HostWorkItem
   static constexpr bool isDevice() { return false; }
 
   //! Indexes de la boucle gérés par ce WorkItem
-  constexpr HostIndexes indexes() const
+  constexpr HostIndexes linearIndexes() const
   {
     return HostIndexes(m_loop_index, m_nb_active_item);
   }
@@ -307,7 +307,7 @@ class DeviceWorkItem
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
 
-  constexpr __device__ DeviceIndexes indexes() const { return DeviceIndexes(m_total_size); }
+  constexpr __device__ DeviceIndexes linearIndexes() const { return DeviceIndexes(m_total_size); }
 
  private:
 
@@ -491,7 +491,7 @@ class SyclDeviceWorkItem
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
 
-  SyclDeviceIndexes indexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
+  SyclDeviceIndexes linearIndexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
 
  private:
 
