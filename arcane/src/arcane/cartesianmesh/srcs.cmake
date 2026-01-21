@@ -27,6 +27,8 @@ set(ARCANE_SOURCES
   CartesianMeshUtils.cc
   CartesianMeshPatchListView.h
   CartesianMeshPatch.cc
+  SimpleHTMLMeshAMRPatchExporter.cc
+  SimpleHTMLMeshAMRPatchExporter.h
 
   v2/CartesianGrid.h
   v2/CartesianNumbering.h

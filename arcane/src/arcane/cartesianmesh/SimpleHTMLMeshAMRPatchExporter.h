@@ -9,10 +9,12 @@
 /*                                                                           */
 /* Écrivain d'un maillage au format HTML, avec un SVG.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
-#define ARCANE_CORE_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
+#ifndef ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
+#define ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/cartesianmesh/CartesianPatch.h"
 
 #include "arcane/core/ItemTypes.h"
 
@@ -23,7 +25,6 @@
 
 namespace Arcane
 {
-class CartesianPatch;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +36,7 @@ class CartesianPatch;
  * d'appeler la méthode writeGroup() pour exporter les entités associées à groupe
  * de maille (noeuds, faces et mailles).
  */
-class ARCANE_CORE_EXPORT SimpleHTMLMeshAMRPatchExporter
+class ARCANE_CARTESIANMESH_EXPORT SimpleHTMLMeshAMRPatchExporter
 {
   class Impl;
 

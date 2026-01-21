@@ -39,7 +39,6 @@
 #include "arcane/core/IPostProcessorWriter.h"
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/SimpleSVGMeshExporter.h"
-#include "arcane/core/SimpleHTMLMeshAMRPatchExporter.h"
 #include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
@@ -54,6 +53,7 @@
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
+#include "arcane/cartesianmesh/SimpleHTMLMeshAMRPatchExporter.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/AMRCartesianMeshTester_axl.h"
@@ -116,6 +116,7 @@ class AMRCartesianMeshTesterModule
   void _processPatches();
   void _writePostProcessing();
   void _checkUniqueIds();
+  void _svgOutput();
   void _testDirections();
   void _checkDirections();
   String _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, Integer nb_items_around);
@@ -299,6 +300,7 @@ init()
     if (options()->coarseAtInit())
       renumbering_info.setParentPatch(m_cartesian_mesh->amrPatch(1));
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
+    _svgOutput();
     _checkUniqueIds();
     _processPatches();
     info() << "MaxUid for mesh=" << MeshUtils::getMaxItemUniqueIdCollective(m_cartesian_mesh->mesh());
@@ -370,6 +372,45 @@ _checkUniqueIds()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
+_svgOutput()
+{
+  const Int32 dimension = defaultMesh()->dimension();
+  const Int32 nb_patch = m_cartesian_mesh->nbPatch();
+
+  IParallelMng* pm = parallelMng();
+  Int32 comm_rank = pm->commRank();
+  Int32 comm_size = pm->commSize();
+
+  SimpleHTMLMeshAMRPatchExporter amr_exporter;
+  Directory directory = subDomain()->exportDirectory();
+
+  // Affiche les informations sur les patchs
+  for (Integer i = 0; i < nb_patch; ++i) {
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
+    CellGroup patch_cells(p->cells());
+
+    // Exporte le patch au format SVG
+    if (dimension == 2 && options()->dumpSvg()) {
+      String filename = String::format("Patch{0}-{1}-{2}.svg", i, comm_rank, comm_size);
+      String full_filename = directory.file(filename);
+      std::ofstream ofile(full_filename.localstr());
+      SimpleSVGMeshExporter exporter(ofile);
+      exporter.write(patch_cells);
+      amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
+    }
+  }
+  if (dimension == 2 && options()->dumpSvg()) {
+    String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
+    String amr_full_filename = directory.file(amr_filename);
+    std::ofstream amr_ofile(amr_full_filename.localstr());
+    amr_exporter.write(amr_ofile);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
 _processPatches()
 {
   const bool do_check = true;
@@ -398,7 +439,6 @@ _processPatches()
 
   IParallelMng* pm = parallelMng();
   Int32 comm_rank = pm->commRank();
-  Int32 comm_size = pm->commSize();
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
   if (nb_cells_expected.size()!=nb_patch)
@@ -414,9 +454,6 @@ _processPatches()
   if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
                  nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
-
-  SimpleHTMLMeshAMRPatchExporter amr_exporter;
-  Directory directory = subDomain()->exportDirectory();
 
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
@@ -463,22 +500,6 @@ _processPatches()
         ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
                      i,total,nb_ghost_cells_expected[i]);
     }
-
-    // Exporte le patch au format SVG
-    if (dimension==2 && options()->dumpSvg()){
-      String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
-      String full_filename = directory.file(filename);
-      std::ofstream ofile(full_filename.localstr());
-      SimpleSVGMeshExporter exporter(ofile);
-      exporter.write(patch_cells);
-      amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
-    }
-  }
-  if (dimension == 2 && options()->dumpSvg()) {
-    String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
-    String amr_full_filename = directory.file(amr_filename);
-    std::ofstream amr_ofile(amr_full_filename.localstr());
-    amr_exporter.write(amr_ofile);
   }
 }
 

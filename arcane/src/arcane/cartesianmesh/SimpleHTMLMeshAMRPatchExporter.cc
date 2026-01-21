@@ -15,9 +15,10 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "arcane/core/SimpleHTMLMeshAMRPatchExporter.h"
+#include "arcane/cartesianmesh/SimpleHTMLMeshAMRPatchExporter.h"
 
-#include "arcane/cartesianmesh/CartesianPatch.h"
+#include "arcane/cartesianmesh/AMRPatchPosition.h"
+
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/StringBuilder.h"
 
@@ -320,6 +321,12 @@ _writePatch(const CartesianPatch& patch)
       m_patches += String::format("{0} {1} ", coord.x, coord.y);
     }
     m_patches += "z'";
+    if (icell->hasFlags(ItemFlags::II_Overlap) && icell->hasFlags(ItemFlags::II_InPatch)) {
+      if (cell.isOwn())
+        m_patches += " fill='magenta'";
+      else
+        m_patches += " fill='darkmagenta'";
+    }
     if (icell->hasFlags(ItemFlags::II_Overlap)) {
       if (cell.isOwn())
         m_patches += " fill='orange'";
