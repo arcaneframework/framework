@@ -1910,7 +1910,7 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
     tm->info() << "HASH_RESULT family=" << family->name()
                << " v=" << hash_str << " expected=" << expected_hash;
   if (!expected_hash.empty() && hash_str != expected_hash)
-    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
+    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v='{1}' expected='{2}'",
                  family->fullName(), hash_str, expected_hash);
 }
 

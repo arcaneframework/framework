@@ -240,6 +240,10 @@ _printFlags(std::ostream& o, Integer flags)
     o << ((position++) ? "|" : "") << "Inactive";
   if (flags & ItemFlags::II_CoarsenInactive)
     o << ((position++) ? "|" : "") << "CoarsenInactive";
+  if (flags & ItemFlags::II_Overlap)
+    o << ((position++) ? "|" : "") << "Overlap";
+  if (flags & ItemFlags::II_InPatch)
+    o << ((position++) ? "|" : "") << "InPatch";
   if (flags & ItemFlags::II_UserMark1)
     o << ((position++) ? "|" : "") << "UserMark1";
   if (flags & ItemFlags::II_UserMark2)
