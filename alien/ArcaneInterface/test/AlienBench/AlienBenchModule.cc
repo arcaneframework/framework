@@ -324,6 +324,9 @@ AlienBenchModule::test()
   {
     Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
+
+    if(block_size==1)
+    {
     /*
     {
       auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::hypre>() ;
@@ -336,20 +339,20 @@ AlienBenchModule::test()
 #ifdef ALIEN_USE_TRILINOS
     if(solver->getBackEndName().contains("tpetraserial"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(false) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(true) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #ifdef KOKKOS_ENABLE_OPENMP
     if(solver->getBackEndName().contains("tpetraomp"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(false) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(true) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
 #ifdef KOKKOS_ENABLE_THREADS
     if(solver->getBackEndName().contains("tpetrapth"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(false) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(true) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
@@ -361,6 +364,7 @@ AlienBenchModule::test()
     }
 #endif
 #endif
+    }
 
 
     if (not solver->hasParallelSupport() and m_parallel_mng->commSize() > 1) {
