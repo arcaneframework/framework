@@ -286,3 +286,5 @@ endif()
 
 # Pas actif pour l'instant car en échec
 arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
+
+arcane_add_test(dynamic-circle-amr-1 testDynamicCircleAMR-1.arc "-m 10")
