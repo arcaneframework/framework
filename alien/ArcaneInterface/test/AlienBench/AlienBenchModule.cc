@@ -339,27 +339,27 @@ AlienBenchModule::test()
 #ifdef ALIEN_USE_TRILINOS
     if(solver->getBackEndName().contains("tpetraserial"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(true) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(false) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #ifdef KOKKOS_ENABLE_OPENMP
     if(solver->getBackEndName().contains("tpetraomp"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(true) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(false) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
 #ifdef KOKKOS_ENABLE_THREADS
     if(solver->getBackEndName().contains("tpetrapth"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(true) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(false) ;
       mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
 #ifdef KOKKOS_ENABLE_CUDA
     if(solver->getBackEndName().contains("tpetracuda"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(true) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(false) ;
       mat->setCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
