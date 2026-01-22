@@ -1067,13 +1067,13 @@ adaptLevel(Int32 level_to_adapt)
   // On fusionne les patchs qui peuvent l'être avant de les "ajouter" dans le maillage.
   AMRPatchPositionLevelGroup::fusionPatches(all_patches, true);
 
-  for (const AMRPatchPosition& patch : all_patches) {
-    debug() << "\tPatch AAA"
-            << " -- Level : " << patch.level()
-            << " -- Min point : " << patch.minPoint()
-            << " -- Max point : " << patch.maxPoint()
-            << " -- overlapLayerSize : " << patch.overlapLayerSize();
-  }
+  // for (const AMRPatchPosition& patch : all_patches) {
+  //   debug() << "\tPatch AAA"
+  //           << " -- Level : " << patch.level()
+  //           << " -- Min point : " << patch.minPoint()
+  //           << " -- Max point : " << patch.maxPoint()
+  //           << " -- overlapLayerSize : " << patch.overlapLayerSize();
+  // }
 
   {
     //   UniqueArray<CartCoord> out(numbering->globalNbCellsY(level_to_adapt + 1) * numbering->globalNbCellsX(level_to_adapt + 1), -1);
@@ -2068,7 +2068,7 @@ _removePartOfPatch(Integer index_patch_to_edit, const AMRPatchPosition& part_to_
     AMRPatchPositionLevelGroup::fusionPatches(new_patch_out, false);
 
     // On ajoute les nouveaux patchs dans la liste des patchs.
-    Integer d_nb_patch_final = 0;
+    // Integer d_nb_patch_final = 0;
     for (const auto& new_patch : new_patch_out) {
       if (!new_patch.isNull()) {
         // info() << "\tNew cut patch"
@@ -2076,7 +2076,7 @@ _removePartOfPatch(Integer index_patch_to_edit, const AMRPatchPosition& part_to_
         //                                     << " -- Max point : " << new_patch.maxPoint()
         //                                     << " -- Level : " << new_patch.level();
         _addCutPatch(new_patch, m_amr_patch_cell_groups_all[index_patch_to_edit - 1]);
-        d_nb_patch_final++;
+        // d_nb_patch_final++;
       }
     }
     // info() << "Nb of new patch after fusion : " << d_nb_patch_final;
