@@ -585,7 +585,7 @@ HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm com
       precond_destroy_function = HYPRE_EuclidDestroy;
     }
     break;
-#if HYPRE_RELEASE_NUMBER >= 23100
+#if HYPRE_RELEASE_NUMBER >= 22200
   case HypreOptionTypes::BJILUKPC:
     {
       precond_name = "iluk";

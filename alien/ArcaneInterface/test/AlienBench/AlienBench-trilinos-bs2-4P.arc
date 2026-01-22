@@ -19,7 +19,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>1 1 1</nsd>
+        <nsd>2 2 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
         <lz nz="10">1.</lz>
@@ -29,9 +29,10 @@
 
 
     <alien-bench>
-      <redistribution>true</redistribution>
+      <redistribution>false</redistribution>
+      <block-size>2</block-size>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-      <homogeneous>false</homogeneous>
+      <homogeneous>true</homogeneous>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
@@ -47,7 +48,7 @@
         <iluk>
           <level-of-fill>0</level-of-fill>
         </iluk>
-        <output>0</output>
+        <output>1</output>
       </linear-solver>
 
     

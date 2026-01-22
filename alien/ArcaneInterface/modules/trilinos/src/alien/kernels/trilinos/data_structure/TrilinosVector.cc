@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,9 +33,15 @@ template <typename ValueT, typename TagT> TrilinosVector<ValueT, TagT>::~Trilino
 /*---------------------------------------------------------------------------*/
 template <typename ValueT, typename TagT>
 void
-TrilinosVector<ValueT, TagT>::init(
-    [[maybe_unused]] const VectorDistribution& dist, const bool need_allocate)
+TrilinosVector<ValueT, TagT>::init(const VectorDistribution& dist, const bool need_allocate)
 {
+  const Block* block = this->block();
+  if (this->block())
+    m_block_size *= block->size();
+  else if (this->vblock())
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
+  else
+    m_block_size = 1;
   if (need_allocate)
     allocate();
 }
@@ -46,8 +52,9 @@ void
 TrilinosVector<ValueT, TagT>::allocate()
 {
   const VectorDistribution& dist = this->distribution();
-  m_local_offset = dist.offset();
-  const Integer globalSize = dist.globalSize();
+  m_local_offset = dist.offset() * m_block_size;
+  m_global_size  = dist.globalSize() * m_block_size;
+  m_local_size   = dist.localSize() * m_block_size;
   auto* parallel_mng =
       const_cast<Arccore::MessagePassing::IMessagePassingMng*>(dist.parallelMng());
 
@@ -55,10 +62,10 @@ TrilinosVector<ValueT, TagT>::allocate()
   auto* pm = dynamic_cast<MpiMessagePassingMng*>(parallel_mng);
   if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
     m_internal.reset(
-        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), *static_cast<const MPI_Comm*>(pm->getMPIComm())));
+        new VectorInternal(dist.offset(), m_global_size, m_local_size, *static_cast<const MPI_Comm*>(pm->getMPIComm())));
   else
     m_internal.reset(
-        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), MPI_COMM_WORLD));
+        new VectorInternal(m_local_offset, m_global_size, m_local_size, MPI_COMM_WORLD));
   // m_internal->m_internal = 0.;
 }
 
@@ -78,7 +85,7 @@ TrilinosVector<ValueT, TagT>::setValues(const int nrow, const ValueT* values)
   auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
 #endif
-  
+
   for (int i = 0; i < nrow; ++i) {
     x_1d(i) = values[i];
     // std::cout<<"SET X["<<i<<"]"<<values[i]<<std::endl ;

@@ -324,6 +324,9 @@ AlienBenchModule::test()
   {
     Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
+
+    if(block_size==1)
+    {
     /*
     {
       auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::hypre>() ;
@@ -356,11 +359,12 @@ AlienBenchModule::test()
 #ifdef KOKKOS_ENABLE_CUDA
     if(solver->getBackEndName().contains("tpetracuda"))
     {
-      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(true) ;
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(false) ;
       mat->setCoordinate(coordX,coordY,coordZ) ;
     }
 #endif
 #endif
+    }
 
 
     if (not solver->hasParallelSupport() and m_parallel_mng->commSize() > 1) {
