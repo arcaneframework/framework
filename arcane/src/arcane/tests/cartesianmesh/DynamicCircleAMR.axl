@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<module name="DynamicCircleAMR" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Module de test
+  </description>
+
+  <variables>
+    <variable
+      field-name="loop_sum"
+      name="LoopSum"
+      data-type="integer"
+      item-kind="none"
+      dim="0"/>
+    <variable
+      field-name="amr"
+      name="AMR"
+      data-type="int16"
+      item-kind="cell"
+      dim="0"/>
+  </variables>
+
+  <options>
+    <simple name="n-steps" type="integer" default="1000">
+      <description>
+        Nombre de boucles à effectuer.
+      </description>
+    </simple>
+  </options>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+  </entry-points>
+
+</module>
