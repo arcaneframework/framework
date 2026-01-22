@@ -216,7 +216,7 @@ class HostWorkItem
  public:
 
   //! Rang du WorkItem actif dans son WorkGroup.
-  constexpr Int32 rankInGroup() const { return 0; }
+  constexpr Int32 rankInBlock() const { return 0; }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return false; }
@@ -302,7 +302,7 @@ class DeviceWorkItem
  public:
 
   //! Rang du WorkItem dans son WorkGroup.
-  __device__ Int32 rankInGroup() const { return m_thread_block.thread_index().x; }
+  __device__ Int32 rankInBlock() const { return m_thread_block.thread_index().x; }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
@@ -486,7 +486,7 @@ class SyclDeviceWorkItem
  public:
 
   //! Rang du WorkItem actif dans le WorkGroup.
-  Int32 rankInGroup() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
+  Int32 rankInBlock() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
 
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
