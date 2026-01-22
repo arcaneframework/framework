@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeDirectionMng.cc                                         (C) 2000-2025 */
+/* NodeDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ class NodeDirectionMng::Impl
   NodeGroup m_inner_all_items;
   NodeGroup m_outer_all_items;
   NodeGroup m_inpatch_all_items;
-  NodeGroup m_overall_all_items;
+  NodeGroup m_overlap_all_items;
   NodeGroup m_all_items;
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Integer m_patch_index = -1;
@@ -232,7 +232,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
   UniqueArray<Int32> inner_lids;
   UniqueArray<Int32> outer_lids;
   UniqueArray<Int32> inpatch_lids;
-  UniqueArray<Int32> overall_lids;
+  UniqueArray<Int32> overlap_lids;
   IItemFamily* family = all_nodes.itemFamily();
   ENUMERATE_ (Node, inode, all_nodes) {
     Int32 lid = inode.itemLocalId();
@@ -255,7 +255,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
       inpatch_lids.add(lid);
     }
     else {
-      overall_lids.add(lid);
+      overlap_lids.add(lid);
     }
   }
   int dir = (int)m_direction;
@@ -265,7 +265,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
   m_p->m_inner_all_items = family->createGroup(String("AllInner") + base_group_name, inner_lids, true);
   m_p->m_outer_all_items = family->createGroup(String("AllOuter") + base_group_name, outer_lids, true);
   m_p->m_inpatch_all_items = family->createGroup(String("AllInPatch") + base_group_name, inpatch_lids, true);
-  m_p->m_overall_all_items = family->createGroup(String("AllOverall") + base_group_name, overall_lids, true);
+  m_p->m_overlap_all_items = family->createGroup(String("AllOverlap") + base_group_name, overlap_lids, true);
   m_p->m_all_items = all_nodes;
 
   _filterNodes();
@@ -546,9 +546,9 @@ allNodes() const
 /*---------------------------------------------------------------------------*/
 
 NodeGroup NodeDirectionMng::
-overallNodes() const
+overlapNodes() const
 {
-  return m_p->m_overall_all_items;
+  return m_p->m_overlap_all_items;
 }
 
 /*---------------------------------------------------------------------------*/

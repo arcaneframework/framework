@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2025 */
+/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2026 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens AMR.               */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 #include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
+#include "arcane/cartesianmesh/SimpleHTMLMeshAMRPatchExporter.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/AMRCartesianMeshTester_axl.h"
@@ -115,6 +116,7 @@ class AMRCartesianMeshTesterModule
   void _processPatches();
   void _writePostProcessing();
   void _checkUniqueIds();
+  void _svgOutput();
   void _testDirections();
   void _checkDirections();
   String _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, Integer nb_items_around);
@@ -298,6 +300,7 @@ init()
     if (options()->coarseAtInit())
       renumbering_info.setParentPatch(m_cartesian_mesh->amrPatch(1));
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
+    _svgOutput();
     _checkUniqueIds();
     _processPatches();
     info() << "MaxUid for mesh=" << MeshUtils::getMaxItemUniqueIdCollective(m_cartesian_mesh->mesh());
@@ -369,6 +372,45 @@ _checkUniqueIds()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
+_svgOutput()
+{
+  const Int32 dimension = defaultMesh()->dimension();
+  const Int32 nb_patch = m_cartesian_mesh->nbPatch();
+
+  IParallelMng* pm = parallelMng();
+  Int32 comm_rank = pm->commRank();
+  Int32 comm_size = pm->commSize();
+
+  SimpleHTMLMeshAMRPatchExporter amr_exporter;
+  Directory directory = subDomain()->exportDirectory();
+
+  // Affiche les informations sur les patchs
+  for (Integer i = 0; i < nb_patch; ++i) {
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
+    CellGroup patch_cells(p->cells());
+
+    // Exporte le patch au format SVG
+    if (dimension == 2 && options()->dumpSvg()) {
+      String filename = String::format("Patch{0}-{1}-{2}.svg", i, comm_rank, comm_size);
+      String full_filename = directory.file(filename);
+      std::ofstream ofile(full_filename.localstr());
+      SimpleSVGMeshExporter exporter(ofile);
+      exporter.write(patch_cells);
+      amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
+    }
+  }
+  if (dimension == 2 && options()->dumpSvg()) {
+    String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
+    String amr_full_filename = directory.file(amr_filename);
+    std::ofstream amr_ofile(amr_full_filename.localstr());
+    amr_exporter.write(amr_ofile);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
 _processPatches()
 {
   const bool do_check = true;
@@ -397,7 +439,6 @@ _processPatches()
 
   IParallelMng* pm = parallelMng();
   Int32 comm_rank = pm->commRank();
-  Int32 comm_size = pm->commSize();
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
   if (nb_cells_expected.size()!=nb_patch)
@@ -413,6 +454,7 @@ _processPatches()
   if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
                  nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
+
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -457,16 +499,6 @@ _processPatches()
       if (total!=nb_ghost_cells_expected[i])
         ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
                      i,total,nb_ghost_cells_expected[i]);
-    }
-
-    // Exporte le patch au format SVG
-    if (dimension==2 && options()->dumpSvg()){
-      String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
-      Directory directory = subDomain()->exportDirectory();
-      String full_filename = directory.file(filename);
-      std::ofstream ofile(full_filename.localstr());
-      SimpleSVGMeshExporter exporter(ofile);
-      exporter.write(patch_cells);
     }
   }
 }
@@ -513,7 +545,7 @@ void AMRCartesianMeshTesterModule::
 _initAMR()
 {
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
-  amr_mng.enableOverlapLayer(false);
+  amr_mng.setOverlapLayerSizeTopLevel(options()->overlapLayerSizeTopLevel());
 
   // Regarde si on dé-raffine le maillage initial
   if (options()->coarseAtInit()){
@@ -981,14 +1013,25 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
         Integer pos_final = i + 1 + (dir * nb_items_per_dir);
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
-        if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+        // En AMR classique, il ne peut pas y avoir une maille dans deux
+        // patchs différents (pas de mailles de recouvrement).
+        if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::Cell) {
+          if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
+            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+          }
+          if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
+            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+          }
+          own_cells_uid_around_cells[pos_pred] = uid_pred;
+          own_cells_uid_around_cells[pos_succ] = uid_succ;
         }
-        if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+        // En AMR par patch, une maille II_Overlap n'a pas forcément les mêmes
+        // voisins pour un patch ou pour un autre.
+        // On retire les vérifications (pour l'instant) (si modif, changement de hash !).
+        else {
+          own_cells_uid_around_cells[pos_pred] = std::max(own_cells_uid_around_cells[pos_pred], uid_pred);
+          own_cells_uid_around_cells[pos_succ] = std::max(own_cells_uid_around_cells[pos_succ], uid_succ);
         }
-        own_cells_uid_around_cells[pos_pred] = uid_pred;
-        own_cells_uid_around_cells[pos_succ] = uid_succ;
         return;
       }
     }

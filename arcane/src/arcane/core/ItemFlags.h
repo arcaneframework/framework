@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFlags.h                                                 (C) 2000-2025 */
+/* ItemFlags.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Drapeaux contenant les caractéristiques d'une entité.                     */
 /*---------------------------------------------------------------------------*/
@@ -79,6 +79,17 @@ class ARCANE_CORE_EXPORT ItemFlags
     II_JustCoarsened = 1 << 22, //!<  L'entité vient d'être dé-raffiné
     II_Inactive = 1 << 23, //!<  L'entité est inactive //COARSEN_INACTIVE,
     II_CoarsenInactive = 1 << 24, //!< L'entité est inactive et a des enfants tagués pour dé-raffinement
+
+    /*!
+     * \brief [AMR Patch] L'entité est marquée comme étant de recouvrement par
+     * au moins un patch AMR.
+     */
+    II_Overlap = 1 << 25,
+
+    /*!
+     * \brief [AMR Patch] L'entité est marqué comme étant dans un patch AMR.
+     */
+    II_InPatch = 1 << 26,
 
     II_UserMark1 = 1 << 30, //!< Marque utilisateur
     II_UserMark2 = 1 << 31 //!< Marque utilisateur

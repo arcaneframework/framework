@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRMng.h                                       (C) 2000-2025 */
+/* CartesianMeshAMRMng.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de l'AMR pour un maillage cartésien.                         */
 /*---------------------------------------------------------------------------*/
@@ -104,8 +104,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
   void coarseZone(const AMRZonePosition& position) const;
 
   /*!
-   * \brief Méthode permettant d'adapter le raffinement du maillage selon les
-   * mailles à raffiner.
+   * \brief Méthode permettant de commencer le raffinement du maillage.
    *
    * \warning Méthode expérimentale.
    *
@@ -113,33 +112,148 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
    * (PatchCartesianMeshOnly).
    *
-   * Avant d'appeler cette méthode, il faut ajouter le flag "II_Refine" sur les
-   * mailles qui doivent être raffinées. Il est possible de le faire niveau par
-   * niveau ou plusieurs niveaux d'un coup (si plusieurs niveaux existent
-   * déjà).
-   * Pour être sûr de n'avoir aucun flag déjà présent sur le maillage, il est
-   * possible d'appeler la méthode \a clearRefineRelatedFlags().
-
-   * Les mailles n'ayant pas de flag "II_Refine" seront déraffinées.
+   * Cette méthode est la première d'un trio de méthodes nécessaires pour
+   * raffiner le maillage :
+   * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
+   * - \a void adaptLevel(Int32 level_to_adapt)
+   * - \a void endAdaptMesh()
    *
-   * Afin d'éviter les mailles orphelines, si une maille est marquée
-   * "II_Refine", alors la maille parente est marquée "II_Refine".
+   * Cette première méthode va permettre de préparer le maillage au
+   * raffinement.
+   *
+   * Il est nécessaire de passer en paramètre de la méthode le nombre de
+   * niveaux de raffinements qui va y avoir pendant cette phase de
+   * raffinement (\a max_nb_levels).
+   *
+   * Il est recommandé de mettre le nombre exact de niveaux pour éviter un
+   * ajustement du nombre de couches de mailles de recouvrements lors de
+   * l'appel à la troisième méthode qui est couteux en calcul.
+   *
+   *
+   * Il est aussi nécessaire de passer en paramètre le premier niveau à être
+   * raffiné.
+   * Si deux niveaux sont déjà présent sur le maillage (0 et 1) et que vous
+   * souhaitez uniquement créer un troisième niveau (niveau 2) à partir du
+   * second niveau (niveau 1), vous pouvez mettre 1 au paramètre
+   * \a level_to_refine_first.
+   *
+   *
+   * Si deux niveaux sont déjà présent sur le maillage (0 et 1) et que vous
+   * souhaitez repartir de zéro, vous pouvez mettre 0 au paramètre
+   * \a level_to_refine_first.
+   * Dans ce cas, les patchs du niveau 1 seront supprimés, mais pas les
+   * mailles/faces/noeuds. Une fois les nouveaux patchs de niveau 1 créés à
+   * l'aide de la deuxième méthode, la troisième méthode s'occupera de
+   * supprimer les items en trop.
+   * Cela permet de conserver les valeurs des variables pour les
+   * mailles/faces/noeuds qui étaient dans un patch avant et qui sont
+   * conservés dans un nouveau patch.
+   *
    *
    * Exemple d'exécution :
    * ```
    * CartesianMeshAMRMng amr_mng(cmesh());
    * amr_mng.clearRefineRelatedFlags();
+   *
+   * amr_mng.beginAdaptMesh(2, 0);
    * for (Integer level = 0; level < 2; ++level){
    *   // Va faire ses calculs et mettre des flags II_Refine sur les mailles
-   *   // du niveau 0 jusqu'au niveau level.
-   *   computeInLevel(0, level);
-   *   amr_mng.adaptMesh();
+   *   // du niveau level.
+   *   computeInLevel(level);
+   *   amr_mng.adaptLevel(level);
    * }
+   * amr_mng.endAdaptMesh();
    * ```
    *
    * Cette opération est collective.
+   *
+   * \param max_nb_levels Le nombre de niveaux de raffinement désiré.
+   * \param level_to_refine_first Le niveau qui sera raffiné en premier.
    */
-  void adaptMesh() const;
+  void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first);
+
+  /*!
+   * \brief Méthode permettant de créer un niveau de raffinement du maillage.
+   *
+   * \warning Méthode expérimentale.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
+   * (PatchCartesianMeshOnly).
+   *
+   * Cette méthode est la seconde d'un trio de méthodes nécessaires pour
+   * raffiner le maillage :
+   * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
+   * - \a void adaptLevel(Int32 level_to_adapt)
+   * - \a void endAdaptMesh()
+   *
+   * Cette seconde méthode va permettre de raffiner le maillage niveau par
+   * niveau.
+   *
+   * Attention, le paramètre \a level_to_adapt désigne bien le niveau à
+   * raffiner, donc la création du niveau \a level_to_adapt +1 (si on veut
+   * raffiner le niveau 0, alors il y aura création du niveau 1).
+   *
+   * Avant d'appeler cette méthode, il faut ajouter le flag "II_Refine" sur les
+   * mailles qui doivent être raffinées, sur le niveau \a level_to_adapt uniquement.
+   * Pour être sûr de n'avoir aucun flag déjà présent sur le maillage, il est
+   * possible d'appeler la méthode \a clearRefineRelatedFlags().
+   *
+   * Pour le raffinement des mailles hors niveau 0 (ce niveau "ground" ayant
+   * un statut particulier), les mailles pouvant être raffinées doivent
+   * posséder le flag "II_InPatch". Les mailles n'ayant pas le flag
+   * "II_InPatch" ne peuvent pas être raffinés.
+   * \todo Ajouter le flag "II_InPatch" à toutes les mailles de niveau 0 ?
+   *
+   * Les mailles du niveau \a level_to_adapt déjà raffinées, mais n'ayant pas
+   * de flag "II_Refine" pourront être supprimées lors de l'appel à la
+   * troisième méthode.
+   * Cette méthode redessine les patchs et créée les nouvelles mailles enfant
+   * si nécessaire, mais ne supprime pas de mailles. La troisième méthode se
+   * chargera de supprimer toutes les mailles n'appartenant à aucun patch.
+   *
+   * Une fois cette méthode appelée, le niveau \a level_to_adapt +1 est prêt à
+   * être utilisé, notamment pour marquer les mailles "II_Refine", et rappeler
+   * cette méthode pour créer un autre niveau, &c.
+   *
+   * Cette méthode est faite pour être appelé itérativement, niveau par niveau
+   * (du niveau le plus bas au niveau le plus haut). Si des patchs de niveaux
+   * supérieurs à \a level_to_adapt sont détectés, ils seront supprimés.
+   * Il est donc possible d'appeler cette méthode pour un niveau n, puis de la
+   * rappeler pour un niveau n-1 par exemple (attention néanmoins au nombre de
+   * nouvelles mailles créées).
+   *
+   * Cette opération est collective.
+   *
+   * \param level_to_adapt Le niveau à adapter.
+   */
+  void adaptLevel(Int32 level_to_adapt) const;
+
+  /*!
+   * \brief Méthode permettant de terminer le raffinement du maillage.
+   *
+   * \warning Méthode expérimentale.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
+   * (PatchCartesianMeshOnly).
+   *
+   * Cette méthode est la troisième d'un trio de méthodes nécessaires pour
+   * raffiner le maillage :
+   * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
+   * - \a void adaptLevel(Int32 level_to_adapt)
+   * - \a void endAdaptMesh()
+   *
+   * Cette troisième méthode va permettre de terminer le raffinement du
+   * maillage, notamment de supprimer les mailles n'appartenant plus à aucun patch.
+   *
+   * Si le plus haut niveau raffiné avec la seconde méthode ne correspond pas
+   * au paramètre \a max_nb_levels de la première méthode, il y aura
+   * ajustement du nombre de couches de mailles de recouvrement.
+   *
+   * Cette opération est collective.
+   */
+  void endAdaptMesh();
 
   /*!
    * \brief Méthode permettant de supprimer les flags liés au raffinement de
@@ -155,9 +269,34 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    */
   void clearRefineRelatedFlags() const;
 
-  void enableOverlapLayer(bool enable) const;
- 
-   /*!
+  /*!
+   * \brief Méthode permettant de modifier le nombre de couches de mailles de
+   * recouvrement sur le niveau de raffinement le plus haut.
+   *
+   * Un appel à cette méthode va déclencher l'ajustement du nombre de couches
+   * pour tous les patchs déjà présent.
+   *
+   * Le paramètre \a new_size doit être un nombre pair (sinon, il sera modifié
+   * au nombre pair supérieur).
+   *
+   * \param new_size Le nouveau nombre de couches de mailles de recouvrement.
+   */
+  void setOverlapLayerSizeTopLevel(Int32 new_size) const;
+
+  /*!
+   * \brief Méthode permettant de désactiver les couches de mailles de
+   * recouvrement (et de les détruire si présentes).
+   *
+   * \warning Sans cette couche, il peut y avoir plus d'un niveau de
+   * raffinement entre deux mailles. C'est à l'utilisateur de gérer lui-même
+   * cette contrainte.
+   *
+   * \note Pour réactiver ces couches, un appel à
+   * \a setOverlapLayerSizeTopLevel() est suffisant.
+   */
+  void disableOverlapLayer();
+
+  /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
    * de mailles fantômes sur un niveau de raffinement défini.
    *
@@ -185,7 +324,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    *
    * Cette méthode peut être utile après plusieurs appels à \a refineZone() et à
    * \a coarseZone(). En revanche, un appel à cette méthode est inutile après
-   * un appel à \a adaptMesh() car \a adaptMesh() s'en occupe.
+   * un appel à \a adaptLevel() car \a adaptLevel() s'en occupe.
    */
   void mergePatches() const;
 

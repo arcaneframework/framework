@@ -5,17 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignatureCut.h                              (C) 2000-2026 */
+/* SimpleHTMLMeshAMRPatchExporter.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Méthodes de découpages de patchs selon leurs signatures.                  */
+/* Écrivain d'un maillage au format HTML, avec un SVG.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
-#define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
+#ifndef ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
+#define ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/CartesianPatch.h"
+
+#include "arcane/core/ItemTypes.h"
+
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-#include "arcane/utils/UniqueArray.h"
+
+#include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,37 +31,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \brief Classe permettant de découper un patch en plusieurs petits patchs.
- */
-class AMRPatchPositionSignatureCut
+class ARCANE_CARTESIANMESH_EXPORT SimpleHTMLMeshAMRPatchExporter
 {
- public:
-  AMRPatchPositionSignatureCut();
-  ~AMRPatchPositionSignatureCut();
+  class Impl;
 
  public:
 
-  /*!
-  * \brief Méthode permettant de chercher le meilleur point pour effectuer
-  * une découpe.
-  * \param sig La signature sur laquelle la recherche doit se faire.
-  * \return Le meilleur point pour la découpe (-1 si problème).
-  */
-  static CartCoord _cutDim(ConstArrayView<CartCoord> sig);
+  SimpleHTMLMeshAMRPatchExporter();
+  SimpleHTMLMeshAMRPatchExporter(const SimpleHTMLMeshAMRPatchExporter& rhs) = delete;
+  SimpleHTMLMeshAMRPatchExporter& operator=(const SimpleHTMLMeshAMRPatchExporter& rhs) = delete;
+  ~SimpleHTMLMeshAMRPatchExporter();
 
-  /*!
-  * \brief Méthode permettant de découper un patch en deux.
-  * \param sig Le patch à découper.
-  * \return Les deux patchs resultant de la découpe.
-  */
-  static std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(const AMRPatchPositionSignature& sig);
+  void addPatch(const CartesianPatch& patch);
+  void write(std::ostream& ofile);
 
-  /*!
-  * \brief Méthode permettant de découper le ou les patchs du tableau \a sig_array_a.
-  * \param sig_array_a [IN/OUT] Le tableau de patchs.
-  */
-  static void cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a);
+ private:
+
+  Impl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -67,5 +58,4 @@ class AMRPatchPositionSignatureCut
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

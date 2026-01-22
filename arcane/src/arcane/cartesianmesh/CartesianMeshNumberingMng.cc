@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshNumberingMng.cc                                (C) 2000-2025 */
+/* CartesianMeshNumberingMng.cc                                (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
 /* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
@@ -74,7 +74,7 @@ firstFaceUniqueId(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbCellsX(Int32 level) const
 {
   return m_internal_api->globalNbCellsX(level);
@@ -83,7 +83,7 @@ globalNbCellsX(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbCellsY(Int32 level) const
 {
   return m_internal_api->globalNbCellsY(level);
@@ -92,7 +92,7 @@ globalNbCellsY(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbCellsZ(Int32 level) const
 {
   return m_internal_api->globalNbCellsZ(level);
@@ -101,7 +101,7 @@ globalNbCellsZ(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbNodesX(Int32 level) const
 {
   return m_internal_api->globalNbNodesX(level);
@@ -110,7 +110,7 @@ globalNbNodesX(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbNodesY(Int32 level) const
 {
   return m_internal_api->globalNbNodesY(level);
@@ -119,7 +119,7 @@ globalNbNodesY(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbNodesZ(Int32 level) const
 {
   return m_internal_api->globalNbNodesZ(level);
@@ -128,7 +128,7 @@ globalNbNodesZ(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesX(Int32 level) const
 {
   return m_internal_api->globalNbFacesX(level);
@@ -137,7 +137,7 @@ globalNbFacesX(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesY(Int32 level) const
 {
   return m_internal_api->globalNbFacesY(level);
@@ -146,7 +146,7 @@ globalNbFacesY(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesZ(Int32 level) const
 {
   return m_internal_api->globalNbFacesZ(level);
@@ -155,7 +155,7 @@ globalNbFacesZ(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesXCartesianView(Int32 level) const
 {
   return m_internal_api->globalNbFacesXCartesianView(level);
@@ -164,7 +164,7 @@ globalNbFacesXCartesianView(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesYCartesianView(Int32 level) const
 {
   return m_internal_api->globalNbFacesYCartesianView(level);
@@ -173,7 +173,7 @@ globalNbFacesYCartesianView(Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 globalNbFacesZCartesianView(Int32 level) const
 {
   return m_internal_api->globalNbFacesZCartesianView(level);
@@ -245,8 +245,8 @@ faceLevel(Int64 uid) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
-offsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const
+CartCoord CartesianMeshNumberingMng::
+offsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const
 {
   return m_internal_api->offsetLevelToLevel(coord, level_from, level_to);
 }
@@ -254,8 +254,8 @@ offsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
-faceOffsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) const
+CartCoord CartesianMeshNumberingMng::
+faceOffsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const
 {
   return m_internal_api->faceOffsetLevelToLevel(coord, level_from, level_to);
 }
@@ -263,7 +263,7 @@ faceOffsetLevelToLevel(CartCoordType coord, Int32 level_from, Int32 level_to) co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordX(Int64 uid, Int32 level) const
 {
   return m_internal_api->cellUniqueIdToCoordX(uid, level);
@@ -272,7 +272,7 @@ cellUniqueIdToCoordX(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordX(Cell cell) const
 {
   return m_internal_api->cellUniqueIdToCoordX(cell);
@@ -281,7 +281,7 @@ cellUniqueIdToCoordX(Cell cell) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordY(Int64 uid, Int32 level) const
 {
   return m_internal_api->cellUniqueIdToCoordY(uid, level);
@@ -290,7 +290,7 @@ cellUniqueIdToCoordY(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordY(Cell cell) const
 {
   return m_internal_api->cellUniqueIdToCoordY(cell);
@@ -299,7 +299,7 @@ cellUniqueIdToCoordY(Cell cell) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordZ(Int64 uid, Int32 level) const
 {
   return m_internal_api->cellUniqueIdToCoordZ(uid, level);
@@ -308,7 +308,7 @@ cellUniqueIdToCoordZ(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordZ(Cell cell) const
 {
   return m_internal_api->cellUniqueIdToCoordZ(cell);
@@ -317,7 +317,7 @@ cellUniqueIdToCoordZ(Cell cell) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordX(Int64 uid, Int32 level) const
 {
   return m_internal_api->nodeUniqueIdToCoordX(uid, level);
@@ -326,7 +326,7 @@ nodeUniqueIdToCoordX(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordX(Node node) const
 {
   return m_internal_api->nodeUniqueIdToCoordX(node);
@@ -335,7 +335,7 @@ nodeUniqueIdToCoordX(Node node) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordY(Int64 uid, Int32 level) const
 {
   return m_internal_api->nodeUniqueIdToCoordY(uid, level);
@@ -344,7 +344,7 @@ nodeUniqueIdToCoordY(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordY(Node node) const
 {
   return m_internal_api->nodeUniqueIdToCoordY(node);
@@ -353,7 +353,7 @@ nodeUniqueIdToCoordY(Node node) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordZ(Int64 uid, Int32 level) const
 {
   return m_internal_api->nodeUniqueIdToCoordZ(uid, level);
@@ -362,7 +362,7 @@ nodeUniqueIdToCoordZ(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 nodeUniqueIdToCoordZ(Node node) const
 {
   return m_internal_api->nodeUniqueIdToCoordZ(node);
@@ -371,7 +371,7 @@ nodeUniqueIdToCoordZ(Node node) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordX(Int64 uid, Int32 level) const
 {
   return m_internal_api->faceUniqueIdToCoordX(uid, level);
@@ -380,7 +380,7 @@ faceUniqueIdToCoordX(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordX(Face face) const
 {
   return m_internal_api->faceUniqueIdToCoordX(face);
@@ -389,7 +389,7 @@ faceUniqueIdToCoordX(Face face) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordY(Int64 uid, Int32 level) const
 {
   return m_internal_api->faceUniqueIdToCoordY(uid, level);
@@ -398,7 +398,7 @@ faceUniqueIdToCoordY(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordY(Face face) const
 {
   return m_internal_api->faceUniqueIdToCoordY(face);
@@ -407,7 +407,7 @@ faceUniqueIdToCoordY(Face face) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordZ(Int64 uid, Int32 level) const
 {
   return m_internal_api->faceUniqueIdToCoordZ(uid, level);
@@ -416,7 +416,7 @@ faceUniqueIdToCoordZ(Int64 uid, Int32 level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoordType CartesianMeshNumberingMng::
+CartCoord CartesianMeshNumberingMng::
 faceUniqueIdToCoordZ(Face face) const
 {
   return m_internal_api->faceUniqueIdToCoordZ(face);
@@ -426,7 +426,7 @@ faceUniqueIdToCoordZ(Face face) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-cellUniqueId(CartCoord3Type cell_coord, Int32 level) const
+cellUniqueId(CartCoord3 cell_coord, Int32 level) const
 {
   return m_internal_api->cellUniqueId(cell_coord, level);
 }
@@ -435,7 +435,7 @@ cellUniqueId(CartCoord3Type cell_coord, Int32 level) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-cellUniqueId(CartCoord2Type cell_coord, Int32 level) const
+cellUniqueId(CartCoord2 cell_coord, Int32 level) const
 {
   return m_internal_api->cellUniqueId(cell_coord, level);
 }
@@ -444,7 +444,7 @@ cellUniqueId(CartCoord2Type cell_coord, Int32 level) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-nodeUniqueId(CartCoord3Type node_coord, Int32 level) const
+nodeUniqueId(CartCoord3 node_coord, Int32 level) const
 {
   return m_internal_api->nodeUniqueId(node_coord, level);
 }
@@ -453,7 +453,7 @@ nodeUniqueId(CartCoord3Type node_coord, Int32 level) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-nodeUniqueId(CartCoord2Type node_coord, Int32 level) const
+nodeUniqueId(CartCoord2 node_coord, Int32 level) const
 {
   return m_internal_api->nodeUniqueId(node_coord, level);
 }
@@ -462,7 +462,7 @@ nodeUniqueId(CartCoord2Type node_coord, Int32 level) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-faceUniqueId(CartCoord3Type face_coord, Int32 level) const
+faceUniqueId(CartCoord3 face_coord, Int32 level) const
 {
   return m_internal_api->faceUniqueId(face_coord, level);
 }
@@ -471,7 +471,7 @@ faceUniqueId(CartCoord3Type face_coord, Int32 level) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-faceUniqueId(CartCoord2Type face_coord, Int32 level) const
+faceUniqueId(CartCoord2 face_coord, Int32 level) const
 {
   return m_internal_api->faceUniqueId(face_coord, level);
 }
@@ -489,7 +489,7 @@ nbNodeByCell() const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellNodeUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellNodeUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellNodeUniqueIds(cell_coord, level, uid);
 }
@@ -498,7 +498,7 @@ cellNodeUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) 
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellNodeUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellNodeUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellNodeUniqueIds(cell_coord, level, uid);
 }
@@ -534,7 +534,7 @@ nbFaceByCell() const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellFaceUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellFaceUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellFaceUniqueIds(cell_coord, level, uid);
 }
@@ -543,7 +543,7 @@ cellFaceUniqueIds(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) 
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellFaceUniqueIds(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellFaceUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellFaceUniqueIds(cell_coord, level, uid);
 }
@@ -570,7 +570,7 @@ cellFaceUniqueIds(Cell cell, ArrayView<Int64> uid) const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellUniqueIdsAroundCell(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellUniqueIdsAroundCell(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellUniqueIdsAroundCell(cell_coord, level, uid);
 }
@@ -579,7 +579,7 @@ cellUniqueIdsAroundCell(CartCoord3Type cell_coord, Int32 level, ArrayView<Int64>
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellUniqueIdsAroundCell(CartCoord2Type cell_coord, Int32 level, ArrayView<Int64> uid) const
+cellUniqueIdsAroundCell(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellUniqueIdsAroundCell(cell_coord, level, uid);
 }
@@ -597,7 +597,7 @@ cellUniqueIdsAroundCell(Cell cell, ArrayView<Int64> uid) const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellUniqueIdsAroundNode(CartCoord3Type node_coord, Int32 level, ArrayView<Int64> uid) const
+cellUniqueIdsAroundNode(CartCoord3 node_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellUniqueIdsAroundNode(node_coord, level, uid);
 }
@@ -606,7 +606,7 @@ cellUniqueIdsAroundNode(CartCoord3Type node_coord, Int32 level, ArrayView<Int64>
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshNumberingMng::
-cellUniqueIdsAroundNode(CartCoord2Type node_coord, Int32 level, ArrayView<Int64> uid) const
+cellUniqueIdsAroundNode(CartCoord2 node_coord, Int32 level, ArrayView<Int64> uid) const
 {
   m_internal_api->cellUniqueIdsAroundNode(node_coord, level, uid);
 }
@@ -660,7 +660,7 @@ parentCellUniqueIdOfCell(Cell cell, bool do_fatal) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-childCellUniqueIdOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const
+childCellUniqueIdOfCell(Cell cell, CartCoord3 child_coord_in_parent) const
 {
   return m_internal_api->childCellUniqueIdOfCell(cell, child_coord_in_parent);
 }
@@ -669,7 +669,7 @@ childCellUniqueIdOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-childCellUniqueIdOfCell(Cell cell, CartCoord2Type child_coord_in_parent) const
+childCellUniqueIdOfCell(Cell cell, CartCoord2 child_coord_in_parent) const
 {
   return m_internal_api->childCellUniqueIdOfCell(cell, child_coord_in_parent);
 }
@@ -687,7 +687,7 @@ childCellUniqueIdOfCell(Cell cell, Int32 child_index_in_parent) const
 /*---------------------------------------------------------------------------*/
 
 Cell CartesianMeshNumberingMng::
-childCellOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const
+childCellOfCell(Cell cell, CartCoord3 child_coord_in_parent) const
 {
   return m_internal_api->childCellOfCell(cell, child_coord_in_parent);
 }
@@ -696,7 +696,7 @@ childCellOfCell(Cell cell, CartCoord3Type child_coord_in_parent) const
 /*---------------------------------------------------------------------------*/
 
 Cell CartesianMeshNumberingMng::
-childCellOfCell(Cell cell, CartCoord2Type child_coord_in_parent) const
+childCellOfCell(Cell cell, CartCoord2 child_coord_in_parent) const
 {
   return m_internal_api->childCellOfCell(cell, child_coord_in_parent);
 }

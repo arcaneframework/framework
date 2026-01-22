@@ -130,6 +130,16 @@
      </simple>
    </complex>
 
+   <simple name="overlap-layer-size-top-level" type="int32" default="-1">
+     <description>
+       Indique le nombre de couches de mailles de recouvrement pour le niveau le plus haut (le nombre
+       de couches des niveaux inférieurs est calculé en se basant sur le nombre de couches du niveau
+       juste au-dessus).
+       Doit être pair.
+       Si -1, alors pas de mailles de recouvrement.
+     </description>
+   </simple>
+
  </options>
 
  <entry-points>

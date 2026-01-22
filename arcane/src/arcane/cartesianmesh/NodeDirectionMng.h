@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeDirectionMng.cc                                         (C) 2000-2025 */
+/* NodeDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Infos sur les noeuds d'une direction X Y ou Z d'un maillage structuré.    */
 /*---------------------------------------------------------------------------*/
@@ -346,7 +346,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 et 2 : Mailles de recouvrements (overallCells)
+   * 1 et 2 : Mailles de recouvrements (overlapCells)
    * 3 : Mailles externes (outerCells)
    * 4 : Mailles internes (innerCells)
    *
@@ -354,14 +354,14 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
    * patchs.
    */
-  NodeGroup overallNodes() const;
+  NodeGroup overlapNodes() const;
 
   /*!
    * \brief Groupe de tous les noeuds du patch dans la direction.
    *
    * Les noeuds du patch sont les noeuds n'ayant pas toutes ces mailles qui
    * soient de recouvrement. TODO reformuler
-   * (`innerNodes() + outerNodes()` ou simplement `!overallNodes()`)
+   * (`innerNodes() + outerNodes()` ou simplement `!overlapNodes()`)
    *
    * \warning Les noeuds au bord du domaine (donc ayant que des mailles
    * "outer") sont inclus dans ce groupe.

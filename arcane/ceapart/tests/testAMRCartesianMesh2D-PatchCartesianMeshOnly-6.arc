@@ -3,10 +3,7 @@
   <arcane>
     <titre>Test CartesianMesh 2D PatchCartesianMeshOnly (Variant 5)</titre>
 
-    <description>
-      Test du raffinement d'un maillage cartesian 2D avec le type d'AMR PatchCartesianMeshOnly et avec mailles
-      de recouvrement.
-    </description>
+    <description>Test du raffinement d'un maillage cartesian 2D avec le type d'AMR PatchCartesianMeshOnly</description>
 
     <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 
@@ -35,8 +32,8 @@
       <cartesian>
         <nsd>2 2</nsd>
         <origine>0.0 0.0</origine>
-        <lx nx='2'>4.0</lx>
-        <ly ny='2'>4.0</ly>
+        <lx nx='4'>4.0</lx>
+        <ly ny='4'>4.0</ly>
       </cartesian>
     </meshgenerator>
   </maillage>
@@ -45,22 +42,19 @@
     <renumber-patch-method>0</renumber-patch-method>
     <refinement-2d>
       <position>0.0 0.0</position>
-      <length>4.0 2.0</length>
+      <length>2.0 2.0</length>
     </refinement-2d>
-    <refinement-2d>
-      <position>1.0 1.0</position>
-      <length>2.0 1.0</length>
-    </refinement-2d>
-    <overlap-layer-size-top-level>0</overlap-layer-size-top-level>
-    <expected-number-of-cells-in-patchs>4 16 8</expected-number-of-cells-in-patchs>
-    <expected-number-of-ghost-cells-in-patchs>12 48 24</expected-number-of-ghost-cells-in-patchs>
-    <nodes-uid-hash>d47ab391c4a2f43ce4db0fb8315c524e</nodes-uid-hash>
-    <faces-uid-hash>9dce494427c85b629522b94d86f7a65f</faces-uid-hash>
-    <cells-uid-hash>3e4181d288a5a191e33374f91cd42892</cells-uid-hash>
-
-    <nodes-direction-hash>22ce00575b01657a87341ca084677dfd</nodes-direction-hash>
-    <faces-direction-hash>8fafa79105aed5e20c394b8b722f7737</faces-direction-hash>
-    <cells-direction-hash>30d50c687d1c9f9aedc7f487161beec7</cells-direction-hash>
+    <expected-number-of-cells-in-patchs>16 16</expected-number-of-cells-in-patchs>
+    <expected-number-of-ghost-cells-in-patchs>20 20</expected-number-of-ghost-cells-in-patchs>
+    <nodes-uid-hash>d9bda47b8232ef43ac7a8d86d193090a</nodes-uid-hash>
+    <!-- Hash avant renumérotation niveau 0. -->
+    <!--    <faces-uid-hash>542d7f574af6aa7c8352ab30fd6e1756</faces-uid-hash>-->
+    <faces-uid-hash>0dc25efa3d0c49eeeb48fd01a21645db</faces-uid-hash>
+    <cells-uid-hash>d3d68d4ddecd3bde5738ac942e17f3b9</cells-uid-hash>
+    <nodes-direction-hash>56d01ab8ec9cdaba5fc092ae1680afe8</nodes-direction-hash>
+    <!--    <faces-direction-hash>aabfb9b5e481a88ae2b485d6f20fd3cf</faces-direction-hash>-->
+    <faces-direction-hash>5618d0b768afe7f57b328506e213a62a</faces-direction-hash>
+    <cells-direction-hash>953548f021995149882b9b7c19849ff1</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-protections-reprises>

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionLevelGroup.cc                               (C) 2000-2025 */
+/* AMRPatchPositionLevelGroup.cc                               (C) 2000-2026 */
 /*                                                                           */
 /* Groupe de position de patch AMR réparti par niveau.                       */
 /*---------------------------------------------------------------------------*/
@@ -118,10 +118,11 @@ fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null)
         //              << " -- Level : " << patch_fusion_1.level()
         //              << " -- NbCells : " << patch_fusion_1.nbCells();
         // }
+
+        // Si la fusion est possible, le patch 0 est agrandi et le patch 1 devient null.
         if (patch_fusion_0.fusion(patch_fusion_1)) {
           // if (tm)
           //   tm->info() << "Fusion OK";
-          patch_fusion_1.setLevel(-2); // Devient null.
           fusion = true;
           break;
         }

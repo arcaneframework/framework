@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRMng.cc                                      (C) 2000-2025 */
+/* CartesianMeshAMRMng.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de l'AMR pour un maillage cartésien.                         */
 /*---------------------------------------------------------------------------*/
@@ -90,42 +90,28 @@ coarseZone(const AMRZonePosition& position) const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRMng::
-adaptMesh() const
+beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
 {
-  /*
-   * Dans le cas d'un raffinement niveau par niveau, il est possible de mettre
-   * le paramètre \a clear_refine_flag à false afin de garder les flags des
-   * niveaux inférieurs et d'éviter d'avoir à les recalculer. Pour le dernier
-   * niveau, il est recommandé de mettre le paramètre \a clear_refine_flag à
-   * true pour supprimer les flags devenu inutiles (ou d'appeler la méthode
-   * clearRefineRelatedFlags()).
-   *
-   * Les mailles n'ayant pas de flag "II_Refine" seront déraffinées.
-   *
-   * Afin d'éviter les mailles orphelines, si une maille est marquée
-   * "II_Refine", alors la maille parente est marquée "II_Refine".
-   *
-   * Exemple d'exécution :
-   * ```
-   * CartesianMeshAMRMng amr_mng(cmesh());
-   * amr_mng.clearRefineRelatedFlags();
-   * for (Integer level = 0; level < 2; ++level){
-   *   computeInLevel(level); // Va mettre des flags II_Refine sur les mailles
-   *   amr_mng.adaptMesh(false);
-   * }
-   * amr_mng.clearRefineRelatedFlags();
-   * ```
-   *
-   * Cette opération est collective.
-   *
-   * \param clear_refine_flag true si l'on souhaite supprimer les flags
-   * II_Refine après adaptation.
-   */
-  auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
-  if (amr_type == eMeshAMRKind::Cell) {
-    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
-  }
-  m_cmesh->_internalApi()->cartesianPatchGroup().refine(true);
+  // On calcule le nombre de mailles de recouvrements pour chaque level.
+  m_cmesh->_internalApi()->cartesianPatchGroup().beginAdaptMesh(max_nb_levels, level_to_refine_first);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+adaptLevel(Int32 level_to_adapt) const
+{
+  m_cmesh->_internalApi()->cartesianPatchGroup().adaptLevel(level_to_adapt);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+endAdaptMesh()
+{
+  m_cmesh->_internalApi()->cartesianPatchGroup().endAdaptMesh();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -141,14 +127,26 @@ clearRefineRelatedFlags() const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRMng::
-enableOverlapLayer(bool enable) const
+setOverlapLayerSizeTopLevel(Int32 new_size) const
 {
   auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
   if (amr_type == eMeshAMRKind::Cell) {
     return;
   }
-  m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(enable ? 2 : 0);
-  m_cmesh->computeDirections();
+  m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(new_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRMng::
+disableOverlapLayer()
+{
+  auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
+  if (amr_type == eMeshAMRKind::Cell) {
+    return;
+  }
+  m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(-1);
 }
 
 /*---------------------------------------------------------------------------*/

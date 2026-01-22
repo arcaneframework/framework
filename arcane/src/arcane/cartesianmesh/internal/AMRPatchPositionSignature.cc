@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPositionSignature.cc                                (C) 2000-2025 */
+/* AMRPatchPositionSignature.cc                                (C) 2000-2026 */
 /*                                                                           */
 /* Calcul des signatures d'une position de patch.                            */
 /*---------------------------------------------------------------------------*/
@@ -34,9 +34,13 @@
 namespace Arcane
 {
 
+// On peut jouer avec ces paramètres pour avoir un meilleur raffinement.
+// TODO : Fixer ça n'est peut-être pas la meilleur façon de faire. Les patchs
+//        créés aujourd'hui sont trop nombreux et trop petits mais conviennent
+//        dans la majorité des cas de figures.
 namespace
 {
-constexpr Integer MIN_SIZE = 1;
+  constexpr Integer MIN_SIZE = 1;
   constexpr Integer TARGET_SIZE = 8;
   constexpr Real TARGET_SIZE_WEIGHT_IN_EFFICACITY = 1;
   constexpr Integer MAX_NB_CUT = 6;
@@ -55,12 +59,11 @@ AMRPatchPositionSignature()
 , m_numbering(nullptr)
 , m_have_cells(false)
 , m_is_computed(false)
-, m_all_patches(nullptr)
 {
 }
 
 AMRPatchPositionSignature::
-AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches)
+AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh)
 : m_is_null(false)
 , m_patch(patch)
 , m_mesh(cmesh)
@@ -72,11 +75,10 @@ AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, 
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
 , m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
-, m_all_patches(all_patches)
 {}
 
 AMRPatchPositionSignature::
-AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, AMRPatchPositionLevelGroup* all_patches, Integer nb_cut)
+AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, Integer nb_cut)
 : m_is_null(false)
 , m_patch(patch)
 , m_mesh(cmesh)
@@ -88,7 +90,6 @@ AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, 
 , m_sig_x(patch.maxPoint().x - patch.minPoint().x, 0)
 , m_sig_y(patch.maxPoint().y - patch.minPoint().y, 0)
 , m_sig_z(patch.maxPoint().z - patch.minPoint().z, 0)
-, m_all_patches(all_patches)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -101,7 +102,8 @@ compress()
     return;
   }
 
-  CartCoordType reduce_x_min = 0;
+  // On cherche la première position où il n'y a plus de zéro.
+  CartCoord reduce_x_min = 0;
   if (m_sig_x[0] == 0) {
     for (; reduce_x_min < m_sig_x.size(); ++reduce_x_min) {
       if (m_sig_x[reduce_x_min] != 0) {
@@ -109,7 +111,7 @@ compress()
       }
     }
   }
-  CartCoordType reduce_y_min = 0;
+  CartCoord reduce_y_min = 0;
   if (m_sig_y[0] == 0) {
     for (; reduce_y_min < m_sig_y.size(); ++reduce_y_min) {
       if (m_sig_y[reduce_y_min] != 0) {
@@ -117,7 +119,7 @@ compress()
       }
     }
   }
-  CartCoordType reduce_z_min = 0;
+  CartCoord reduce_z_min = 0;
   if (m_sig_z[0] == 0) {
     for (; reduce_z_min < m_sig_z.size(); ++reduce_z_min) {
       if (m_sig_z[reduce_z_min] != 0) {
@@ -126,7 +128,9 @@ compress()
     }
   }
 
-  CartCoordType reduce_x_max = m_sig_x.size() - 1;
+  // On cherche la première position où il n'y a plus de zéro en partant de la
+  // fin.
+  CartCoord reduce_x_max = m_sig_x.size() - 1;
   if (m_sig_x[reduce_x_max] == 0) {
     for (; reduce_x_max >= 0; --reduce_x_max) {
       if (m_sig_x[reduce_x_max] != 0) {
@@ -134,7 +138,7 @@ compress()
       }
     }
   }
-  CartCoordType reduce_y_max = m_sig_y.size() - 1;
+  CartCoord reduce_y_max = m_sig_y.size() - 1;
   if (m_sig_y[reduce_y_max] == 0) {
     for (; reduce_y_max >= 0; --reduce_y_max) {
       if (m_sig_y[reduce_y_max] != 0) {
@@ -142,7 +146,7 @@ compress()
       }
     }
   }
-  CartCoordType reduce_z_max = m_sig_z.size() - 1;
+  CartCoord reduce_z_max = m_sig_z.size() - 1;
   if (m_sig_z[reduce_z_max] == 0) {
     for (; reduce_z_max >= 0; --reduce_z_max) {
       if (m_sig_z[reduce_z_max] != 0) {
@@ -151,20 +155,23 @@ compress()
     }
   }
 
+  // Si une réduction de taille doit avoir lieu en X.
   if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size()-1) {
+    // Le patch ne peut pas être "plat".
     if (reduce_x_max < reduce_x_min) {
       ARCANE_FATAL("Bad patch X : no refine cell");
     }
     reduce_x_max++;
     UniqueArray tmp = m_sig_x.subView(reduce_x_min, reduce_x_max - reduce_x_min);
     m_sig_x = tmp;
-    CartCoord3Type patch_min = m_patch.minPoint();
-    CartCoord3Type patch_max = m_patch.maxPoint();
+    CartCoord3 patch_min = m_patch.minPoint();
+    CartCoord3 patch_max = m_patch.maxPoint();
     patch_min.x += reduce_x_min;
     patch_max.x = patch_min.x + (reduce_x_max - reduce_x_min);
     m_patch.setMinPoint(patch_min);
     m_patch.setMaxPoint(patch_max);
   }
+
   if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size()-1) {
     if (reduce_y_max < reduce_y_min) {
       ARCANE_FATAL("Bad patch Y : no refine cell");
@@ -172,13 +179,14 @@ compress()
     reduce_y_max++;
     UniqueArray tmp = m_sig_y.subView(reduce_y_min, reduce_y_max - reduce_y_min);
     m_sig_y = tmp;
-    CartCoord3Type patch_min = m_patch.minPoint();
-    CartCoord3Type patch_max = m_patch.maxPoint();
+    CartCoord3 patch_min = m_patch.minPoint();
+    CartCoord3 patch_max = m_patch.maxPoint();
     patch_min.y += reduce_y_min;
     patch_max.y = patch_min.y + (reduce_y_max - reduce_y_min);
     m_patch.setMinPoint(patch_min);
     m_patch.setMaxPoint(patch_max);
   }
+
   if (m_mesh->mesh()->dimension() == 3 && (reduce_z_min != 0 || reduce_z_max != m_sig_z.size() - 1)) {
     if (reduce_z_max < reduce_z_min) {
       ARCANE_FATAL("Bad patch Z : no refine cell");
@@ -186,8 +194,8 @@ compress()
     reduce_z_max++;
     UniqueArray tmp = m_sig_z.subView(reduce_z_min, reduce_z_max - reduce_z_min);
     m_sig_z = tmp;
-    CartCoord3Type patch_min = m_patch.minPoint();
-    CartCoord3Type patch_max = m_patch.maxPoint();
+    CartCoord3 patch_min = m_patch.minPoint();
+    CartCoord3 patch_max = m_patch.maxPoint();
     patch_min.z += reduce_z_min;
     patch_max.z = patch_min.z + (reduce_z_max - reduce_z_min);
     m_patch.setMinPoint(patch_min);
@@ -204,12 +212,17 @@ fillSig()
   m_sig_x.fill(0);
   m_sig_y.fill(0);
   m_sig_z.fill(0);
+
+  // Le calcul de la signature se fait en deux fois.
+  // D'abord, on calcule la signature avec les flags II_Refine.
+  // Chaque sous-domaine calcule sa signature locale et une réduction est
+  // faite à la fin.
   ENUMERATE_ (Cell, icell, m_mesh->mesh()->ownLevelCells(m_patch.level())) {
     if (!icell->hasFlags(ItemFlags::II_Refine)) {
       continue;
     }
 
-    const CartCoord3Type pos = m_numbering->cellUniqueIdToCoord(*icell);
+    const CartCoord3 pos = m_numbering->cellUniqueIdToCoord(*icell);
     if (!m_patch.isIn(pos)) {
       continue;
     }
@@ -219,55 +232,14 @@ fillSig()
     m_sig_z[pos.z - m_patch.minPoint().z]++;
   }
 
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
-  m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
-
-  if (m_all_patches->maxLevel() > m_patch.level()) {
-
-    // Pour que la signature soit valide, il ne faut pas que les patchs de m_all_patches
-    // s'intersectent entre eux (pour un même niveau).
-    for (const auto& elem : m_all_patches->patches(m_patch.level() + 1)) {
-      AMRPatchPosition patch_down = elem.patchDown(m_mesh->mesh()->dimension());
-      if (!m_patch.haveIntersection(patch_down)) {
-        continue;
-      }
-
-      CartCoord3Type min = patch_down.minPoint() - m_patch.minPoint();
-      CartCoord3Type max = patch_down.maxPoint() - m_patch.minPoint();
-
-      CartCoord3Type begin;
-      CartCoord3Type end;
-
-      begin.x = std::max(min.x, 0);
-      end.x = std::min(max.x, m_sig_x.size());
-
-      begin.y = std::max(min.y, 0);
-      end.y = std::min(max.y, m_sig_y.size());
-
-      if (m_mesh->mesh()->dimension() == 2) {
-        begin.z = 0;
-        end.z = 1;
-      }
-      else {
-        begin.z = std::max(min.z, 0);
-        end.z = std::min(max.z, m_sig_z.size());
-      }
-
-      for (CartCoordType k = begin.z; k < end.z; ++k) {
-        for (CartCoordType j = begin.y; j < end.y; ++j) {
-          for (CartCoordType i = begin.x; i < end.x; ++i) {
-            m_sig_x[i]++;
-            m_sig_y[j]++;
-            m_sig_z[k]++;
-            m_have_cells = true;
-          }
-        }
-      }
-    }
-  }
-
+  // Compresser un patch vide ne fonctionnera pas.
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
+
+  if (m_have_cells) {
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_x);
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_y);
+    m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, m_sig_z);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -276,6 +248,9 @@ fillSig()
 bool AMRPatchPositionSignature::
 isValid() const
 {
+  if (!m_have_cells) {
+    return false;
+  }
   if (m_is_null) {
     return false;
   }
@@ -291,16 +266,16 @@ isValid() const
 bool AMRPatchPositionSignature::
 canBeCut() const
 {
-  m_mesh->traceMng()->info() << "canBeCut() -- m_sig_x.size : " << m_sig_x.size()
-  << " -- m_sig_y.size : " << m_sig_y.size()
-                             << " -- m_sig_z.size : " << m_sig_z.size()
-                             << " -- min = " << m_patch.minPoint()
-                             << " -- max = " << m_patch.maxPoint()
-                             << " -- length = " << m_patch.length()
-                             << " -- isValid : " << isValid()
-                             << " -- efficacity : " << efficacity() << " / " << TARGET_EFFICACITY
-                             << " -- m_nb_cut : " << m_nb_cut << " / " << MAX_NB_CUT
-                             << " -- m_stop_cut : " << m_stop_cut;
+  // m_mesh->traceMng()->info() << "canBeCut() -- m_sig_x.size : " << m_sig_x.size()
+  // << " -- m_sig_y.size : " << m_sig_y.size()
+  //                            << " -- m_sig_z.size : " << m_sig_z.size()
+  //                            << " -- min = " << m_patch.minPoint()
+  //                            << " -- max = " << m_patch.maxPoint()
+  //                            << " -- length = " << m_patch.length()
+  //                            << " -- isValid : " << isValid()
+  //                            << " -- efficacity : " << efficacity() << " / " << TARGET_EFFICACITY
+  //                            << " -- m_nb_cut : " << m_nb_cut << " / " << MAX_NB_CUT
+  //                            << " -- m_stop_cut : " << m_stop_cut;
 
   if (!isValid()) {
     return false;
@@ -325,12 +300,12 @@ canBeCut() const
 void AMRPatchPositionSignature::
 compute()
 {
-  m_mesh->traceMng()->info() << "Compute() -- Patch before compute : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- length = " << m_patch.length();
+  // m_mesh->traceMng()->info() << "Compute() -- Patch before compute : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- length = " << m_patch.length();
   fillSig();
   //m_mesh->traceMng()->info() << "Compute() -- Signature : x = " << m_sig_x << " -- y = " << m_sig_y ;
   compress();
-  m_mesh->traceMng()->info() << "Compute() -- Compress : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- x = " << m_sig_x << " -- y = " << m_sig_y << " -- z = " << m_sig_z;
-  m_mesh->traceMng()->info() << "Compute() -- Patch computed :       min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- length = " << m_patch.length();
+  // m_mesh->traceMng()->info() << "Compute() -- Compress : min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- x = " << m_sig_x << " -- y = " << m_sig_y << " -- z = " << m_sig_z;
+  // m_mesh->traceMng()->info() << "Compute() -- Patch computed :       min = " << m_patch.minPoint() << " -- max = " << m_patch.maxPoint() << " -- length = " << m_patch.length();
 
   m_is_computed = true;
 }
@@ -345,6 +320,12 @@ efficacity() const
     // Sans compression, pas terrible.
     m_mesh->traceMng()->warning() << "Need to be computed";
   }
+
+  // On base le calcul de l'efficacité sur deux choses :
+  // - le ratio maille à raffiner dans le patch sur nombre de mailles du patch,
+  // - la taille de chaque dimension par rapport à la taille cible.
+  // TODO : À peaufiner/réécrire.
+
   Int32 sum = 0;
   for (const Int32 elem : m_sig_x) {
     sum += elem;
@@ -397,16 +378,16 @@ efficacity() const
 /*---------------------------------------------------------------------------*/
 
 std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPositionSignature::
-cut(Integer dim, CartCoordType cut_point) const
+cut(Integer dim, CartCoord cut_point) const
 {
   auto [fst, snd] = m_patch.cut(cut_point, dim);
-  return {AMRPatchPositionSignature(fst, m_mesh, m_all_patches, m_nb_cut+1), AMRPatchPositionSignature(snd, m_mesh, m_all_patches, m_nb_cut+1)};
+  return { AMRPatchPositionSignature(fst, m_mesh, m_nb_cut + 1), AMRPatchPositionSignature(snd, m_mesh, m_nb_cut + 1) };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<CartCoordType> AMRPatchPositionSignature::
+ConstArrayView<CartCoord> AMRPatchPositionSignature::
 sigX() const
 {
   return m_sig_x;
@@ -415,7 +396,7 @@ sigX() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<CartCoordType> AMRPatchPositionSignature::
+ConstArrayView<CartCoord> AMRPatchPositionSignature::
 sigY() const
 {
   return m_sig_y;
@@ -424,7 +405,7 @@ sigY() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<CartCoordType> AMRPatchPositionSignature::
+ConstArrayView<CartCoord> AMRPatchPositionSignature::
 sigZ() const
 {
   return m_sig_z;

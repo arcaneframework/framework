@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2025 */
+/* MeshUtils.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -1910,7 +1910,7 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
     tm->info() << "HASH_RESULT family=" << family->name()
                << " v=" << hash_str << " expected=" << expected_hash;
   if (!expected_hash.empty() && hash_str != expected_hash)
-    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
+    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v='{1}' expected='{2}'",
                  family->fullName(), hash_str, expected_hash);
 }
 

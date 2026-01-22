@@ -175,12 +175,16 @@ arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-2 testAMRCartesianMesh
 arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-3.arc "-m 20")
 arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-4 testAMRCartesianMesh2D-PatchCartesianMeshOnly-4.arc "-m 20")
 arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-5 testAMRCartesianMesh2D-PatchCartesianMeshOnly-5.arc "-m 20")
+arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-6 testAMRCartesianMesh2D-PatchCartesianMeshOnly-6.arc "-m 20")
+arcane_add_test(amr-cartesian2D-patch-cartesian-mesh-only-7 testAMRCartesianMesh2D-PatchCartesianMeshOnly-7.arc "-m 20")
 
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-1 testAMRCartesianMesh2D-PatchCartesianMeshOnly-1.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-2.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-3.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-4 testAMRCartesianMesh2D-PatchCartesianMeshOnly-4.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-5 testAMRCartesianMesh2D-PatchCartesianMeshOnly-5.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-6 testAMRCartesianMesh2D-PatchCartesianMeshOnly-6.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-patch-cartesian-mesh-only-7 testAMRCartesianMesh2D-PatchCartesianMeshOnly-7.arc 3 5)
 
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-1.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-1.arc 8 "-m 20")
@@ -190,6 +194,8 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCa
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc 8 "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-4.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-4.arc 8 "-m 20")
+arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-5.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-5 testAMRCartesianMesh3D-PatchCartesianMeshOnly-5.arc 8 "-m 20")
 
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-1.arc 3 5)
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-PatchCartesianMeshOnly-1.arc 8 3 5)
@@ -208,6 +214,7 @@ arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-5 testAMRCartes
 arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc "-m 20")
 arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc "-m 20")
 arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-8 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-8.arc "-m 20")
+arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-9 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-9.arc "-m 20")
 
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-1.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-2 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-2.arc 3 5)
@@ -217,6 +224,7 @@ arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mes
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-8 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-8.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-coarse-patch-cartesian-mesh-only-9 testAMRCartesianMesh2D-WithInitialCoarse-PatchCartesianMeshOnly-9.arc 3 5)
 
 arcane_add_test_sequential(amr-cartesian3D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-1.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-1.arc 8 "-m 20")
