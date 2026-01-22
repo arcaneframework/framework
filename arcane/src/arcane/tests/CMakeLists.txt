@@ -28,28 +28,8 @@ endif()
 arcane_find_package(hiredis QUIET)
 
 include(srcs.cmake)
+include(cartesianmesh/srcs.cmake)
 
-set(ARCANE_ACCELERATOR_SOURCES
-  accelerator/AtomicUnitTest.cc
-  accelerator/SimpleHydroAcceleratorService.cc
-  accelerator/MiniWeatherArray.cc
-  accelerator/MemoryCopyUnitTest.cc
-  accelerator/MultiMemoryCopyUnitTest.cc
-  accelerator/NumArrayUnitTest.cc
-  accelerator/AcceleratorItemInfoUnitTest.cc
-  accelerator/AcceleratorReduceUnitTest.cc
-  accelerator/AcceleratorScanUnitTest.cc
-  accelerator/AcceleratorFilterUnitTest.cc
-  accelerator/AcceleratorPartitionerUnitTest.cc
-  accelerator/AcceleratorSorterUnitTest.cc
-  accelerator/RunQueueUnitTest.cc
-  accelerator/AcceleratorMathUnitTest.cc
-  accelerator/AcceleratorLocalMemoryUnitTest.cc
-  accelerator/AcceleratorViewsUnitTest.cc
-  accelerator/ArcaneTestStandaloneAcceleratorMng.cc
-  accelerator/MeshMaterialAcceleratorUnitTest.cc
-  ArcaneTestStandaloneSubDomain.cc
-)
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     MDVariableUnitTest.cc
@@ -1414,6 +1394,9 @@ if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   endif()
   #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
+
+include(cartesianmesh/tests.cmake)
+
 
 # ----------------------------------------------------------------------------
 # Local Variables:

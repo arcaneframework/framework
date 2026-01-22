@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/tests/CartesianMeshV2TestUtils.h"
+#include "arcane/tests/cartesianmesh/CartesianMeshV2TestUtils.h"
 
 #include "arcane/cartesianmesh/v2/CartesianTypes.h"
 #include "arcane/cartesianmesh/v2/CartesianGrid.h"

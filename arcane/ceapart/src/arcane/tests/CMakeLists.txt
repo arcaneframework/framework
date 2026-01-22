@@ -2,12 +2,9 @@
 
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
-    AdiProjectionModule.cc
     ${ARCANE_MATERIAL_SOURCES}
   )
   set(ARCANE_ACCELERATOR_SOURCES
-    AdiProjectionModule.cc
-    CartesianMeshTestUtils.cc
     MeshMaterialSyncUnitTest.cc
     MaterialHeatTestModule.cc
   )
