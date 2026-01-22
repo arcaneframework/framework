@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/tests/CartesianMeshTestUtils.h"
+#include "arcane/tests/cartesianmesh/CartesianMeshTestUtils.h"
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"

@@ -32,7 +32,7 @@
 #include "arcane/accelerator/RunCommandEnumerate.h"
 #include "arcane/accelerator/VariableViews.h"
 
-#include "arcane/tests/AdiProjection_axl.h"
+#include "arcane/tests/cartesianmesh/AdiProjection_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
