@@ -60,8 +60,8 @@ class CooperativeHostWorkItemGrid
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère la grille de CooperativeWorkItem dans un
- * CooperativeWorkGroupLoopRange pour un device CUDA ou ROCM.
+ * \brief Gère la grille de WorkItem dans un
+ * CooperativeWorkGroupLoopRange pour un device CUDA ou HIP.
  */
 class DeviceCooperativeWorkItemGrid
 {
@@ -81,7 +81,7 @@ class DeviceCooperativeWorkItemGrid
 
  public:
 
-  //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
+  //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   __device__ void barrier() { m_grid_group.sync(); }
 
  private:
@@ -175,9 +175,11 @@ class SyclDeviceCooperativeWorkItemGrid
 /*!
  * \brief Contexte d'exécution d'une CooperativeWorkGroupLoopRange pour Sycl.
  *
- * Cette classe est utilisée uniquement pour la polique d'exécution eAcceleratorPolicy::SYCL.
+ * Cette classe est utilisée uniquement pour la polique
+ * d'exécution eAcceleratorPolicy::SYCL.
  */
 class SyclCooperativeWorkGroupLoopContext
+: public SyclWorkGroupLoopContextBase
 {
   friend CooperativeWorkGroupLoopRange;
   friend SyclCooperativeWorkGroupLoopContext arcaneGetLoopIndexSycl(const CooperativeWorkGroupLoopRange& loop_range,
@@ -187,24 +189,21 @@ class SyclCooperativeWorkGroupLoopContext
 
   // Ce constructeur n'est utilisé que sur le device
   explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
-  : m_nd_item(nd_item)
-  , m_total_size(total_size)
+  : SyclWorkGroupLoopContextBase(nd_item, total_size)
   {
   }
 
  public:
 
   //! Grille courante
-  SyclDeviceCooperativeWorkItemGrid grid() const { return SyclDeviceCooperativeWorkItemGrid(m_nd_item); }
-
-  //! Groupe courant
-  SyclDeviceWorkItemBlock group() const { return SyclDeviceWorkItemBlock(m_nd_item, m_total_size); }
-
- private:
-
-  sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size = 0;
+  SyclDeviceCooperativeWorkItemGrid grid() const
+  {
+    return SyclDeviceCooperativeWorkItemGrid(m_nd_item);
+  }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif // ARCCORE_COMPILING_SYCL
 
