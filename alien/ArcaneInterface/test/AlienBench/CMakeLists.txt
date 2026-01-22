@@ -322,12 +322,14 @@ endif ()
 
 if (TARGET trilinos)
     configure_file(AlienBench-trilinos.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos.arc COPYONLY)
+    configure_file(AlienBench-trilinos-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-bs2.arc COPYONLY)
     configure_file(AlienBench-trilinos-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-2P.arc COPYONLY)
     configure_file(AlienBench-trilinosmuelu.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu.arc COPYONLY)
     configure_file(AlienBench-trilinosmuelu-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-trilinos.arc
+            AlienBench-trilinos-bs2.arc
             AlienBench-trilinos-2P.arc
             AlienBench-trilinosmuelu.arc
             AlienBench-trilinosmuelu-4P.arc
@@ -618,6 +620,15 @@ if (TARGET trilinos)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.trilinos-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinos-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 

@@ -28,7 +28,7 @@ MatrixInternal<ValueT, TagT>::initMatrix(int local_offset, int nrows, int const*
   if(block_size>1)
   {
     m_local_offset *= block_size ;
-    m_local_size += block_size ;
+    m_local_size *= block_size ;
     int block2_size = block_size*block_size;
 
     Arcane::UniqueArray<int> row_indices(max_row_size*block_size) ;
@@ -148,10 +148,11 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
   auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
 
   int max_row_size = 0 ;
-  std::vector<std::size_t> row_size(nrows) ;
+  std::vector<std::size_t> row_size(nrows*block_size) ;
   for (int irow = 0; irow < nrows; ++irow) {
-    int size = kcol[irow + 1] - kcol[irow] ;
-    row_size[irow] = size*block_size ;
+    int size = (kcol[irow + 1] - kcol[irow])*block_size ;
+    for(int k=0;k<block_size;++k)
+      row_size[irow*block_size+k] = size ;
     max_row_size = std::max(max_row_size,size) ;
   }
 
