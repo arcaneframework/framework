@@ -63,7 +63,7 @@ class CooperativeHostWorkItemGrid
  * \brief Gère la grille de WorkItem dans un
  * CooperativeWorkGroupLoopRange pour un device CUDA ou HIP.
  */
-class DeviceCooperativeWorkItemGrid
+class CooperativeDeviceWorkItemGrid
 {
   friend CooperativeWorkGroupLoopContext;
 
@@ -75,7 +75,7 @@ class DeviceCooperativeWorkItemGrid
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_grid()
    */
-  __device__ DeviceCooperativeWorkItemGrid()
+  __device__ CooperativeDeviceWorkItemGrid()
   : m_grid_group(cooperative_groups::this_grid())
   {}
 
@@ -132,7 +132,7 @@ class CooperativeWorkGroupLoopContext
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceCooperativeWorkItemGrid grid() const { return DeviceCooperativeWorkItemGrid{}; }
+  __device__ CooperativeDeviceWorkItemGrid grid() const { return CooperativeDeviceWorkItemGrid{}; }
 #else
   //! Groupe courant
   CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
@@ -149,13 +149,13 @@ class CooperativeWorkGroupLoopContext
 /*!
  * \brief Gère la grille de WorkItem dans un CooperativeWorkGroupLoopRange pour un device Sycl.
  */
-class SyclDeviceCooperativeWorkItemGrid
+class SyclCooperativeDeviceWorkItemGrid
 {
   friend SyclCooperativeWorkGroupLoopContext;
 
  private:
 
-  explicit SyclDeviceCooperativeWorkItemGrid(sycl::nd_item<1> n)
+  explicit SyclCooperativeDeviceWorkItemGrid(sycl::nd_item<1> n)
   : m_nd_item(n)
   {
   }
@@ -196,9 +196,9 @@ class SyclCooperativeWorkGroupLoopContext
  public:
 
   //! Grille courante
-  SyclDeviceCooperativeWorkItemGrid grid() const
+  SyclCooperativeDeviceWorkItemGrid grid() const
   {
-    return SyclDeviceCooperativeWorkItemGrid(m_nd_item);
+    return SyclCooperativeDeviceWorkItemGrid(m_nd_item);
   }
 };
 
