@@ -113,9 +113,6 @@ class ReduceDeviceInfo
    * La mémoire associée est allouée sur l'accélérateur.
    */
   unsigned int* m_device_count = nullptr;
-
-  //! Taille d'un warp
-  Int32 m_warp_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -441,7 +438,6 @@ class HostDeviceReducerBase
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     dvi.m_current_value = m_local_value;
-    dvi.m_warp_size = m_grid_memory_info.m_warp_size;
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
