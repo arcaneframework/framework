@@ -52,14 +52,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
  public:
 
   //! Groupe de mailles du patch (incluant les mailles de recouvrement).
-  CellGroup cells();
+  CellGroup cells() const;
 
   /*!
    * \brief Groupe de mailles du patch (sans les mailles de recouvrement).
    *
    * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
    */
-  CellGroup inPatchCells();
+  CellGroup inPatchCells() const;
 
   //! Index du patch dans le tableau des patchs.
   Integer index() const;

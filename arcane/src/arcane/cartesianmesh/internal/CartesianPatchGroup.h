@@ -143,6 +143,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Int32 m_higher_level;
   Int32 m_target_nb_levels;
   Int32 m_latest_call_level;
+  bool m_latest_call_level_usefull = false;
   Ref<Properties> m_properties;
 };
 

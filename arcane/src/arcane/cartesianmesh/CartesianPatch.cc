@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 CellGroup CartesianPatch::
-cells()
+cells() const
 {
   ARCANE_CHECK_POINTER(m_patch);
   return m_patch->cells();
@@ -35,7 +35,7 @@ cells()
 /*---------------------------------------------------------------------------*/
 
 CellGroup CartesianPatch::
-inPatchCells()
+inPatchCells() const
 {
   ARCANE_CHECK_POINTER(m_patch);
   return m_patch->inPatchCells();
