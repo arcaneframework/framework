@@ -744,6 +744,9 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
   if (m_latest_call_level != -1) {
     ARCANE_FATAL("Call endAdaptMesh() before restart mesh adaptation");
   }
+  if (level_to_refine_first > m_higher_level) {
+    ARCANE_FATAL("Cannot begin to refine level higher than the actual higher level -- Level to refine first : {0} -- Higher level : {1}", level_to_refine_first, m_higher_level);
+  }
 
   Trace::Setter mci(traceMng(), "CartesianPatchGroup");
   info() << "Begin adapting mesh with higher level = " << (nb_levels - 1);
@@ -782,6 +785,7 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
 
   m_target_nb_levels = nb_levels;
   m_latest_call_level = level_to_refine_first;
+  m_latest_call_level_usefull = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -805,7 +809,16 @@ endAdaptMesh()
   // niveau raffiné).
   // On est sûr que c'est le niveau le plus haut étant donné que l'on supprime
   // systématiquement les patchs au-dessus dans adaptLevel().
-  m_higher_level = m_latest_call_level + 1;
+  // Si le dernier appel à adaptLevel() était inutile
+  // (m_latest_call_level_usefull == false), le niveau le plus haut est
+  // m_latest_call_level.
+  // beginAdaptMesh() met le premier niveau à raffiner donné par l'utilisateur
+  // dans l'attribut m_latest_call_level et vérifie si le niveau existe. Le
+  // premier m_latest_call_level est donc valide.
+  if (m_latest_call_level_usefull)
+    m_higher_level = m_latest_call_level + 1;
+  else
+    m_higher_level = m_latest_call_level;
 
   // Si m_latest_call_level == 0, alors adaptLevel() a créée le niveau 1 donc
   // il y a 2 niveaux.
@@ -852,6 +865,7 @@ endAdaptMesh()
 
   m_target_nb_levels = 0;
   m_latest_call_level = -1;
+  m_latest_call_level_usefull = false;
   clearRefineRelatedFlags();
 
   info() << "Patch list:";
@@ -916,7 +930,6 @@ adaptLevel(Int32 level_to_adapt)
     }
   }
 
-  m_latest_call_level = level_to_adapt;
   auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
@@ -942,6 +955,9 @@ adaptLevel(Int32 level_to_adapt)
   // - on ne peut pas raffiner plusieurs niveaux d'un coup,
   // - on ne peut pas raffiner des mailles qui ne sont pas dans un patch (les
   // mailles de recouvrements ne sont pas forcément dans un patch).
+  // De plus, on doit savoir s'il y a au moins une maille avec le flag
+  // II_Refine pour savoir si c'est utile de continuer la méthode ou non.
+  bool has_cell_to_refine = false;
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
     if (icell->hasFlags(ItemFlags::II_Refine)) {
       if (icell->level() != level_to_adapt) {
@@ -951,8 +967,18 @@ adaptLevel(Int32 level_to_adapt)
         const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
         ARCANE_FATAL("Cannot refine cell not in patch -- Pos : {0} -- CellUID : {1} -- CellLevel : {2}", pos, icell->uniqueId(), icell->level());
       }
+      has_cell_to_refine = true;
     }
   }
+  has_cell_to_refine = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_refine);
+
+  if (!has_cell_to_refine) {
+    m_latest_call_level_usefull = false;
+    return;
+  }
+
+  m_latest_call_level = level_to_adapt;
+  m_latest_call_level_usefull = true;
 
   UniqueArray<AMRPatchPositionSignature> sig_array;
 
