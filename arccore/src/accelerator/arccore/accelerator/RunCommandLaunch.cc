@@ -40,19 +40,19 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Accelerator::WorkGroupLoopRange Accelerator::
+Accelerator::WorkGroupLoopRange<Int32> Accelerator::
 makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size)
 {
   Int32 total_size = nb_group * group_size;
   _setGroupSize(command, group_size);
-  return WorkGroupLoopRange(total_size, nb_group, group_size);
+  return { total_size, nb_group, group_size };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Créé un intervalle d'itération pour la commande \a command pour \a nb_element
-Accelerator::WorkGroupLoopRange Accelerator::
+Accelerator::WorkGroupLoopRange<Int32> Accelerator::
 makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size)
 {
   // Calcule automatiquement la taille d'un groupe si l'argument vaut '0'.
@@ -68,25 +68,25 @@ makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, In
     ++nb_group;
 
   _setGroupSize(command, group_size);
-  return WorkGroupLoopRange(nb_element, nb_group, group_size);
+  return { nb_element, nb_group, group_size };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Accelerator::CooperativeWorkGroupLoopRange Accelerator::
+Accelerator::CooperativeWorkGroupLoopRange<Int32> Accelerator::
 makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size)
 {
   Int32 total_size = nb_group * group_size;
   _setGroupSize(command, group_size);
-  return CooperativeWorkGroupLoopRange(total_size, nb_group, group_size);
+  return { total_size, nb_group, group_size };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Créé un intervalle d'itération pour la commande \a command pour \a nb_element
-Accelerator::CooperativeWorkGroupLoopRange Accelerator::
+Accelerator::CooperativeWorkGroupLoopRange<Int32> Accelerator::
 makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size)
 {
   // Calcule automatiquement la taille d'un groupe si l'argument vaut '0'.
@@ -102,7 +102,7 @@ makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 n
     ++nb_group;
 
   _setGroupSize(command, group_size);
-  return CooperativeWorkGroupLoopRange(nb_element, nb_group, group_size);
+  return { nb_element, nb_group, group_size };
 }
 
 /*---------------------------------------------------------------------------*/

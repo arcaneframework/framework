@@ -33,7 +33,7 @@ namespace Arcane::Accelerator
  */
 class CooperativeHostWorkItemGrid
 {
-  friend CooperativeWorkGroupLoopContext;
+  template<typename T> friend class CooperativeWorkGroupLoopContext;
 
  private:
 
@@ -48,8 +48,6 @@ class CooperativeHostWorkItemGrid
   {
     // TODO: A implementer pour le multi-threading via std::barrier()
   }
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -63,9 +61,9 @@ class CooperativeHostWorkItemGrid
  * \brief Gère la grille de WorkItem dans un
  * CooperativeWorkGroupLoopRange pour un device CUDA ou HIP.
  */
-class DeviceCooperativeWorkItemGrid
+class CooperativeDeviceWorkItemGrid
 {
-  friend CooperativeWorkGroupLoopContext;
+  template <typename T> friend class CooperativeWorkGroupLoopContext;
 
  private:
 
@@ -75,7 +73,7 @@ class DeviceCooperativeWorkItemGrid
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_grid()
    */
-  __device__ DeviceCooperativeWorkItemGrid()
+  __device__ CooperativeDeviceWorkItemGrid()
   : m_grid_group(cooperative_groups::this_grid())
   {}
 
@@ -104,35 +102,36 @@ class DeviceCooperativeWorkItemGrid
  * La méthode group() est différente sur accélérateur et sur l'hôte ce qui
  * permet de particulariser le traitement de la commande.
  */
+template <typename IndexType_>
 class CooperativeWorkGroupLoopContext
-: public WorkGroupLoopContextBase
+: public WorkGroupLoopContextBase<IndexType_>
 {
   // Pour accéder aux constructeurs
-  friend CooperativeWorkGroupLoopRange;
+  friend class CooperativeWorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupSequentialForHelper;
-  friend constexpr ARCCORE_HOST_DEVICE CooperativeWorkGroupLoopContext
-  arcaneGetLoopIndexCudaHip(const CooperativeWorkGroupLoopRange& loop_range);
+  friend Impl::WorkGroupLoopContextBuilder;
+  using BaseClass = WorkGroupLoopContextBase<IndexType_>;
 
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index,
                                             Int32 group_size, Int32 nb_active_item, Int64 total_size)
-  : WorkGroupLoopContextBase(loop_index, group_index, group_size, nb_active_item, total_size)
+  : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
   explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(Int64 total_size)
-  : WorkGroupLoopContextBase(total_size)
+  : BaseClass(total_size)
   {}
 
  public:
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
   //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
-  __device__ DeviceCooperativeWorkItemGrid grid() const { return DeviceCooperativeWorkItemGrid{}; }
+  __device__ CooperativeDeviceWorkItemGrid grid() const { return CooperativeDeviceWorkItemGrid{}; }
 #else
   //! Groupe courant
   CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
@@ -149,13 +148,13 @@ class CooperativeWorkGroupLoopContext
 /*!
  * \brief Gère la grille de WorkItem dans un CooperativeWorkGroupLoopRange pour un device Sycl.
  */
-class SyclDeviceCooperativeWorkItemGrid
+class SyclCooperativeDeviceWorkItemGrid
 {
-  friend SyclCooperativeWorkGroupLoopContext;
+  template <typename T> friend class SyclCooperativeWorkGroupLoopContext;
 
  private:
 
-  explicit SyclDeviceCooperativeWorkItemGrid(sycl::nd_item<1> n)
+  explicit SyclCooperativeDeviceWorkItemGrid(sycl::nd_item<1> n)
   : m_nd_item(n)
   {
   }
@@ -178,27 +177,27 @@ class SyclDeviceCooperativeWorkItemGrid
  * Cette classe est utilisée uniquement pour la polique
  * d'exécution eAcceleratorPolicy::SYCL.
  */
+template <typename IndexType_>
 class SyclCooperativeWorkGroupLoopContext
-: public SyclWorkGroupLoopContextBase
+: public SyclWorkGroupLoopContextBase<IndexType_>
 {
-  friend CooperativeWorkGroupLoopRange;
-  friend SyclCooperativeWorkGroupLoopContext arcaneGetLoopIndexSycl(const CooperativeWorkGroupLoopRange& loop_range,
-                                                                    sycl::nd_item<1> id);
+  friend CooperativeWorkGroupLoopRange<IndexType_>;
+  friend Impl::WorkGroupLoopContextBuilder;
 
  private:
 
   // Ce constructeur n'est utilisé que sur le device
   explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
-  : SyclWorkGroupLoopContextBase(nd_item, total_size)
+  : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
   }
 
  public:
 
   //! Grille courante
-  SyclDeviceCooperativeWorkItemGrid grid() const
+  SyclCooperativeDeviceWorkItemGrid grid() const
   {
-    return SyclDeviceCooperativeWorkItemGrid(m_nd_item);
+    return SyclCooperativeDeviceWorkItemGrid(this->m_nd_item);
   }
 };
 
@@ -224,19 +223,20 @@ class SyclCooperativeWorkGroupLoopContext
  * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
  * et être un multiple de 32.
  */
-class ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
-: public WorkGroupLoopRangeBase
+template <typename IndexType_>
+class CooperativeWorkGroupLoopRange
+: public WorkGroupLoopRangeBase<IndexType_>
 {
  private:
 
-  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
+  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
   makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
-  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
+  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
   makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
 
  public:
 
-  using LoopIndexType = CooperativeWorkGroupLoopContext;
+  using LoopIndexType = CooperativeWorkGroupLoopContext<IndexType_>;
   // Pour indiquer au KernelLauncher qu'on souhaite un lancement coopératif.
   static constexpr bool isCooperativeLaunch() { return true; }
 
@@ -253,7 +253,7 @@ class ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange
    * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
    */
   CooperativeWorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size)
-  : WorkGroupLoopRangeBase(total_nb_element, nb_group, group_size)
+  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element, nb_group, group_size)
   {}
 
  public:

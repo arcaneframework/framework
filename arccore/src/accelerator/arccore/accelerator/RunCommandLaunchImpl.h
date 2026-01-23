@@ -26,74 +26,66 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class WorkGroupLoopContextBuilder
+{
+ public:
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
-inline constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext
-arcaneGetLoopIndexCudaHip(const WorkGroupLoopRange& loop_range)
-{
-  return WorkGroupLoopContext(loop_range.nbElement());
-}
+  template <typename IndexType_> static constexpr ARCCORE_HOST_DEVICE WorkGroupLoopContext<IndexType_>
+  build(const WorkGroupLoopRange<IndexType_>& loop_range)
+  {
+    return WorkGroupLoopContext<IndexType_>(loop_range.nbElement());
+  }
 
-inline constexpr ARCCORE_HOST_DEVICE CooperativeWorkGroupLoopContext
-arcaneGetLoopIndexCudaHip(const CooperativeWorkGroupLoopRange& loop_range)
-{
-  return CooperativeWorkGroupLoopContext(loop_range.nbElement());
-}
+  template <typename IndexType_> static constexpr ARCCORE_HOST_DEVICE CooperativeWorkGroupLoopContext<IndexType_>
+  build(const CooperativeWorkGroupLoopRange<IndexType_>& loop_range)
+  {
+    return CooperativeWorkGroupLoopContext<IndexType_>(loop_range.nbElement());
+  }
 
 #endif
 
 #if defined(ARCCORE_COMPILING_SYCL)
 
-namespace Impl
-{
-  // Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
-  // comme argument avec 'WorkGroupLoopRange.
-  template <>
-  class IsAlwaysUseSyclNdItem<StridedLoopRanges<WorkGroupLoopRange>>
-  : public std::true_type
+  template <typename IndexType_> static SyclWorkGroupLoopContext<IndexType_>
+  build(const WorkGroupLoopRange<IndexType_>& loop_range, sycl::nd_item<1> id)
   {
-  };
-  // Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
-  // comme argument avec 'CooperativeWorkGroupLoopRange.
-  template <>
-  class IsAlwaysUseSyclNdItem<StridedLoopRanges<CooperativeWorkGroupLoopRange>>
-  : public std::true_type
+    return SyclWorkGroupLoopContext<IndexType_>(id, loop_range.nbElement());
+  }
+
+  template <typename IndexType_> static SyclCooperativeWorkGroupLoopContext<IndexType_>
+  build(const CooperativeWorkGroupLoopRange<IndexType_>& loop_range, sycl::nd_item<1> id)
   {
-  };
-} // namespace Impl
+    return SyclCooperativeWorkGroupLoopContext<IndexType_>(id, loop_range.nbElement());
+  }
+#endif
+};
 
-inline SyclWorkGroupLoopContext
-arcaneGetLoopIndexSycl(const WorkGroupLoopRange& loop_range,
-                       sycl::nd_item<1> id)
-{
-  return SyclWorkGroupLoopContext(id, loop_range.nbElement());
-}
+#if defined(ARCCORE_COMPILING_SYCL)
 
-inline SyclCooperativeWorkGroupLoopContext
-arcaneGetLoopIndexSycl(const CooperativeWorkGroupLoopRange& loop_range,
-                       sycl::nd_item<1> id)
+// Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
+// comme argument avec 'WorkGroupLoopRange.
+template <typename IndexType_>
+class IsAlwaysUseSyclNdItem<StridedLoopRanges<WorkGroupLoopRange<IndexType_>>>
+: public std::true_type
 {
-  return SyclCooperativeWorkGroupLoopContext(id, loop_range.nbElement());
-}
+};
+// Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
+// comme argument avec 'CooperativeWorkGroupLoopRange.
+template <typename IndexType_>
+class IsAlwaysUseSyclNdItem<StridedLoopRanges<CooperativeWorkGroupLoopRange<IndexType_>>>
+: public std::true_type
+{
+};
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::Impl
-{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -147,7 +139,7 @@ doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... 
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if (i < bounds.nbOriginalElement()) {
-    func(arcaneGetLoopIndexCudaHip(bounds.originalLoop()), remaining_args...);
+    func(WorkGroupLoopContextBuilder::build(bounds.originalLoop()), remaining_args...);
   }
   CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 };
@@ -168,8 +160,7 @@ class doHierarchicalLaunchSycl
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbOriginalElement()) {
-      // Si possible, on passe \a x en argument
-      func(arcaneGetLoopIndexSycl(bounds.originalLoop(), x), remaining_args...);
+      func(WorkGroupLoopContextBuilder::build(bounds.originalLoop(), x), remaining_args...);
     }
     SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
   }
@@ -319,8 +310,8 @@ namespace Arcane::Accelerator
  * \internal
  * \brief Applique le fonctor \a func sur une boucle séqentielle.
  */
-template <typename Lambda, typename... RemainingArgs> void
-arccoreSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
+template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
+arccoreSequentialFor(WorkGroupLoopRange<IndexType_> bounds, const Lambda& func, const RemainingArgs&... remaining_args)
 {
   Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
 }
@@ -331,8 +322,8 @@ arccoreSequentialFor(WorkGroupLoopRange bounds, const Lambda& func, const Remain
  * \internal
  * \brief Applique le fonctor \a func sur une boucle parallèle.
  */
-template <typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(WorkGroupLoopRange bounds, ForLoopRunInfo run_info,
+template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(WorkGroupLoopRange<IndexType_> bounds, ForLoopRunInfo run_info,
                    const Lambda& func, const RemainingArgs&... remaining_args)
 {
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
@@ -347,8 +338,9 @@ arccoreParallelFor(WorkGroupLoopRange bounds, ForLoopRunInfo run_info,
  * \internal
  * \brief Applique le fonctor \a func sur une boucle séqentielle.
  */
-template <typename Lambda, typename... RemainingArgs> void
-arccoreSequentialFor(CooperativeWorkGroupLoopRange bounds, const Lambda& func, const RemainingArgs&... remaining_args)
+template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
+arccoreSequentialFor(CooperativeWorkGroupLoopRange<IndexType_> bounds, const Lambda& func,
+                     const RemainingArgs&... remaining_args)
 {
   Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
 }
@@ -359,8 +351,8 @@ arccoreSequentialFor(CooperativeWorkGroupLoopRange bounds, const Lambda& func, c
  * \internal
  * \brief Applique le fonctor \a func sur une boucle parallèle.
  */
-template <typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(CooperativeWorkGroupLoopRange bounds, ForLoopRunInfo run_info,
+template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(CooperativeWorkGroupLoopRange<IndexType_> bounds, ForLoopRunInfo run_info,
                    const Lambda& func, const RemainingArgs&... remaining_args)
 {
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {

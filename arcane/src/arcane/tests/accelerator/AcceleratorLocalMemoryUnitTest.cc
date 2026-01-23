@@ -191,7 +191,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     auto local_span_int64 = local_data_int64.span();
 
     // Le WorkItem 0 du groupe initialise la mémoire partagée
-    const bool is_rank0 = (work_item.rankInGroup() == 0);
+    const bool is_rank0 = (work_item.rankInBlock() == 0);
     if (is_rank0) {
       local_span_int32.fill(0);
       local_span_int64.fill(0);
