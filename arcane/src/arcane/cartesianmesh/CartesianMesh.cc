@@ -697,30 +697,7 @@ _computeDirectionsV2()
 
   m_is_amr = m_mesh->isAmrActivated();
 
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  IItemFamily* node_family = m_mesh->nodeFamily();
-
-  bool is_3d = m_mesh->dimension() == 3;
-
-  m_all_items_direction_info->_internalComputeNodeCellInformations();
-
-  info() << "Informations from IMesh properties:";
-
-  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
-
-  info() << "GlobalNbCell = " << cmgi->globalNbCells();
-  info() << "OwnNbCell: " << cmgi->ownNbCells();
-  info() << "SubDomainOffset: " << cmgi->subDomainOffsets();
-  info() << "OwnCellOffset: " << cmgi->ownCellOffsets();
-
-  CellGroup all_cells = cell_family->allItems();
-  NodeGroup all_nodes = node_family->allItems();
-  if (m_is_amr) {
-    auto x = _buildPatchGroups(mesh()->allLevelCells(0), 0);
-    all_cells = std::get<0>(x);
-    all_nodes = std::get<1>(x);
-  }
-  if (is_3d) {
+  if (m_mesh->dimension() == 3) {
     m_local_face_direction[MD_DirX] = 4;
     m_local_face_direction[MD_DirY] = 5;
     m_local_face_direction[MD_DirZ] = 3;
@@ -728,19 +705,6 @@ _computeDirectionsV2()
   else {
     m_local_face_direction[MD_DirX] = 1;
     m_local_face_direction[MD_DirY] = 2;
-  }
-
-  _computeMeshDirectionV2(*m_all_items_direction_info.get(), MD_DirX, all_cells, all_cells, CellGroup(), all_nodes);
-  _computeMeshDirectionV2(*m_all_items_direction_info.get(), MD_DirY, all_cells, all_cells, CellGroup(), all_nodes);
-  if (is_3d) {
-    _computeMeshDirectionV2(*m_all_items_direction_info.get(), MD_DirZ, all_cells, all_cells, CellGroup(), all_nodes);
-  }
-
-  // Positionne les informations par direction
-  for (Integer idir = 0, nb_dir = mesh()->dimension(); idir < nb_dir; ++idir) {
-    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
-    cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
-                                         cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
   }
 
   info() << "Compute cartesian connectivity";
@@ -753,13 +717,12 @@ _computeDirectionsV2()
   m_connectivity._computeInfos(this);
 
   // Ajoute informations de connectivités pour les patchs AMR
-  for (Integer patch_index = 1; patch_index < m_patch_group.nbPatch(); ++patch_index) {
+  for (Integer patch_index = 0; patch_index < m_patch_group.nbPatch(); ++patch_index) {
     computeDirectionsPatchV2(patch_index);
   }
 
-  // TODO : Voir pour modifier cette méthode.
-  // if (arcaneIsCheck())
-  //   checkValid();
+  if (arcaneIsCheck())
+    checkValid();
 
   _saveInfosInProperties();
 }
@@ -774,7 +737,23 @@ computeDirectionsPatchV2(Integer patch_index)
 
   CellGroup cells = m_patch_group.allCells(patch_index);
   Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
-  info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
+
+  if (patch->index() == -1) {
+    auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+    info() << "Informations from IMesh properties:";
+    info() << "GlobalNbCell = " << cmgi->globalNbCells();
+    info() << "OwnNbCell: " << cmgi->ownNbCells();
+    info() << "SubDomainOffset: " << cmgi->subDomainOffsets();
+    info() << "OwnCellOffset: " << cmgi->ownCellOffsets();
+    // Positionne les informations par direction
+    for (Integer idir = 0, nb_dir = mesh()->dimension(); idir < nb_dir; ++idir) {
+      CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
+      cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
+                                           cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
+    }
+  }
+
+  info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " trueindex=" << patch->index() << " nbPatch=" << m_patch_group.nbPatch();
   {
     const AMRPatchPosition position = patch->position();
     info() << "  position min=" << position.minPoint() << " max=" << position.maxPoint() << " level=" << position.level() << " overlapLayerSize=" << position.overlapLayerSize();
