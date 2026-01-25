@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonCudaHipReduceImpl.h                                   (C) 2000-2025 */
+/* CommonCudaHipReduceImpl.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation CUDA et HIP des réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -245,24 +245,13 @@ _applyDeviceGeneric(const ReduceDeviceInfo<typename ReduceOperator::DataType>& d
   unsigned int* device_count = dev_info.m_device_count;
   DataType* host_pinned_ptr = dev_info.m_host_pinned_final_ptr;
   DataType v = dev_info.m_current_value;
-#if HIP_VERSION_MAJOR >= 7
-  // A partir de ROCM 7, il n'est pas possible de savoir à la compilation
-  // la taille d'un warp. C'est 32 ou 64. Pour contourner ce problème,
-  // on utilise deux instantiations de la reduction et on choisit
-  // dynamiquement. C'est probablement un peu moins performant qu'avec
-  // l'ancien mécanisme. Une autre solution serait de choisir à la
-  // compilation la taille d'un warp. Cela est possible sur les architectures
-  // HPC comme les MI300 car cette valeur est fixe. Mais sur les architectures
-  // RDNA les deux valeurs sont possibles.
-  // TODO: Sur les architectures AMD avec une taille de warp fixe,
-  // utiliser cette taille de warp comme 'constexpr' pour éviter le 'if'.
-  const Int32 warp_size = dev_info.m_warp_size;
-#else
-#if defined(__HIP__)
-  constexpr const Int32 WARP_SIZE = warpSize;
+  // Avec CUDA, la taille d'un warp est toujours 32.
+  // Avec HIP, La taille d'un warp est 64 pour les GPUs de classe GFX9
+  // (MI50, MI100, ... , MI300) et 32 pour architectures GFX10 et les suivantes
+#if defined(__GFX9__)
+  constexpr const Int32 WARP_SIZE = 64;
 #else
   constexpr const Int32 WARP_SIZE = 32;
-#endif
 #endif
 
   //if (impl::getThreadId()==0){
@@ -270,17 +259,7 @@ _applyDeviceGeneric(const ReduceDeviceInfo<typename ReduceOperator::DataType>& d
   //         getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,
   //         (void*)device_count,(do_grid_reduce)?1:0);
   //}
-#if HIP_VERSION_MAJOR >= 7
-  bool is_done = false;
-  if (warp_size == 64)
-    is_done = grid_reduce<ReduceOperator, 64, DataType>(v, grid_buffer, device_count);
-  else if (warp_size == 32)
-    is_done = grid_reduce<ReduceOperator, 32, DataType>(v, grid_buffer, device_count);
-  else
-    assert("Bad warp size (should be 32 or 64)");
-#else
   bool is_done = grid_reduce<ReduceOperator, WARP_SIZE, DataType>(v, grid_buffer, device_count);
-#endif
   if (is_done) {
     *host_pinned_ptr = v;
     // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
