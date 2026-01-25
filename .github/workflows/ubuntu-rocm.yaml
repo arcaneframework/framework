@@ -21,15 +21,24 @@ jobs:
         include:
           - os: ubuntu-24.04
             ubuntu-name: noble
+            full_name: 'ubuntu-24.04-rocm-7.2'
+            rocm-version: '7.2'
+            amdgpu-package: amdgpu-install_7.2.70200-1_all.deb
+            driver-repo-name : graphics
+            cmake_specific_args : ''
+          - os: ubuntu-24.04
+            ubuntu-name: noble
             full_name: 'ubuntu-24.04-rocm-6.3.1'
             rocm-version: '6.3.1'
             amdgpu-package: amdgpu-install_6.3.60301-1_all.deb
+            driver-repo-name : amdgpu
             cmake_specific_args : ''
           - os: ubuntu-22.04
             ubuntu-name: jammy
             full_name: 'ubuntu-22.04-rocm-5.7.1'
             rocm-version: '5.7.1'
             amdgpu-package: amdgpu-install_5.7.50701-1_all.deb
+            driver-repo-name : amdgpu
             cmake_specific_args : '-DARCCORE_ENABLE_TBB=FALSE'
 
     env:
@@ -61,15 +70,13 @@ jobs:
         run: |
           sudo mkdir --parents --mode=0755 /etc/apt/keyrings
           wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
-          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${{ matrix.rocm-version }}/ubuntu ${{ matrix.ubuntu-name }} main" | sudo tee /etc/apt/sources.list.d/amdgpu.list
-          sudo apt-get update
           echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${{ matrix.rocm-version }} ${{ matrix.ubuntu-name }} main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/${{ matrix.driver-repo-name }}/${{ matrix.rocm-version }}/ubuntu ${{ matrix.ubuntu-name }} main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
           sudo echo 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
+          sudo apt-get update
           wget https://repo.radeon.com/amdgpu-install/${{ matrix.rocm-version }}/ubuntu/${{ matrix.ubuntu-name }}/${{ matrix.amdgpu-package }}
           sudo apt install -y ./${{ matrix.amdgpu-package }}
           sudo apt-get update
-          #sudo apt-get install -y amdgpu-dkms
-          #sudo apt-get install -y rocm-hip-sdk rocm-hip-runtime-dev rocm-core
           sudo apt-get install -y rocm-hip-runtime-dev rocprim-dev roctracer-dev rocm-core
           find /opt/rocm
 
