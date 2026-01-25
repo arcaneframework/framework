@@ -108,6 +108,35 @@ makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Accelerator::Impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> HostLaunchLoopRangeBase<IndexType_>::
+HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, Int32 block_size)
+: m_total_size(total_size)
+, m_nb_group(nb_group)
+, m_group_size(block_size)
+{
+  m_last_group_size = (total_size - (block_size * (nb_group - 1)));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template class ARCCORE_EXPORT HostLaunchLoopRangeBase<Int32>;
+template class ARCCORE_EXPORT HostLaunchLoopRangeBase<Int64>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Accelerator::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

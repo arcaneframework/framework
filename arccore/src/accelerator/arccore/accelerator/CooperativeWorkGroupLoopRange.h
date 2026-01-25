@@ -237,6 +237,8 @@ class CooperativeWorkGroupLoopRange
  public:
 
   using LoopIndexType = CooperativeWorkGroupLoopContext<IndexType_>;
+  using IndexType = IndexType_;
+
   // Pour indiquer au KernelLauncher qu'on souhaite un lancement coopératif.
   static constexpr bool isCooperativeLaunch() { return true; }
 

@@ -647,6 +647,10 @@ class WorkGroupLoopRangeBase
 {
  public:
 
+  using IndexType = IndexType_;
+
+ public:
+
   WorkGroupLoopRangeBase() = default;
 
  protected:
@@ -720,6 +724,7 @@ class WorkGroupLoopRange
  public:
 
   using LoopIndexType = WorkGroupLoopContext<IndexType_>;
+  using IndexType = IndexType_;
 
  public:
 
