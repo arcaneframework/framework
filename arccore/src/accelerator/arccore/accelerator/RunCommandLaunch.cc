@@ -36,7 +36,7 @@ namespace Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> HostLaunchLoopRangeBase<IndexType_>::
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT HostLaunchLoopRangeBase<IndexType_>::
 HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_block, Int32 block_size)
 : m_total_size(total_size)
 , m_nb_block(nb_block)
@@ -50,8 +50,8 @@ HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_block, Int32 block_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ARCCORE_EXPORT HostLaunchLoopRangeBase<Int32>;
-template class ARCCORE_EXPORT HostLaunchLoopRangeBase<Int64>;
+template class HostLaunchLoopRangeBase<Int32>;
+template class HostLaunchLoopRangeBase<Int64>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

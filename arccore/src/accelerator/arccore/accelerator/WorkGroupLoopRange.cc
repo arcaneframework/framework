@@ -25,7 +25,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
 setBlockSize(Int32 block_size)
 {
   if ((block_size <= 0) || ((block_size % 32) != 0))
@@ -37,7 +38,8 @@ setBlockSize(Int32 block_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
 setBlockSize(const RunCommand& command)
 {
   // TODO: en multi-threading, à calculer en fonction du nombre de threads
@@ -60,8 +62,8 @@ _setNbBlock()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ARCCORE_EXPORT WorkGroupLoopRangeBase<Int32>;
-template class ARCCORE_EXPORT WorkGroupLoopRangeBase<Int64>;
+template class WorkGroupLoopRangeBase<Int32>;
+template class WorkGroupLoopRangeBase<Int64>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
