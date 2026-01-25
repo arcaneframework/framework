@@ -666,7 +666,6 @@ class WorkGroupLoopRangeBase
   , m_nb_group(nb_group)
   , m_group_size(block_size)
   {
-    m_last_group_size = (total_size - (block_size * (nb_group - 1)));
   }
 
  public:
@@ -677,20 +676,12 @@ class WorkGroupLoopRangeBase
   constexpr Int32 groupSize() const { return m_group_size; }
   //! Nombre de groupes
   constexpr Int32 nbGroup() const { return m_nb_group; }
-  //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastGroupSize() const { return m_last_group_size; }
-  //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr Int32 nbActiveItem(Int32 i) const
-  {
-    return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
-  }
 
  private:
 
   Int32 m_total_size = 0;
   Int32 m_nb_group = 0;
   Int32 m_group_size = 0;
-  Int32 m_last_group_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/

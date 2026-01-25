@@ -229,8 +229,11 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
   bool is_accelerator = m_queue.isAcceleratorPolicy();
   for (Int32 i = 0, n = out_array_size; i < n; ++i) {
+    Int32 nb_active_item = loop_range.groupSize();
     // Pour le dernier bloc, le nombre d'éléments actif n'est pas forcément group_size
-    Int32 nb_active_item = loop_range.nbActiveItem(i);
+    if ((i + 1) == n) {
+      nb_active_item = (loop_range.nbElement() - (loop_range.groupSize() * (loop_range.nbGroup() - 1)));
+    }
     Int64 out_value = out_span[i];
     const Int32 base_value = nb_active_item + nb_active_item * 10;
     // Sur accélérateur on ajoute 2 car il y a un ajout dans le 'constexpr' de la lambda
