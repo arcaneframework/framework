@@ -13,11 +13,57 @@
 
 #include "arccore/accelerator/WorkGroupLoopRange.h"
 
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/common/accelerator/RunCommand.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
+setBlockSize(Int32 block_size)
+{
+  if ((block_size <= 0) || ((block_size % 32) != 0))
+    ARCCORE_FATAL("Invalid value '{0}' for block size: should be a multiple of 32", block_size);
+  m_block_size = block_size;
+  _setNbBlock();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
+setBlockSize(const RunCommand& command)
+{
+  // TODO: en multi-threading, à calculer en fonction du nombre de threads
+  // disponibles et du nombre total d'éléments
+  Int32 block_size = 1024;
+  if (isAcceleratorPolicy(command.executionPolicy()))
+    block_size = 256;
+  setBlockSize(block_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
+_setNbBlock()
+{
+  m_nb_block = (m_nb_element + (m_block_size - 1)) / m_block_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template class WorkGroupLoopRangeBase<Int32>;
+template class WorkGroupLoopRangeBase<Int64>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

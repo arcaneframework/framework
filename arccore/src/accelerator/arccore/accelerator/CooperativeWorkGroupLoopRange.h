@@ -210,50 +210,27 @@ class SyclCooperativeWorkGroupLoopContext
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme
- * hiérarchique en mode coopératif.
+ * hiérarchique collaboratif.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de %Arcane.
- *
- * L'intervalle d'itération contient nbElement() et est décomposé en
- * \a nbGroup() CooperativeWorkGroup contenant chacun \a groupSize() CooperativeWorkItem.
- *
- * La création de ces instances se fait via les méthodes makeCooperativeWorkGroupLoopRange().
- *
- * \note Sur accélérateur, La valeur de \a groupSize() est dépendante de l'architecture
- * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
- * et être un multiple de 32.
+ * \sa WorkGroupLoopRangeBase
  */
 template <typename IndexType_>
 class CooperativeWorkGroupLoopRange
 : public WorkGroupLoopRangeBase<IndexType_>
 {
- private:
-
-  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
-  makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
-  friend ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
-  makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
-
  public:
 
   using LoopIndexType = CooperativeWorkGroupLoopContext<IndexType_>;
+  using IndexType = IndexType_;
+
   // Pour indiquer au KernelLauncher qu'on souhaite un lancement coopératif.
   static constexpr bool isCooperativeLaunch() { return true; }
 
  public:
 
   CooperativeWorkGroupLoopRange() = default;
-
- private:
-
-  /*!
-   * \brief Créé un intervalle d'itération pour la commande \a command.
-   *
-   * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a group_size.
-   * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
-   */
-  CooperativeWorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element, nb_group, group_size)
+  explicit CooperativeWorkGroupLoopRange(IndexType total_nb_element)
+  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
   {}
 
  public:

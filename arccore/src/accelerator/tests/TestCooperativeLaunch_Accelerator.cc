@@ -42,7 +42,8 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread
     for (int j = 0; j < nb_loop; ++j) {
       auto command = makeCommand(queue);
       command.addNbThreadPerBlock(nb_thread);
-      auto loop_range = makeCooperativeWorkGroupLoopRange(command, nb_group, group_size);
+      CooperativeWorkGroupLoopRange loop_range(nb_group * group_size);
+      loop_range.setBlockSize(group_size);
       command << RUNCOMMAND_LAUNCH(iter, loop_range)
       {
         auto x = iter.grid();

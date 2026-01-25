@@ -34,52 +34,6 @@ operator<<(RunCommand& command, const Impl::ExtendedLaunchLoop<LoopBoundType, Re
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé un intervalle d'itération pour la commande \a command.
- *
- * Créé un intervalle pour \a nb_group de taille \a group_size.
- * Le nombre total d'éléments est donc égal à `nb_group * group_size`.
- */
-extern "C++" ARCCORE_ACCELERATOR_EXPORT WorkGroupLoopRange<Int32>
-makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé un intervalle d'itération pour la commande \a command.
- *
- * Créé un intervalle contenant \a nb_element, répartis en \a nb_group de taille \a group_size.
- * Si \a nb_group et \a group_size sont nuls, une taille de bloc par défaut sera choisie en
- * fonction de l'accélérateur et \a nb_group sera calculé automatiquement.
- */
-extern "C++" ARCCORE_ACCELERATOR_EXPORT WorkGroupLoopRange<Int32>
-makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé un intervalle d'itération pour la commande \a command.
- *
- * Créé un intervalle pour \a nb_group de taille \a group_size.
- * Le nombre total d'éléments est donc égal à `nb_group * group_size`.
- */
-extern "C++" ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
-makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé un intervalle d'itération pour la commande \a command.
- *
- * Créé un intervalle contenant \a nb_element, répartis en \a nb_group de taille \a group_size.
- * Si \a nb_group et \a group_size sont nuls, une taille de bloc par défaut sera choisie en
- * fonction de l'accélérateur et \a nb_group sera calculé automatiquement.
- */
-extern "C++" ARCCORE_ACCELERATOR_EXPORT CooperativeWorkGroupLoopRange<Int32>
-makeCooperativeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
 

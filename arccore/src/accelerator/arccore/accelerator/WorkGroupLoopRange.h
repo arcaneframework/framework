@@ -640,53 +640,69 @@ class SyclWorkGroupLoopContext
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base pour WorkGroupLoopRange et CooperativeWorkGroupLoopRange.
+ * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
+ *
+ * Cette classe est la classe de base pour WorkGroupLoopRange et CooperativeWorkGroupLoopRange.
+ *
+ * Il faudra appeler setBlockSize() pour positionner la taille d'un bloc.
+ * Cela peut être fait par le développeur ou automatiquement au lancement de la
+ * commande.
+ *
+ * L'intervalle d'itération contient nbElement() et est décomposé en
+ * \a nbBlock() WorkGroup contenant chacun \a blockSize() WorkItem.
+ *
+ * \note Sur accélérateur, La valeur de \a blockSize() est dépendante de l'architecture
+ * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
+ * et être un multiple de 32.
+ *
  */
 template <typename IndexType_>
 class WorkGroupLoopRangeBase
 {
  public:
 
+  using IndexType = IndexType_;
+
+ public:
+
   WorkGroupLoopRangeBase() = default;
-
- protected:
-
-  /*!
-   * \brief Créé un intervalle d'itération pour la commande \a command.
-   *
-   * Le nombre total d'éléments est \a total_size, réparti en \a nb_group de taille \a block_size.
-   * \a total_size n'est pas nécessairement un multiple de \a block_size.
-   */
-  WorkGroupLoopRangeBase(Int32 total_size, Int32 nb_group, Int32 block_size)
-  : m_total_size(total_size)
-  , m_nb_group(nb_group)
-  , m_group_size(block_size)
+  explicit WorkGroupLoopRangeBase(IndexType nb_element)
+  : m_nb_element(nb_element)
   {
-    m_last_group_size = (total_size - (block_size * (nb_group - 1)));
   }
 
  public:
 
   //! Nombre d'éléments à traiter
-  constexpr Int32 nbElement() const { return m_total_size; }
-  //! Taille d'un groupe
-  constexpr Int32 groupSize() const { return m_group_size; }
-  //! Nombre de groupes
-  constexpr Int32 nbGroup() const { return m_nb_group; }
-  //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastGroupSize() const { return m_last_group_size; }
-  //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr Int32 nbActiveItem(Int32 i) const
-  {
-    return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
-  }
+  constexpr IndexType nbElement() const { return m_nb_element; }
+  //! Taille d'un block
+  constexpr Int32 blockSize() const { return m_block_size; }
+  /*!
+   * \brief Nombre de blocs.
+   *
+   * Retourne 0 si setBlockSize() n'a pas encore été appelé.
+   */
+  constexpr Int32 nbBlock() const { return m_nb_block; }
+
+  /*!
+   * \brief Positionne la taille d'un bloc.
+   *
+   * \a nb_block doit être un multiple de 32.
+   */
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(Int32 nb_block);
+
+  //! Positionne la taille d'un bloc en fonction de la commande \a command
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(const RunCommand& command);
 
  private:
 
-  Int32 m_total_size = 0;
-  Int32 m_nb_group = 0;
-  Int32 m_group_size = 0;
-  Int32 m_last_group_size = 0;
+  Int32 m_nb_element = 0;
+  Int32 m_nb_block = 0;
+  Int32 m_block_size = 0;
+
+ private:
+
+  void _setNbBlock();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -694,47 +710,22 @@ class WorkGroupLoopRangeBase
 /*!
  * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de %Arcane.
- *
- * L'intervalle d'itération contient nbElement() et est décomposé en
- * \a nbGroup() WorkGroup contenant chacun \a groupSize() WorkItem.
- *
- * La création de ces instances se fait via les méthodes makeWorkGroupLoopRange().
- *
- * \note Sur accélérateur, La valeur de \a groupSize() est dépendante de l'architecture
- * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
- * et être un multiple de 32.
+ * \sa WorkGroupLoopRangeBase
  */
 template <typename IndexType_>
 class WorkGroupLoopRange
 : public WorkGroupLoopRangeBase<IndexType_>
 {
- private:
-
-  friend ARCCORE_ACCELERATOR_EXPORT WorkGroupLoopRange<Int32>
-  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_group, Int32 group_size);
-  friend ARCCORE_ACCELERATOR_EXPORT WorkGroupLoopRange<Int32>
-  makeWorkGroupLoopRange(RunCommand& command, Int32 nb_element, Int32 nb_group, Int32 group_size);
-  template <typename T> friend class CooperativeWorkGroupLoopRange;
-
  public:
 
   using LoopIndexType = WorkGroupLoopContext<IndexType_>;
+  using IndexType = IndexType_;
 
  public:
 
   WorkGroupLoopRange() = default;
-
- private:
-
-  /*!
-   * \brief Créé un intervalle d'itération pour la commande \a command.
-   *
-   * Le nombre total d'éléments est \a total_nb_element, réparti en \a nb_group de taille \a group_size.
-   * \a total_nb_element n'est pas nécessairement un multiple de \a block_size.
-   */
-  WorkGroupLoopRange(Int32 total_nb_element, Int32 nb_group, Int32 group_size)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element, nb_group, group_size)
+  explicit WorkGroupLoopRange(IndexType total_nb_element)
+  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
   {}
 
  public:

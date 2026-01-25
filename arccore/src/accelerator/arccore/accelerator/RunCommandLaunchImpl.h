@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "AcceleratorGlobal.h"
 #include "arccore/common/SequentialFor.h"
 #include "arccore/common/StridedLoopRanges.h"
 #include "arccore/common/accelerator/RunCommand.h"
@@ -28,6 +29,69 @@
 
 namespace Arcane::Accelerator::Impl
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations d'une boucle utilisant le parallélisme hiérarchique
+ * sur l'hôte.
+ */
+template <typename IndexType_>
+class HostLaunchLoopRangeBase
+{
+ public:
+
+  using IndexType = IndexType_;
+
+ public:
+
+  ARCCORE_ACCELERATOR_EXPORT
+  HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, Int32 block_size);
+
+ public:
+
+  //! Nombre d'éléments à traiter
+  constexpr IndexType nbElement() const { return m_total_size; }
+  //! Taille d'un bloc
+  constexpr Int32 blockSize() const { return m_block_size; }
+  //! Nombre de groupes
+  constexpr Int32 nbBlock() const { return m_nb_block; }
+  //! Nombre d'éléments du dernier groupe
+  constexpr Int32 lastBlockSize() const { return m_last_block_size; }
+  //! Nombre d'éléments actifs pour le i-ème groupe
+  constexpr Int32 nbActiveItem(Int32 i) const
+  {
+    return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
+  }
+
+ private:
+
+  IndexType m_total_size = 0;
+  Int32 m_nb_block = 0;
+  Int32 m_block_size = 0;
+  Int32 m_last_block_size = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename WorkGroupLoopRangeType_>
+class HostLaunchLoopRange
+: public HostLaunchLoopRangeBase<typename WorkGroupLoopRangeType_::IndexType>
+{
+ public:
+
+  using WorkGroupLoopRangeType = WorkGroupLoopRangeType_;
+  using IndexType = typename WorkGroupLoopRangeType_::IndexType;
+  using BaseClass = HostLaunchLoopRangeBase<typename WorkGroupLoopRangeType_::IndexType>;
+
+ public:
+
+  explicit HostLaunchLoopRange(const WorkGroupLoopRangeType& bounds)
+  : BaseClass(bounds.nbElement(), bounds.nbBlock(), bounds.blockSize())
+  {
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,12 +164,12 @@ class WorkGroupSequentialForHelper
 
   //! Applique le fonctor \a func sur une boucle séqentielle.
   template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> static void
-  apply(Int32 begin_index, Int32 nb_loop, LoopBoundType bounds,
+  apply(Int32 begin_index, Int32 nb_loop, HostLaunchLoopRange<LoopBoundType> bounds,
         const Lambda& func, RemainingArgs... remaining_args)
   {
     using LoopIndexType = LoopBoundType::LoopIndexType;
     ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
-    const Int32 group_size = bounds.groupSize();
+    const Int32 group_size = bounds.blockSize();
     Int32 loop_index = begin_index * group_size;
     for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
       // Pour la dernière itération de la boucle, le nombre d'éléments actifs peut-être
@@ -191,11 +255,15 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
   if (nb_orig_element == 0)
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
+  if (bounds.blockSize() == 0)
+    bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
   TrueLoopBoundType bounds2(bounds);
   if (isAcceleratorPolicy(exec_policy)) {
+    command.addNbThreadPerBlock(bounds.blockSize());
     bounds2.setNbStride(command.nbStride());
   }
+  using HostLoopBoundType = HostLaunchLoopRange<LoopBoundType>;
 
   Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue(), bounds.isCooperativeLaunch());
   launch_info.beginExecute();
@@ -212,12 +280,14 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
     ARCCORE_KERNEL_SYCL_FUNC((Impl::doHierarchicalLaunchSycl<TrueLoopBoundType, Lambda, RemainingArgs...>{}),
                              launch_info, func, bounds2, other_args...);
     break;
-  case eExecutionPolicy::Sequential:
-    arccoreSequentialFor(bounds, func, other_args...);
-    break;
-  case eExecutionPolicy::Thread:
-    arccoreParallelFor(bounds, launch_info.loopRunInfo(), func, other_args...);
-    break;
+  case eExecutionPolicy::Sequential: {
+    HostLoopBoundType host_bounds(bounds);
+    arccoreSequentialFor(host_bounds, func, other_args...);
+  } break;
+  case eExecutionPolicy::Thread: {
+    HostLoopBoundType host_bounds(bounds);
+    arccoreParallelFor(host_bounds, launch_info.loopRunInfo(), func, other_args...);
+  } break;
   default:
     ARCCORE_FATAL("Invalid execution policy '{0}'", exec_policy);
   }
@@ -282,8 +352,8 @@ makeLaunch(const LoopBoundType& bounds, RemainingArgs... args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
-inline void operator<<(ExtendedLaunchRunCommand<LoopBoundType, RemainingArgs...>&& nr, const Lambda& f)
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+operator<<(ExtendedLaunchRunCommand<LoopBoundType, RemainingArgs...>&& nr, const Lambda& f)
 {
   if constexpr (sizeof...(RemainingArgs) > 0) {
     std::apply([&](auto... vs) { _doHierarchicalLaunch(nr.m_command, nr.m_bounds, f, vs...); }, nr.m_remaining_args);
@@ -295,76 +365,36 @@ inline void operator<<(ExtendedLaunchRunCommand<LoopBoundType, RemainingArgs...>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Applique le fonctor \a func sur une boucle séqentielle.
+ */
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& func, const RemainingArgs&... remaining_args)
+{
+  WorkGroupSequentialForHelper::apply(0, bounds.nbBlock(), bounds, func, remaining_args...);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Applique le fonctor \a func sur une boucle parallèle.
+ */
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
+arccoreParallelFor(Impl::HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,
+                   const Lambda& func, const RemainingArgs&... remaining_args)
+{
+  auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
+    Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
+  };
+  ::Arcane::arccoreParallelFor(0, bounds.nbBlock(), run_info, sub_func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator::Impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Applique le fonctor \a func sur une boucle séqentielle.
- */
-template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
-arccoreSequentialFor(WorkGroupLoopRange<IndexType_> bounds, const Lambda& func, const RemainingArgs&... remaining_args)
-{
-  Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Applique le fonctor \a func sur une boucle parallèle.
- */
-template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(WorkGroupLoopRange<IndexType_> bounds, ForLoopRunInfo run_info,
-                   const Lambda& func, const RemainingArgs&... remaining_args)
-{
-  auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
-    Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
-  };
-  arccoreParallelFor(0, bounds.nbGroup(), run_info, sub_func);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Applique le fonctor \a func sur une boucle séqentielle.
- */
-template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
-arccoreSequentialFor(CooperativeWorkGroupLoopRange<IndexType_> bounds, const Lambda& func,
-                     const RemainingArgs&... remaining_args)
-{
-  Impl::WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Applique le fonctor \a func sur une boucle parallèle.
- */
-template <typename IndexType_, typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(CooperativeWorkGroupLoopRange<IndexType_> bounds, ForLoopRunInfo run_info,
-                   const Lambda& func, const RemainingArgs&... remaining_args)
-{
-  auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
-    Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
-  };
-  arccoreParallelFor(0, bounds.nbGroup(), run_info, sub_func);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
