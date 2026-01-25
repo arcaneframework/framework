@@ -138,7 +138,7 @@ _doTestEmpty()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Si \a block_size==0, alors nb_block_or_total_nb_element est le
+// Si \a group_size==0, alors nb_block_or_total_nb_element est le
 // nombre total d'éléments. Sinon il s'agit du nombre de bloc.
 
 void AcceleratorLocalMemoryUnitTest::
@@ -151,16 +151,23 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   // en mémoire partagé. Le dernier WorkItem du groupe recopie
   // ensuite ce tableau en mémoire globale.
 
+  info() << "DO_TEST group_size=" << group_size
+         << " nb_group_or_total_nb_element=" << nb_group_or_total_nb_element;
+
   auto command = makeCommand(m_queue);
 
-  ax::WorkGroupLoopRange loop_range;
-  if (group_size > 0)
-    loop_range = ax::makeWorkGroupLoopRange(command, nb_group_or_total_nb_element, group_size);
-  else {
-    loop_range = ax::makeWorkGroupLoopRange(command, nb_group_or_total_nb_element, 0, 0);
-    group_size = loop_range.groupSize();
+  ax::WorkGroupLoopRange<Int32> loop_range;
+  if (group_size > 0){
+    Int32 total = group_size * nb_group_or_total_nb_element;
+    loop_range = ax::WorkGroupLoopRange<Int32>(total);
+    loop_range.setBlockSize(group_size);
   }
-  const Int32 nb_group = loop_range.nbGroup();
+  else {
+    loop_range = ax::WorkGroupLoopRange<Int32>(nb_group_or_total_nb_element);
+    loop_range.setBlockSize(command);
+  }
+
+  const Int32 nb_group = loop_range.nbBlock();
   // NOTE: sur accélérateur, la taille d'un WorkGroup doit être
   // un multiple de 32 et inférieur au nombre maximum de thread d'un bloc
   // (en général 1024).
@@ -229,10 +236,10 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
   bool is_accelerator = m_queue.isAcceleratorPolicy();
   for (Int32 i = 0, n = out_array_size; i < n; ++i) {
-    Int32 nb_active_item = loop_range.groupSize();
+    Int32 nb_active_item = loop_range.blockSize();
     // Pour le dernier bloc, le nombre d'éléments actif n'est pas forcément group_size
     if ((i + 1) == n) {
-      nb_active_item = (loop_range.nbElement() - (loop_range.groupSize() * (loop_range.nbGroup() - 1)));
+      nb_active_item = (loop_range.nbElement() - (loop_range.blockSize() * (loop_range.nbBlock() - 1)));
     }
     Int64 out_value = out_span[i];
     const Int32 base_value = nb_active_item + nb_active_item * 10;

@@ -52,24 +52,24 @@ class HostLaunchLoopRangeBase
 
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_total_size; }
-  //! Taille d'un groupe
-  constexpr Int32 groupSize() const { return m_group_size; }
+  //! Taille d'un bloc
+  constexpr Int32 blockSize() const { return m_block_size; }
   //! Nombre de groupes
-  constexpr Int32 nbGroup() const { return m_nb_group; }
+  constexpr Int32 nbBlock() const { return m_nb_block; }
   //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastGroupSize() const { return m_last_group_size; }
+  constexpr Int32 lastBlockSize() const { return m_last_block_size; }
   //! Nombre d'éléments actifs pour le i-ème groupe
   constexpr Int32 nbActiveItem(Int32 i) const
   {
-    return ((i + 1) != m_nb_group) ? m_group_size : m_last_group_size;
+    return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
   }
 
  private:
 
   IndexType m_total_size = 0;
-  Int32 m_nb_group = 0;
-  Int32 m_group_size = 0;
-  Int32 m_last_group_size = 0;
+  Int32 m_nb_block = 0;
+  Int32 m_block_size = 0;
+  Int32 m_last_block_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ class HostLaunchLoopRange
  public:
 
   explicit HostLaunchLoopRange(const WorkGroupLoopRangeType& bounds)
-  : BaseClass(bounds.nbElement(), bounds.nbGroup(), bounds.groupSize())
+  : BaseClass(bounds.nbElement(), bounds.nbBlock(), bounds.blockSize())
   {
   }
 };
@@ -169,7 +169,7 @@ class WorkGroupSequentialForHelper
   {
     using LoopIndexType = LoopBoundType::LoopIndexType;
     ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
-    const Int32 group_size = bounds.groupSize();
+    const Int32 group_size = bounds.blockSize();
     Int32 loop_index = begin_index * group_size;
     for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
       // Pour la dernière itération de la boucle, le nombre d'éléments actifs peut-être
@@ -255,10 +255,12 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
   if (nb_orig_element == 0)
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
-
+  if (bounds.blockSize() == 0)
+    bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
   TrueLoopBoundType bounds2(bounds);
   if (isAcceleratorPolicy(exec_policy)) {
+    command.addNbThreadPerBlock(bounds.blockSize());
     bounds2.setNbStride(command.nbStride());
   }
   using HostLoopBoundType = HostLaunchLoopRange<LoopBoundType>;
@@ -370,7 +372,7 @@ operator<<(ExtendedLaunchRunCommand<LoopBoundType, RemainingArgs...>&& nr, const
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& func, const RemainingArgs&... remaining_args)
 {
-  WorkGroupSequentialForHelper::apply(0, bounds.nbGroup(), bounds, func, remaining_args...);
+  WorkGroupSequentialForHelper::apply(0, bounds.nbBlock(), bounds, func, remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -386,7 +388,7 @@ arccoreParallelFor(Impl::HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunIn
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
     Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
   };
-  ::Arcane::arccoreParallelFor(0, bounds.nbGroup(), run_info, sub_func);
+  ::Arcane::arccoreParallelFor(0, bounds.nbBlock(), run_info, sub_func);
 }
 
 /*---------------------------------------------------------------------------*/
