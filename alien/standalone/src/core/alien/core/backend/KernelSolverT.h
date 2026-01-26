@@ -40,6 +40,7 @@ namespace Alien
 
     virtual void init() = 0;
     virtual void start() = 0 ;
+    virtual void end() = 0 ;
 
     //! Initialize the linear solver
     virtual void init(MatrixType const& A) = 0;

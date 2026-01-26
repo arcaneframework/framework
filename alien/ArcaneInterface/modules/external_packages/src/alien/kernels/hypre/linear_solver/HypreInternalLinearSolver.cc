@@ -1042,10 +1042,10 @@ HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm com
       (*solver_set_tol_function)(solver, rtol));
 
   if (output_level > 0) {
-    checkError("Hypre " + solver_name + " solver Setlogging",
-        (*solver_set_print_level_function)(solver, 1));
+    //checkError("Hypre " + solver_name + " solver Setlogging",
+    //    (*solver_set_print_level_function)(solver, 1));
     checkError("Hypre " + solver_name + " solver SetPrintLevel",
-        (*solver_set_print_level_function)(solver, 3));
+        (*solver_set_print_level_function)(solver, 1));
   }
   m_initialized = true ;
 }

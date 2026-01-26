@@ -35,8 +35,8 @@ class MatrixInternal
   void setValues(ValueT value)
   {
     m_values.fill(value) ;
-
   }
+
   ConstArrayView<ValueType> getValues() const { return m_values; }
 
   UniqueArray<ValueType>& getValues() { return m_values; }
@@ -51,6 +51,18 @@ class MatrixInternal
   const CSRStructInfo& getCSRProfile() const { return *m_profile; }
 
   Integer getRowSize(Integer row) const { return m_profile->getRowSize(row); }
+
+  void scal(ValueType const* diag)
+  {
+    auto nrows = m_profile->getNRows() ;
+    auto kcol = m_profile->kcol() ;
+    for(int irow=0;irow<nrows;++irow)
+    {
+      ValueType scal = diag[irow] ;
+      for(int k=kcol[irow];k<kcol[irow+1];++k)
+        m_values[k] *= scal ;
+    }
+  }
 
   void clear() { m_values.resize(0); }
 

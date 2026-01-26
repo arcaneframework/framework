@@ -106,6 +106,22 @@ AlienCoreLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   return solve(matrix, rhs, sol);
 }
 
+void
+AlienCoreLinearSolver::setDiagScaling(IMatrix const& matrix)
+{
+  using namespace Alien;
+
+  SolverStatSentry<AlienCoreLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  CSRMatrixType const& matrixA = matrix.impl()->get<BackEnd::tag::simplecsr>();
+  BaseType::setDiagScaling(matrixA) ;
+}
+
+void
+AlienCoreLinearSolver::setDiagScaling(CSRMatrixType const& matrix)
+{
+  BaseType::setDiagScaling(matrix) ;
+}
+
 std::shared_ptr<ILinearAlgebra>
 AlienCoreLinearSolver::algebra() const
 {

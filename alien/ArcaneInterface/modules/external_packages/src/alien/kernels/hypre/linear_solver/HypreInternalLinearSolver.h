@@ -80,19 +80,19 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false, int device_id=0) ;
 
-  void init();
-
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
 
-  void end();
-
   Arccore::String getBackEndName() const { return "hypre"; }
+
+  void init();
 
   void init(HypreMatrix const& A) ;
 
   void start() {
 
   }
+
+  void end();
 
   //! Résolution du système linéaire
   bool solve(const HypreMatrix& A, const HypreVector& b, HypreVector& x);

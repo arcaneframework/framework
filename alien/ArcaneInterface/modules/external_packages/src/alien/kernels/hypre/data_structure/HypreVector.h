@@ -88,6 +88,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreVector : public IVectorImpl
 
   bool getValues(const int nrow, double* values) const;
 
+  bool setValue(ValueType value) ;
+
  public:
   // Méthodes restreintes à usage interne de l'implémentation HYPRE
   VectorInternal* internal() { return m_internal; }

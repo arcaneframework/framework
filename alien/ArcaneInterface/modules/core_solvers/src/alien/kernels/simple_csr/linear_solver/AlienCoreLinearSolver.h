@@ -54,6 +54,9 @@ class ALIEN_CORE_SOLVERS_EXPORT AlienCoreLinearSolver
 
   void init() ;
 
+  void setDiagScaling(IMatrix const& A) ;
+  void setDiagScaling(CSRMatrixType const& A) ;
+
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& A, const CSRVectorType& b, CSRVectorType& x);
 

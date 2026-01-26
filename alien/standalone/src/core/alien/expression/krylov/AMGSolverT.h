@@ -40,7 +40,10 @@ class AMGSolverT
   , m_precond(precond)
   {}
 
-  virtual ~AMGSolverT(){}
+  virtual ~AMGSolverT()
+  {
+    end() ;
+  }
 
   void init()
   {
@@ -62,6 +65,11 @@ class AMGSolverT
     m_precond.init() ;
   }
 
+  void end() {
+    if constexpr (requires{m_solver.end();}) {
+      m_solver.end() ;
+    }
+  }
 
   bool solve(const VectorType& b, VectorType& x)
   {
@@ -138,7 +146,10 @@ class KernelAMGSolverT
           dynamic_cast<VectorConvToType*>(VectorConverterRegisterer::getConverter(solver_backend_id,backend_id));
     }
 
-  virtual ~KernelAMGSolverT(){}
+  virtual ~KernelAMGSolverT()
+  {
+    end() ;
+  }
 
   void init()
   {
@@ -162,6 +173,14 @@ class KernelAMGSolverT
     m_amg_solver->init(*m_solver_matrix) ;
   }
 
+  void end() {
+    m_solver_b.reset() ;
+    m_solver_x.reset();
+    m_solver_matrix.reset() ;
+    if constexpr (requires{m_amg_solver->end();}) {
+      m_amg_solver->end() ;
+    }
+  }
 
   bool solve(const VectorType& b, VectorType& x)
   {
@@ -178,6 +197,9 @@ class KernelAMGSolverT
       ptr->init(AlgebraType::resource(*m_matrix),true) ;
       m_solver_x.reset(ptr) ;
     }
+    else
+      m_solver_x->setValue(0.) ;
+
     m_amg_solver->solve(*m_solver_b,*m_solver_x) ;
     m_vector_converter_to->convert(*m_solver_x,x);
     return true ;

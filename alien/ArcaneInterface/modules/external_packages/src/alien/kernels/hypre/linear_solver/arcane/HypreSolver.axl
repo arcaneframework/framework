@@ -49,7 +49,7 @@
             <description>ilut max nnz per row</description>
       </simple>
 
-      <simple name="amg-coarsen-type" type="string" default="Falgout">
+      <simple name="amg-coarsen-type" type="string" default="PMIS">
       <description>
       Coarsen alg type:
       - CLJP
@@ -61,7 +61,7 @@
       </description>
       </simple>
 
-      <simple name="amg-interp-type" type="string" default="classical">
+      <simple name="amg-interp-type" type="string" default="ext+i-cc">
       <description>
       Interpolation type :
         - classical
@@ -77,24 +77,24 @@
       </description>
       </simple>
 
-      <simple name="amg-relax-type" type="string" default="gauss-seidel-jacobi">
+      <simple name="amg-relax-type" type="string" default="hybrid-Gauss-Seidel">
       <description>
       Options de RelaxType
           0 - Jacobi
-          1 - Gauss-Seidel, séquentiel (parcours avant)
-          2 - Gauss-Seidel, séquentiel (parcours arrière)
-          3 - Gauss-Seidel hybride (parcours avant)
-          4 - Gauss-Seidel hybride (parcours arrière)
-          5 - Gauss-Seidel hybride symétrique
-          6 - Gauss-Seidel hybride, L1 (parcours avant)
-          7 - Gauss-Seidel hybride, L1 (parcours arrière)
-          8 - Gauss-Seidel hybride symétrique, L1
-          9 - Gauss-Seidel, L1 (parcours avant)
-          13 - Gauss-Seidel L1 forward
-          14 - Gauss-Seidel L1 backward
-          15 - CG (non recommandé comme lisseur)
+          1 - sequential-Gauss-Seidel      : Gauss-Seidel, séquentiel (parcours avant)
+          2 - backward-Gauss-Seidel        : Gauss-Seidel, séquentiel (parcours arrière)
+          3 - hybrid-Gauss-Seidel          : Gauss-Seidel hybride (parcours avant)
+          4 - backward-hybrid-Gauss-Seidel : Gauss-Seidel hybride (parcours arrière)
+          5 - symetric-hybrid-Gauss-Seidel : Gauss-Seidel hybride symétrique
+          6 - l1-hybrid-Gauss-Seidel       : Gauss-Seidel hybride, L1 (parcours avant)
+          7 - backward-l1-hybrid-Gauss-Seidel : Gauss-Seidel hybride, L1 (parcours arrière)
+          8 - l1-Gauss-Seidel                 : Gauss-Seidel hybride symétrique, L1
+          9 - l1-Gauss-Seidel                 : Gauss-Seidel, L1 (parcours avant)
+          13 - forward-l1-Gauss-Seidel        : Gauss-Seidel L1 forward
+          14 - backward-l1-Gauss-Seidel       : Gauss-Seidel L1 backward
+          15 - CG                             : (non recommandé comme lisseur)
           16 - Chebyshev
-          18 - Gauss-Seidel hybride L1 (version alternative)
+          18 - l1-hybrid-Gauss-Seidel-v2      : Gauss-Seidel hybride L1 (version alternative)
 
           Utilisation typique
 La valeur par défaut est généralement 3 (Gauss-Seidel hybride forward), qui offre un bon compromis entre efficacité et parallélisme. Pour des problèmes symétriques, 6 ou 8 (versions L1) sont souvent recommandés.

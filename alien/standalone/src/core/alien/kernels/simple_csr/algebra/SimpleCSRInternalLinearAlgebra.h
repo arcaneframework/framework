@@ -109,6 +109,9 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
   void addUMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
 
+  void multDiag(const Matrix& A, Vector& y) const;
+  void computeDiag(const Matrix& a, Vector& inv_diag) const;
+
   void multInvDiag(const Matrix& A, Vector& y) const;
   void computeInvDiag(const Matrix& a, Vector& inv_diag) const;
 
@@ -124,6 +127,7 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void dot(const Vector& x, const Vector& y, FutureType& res) const;
 
   void scal(Real alpha, Vector& x) const;
+  void scal(const Vector& x, Matrix& a) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
@@ -145,6 +149,7 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   }
 
   Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
+  Integer computeCxr(const Matrix& a, Vector const& diag_scal, Matrix& cxr_a) const ;
 
   static ResourceType resource(Matrix const& A);
 
