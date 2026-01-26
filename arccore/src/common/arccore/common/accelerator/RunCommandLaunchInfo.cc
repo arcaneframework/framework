@@ -13,11 +13,11 @@
 
 #include "arccore/common/accelerator/RunCommandLaunchInfo.h"
 
-#include "KernelLaunchArgs.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/ConcurrencyBase.h"
 
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
@@ -148,7 +148,9 @@ _computeInitialKernelLaunchArgs()
     threads_per_block = 256;
   Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
-  m_kernel_launch_args = KernelLaunchArgs(blocks_per_grid, threads_per_block, m_command._sharedMemory());
+  m_kernel_launch_args = KernelLaunchArgs(blocks_per_grid, threads_per_block);
+  m_kernel_launch_args.setSharedMemorySize(m_command._sharedMemory());
+  m_kernel_launch_args.setIsCooperative(m_is_cooperative_launch);
 }
 
 /*---------------------------------------------------------------------------*/

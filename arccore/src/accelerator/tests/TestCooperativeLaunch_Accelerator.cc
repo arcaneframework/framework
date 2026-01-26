@@ -34,7 +34,7 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread
   Int64 total_x = {};
   if ((nb_value % nb_part) != 0)
     ARCCORE_FATAL("{0} is not a multiple of {1}", nb_value, nb_part);
-  Int32 nb_group = 10;
+  Int32 nb_group = 10 * 1000;
   Int32 group_size = 128;
   double x = Platform::getRealTime();
   {
