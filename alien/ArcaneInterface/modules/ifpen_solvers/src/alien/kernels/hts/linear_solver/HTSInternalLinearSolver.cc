@@ -542,10 +542,12 @@ HTSInternalLinearSolver::setDiagScaling(CSRMatrixType const& matrix)
   if (m_output_level > 0)
     alien_info([&] { cout() << "HTSLinearSolver::setDigaScaling : block-size="<<block_size<<" NROWS="<<local_size; });
   auto dcol = matrix.getProfile().dcol() ;
-  if constexpr (requires{m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;}) {
+#ifdef HTS_HAS_DIAG_SCAL
+  //if constexpr (requires{m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;}) {
     m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;
     m_diag_scaling_is_set = true ;
-  }
+  //}
+#endif
 #endif
 }
 
