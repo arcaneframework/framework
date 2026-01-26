@@ -56,7 +56,7 @@ setBlockSize(const RunCommand& command)
 template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
 _setNbBlock()
 {
-  m_nb_block = (m_nb_element + (m_block_size - 1)) / m_block_size;
+  m_nb_block = static_cast<Int32>((m_nb_element + (m_block_size - 1)) / m_block_size);
 }
 
 /*---------------------------------------------------------------------------*/

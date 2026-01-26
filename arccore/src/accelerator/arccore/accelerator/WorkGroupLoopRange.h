@@ -68,19 +68,29 @@ class WorkGroupLoopContextBase;
 template <typename Indextype_ = Int32>
 class SyclWorkGroupLoopContextBase;
 
+template <typename IndexType_ = Int32>
+class HostIndexes;
+template <typename IndexType_ = Int32>
+class DeviceIndexesBase;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename IndexType_>
 class HostIndexes
 {
+ public:
+
+  using IndexType = IndexType_;
+
   class HostWorkItemIterator
   {
    public:
 
-    explicit constexpr HostWorkItemIterator(Int32 loop_index)
+    explicit constexpr HostWorkItemIterator(IndexType loop_index)
     : m_loop_index(loop_index)
     {}
-    constexpr Int32 operator*() const { return m_loop_index; }
+    constexpr IndexType operator*() const { return m_loop_index; }
     HostWorkItemIterator& operator++()
     {
       ++m_loop_index;
@@ -93,12 +103,12 @@ class HostIndexes
 
    private:
 
-    Int32 m_loop_index = 0;
+    IndexType m_loop_index = 0;
   };
 
  public:
 
-  constexpr HostIndexes(Int32 loop_index, Int32 nb_active_item)
+  constexpr HostIndexes(IndexType loop_index, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_nb_active_item(nb_active_item)
   {}
@@ -110,23 +120,29 @@ class HostIndexes
 
  private:
 
-  Int32 m_loop_index = 0;
+  IndexType m_loop_index = 0;
   Int32 m_nb_active_item = 0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_>
 class DeviceIndexesBase
 {
  public:
+
+  using IndexType = IndexType_;
 
   class DeviceWorkItemIterator
   {
    public:
 
-    explicit constexpr DeviceWorkItemIterator(Int32 loop_index, Int32 grid_size)
+    explicit constexpr DeviceWorkItemIterator(IndexType loop_index, Int32 grid_size)
     : m_loop_index(loop_index)
     , m_grid_size(grid_size)
     {}
-    constexpr Int32 operator*() const { return m_loop_index; }
+    constexpr IndexType operator*() const { return m_loop_index; }
     ARCCORE_HOST_DEVICE DeviceWorkItemIterator& operator++()
     {
       m_loop_index += m_grid_size;
@@ -139,7 +155,7 @@ class DeviceIndexesBase
 
    private:
 
-    Int32 m_loop_index = 0;
+    IndexType m_loop_index = 0;
     Int32 m_grid_size = 0;
   };
 
@@ -147,7 +163,7 @@ class DeviceIndexesBase
   {
    public:
 
-    explicit constexpr DeviceWorkItemSentinel(Int64 total_size)
+    explicit constexpr DeviceWorkItemSentinel(IndexType total_size)
     : m_total_size(total_size)
     {}
     friend constexpr bool operator!=(DeviceWorkItemIterator a, DeviceWorkItemSentinel b)
@@ -157,18 +173,25 @@ class DeviceIndexesBase
 
    private:
 
-    Int64 m_total_size = 0;
+    IndexType m_total_size = 0;
   };
 };
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
+template <typename IndexType_>
 class DeviceIndexes
-: public DeviceIndexesBase
+: public DeviceIndexesBase<IndexType_>
 {
  public:
 
-  explicit constexpr DeviceIndexes(Int64 total_size)
+  using IndexType = IndexType_;
+  using DeviceWorkItemIterator = DeviceIndexesBase<IndexType_>::DeviceWorkItemIterator;
+  using DeviceWorkItemSentinel = DeviceIndexesBase<IndexType_>::DeviceWorkItemSentinel;
+
+ public:
+
+  explicit constexpr DeviceIndexes(IndexType total_size)
   : m_total_size(total_size)
   {}
 
@@ -178,22 +201,33 @@ class DeviceIndexes
   {
     return DeviceWorkItemIterator(blockDim.x * blockIdx.x + threadIdx.x, blockDim.x * gridDim.x);
   }
-  constexpr __device__ DeviceWorkItemSentinel end() const { return DeviceWorkItemSentinel(m_total_size); }
+  constexpr __device__ DeviceWorkItemSentinel end() const
+  {
+    return DeviceWorkItemSentinel(m_total_size);
+  }
 
  private:
 
-  Int64 m_total_size = 0;
+  IndexType m_total_size = 0;
 };
 
 #endif
 
 #if defined(ARCCORE_COMPILING_SYCL)
+
+template <typename IndexType_>
 class SyclDeviceIndexes
-: public DeviceIndexesBase
+: public DeviceIndexesBase<IndexType_>
 {
  public:
 
-  SyclDeviceIndexes(sycl::nd_item<1> nd_item, Int64 total_size)
+  using IndexType = IndexType_;
+  using DeviceWorkItemIterator = DeviceIndexesBase<IndexType_>::DeviceWorkItemIterator;
+  using DeviceWorkItemSentinel = DeviceIndexesBase<IndexType_>::DeviceWorkItemSentinel;
+
+ public:
+
+  SyclDeviceIndexes(sycl::nd_item<1> nd_item, IndexType total_size)
   : m_nd_item(nd_item)
   , m_total_size(total_size)
   {}
@@ -202,7 +236,7 @@ class SyclDeviceIndexes
 
   DeviceWorkItemIterator begin() const
   {
-    Int32 index = static_cast<Int32>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0));
+    IndexType index = static_cast<IndexType>(m_nd_item.get_group(0) * m_nd_item.get_local_range(0) + m_nd_item.get_local_id(0));
     Int32 grid_size = static_cast<Int32>(m_nd_item.get_local_range(0) * m_nd_item.get_group_range(0));
     return DeviceWorkItemIterator(index, grid_size);
   }
@@ -211,7 +245,7 @@ class SyclDeviceIndexes
  private:
 
   sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size = 0;
+  IndexType m_total_size = 0;
 };
 
 #endif
@@ -222,15 +256,19 @@ class SyclDeviceIndexes
  * \brief Gère pour l'hôte un WorkItem dans un WorkGroupLoopRange ou
  * CooperativeWorkGroupLoopRange.
  */
-template <typename Indextype_>
+template <typename IndexType_>
 class HostWorkItem
 {
   template <typename T> friend class WorkGroupLoopContextBase;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   //! Constructeur pour l'hôte
-  constexpr ARCCORE_HOST_DEVICE HostWorkItem(Int32 loop_index, Int32 nb_active_item)
+  constexpr ARCCORE_HOST_DEVICE HostWorkItem(IndexType loop_index, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_nb_active_item(nb_active_item)
   {}
@@ -244,14 +282,14 @@ class HostWorkItem
   static constexpr bool isDevice() { return false; }
 
   //! Indexes de la boucle gérés par ce WorkItem
-  constexpr HostIndexes linearIndexes() const
+  constexpr HostIndexes<IndexType> linearIndexes() const
   {
-    return HostIndexes(m_loop_index, m_nb_active_item);
+    return HostIndexes<IndexType>(m_loop_index, m_nb_active_item);
   }
 
  private:
 
-  Int32 m_loop_index = 0;
+  IndexType m_loop_index = 0;
   Int32 m_nb_active_item = 0;
 };
 
@@ -309,6 +347,10 @@ class DeviceWorkItem
 {
   friend class WorkGroupLoopContextBase<IndexType_>;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   /*!
@@ -317,7 +359,7 @@ class DeviceWorkItem
    * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
    * récupéré via cooperative_groups::this_thread_block()
    */
-  explicit __device__ DeviceWorkItem(Int64 total_size)
+  explicit __device__ DeviceWorkItem(IndexType total_size)
   : m_thread_block(cooperative_groups::this_thread_block())
   , m_total_size(total_size)
   {}
@@ -330,13 +372,16 @@ class DeviceWorkItem
   //! Indique si on s'exécute sur un accélérateur
   static constexpr __device__ bool isDevice() { return true; }
 
-  constexpr __device__ DeviceIndexes linearIndexes() const { return DeviceIndexes(m_total_size); }
+  constexpr __device__ DeviceIndexes<IndexType> linearIndexes() const
+  {
+    return DeviceIndexes<IndexType>(m_total_size);
+  }
 
  private:
 
   // TODO A supprimer
   cooperative_groups::thread_block m_thread_block;
-  Int64 m_total_size = 0;
+  IndexType_ m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -396,18 +441,19 @@ class WorkGroupLoopContextBase
  protected:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  constexpr WorkGroupLoopContextBase(IndexType loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item, Int64 total_size)
+  constexpr WorkGroupLoopContextBase(IndexType loop_index, Int32 group_index, Int32 group_size,
+                                     Int32 nb_active_item, IndexType total_size)
   : m_loop_index(loop_index)
+  , m_total_size(total_size)
   , m_group_index(group_index)
   , m_group_size(group_size)
   , m_nb_active_item(nb_active_item)
-  , m_total_size(total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContextBase(Int64 total_size)
+  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContextBase(IndexType total_size)
   : m_total_size(total_size)
   {}
 
@@ -427,11 +473,11 @@ class WorkGroupLoopContextBase
 
  protected:
 
-  Int32 m_loop_index = 0;
+  IndexType m_loop_index = 0;
+  IndexType m_total_size = 0;
   Int32 m_group_index = 0;
   Int32 m_group_size = 0;
   Int32 m_nb_active_item = 0;
-  Int64 m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -454,17 +500,22 @@ class WorkGroupLoopContext
   friend Impl::WorkGroupLoopContextBuilder;
   using BaseClass = WorkGroupLoopContextBase<IndexType_>;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  explicit constexpr WorkGroupLoopContext(Int32 loop_index, Int32 group_index, Int32 group_size, Int32 nb_active_item, Int64 total_size)
+  explicit constexpr WorkGroupLoopContext(IndexType loop_index, Int32 group_index, Int32 group_size,
+                                          Int32 nb_active_item, IndexType total_size)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext(Int64 total_size)
+  explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext(IndexType total_size)
   : BaseClass(total_size)
   {}
 };
@@ -506,9 +557,13 @@ class SyclDeviceWorkItem
 {
   friend SyclWorkGroupLoopContextBase<IndexType_>;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
-  explicit SyclDeviceWorkItem(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclDeviceWorkItem(sycl::nd_item<1> nd_item, IndexType total_size)
   : m_nd_item(nd_item)
   , m_total_size(total_size)
   {
@@ -522,12 +577,15 @@ class SyclDeviceWorkItem
   //! Indique si on s'exécute sur un accélérateur
   static constexpr bool isDevice() { return true; }
 
-  SyclDeviceIndexes linearIndexes() const { return SyclDeviceIndexes(m_nd_item, m_total_size); }
+  SyclDeviceIndexes<IndexType> linearIndexes() const
+  {
+    return SyclDeviceIndexes<IndexType>(m_nd_item, m_total_size);
+  }
 
  private:
 
   sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size = 0;
+  IndexType m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -696,7 +754,7 @@ class WorkGroupLoopRangeBase
 
  private:
 
-  Int32 m_nb_element = 0;
+  IndexType m_nb_element = 0;
   Int32 m_nb_block = 0;
   Int32 m_block_size = 0;
 

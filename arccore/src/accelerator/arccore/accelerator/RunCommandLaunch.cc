@@ -42,7 +42,7 @@ HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_block, Int32 block_size)
 , m_nb_block(nb_block)
 , m_block_size(block_size)
 {
-  m_last_block_size = (total_size - (block_size * (nb_block - 1)));
+  m_last_block_size = static_cast<Int32>((total_size - (block_size * (nb_block - 1))));
   if (m_last_block_size <= 0)
     ARCCORE_FATAL("Bad value '{0}' for last group size", m_last_block_size);
 }

@@ -112,18 +112,22 @@ class CooperativeWorkGroupLoopContext
   friend Impl::WorkGroupLoopContextBuilder;
   using BaseClass = WorkGroupLoopContextBase<IndexType_>;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
-  constexpr CooperativeWorkGroupLoopContext(Int32 loop_index, Int32 group_index,
-                                            Int32 group_size, Int32 nb_active_item, Int64 total_size)
+  constexpr CooperativeWorkGroupLoopContext(IndexType loop_index, Int32 group_index,
+                                            Int32 group_size, Int32 nb_active_item, IndexType total_size)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(Int64 total_size)
+  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size)
   : BaseClass(total_size)
   {}
 
