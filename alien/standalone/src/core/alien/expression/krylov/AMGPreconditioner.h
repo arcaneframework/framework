@@ -35,9 +35,12 @@ namespace Alien
     {
     }
 
-    virtual ~AMGPreconditioner() {}
+    virtual ~AMGPreconditioner()
+    {
+      end() ;
+    }
 
-     void init()
+    void init()
     {
       if(m_amg_solver)
       {
@@ -45,6 +48,12 @@ namespace Alien
         m_amg_solver->init(m_matrix) ;
         m_amg_solver->start() ;
       }
+    }
+
+    void end()
+    {
+      if(m_amg_solver)
+        m_amg_solver->end() ;
     }
 
     void solve([[maybe_unused]] AlgebraType& alg,

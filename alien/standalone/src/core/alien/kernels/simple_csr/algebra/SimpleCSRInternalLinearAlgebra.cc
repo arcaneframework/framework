@@ -160,6 +160,22 @@ void SimpleCSRInternalLinearAlgebra::addUMult(Real alpha,
   Internal::SimpleCSRMatrixMultT<Real>(ma).addUMult(alpha, vx, vr);
 }
 
+void SimpleCSRInternalLinearAlgebra::multDiag(const CSRMatrix& ma, CSRVector& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-MULTDIAG");
+#endif
+  Internal::SimpleCSRMatrixMultT<Real>(ma).multDiag(vr);
+}
+
+void SimpleCSRInternalLinearAlgebra::computeDiag(const CSRMatrix& ma, CSRVector& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-DIAG");
+#endif
+  Internal::SimpleCSRMatrixMultT<Real>(ma).computeDiag(vr);
+}
+
 void SimpleCSRInternalLinearAlgebra::multInvDiag(const CSRMatrix& ma, CSRVector& vr) const
 {
 #ifdef ALIEN_USE_PERF_TIMER
@@ -267,17 +283,27 @@ void SimpleCSRInternalLinearAlgebra::scal(Real alpha, CSRVector& vx) const
   CBLASMPIKernel::scal(vx.distribution(), alpha, vx);
 }
 
-void SimpleCSRInternalLinearAlgebra::diagonal(
-const CSRMatrix& a ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::scal(CSRVector const& vx, CSRMatrix& a) const
 {
-  throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-SCAL");
+#endif
+  a.scal(vx.data()) ;
+}
+
+void SimpleCSRInternalLinearAlgebra::diagonal(
+const CSRMatrix& a, CSRVector& diag) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-DIAG");
+#endif
+  Internal::SimpleCSRMatrixMultT<Real>(a).computeDiag(diag);
 }
 
 void SimpleCSRInternalLinearAlgebra::reciprocal(CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::reciprocal not implemented");
 }
 
 void SimpleCSRInternalLinearAlgebra::pointwiseMult(const CSRVector& vx,
@@ -303,6 +329,15 @@ Integer SimpleCSRInternalLinearAlgebra::computeCxr(const CSRMatrix& a, CSRMatrix
   auto block_size = a.blockSize() ;
   cxr_a.setBlockSize(1) ;
   cxr_a.copy(a) ;
+  return block_size ;
+}
+
+Integer SimpleCSRInternalLinearAlgebra::computeCxr(const CSRMatrix& a, const CSRVector& diag, CSRMatrix& cxr_a) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  cxr_a.copy(a) ;
+  cxr_a.scal(diag.data());
   return block_size ;
 }
 

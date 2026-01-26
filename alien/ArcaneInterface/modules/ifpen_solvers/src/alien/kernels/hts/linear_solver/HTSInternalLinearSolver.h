@@ -24,8 +24,9 @@ class SolverStat;
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
     //: public IInternalLinearSolver<SimpleCSRMatrix<Real>, SimpleCSRVector<Real> >
-    : public ILinearSolver,
-      public ObjectWithTrace
+: public ILinearSolver
+, public ILinearSolverWithDiagScaling
+, public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -55,6 +56,9 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   void end();
 
   String getBackEndName() const { return "htssolver"; }
+
+  void setDiagScaling(IMatrix const& A) ;
+  void setDiagScaling(CSRMatrixType const& A) ;
 
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& A, const CSRVectorType& b, CSRVectorType& x);
@@ -102,6 +106,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   Integer m_output_level = 0;
 
   bool m_use_mpi = false;
+  bool m_diag_scaling_is_set = false ;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   Alien::SolverStatus m_status;
 

@@ -43,8 +43,9 @@ class SolverStat;
 
 template<typename AlgebraT>
 class AlienCoreSolverBaseT
-    : public ILinearSolver,
-      public ObjectWithTrace
+: public ILinearSolver
+, public ILinearSolverWithDiagScaling
+, public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -53,6 +54,7 @@ class AlienCoreSolverBaseT
   using AlgebraType = AlgebraT;
   using MatrixType  = typename AlgebraType::Matrix;
   using VectorType  = typename AlgebraType::Vector;
+  using ValueType   = typename AlgebraType::ValueType;
   using BackEndType = typename AlgebraType::BackEndType;
 
   /** Constructeur de la classe */
@@ -100,6 +102,19 @@ class AlienCoreSolverBaseT
   void end()
   {
 
+  }
+
+  void setDiagScaling(const MatrixType& matrixA)
+  {
+    AlgebraType algebra;
+    algebra.allocate(AlgebraType::resource(matrixA),m_matrix_diag);
+    algebra.diagonal(matrixA,m_matrix_diag) ;
+
+    auto const& dist = *std::get<0>(AlgebraType::resource(matrixA)) ;
+    m_diag_scaling.init(dist,1,true) ;
+    auto block_size = matrixA.blockSize() ;
+    algebra.copy(m_matrix_diag,block_size,m_diag_scaling,1);
+    m_use_diag_scaling = true ;
   }
 
 
@@ -236,7 +251,10 @@ class AlienCoreSolverBaseT
                                                  traceMng()} ;
               {
                 Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
-                precond.init() ;
+                if(m_use_diag_scaling)
+                  precond.init(m_diag_scaling) ;
+                else
+                  precond.init() ;
               }
               {
                 Alien::StdTimer::Sentry ts(m_timer,"Solve");
@@ -425,7 +443,10 @@ class AlienCoreSolverBaseT
                                           traceMng()} ;
             {
               Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
-              precond.init() ;
+              if(m_use_diag_scaling)
+                precond.init(m_diag_scaling) ;
+              else
+                precond.init() ;
             }
             {
               Alien::StdTimer::Sentry ts(m_timer,"Solve");
@@ -597,7 +618,10 @@ class AlienCoreSolverBaseT
   Real m_total_prec_setup_time = 0.;
 
   IOptionsAlienCoreSolver* m_options = nullptr;
-  std::vector<double> m_pressure_diag;
+
+  bool m_use_diag_scaling = false ;
+  VectorType m_matrix_diag;
+  VectorType m_diag_scaling;
 };
 
 } // namespace Alien

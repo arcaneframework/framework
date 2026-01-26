@@ -521,6 +521,36 @@ HTSInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
 #endif
 }
 
+
+void
+HTSInternalLinearSolver::setDiagScaling(IMatrix const& matrix)
+{
+  using namespace Alien;
+
+  SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  CSRMatrixType const& matrixA = matrix.impl()->get<BackEnd::tag::simplecsr>();
+  setDiagScaling(matrixA) ;
+}
+
+void
+HTSInternalLinearSolver::setDiagScaling(CSRMatrixType const& matrix)
+{
+#ifdef ALIEN_USE_HTSSOLVER
+  auto block_size = matrix.blockSize() ;
+  auto block2_size = block_size*block_size;
+  auto local_size = matrix.getLocalSize() ;
+  if (m_output_level > 0)
+    alien_info([&] { cout() << "HTSLinearSolver::setDigaScaling : block-size="<<block_size<<" NROWS="<<local_size; });
+  auto dcol = matrix.getProfile().dcol() ;
+  if constexpr (requires{m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;}) {
+    m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;
+    m_diag_scaling_is_set = true ;
+  }
+#endif
+}
+
+
+
 std::shared_ptr<ILinearAlgebra>
 HTSInternalLinearSolver::algebra() const
 {

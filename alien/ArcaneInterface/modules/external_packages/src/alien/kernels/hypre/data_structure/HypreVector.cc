@@ -132,6 +132,15 @@ HypreVector::setValues([[maybe_unused]] const int nrow, const double* values)
   return m_internal->setValues(m_rows.size(), m_rows.data(), values);
 }
 
+
+bool HypreVector::setValue(ValueType value)
+{
+  if (m_internal == NULL)
+    return false;
+  std::vector<ValueType> values(m_rows.size(),value) ;
+  return m_internal->setValues(m_rows.size(), m_rows.data(), values.data());
+}
+
 /*---------------------------------------------------------------------------*/
 
 bool

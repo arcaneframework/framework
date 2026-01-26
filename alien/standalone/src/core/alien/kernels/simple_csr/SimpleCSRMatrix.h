@@ -104,6 +104,11 @@ class SimpleCSRMatrix : public IMatrixImpl
     }
   }
 
+  void scal(ValueType const* values)
+  {
+    m_matrix.scal(values) ;
+  }
+
   CSRStructInfo& getCSRProfile() { return m_matrix.getCSRProfile(); }
 
   const CSRStructInfo& getCSRProfile() const { return m_matrix.getCSRProfile(); }

@@ -42,7 +42,10 @@ namespace Alien
     {
     }
 
-    virtual ~CxrPreconditioner() {}
+    virtual ~CxrPreconditioner()
+    {
+      end() ;
+    }
 
     void init()
     {
@@ -57,6 +60,27 @@ namespace Alien
         m_cxr_solver->start() ;
       }
       m_algebra.allocate(AlgebraType::resource(cxr_matrix),m_x_Cxr,m_y_Cxr,m_r_Cxr);
+    }
+
+    void init(VectorType const& diag_scale)
+    {
+      m_cxr_op->computeCxrMatrix(m_algebra, diag_scale) ;
+      auto& cxr_matrix = m_cxr_op->getCxrMatrix() ;
+      if(m_relax_solver)
+        m_relax_solver->init() ;
+      if(m_cxr_solver)
+      {
+        m_cxr_solver->init() ;
+        m_cxr_solver->init(cxr_matrix) ;
+        m_cxr_solver->start() ;
+      }
+      m_algebra.allocate(AlgebraType::resource(cxr_matrix),m_x_Cxr,m_y_Cxr,m_r_Cxr);
+    }
+
+    void end()
+    {
+      if(m_cxr_solver)
+        m_cxr_solver->end() ;
     }
 
     void solve(AlgebraType& alg,
@@ -82,12 +106,15 @@ namespace Alien
         // R_Cpr = X1-X_Cpr
         //m_kernel->xmy(m_r_Cxr,m_x_Cxr);
         alg.scal(-1.,m_x_Cxr) ;
-        alg.axpy(1.,m_r_Cxr,m_x_Cxr) ;
+        alg.axpy(1.,m_x_Cxr,m_r_Cxr) ;
+
+        m_cxr_op->scal(alg,m_r_Cxr) ;
       }
       else
       {
         alg.copy(y,x) ;
-        m_cxr_op->get(alg,x,m_x_Cxr);
+        m_cxr_op->get(alg,x,m_r_Cxr);
+        m_cxr_op->scal(alg,m_r_Cxr) ;
       }
 
 
@@ -95,7 +122,7 @@ namespace Alien
       {
         // Solve A11.Y_Cpr = R_Cpr
 
-        alg.copy(m_x_Cxr,m_y_Cxr) ;
+        alg.copy(m_r_Cxr,m_x_Cxr) ;
         m_cxr_solver->solve(m_x_Cxr,m_y_Cxr);
 
         // combine m_y_Cpr with y
@@ -107,6 +134,7 @@ namespace Alien
     }
 
   private :
+    bool                m_use_diag_scale = false ;
     AlgebraType&        m_algebra ;
     MatrixType const&   m_matrix ;
 
@@ -117,7 +145,6 @@ namespace Alien
 
     mutable VectorType  m_r;
     mutable VectorType  m_r_Cxr;
-
 
     RelaxSolverType*    m_relax_solver = nullptr;
     CxrSolverType*      m_cxr_solver   = nullptr;

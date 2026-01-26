@@ -57,27 +57,33 @@ public:
   template<typename AlgebraT>
   void computeCxrMatrix(AlgebraT& algebra, VectorType const& diag)
   {
-    m_block_size = algebra.computeCxr(m_matrix,m_cxr_matrix) ;
-    {
-      m_use_diag_scal = true ;
-      algebra.copy(diag,m_cxr_diag_scal) ;
-      algebra.multDiagScal(m_cxr_matrix,m_cxr_diag_scal) ;
-    }
+    m_use_diag_scal = true ;
+    m_cxr_diag_scal.init(diag.distribution(),true) ;
+    algebra.copy(diag,m_cxr_diag_scal) ;
+    m_block_size = algebra.computeCxr(m_matrix,m_cxr_matrix);
+    m_cxr_matrix.scal(m_cxr_diag_scal.data()) ;
   }
 
 
   template<typename AlgebraT>
   void get(AlgebraT& algebra, VectorType const& x,VectorType& cxr_x)
   {
+    algebra.copy(x,m_block_size,cxr_x,1);
+    /*
     if(m_use_diag_scal)
     {
-      if(m_cxr_v.getAllocSize()==0)
-        algebra.allocate(AlgebraT::resource(m_matrix),m_cxr_v);
-      algebra.copy(x,m_block_size,m_cxr_v,1);
-      algebra.pointwiseMult(m_cxr_diag_scal,m_cxr_v,cxr_x) ;
+      algebra.pointwiseMult(m_cxr_diag_scal,cxr_x,cxr_x) ;
+    }*/
+  }
+
+
+  template<typename AlgebraT>
+  void scal(AlgebraT& algebra, VectorType& cxr_x)
+  {
+    if(m_use_diag_scal)
+    {
+      algebra.pointwiseMult(m_cxr_diag_scal,cxr_x,cxr_x) ;
     }
-    else
-      algebra.copy(x,m_block_size,cxr_x,1);
   }
 
   template<typename AlgebraT>
