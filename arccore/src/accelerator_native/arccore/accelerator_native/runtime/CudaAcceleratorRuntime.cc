@@ -859,13 +859,30 @@ class CudaRunnerRuntime
                                            const void* kernel_ptr,
                                            Int64 total_loop_size) override
   {
+    Int32 shared_memory = orig_args.sharedMemorySize();
+    if (orig_args.isCooperative()) {
+      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
+      // que le maximum qui peut résider sur le GPU.
+      Int32 nb_thread = orig_args.nbThreadPerBlock();
+      Int32 nb_block = orig_args.nbBlockPerGrid();
+      int nb_block_per_sm = 0;
+      ARCCORE_CHECK_CUDA(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
+
+      int max_block = nb_block_per_sm * m_multi_processor_count;
+      if (nb_block > max_block) {
+        KernelLaunchArgs modified_args(orig_args);
+        modified_args.setNbBlockPerGrid(max_block);
+        return modified_args;
+      }
+      return orig_args;
+    }
+
     if (!m_use_computed_occupancy)
       return orig_args;
-    Int32 wanted_shared_memory = orig_args.sharedMemorySize();
-    if (wanted_shared_memory < 0)
-      wanted_shared_memory = 0;
+    if (shared_memory < 0)
+      shared_memory = 0;
     // Pour l'instant, on ne fait pas de calcul si la mémoire partagée est non nulle.
-    if (wanted_shared_memory != 0)
+    if (shared_memory != 0)
       return orig_args;
     Int32 computed_block_size = m_occupancy_map.getNbThreadPerBlock(kernel_ptr);
     if (computed_block_size == 0)
@@ -895,6 +912,7 @@ class CudaRunnerRuntime
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
   bool m_use_computed_occupancy = false;
+  Int32 m_multi_processor_count = 0;
   Impl::DeviceInfoList m_device_info_list;
   OccupancyMap m_occupancy_map;
 };
@@ -954,6 +972,11 @@ fillDevices(bool is_verbose)
     o << " computeMode = " << dp.computeMode << "\n";
     o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
 #endif
+
+    // TODO: On suppose que tous les GPUs sont les mêmes et donc
+    // que le nombre de SM par GPU est le même. Cela est utilisé pour
+    // calculer le nombre de blocs en mode coopératif.
+    m_multi_processor_count = dp.multiProcessorCount;
 
     {
       int least_val = 0;

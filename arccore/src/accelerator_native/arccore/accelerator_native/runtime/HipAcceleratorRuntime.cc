@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2025 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
 {
+using Impl::KernelLaunchArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -583,6 +584,29 @@ class HipRunnerRuntime
     finalizeHipMemoryAllocators(tm);
   }
 
+  KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                           const void* kernel_ptr,
+                                           Int64 total_loop_size) override
+  {
+    Int32 shared_memory = orig_args.sharedMemorySize();
+    if (orig_args.isCooperative()) {
+      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
+      // que le maximum qui peut résider sur le GPU.
+      Int32 nb_thread = orig_args.nbThreadPerBlock();
+      Int32 nb_block = orig_args.nbBlockPerGrid();
+      int nb_block_per_sm = 0;
+      ARCCORE_CHECK_HIP(hipOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
+
+      int max_block = nb_block_per_sm * m_multi_processor_count;
+      if (nb_block > max_block) {
+        KernelLaunchArgs modified_args(orig_args);
+        modified_args.setNbBlockPerGrid(max_block);
+        return modified_args;
+      }
+    }
+    return orig_args;
+  }
+
  public:
 
   void fillDevices(bool is_verbose);
@@ -591,6 +615,7 @@ class HipRunnerRuntime
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
+  Int32 m_multi_processor_count = 0;
   Impl::DeviceInfoList m_device_info_list;
 };
 
@@ -666,6 +691,12 @@ fillDevices(bool is_verbose)
     o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
 #endif
+
+    // TODO: On suppose que tous les GPUs sont les mêmes et donc
+    // que le nombre de SM par GPU est le même. Cela est utilisé pour
+    // calculer le nombre de blocs en mode coopératif.
+    m_multi_processor_count = dp.multiProcessorCount;
+
     std::ostringstream device_uuid_ostr;
     {
       hipDevice_t device;
