@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2025 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -870,9 +870,15 @@ class CudaRunnerRuntime
     Int32 computed_block_size = m_occupancy_map.getNbThreadPerBlock(kernel_ptr);
     if (computed_block_size == 0)
       return orig_args;
+
+    // Ici, on utilise le nombre de threads par bloc pour avoir une
+    // occupation maximale.
+    KernelLaunchArgs modified_args(orig_args);
     Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
     int blocks_per_grid = CheckedConvert::toInt32(big_b);
-    return { blocks_per_grid, computed_block_size, wanted_shared_memory };
+    modified_args.setNbBlockPerGrid(blocks_per_grid);
+    modified_args.setNbThreadPerBlock(computed_block_size);
+    return modified_args;
   }
 
  public:
