@@ -170,7 +170,6 @@ mergePatches() const
   }
 
   m_cmesh->_internalApi()->cartesianPatchGroup().mergePatches();
-  m_cmesh->_internalApi()->cartesianPatchGroup().applyPatchEdit(false);
 }
 
 /*---------------------------------------------------------------------------*/
