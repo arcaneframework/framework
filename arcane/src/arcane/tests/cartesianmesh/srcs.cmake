@@ -1,5 +1,6 @@
 list(APPEND ARCANE_SOURCES
   cartesianmesh/AMRCartesianMeshTesterModule.cc
+  cartesianmesh/AMRPatchTesterModule.cc
   cartesianmesh/CartesianMeshTesterModule.cc
   cartesianmesh/CartesianMeshTestUtils.cc
   cartesianmesh/CartesianMeshTestUtils.h
@@ -10,6 +11,7 @@ list(APPEND ARCANE_SOURCES
 )
 list(APPEND AXL_FILES
   cartesianmesh/AMRCartesianMeshTester
+  cartesianmesh/AMRPatchTester
   cartesianmesh/CartesianMeshTester
   cartesianmesh/DynamicCircleAMR
   cartesianmesh/UnitTestCartesianMeshPatch
