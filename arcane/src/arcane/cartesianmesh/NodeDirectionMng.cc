@@ -231,8 +231,8 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
 
   UniqueArray<Int32> inner_lids;
   UniqueArray<Int32> outer_lids;
-  UniqueArray<Int32> inpatch_lids;
-  UniqueArray<Int32> overlap_lids;
+  // UniqueArray<Int32> inpatch_lids;
+  // UniqueArray<Int32> overlap_lids;
   IItemFamily* family = all_nodes.itemFamily();
   ENUMERATE_ (Node, inode, all_nodes) {
     Int32 lid = inode.itemLocalId();
@@ -248,15 +248,17 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
     }
     if (nb_inner_cells + nb_outer_cells == inode->nbCell()) {
       inner_lids.add(lid);
-      inpatch_lids.add(lid);
     }
     else if (nb_outer_cells != 0) {
       outer_lids.add(lid);
-      inpatch_lids.add(lid);
     }
-    else {
-      overlap_lids.add(lid);
-    }
+
+    // if (inode->hasFlags(ItemFlags::II_InPatch)) {
+    //   inpatch_lids.add(lid);
+    // }
+    // if (inode->hasFlags(ItemFlags::II_Overlap)) {
+    //   overlap_lids.add(lid);
+    // }
   }
   int dir = (int)m_direction;
   String base_group_name = String("Direction") + dir;
@@ -264,8 +266,10 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
     base_group_name = base_group_name + String("AMRPatch") + m_p->m_patch_index;
   m_p->m_inner_all_items = family->createGroup(String("AllInner") + base_group_name, inner_lids, true);
   m_p->m_outer_all_items = family->createGroup(String("AllOuter") + base_group_name, outer_lids, true);
-  m_p->m_inpatch_all_items = family->createGroup(String("AllInPatch") + base_group_name, inpatch_lids, true);
-  m_p->m_overlap_all_items = family->createGroup(String("AllOverlap") + base_group_name, overlap_lids, true);
+  // m_p->m_inpatch_all_items = family->createGroup(String("AllInPatch") + base_group_name, inpatch_lids, true);
+  // m_p->m_overlap_all_items = family->createGroup(String("AllOverlap") + base_group_name, overlap_lids, true);
+  m_p->m_inpatch_all_items = cell_dm.inPatchCells().nodeGroup();
+  m_p->m_overlap_all_items = cell_dm.overlapCells().nodeGroup();
   m_p->m_all_items = all_nodes;
 
   _filterNodes();
