@@ -288,3 +288,8 @@ endif()
 arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
 
 arcane_add_test(dynamic-circle-amr-1 testDynamicCircleAMR-1.arc "-m 10")
+
+arcane_add_test(amr-patch-tester-1 testAMRPatchTester-1.arc "-m 10")
+
+arcane_add_test_sequential(amr-patch-tester-2 testAMRPatchTester-2.arc "-m 10")
+arcane_add_test_parallel(amr-patch-tester-2 testAMRPatchTester-2.arc 8 "-m 10")

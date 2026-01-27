@@ -375,6 +375,9 @@ void AMRCartesianMeshTesterModule::
 _svgOutput()
 {
   const Int32 dimension = defaultMesh()->dimension();
+  if (dimension != 2 || !options()->dumpSvg()) {
+    return;
+  }
   const Int32 nb_patch = m_cartesian_mesh->nbPatch();
 
   IParallelMng* pm = parallelMng();
@@ -390,21 +393,18 @@ _svgOutput()
     CellGroup patch_cells(p->cells());
 
     // Exporte le patch au format SVG
-    if (dimension == 2 && options()->dumpSvg()) {
-      String filename = String::format("Patch{0}-{1}-{2}.svg", i, comm_rank, comm_size);
-      String full_filename = directory.file(filename);
-      std::ofstream ofile(full_filename.localstr());
-      SimpleSVGMeshExporter exporter(ofile);
-      exporter.write(patch_cells);
-      amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
-    }
+    String filename = String::format("Patch{0}-{1}-{2}.svg", i, comm_rank, comm_size);
+    String full_filename = directory.file(filename);
+    std::ofstream ofile(full_filename.localstr());
+    SimpleSVGMeshExporter exporter(ofile);
+    exporter.write(patch_cells);
+    amr_exporter.addPatch(m_cartesian_mesh->amrPatch(i));
   }
-  if (dimension == 2 && options()->dumpSvg()) {
-    String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
-    String amr_full_filename = directory.file(amr_filename);
-    std::ofstream amr_ofile(amr_full_filename.localstr());
-    amr_exporter.write(amr_ofile);
-  }
+
+  String amr_filename = String::format("MeshPatch{0}-{1}.html", comm_rank, comm_size);
+  String amr_full_filename = directory.file(amr_filename);
+  std::ofstream amr_ofile(amr_full_filename.localstr());
+  amr_exporter.write(amr_ofile);
 }
 
 /*---------------------------------------------------------------------------*/
