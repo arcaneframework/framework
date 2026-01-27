@@ -49,7 +49,7 @@ CartesianPatchGroup(ICartesianMesh* cmesh)
 , m_size_of_overlap_layer_top_level(0)
 , m_higher_level(0)
 , m_target_nb_levels(0)
-, m_latest_call_level(-1)
+, m_latest_call_level(-2)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -509,7 +509,7 @@ removeCellsInZone(const AMRZonePosition& zone_to_delete)
 
   _removeCellsInAllPatches(patch_position);
   applyPatchEdit(false, false);
-  _updatePatchFlagsOfCellsLevel(patch_position.level(), true);
+  _updatePatchFlagsOfItemsLevel(patch_position.level(), true);
   _updateHigherLevel();
   _coarsenUselessCells(true);
 
@@ -604,7 +604,7 @@ updateLevelsAndAddGroundPatch()
   old_ground.computeOverlapLayerSize(m_higher_level + 1, m_size_of_overlap_layer_top_level);
 
   _addPatch(old_ground);
-  _updatePatchFlagsOfCellsGroundLevel();
+  _updatePatchFlagsOfItemsGroundLevel();
   _updateHigherLevel();
 
 #ifdef ARCANE_CHECK
@@ -723,7 +723,7 @@ mergePatches()
   applyPatchEdit(false, false);
 
   for (Int32 level : levels_edited) {
-    _updatePatchFlagsOfCellsLevel(level, true);
+    _updatePatchFlagsOfItemsLevel(level, true);
   }
 
 #ifdef ARCANE_CHECK
@@ -740,7 +740,7 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-  if (m_latest_call_level != -1) {
+  if (m_latest_call_level != -2) {
     ARCANE_FATAL("Call endAdaptMesh() before restart mesh adaptation");
   }
   if (level_to_refine_first > m_higher_level) {
@@ -765,9 +765,7 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
   // celles qui ne sont plus utilisées par la suite dans un des nouveaux
   // patchs soit supprimées dans la méthode finalizeAdaptMesh().
   for (Integer l = level_to_refine_first + 1; l <= max_level; ++l) {
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(l)) {
-      icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
-    }
+    _removePatchFlagsOfItemsLevel(l);
   }
   // On doit adapter tous les niveaux sous le niveau à adapter.
   // Les patchs du niveau "level_to_refine_first" (exclus) et plus seront supprimés.
@@ -782,8 +780,7 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
   }
 
   m_target_nb_levels = nb_levels;
-  m_latest_call_level = level_to_refine_first;
-  m_latest_call_level_usefull = false;
+  m_latest_call_level = level_to_refine_first - 1;
   // m_higher_level conserve son ancienne valeur.
 }
 
@@ -796,7 +793,7 @@ endAdaptMesh()
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-  if (m_latest_call_level == -1) {
+  if (m_latest_call_level == -2) {
     ARCANE_FATAL("Call beginAdaptMesh() before");
   }
   Trace::Setter mci(traceMng(), "CartesianPatchGroup");
@@ -808,16 +805,10 @@ endAdaptMesh()
   // niveau raffiné).
   // On est sûr que c'est le niveau le plus haut étant donné que l'on supprime
   // systématiquement les patchs au-dessus dans adaptLevel().
-  // Si le dernier appel à adaptLevel() était inutile
-  // (m_latest_call_level_usefull == false), le niveau le plus haut est
-  // m_latest_call_level.
   // beginAdaptMesh() met le premier niveau à raffiner donné par l'utilisateur
   // dans l'attribut m_latest_call_level et vérifie si le niveau existe. Le
   // premier m_latest_call_level est donc valide.
-  if (m_latest_call_level_usefull)
-    m_higher_level = m_latest_call_level + 1;
-  else
-    m_higher_level = m_latest_call_level;
+  m_higher_level = m_latest_call_level + 1;
 
   // Si m_latest_call_level == 0, alors adaptLevel() a créée le niveau 1 donc
   // il y a 2 niveaux.
@@ -836,8 +827,7 @@ endAdaptMesh()
   _coarsenUselessCells(true);
 
   m_target_nb_levels = 0;
-  m_latest_call_level = -1;
-  m_latest_call_level_usefull = false;
+  m_latest_call_level = -2;
   clearRefineRelatedFlags();
 
   info() << "Patch list:";
@@ -869,7 +859,7 @@ adaptLevel(Int32 level_to_adapt)
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
 
-  if (m_latest_call_level == -1) {
+  if (m_latest_call_level == -2) {
     ARCANE_FATAL("Call beginAdaptMesh() before to begin a mesh adaptation");
   }
 
@@ -896,9 +886,7 @@ adaptLevel(Int32 level_to_adapt)
     applyPatchEdit(false, false);
 
     for (Integer l = level_to_adapt + 1; l <= max_level; ++l) {
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(l)) {
-        icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
-      }
+      _removePatchFlagsOfItemsLevel(l);
     }
   }
 
@@ -945,12 +933,38 @@ adaptLevel(Int32 level_to_adapt)
   has_cell_to_refine = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_refine);
 
   if (!has_cell_to_refine) {
-    m_latest_call_level_usefull = false;
+    // On rappelle que, dans endAdaptMesh(), m_higher_level prendra la valeur
+    // de m_latest_call_level +1.
+    //
+    // Il est important de mettre -1 ici dans le cas où (exemple) :
+    // - Initialement, pas de patchs (m_latest_call_level == -1), adaptLevel(0) :
+    //  -> On raffine des mailles niveau 0, donc m_latest_call_level = 0 et
+    //  donc, m_higher_level sera égal à 1
+    // - On refait une seconde fois adaptLevel(0) :
+    //  -> L'utilisateur n'a marqué aucune maille de niveau 0, donc
+    //  m_latest_call_level = -1 et donc m_higher_level = 0.
+    // Au-dessus, on supprime les niveaux supérieurs à level_to_adapt même si
+    // l'appel à adaptLevel() ne raffine pas de maille, on doit donc mettre à
+    // jour m_latest_call_level.
+    m_latest_call_level = level_to_adapt - 1;
+    debug() << "adaptLevel() -- End call -- No refine -- Actual patch list:";
+
+    for (Integer i = 0; i <= m_target_nb_levels; ++i) {
+      for (auto p : m_amr_patches_pointer) {
+        auto& position = p->_internalApi()->positionRef();
+        if (position.level() == i) {
+          debug() << "\tPatch #" << p->index()
+                  << " -- Level : " << position.level()
+                  << " -- Min point : " << position.minPoint()
+                  << " -- Max point : " << position.maxPoint()
+                  << " -- Overlap layer size : " << position.overlapLayerSize();
+        }
+      }
+    }
     return;
   }
 
   m_latest_call_level = level_to_adapt;
-  m_latest_call_level_usefull = true;
 
   UniqueArray<AMRPatchPositionSignature> sig_array;
 
@@ -1333,7 +1347,7 @@ _reduceOverlapSizeLevel(Int32 level_to_reduce, Int32 new_size)
   }
 
   // À cause du mélange des deux flags, on doit recalculer les flags.
-  _updatePatchFlagsOfCellsLevel(level_to_reduce, true);
+  _updatePatchFlagsOfItemsLevel(level_to_reduce, true);
 
   for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
     Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
@@ -1441,10 +1455,10 @@ _coarsenUselessCellsInLevel(Int32 level)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-_updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups)
+_updatePatchFlagsOfItemsLevel(Int32 level, bool use_cell_groups)
 {
   if (level == 0) {
-    _updatePatchFlagsOfCellsGroundLevel();
+    _updatePatchFlagsOfItemsGroundLevel();
     return;
   }
 
@@ -1561,7 +1575,7 @@ _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-_updatePatchFlagsOfCellsGroundLevel()
+_updatePatchFlagsOfItemsGroundLevel()
 {
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(0)) {
     icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
@@ -1571,6 +1585,23 @@ _updatePatchFlagsOfCellsGroundLevel()
   }
   ENUMERATE_ (Node, inode, m_cmesh->mesh()->allLevelCells(0).nodeGroup()) {
     inode->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_removePatchFlagsOfItemsLevel(Int32 level)
+{
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Face, iface, m_cmesh->mesh()->allLevelCells(level).faceGroup()) {
+    iface->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Node, inode, m_cmesh->mesh()->allLevelCells(level).nodeGroup()) {
+    inode->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
   }
 }
 
@@ -1654,7 +1685,16 @@ _checkPatchesAndMesh()
       }
     }
     ENUMERATE_ (Face, iface, m_cmesh->mesh()->allFaces()) {
+      Int32 max_level = 0;
       for (Cell cell : iface->cells()) {
+        if (cell.level() > max_level) {
+          max_level = cell.level();
+        }
+      }
+      for (Cell cell : iface->cells()) {
+        if (cell.level() != max_level) {
+          continue;
+        }
         if (cell.hasFlags(ItemFlags::II_UserMark1)) {
           iface->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
         }
@@ -1664,7 +1704,16 @@ _checkPatchesAndMesh()
       }
     }
     ENUMERATE_ (Node, inode, m_cmesh->mesh()->allNodes()) {
+      Int32 max_level = 0;
       for (Cell cell : inode->cells()) {
+        if (cell.level() > max_level) {
+          max_level = cell.level();
+        }
+      }
+      for (Cell cell : inode->cells()) {
+        if (cell.level() != max_level) {
+          continue;
+        }
         if (cell.hasFlags(ItemFlags::II_UserMark1)) {
           inode->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
         }
