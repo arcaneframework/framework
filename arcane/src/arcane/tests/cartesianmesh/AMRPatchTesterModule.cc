@@ -61,7 +61,7 @@ class AMRPatchTesterModule
   void _test1();
   void _test1_1();
   void _test1_2();
-  void testMarkCellsToRefine(Integer level);
+  void testMarkCellsToRefine(Integer level, Integer patch_id);
   void _svgOutput(const String& name);
 
  private:
@@ -163,58 +163,59 @@ _test1()
 {
   m_cartesian_mesh->computeDirections();
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  for (Integer i = 0; i < 1; ++i) {
+    {
+      _svgOutput("WithoutRefine");
 
-  {
-    _svgOutput("WithoutRefine");
+      _test1_1();
+      _test1_2();
+    }
+    {
+      amr_mng.beginAdaptMesh(2, 0);
+      testMarkCellsToRefine(0, i);
+      amr_mng.adaptLevel(0);
+      amr_mng.endAdaptMesh();
 
-    _test1_1();
-    _test1_2();
-  }
-  {
-    amr_mng.beginAdaptMesh(2, 0);
-    testMarkCellsToRefine(0);
-    amr_mng.adaptLevel(0);
-    amr_mng.endAdaptMesh();
+      _svgOutput("2Levels0First");
 
-    _svgOutput("2Levels0First");
+      _test1_1();
+      _test1_2();
+    }
+    {
+      amr_mng.beginAdaptMesh(3, 0);
+      testMarkCellsToRefine(0, i);
+      amr_mng.adaptLevel(0);
+      amr_mng.endAdaptMesh();
 
-    _test1_1();
-    _test1_2();
-  }
-  {
-    amr_mng.beginAdaptMesh(3, 0);
-    testMarkCellsToRefine(0);
-    amr_mng.adaptLevel(0);
-    amr_mng.endAdaptMesh();
+      _svgOutput("2Levels3Max0First");
 
-    _svgOutput("2Levels3Max0First");
+      _test1_1();
+      _test1_2();
+    }
+    {
+      amr_mng.beginAdaptMesh(3, 0);
+      testMarkCellsToRefine(0, i);
+      amr_mng.adaptLevel(0);
+      testMarkCellsToRefine(1, i);
+      amr_mng.adaptLevel(1);
+      amr_mng.endAdaptMesh();
 
-    _test1_1();
-    _test1_2();
-  }
-  {
-    amr_mng.beginAdaptMesh(3, 0);
-    testMarkCellsToRefine(0);
-    amr_mng.adaptLevel(0);
-    testMarkCellsToRefine(1);
-    amr_mng.adaptLevel(1);
-    amr_mng.endAdaptMesh();
+      _svgOutput("3Levels0First");
 
-    _svgOutput("3Levels0First");
+      _test1_1();
+      _test1_2();
+    }
+    {
+      amr_mng.beginAdaptMesh(3, 1);
+      testMarkCellsToRefine(1, i);
+      amr_mng.adaptLevel(1);
+      amr_mng.endAdaptMesh();
 
-    _test1_1();
-    _test1_2();
-  }
-  {
-    amr_mng.beginAdaptMesh(3, 1);
-    testMarkCellsToRefine(1);
-    amr_mng.adaptLevel(1);
-    amr_mng.endAdaptMesh();
+      _svgOutput("3Levels1First");
 
-    _svgOutput("3Levels1First");
-
-    _test1_1();
-    _test1_2();
+      _test1_1();
+      _test1_2();
+    }
   }
 }
 
@@ -242,7 +243,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -251,7 +252,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -261,7 +262,7 @@ _test1_1()
           for (Node node : icell->nodes()) {
             if (var_test[node] != val) {
               ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-                node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                           node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
             }
           }
         }
@@ -279,7 +280,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -288,7 +289,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -298,7 +299,7 @@ _test1_1()
           for (Node node : icell->nodes()) {
             if (var_test[node] != val) {
               ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-                node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                           node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
             }
           }
         }
@@ -316,7 +317,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -325,7 +326,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -334,7 +335,7 @@ _test1_1()
         for (Node node : icell->nodes()) {
           if (var_test[node] != val) {
             ARCANE_FATAL("A node of InPatchCell is not InPatchNode -- NodeUID : {0} -- CellUID : {1} -- Val : {2} -- PatchIndex : {3}",
-              node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
+                         node.uniqueId(), icell->uniqueId(), var_test[node], patch.index());
           }
         }
       }
@@ -424,17 +425,15 @@ _test1_2()
 /*---------------------------------------------------------------------------*/
 
 void AMRPatchTesterModule::
-testMarkCellsToRefine(Integer level)
+testMarkCellsToRefine(Integer level, const Integer patch_id)
 {
   CartesianMeshNumberingMng numbering(m_cartesian_mesh);
-
-  constexpr Integer choose = 0;
 
   ENUMERATE_ (Cell, icell, mesh()->allLevelCells(level)) {
     const Integer pos_x = numbering.offsetLevelToLevel(numbering.cellUniqueIdToCoordX(*icell), level, 0);
     const Integer pos_y = numbering.offsetLevelToLevel(numbering.cellUniqueIdToCoordY(*icell), level, 0);
 
-    if constexpr (choose == 0) {
+    if (patch_id == 0) {
       if (pos_x >= 2 && pos_x < 6 && pos_y >= 2 && pos_y < 5) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -443,7 +442,7 @@ testMarkCellsToRefine(Integer level)
       }
     }
 
-    if constexpr (choose == 1) {
+    if (patch_id == 1) {
       if (pos_x >= 2 && pos_x < 6 && pos_y >= 2 && pos_y < 5) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -452,7 +451,7 @@ testMarkCellsToRefine(Integer level)
       }
     }
 
-    if constexpr (choose == 2) {
+    if (patch_id == 2) {
       if (pos_x >= 6 && pos_x < 26 && pos_y >= 4 && pos_y < 7) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -461,7 +460,7 @@ testMarkCellsToRefine(Integer level)
       }
     }
 
-    if constexpr (choose == 3) {
+    if (patch_id == 3) {
       if (pos_x >= 3 && pos_x < 11 && pos_y >= 25 && pos_y < 37) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -508,6 +507,12 @@ testMarkCellsToRefine(Integer level)
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
       if (pos_x >= 18 && pos_x < 21 && pos_y >= 42 && pos_y < 51) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+      }
+    }
+
+    if (patch_id == 4) {
+      if (pos_x >= 0 && pos_x < 15 && pos_y >= 0 && pos_y < 15) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
     }
