@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -76,6 +76,19 @@ TEST(TestRealN,Real2)
     ASSERT_EQ(v2.x,1.2);
     ASSERT_EQ(v2.y,2.3);
   }
+  {
+    Real x = 1.2;
+    Real y = -3.4;
+    Real2 v4(x,y);
+    Real norm_l2 = math::sqrt(x*x+y*y);
+    ASSERT_TRUE(math::isNearlyEqual(norm_l2,v4.normL2()));
+    ASSERT_TRUE(math::isNearlyEqual(1.0,math::normL2(math::normalizeL2(v4))));
+    Real2 v5(v4);
+    math::mutableNormalize(v5);
+    ASSERT_TRUE(math::isNearlyEqual(1.0,math::normL2(v5)));
+    Real2 v6;
+    ASSERT_EQ(0.0,math::normL2(v6));
+  }
 }
 
 TEST(TestRealN,Real3)
@@ -111,6 +124,20 @@ TEST(TestRealN,Real3)
     ASSERT_EQ(v3.x,1.2);
     ASSERT_EQ(v3.y,2.3);
     ASSERT_EQ(v3.z,0.0);
+  }
+  {
+    Real x = 1.2;
+    Real y = -3.4;
+    Real z = 9.1;
+    Real3 v4(x,y,z);
+    Real norm_l2 = math::sqrt(x*x+y*y+z*z);
+    ASSERT_TRUE(math::isNearlyEqual(norm_l2,v4.normL2()));
+    ASSERT_TRUE(math::isNearlyEqual(1.0,math::normL2(math::normalizeL2(v4))));
+    Real3 v5(v4);
+    math::mutableNormalize(v5);
+    ASSERT_TRUE(math::isNearlyEqual(1.0,math::normL2(v5)));
+    Real3 v6;
+    ASSERT_EQ(0.0,math::normL2(v6));
   }
 }
 
