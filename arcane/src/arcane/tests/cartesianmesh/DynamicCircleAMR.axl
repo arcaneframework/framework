@@ -6,18 +6,35 @@
 
   <variables>
     <variable
-      field-name="loop_sum"
-      name="LoopSum"
-      data-type="integer"
-      item-kind="none"
-      dim="0"/>
-    <variable
       field-name="amr"
       name="AMR"
+      data-type="real"
+      item-kind="cell"
+      dim="0"/>
+    <variable
+      field-name="refine_tracer"
+      name="RefineTracer"
       data-type="int16"
       item-kind="cell"
       dim="0"/>
+    <variable
+      field-name="distance"
+      name="Distance"
+      data-type="real"
+      item-kind="node"
+      dim="0"/>
+    <variable
+      field-name="celluid"
+      name="Celluid"
+      data-type="int64"
+      item-kind="cell"
+      dim="0"/>
   </variables>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+  </entry-points>
 
   <options>
     <simple name="n-steps" type="integer" default="1000">
@@ -25,11 +42,12 @@
         Nombre de boucles à effectuer.
       </description>
     </simple>
+    <service-instance name="post-processor" type="Arcane::IPostProcessorWriter" default="Ensight7PostProcessor">
+      <description>
+        Indique le type de bibliothèque à utiliser pour les sorties de dépouillement.
+      </description>
+    </service-instance>
   </options>
 
-  <entry-points>
-    <entry-point method-name="init" name="init" where="init" property="none"/>
-    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
-  </entry-points>
 
 </module>

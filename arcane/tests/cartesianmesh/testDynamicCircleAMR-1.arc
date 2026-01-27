@@ -25,7 +25,4 @@
     </meshgenerator>
   </mesh>
 
-  <say-hello>
-  
-  </say-hello>
 </case>
