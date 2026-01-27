@@ -109,8 +109,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void _coarsenUselessCells(bool use_cells_level);
   void _coarsenUselessCellsInLevel(Int32 level);
 
-  void _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups);
-  void _updatePatchFlagsOfCellsGroundLevel();
+  void _updatePatchFlagsOfItemsLevel(Int32 level, bool use_cell_groups);
+  void _updatePatchFlagsOfItemsGroundLevel();
+  void _removePatchFlagsOfItemsLevel(Int32 level);
 
   void _checkPatchesAndMesh();
 
@@ -147,7 +148,6 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Int32 m_higher_level;
   Int32 m_target_nb_levels;
   Int32 m_latest_call_level;
-  bool m_latest_call_level_usefull = false;
   Ref<Properties> m_properties;
 };
 
