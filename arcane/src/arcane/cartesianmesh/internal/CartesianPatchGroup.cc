@@ -770,7 +770,7 @@ beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
   // On doit adapter tous les niveaux sous le niveau à adapter.
   // Les patchs du niveau "level_to_refine_first" (exclus) et plus seront supprimés.
   if (nb_levels - 1 != m_higher_level) {
-    debug() << "beginAdaptMesh() -- First call -- Change overlap layer size -- Old higher level : " << m_higher_level
+    debug() << "beginAdaptMesh() -- Change overlap layer size -- Old higher level : " << m_higher_level
             << " -- Asked higher level : " << (nb_levels - 1)
             << " -- Adapt level lower than : " << level_to_refine_first;
 
@@ -853,20 +853,26 @@ endAdaptMesh()
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-adaptLevel(Int32 level_to_adapt)
+adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless)
 {
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-
   if (m_latest_call_level == -2) {
     ARCANE_FATAL("Call beginAdaptMesh() before to begin a mesh adaptation");
+  }
+  if (level_to_adapt + 1 >= m_target_nb_levels || level_to_adapt < 0) {
+    ARCANE_FATAL("Bad level to adapt -- Level to adapt : {0} (creating level {1}) -- Max nb levels : {2}", level_to_adapt, level_to_adapt + 1, m_target_nb_levels);
   }
 
   Trace::Setter mci(traceMng(), "CartesianPatchGroup");
 
-  if (level_to_adapt + 1 >= m_target_nb_levels || level_to_adapt < 0) {
-    ARCANE_FATAL("Bad level to adapt -- Level to adapt : {0} (creating level {1}) -- Max nb levels : {2}", level_to_adapt, level_to_adapt + 1, m_target_nb_levels);
+  if (level_to_adapt > m_latest_call_level + 1) {
+    if (do_fatal_if_useless) {
+      ARCANE_FATAL("You must refine level {0} before.", (m_latest_call_level + 1));
+    }
+    warning() << String::format("Useless call -- You must refine level {0} before.", (m_latest_call_level + 1));
+    return;
   }
 
   // On supprime tous les patchs au-dessus du niveau que l'on souhaite adapter.
@@ -908,8 +914,8 @@ adaptLevel(Int32 level_to_adapt)
   Int32 nb_overlap_cells = overlapLayerSize(level_to_adapt + 1) / numbering->pattern();
 
   info() << "adaptLevel()"
-         << " -- level_to_adapt : " << level_to_adapt
-         << " -- nb_overlap_cells : " << nb_overlap_cells;
+         << " -- Level to adapt : " << level_to_adapt
+         << " -- Nb of overlap cells (intermediary patch) : " << nb_overlap_cells;
 
   // Deux vérifications :
   // - on ne peut pas raffiner plusieurs niveaux d'un coup,
@@ -933,6 +939,9 @@ adaptLevel(Int32 level_to_adapt)
   has_cell_to_refine = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_refine);
 
   if (!has_cell_to_refine) {
+    if (do_fatal_if_useless) {
+      ARCANE_FATAL("There are no cells to refine.");
+    }
     // On rappelle que, dans endAdaptMesh(), m_higher_level prendra la valeur
     // de m_latest_call_level +1.
     //

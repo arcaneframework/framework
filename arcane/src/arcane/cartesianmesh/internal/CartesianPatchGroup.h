@@ -86,7 +86,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first);
   void endAdaptMesh();
-  void adaptLevel(Int32 level_to_adapt);
+  void adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless);
 
   void clearRefineRelatedFlags() const;
 
