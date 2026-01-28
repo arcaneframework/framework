@@ -86,24 +86,6 @@ set(ARCANE_SOURCES
 )
 
 set(ARCANE_ACCELERATOR_SOURCES
-  accelerator/AtomicUnitTest.cc
-  accelerator/SimpleHydroAcceleratorService.cc
-  accelerator/MiniWeatherArray.cc
-  accelerator/MemoryCopyUnitTest.cc
-  accelerator/MultiMemoryCopyUnitTest.cc
-  accelerator/NumArrayUnitTest.cc
-  accelerator/AcceleratorItemInfoUnitTest.cc
-  accelerator/AcceleratorReduceUnitTest.cc
-  accelerator/AcceleratorScanUnitTest.cc
-  accelerator/AcceleratorFilterUnitTest.cc
-  accelerator/AcceleratorPartitionerUnitTest.cc
-  accelerator/AcceleratorSorterUnitTest.cc
-  accelerator/RunQueueUnitTest.cc
-  accelerator/AcceleratorMathUnitTest.cc
-  accelerator/AcceleratorLocalMemoryUnitTest.cc
-  accelerator/AcceleratorViewsUnitTest.cc
-  accelerator/ArcaneTestStandaloneAcceleratorMng.cc
-  accelerator/MeshMaterialAcceleratorUnitTest.cc
   ArcaneTestStandaloneSubDomain.cc
 )
 
@@ -144,10 +126,6 @@ set(AXL_FILES
   geometry/GeometryUnitTest
   MeshPolyhedralTest
   HydroAdditionalTest
-  accelerator/SimpleHydroAccelerator
-  accelerator/AcceleratorReduceUnitTest
-  accelerator/AcceleratorScanUnitTest
-  accelerator/AcceleratorFilterUnitTest
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   ServiceInterface1ImplTest

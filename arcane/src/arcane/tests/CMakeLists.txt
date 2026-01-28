@@ -28,13 +28,12 @@ endif()
 arcane_find_package(hiredis QUIET)
 
 include(srcs.cmake)
+include(accelerator/srcs.cmake)
 include(cartesianmesh/srcs.cmake)
 
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     MDVariableUnitTest.cc
-    accelerator/MiniWeatherOriginalSequential.cc
-    accelerator/MiniWeatherArraySequential.cc
     )
   list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
   arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
@@ -481,16 +480,6 @@ add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 
 # ----------------------------------------------------------------------------
 
-if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_accelerator_test_all_policies(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  arcane_add_accelerator_test_all_policies(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  #  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  #arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  #arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
-  arcane_add_accelerator_test_all_policies(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum_hostpinned dummy.arc "-A,StandaloneAcceleratorMethod=TestSum" "-We,ARCANE_DEFAULT_DATA_MEMORY_RESOURCE,HostPinned")
-endif()
-
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
 arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_sequential(standalone_subdomain3 dummy.arc "-A,StandaloneSubDomainMethod=Test3")
@@ -877,28 +866,6 @@ if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
   arcane_add_test(hydrosimd5_trace testHydroSimd-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
 endif()
 
-if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
-  arcane_add_accelerator_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
-  arcane_add_accelerator_test_sequential(hydro_accelerator5_no_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,0")
-  arcane_add_accelerator_test_sequential(hydro_accelerator5_full_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,7")
-  arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-  arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-  arcane_add_accelerator_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
-  arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
-  arcane_add_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
-  arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-  arcane_add_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-  arcane_add_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
-  if (ARCANE_ACCELERATOR_RUNTIME_NAME STREQUAL cuda)
-    arcane_add_accelerator_test_sequential(hydro_accelerator5_cupti testHydroAccelerator-5.arc -m 20 -We,ARCANE_CUPTI_LEVEL,1)
-  endif()
-
-  arcane_add_accelerator_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
-  arcane_add_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
-  arcane_add_test_sequential_task(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc 4 -m 50)
-endif()
-
 arcane_add_test_sequential_task(hydrosimd5 testHydroSimd-5.arc 4 -m 50)
 arcane_add_test_parallel(hydro5-3proc_replica4 testHydro-5.arc 12 -m 50 -R 4)
 arcane_add_test_parallel(hydro5-checkreplica_2proc_replica2 testHydro-5.arc 4 -m 10 -R 2 "-We,STDENV_VERIF,CHECKREPLICA")
@@ -955,78 +922,6 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST(hydro1_checkpoint testHydro-1-checkpoint.arc -c 2 -m 25)
   ARCANE_ADD_TEST_SEQUENTIAL(hydro6_checkpoint testHydro-6.arc -c 2 -m 25)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
-endif()
-
-if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(numarray1 testNumArray-1.arc)
-  arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
-  arcane_add_accelerator_test_sequential(numarray1 testNumArray-1.arc)
-
-  arcane_add_test_sequential(runqueue1 testRunQueue-1.arc)
-  arcane_add_test_sequential_task(runqueue1 testRunQueue-1.arc 4)
-  arcane_add_accelerator_test_sequential(runqueue1 testRunQueue-1.arc)
-
-  arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
-  arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
-  arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
-  arcane_add_accelerator_test_parallel(acceleratorviews1 testAcceleratorViews-1.arc 4)
-
-  arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
-  arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
-
-  arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
-  arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelelerator_scan1 testAcceleratorScan-1.arc)
-
-  arcane_add_test_sequential(accelerator_filter1 testAcceleratorFilter-1.arc)
-  arcane_add_test_sequential_task(accelerator_filter1 testAcceleratorFilter-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelelerator_filter1 testAcceleratorFilter-1.arc)
-
-  arcane_add_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
-  arcane_add_test_sequential_task(accelerator_partitioner1 testAcceleratorPartitioner-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
-
-  arcane_add_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
-  arcane_add_test_sequential_task(accelerator_sorter1 testAcceleratorSorter-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
-
-  arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
-  arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
-
-  arcane_add_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
-  arcane_add_accelerator_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
-
-  arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
-  arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)
-  arcane_add_accelerator_test_sequential(memorycopy1 testMemoryCopy-1.arc)
-
-  arcane_add_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
-  arcane_add_test_sequential_task(multi_memorycopy1 testMultiMemoryCopy-1.arc 4)
-  arcane_add_accelerator_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
-
-  arcane_add_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
-  arcane_add_test_sequential_task(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
-
-  arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
-  arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
-  arcane_add_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
-  arcane_add_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
-  arcane_add_test_sequential_task(miniweather_array1 testMiniWeatherArray.arc 4)
-  arcane_add_accelerator_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
-  arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
-  arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
-
-  arcane_add_accelerator_test_all_policies(accelerator_atomic testAcceleratorAtomic-1.arc)
-
-  arcane_add_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
-  arcane_add_accelerator_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
-
-  arcane_add_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
-  arcane_add_test_sequential_task(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc 4)
-  arcane_add_accelerator_test_sequential(accelerator_local_memory1 testAcceleratorLocalMemory-1.arc)
 endif()
 
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)
@@ -1395,6 +1290,7 @@ if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
 
+include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
 
 
