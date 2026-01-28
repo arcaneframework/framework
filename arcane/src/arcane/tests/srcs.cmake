@@ -85,6 +85,10 @@ set(ARCANE_SOURCES
   StackTraceUnitTest.cc
 )
 
+set(ARCANE_ACCELERATOR_SOURCES
+  ArcaneTestStandaloneSubDomain.cc
+)
+
 set(AXL_FILES
   CheckpointTester
   SimpleHydro
@@ -122,10 +126,6 @@ set(AXL_FILES
   geometry/GeometryUnitTest
   MeshPolyhedralTest
   HydroAdditionalTest
-  accelerator/SimpleHydroAccelerator
-  accelerator/AcceleratorReduceUnitTest
-  accelerator/AcceleratorScanUnitTest
-  accelerator/AcceleratorFilterUnitTest
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   ServiceInterface1ImplTest

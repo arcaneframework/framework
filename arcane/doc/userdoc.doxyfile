@@ -1162,8 +1162,9 @@ EXCLUDE_SYMBOLS        =
 
 EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
                          @Arcane_SOURCE_DIR@/src/arcane/tests/accelerator \
-                         @ARCANESRCROOT@/samples_build/samples \
+                         @Arcane_SOURCE_DIR@/src/arcane/tests/cartesianmesh \
                          @Arcane_SOURCE_DIR@/src/arcane/tests \
+                         @ARCANESRCROOT@/samples_build/samples \
                          @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites/snippets \
                          @DOC_OUTPUT_DIR@/share/axl/dox/snippets
 
