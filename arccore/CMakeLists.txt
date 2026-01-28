@@ -254,7 +254,7 @@ arccore_add_component_directory(common)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
+# Les modes supportés sont 'CUDA', 'HIP' (ou 'ROCM') et 'SYCL'
 # NOTE: (2025/11) Pour l'instant pour des raisons de compatibilité
 # on laisse les macros préfixées par ARCANE
 
@@ -275,16 +275,19 @@ endif()
 if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
   set (ARCCORE_ACCELERATOR_MODE "CUDA" )
 endif()
-if (ARCCORE_ACCELERATOR_MODE STREQUAL "HIP" )
-  set (ARCCORE_ACCELERATOR_MODE "ROCM" )
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM" )
+  set (ARCCORE_ACCELERATOR_MODE "HIP" )
 endif()
 if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set (ARCCORE_ACCELERATOR_MODE "ROCM" )
+  set (ARCCORE_ACCELERATOR_MODE "HIP" )
 endif()
 if (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
   set (ARCCORE_ACCELERATOR_MODE "SYCL" )
 endif()
 
+set (ARCCORE_HAS_CUDA FALSE)
+set (ARCCORE_HAS_HIP FALSE)
+set (ARCCORE_HAS_SYCL FALSE)
 if (DEFINED ARCCORE_ACCELERATOR_MODE)
   set(ARCANE_ACCELERATOR_MODE "${ARCCORE_ACCELERATOR_MODE}")
   if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDA" )
@@ -308,7 +311,7 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
     message(STATUS "CMAKE_CUDA_HOST_COMPILER = ${CMAKE_CUDA_HOST_COMPILER}")
     message(STATUS "CMAKE_CUDA_FLAGS         = ${CMAKE_CUDA_FLAGS}")
     message(STATUS "CMAKE_CUDA_ARCHITECTURES = ${CMAKE_CUDA_ARCHITECTURES}")
-  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM" )
+  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "HIP" )
     set (ARCCORE_HAS_HIP TRUE)
     set (ARCCORE_ACCELERATOR_RUNTIME hip)
     # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
@@ -327,7 +330,7 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
     set (ARCCORE_CXX_SYCL_FLAGS "${ARCCORE_CXX_SYCL_FLAGS}" CACHE STRING "Compilation flags for Sycl source files" FORCE)
   else()
     message(FATAL_ERROR "Unsupported ARCCORE_ACCELERATOR_MODE '${ARCCORE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
+      "Valid values are 'CUDA', 'HIP'/'ROCM' or 'SYCL")
   endif()
 
   set (ARCCORE_ACCELERATOR_MODE ${ARCCORE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
@@ -344,6 +347,10 @@ if (DEFINED ARCCORE_ACCELERATOR_MODE)
 
   arccore_add_component_directory(accelerator_native)
 endif()
+
+set (ARCCORE_HAS_CUDA ${ARCCORE_HAS_CUDA} CACHE STRING "Is Arccore using CUDA for accelerator backend" FORCE)
+set (ARCCORE_HAS_HIP ${ARCCORE_HAS_HIP} CACHE STRING "Is Arccore using ROCM/HIP for accelerator backend" FORCE)
+set (ARCCORE_HAS_SYCL ${ARCCORE_HAS_SYCL} CACHE STRING "Is Arccore using SYCL for accelerator backend" FORCE)
 
 arccore_add_component_directory(trace)
 arccore_add_component_directory(concurrency)
