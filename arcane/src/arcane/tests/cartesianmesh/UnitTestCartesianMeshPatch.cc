@@ -24,7 +24,7 @@
 #include "arcane/SimpleSVGMeshExporter.h"
 #include "arcane/Directory.h"
 
-#include "arcane/tests/UnitTestCartesianMeshPatch_axl.h"
+#include "arcane/tests/cartesianmesh/UnitTestCartesianMeshPatch_axl.h"
 
 #include <vector>
 
