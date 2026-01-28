@@ -794,12 +794,12 @@ AlienBenchModule::_test(Timer& pbuild_timer,
       Alien::ProfiledBlockMatrixBuilder builder(matrixA, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
 
       Alien::UniqueArray2<double> zero(block_size, block_size);
-      Alien::UniqueArray2<double> id(block_size, block_size);
+      Alien::UniqueArray2<double> id1(block_size, block_size);
+      Alien::UniqueArray2<double> id2(block_size, block_size);
       Alien::UniqueArray2<double> diagB(block_size, block_size);
       for (int k = 0; k < block_size; ++k)
       {
         diagB[k][k] = 1;
-        id[k][k] = 1;
         if (k - 1 >= 0)
           diagB[k][k - 1] = -1;
         if (k + 1 < block_size)
@@ -813,7 +813,7 @@ AlienBenchModule::_test(Timer& pbuild_timer,
         Integer i = allUIndex[cell.localId()];
         for (int k = 0; k < block_size; ++k)
         {
-          diagB[k][k] = diag;
+          diagB[k][0] = diag;
         }
         builder(i, i) += diagB ;
         ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
@@ -821,9 +821,17 @@ AlienBenchModule::_test(Timer& pbuild_timer,
           const Cell& subcell = *isubcell;
           double off_diag = fij(cell, subcell);
           Integer j = allUIndex[subcell.localId()];
-          id[0][0] = off_diag ;
-          builder(i, j) -= id;
-          builder(i, i) += id;
+          for (int k = 0; k < block_size; ++k)
+          {
+            id1[0][k] = 1 ;
+            id2[0][k] = -1 ;
+            id1[k][k] = 1 ;
+            id2[k][k] = 1 ;
+            id1[k][0] = off_diag ;
+            id2[k][0] = off_diag ;
+          }
+          builder(i, j) -= id1;
+          builder(i, i) += id2;
         }
       }
       if (options()->sigma() > 0.)
@@ -844,8 +852,8 @@ AlienBenchModule::_test(Timer& pbuild_timer,
             info() << "MATRIX TRANSFO SIGMAMAX " << i;
             if (cell.isOwn())
             {
-              id[0][0] = m_sigma;
-              builder(i, i) = id ;
+              id1[0][0] = m_sigma;
+              builder(i, i) = id1 ;
             }
             ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
             {
@@ -863,8 +871,8 @@ AlienBenchModule::_test(Timer& pbuild_timer,
 
             if (cell.isOwn())
             {
-              id[0][0] = 1. / m_sigma;
-              builder(i, i) = id ;
+              id1[0][0] = 1. / m_sigma;
+              builder(i, i) = id1 ;
             }
             ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
             {

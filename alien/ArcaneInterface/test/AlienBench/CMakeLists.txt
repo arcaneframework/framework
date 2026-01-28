@@ -340,29 +340,37 @@ endif ()
 
 if (TARGET ifpsolver)
     configure_file(AlienBench-ifps.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps.arc COPYONLY)
+    configure_file(AlienBench-ifps-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps-bs2.arc COPYONLY)
     configure_file(AlienBench-ifps-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps-2P.arc COPYONLY)
     configure_file(AlienBench-ifpsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg.arc COPYONLY)
     configure_file(AlienBench-ifpsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg-4P.arc COPYONLY)
+    configure_file(AlienBench-ifpscpramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpscpramg-bs2.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-ifps.arc
+            AlienBench-ifps-bs2.arc
             AlienBench-ifps-2P.arc
             AlienBench-ifpsamg.arc
             AlienBench-ifpsamg-4P.arc
+            AlienBench-ifpscpramg-bs2.arc
             )
 endif ()
 
 if (TARGET htssolver)
     configure_file(AlienBench-hts.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts.arc COPYONLY)
+    configure_file(AlienBench-hts-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts-bs2.arc COPYONLY)
     configure_file(AlienBench-hts-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts-2P.arc COPYONLY)
     configure_file(AlienBench-htsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg.arc COPYONLY)
     configure_file(AlienBench-htsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg-4P.arc COPYONLY)
+    configure_file(AlienBench-htscpramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htscpramg-bs2.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-hts.arc
+            AlienBench-hts-bs2.arc
             AlienBench-hts-2P.arc
             AlienBench-htsamg.arc
             AlienBench-htsamg-4P.arc
+            AlienBench-htscpramg-bs2.arc
             )
 endif ()
 
@@ -684,6 +692,15 @@ if (TARGET ifpsolver)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
+            BENCH bench.ifps-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifps-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
             BENCH bench.ifpsamg
             NAME seq
             PROCS 1
@@ -707,6 +724,15 @@ if (TARGET ifpsolver)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-ifpsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifpscpramg-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifpscpramg-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
@@ -746,6 +772,15 @@ if (TARGET htssolver)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-htsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htscpramg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htscpramg-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
