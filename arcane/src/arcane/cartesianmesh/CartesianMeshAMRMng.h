@@ -226,8 +226,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * Cette opération est collective.
    *
    * \param level_to_adapt Le niveau à adapter.
+   * \param do_fatal_if_useless Déclenche une exception si aucune maille n'est
+   *                            à raffiner ou si level_to_adapt désigne un
+   *                            niveau trop élevé par rapport au précedent
+   *                            appel.
    */
-  void adaptLevel(Int32 level_to_adapt) const;
+  void adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless = false) const;
 
   /*!
    * \brief Méthode permettant de terminer le raffinement du maillage.

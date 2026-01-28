@@ -60,7 +60,7 @@ class DynamicCircleAMRModule
   void compute() override;
   void computeDistance(CartesianPatch& patch, const Real3& center_large_circle);
   void computeValue(CartesianPatch& patch);
-  void computeRefine(CartesianPatch& patch);
+  Integer computeRefine(CartesianPatch& patch);
   void syncUp(Integer level_down, VariableCellReal& var);
   void syncDown(Integer level_down, VariableCellReal& var);
   void postProcessing();
@@ -74,6 +74,7 @@ class DynamicCircleAMRModule
   Real3 m_center{};
   Real m_radius = 0;
   Real m_radius_large_circle = 0;
+  Real m_circle_width = 0;
   bool m_change_radius = true;
   UniqueArray<Real> times;
   ICartesianMesh* m_cartesian_mesh = nullptr;
@@ -140,11 +141,13 @@ init()
   m_center = m_generation_info->globalLength() / 2;
   m_radius = math::normL2(m_center / 10);
   m_radius_large_circle = m_radius * 5;
+  m_circle_width = m_radius * 1.3;
 
   info() << "Global length : " << m_generation_info->globalLength();
   info() << "Global center : " << m_center;
-  info() << "Global radius : " << m_radius;
-  info() << "Large radius : " << m_radius_large_circle;
+  info() << "Radius of small circle : " << m_radius;
+  info() << "Radius of large circle : " << m_radius_large_circle;
+  info() << "Large circle width : " << m_circle_width;
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh());
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
@@ -178,19 +181,21 @@ compute()
 
   m_radius_large_circle += (m_change_radius ? -1 : 1);
 
-  constexpr Int32 nb_levels = 3;
-
-  amr_mng.beginAdaptMesh(nb_levels, 0);
-  for (Integer l = 0; l < nb_levels - 1; ++l) {
+  amr_mng.beginAdaptMesh(options()->getNbLevelsMax(), 0);
+  for (Integer l = 0; l < options()->getNbLevelsMax() - 1; ++l) {
+    Integer nb_cell_refine = 0;
     for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
       auto patch = m_cartesian_mesh->amrPatch(p);
       if (patch.level() == l) {
         computeDistance(patch, center_large_circle);
         computeValue(patch);
-        computeRefine(patch);
+        nb_cell_refine += computeRefine(patch);
       }
     }
-    amr_mng.adaptLevel(l);
+    if (nb_cell_refine == 0) {
+      break;
+    }
+    amr_mng.adaptLevel(l, true);
     syncUp(l, m_amr);
   }
   // if (globalIteration() == 2) {
@@ -204,15 +209,12 @@ compute()
 
   for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
     auto patch = m_cartesian_mesh->amrPatch(p);
-    if (patch.level() == nb_levels - 1) {
+    if (patch.level() == options()->getNbLevelsMax() - 1) {
       computeDistance(patch, center_large_circle);
     }
   }
 
   postProcessing();
-
-  if (globalIteration() > options()->getNSteps())
-    subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,34 +223,22 @@ compute()
 void DynamicCircleAMRModule::
 computeDistance(CartesianPatch& patch, const Real3& center_large_circle)
 {
+  constexpr bool alternative_pattern = false;
   VariableNodeReal3& node_coords = mesh()->nodesCoordinates();
-
-  // CellGroup in_patch_cells = patch.inPatchCells();
-  // ENUMERATE_ (Cell, icell, in_patch_cells) {
-  //   Real3 bary{};
-  //   for (Node node : icell->nodes()) {
-  //     bary += node_coords[node];
-  //   }
-  //   bary /= icell->nbNode();
-  //
-  //   // Real node_dist = math::normL2(bary - center_large_circle);
-  //   // Real value = std::max(m_radius_large_circle - node_dist, 0.);
-  //
-  //   Real node_dist = math::normL2(bary - center_large_circle);
-  //   node_dist = m_radius - std::abs(node_dist - m_radius_large_circle);
-  //   Real value = std::max(node_dist, 0.);
-  //
-  //   m_amr[icell] = value;
-  // }
 
   NodeDirectionMng ndm_x{ patch.nodeDirection(MD_DirX) };
   ENUMERATE_ (Node, inode, ndm_x.inPatchNodes()) {
-    // Real node_dist = math::normL2(bary - center_large_circle);
-    // Real value = std::max(m_radius_large_circle - node_dist, 0.);
-    Real node_dist = math::normL2(node_coords[inode] - center_large_circle);
-    node_dist = m_radius - std::abs(node_dist - m_radius_large_circle);
-    Real value = std::max(node_dist, 0.);
-    m_distance[inode] = value;
+    if constexpr (alternative_pattern) {
+      Real node_dist = math::normL2(node_coords[inode] - center_large_circle);
+      Real value = std::max(m_radius_large_circle - node_dist, 0.);
+      m_distance[inode] = value;
+    }
+    else {
+      Real node_dist = math::normL2(node_coords[inode] - center_large_circle);
+      node_dist = m_circle_width - std::abs(node_dist - m_radius_large_circle);
+      Real value = std::max(node_dist, 0.);
+      m_distance[inode] = value;
+    }
   }
 }
 
@@ -265,9 +255,6 @@ computeValue(CartesianPatch& patch)
       if (std::isnan(m_distance[node])) {
         ARCANE_FATAL("Nan detected -- NodeUID : {0} -- CellUID : {1}", node.uniqueId(), icell->uniqueId());
       }
-      // if (m_distance[node] == 0) {
-      //   ARCANE_FATAL("0 detected -- NodeUID : {0} -- CellUID : {1}", node.uniqueId(), icell->uniqueId());
-      // }
       moy += m_distance[node];
     }
     moy /= icell->nbNode();
@@ -278,15 +265,23 @@ computeValue(CartesianPatch& patch)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicCircleAMRModule::
+Integer DynamicCircleAMRModule::
 computeRefine(CartesianPatch& patch)
 {
+  // Real ref = 0.04;
+  // Real ref_level = ref * pow(10, patch.level());
+
+  // -2 car le dernier niveau que l'on va adapter est celui sous le niveau le
+  // plus haut (qui sera créé et qui sera le niveau m_nb_levels-1).
+  Real ref_level = (m_circle_width * 0.5) / pow(10, options()->getNbLevelsMax() - patch.level() - 2);
+
+  // m_circle_width est la valeur max (voir computeDistance()).
+  // On raffine les mailles 50% au-dessus de la valeur max.
+  // Real ref_level = m_circle_width * 0.5;
+
+  info() << "Ref level : " << ref_level << " -- Patch level : " << patch.level();
+
   Integer nb_cell_refine = 0;
-
-  Real ref = 0.05;
-  Real ref_level = ref * pow(10, patch.level());
-  info() << "Ref level : " << ref_level;
-
   CellDirectionMng cdm_x{ patch.cellDirection(MD_DirX) };
   ENUMERATE_ (Cell, icell, cdm_x.inPatchCells()) {
     //info() << "m_amr[icell] : " << m_amr[icell];
@@ -300,6 +295,7 @@ computeRefine(CartesianPatch& patch)
     }
   }
   info() << "nb_cell_refine : " << nb_cell_refine;
+  return nb_cell_refine;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -350,15 +346,20 @@ postProcessing()
   output_directory.createDirectory();
   info() << "Creating output dir '" << output_directory.path() << "' for export";
   times.add(m_global_time());
+
+  VariableCellInteger patch_cell(VariableBuildInfo(mesh(), "Patch"));
+
   post_processor->setTimes(times);
   post_processor->setBaseDirectoryName(output_directory.path());
 
   ItemGroupList groups;
-  // groups.add(allCells());
   for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
     auto patch = m_cartesian_mesh->amrPatch(p);
     //groups.add(patch.cells());
     groups.add(patch.inPatchCells());
+    ENUMERATE_ (Cell, icell, patch.inPatchCells()) {
+      patch_cell[icell] = patch.index();
+    }
   }
 
   post_processor->setGroups(groups);

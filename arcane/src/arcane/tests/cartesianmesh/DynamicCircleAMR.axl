@@ -37,9 +37,9 @@
   </entry-points>
 
   <options>
-    <simple name="n-steps" type="integer" default="1000">
+    <simple name="nb-levels-max" type="integer" default="2">
       <description>
-        Nombre de boucles à effectuer.
+        Nombre de niveaux à créer au maximum.
       </description>
     </simple>
     <service-instance name="post-processor" type="Arcane::IPostProcessorWriter" default="Ensight7PostProcessor">
