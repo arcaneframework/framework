@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2025 */
+/* ArcaneMain.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -1041,11 +1041,6 @@ _runDotNet()
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
-  // N'active pas MPI si on utilise le service de parallélisme 'Sequential'
-  String mp_service = defaultApplicationInfo().commandLineArguments().getParameter("MessagePassingService");
-  if (mp_service=="Sequential")
-    return;
-
   auto si = _staticInfo();
   // Pour pouvoir automatiquement enregisrer MPI, il faut
   // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
