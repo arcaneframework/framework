@@ -217,6 +217,13 @@ setDefaultValues()
 {
   ApplicationCoreBuildInfo::setDefaultValues();
   {
+    String str = m_core->getValue({ "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String());
+    if (!str.null()) {
+      String service_name = str + "ParallelSuperMng";
+      PropertyImpl::checkSet(m_p->m_message_passing_service, service_name);
+    }
+  }
+  {
     String str = m_core->getValue({ "ARCANE_NB_THREAD" }, "S", String());
     PropertyImpl::checkSet(m_p->m_nb_shared_memory_sub_domain, str);
   }
@@ -299,12 +306,6 @@ setDefaultServices()
     // Positionne la valeur par défaut si ce n'est pas déjà fait.
     if (m_p->m_default_message_passing_service.null())
       m_p->m_default_message_passing_service = default_service_name;
-
-    String str = m_core->getValue({ "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String());
-    if (!str.null()) {
-      String service_name = str + "ParallelSuperMng";
-      PropertyImpl::checkSet(m_p->m_message_passing_service, service_name);
-    }
   }
 }
 
