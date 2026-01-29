@@ -43,6 +43,9 @@ class CooperativeHostWorkItemGrid
 
  public:
 
+  //! Nombre de blocs dans la grille
+  Int32 nbBlock() const { return 1; }
+
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   void barrier()
   {
@@ -78,6 +81,9 @@ class CooperativeDeviceWorkItemGrid
   {}
 
  public:
+
+  //! Nombre de blocs dans la grille
+  __device__ Int32 nbBlock() const { return m_grid_group.group_dim().x; }
 
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   __device__ void barrier() { m_grid_group.sync(); }
@@ -165,6 +171,9 @@ class SyclCooperativeDeviceWorkItemGrid
 
  public:
 
+  //! Nombre de blocs dans la grille
+  Int32 nbBlock() const { return static_cast<Int32>(m_nd_item.get_group_range(0)); }
+
   //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
   void barrier() { /* Not Yet Implemented */ }
 
@@ -188,10 +197,14 @@ class SyclCooperativeWorkGroupLoopContext
   friend CooperativeWorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupLoopContextBuilder;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
   }

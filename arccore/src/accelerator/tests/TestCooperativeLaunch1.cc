@@ -48,7 +48,7 @@ void _doTestCooperativeLaunch(bool use_accelerator)
   nb_value = 10000000;
   expected_value = 100000040000000;
   nb_loop = 100;
-  nb_loop = 1;
+  nb_loop = 5;
 
   Int32 nb_thread = 256;
   Int32 nb_part = 1;
@@ -76,17 +76,12 @@ void _doTestCooperativeLaunch(bool use_accelerator)
 
   NumArray<Int64, MDDim1> c(mem);
   c.copy(host_c);
-  //queue.prefetchMemory(MemoryPrefetchArgs(c.bytes()));
 
   nb_part = 1;
+  eExecutionPolicy policy = runner.executionPolicy();
   for (Int32 k = 1; k < 5; ++k) {
     {
       Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop, false);
-      Int64 v2 = v / nb_loop;
-      //ASSERT_EQ(v2, expected_value);
-    }
-    {
-      Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop, true);
       Int64 v2 = v / nb_loop;
       //ASSERT_EQ(v2, expected_value);
     }
