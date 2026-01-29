@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicCircleAMRModule.cc                                (C) 2000-2024 */
+/* DynamicCircleAMRModule.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire de maillages cartésiens.                   */
+/* Module de test de l'AMR type 3. Juste un cercle qui tourne.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -138,6 +138,11 @@ init()
   const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh(), true);
   m_global_deltat = 1;
 
+  // Le principe est que l'on va avoir un grand cercle (sphère en 3D) avec son
+  // contour qui va être raffiné.
+  // Ce cercle bougera et aura comme orbite un petit cercle ayant pour centre
+  // le centre du maillage.
+
   m_center = m_generation_info->globalLength() / 2;
   m_radius = math::normL2(m_center / 10);
   m_radius_large_circle = m_radius * 5;
@@ -151,6 +156,8 @@ init()
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh());
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+  // On demande au manageur AMR deux couches de mailles de recouvrement pour
+  // le niveau le plus haut.
   amr_mng.setOverlapLayerSizeTopLevel(2);
 }
 
@@ -169,48 +176,105 @@ compute()
   m_amr.fill(0);
   m_distance.fill(0);
 
+  // On fait simple pour le centre du grand cercle.
   Real3 center_large_circle = m_center + Real3{ std::cos(globalIteration()), std::sin(globalIteration()), 0 } * m_radius;
   info() << "Large center : " << center_large_circle;
 
+  // On change le taille du grand cercle à chaque itération. On la diminue
+  // jusqu'à un min puis on l'augmente jusqu'à un max, &c.
   if (!m_change_radius && m_radius_large_circle > m_radius * 5) {
     m_change_radius = true;
   }
   else if (m_change_radius && m_radius_large_circle < m_radius) {
     m_change_radius = false;
   }
-
   m_radius_large_circle += (m_change_radius ? -1 : 1);
 
+  // L'adaptation du maillage se fait en trois phases :
+  //
+  // D'abord, on initialise l'adaptation en donnant le nombre maximum de
+  // niveaux dont on aura besoin. Ce maximum permet de calculer le nombre de
+  // couches de mailles de recouvrement pour chaque niveau. Si ce nombre de
+  // niveaux n'est pas atteint, le nombre de couches devra être ajusté lors de
+  // la troisième phase (quelques calculs en plus).
+  //
+  // Le deuxième argument est le niveau auquel on commence l'adaptation.
+  // Si, lors d'une précédente itération, on a créé un niveau que l'on
+  // souhaite conserver, on peut le choisir ici. Les patchs de ce niveau ne
+  // seront pas effacés, ainsi que les patchs des niveaux inférieurs. Les
+  // patchs des niveaux supérieurs seront effacés pour être recréés dans la
+  // seconde phase.
+  // Il est important de noter que ce sont les patchs qui sont supprimés dans
+  // cette première phase, pas les mailles de ces patchs. Les mailles (et les
+  // différents items autours), si elles ne sont plus dans aucun patch à
+  // l'issue de la seconde phase, seront supprimées dans la troisième phase.
+  // La conséquence est que, si une maille à vu son patch être supprimé, mais
+  // a retrouvé un patch lors de la seconde phase, les variables qui lui sont
+  // associées ne seront pas réinitialisées.
+  // Enfin, il faut noter qu'une maille "InPatch" peut devenir une
+  // maille "Overlap", et inversement.
   amr_mng.beginAdaptMesh(options()->getNbLevelsMax(), 0);
-  for (Integer l = 0; l < options()->getNbLevelsMax() - 1; ++l) {
+  for (Integer level_to_adapt = 0; level_to_adapt < options()->getNbLevelsMax() - 1; ++level_to_adapt) {
     Integer nb_cell_refine = 0;
+    // TODO : Methode pour itérer sur tous les patchs d'un niveau.
     for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
       auto patch = m_cartesian_mesh->amrPatch(p);
-      if (patch.level() == l) {
+      if (patch.level() == level_to_adapt) {
+        // Ici, on va attribuer le flag "II_Refine" à toutes les mailles qui
+        // faudra raffiner.
         computeDistance(patch, center_large_circle);
         computeValue(patch);
+        // Voir méthode computeRefine()...
         nb_cell_refine += computeRefine(patch);
       }
     }
     if (nb_cell_refine == 0) {
       break;
     }
-    amr_mng.adaptLevel(l, true);
-    syncUp(l, m_amr);
+    // Deuxième phase. Avant d'appeler cette méthode, les mailles des patchs
+    // du niveau "level_to_adapt" qui doivent être raffinées doivent avoir le
+    // flag "II_Refine".
+    // Le premier argument est le niveau à adapter. L'adaptation se fait
+    // niveau par niveau, un par un, du plus bas vers le plus haut.
+    // Il est possible de "recommencer" l'adaptation en appelant cette méthode
+    // avec un niveau à adapter inférieur à l'appel précédent. Dans ce cas,
+    // les patchs de niveau supérieur à "level_to_adapt" seront supprimés
+    // (comme lors de la première phase).
+    // Le second argument permet de faire planter le programme si l'appel est
+    // inutile (c'est-à-dire s'il n'y a pas de mailles "II_Refine" ou si
+    // level_to_adapt est supérieur au précedent appel +1 (ce qui implique
+    // qu'il n'y a pas de mailles "II_Refine")).
+    // Ici, mettre ce paramètre à "false" peut permettre de retirer la
+    // variable "nb_cell_refine", au prix de plus de calculs inutiles.
+    // Une fois cette méthode appelée, les patchs créés sont utilisables
+    // normalement (leurs directions sont calculées).
+    amr_mng.adaptLevel(level_to_adapt, true);
+
+    // Pas utile pour l'instant.
+    syncUp(level_to_adapt, m_amr);
   }
   // if (globalIteration() == 2) {
   //   _svgOutput("aaaa");
   // }
+
+  // Enfin, la dernière phase.
+  // Cette phase va d'abord ajuster le nombre de couches de mailles de
+  // recouvrement de chaque patch dans le cas où le nombre de niveaux maximum
+  // donné lors de la première phase n'est pas atteint.
+  // Puis, elle va supprimer toutes les mailles qui n'ont ni le flag
+  // "II_InPatch", ni le flag "II_Overlap".
   amr_mng.endAdaptMesh();
 
   ENUMERATE_ (Cell, icell, allCells()) {
     m_celluid[icell] = icell->uniqueId();
   }
 
+  // On calcule les valeurs sur le dernier niveau de raffinement.
   for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
     auto patch = m_cartesian_mesh->amrPatch(p);
     if (patch.level() == options()->getNbLevelsMax() - 1) {
       computeDistance(patch, center_large_circle);
+      computeValue(patch);
     }
   }
 
@@ -220,6 +284,8 @@ compute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// On calcule la distance de chaque noeud par rapport au centre du grand
+// cercle.
 void DynamicCircleAMRModule::
 computeDistance(CartesianPatch& patch, const Real3& center_large_circle)
 {
@@ -235,6 +301,7 @@ computeDistance(CartesianPatch& patch, const Real3& center_large_circle)
     }
     else {
       Real node_dist = math::normL2(node_coords[inode] - center_large_circle);
+      // On donne un dégradé au bord du cercle.
       node_dist = m_circle_width - std::abs(node_dist - m_radius_large_circle);
       Real value = std::max(node_dist, 0.);
       m_distance[inode] = value;
@@ -282,6 +349,19 @@ computeRefine(CartesianPatch& patch)
   info() << "Ref level : " << ref_level << " -- Patch level : " << patch.level();
 
   Integer nb_cell_refine = 0;
+
+  // Ici, on va attribuer le flags "II_Refine" à des mailles.
+  // Plusieurs choses à noter.
+  // D'abord, il est possible d'utiliser les directions des patchs car la
+  // méthode adaptLevel() (deuxième phase de l'adaptation du maillage) calcule
+  // les directions de tous les patchs nouvellement créés ; pas besoin
+  // d'attendre endAdaptMesh().
+  // Enfin, le flag "II_Refine" ne peut être attribué qu'à des mailles ayant
+  // le flag "InPatch". Il est impossible de raffiner des mailles purement de
+  // recouvrement (les mailles ayant le flag "II_Overlap" ET n'ayant pas le
+  // flag "InPatch").
+  // Ces mailles pouvant être raffinées sont regroupées dans le groupe
+  // "inPatchCells()".
   CellDirectionMng cdm_x{ patch.cellDirection(MD_DirX) };
   ENUMERATE_ (Cell, icell, cdm_x.inPatchCells()) {
     //info() << "m_amr[icell] : " << m_amr[icell];
