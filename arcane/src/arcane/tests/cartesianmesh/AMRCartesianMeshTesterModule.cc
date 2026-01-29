@@ -56,8 +56,8 @@
 #include "arcane/cartesianmesh/SimpleHTMLMeshAMRPatchExporter.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/AMRCartesianMeshTester_axl.h"
-#include "arcane/tests/CartesianMeshTestUtils.h"
+#include "arcane/tests/cartesianmesh/AMRCartesianMeshTester_axl.h"
+#include "arcane/tests/cartesianmesh/CartesianMeshTestUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
