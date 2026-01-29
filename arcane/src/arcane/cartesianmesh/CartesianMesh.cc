@@ -1150,7 +1150,6 @@ _applyCoarse(const AMRZonePosition& zone_position)
 
     debug() << "Coarse with modifier() (for all mesh types)";
     m_patch_group.removeCellsInAllPatches(cells_local_id);
-    m_patch_group.applyPatchEdit(true, false);
 
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
     m_mesh->modifier()->coarsenItemsV2(true);

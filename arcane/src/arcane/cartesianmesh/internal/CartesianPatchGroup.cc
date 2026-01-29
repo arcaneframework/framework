@@ -78,20 +78,22 @@ saveInfosInProperties()
   }
 
   else {
+    // Il est inutile de sauvegarder le patch ground. Il sera recalculé.
     UniqueArray<String> patch_group_names(m_amr_patches_pointer.size() - 1);
-    UniqueArray<Int32> level(m_amr_patches_pointer.size());
-    UniqueArray<Int32> overlap(m_amr_patches_pointer.size());
-    UniqueArray<Int32> index(m_amr_patches_pointer.size());
-    UniqueArray<CartCoord> min_point(m_amr_patches_pointer.size() * 3);
-    UniqueArray<CartCoord> max_point(m_amr_patches_pointer.size() * 3);
+    UniqueArray<Int32> level(m_amr_patches_pointer.size() - 1);
+    UniqueArray<Int32> overlap(m_amr_patches_pointer.size() - 1);
+    UniqueArray<Int32> index(m_amr_patches_pointer.size() - 1);
+    UniqueArray<CartCoord> min_point((m_amr_patches_pointer.size() - 1) * 3);
+    UniqueArray<CartCoord> max_point((m_amr_patches_pointer.size() - 1) * 3);
 
-    for (Integer i = 0; i < m_amr_patches_pointer.size(); ++i) {
-      const AMRPatchPosition& position = m_amr_patches_pointer[i]->_internalApi()->positionRef();
-      level[i] = position.level();
-      overlap[i] = position.overlapLayerSize();
-      index[i] = m_amr_patches_pointer[i]->index();
+    for (Integer patch = 1; patch < m_amr_patches_pointer.size(); ++patch) {
+      const Integer pos_in_array = patch - 1;
+      const AMRPatchPosition& position = m_amr_patches_pointer[patch]->_internalApi()->positionRef();
+      level[pos_in_array] = position.level();
+      overlap[pos_in_array] = position.overlapLayerSize();
+      index[pos_in_array] = m_amr_patches_pointer[patch]->index();
 
-      const Integer pos = i * 3;
+      const Integer pos = pos_in_array * 3;
       min_point[pos + 0] = position.minPoint().x;
       min_point[pos + 1] = position.minPoint().y;
       min_point[pos + 2] = position.minPoint().z;
@@ -99,9 +101,7 @@ saveInfosInProperties()
       max_point[pos + 1] = position.maxPoint().y;
       max_point[pos + 2] = position.maxPoint().z;
 
-      if (i != 0) {
-        patch_group_names[i - 1] = allCells(i).name();
-      }
+      patch_group_names[pos_in_array] = allCells(patch).name();
     }
     m_properties->set("LevelPatches", level);
     m_properties->set("OverlapSizePatches", overlap);
@@ -148,7 +148,7 @@ recreateFromDump()
       CellGroup group = cell_family->findGroup(x);
       if (group.null())
         ARCANE_FATAL("Can not find cell group '{0}'", x);
-      addPatchAfterRestore(group);
+      _addPatchAfterRestore(group);
     }
   }
   else {
@@ -164,41 +164,25 @@ recreateFromDump()
     m_properties->get("MinPointPatches", min_point);
     m_properties->get("MaxPointPatches", max_point);
 
-    if (index.size() < 1) {
-      ARCANE_FATAL("Le ground est forcement save");
-    }
-
-    {
-      ConstArrayView min(min_point.subConstView(0, 3));
-      ConstArrayView max(max_point.subConstView(0, 3));
-
-      AMRPatchPosition position(
-      level[0],
-      { min[MD_DirX], min[MD_DirY], min[MD_DirZ] },
-      { max[MD_DirX], max[MD_DirY], max[MD_DirZ] },
-      overlap[0]);
-
-      m_amr_patches_pointer[0]->_internalApi()->setPosition(position);
-    }
-
     IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
 
-    for (Integer i = 1; i < index.size(); ++i) {
-      ConstArrayView min(min_point.subConstView(i * 3, 3));
-      ConstArrayView max(max_point.subConstView(i * 3, 3));
+    // À noter : on a exclut le patch ground de la sauvegarde.
+    for (Integer pos_in_array = 0; pos_in_array < index.size(); ++pos_in_array) {
+      ConstArrayView min(min_point.subConstView(pos_in_array * 3, 3));
+      ConstArrayView max(max_point.subConstView(pos_in_array * 3, 3));
 
       AMRPatchPosition position(
-      level[i],
+      level[pos_in_array],
       { min[MD_DirX], min[MD_DirY], min[MD_DirZ] },
       { max[MD_DirX], max[MD_DirY], max[MD_DirZ] },
-      overlap[i]);
+      overlap[pos_in_array]);
 
-      const String& x = patch_group_names[i - 1];
+      const String& x = patch_group_names[pos_in_array];
       CellGroup cell_group = cell_family->findGroup(x);
       if (cell_group.null())
         ARCANE_FATAL("Can not find cell group '{0}'", x);
 
-      auto* cdi = new CartesianMeshPatch(m_cmesh, index[i], position);
+      auto* cdi = new CartesianMeshPatch(m_cmesh, index[pos_in_array], position);
       _addPatchInstance(makeRef(cdi));
       _addCellGroup(cell_group, cdi, true);
     }
@@ -233,7 +217,7 @@ addPatch(ConstArrayView<Int32> cells_local_id)
   String children_group_name = String("CartesianMeshPatchCells") + index;
   IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
   CellGroup children_cells = cell_family->createGroup(children_group_name, cells_local_id, true);
-  addPatch(children_cells, index);
+  _addPatch(children_cells, index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -241,7 +225,7 @@ addPatch(ConstArrayView<Int32> cells_local_id)
 
 // Il faut appeler rebuildAvailableIndex() après les appels à cette méthode.
 Integer CartesianPatchGroup::
-addPatchAfterRestore(CellGroup cell_group)
+_addPatchAfterRestore(CellGroup cell_group)
 {
   const String& name = cell_group.name();
   Integer group_index = -1;
@@ -253,7 +237,7 @@ addPatchAfterRestore(CellGroup cell_group)
     ARCANE_FATAL("Invalid group");
   }
 
-  addPatch(cell_group, group_index);
+  _addPatch(cell_group, group_index);
   return group_index;
 }
 
@@ -261,7 +245,7 @@ addPatchAfterRestore(CellGroup cell_group)
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-addPatch(CellGroup cell_group, Integer group_index)
+_addPatch(CellGroup cell_group, Integer group_index)
 {
   _createGroundPatch();
   if (group_index == -1) {
@@ -283,6 +267,10 @@ addPatch(CellGroup cell_group, Integer group_index)
 void CartesianPatchGroup::
 addPatch(const AMRZonePosition& zone_position)
 {
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+
   Trace::Setter mci(traceMng(), "CartesianPatchGroup");
 
   info() << "addPatch() with zone"
@@ -294,18 +282,27 @@ addPatch(const AMRZonePosition& zone_position)
   auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
+  // La conversion nous donne le patch intermédiaire (qui entoure les mailles
+  // à raffiner et non les mailles raffinées). Un appel à la méthode
+  // AMRPatchPosition::patchUp() permet de monter le patch d'un niveau afin
+  // qu'il regroupe les mailles raffinées, devenant ainsi un patch "classique".
   AMRPatchPosition position = zone_position.toAMRPatchPosition(m_cmesh);
+
   Int32 level = position.level();
   Int32 level_up = level + 1;
   Int32 nb_overlap_cells = 0;
 
   Int32 higher_level = m_higher_level;
 
-  // Dans ce cas, on a un patch qui sera plus haut que tous les autres.
   // La méthode patchUp() aura besoin du futur higher_level pour calculer
-  // correctement le nombre de couche de mailles de recouvrement.
+  // correctement le nombre de couches de mailles de recouvrement.
+  // Si on a un patch qui sera plus haut que tous les autres.
   if (level_up >= higher_level) {
     higher_level = level_up;
+    // Le nombre de couches du niveau le plus haut devra être
+    // m_size_of_overlap_layer_top_level. On est sur un patch intermédiaire,
+    // donc on divise ce nombre par le nombre de mailles enfants qui seront
+    // créées.
     nb_overlap_cells = m_size_of_overlap_layer_top_level / numbering->pattern();
     debug() << "Higher level -- Old : " << m_higher_level << " -- New : " << higher_level;
   }
@@ -333,6 +330,9 @@ addPatch(const AMRZonePosition& zone_position)
           << " -- overlapLayerSize : " << position.overlapLayerSize()
           << " -- level : " << level;
 
+  // Rappel : on ne peut raffiner que les mailles ayant le flag "II_InPatch".
+  //          Cette condition est vérifiée dans la méthode
+  //          AMRZonePosition::toAMRPatchPosition() appelée au-dessus.
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
     if (!icell->hasHChildren()) {
       const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
@@ -344,6 +344,7 @@ addPatch(const AMRZonePosition& zone_position)
 
   amr->refine();
 
+  // On passe d'un patch intermédiaire à un patch classique.
   AMRPatchPosition position_up = position.patchUp(m_cmesh->mesh()->dimension(), higher_level, m_size_of_overlap_layer_top_level);
 
   info() << "Zone to Patch"
@@ -352,7 +353,12 @@ addPatch(const AMRZonePosition& zone_position)
          << " -- overlapLayerSize : " << position_up.overlapLayerSize()
          << " -- level : " << position_up.level();
 
+  // On ajoute ce patch dans notre objet.
   _addPatch(position_up);
+
+  // Si le patch créé est plus haut que les autres, il y a eu création d'un
+  // nouveau niveau de raffinement et on doit mettre à jour le nombre de
+  // couches de mailles de recouvrement des niveaux plus bas.
   _updateHigherLevel();
 
 #ifdef ARCANE_CHECK
@@ -363,7 +369,6 @@ addPatch(const AMRZonePosition& zone_position)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Attention : avant _createGroundPatch() = 0, après _createGroundPatch(); = 1
 Integer CartesianPatchGroup::
 nbPatch() const
 {
@@ -461,9 +466,11 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
     ARCANE_FATAL("Method available only with AMR Cell");
   }
 
+  // Dans l'AMR type 1, il n'y a que les groupes "all".
   for (Integer i = 1; i < m_amr_patch_cell_groups_all.size(); ++i) {
     allCells(i).removeItems(cells_local_id);
   }
+  applyPatchEdit(true, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -534,10 +541,8 @@ applyPatchEdit(bool remove_empty_patches, bool update_higher_level)
   _removeMultiplePatches(m_patches_to_delete);
   m_patches_to_delete.clear();
 
-  if (remove_empty_patches) {
-    if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-      ARCANE_FATAL("remove_empty_patches=true available only with AMR Cell");
-    }
+  // Dans l'AMR type 3, il ne peut pas y avoir de patch vide.
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly && remove_empty_patches) {
     UniqueArray<Integer> size_of_patches(m_amr_patch_cell_groups_all.size());
     for (Integer i = 0; i < m_amr_patch_cell_groups_all.size(); ++i) {
       size_of_patches[i] = m_amr_patch_cell_groups_all[i].size();
@@ -552,6 +557,7 @@ applyPatchEdit(bool remove_empty_patches, bool update_higher_level)
     m_patches_to_delete.clear();
   }
 
+  // Dans l'AMR type 1, il n'y a pas de notion de niveau de patch.
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly && update_higher_level) {
     _updateHigherLevel();
     _coarsenUselessCells(true);
@@ -564,6 +570,7 @@ applyPatchEdit(bool remove_empty_patches, bool update_higher_level)
 void CartesianPatchGroup::
 updateLevelsAndAddGroundPatch()
 {
+  // TODO : Cette méthode devrait appeler createSubLevel(), pas l'inverse.
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     return;
   }
