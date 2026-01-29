@@ -31,13 +31,8 @@ include(srcs.cmake)
 include(accelerator/srcs.cmake)
 include(cartesianmesh/srcs.cmake)
 
-if (ARCANE_HAS_ACCELERATOR_API)
-  list(APPEND ARCANE_SOURCES
-    MDVariableUnitTest.cc
-    )
-  list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
-  arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
-endif()
+list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
+arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 
 if (TARGET hiredis::hiredis)
   list(APPEND ARCANE_SOURCES RedisUnitTest.cc)
@@ -181,9 +176,7 @@ set(ARCANE_TEST_DRIVER ${ARCANE_TEST_DRIVER} CACHE STRING "Driver for test" FORC
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-if (ARCANE_HAS_ACCELERATOR_API)
-  target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator)
-endif()
+target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator)
 target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator_core)
 
 # ----------------------------------------------------------------------------
@@ -312,9 +305,9 @@ endif()
 if (zstd_FOUND)
   arcane_add_test_sequential(variable_zstd testVariable-1-zstd.arc)
 endif()
-if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(mdvariable testMDVariable-1.arc)
-endif()
+
+arcane_add_test_sequential(mdvariable testMDVariable-1.arc)
+
 ARCANE_ADD_TEST_SEQUENTIAL(variablesimd testVariableSimd-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(partial-variable-seq testPartialVariable-seq.arc)
 if(PARTITIONER_FOUND)
@@ -486,9 +479,9 @@ arcane_add_test_sequential(standalone_subdomain3 dummy.arc "-A,StandaloneSubDoma
 arcane_add_test_sequential(standalone_subdomain4 dummy.arc "-A,StandaloneSubDomainMethod=Test4")
 arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_parallel(standalone_subdomain2_legacy_partition_init dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2" "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
-if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_accelerator_test_all_policies(standalone_subdomain_accelerator dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
-endif()
+
+arcane_add_accelerator_test_all_policies(standalone_subdomain_accelerator dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
+
 
 # ----------------------------------------------------------------------------
 
