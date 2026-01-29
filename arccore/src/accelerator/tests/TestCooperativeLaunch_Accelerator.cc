@@ -17,6 +17,9 @@
 
 #include "arccore/accelerator/RunCommandLaunch.h"
 
+#include "arccore/accelerator/Reduce.h"
+#include "arccore/accelerator/LocalMemory.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,25 +37,55 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread
   Int64 total_x = {};
   if ((nb_value % nb_part) != 0)
     ARCCORE_FATAL("{0} is not a multiple of {1}", nb_value, nb_part);
-  Int32 nb_group = 10 * 1000;
-  Int32 group_size = 128;
+  //Int32 nb_group = 15 * 1200;
+  //Int32 group_size = 128;
   double x = Platform::getRealTime();
+  NumArray<Int64, MDDim1> by_block_partial_sum(queue.memoryResource());
+  by_block_partial_sum.resize(1024);
   {
+    nb_loop = 1;
+    nb_value = 1000000;
     SmallSpan<const Int64> c_view(c);
     for (int j = 0; j < nb_loop; ++j) {
       auto command = makeCommand(queue);
-      command.addNbThreadPerBlock(nb_thread);
-      CooperativeWorkGroupLoopRange loop_range(nb_group * group_size);
-      loop_range.setBlockSize(group_size);
+      CooperativeWorkGroupLoopRange loop_range(nb_value);
+      auto partial_sum_span = viewInOut(command, by_block_partial_sum);
       command << RUNCOMMAND_LAUNCH(iter, loop_range)
       {
-        auto x = iter.grid();
-        //printf("X=%d\n", x.gridDim());
-        x.barrier();
-        //Int32 i = iter;
+        auto grid = iter.grid();
+        auto block = iter.block();
+        auto w = iter.workItem();
+
+        Int64 my_v = 0;
+        for (Int32 i : w.linearIndexes())
+          my_v += c[i];
+        block.barrier();
+        Int32 nb_block = 0;
+#if defined(ARCCORE_COMPILING_CUDA_OR_HIP) && defined(ARCCORE_DEVICE_CODE)
+        nb_block = grid.nbBlock();
+        Int64 v = Arcane::Accelerator::Impl::block_reduce<Arcane::Accelerator::Impl::ReduceFunctorSum<Int64>, 32, Int64>(my_v);
+        if (w.rankInBlock() == 0) {
+          //printf("V0=%d %ld\n", block.groupRank(), v);
+          partial_sum_span[block.groupRank()] = v;
+        }
+#endif
+        grid.barrier();
+        if (w.rankInBlock() == 0 && block.groupRank() == 0) {
+          Int64 final_sum = 0;
+          for (Int32 i = 0; i < nb_block; ++i) {
+            Int64 v = partial_sum_span[i];
+            //printf("ADD_V block=%d v=%ld\n", i, v);
+            final_sum += partial_sum_span[i];
+          }
+          partial_sum_span[0] = final_sum;
+#if !defined(__INTEL_LLVM_COMPILER)
+          printf("FINAL= nb_block=%d v=%ld\n", nb_block, final_sum);
+#endif
+        }
       };
     }
   }
+  queue.barrier();
   double y = Platform::getRealTime();
   Int64 nb_byte = c.size() * sizeof(Int64) * nb_loop;
   Real diff = y - x;
