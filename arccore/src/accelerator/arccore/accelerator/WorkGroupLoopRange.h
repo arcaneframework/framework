@@ -643,7 +643,7 @@ class SyclWorkGroupLoopContextBase
  protected:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, Int64 total_size)
+  explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, IndexType total_size)
   : m_nd_item(n)
   , m_total_size(total_size)
   {
@@ -663,7 +663,7 @@ class SyclWorkGroupLoopContextBase
  protected:
 
   sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size = 0;
+  IndexType m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -681,10 +681,14 @@ class SyclWorkGroupLoopContext
   friend WorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupLoopContextBuilder;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
   }
