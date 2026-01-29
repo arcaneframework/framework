@@ -78,7 +78,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removeCellsInZone(const AMRZonePosition& zone_to_delete);
 
-  void applyPatchEdit(bool remove_empty_patches);
+  void applyPatchEdit(bool remove_empty_patches, bool update_higher_level);
 
   void updateLevelsAndAddGroundPatch();
 
@@ -86,7 +86,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first);
   void endAdaptMesh();
-  void adaptLevel(Int32 level_to_adapt);
+  void adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless);
 
   void clearRefineRelatedFlags() const;
 
@@ -106,8 +106,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void _changeOverlapSizeLevel(Int32 level, Int32 previous_higher_level, Int32 new_higher_level);
 
-  void _updatePatchFlagsOfCellsLevel(Int32 level, bool use_cell_groups);
-  void _updatePatchFlagsOfCellsGroundLevel();
+  void _coarsenUselessCells(bool use_cells_level);
+  void _coarsenUselessCellsInLevel(Int32 level);
+
+  void _updatePatchFlagsOfItemsLevel(Int32 level, bool use_cell_groups);
+  void _updatePatchFlagsOfItemsGroundLevel();
+  void _removePatchFlagsOfItemsLevel(Int32 level);
 
   void _checkPatchesAndMesh();
 
@@ -122,7 +126,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void _removeAllPatches();
   void _createGroundPatch();
 
-  Integer _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch);
+  Integer _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch, bool add_flags);
+  void _updateCellGroups(Integer index, bool update_flags);
 
   void _removePartOfPatch(Integer index_patch_to_edit, const AMRPatchPosition& patch_position);
   void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);

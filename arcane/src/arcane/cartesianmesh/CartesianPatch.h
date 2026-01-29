@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianPatch.h                                            (C) 2000-2025 */
+/* CartesianPatch.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Patch AMR d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -52,14 +52,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
  public:
 
   //! Groupe de mailles du patch (incluant les mailles de recouvrement).
-  CellGroup cells();
+  CellGroup cells() const;
 
   /*!
    * \brief Groupe de mailles du patch (sans les mailles de recouvrement).
    *
    * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
    */
-  CellGroup inPatchCells();
+  CellGroup inPatchCells() const;
 
   //! Index du patch dans le tableau des patchs.
   Integer index() const;

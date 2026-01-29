@@ -286,3 +286,30 @@ endif()
 
 # Pas actif pour l'instant car en échec
 arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
+
+
+#################################
+# DynamicCircleAMRModule :
+#################################
+arcane_add_test(dynamic-circle-amr-1 testDynamicCircleAMR-1.arc "-m 10")
+
+if (BIG_TEST)
+  arcane_add_test_sequential(dynamic-circle-amr-2 testDynamicCircleAMR-2.arc "-m 10")
+  arcane_add_test_parallel(dynamic-circle-amr-2 testDynamicCircleAMR-2.arc 8 "-m 10")
+endif ()
+#arcane_add_test_sequential(dynamic-circle-amr-2-fast testDynamicCircleAMR-2.arc
+#  "-m 2"
+#  "-A,//meshes/mesh/generator/y/n=4"
+#)
+#arcane_add_test_parallel(dynamic-circle-amr-2-fast testDynamicCircleAMR-2.arc 8
+#  "-m 2"
+#  "-A,//meshes/mesh/generator/y/n=4"
+#)
+
+#################################
+# AMRPatchTesterModule :
+#################################
+arcane_add_test(amr-patch-tester-1 testAMRPatchTester-1.arc "-m 10")
+
+arcane_add_test_sequential(amr-patch-tester-2 testAMRPatchTester-2.arc "-m 10")
+arcane_add_test_parallel(amr-patch-tester-2 testAMRPatchTester-2.arc 8 "-m 10")

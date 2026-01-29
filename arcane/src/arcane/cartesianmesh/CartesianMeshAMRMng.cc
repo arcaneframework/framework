@@ -100,9 +100,9 @@ beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRMng::
-adaptLevel(Int32 level_to_adapt) const
+adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless) const
 {
-  m_cmesh->_internalApi()->cartesianPatchGroup().adaptLevel(level_to_adapt);
+  m_cmesh->_internalApi()->cartesianPatchGroup().adaptLevel(level_to_adapt, do_fatal_if_useless);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +170,6 @@ mergePatches() const
   }
 
   m_cmesh->_internalApi()->cartesianPatchGroup().mergePatches();
-  m_cmesh->_internalApi()->cartesianPatchGroup().applyPatchEdit(false);
 }
 
 /*---------------------------------------------------------------------------*/

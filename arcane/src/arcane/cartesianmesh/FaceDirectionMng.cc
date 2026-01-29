@@ -420,13 +420,13 @@ _computeCellInfos() const
           if (face.uniqueId() == av_uids[1])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[3])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[3], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[3], face.uniqueId());
         }
         else if (dir == MD_DirY) {
           if (face.uniqueId() == av_uids[2])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[0])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[0], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[0], face.uniqueId());
         }
       }
       else if (m_p->m_cartesian_mesh->mesh()->dimension() == 3) {
@@ -434,19 +434,19 @@ _computeCellInfos() const
           if (face.uniqueId() == av_uids[4])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[1])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[1], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[1], face.uniqueId());
         }
         else if (dir == MD_DirY) {
           if (face.uniqueId() == av_uids[5])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[2])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[2], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[2], face.uniqueId());
         }
         else if (dir == MD_DirZ) {
           if (face.uniqueId() == av_uids[3])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[0])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[0], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[0], face.uniqueId());
         }
       }
     }
@@ -459,13 +459,13 @@ _computeCellInfos() const
           if (face.uniqueId() == av_uids[3])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[1])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[1], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[1], face.uniqueId());
         }
         else if (dir == MD_DirY) {
           if (face.uniqueId() == av_uids[0])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[2])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[2], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[2], face.uniqueId());
         }
       }
       else if (m_p->m_cartesian_mesh->mesh()->dimension() == 3) {
@@ -473,19 +473,19 @@ _computeCellInfos() const
           if (face.uniqueId() == av_uids[1])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[4])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[4], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[4], face.uniqueId());
         }
         else if (dir == MD_DirY) {
           if (face.uniqueId() == av_uids[2])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[5])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[5], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[5], face.uniqueId());
         }
         else if (dir == MD_DirZ) {
           if (face.uniqueId() == av_uids[0])
             is_inverse = true;
           else if (face.uniqueId() != av_uids[3])
-            ARCANE_FATAL("Bad connectivity -- Expected : {0} -- Found : {1}", av_uids[3], face.uniqueId());
+            ARCANE_FATAL("Bad connectivity, did you call computeDirection() ? -- Expected : {0} -- Found : {1}", av_uids[3], face.uniqueId());
         }
       }
     }
