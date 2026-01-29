@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/PropertyDeclarations.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 #include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
@@ -25,15 +24,6 @@
 
 namespace Arcane::Accelerator
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfoProperties
-: public AcceleratorRuntimeInitialisationInfo
-{
-  ARCANE_DECLARE_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo);
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -8,70 +8,70 @@
     <simple name="output" type="integer" default="0">
       <description>output level</description>
     </simple>
-    
+
     <simple name="parallel-trace" type="integer" default="0">
       <description>parallel output level</description>
     </simple>
-    
+
     <simple name="export-iter" type="integer" default="-1">
       <description>export iter</description>
     </simple>
-    
+
     <simple name="export-opt" type="bool" default="false">
       <description>export option</description>
     </simple>
-    
+
     <simple name="import-opt" type="bool" default="false">
       <description>import option</description>
     </simple>
-    
+
     <simple name="poly-factor" type="real" default="0.">
       <description>polynomial factor</description>
     </simple>
-    
+
     <simple name="poly-eigenvalue-ratio" type="real" default="30.">
       <description>polynomial factor</description>
     </simple>
-    
+
     <simple name="poly-eigenvalue-max" type="real" default="0.">
       <description>polynomial factor</description>
     </simple>
-    
+
     <simple name="poly-eigenvalue-min" type="real" default="0.">
       <description>polynomial factor</description>
     </simple>
-    
-    
-    
-    
+
+
+
+
     <simple name="poly-factor-max-iter" type="integer" default="3">
       <description>polynomial factor</description>
     </simple>
-    
+
     <simple name="poly-degree" type="integer" default="3">
       <description>polynomial degree</description>
     </simple>
-    
+
     <simple name="ilufp-factor-niter" type="integer" default="0">
       <description>fixed point ilu number of factorization iterations</description>
     </simple>
-    
+
     <simple name="ilufp-solver-niter" type="integer" default="1">
       <description>fixed point ilu number of solver iterations</description>
     </simple>
-    
+
     <simple name="ilufp-tol" type="real" default="0.">
       <description>fixed point ilu tolerance</description>
     </simple>
-    
+
     <simple name="ilu-level" type="integer" default="0">
       <description>iluk level</description>
     </simple>
-    
+
     <simple name="ilu-drop-tol" type="real" default="0.">
       <description>iluk drop tolerance</description>
     </simple>
-    
+
     <complex name="ml-opt" type="MLOptType" minOccurs="0" maxOccurs="1">
       <description> ML options</description>
         <simple name="output" type="integer" default="0">
@@ -91,8 +91,8 @@
          </simple>
          <simple name="evtype" type="integer" default="1">
            <description>Eigen Solver type :
-                           0->SLEPC 
-                           1->ARPACK 
+                           0->SLEPC
+                           1->ARPACK
                            2->Spectra
             </description>
          </simple>
@@ -104,18 +104,18 @@
          </simple>
          <simple name="ev-max-iter" type="integer" default="1000">
            <description>Max iter for EV problem</description>
-         </simple> 
+         </simple>
          <simple name="coarse-op" type="integer" default="1">
-           <description>DDML option -- Coarse operator choice -- 
-                                1) Nicolaides ; 
+           <description>DDML option -- Coarse operator choice --
+                                1) Nicolaides ;
                                 2) GenEO
             </description>
          </simple>
          <simple name="solver" type="integer" default="0">
-           <description>DDML option -- local solver choice -- 
-                              0->LU, 
-                              1->LUS, 
-                              2->BCGS, 
+           <description>DDML option -- local solver choice --
+                              0->LU,
+                              1->LUS,
+                              2->BCGS,
                               3->ILUBCGS
             </description>
          </simple>
@@ -129,11 +129,11 @@
            <description>nb ML local solver nev</description>
          </simple>
          <simple name="coarse-solver" type="integer" default="0">
-                    <description>DDML option -- coarse solver choice -- 
-                              0->LU, 
-                              1->LUS, 
-                              2->LUMT 
-                              3->LUMTS 
+                    <description>DDML option -- coarse solver choice --
+                              0->LU,
+                              1->LUS,
+                              2->LUMT
+                              3->LUMTS
                               4->DistLU
             </description>
          </simple>
@@ -144,47 +144,47 @@
            <description>ML Neumann cor</description>
          </simple>
      </complex>
-    
+
     <simple name="use-unit-diag" type="bool" default="true">
       <description>unit diag options</description>
     </simple>
-    
+
     <simple name="keep-diag-opt" type="bool" default="true">
       <description>unit diag options</description>
     </simple>
-    
+
     <simple name="reorder-opt" type="bool" default="true">
       <description>reorder option</description>
     </simple>
-    
+
     <simple name="interface-opt" type="integer" default="0">
       <description>interface option</description>
     </simple>
-    
+
     <simple name="relax-solver" type="integer" default="0">
       <description>relax solver option</description>
     </simple>
-    
+
     <simple name="cpr-solver" type="integer" default="0">
       <description>cpr solver option</description>
     </simple>
-    
+
     <simple name="amg-algo" type="string" default="PMIS">
         <description>AMG algorithm option, AGGREGATION or PMIS </description>
     </simple>
-    
+
     <simple name="normalize-opt" type="bool" default="true">
       <description>unit diag options</description>
     </simple>
-    
+
     <simple name="max-iteration-num" type="integer" default="1000">
       <description>Maximal number of iterations</description>
     </simple>
-    
+
     <simple name="stop-criteria-value" type="real" default="1e-6">
       <description>Expected accuracy</description>
     </simple>
-    
+
     <enumeration name="solver" type="HTSOptionTypes::eSolver" default="BiCGStab">
       <description>Solveur type</description>
       <enumvalue name="BiCGStab" genvalue="HTSOptionTypes::BiCGStab">
@@ -194,7 +194,7 @@
         <description>BiCGStab Solver</description>
       </enumvalue>
     </enumeration>
-    
+
     <enumeration name="preconditioner" type="HTSOptionTypes::ePreconditioner" default="None">
       <description>type def preconditionnement</description>
       <enumvalue name="None" genvalue="HTSOptionTypes::None">
@@ -224,25 +224,25 @@
       <enumvalue name="CprDDML" genvalue="HTSOptionTypes::CprDDML">
         <description>CprDDML</description>
       </enumvalue>
-      <enumvalue name="CprAMG" genvalue="HTSOptionTypes::CprAMG">
+      <enumvalue name="CprAMG" genvalue="HTSOptionTypes::Cpr">
         <description>CprAMG</description>
       </enumvalue>
-      
+
     </enumeration>
-    
+
     <simple name="verbose" type="bool" default="false">
       <description>Verbosity flag</description>
     </simple>
-    
+
     <simple name="use-thread" type="bool" default="false">
       <description>use multithreaded solver</description>
     </simple>
-    
+
     <simple name="nb-threads" type="integer" default="1">
       <description>number of thread for multithreaded solver</description>
     </simple>
-    
-    
+
+
     <simple name="pqueue" type="integer" default="0">
       <description>Parallel Queue System :
                      0->Single
@@ -250,7 +250,7 @@
                      2->Squential
        </description>
     </simple>
-    
+
     <simple name="thread-env-type" type="integer" default="0">
       <description>ThreadEnv System :
                      0->Pth
@@ -258,34 +258,34 @@
                      2->TBB
        </description>
     </simple>
-    
+
     <simple name="affinity-mode" type="integer" default="0">
       <description>Affinity Mode :
                      0->Block
                      1->Interleave
        </description>
     </simple>
-    
+
     <simple name="use-simd" type="bool" default="false">
       <description></description>
     </simple>
-    
+
     <simple name="nb-part" type="integer" default="1">
       <description>number of domain partitions</description>
     </simple>
-    
+
     <simple name="nb-subpart" type="integer" default="0">
       <description>number of subdomain partitions</description>
     </simple>
-    
+
     <simple name="metis" type="integer" default="1">
       <description>to use metis partitioner on each MPI domains</description>
     </simple>
-    
+
     <simple name="smetis" type="integer" default="1">
       <description>to use metis partitioner on each MPI domains</description>
     </simple>
-    
+
     <simple name="sendrecv-opt" type="integer" default="1">
       <description>SendRecv MPI policy</description>
     </simple>

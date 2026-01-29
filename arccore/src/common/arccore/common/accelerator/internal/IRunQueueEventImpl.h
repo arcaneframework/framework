@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueEventImpl.h                                        (C) 2000-2025 */
+/* IRunQueueEventImpl.h                                        (C) 2000-2026 */
 /*                                                                           */
 /* Interface de l'implémentation d'un évènement.                             */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -43,13 +43,13 @@ class ARCCORE_COMMON_EXPORT IRunQueueEventImpl
   //! Temps écoulé (en nanoseconde) entre l'évènement \a from_event et cet évènement.
   virtual Int64 elapsedTime(IRunQueueEventImpl* from_event) = 0;
 
-  virtual bool hasPendingWork() =0;
+  virtual bool hasPendingWork() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

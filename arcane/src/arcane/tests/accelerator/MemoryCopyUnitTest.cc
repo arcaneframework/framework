@@ -112,7 +112,7 @@ initializeTest()
 void MemoryCopyUnitTest::
 executeTest()
 {
-  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy())) {
+  if (isAcceleratorPolicy(m_runner.executionPolicy())) {
     info() << "ExecuteTest1: using accelerator";
     _executeTest1(eMemoryRessource::UnifiedMemory);
     _executeTest1(eMemoryRessource::HostPinned);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandImpl.h                                            (C) 2000-2025 */
+/* RunCommandImpl.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation de la gestion d'une commande sur accélérateur.             */
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ class RunCommandImpl
   void notifyBeginLaunchKernel();
   void notifyEndLaunchKernel();
   void notifyEndExecuteKernel();
-  impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
+  Impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
   IRunQueueStream* internalStream() const;
   RunnerImpl* runner() const;
@@ -113,6 +113,9 @@ class RunCommandImpl
   ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;
 
   //! Indique si la commande s'exécute sur accélérateur
+  const eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
+
+  //! Indique si la commande s'exécute sur accélérateur
   const bool m_use_accelerator = false;
 
   /*!
@@ -133,6 +136,9 @@ class RunCommandImpl
   //! Taille de la mémoire partagée à allouer
   Int32 m_shared_memory_size = 0;
 
+  //! Nombre de pas de décomposition de la boucle
+  Int32 m_nb_stride = 1;
+
  private:
 
   void _freePools();
@@ -145,7 +151,7 @@ class RunCommandImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

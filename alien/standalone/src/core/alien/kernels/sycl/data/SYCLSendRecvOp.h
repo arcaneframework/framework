@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 #endif
   }
 
-  void start(bool insitu = false)
+  void start([[maybe_unused]] bool insitu = false)
   {
     //alien_debug([&] {cout() << "SYCLSendRecvOP START "<<m_send_policy;});
     //Universe().traceMng()->flush() ;
@@ -162,7 +162,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     //Universe().traceMng()->flush() ;
   }
 
-  void end(bool insitu = false)
+  void end([[maybe_unused]] bool insitu = false)
   {
     //alien_debug([&] {cout() << "SYCLSendRecvOP END : "<<m_recv_policy;});
     //Universe().traceMng()->flush() ;
@@ -247,7 +247,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     //Universe().traceMng()->flush() ;
   }
 
-  void upperRecv(bool insitu = true) 
+  void upperRecv([[maybe_unused]] bool insitu = true)
   {
   }
   
@@ -255,7 +255,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   {
   }
   
-  void lowerRecv(bool insitu = true)
+  void lowerRecv([[maybe_unused]] bool insitu = true)
   {
   }
   

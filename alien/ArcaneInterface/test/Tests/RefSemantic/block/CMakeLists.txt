@@ -10,6 +10,12 @@ foreach (BUILDER Profiled Stream Import)
         linkLibraries(refmvhandlers.Block${BUILDER} intel)
     endif ()
 
+    if (TARGET alien_core_solvers)
+        linkLibraries(refmvhandlers.Block${BUILDER}
+                alien_core_solvers
+                )
+    endif ()
+    
     if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Block${BUILDER}
                 alien_external_packages
@@ -51,6 +57,12 @@ foreach (BUILDER VBlockStream)
 
     addSources(refmvhandlers.${BUILDER} ${BUILDER}.cpp BuilderTestVBlockFramework.cpp)
 
+    if (TARGET alien_core_solvers)
+        linkLibraries(refmvhandlers.${BUILDER}
+                alien_core_solvers
+                )
+    endif ()
+    
     if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.${BUILDER}
                 alien_external_packages

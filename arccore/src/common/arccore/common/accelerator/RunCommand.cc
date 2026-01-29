@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2025 */
+/* RunCommand.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -50,6 +50,16 @@ RunCommand::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Politique d'exécution de la commande
+eExecutionPolicy RunCommand::
+executionPolicy() const
+{
+  return m_p->m_execution_policy;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,6 +125,21 @@ addNbThreadPerBlock(Int32 v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+RunCommand& RunCommand::
+addNbStride(Int32 v)
+{
+  // On ne gère le pas de grille que sur accélérateur.
+  if (m_p->m_use_accelerator){
+    if (v < 0)
+      v = 1;
+    m_p->m_nb_stride = v;
+  }
+  return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void RunCommand::
 setParallelLoopOptions(const ParallelLoopOptions& opt)
 {
@@ -152,7 +177,7 @@ _internalNativeStream() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunQueueImpl* RunCommand::
+Impl::RunQueueImpl* RunCommand::
 _internalQueueImpl() const
 {
   return m_p->m_queue;
@@ -161,17 +186,17 @@ _internalQueueImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunCommandImpl* RunCommand::
-_internalCreateImpl(impl::RunQueueImpl* queue)
+Impl::RunCommandImpl* RunCommand::
+_internalCreateImpl(Impl::RunQueueImpl* queue)
 {
-  return new impl::RunCommandImpl(queue);
+  return new Impl::RunCommandImpl(queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void RunCommand::
-_internalDestroyImpl(impl::RunCommandImpl* p)
+_internalDestroyImpl(Impl::RunCommandImpl* p)
 {
   delete p;
 }
@@ -243,6 +268,15 @@ Int32 RunCommand::
 _sharedMemory() const
 {
   return m_p->m_shared_memory_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 RunCommand::
+nbStride() const
+{
+  return m_p->m_nb_stride;
 }
 
 /*---------------------------------------------------------------------------*/

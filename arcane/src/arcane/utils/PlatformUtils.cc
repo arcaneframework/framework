@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2025 */
+/* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -100,31 +100,10 @@ namespace Arcane
 namespace platform
 {
   IOnlineDebuggerService* global_online_debugger_service = nullptr;
-  ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService* platform::
-getSymbolizerService()
-{
-  return global_symbolizer_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_UTILS_EXPORT ISymbolizerService* platform::
-setSymbolizerService(ISymbolizerService* service)
-{
-  ISymbolizerService* old_service = global_symbolizer_service;
-  global_symbolizer_service = service;
-  return old_service;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -412,61 +391,6 @@ getExeFullPath()
   }
 #else
 #error "platform::getExeFullPath() not implemented for this platform"
-#endif
-  return full_path;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" String platform::
-getLoadedSharedLibraryFullPath(const String& dll_name)
-{
-  String full_path;
-  if (dll_name.null())
-    return full_path;
-#if defined(ARCANE_OS_LINUX)
-  {
-    std::ifstream ifile("/proc/self/maps");
-    String v;
-    String true_name = "lib" + dll_name + ".so";
-    while (ifile.good()){
-      ifile >> v;
-      Span<const Byte> vb = v.bytes();
-      if (vb.size()>0 && vb[0]=='/'){
-        if (v.endsWith(true_name)){
-          full_path = v;
-          //std::cout << "V='" << v << "'\n";
-          break;
-        }
-      }
-    }
-  }
-#elif defined(ARCANE_OS_WIN32)
-  HMODULE hModule = GetModuleHandleA(dll_name.localstr());
-  if (!hModule)
-    return full_path;
-  TCHAR dllPath[_MAX_PATH];
-  GetModuleFileName(hModule, dllPath, _MAX_PATH);
-  full_path = StringView(dllPath);
-#elif defined(ARCANE_OS_MACOS)
-  {
-    String true_name = "lib" + dll_name + ".dylib";
-    uint32_t count = _dyld_image_count();
-    for (uint32_t i = 0; i < count; i++) {
-      const char* image_name = _dyld_get_image_name(i);
-      if (image_name) {
-        String image_path(image_name);
-        if (image_path.endsWith(true_name)) {
-          full_path = image_path;
-          break;
-        }
-      }
-    }
-  }
-#else
-  throw NotSupportedException(A_FUNCINFO);
-//#error "platform::getSymbolFullPath() not implemented for this platform"
 #endif
   return full_path;
 }

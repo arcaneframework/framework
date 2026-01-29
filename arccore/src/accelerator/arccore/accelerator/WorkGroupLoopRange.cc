@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* WorkGroupLoopRange.cc                                       (C) 2000-2025 */
+/* WorkGroupLoopRange.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Boucle pour le parallélisme hiérarchique.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/accelerator/WorkGroupLoopRange.h"
+
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/common/accelerator/RunCommand.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,14 +25,45 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-WorkGroupLoopRange::
-WorkGroupLoopRange(Int32 total_size, Int32 nb_group, Int32 block_size)
-: m_total_size(total_size)
-, m_nb_group(nb_group)
-, m_group_size(block_size)
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
+setBlockSize(Int32 block_size)
 {
-  m_last_group_size = (total_size - (block_size * (nb_group - 1)));
+  if ((block_size <= 0) || ((block_size % 32) != 0))
+    ARCCORE_FATAL("Invalid value '{0}' for block size: should be a multiple of 32", block_size);
+  m_block_size = block_size;
+  _setNbBlock();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IndexType_>::
+setBlockSize(const RunCommand& command)
+{
+  // TODO: en multi-threading, à calculer en fonction du nombre de threads
+  // disponibles et du nombre total d'éléments
+  Int32 block_size = 1024;
+  if (isAcceleratorPolicy(command.executionPolicy()))
+    block_size = 256;
+  setBlockSize(block_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
+_setNbBlock()
+{
+  m_nb_block = static_cast<Int32>((m_nb_element + (m_block_size - 1)) / m_block_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template class WorkGroupLoopRangeBase<Int32>;
+template class WorkGroupLoopRangeBase<Int64>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@ namespace Arcane::Accelerator
 VariableViewBase::
 VariableViewBase(const ViewBuildInfo& vbi, IVariable* var)
 {
-  impl::RunQueueImpl* q = vbi._internalQueue();
+  Impl::RunQueueImpl* q = vbi._internalQueue();
   if (q->isAutoPrefetchCommand()) {
     RunQueue rq(q);
     VariableUtils::prefetchVariableAsync(var, &rq);

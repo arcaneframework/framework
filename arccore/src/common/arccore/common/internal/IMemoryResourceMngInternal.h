@@ -43,6 +43,9 @@ class ARCCORE_COMMON_EXPORT IMemoryResourceMngInternal
   //! Positionne l'allocateur pour la ressource \a r
   virtual void setAllocator(eMemoryResource r, IMemoryAllocator* allocator) = 0;
 
+  //! Positionne le pool mémoire pour la ressource \a r
+  virtual void setMemoryPool(eMemoryResource r, IMemoryPool* pool) = 0;
+
   //! Positionne l'instance gérant les copies.
   virtual void setCopier(IMemoryCopier* copier) = 0;
 

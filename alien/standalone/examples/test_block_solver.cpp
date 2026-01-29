@@ -1,0 +1,753 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
+#include <map>
+#include <mpi.h>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+#include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
+#include <arccore/trace/ITraceMng.h>
+#include <arccore/base/StringBuilder.h>
+
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
+#include <alien/index_manager/IIndexManager.h>
+#include <alien/index_manager/IndexManager.h>
+#include <alien/index_manager/functional/DefaultAbstractFamily.h>
+
+#include <alien/ref/AlienRefSemantic.h>
+
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRInternalLinearAlgebra.h>
+
+#ifdef ALIEN_USE_SYCL
+#include <alien/kernels/sycl/SYCLPrecomp.h>
+#include <alien/kernels/sycl/SYCLBackEnd.h>
+
+#include "alien/kernels/sycl/data/SYCLEnv.h"
+#include "alien/kernels/sycl/data/SYCLEnvInternal.h"
+
+#include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
+#include <alien/kernels/sycl/data/SYCLVector.h>
+#include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
+
+#include "alien/kernels/sycl/data/SYCLVectorInternal.h"
+#include <alien/kernels/sycl/data/SYCLBEllPackInternal.h>
+#include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
+
+#include <alien/kernels/sycl/algebra/SYCLKernelInternal.h>
+#endif
+
+#include <alien/expression/krylov/AlienKrylov.h>
+
+#include <alien/utils/StdTimer.h>
+
+namespace Environment
+{
+void initialize(int argc, char** argv)
+{
+  MPI_Init(&argc, &argv);
+}
+
+void finalize()
+{
+  MPI_Finalize();
+}
+
+Arccore::MessagePassing::IMessagePassingMng*
+parallelMng()
+{
+  return Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
+  MPI_COMM_WORLD);
+}
+
+Arccore::ITraceMng*
+traceMng()
+{
+  return Arccore::arccoreCreateDefaultTraceMng();
+}
+} // namespace Environment
+
+// Define index type for local ids
+typedef Arccore::Integer LID;
+// Define index type for global (unique) ids
+typedef Arccore::Int64 UID;
+
+int main(int argc, char** argv)
+{
+
+  // clang-format off
+  using namespace boost::program_options ;
+  options_description desc;
+  desc.add_options()
+      ("help",                                                            "produce help")
+      ("nx",                  value<int>()->default_value(10),            "nx")
+      ("ny",                  value<int>()->default_value(10),            "ny")
+      ("solver",              value<std::string>()->default_value("bicgs"),"solver [cg,bicgs]")
+      ("precond",             value<std::string>()->default_value("diag"),"preconditioner [diag,cheb,neumann,ilu0,filu0]")
+      ("output-level",        value<int>()->default_value(0),             "output level")
+      ("asynch",              value<int>()->default_value(0),             "Asynch mode synch : 0 or asynch 1")
+      ("dot-algo",            value<int>()->default_value(0),             "dot algo choice")
+      ("max-iter",            value<int>()->default_value(1000),          "max iterations")
+      ("tol",                 value<double>()->default_value(1.e-6),      "tolerance")
+      ("poly-factor",         value<double>()->default_value(0.5),        "polynome factor")
+      ("poly-factor-max-iter",value<int>()->default_value(10),            "polynome factor max iterations")
+      ("poly-order",          value<int>()->default_value(3),             "polynome order")
+      ("filu-factor-niter",   value<int>()->default_value(0),             "nb ILU Factorization iter")
+      ("filu-solver-niter",   value<int>()->default_value(3),             "nb ILU resolution iter")
+      ("filu-tol",            value<double>()->default_value(3),          "nb ILU tolerance")
+      ("kernel",              value<std::string>()->default_value("simplecsr"), "Kernel type [simplecsr sycl]")
+      ("test",                value<std::string>()->default_value("solver"),    "test [solver,mult,all]");
+  // clang-format on
+
+  variables_map vm;
+  store(parse_command_line(argc, argv, desc), vm);
+  notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    return 1;
+  }
+
+  /*
+   * Example : LAPLACIAN PROBLEM on a 2D square mesh of size NX x NY
+   * Unknowns on nodes (i,j)
+   * Use a 5-Points stencil
+   *
+   *
+   *           (I,J+1)
+   *              |
+   * (I-1,J) -- (I,J) -- (I+1,J)
+   *              |
+   *           (I,J-1)
+   *
+   * TUTORIAL : LINEAR SYSTEM mat.X=rhs DEFINITION
+   * =========================================
+   */
+  int Nx = vm["nx"].as<int>();
+  int Ny = vm["ny"].as<int>();
+  // int space_size = Nx * Ny;
+
+  // INITIALIZE PARALLEL ENVIRONMENT
+  Environment::initialize(argc, argv);
+
+  auto parallel_mng = Environment::parallelMng();
+  auto trace_mng = Environment::traceMng();
+
+  auto comm_size = Environment::parallelMng()->commSize();
+  auto comm_rank = Environment::parallelMng()->commRank();
+
+  Arccore::StringBuilder filename("krylov.log");
+  Arccore::ReferenceCounter<Arccore::ITraceStream> ofile;
+  if (comm_size > 1) {
+    filename += comm_rank;
+    ofile = Arccore::ITraceStream::createFileStream(filename.toString());
+    trace_mng->setRedirectStream(ofile.get());
+  }
+  trace_mng->finishInitialize();
+
+  Alien::setTraceMng(trace_mng);
+  Alien::setVerbosityLevel(Alien::Verbosity::Debug);
+
+  trace_mng->info() << "INFO START KRYLOV TEST";
+  trace_mng->info() << "NB PROC = " << comm_size;
+  trace_mng->info() << "RANK    = " << comm_rank;
+  trace_mng->flush();
+
+  /*
+     * MESH PARTITION ALONG Y AXIS
+     *
+     */
+  int local_ny = Ny / comm_size;
+  int r = Ny % comm_size;
+
+  std::vector<int> y_offset(comm_size + 1);
+  y_offset[0] = 0;
+  for (int ip = 0; ip < r; ++ip)
+    y_offset[ip + 1] = y_offset[ip] + local_ny + 1;
+
+  for (int ip = r; ip < comm_size; ++ip)
+    y_offset[ip + 1] = y_offset[ip] + local_ny;
+
+  // Define a lambda function to compute node uids from the 2D (i,j) coordinates
+  // (i,j) -> uid = node_uid(i,j)
+  auto node_uid = [&](int i, int j) { return j * Nx + i; };
+
+  /*
+     * DEFINITION of Unknowns Unique Ids and  Local Ids
+     */
+  Alien::UniqueArray<UID> uid;
+  Alien::UniqueArray<Arccore::Integer> owners;
+  Alien::UniqueArray<LID> lid;
+  std::map<UID, LID> uid2lid;
+  int first_j = y_offset[comm_rank];
+  int last_j = y_offset[comm_rank + 1];
+
+  int index = 0;
+  for (int j = first_j; j < last_j; ++j) {
+    for (int i = 0; i < Nx; ++i) {
+      int n_uid = node_uid(i, j);
+      uid.add(n_uid);
+      owners.add(comm_rank);
+      lid.add(index);
+      uid2lid[n_uid] = index;
+      ++index;
+    }
+  }
+
+  int nb_ghost = 0;
+  if (comm_size > 1) {
+    if (comm_rank > 0) {
+      for (int i = 0; i < Nx; ++i) {
+        int n_uid = node_uid(i, first_j - 1);
+        uid.add(n_uid);
+        owners.add(comm_rank - 1);
+        lid.add(index);
+        uid2lid[n_uid] = index;
+        ++index;
+        ++nb_ghost;
+      }
+    }
+    if (comm_rank < comm_size - 1) {
+      for (int i = 0; i < Nx; ++i) {
+        int n_uid = node_uid(i, last_j);
+        uid.add(n_uid);
+        owners.add(comm_rank + 1);
+        lid.add(index);
+        uid2lid[n_uid] = index;
+        ++index;
+        ++nb_ghost;
+      }
+    }
+  }
+
+  /*
+     * DEFINITION of an abstract family of unknowns
+     */
+  Alien::DefaultAbstractFamily family(uid, owners, parallel_mng);
+
+  Alien::IndexManager index_manager(parallel_mng);
+
+  /*
+     * Creation of a set of indexes
+     */
+  auto indexSetU = index_manager.buildScalarIndexSet("U", family, 0);
+
+  // Combine all index set and create Linear system index system
+  index_manager.prepare();
+
+  auto global_size = index_manager.globalSize();
+  auto local_size = index_manager.localSize();
+
+  trace_mng->info() << "GLOBAL SIZE : " << global_size;
+  trace_mng->info() << "LOCAL SIZE  : " << local_size;
+  trace_mng->info() << "GHOST SIZE  : " << nb_ghost;
+  trace_mng->flush();
+
+  /*
+   * DEFINITION of
+   * - Alien Space,
+   * - matrix and vector distributions
+   * to manage the distribution of indexes between all MPI processes
+   */
+
+  auto space = Alien::Space(global_size, "MySpace");
+
+  auto matrix_dist =
+  Alien::MatrixDistribution(global_size, global_size, local_size, parallel_mng);
+  auto vector_dist = Alien::VectorDistribution(global_size, local_size, parallel_mng);
+
+  trace_mng->info() << "MATRIX DISTRIBUTION INFO";
+  trace_mng->info() << "GLOBAL ROW SIZE : " << matrix_dist.globalRowSize();
+  trace_mng->info() << "LOCAL ROW SIZE  : " << matrix_dist.localRowSize();
+  trace_mng->info() << "GLOBAL COL SIZE : " << matrix_dist.globalColSize();
+  trace_mng->info() << "LOCAL COL SIZE  : " << matrix_dist.localColSize();
+
+  trace_mng->info() << "VECTOR DISTRIBUTION INFO";
+  trace_mng->info() << "GLOBAL SIZE : " << vector_dist.globalSize();
+  trace_mng->info() << "LOCAL SIZE  : " << vector_dist.localSize();
+  trace_mng->flush();
+
+  auto allUIndex = index_manager.getIndexes(indexSetU);
+
+  double off_diag = 0.5;
+  /*
+   *  Assemble matrix.
+   */
+  Alien::Block block(2);
+  auto A = Alien::BlockMatrix(block,matrix_dist);
+
+  /* Two passes */
+
+  // PROFILE DEFINITION
+  {
+    Alien::MatrixProfiler profiler(A);
+
+    for (int j = first_j; j < last_j; ++j) {
+      // BOUCLE SUIVANT AXE X
+      for (int i = 0; i < Nx; ++i) {
+        auto n_uid = node_uid(i, j);
+        auto n_lid = uid2lid[n_uid];
+        auto irow = allUIndex[n_lid];
+
+        // DEFINE DIAGONAL
+        profiler.addMatrixEntry(irow, irow);
+
+        // OFF DIAG
+        // lower
+        if (j > 0) {
+          auto off_uid = node_uid(i, j - 1);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1)
+            profiler.addMatrixEntry(irow, jcol);
+        }
+        // left
+        if (i > 0) {
+          auto off_uid = node_uid(i - 1, j);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1)
+            profiler.addMatrixEntry(irow, jcol);
+        }
+        // right
+        if (i < Nx - 1) {
+          auto off_uid = node_uid(i + 1, j);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1)
+            profiler.addMatrixEntry(irow, jcol);
+        }
+        // upper
+        if (j < Ny - 1) {
+          auto off_uid = node_uid(i, j + 1);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1)
+            profiler.addMatrixEntry(irow, jcol);
+        }
+      }
+    }
+  }
+  // Distributions calculée
+  const auto& dist = A.distribution();
+  int offset = dist.rowOffset();
+  int lsize = dist.localRowSize();
+  int gsize = dist.globalRowSize();
+
+  trace_mng->info() << "define matrix profile [1d-laplacian] with matrix profiler";
+  {
+    Alien::MatrixProfiler profiler(A);
+
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      profiler.addMatrixEntry(irow, irow);
+      if (irow - 1 >= 0)
+        profiler.addMatrixEntry(irow, irow - 1);
+      if (irow + 1 < gsize)
+        profiler.addMatrixEntry(irow, irow + 1);
+    }
+  }
+
+  trace_mng->info() << "build matrix [1d-laplacian] with profiled matrix builder";
+  {
+    Alien::ProfiledBlockMatrixBuilder builder(
+        A, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
+    Alien::UniqueArray2<double> values2d, values2dExtraDiag;
+    const int block_size = A.block().size();
+    values2d.resize(block_size, block_size);
+    values2dExtraDiag.resize(block_size, block_size);
+    values2d.fill(0.);
+    values2dExtraDiag.fill(0.);
+    for (int i = offset; i < offset + lsize; ++i) {
+      for (int j = 0; j < block_size; ++j) {
+        values2d[j][j] = 4;
+        values2dExtraDiag[j][j] = -1;
+        if (j - 1 >= 0)
+          values2d[j][j - 1] = -1;
+        if (j + 1 < block_size)
+          values2d[j][j + 1] = -1;
+      }
+      builder(i, i) = values2d.view();
+      if (i - 1 >= 0)
+        builder(i, i - 1) = values2dExtraDiag.view();
+      if (i + 1 < gsize)
+        builder(i, i + 1) = values2dExtraDiag.view();
+    }
+  }
+
+  // SECOND STEP : MATRIX FILLING STEP
+  {
+    Alien::ProfiledBlockMatrixBuilder builder(
+            A, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
+    Alien::UniqueArray2<double> values2d, values2dExtraDiag;
+    const int block_size = A.block().size();
+    values2d.resize(block_size, block_size);
+    values2dExtraDiag.resize(block_size, block_size);
+    values2d.fill(0.);
+    values2dExtraDiag.fill(0.);
+    // Loop on Y-axis
+    for (int j = first_j; j < last_j; ++j)
+    {
+      // Loop on X-axis
+      for (int i = 0; i < Nx; ++i)
+      {
+        auto n_uid = node_uid(i, j);
+        auto n_lid = uid2lid[n_uid];
+        auto irow = allUIndex[n_lid];
+
+        for (int k = 0; k < block_size; ++k)
+        {
+          values2d[j][j] = 4;
+          values2dExtraDiag[k][k] = -1;
+          if (k - 1 >= 0)
+            values2d[k][k - 1] = -1;
+          if (k + 1 < block_size)
+            values2d[k][k + 1] = -1;
+        }
+        // OFF DIAG
+        // lower
+        if (j > 0) {
+          auto off_uid = node_uid(i, j - 1);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1) {
+            builder(irow, jcol) = values2dExtraDiag.view();
+          }
+        }
+        // left
+        if (i > 0) {
+          auto off_uid = node_uid(i - 1, j);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1) {
+            builder(irow, jcol) = values2dExtraDiag.view();
+          }
+        }
+        // right
+        if (i < Nx - 1) {
+          auto off_uid = node_uid(i + 1, j);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1) {
+            builder(irow, jcol) = values2dExtraDiag.view();
+          }
+        }
+        if (i == Nx - 1) {
+          // Dirichlet Boundary Condition on XMAX
+        }
+
+        // upper
+        if (j < Ny - 1) {
+          auto off_uid = node_uid(i, j + 1);
+          auto off_lid = uid2lid[off_uid];
+          auto jcol = allUIndex[off_lid];
+          if (jcol != -1) {
+            builder(irow, jcol) = values2dExtraDiag.view();
+          }
+        }
+        // DIAGONAL
+        builder(irow, irow) = values2d.view();
+      }
+    }
+  }
+
+  /*
+   * Build rhs vector
+   */
+  auto b = Alien::BlockVector(block,vector_dist);
+  auto x = Alien::BlockVector(block,vector_dist);
+
+  {
+    Alien::BlockVectorWriter writer_b(b);
+    Alien::BlockVectorWriter writer_x(x);
+
+    // Loop on Y-axis
+    for (int j = first_j; j < last_j; ++j) {
+      // Loop on X-axis
+      for (int i = 0; i < Nx; ++i) {
+        auto n_uid = node_uid(i, j);
+        auto n_lid = uid2lid[n_uid];
+        auto irow = allUIndex[n_lid];
+
+        //writer[irow] = 1. / (1. + i + j);
+        //writer[irow] = 1. ;
+        writer_b[irow].fill(0.);
+        writer_x[irow].fill(0.);
+        if (i == Nx - 1) {
+          writer_b[irow].fill(1.);
+        }
+      }
+    }
+  }
+
+  // clang-format off
+  typedef Alien::StdTimer   TimerType ;
+  typedef TimerType::Sentry SentryType ;
+  // clang-format on
+
+  TimerType timer;
+  std::string kernel = vm["kernel"].as<std::string>();
+
+  if (vm["test"].as<std::string>().compare("all") == 0 || vm["test"].as<std::string>().compare("cxr") == 0)
+  {
+    auto run = [&](auto& alg)
+                  {
+                    using AlgebraType      = typename std::remove_reference<decltype(alg)>::type ;
+                    using BackEndType      = typename AlgebraType::BackEndType ;
+                    using StopCriteriaType = Alien::Iteration<AlgebraType> ;
+                    using VectorType       = typename AlgebraType::Vector ;
+                    using MatrixType       = typename AlgebraType::Matrix ;
+                    using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
+                    using StopCritType     = Alien::Iteration<AlgebraType> ;
+                    using CGSolverType     = Alien::CG<AlgebraType> ;
+                    using DiagPrecondType  = Alien::DiagPreconditioner<AlgebraType> ;
+                    using CxrSolverType    = Alien::AMGSolverT<BackEndType,AlgebraType,CGSolverType,DiagPrecondType> ;
+                    using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
+                    using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
+                                                                      MatrixType,
+                                                                      VectorType,
+                                                                      CxrSolverType,
+                                                                      CxrOpType,
+                                                                      RelaxSolverType> ;
+
+
+                    auto const& true_A = A.impl()->get<BackEndType>() ;
+                    auto const& true_b = b.impl()->get<BackEndType>() ;
+                    auto&       true_x = x.impl()->get<BackEndType>(true) ;
+                    VectorType diag ;
+                    alg.diagonal(true_A, diag);
+                    auto cxr_op = CxrOpType(true_A) ;
+                    cxr_op.computeCxrMatrix(alg) ;
+                    auto& cxr_matrix = cxr_op.getCxrMatrix() ;
+
+                    auto cg_solver = CGSolverType{alg,trace_mng} ;
+                    auto diag_prec = DiagPrecondType{alg,cxr_matrix} ;
+                    auto cxr_solver = CxrSolverType{alg,cg_solver,diag_prec} ;
+                    auto relax_solver = RelaxSolverType{alg,true_A,trace_mng} ;
+
+                    auto cxr_precond = CxrPrecondType{alg,
+                                                      true_A,
+                                                      &cxr_op,
+                                                      &cxr_solver,
+                                                      &relax_solver,
+                                                      trace_mng} ;
+                    cxr_precond.init() ;
+                    cxr_precond.solve(alg,true_b,true_x) ;
+                  } ;
+
+    if (kernel.compare("simplecsr") == 0) {
+      Alien::SimpleCSRInternalLinearAlgebra alg;
+      run(alg);
+    }
+  }
+
+  if (vm["test"].as<std::string>().compare("all") == 0 || vm["test"].as<std::string>().compare("solver") == 0)
+  {
+    // clang-format off
+    int         max_iteration = vm["max-iter"].as<int>();
+    double      tol           = vm["tol"].as<double>();
+    std::string solver        = vm["solver"].as<std::string>();
+    std::string precond       = vm["precond"].as<std::string>();
+    int         output_level  = vm["output-level"].as<int>();
+    int         asynch        = vm["asynch"].as<int>();
+    // clang-format on
+
+    // clang-format off
+    auto run = [&](auto& alg)
+              {
+                typedef typename std::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename AlgebraType::BackEndType        BackEndType ;
+                typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
+
+
+                auto const& true_A = A.impl()->get<BackEndType>() ;
+                auto const& true_b = b.impl()->get<BackEndType>() ;
+                auto&       true_x = x.impl()->get<BackEndType>(true) ;
+
+                StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?trace_mng:nullptr} ;
+
+                if(solver.compare("cg")==0)
+                {
+                  typedef Alien::CG<AlgebraType> SolverType ;
+
+                  SolverType solver{alg,trace_mng} ;
+                  solver.setOutputLevel(output_level) ;
+
+                  if(precond.compare("diag")==0)
+                    {
+                      trace_mng->info()<<"DIAG PRECONDITIONER";
+                      trace_mng->flush() ;
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+                      SentryType sentry(timer,"CG-Diag") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("cheb")==0)
+                    {
+                      trace_mng->info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"CG-ChebyshevPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("neumann")==0)
+                    {
+                      trace_mng->info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"CG-NeumanPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                }
+
+                if(solver.compare("bicgs")==0)
+                {
+                  typedef Alien::BiCGStab<AlgebraType> SolverType ;
+                  SolverType solver{alg,trace_mng} ;
+                  solver.setOutputLevel(output_level) ;
+                  if(precond.compare("diag")==0)
+                    {
+                      trace_mng->info()<<"DIAG PRECONDITIONER";
+                      trace_mng->flush() ;
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+                      SentryType sentry(timer,"BiCGS-Diag") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("cheb")==0)
+                    {
+                      trace_mng->info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-ChebyshevPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("neumann")==0)
+                    {
+                      trace_mng->info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-NeumanPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("ilu0")==0)
+                    {
+                      trace_mng->info()<<"ILU0 PRECONDITIONER";
+                      typedef Alien::ILU0Preconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,trace_mng} ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-ILU0") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("filu0")==0)
+                    {
+                      trace_mng->info()<<"FILU0 PRECONDITIONER";
+                      typedef Alien::FILU0Preconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,trace_mng} ;
+                      precond.setParameter("nb-factor-iter",vm["filu-factor-niter"].as<int>()) ;
+                      precond.setParameter("nb-solver-iter",vm["filu-solver-niter"].as<int>()) ;
+                      precond.setParameter("tol",           vm["filu-tol"].as<double>()) ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-FILU0") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  /*
+                  if(precond.compare("cxr")==0)
+                    {
+                      trace_mng->info()<<" CXR PRECONDITIONER";
+                      typedef Alien::CxrOperator<AlgebraType::matrix_type> CsrOpType ;
+                      auto cxr_op = CxrOpType(true_A) ;
+                      cxr_op.computeCxrMatrix() ;
+                      auto& cxr_matrix = cxr_op.getCxrMatrix() ;
+                    }*/
+                }
+
+                if(stop_criteria.getStatus())
+                {
+                  trace_mng->info()<<"Solver has converged";
+                  trace_mng->info()<<"Nb iterations  : "<<stop_criteria();
+                  trace_mng->info()<<"Criteria value : "<<stop_criteria.getValue();
+                }
+                else
+                {
+                  trace_mng->info()<<"Solver convergence failed";
+                }
+              } ;
+    // clang-format on
+
+    if (kernel.compare("simplecsr") == 0) {
+      Alien::SimpleCSRInternalLinearAlgebra alg;
+      run(alg);
+    }
+
+  }
+
+  timer.printInfo(trace_mng->info().file(), "KRYLOV-BENCH");
+
+  Environment::finalize();
+
+  return 0;
+}

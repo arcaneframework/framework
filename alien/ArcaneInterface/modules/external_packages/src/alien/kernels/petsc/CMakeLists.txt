@@ -1,4 +1,4 @@
-  addSources(alien_external_packages
+addSources(alien_external_packages
           algebra/PETScInternalLinearAlgebra.cc
           linear_solver/PETScInitType.cc
           linear_solver/PETScInternalLinearSolver.cc
@@ -12,16 +12,24 @@
           io/AsciiDumper.cc
           )
 
-  linkLibraries(alien_external_packages petsc)
-  
-  if(PETSc_USE_PKGCONFIG)
-    if(PKG_PETSC_FOUND) 
+if(ALIEN_USE_SYCL)
+  addSources(alien_external_packages
+             converters/HCSR/HCSR_to_PETSc_VectorConverter.cc
+             converters/HCSR/SYCL_to_PETSc_VectorConverter.cc
+             converters/HCSR/HCSR_to_PETSc_MatrixConverter.cc
+            )
+endif()
+
+linkLibraries(alien_external_packages petsc)
+
+if(PETSc_USE_PKGCONFIG)
+    if(PKG_PETSC_FOUND)
       target_link_options(alien_external_packages PRIVATE ${PKG_PETSC_STATIC_LDFLAGS})
      endif()
-  endif()  
+endif()
 
 
-  if(USE_AXLSTAR)
+if(USE_AXLSTAR)
   generateAxl(alien_external_packages
           linear_solver/spai/PETScPrecConfigSPAI.axl
           linear_solver/arcane/PETScSolverConfigBiCGStab.axl
@@ -48,8 +56,9 @@
           INSTALL_GENERATED_FILES
           USER_INSTALL_PREFIX ALIEN
           )
-  endif()
-  addSources(alien_external_packages
+endif()
+
+addSources(alien_external_packages
           linear_solver/spai/PETScPrecConfigSPAIService.cc
           linear_solver/arcane/PETScSolverConfigBiCGStabService.cc
           linear_solver/arcane/PETScPrecConfigAdditiveSchwarzService.cc
@@ -70,8 +79,8 @@
           linear_solver/field_split/SymmetricMultiplicativeFieldSplitTypeService.cc
           )
 
-  if (TARGET slepc)
-      if(USE_AXLSTAR)
+if (TARGET slepc)
+  if (USE_AXLSTAR)
       generateAxl(alien_external_packages
               eigen_solver/arcane/SLEPcEigenSolver.axl
               AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
@@ -81,16 +90,16 @@
               INSTALL_GENERATED_FILES
               USER_INSTALL_PREFIX ALIEN
               )
-      endif()
-      addSources(alien_external_packages
+  endif()
+  addSources(alien_external_packages
               eigen_solver/SLEPcInternalEigenSolver.cc
               eigen_solver/arcane/SLEPcEigenSolver.cc)
       linkLibraries(alien_external_packages slepc)
 
-  endif (TARGET slepc)
+endif (TARGET slepc)
 
-  if (TARGET hypre)
-      if(USE_AXLSTAR)
+if (TARGET petsc::hypre)
+  if (USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/hypre/PETScPrecConfigHypreEuclid.axl
               linear_solver/hypre/PETScPrecConfigHypre.axl
@@ -101,15 +110,16 @@
               INSTALL_GENERATED_FILES
               USER_INSTALL_PREFIX ALIEN
               )
-      endif()
-      addSources(alien_external_packages
-              linear_solver/hypre/PETScPrecConfigHypreEuclidService.cc
-              linear_solver/hypre/PETScPrecConfigHypreService.cc
-              )
-  endif (TARGET hypre)
+  endif()
+  addSources(alien_external_packages
+             linear_solver/hypre/PETScPrecConfigHypreEuclidService.cc
+             linear_solver/hypre/PETScPrecConfigHypreService.cc
+            )
 
-  if (TARGET superlu)
-      if(USE_AXLSTAR)
+endif (TARGET petsc::hypre)
+
+if (TARGET petsc::superlu)
+  if(USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLU.axl
               linear_solver/super_lu/PETScPrecConfigSuperLU.axl
@@ -120,15 +130,15 @@
               INSTALL_GENERATED_FILES
               USER_INSTALL_PREFIX ALIEN
               )
-      endif()
-      addSources(alien_external_packages
+  endif()
+  addSources(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLUService.cc
               linear_solver/super_lu/PETScPrecConfigSuperLUService.cc
               )
-  endif (TARGET superlu)
+endif (TARGET petsc::superlu)
 
-  if (TARGET petsc::mumps)
-      if(USE_AXLSTAR)
+if (TARGET petsc::mumps)
+  if(USE_AXLSTAR)
           generateAxl(alien_external_packages
                   linear_solver/mumps/PETScSolverConfigMUMPS.axl
                   linear_solver/mumps/PETScPrecConfigMUMPS.axl
@@ -139,29 +149,33 @@
                   INSTALL_GENERATED_FILES
                   USER_INSTALL_PREFIX ALIEN
           )
-      endif()
-      addSources(alien_external_packages
+  endif()
+  addSources(alien_external_packages
               linear_solver/mumps/PETScSolverConfigMUMPSService.cc
               linear_solver/mumps/PETScPrecConfigMUMPSService.cc
-      )
-  endif (TARGET petsc::mumps)
+            )
+endif (TARGET petsc::mumps)
 
-  if (TARGET superlu)
+if (TARGET hypre)
+      linkLibraries(alien_external_packages hypre)
+endif ()
+
+if (TARGET superlu)
       linkLibraries(alien_external_packages superlu)
-  endif ()
+endif ()
 
-  if (TARGET superludist)
+if (TARGET superludist)
       linkLibraries(alien_external_packages superludist)
-  endif ()
+endif ()
 
-  if (TARGET mumps)
+if (TARGET mumps)
       linkLibraries(alien_external_packages mumps)
-  endif ()
+endif ()
 
-  if (TARGET metis)
+if (TARGET metis)
       linkLibraries(alien_external_packages metis)
-  endif ()
+endif ()
 
-  if (TARGET fftw3)
+if (TARGET fftw3)
       linkLibraries(alien_external_packages fftw3)
-  endif ()
+endif ()

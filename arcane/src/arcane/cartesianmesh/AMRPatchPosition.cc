@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRPatchPosition.cc                                         (C) 2000-2025 */
+/* AMRPatchPosition.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Position d'un patch AMR d'un maillage cartésien.                          */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ AMRPatchPosition()
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition::
-AMRPatchPosition(Int32 level, CartCoord3Type min_point, CartCoord3Type max_point, Int32 overlap_layer_size)
+AMRPatchPosition(Int32 level, CartCoord3 min_point, CartCoord3 max_point, Int32 overlap_layer_size)
 : m_level(level)
 , m_min_point(min_point)
 , m_max_point(max_point)
@@ -85,7 +85,7 @@ setLevel(Int32 level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoord3Type AMRPatchPosition::
+CartCoord3 AMRPatchPosition::
 minPoint() const
 {
   return m_min_point;
@@ -95,7 +95,7 @@ minPoint() const
 /*---------------------------------------------------------------------------*/
 
 void AMRPatchPosition::
-setMinPoint(CartCoord3Type min_point)
+setMinPoint(CartCoord3 min_point)
 {
   m_min_point = min_point;
 }
@@ -103,7 +103,7 @@ setMinPoint(CartCoord3Type min_point)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoord3Type AMRPatchPosition::
+CartCoord3 AMRPatchPosition::
 maxPoint() const
 {
   return m_max_point;
@@ -113,7 +113,7 @@ maxPoint() const
 /*---------------------------------------------------------------------------*/
 
 void AMRPatchPosition::
-setMaxPoint(CartCoord3Type max_point)
+setMaxPoint(CartCoord3 max_point)
 {
   m_max_point = max_point;
 }
@@ -139,7 +139,7 @@ setOverlapLayerSize(Int32 layer_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoord3Type AMRPatchPosition::
+CartCoord3 AMRPatchPosition::
 minPointWithOverlap() const
 {
   return m_min_point - m_overlap_layer_size;
@@ -148,7 +148,7 @@ minPointWithOverlap() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoord3Type AMRPatchPosition::
+CartCoord3 AMRPatchPosition::
 maxPointWithOverlap() const
 {
   return m_max_point + m_overlap_layer_size;
@@ -167,10 +167,10 @@ nbCells() const
 /*---------------------------------------------------------------------------*/
 
 std::pair<AMRPatchPosition, AMRPatchPosition> AMRPatchPosition::
-cut(CartCoordType cut_point, Integer dim) const
+cut(CartCoord cut_point, Integer dim) const
 {
-  CartCoord3Type patch_max_cut = m_max_point;
-  CartCoord3Type patch_min_cut = m_min_point;
+  CartCoord3 patch_max_cut = m_max_point;
+  CartCoord3 patch_min_cut = m_min_point;
 
   if (dim == MD_DirX) {
     patch_max_cut.x = cut_point;
@@ -200,8 +200,8 @@ cut(CartCoordType cut_point, Integer dim) const
 bool AMRPatchPosition::
 canBeFusion(const AMRPatchPosition& other_patch) const
 {
-  const CartCoord3Type min_point = other_patch.minPoint();
-  const CartCoord3Type max_point = other_patch.maxPoint();
+  const CartCoord3 min_point = other_patch.minPoint();
+  const CartCoord3 max_point = other_patch.maxPoint();
   return m_level == other_patch.level() &&
   (((m_min_point.x == max_point.x || m_max_point.x == min_point.x) &&
     (m_min_point.y == min_point.y && m_max_point.y == max_point.y) &&
@@ -220,14 +220,14 @@ canBeFusion(const AMRPatchPosition& other_patch) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-fusion(const AMRPatchPosition& other_patch)
+fusion(AMRPatchPosition& other_patch)
 {
   if (!canBeFusion(other_patch)) {
     return false;
   }
 
-  const CartCoord3Type min_point = other_patch.minPoint();
-  const CartCoord3Type max_point = other_patch.maxPoint();
+  const CartCoord3 min_point = other_patch.minPoint();
+  const CartCoord3 max_point = other_patch.maxPoint();
 
   if (m_min_point.x > min_point.x) {
     m_min_point.x = min_point.x;
@@ -250,6 +250,8 @@ fusion(const AMRPatchPosition& other_patch)
     m_max_point.z = max_point.z;
   }
 
+  other_patch.setLevel(-2);
+
   return true;
 }
 
@@ -266,7 +268,7 @@ isNull() const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchUp(Integer dim) const
+patchUp(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level + 1);
@@ -277,7 +279,7 @@ patchUp(Integer dim) const
   else {
     p.setMaxPoint(m_max_point * 2);
   }
-  p.setOverlapLayerSize(m_overlap_layer_size * 2);
+  p.computeOverlapLayerSize(higher_level, overlap_layer_size_top_level);
   return p;
 }
 
@@ -285,25 +287,25 @@ patchUp(Integer dim) const
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPosition AMRPatchPosition::
-patchDown(Integer dim) const
+patchDown(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const
 {
   AMRPatchPosition p;
   p.setLevel(m_level - 1);
   p.setMinPoint(m_min_point / 2);
   if (dim == 2) {
-    p.setMaxPoint({ static_cast<CartCoordType>(std::ceil(m_max_point.x / 2.)), static_cast<CartCoordType>(std::ceil(m_max_point.y / 2.)), 1 });
+    p.setMaxPoint({ static_cast<CartCoord>(std::ceil(m_max_point.x / 2.)), static_cast<CartCoord>(std::ceil(m_max_point.y / 2.)), 1 });
   }
   else {
-    p.setMaxPoint({ static_cast<CartCoordType>(std::ceil(m_max_point.x / 2.)), static_cast<CartCoordType>(std::ceil(m_max_point.y / 2.)), static_cast<CartCoordType>(std::ceil(m_max_point.z / 2.)) });
+    p.setMaxPoint({ static_cast<CartCoord>(std::ceil(m_max_point.x / 2.)), static_cast<CartCoord>(std::ceil(m_max_point.y / 2.)), static_cast<CartCoord>(std::ceil(m_max_point.z / 2.)) });
   }
-  p.setOverlapLayerSize((m_overlap_layer_size / 2) + 1);
+  p.computeOverlapLayerSize(higher_level, overlap_layer_size_top_level);
   return p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartCoord3Type AMRPatchPosition::
+CartCoord3 AMRPatchPosition::
 length() const
 {
   return m_max_point - m_min_point;
@@ -313,7 +315,7 @@ length() const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isIn(CartCoordType x, CartCoordType y, CartCoordType z) const
+isIn(CartCoord x, CartCoord y, CartCoord z) const
 {
   return x >= m_min_point.x && x < m_max_point.x && y >= m_min_point.y && y < m_max_point.y && z >= m_min_point.z && z < m_max_point.z;
 }
@@ -322,7 +324,7 @@ isIn(CartCoordType x, CartCoordType y, CartCoordType z) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isIn(CartCoord3Type coord) const
+isIn(CartCoord3 coord) const
 {
   return coord.x >= m_min_point.x && coord.x < m_max_point.x && coord.y >= m_min_point.y && coord.y < m_max_point.y && coord.z >= m_min_point.z && coord.z < m_max_point.z;
 }
@@ -331,10 +333,10 @@ isIn(CartCoord3Type coord) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z) const
+isInWithOverlap(CartCoord x, CartCoord y, CartCoord z) const
 {
-  const CartCoord3Type min_point = minPointWithOverlap();
-  const CartCoord3Type max_point = maxPointWithOverlap();
+  const CartCoord3 min_point = minPointWithOverlap();
+  const CartCoord3 max_point = maxPointWithOverlap();
   return x >= min_point.x && x < max_point.x && y >= min_point.y && y < max_point.y && z >= min_point.z && z < max_point.z;
 }
 
@@ -342,10 +344,10 @@ isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(CartCoord3Type coord) const
+isInWithOverlap(CartCoord3 coord) const
 {
-  const CartCoord3Type min_point = minPointWithOverlap();
-  const CartCoord3Type max_point = maxPointWithOverlap();
+  const CartCoord3 min_point = minPointWithOverlap();
+  const CartCoord3 max_point = maxPointWithOverlap();
   return coord.x >= min_point.x && coord.x < max_point.x && coord.y >= min_point.y && coord.y < max_point.y && coord.z >= min_point.z && coord.z < max_point.z;
 }
 
@@ -353,10 +355,10 @@ isInWithOverlap(CartCoord3Type coord) const
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z, Integer overlap) const
+isInWithOverlap(CartCoord x, CartCoord y, CartCoord z, Integer overlap) const
 {
-  const CartCoord3Type min_point = m_min_point - overlap;
-  const CartCoord3Type max_point = m_max_point + overlap;
+  const CartCoord3 min_point = m_min_point - overlap;
+  const CartCoord3 max_point = m_max_point + overlap;
   return x >= min_point.x && x < max_point.x && y >= min_point.y && y < max_point.y && z >= min_point.z && z < max_point.z;
 }
 
@@ -364,10 +366,10 @@ isInWithOverlap(CartCoordType x, CartCoordType y, CartCoordType z, Integer overl
 /*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
-isInWithOverlap(CartCoord3Type coord, Integer overlap) const
+isInWithOverlap(CartCoord3 coord, Integer overlap) const
 {
-  const CartCoord3Type min_point = m_min_point - overlap;
-  const CartCoord3Type max_point = m_max_point + overlap;
+  const CartCoord3 min_point = m_min_point - overlap;
+  const CartCoord3 max_point = m_max_point + overlap;
   return coord.x >= min_point.x && coord.x < max_point.x && coord.y >= min_point.y && coord.y < max_point.y && coord.z >= min_point.z && coord.z < max_point.z;
 }
 
@@ -382,6 +384,62 @@ haveIntersection(const AMRPatchPosition& other) const
   (other.maxPoint().x > minPoint().x && maxPoint().x > other.minPoint().x) &&
   (other.maxPoint().y > minPoint().y && maxPoint().y > other.minPoint().y) &&
   (other.maxPoint().z > minPoint().z && maxPoint().z > other.minPoint().z));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * Suite :
+ * Soit m le plus haut niveau de raffinement (higher_level),
+ * Soit C(m) le nombre de couches au niveau m (overlap_layer_size_top_level),
+ * Pour tout C(m) entier pair positif :
+ * C(m-1) = (int(C(m)/4)+1)*2
+ */
+Int32 AMRPatchPosition::
+computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
+{
+  // Si le top level est à -1, les mailles de recouvrement sont désactivées.
+  if (overlap_layer_size_top_level == -1) {
+    return 0;
+  }
+  // Le niveau 0 n'a jamais de couches.
+  if (level == 0) {
+    return 0;
+  }
+  if (level == higher_level) {
+    return overlap_layer_size_top_level;
+  }
+  if (level < 0 || level > higher_level) {
+    ARCANE_FATAL("Level {0} doesn't exist (higher_level={1})", level, higher_level);
+  }
+
+  Int32 nb_overlap_cells = overlap_layer_size_top_level;
+
+  // Pour éviter des tours de boucle inutiles.
+  if (nb_overlap_cells == 0) {
+    return 2;
+  }
+  if (nb_overlap_cells == 2) {
+    return 2;
+  }
+  for (Integer m = higher_level; m > level; --m) {
+    if (nb_overlap_cells == 4) {
+      return 4;
+    }
+    nb_overlap_cells = ((nb_overlap_cells / 4) + 1) * 2;
+  }
+
+  return nb_overlap_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRPatchPosition::
+computeOverlapLayerSize(Int32 higher_level, Int32 overlap_layer_size_top_level)
+{
+  m_overlap_layer_size = computeOverlapLayerSize(m_level, higher_level, overlap_layer_size_top_level);
 }
 
 /*---------------------------------------------------------------------------*/

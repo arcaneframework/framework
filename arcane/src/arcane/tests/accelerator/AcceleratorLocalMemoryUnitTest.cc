@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorLocalMemoryUnitTest.cc                           (C) 2000-2025 */
+/* AcceleratorLocalMemoryUnitTest.cc                           (C) 2000-2026 */
 /*                                                                           */
 /* Service de test de la mémoire locale pour les accélérateurs.              */
 /*---------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ _doTestEmpty()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Si \a block_size==0, alors nb_block_or_total_nb_element est le
+// Si \a group_size==0, alors nb_block_or_total_nb_element est le
 // nombre total d'éléments. Sinon il s'agit du nombre de bloc.
 
 void AcceleratorLocalMemoryUnitTest::
@@ -151,16 +151,23 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   // en mémoire partagé. Le dernier WorkItem du groupe recopie
   // ensuite ce tableau en mémoire globale.
 
+  info() << "DO_TEST group_size=" << group_size
+         << " nb_group_or_total_nb_element=" << nb_group_or_total_nb_element;
+
   auto command = makeCommand(m_queue);
 
-  ax::WorkGroupLoopRange loop_range;
-  if (group_size > 0)
-    loop_range = ax::makeWorkGroupLoopRange(command, nb_group_or_total_nb_element, group_size);
-  else {
-    loop_range = ax::makeWorkGroupLoopRange(command, nb_group_or_total_nb_element, 0, 0);
-    group_size = loop_range.groupSize();
+  ax::WorkGroupLoopRange<Int32> loop_range;
+  if (group_size > 0){
+    Int32 total = group_size * nb_group_or_total_nb_element;
+    loop_range = ax::WorkGroupLoopRange<Int32>(total);
+    loop_range.setBlockSize(group_size);
   }
-  const Int32 nb_group = loop_range.nbGroup();
+  else {
+    loop_range = ax::WorkGroupLoopRange<Int32>(nb_group_or_total_nb_element);
+    loop_range.setBlockSize(command);
+  }
+
+  const Int32 nb_group = loop_range.nbBlock();
   // NOTE: sur accélérateur, la taille d'un WorkGroup doit être
   // un multiple de 32 et inférieur au nombre maximum de thread d'un bloc
   // (en général 1024).
@@ -183,52 +190,43 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     loop_options.setGrainSize(nb_group / 4);
     command.setParallelLoopOptions(loop_options);
   }
-
-  command << RUNCOMMAND_LAUNCH(work_group_context, loop_range, local_data_int32, local_data_int64)
+  command << RUNCOMMAND_LAUNCH(context, loop_range, local_data_int32, local_data_int64)
   {
-    auto work_group = work_group_context.group();
+    auto work_block = context.block();
+    auto work_item = context.workItem();
     auto local_span_int32 = local_data_int32.span();
     auto local_span_int64 = local_data_int64.span();
 
     // Le WorkItem 0 du groupe initialise la mémoire partagée
-    const bool is_rank0 = (work_group.activeWorkItemRankInGroup() == 0);
+    const bool is_rank0 = (work_item.rankInBlock() == 0);
     if (is_rank0) {
       local_span_int32.fill(0);
       local_span_int64.fill(0);
     }
 
     // S'assure que tous les WorkItem du bloc attendent l'initialisation
-    work_group.barrier();
+    work_block.barrier();
 
-    // Traite chaque WorkItem qui va ajouter des valeurs à la mémoire partagée.
-    // NOTE: Sur accélérateur, nbItem() vaut toujours 1.
-    for (Int32 g = 0; g < work_group.nbActiveItem(); ++g) {
-      auto work_item = work_group.activeItem(g);
-      Int32 i = work_item.linearIndex();
+    // Traite chaque indice de la boucle géré par le WorkItem.
+    // Il va ajouter des valeurs à la mémoire partagée.
+    for ( Int32 i : work_item.linearIndexes() ) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
-#if !defined(ARCCORE_DEVICE_CODE)
-      if constexpr (!work_group.isDevice()) {
-        Int32 expected_linear_index = work_group.activeItem(0).linearIndex() + g;
-        if (i != work_group.activeItem(0).linearIndex() + g)
-          ARCANE_FATAL("Bad value for linear index i={0} expected={1}", i, expected_linear_index);
-      }
-#endif
     }
 
     // Pour tester le 'constexpr' uniquement sur le device
-    if constexpr (work_group.isDevice()) {
+    if constexpr (work_block.isDevice()) {
       if (is_rank0)
         ax::doAtomicAdd(&local_span_int32[0], 2);
     }
 
     // S'assure que tous les WorkItem ont terminé l'ajout atomique.
-    work_group.barrier();
+    work_block.barrier();
 
     // Le WorkItem 0 recopie le tableau partagé dans le tableau de sortie
     // à l'indice correspondant à son groupe.
     if (is_rank0) {
-      Int32 group_index = work_group.groupRank();
+      Int32 group_index = work_block.groupRank();
       for (Int32 s : local_span_int32)
         out_span[group_index] += s;
       for (Int64 s : local_span_int64)
@@ -238,8 +236,11 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
   bool is_accelerator = m_queue.isAcceleratorPolicy();
   for (Int32 i = 0, n = out_array_size; i < n; ++i) {
+    Int32 nb_active_item = loop_range.blockSize();
     // Pour le dernier bloc, le nombre d'éléments actif n'est pas forcément group_size
-    Int32 nb_active_item = loop_range.nbActiveItem(i);
+    if ((i + 1) == n) {
+      nb_active_item = (loop_range.nbElement() - (loop_range.blockSize() * (loop_range.nbBlock() - 1)));
+    }
     Int64 out_value = out_span[i];
     const Int32 base_value = nb_active_item + nb_active_item * 10;
     // Sur accélérateur on ajoute 2 car il y a un ajout dans le 'constexpr' de la lambda

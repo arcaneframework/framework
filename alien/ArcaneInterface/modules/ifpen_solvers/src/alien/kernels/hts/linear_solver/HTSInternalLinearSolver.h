@@ -1,12 +1,10 @@
-/*
- * HTSInternalLinearSolver.h
- *
- *  Created on: 22 déc. 2014
- *      Author: gratienj
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
 
-#ifndef ALIEN_KERNELS_HTS_LINEARSOLVER_HTSINTERNALLINEARSOLVER_H
-#define ALIEN_KERNELS_HTS_LINEARSOLVER_HTSINTERNALLINEARSOLVER_H
+#pragma once
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
@@ -26,8 +24,9 @@ class SolverStat;
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
     //: public IInternalLinearSolver<SimpleCSRMatrix<Real>, SimpleCSRVector<Real> >
-    : public ILinearSolver,
-      public ObjectWithTrace
+: public ILinearSolver
+, public ILinearSolverWithDiagScaling
+, public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -43,7 +42,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
       IOptionsHTSSolver* options = nullptr);
 
   /** Destructeur de la classe */
-  virtual ~HTSInternalLinearSolver() {}
+  virtual ~HTSInternalLinearSolver() ;
 
  public:
   //! Initialisation
@@ -57,6 +56,9 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   void end();
 
   String getBackEndName() const { return "htssolver"; }
+
+  void setDiagScaling(IMatrix const& A) ;
+  void setDiagScaling(CSRMatrixType const& A) ;
 
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& A, const CSRVectorType& b, CSRVectorType& x);
@@ -86,34 +88,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   void printInfo();
   void printCurrentTimeInfo() {}
 
-  struct RunOp
-  {
-    typedef HartsSolver::CSRMatrix<Real, 1> MatrixType;
-    typedef MatrixType::VectorDataType VectorDataType;
-    HartsSolver::HTSSolver* m_solver;
-    MatrixType& m_A;
-    VectorDataType const* m_b;
-    VectorDataType* m_x;
-    HartsSolver::HTSSolver::Status& m_status;
-    HartsSolver::HTSSolver::ContextType& m_context;
 
-    RunOp(HartsSolver::HTSSolver* solver, HartsSolver::CSRMatrix<Real, 1>& A,
-        const double* b, double* x, HartsSolver::HTSSolver::Status& status,
-        HartsSolver::HTSSolver::ContextType& context)
-    : m_solver(solver)
-    , m_A(A)
-    , m_b(b)
-    , m_x(x)
-    , m_status(status)
-    , m_context(context)
-    {
-    }
-
-    template <bool is_mpi, bool use_simd, HARTS::eThreadEnvType th_env> void run()
-    {
-      m_solver->solve<is_mpi, use_simd, th_env>(m_A, m_b, m_x, m_status, m_context);
-    }
-  };
 
  private:
   void updateLinearSystem();
@@ -121,43 +96,19 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   inline void _endPerfCount();
 
  protected:
-  std::unique_ptr<HartsSolver::HTSSolver> m_hts_solver;
 
  private:
   //! Structure interne du solveur
 
-  bool m_use_mpi = false;
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
-  RunTimeSystem::MachineInfo m_machine_info;
-  HARTS::Runtime::Configuration m_runtime_configuration;
-  // HartsSolver::MPIInfo*        m_mpi_info     = nullptr;
-
-  // Status m_status;
-  HartsSolver::HTSSolver::Status m_hts_status;
-  Alien::SolverStatus m_status;
-
-  //! Preconditioner options
-  // HTSOptionTypes::ePreconditioner m_precond_opt ;
-
-  //! Solver parameters
-  Integer m_max_iteration = 0;
-  Real m_precision = 0.;
-
-  //! Linear system builder options
-  //!@{
-  // bool m_use_unit_diag ;
-  // bool m_keep_diag_opt ;
-  // int  m_normalize_opt ;
-  //!@}
-
-  // multithread options
-  bool m_use_thread = false;
-  Integer m_num_thread = 1;
-  HARTS::eThreadEnvType m_thread_env_type = HARTS::PTh;
-
-  int m_current_ctx_id = -1;
+  struct Impl ;
+  std::unique_ptr<Impl> m_impl ;
 
   Integer m_output_level = 0;
+
+  bool m_use_mpi = false;
+  bool m_diag_scaling_is_set = false ;
+  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
+  Alien::SolverStatus m_status;
 
   Integer m_solve_num = 0;
   Integer m_total_iter_num = 0;
@@ -178,4 +129,3 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
 } // namespace Alien
 
-#endif /* HTSLINEARSOLVER_H_ */

@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<module name="DynamicCircleAMR" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Module de test
+  </description>
+
+  <variables>
+    <variable
+      field-name="amr"
+      name="AMR"
+      data-type="real"
+      item-kind="cell"
+      dim="0"/>
+    <variable
+      field-name="refine_tracer"
+      name="RefineTracer"
+      data-type="int16"
+      item-kind="cell"
+      dim="0"/>
+    <variable
+      field-name="distance"
+      name="Distance"
+      data-type="real"
+      item-kind="node"
+      dim="0"/>
+    <variable
+      field-name="celluid"
+      name="Celluid"
+      data-type="int64"
+      item-kind="cell"
+      dim="0"/>
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+  </entry-points>
+
+  <options>
+    <simple name="nb-levels-max" type="integer" default="2">
+      <description>
+        Nombre de niveaux à créer au maximum.
+      </description>
+    </simple>
+    <service-instance name="post-processor" type="Arcane::IPostProcessorWriter" default="Ensight7PostProcessor">
+      <description>
+        Indique le type de bibliothèque à utiliser pour les sorties de dépouillement.
+      </description>
+    </service-instance>
+  </options>
+</module>

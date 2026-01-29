@@ -12,6 +12,8 @@ set(SOURCES
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
+  CooperativeWorkGroupLoopRange.h
+  CooperativeWorkGroupLoopRange.cc
   GenericFilterer.h
   GenericFilterer.cc
   GenericPartitioner.h
@@ -20,6 +22,7 @@ set(SOURCES
   GenericScanner.h
   GenericSorter.h
   KernelLauncher.h
+  Initializer.cc
   LocalMemory.h
   MultiThreadAlgo.h
   MultiThreadAlgo.cc
@@ -36,4 +39,5 @@ set(SOURCES
   WorkGroupLoopRange.cc
 
   internal/AcceleratorMemoryCopier.h
+  internal/Initializer.h
 )

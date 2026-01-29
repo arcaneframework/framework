@@ -180,6 +180,7 @@ main(int argc, char** argv)
     const auto solver_package = arguments["solver-package"].as<std::string>();
 #ifdef ALIEN_USE_PETSC
     if(solver_package == "petsc") {
+      Alien::PETScInternalLinearSolver::initializeLibrary() ;
       Alien::PETScLinearAlgebra algebra;
 
       test(tm, format, pm, arguments, algebra, size, block, A, xe, b);

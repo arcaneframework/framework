@@ -16,8 +16,10 @@
 #include "arcane/utils/StackTrace.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Process.h"
 #include "arcane/utils/ISymbolizerService.h"
+
+#include "arccore/base/internal/DependencyInjection.h"
+#include "arccore/common/internal/Process.h"
 
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Directory.h"
@@ -173,7 +175,7 @@ class DWHandler
  * \brief Service de trace des appels de fonctions utilisant la libunwind.
  */
 class LibUnwindStackTraceService
-: public AbstractService
+: public TraceAccessor
 , public IStackTraceService
 {
  private:
@@ -211,9 +213,12 @@ class LibUnwindStackTraceService
  public:
 
   explicit LibUnwindStackTraceService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_want_gdb_info(false), m_use_backtrace(false)
+  : TraceAccessor(sbi.application()->traceMng())
   {
-    m_application = sbi.application();
+  }
+  explicit LibUnwindStackTraceService(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
   }
 
  public:
@@ -240,7 +245,6 @@ class LibUnwindStackTraceService
 
   bool m_want_gdb_info = false;
   bool m_use_backtrace = false;
-  IApplication* m_application = nullptr; //A SUPPRIMER
   DWHandler m_dw_handler;
   ProcInfo _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor);
   ProcInfo _getFuncInfo(const void* ip);
@@ -566,23 +570,25 @@ _generateFileAndOffset(const FixedStackFrameArray& stack_frames)
 /*---------------------------------------------------------------------------*/
 
 class LLVMSymbolizerService
-: public AbstractService
+: public TraceAccessor
 , public ISymbolizerService
 {
  public:
 
   explicit LLVMSymbolizerService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
-  , m_is_check_done(false)
-  , m_is_valid(false)
-  {}
+  : TraceAccessor(sbi.application()->traceMng())
+  {
+    _init();
+  }
+  explicit LLVMSymbolizerService(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
+    _init();
+  }
 
  public:
 
-  void build() override
-  {
-    m_llvm_symbolizer_path = platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH");
-  }
+  void build() {}
 
  public:
 
@@ -610,6 +616,10 @@ class LLVMSymbolizerService
     if (length>0)
       m_is_valid = true;
     m_is_check_done = true;
+  }
+  void _init()
+  {
+    m_llvm_symbolizer_path = platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH");
   }
 };
 
@@ -673,6 +683,16 @@ ARCANE_REGISTER_SERVICE(LibUnwindStackTraceService,
 ARCANE_REGISTER_SERVICE(LLVMSymbolizerService,
                         ServiceProperty("LLVMSymbolizer",ST_Application),
                         ARCANE_SERVICE_INTERFACE(ISymbolizerService));
+
+ARCANE_DI_REGISTER_PROVIDER(LibUnwindStackTraceService,
+                            DependencyInjection::ProviderProperty("LibUnwind"),
+                            ARCANE_DI_INTERFACES(IStackTraceService),
+                            ARCANE_DI_CONSTRUCTOR(ITraceMng*));
+
+ARCANE_DI_REGISTER_PROVIDER(LLVMSymbolizerService,
+                            DependencyInjection::ProviderProperty("LLVMSymbolizer"),
+                            ARCANE_DI_INTERFACES(ISymbolizerService),
+                            ARCANE_DI_CONSTRUCTOR(ITraceMng*));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

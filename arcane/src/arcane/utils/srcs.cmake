@@ -22,7 +22,6 @@ set(ARCANE_SOURCES
   BFloat16.h
   Collection.h
   CommandLineArguments.h
-  CommandLineArguments.cc
   Convert.cc
   Convert.h
   ConcurrencyUtils.h
@@ -54,11 +53,6 @@ set(ARCANE_SOURCES
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
-  JSONPropertyReader.h
-  JSONReader.cc
-  JSONReader.h
-  JSONWriter.cc
-  JSONWriter.h
   LinearOffsetMap.h
   LinearOffsetMap.cc
   HashAlgorithm.cc
@@ -106,18 +100,12 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   ParallelLoopOptions.h
   ParallelLoopOptions.cc
-  ParameterCaseOption.h
   ParameterCaseOption.cc
   PerfCounterMng.cc
   PerfCounterMng.h
   PlatformUtils.cc
   PlatformUtils.h
-  Process.cc
-  Process.h
   Profiling.h
-  Property.cc
-  Property.h
-  PropertyDeclarations.h
   Ptr.cc
   Ptr.h
   Ref.h
@@ -186,7 +174,6 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   PerfCounterMng.h
   PlatformUtils.h
-  Process.h
   Ptr.h
   Real2.h
   Real2x2.h
@@ -274,7 +261,7 @@ set(ARCANE_SOURCES
   HashTableMap2.cc
   ObjectImpl.h
   ParameterList.h
-  ParameterList.cc
+  ParameterListWithCaseOption.cc
   RangeFunctor.h
   Real2Proxy.h
   Real2x2Proxy.h
@@ -298,7 +285,6 @@ set(ARCANE_SOURCES
   String.h
   StringBuilder.h
   StringDictionary.h
-  StringDictionary.cc
   StringList.h
   SHA1HashAlgorithm.h
   SHA1HashAlgorithm.cc
@@ -327,6 +313,7 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
 
   internal/ApplicationInfoProperties.h
+  internal/ParameterCaseOption.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
   internal/ValueConvertInternal.h

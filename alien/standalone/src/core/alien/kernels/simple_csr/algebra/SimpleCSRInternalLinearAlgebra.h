@@ -1,14 +1,9 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*---------------------------------------------------------------------------*/
-/* SimpleCSRInternalLinearAlgebra.h                            (C) 2000-2023 */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 #pragma once
 
@@ -54,7 +49,7 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
  public:
   typedef BackEnd::tag::simplecsr BackEndType;
 
-  typedef VectorDistribution ResourceType;
+  typedef std::tuple<VectorDistribution const*,Integer> ResourceType;
 
   class NullValueException
   : public Exception::NumericException
@@ -114,6 +109,9 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
   void addUMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
 
+  void multDiag(const Matrix& A, Vector& y) const;
+  void computeDiag(const Matrix& a, Vector& inv_diag) const;
+
   void multInvDiag(const Matrix& A, Vector& y) const;
   void computeInvDiag(const Matrix& a, Vector& inv_diag) const;
 
@@ -121,10 +119,15 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void aypx(Real alpha, Vector& y, const Vector& x) const;
   void copy(const Vector& x, Vector& r) const;
 
+  void axpy(Real alpha, const Vector& x,Integer stride_x,Vector& r,Integer stride_r) const;
+  void aypx(Real alpha, Vector& y, Integer stride_y, const Vector& x,Integer stride_x) const;
+  void copy(const Vector& x, Integer stride_x, Vector& r, Integer stride_r) const;
+
   Real dot(const Vector& x, const Vector& y) const;
   void dot(const Vector& x, const Vector& y, FutureType& res) const;
 
   void scal(Real alpha, Vector& x) const;
+  void scal(const Vector& x, Matrix& a) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
@@ -145,12 +148,15 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
     return precond.solve(*this, x, y);
   }
 
-  static ResourceType const& resource(Matrix const& A);
+  Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
+  Integer computeCxr(const Matrix& a, Vector const& diag_scal, Matrix& cxr_a) const ;
 
-  void allocate(ResourceType const& resource, Vector& v);
+  static ResourceType resource(Matrix const& A);
+
+  void allocate(ResourceType resource, Vector& v);
 
   template <typename T0, typename... T>
-  void allocate(ResourceType const& resource, T0& v0, T&... args)
+  void allocate(ResourceType resource, T0& v0, T&... args)
   {
     allocate(resource, v0);
     allocate(resource, args...);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,18 +36,11 @@ class CSRStructInfo
 
   CSRStructInfo(bool is_variable_block = false)
   : m_is_variable_block(is_variable_block)
-  , m_nrow(0)
-  , m_col_ordering(eUndef)
-  , m_diag_first(true)
-  , m_symmetric(true)
   {}
 
   CSRStructInfo(Integer nrow, bool is_variable_block = false)
   : m_is_variable_block(is_variable_block)
   , m_nrow(nrow)
-  , m_col_ordering(eUndef)
-  , m_diag_first(true)
-  , m_symmetric(true)
   {
     m_row_offset.resize(nrow + 1);
     if (m_is_variable_block)
@@ -57,9 +50,6 @@ class CSRStructInfo
   CSRStructInfo(Integer nrow, const int* kcol, const int* cols)
   : m_is_variable_block(false)
   , m_nrow(nrow)
-  , m_col_ordering(eUndef)
-  , m_diag_first(true)
-  , m_symmetric(true)
   {
     m_row_offset.resize(nrow + 1);
     std::copy(kcol, kcol + nrow + 1, m_row_offset.data());
@@ -383,16 +373,16 @@ class CSRStructInfo
  protected:
   bool m_is_variable_block = false;
   Arccore::Integer m_nrow = 0;
+  ColOrdering m_col_ordering = eUndef;
+  bool m_diag_first = false;
+  mutable int m_max_row_size = -1;
+  bool m_symmetric = true;
+  Arccore::Int64 m_timestamp = -1;
   Arccore::UniqueArray<Arccore::Integer> m_row_offset;
   Arccore::UniqueArray<Arccore::Integer> m_block_row_offset;
   Arccore::UniqueArray<Arccore::Integer> m_cols;
   Arccore::UniqueArray<Arccore::Integer> m_block_cols;
-  ColOrdering m_col_ordering;
-  bool m_diag_first = true;
   mutable Arccore::UniqueArray<Arccore::Integer> m_upper_diag_offset;
-  mutable int m_max_row_size = -1;
-  bool m_symmetric = true;
-  Arccore::Int64 m_timestamp = -1;
 #ifdef ALIEN_USE_PERF_TIMER
  private:
   mutable TimerType m_timer;

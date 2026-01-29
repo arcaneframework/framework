@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,18 +18,52 @@ BEGIN_TRILINOSINTERNAL_NAMESPACE
 template <typename ValueT, typename TagT>
 bool
 MatrixInternal<ValueT, TagT>::initMatrix(int local_offset, int nrows, int const* kcol,
-    int const* cols,[[maybe_unused]]  int block_size, ValueT const* values)
+    int const* cols, int block_size, int max_row_size, ValueT const* values)
 {
   m_local_offset = local_offset;
   m_local_size = nrows;
   int const* cols_ptr = cols;
   ValueT const* values_ptr = values;
   auto& csr_matrix = *m_internal;
-  for (int irow = 0; irow < nrows; ++irow) {
-    int row_size = kcol[irow + 1] - kcol[irow];
-    csr_matrix.insertGlobalValues(local_offset + irow, row_size, values_ptr, cols_ptr);
-    cols_ptr += row_size;
-    values_ptr += row_size;
+  if(block_size>1)
+  {
+    m_local_offset *= block_size ;
+    m_local_size *= block_size ;
+    int block2_size = block_size*block_size;
+
+    Arcane::UniqueArray<int> row_indices(max_row_size*block_size) ;
+    Arcane::UniqueArray2<ValueT> row_values(block_size,max_row_size*block_size) ;
+    for (int irow = 0; irow < nrows; ++irow)
+    {
+       int row_size = kcol[irow + 1] - kcol[irow];
+       int jcol = 0 ;
+       for(int k=kcol[irow];k<kcol[irow + 1];++k)
+         for(int j=0;j<block_size;++j)
+         {
+           row_indices[jcol] = cols[k] * block_size + j ;
+           for( int i=0;i<block_size;++i)
+           {
+             row_values[i][jcol] = values[ k * block2_size + i * block_size + j] ;
+           }
+            ++jcol;
+         }
+       for( int i=0;i<block_size;++i)
+       {
+          csr_matrix.insertGlobalValues(m_local_offset + irow*block_size + i,
+                                        row_size * block_size,
+                                        row_values[i].data(),
+                                        row_indices.data());
+       }
+    }
+  }
+  else
+  {
+    for (int irow = 0; irow < nrows; ++irow) {
+      int row_size = kcol[irow + 1] - kcol[irow];
+      csr_matrix.insertGlobalValues(local_offset + irow, row_size, values_ptr, cols_ptr);
+      cols_ptr += row_size;
+      values_ptr += row_size;
+    }
   }
   csr_matrix.fillComplete();
 
@@ -112,12 +146,22 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
 {
   using namespace Arccore::MessagePassing::Mpi;
   auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
-  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows,*static_cast<const MPI_Comm*>(pm->getMPIComm())));
-  else
-    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, MPI_COMM_WORLD));
 
-  return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, values);
+  int max_row_size = 0 ;
+  std::vector<std::size_t> row_size(nrows*block_size) ;
+  for (int irow = 0; irow < nrows; ++irow) {
+    int size = (kcol[irow + 1] - kcol[irow])*block_size ;
+    for(int k=0;k<block_size;++k)
+      row_size[irow*block_size+k] = size ;
+    max_row_size = std::max(max_row_size,size) ;
+  }
+
+  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size,row_size.data(),*static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  else
+    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size, row_size.data(), MPI_COMM_WORLD));
+
+  return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, max_row_size, values);
 }
 
 template <typename ValueT, typename TagT>

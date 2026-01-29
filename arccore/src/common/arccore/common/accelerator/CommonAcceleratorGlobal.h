@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCoreGlobal.h                                     (C) 2000-2025 */
+/* AcceleratorCoreGlobal.h                                     (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ class ViewBuildInfo;
 class RunnerInternal;
 enum class eMemoryAdvice;
 
-namespace impl
+namespace Impl
 {
   class RuntimeStaticInfo;
   class IRunnerRuntime;
@@ -71,10 +71,6 @@ namespace impl
   class IRunQueueEventImpl;
   class RunnerImpl;
   class RunQueueImplStack;
-} // namespace impl
-
-namespace Impl
-{
   class KernelLaunchArgs;
   class RunCommandLaunchInfo;
   class NativeStream;
@@ -243,9 +239,8 @@ getPointerAccessibility(T& queue_or_runner_or_policy, const void* ptr, PointerAt
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
-using Arcane::Accelerator::isAcceleratorPolicy;
 
 /*!
  * \brief Vérifie si \a ptr est accessible pour une exécution sur \a queue.
@@ -288,7 +283,7 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
   arcaneCheckPointerIsAccessible(&runner, ptr, name, ti);
 }
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -298,7 +293,7 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
  * Lance une exception si ce n'est pas le cas.
  */
 #define ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
-  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
+  ::Arcane::Accelerator::Impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
 
 #define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
   ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))
@@ -324,6 +319,16 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
 #define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)
 
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+// Pour compatibilité avec les anciennes versions de Arcane.
+// A rendre obsolète fin 2026.
+using Arcane::Accelerator::isAcceleratorPolicy;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

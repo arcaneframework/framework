@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2025 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -504,11 +504,11 @@ class OccupancyMap
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueStream
-: public impl::IRunQueueStream
+: public Impl::IRunQueueStream
 {
  public:
 
-  CudaRunQueueStream(impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
+  CudaRunQueueStream(Impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -525,7 +525,7 @@ class CudaRunQueueStream
 
  public:
 
-  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] Impl::RunCommandImpl& c) override
   {
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     auto kname = c.kernelName();
@@ -536,7 +536,7 @@ class CudaRunQueueStream
 #endif
     return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  void notifyEndLaunchKernel(Impl::RunCommandImpl&) override
   {
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
@@ -597,7 +597,7 @@ class CudaRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  Impl::IRunnerRuntime* m_runtime = nullptr;
   cudaStream_t m_cuda_stream = nullptr;
 };
 
@@ -605,7 +605,7 @@ class CudaRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueEvent
-: public impl::IRunQueueEventImpl
+: public Impl::IRunQueueEventImpl
 {
  public:
 
@@ -624,7 +624,7 @@ class CudaRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) final
+  void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCCORE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
@@ -635,7 +635,7 @@ class CudaRunQueueEvent
     ARCCORE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) final
+  void waitForEvent(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCCORE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
@@ -675,7 +675,7 @@ class CudaRunQueueEvent
 /*---------------------------------------------------------------------------*/
 
 class CudaRunnerRuntime
-: public impl::IRunnerRuntime
+: public Impl::IRunnerRuntime
 {
  public:
 
@@ -703,15 +703,15 @@ class CudaRunnerRuntime
   {
     return eExecutionPolicy::CUDA;
   }
-  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  Impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new CudaRunQueueStream(this, bi);
   }
-  impl::IRunQueueEventImpl* createEventImpl() override
+  Impl::IRunQueueEventImpl* createEventImpl() override
   {
     return new CudaRunQueueEvent(false);
   }
-  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  Impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
     return new CudaRunQueueEvent(true);
   }
@@ -859,20 +859,43 @@ class CudaRunnerRuntime
                                            const void* kernel_ptr,
                                            Int64 total_loop_size) override
   {
+    Int32 shared_memory = orig_args.sharedMemorySize();
+    if (orig_args.isCooperative()) {
+      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
+      // que le maximum qui peut résider sur le GPU.
+      Int32 nb_thread = orig_args.nbThreadPerBlock();
+      Int32 nb_block = orig_args.nbBlockPerGrid();
+      int nb_block_per_sm = 0;
+      ARCCORE_CHECK_CUDA(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
+
+      int max_block = nb_block_per_sm * m_multi_processor_count;
+      if (nb_block > max_block) {
+        KernelLaunchArgs modified_args(orig_args);
+        modified_args.setNbBlockPerGrid(max_block);
+        return modified_args;
+      }
+      return orig_args;
+    }
+
     if (!m_use_computed_occupancy)
       return orig_args;
-    Int32 wanted_shared_memory = orig_args.sharedMemorySize();
-    if (wanted_shared_memory < 0)
-      wanted_shared_memory = 0;
+    if (shared_memory < 0)
+      shared_memory = 0;
     // Pour l'instant, on ne fait pas de calcul si la mémoire partagée est non nulle.
-    if (wanted_shared_memory != 0)
+    if (shared_memory != 0)
       return orig_args;
     Int32 computed_block_size = m_occupancy_map.getNbThreadPerBlock(kernel_ptr);
     if (computed_block_size == 0)
       return orig_args;
+
+    // Ici, on utilise le nombre de threads par bloc pour avoir une
+    // occupation maximale.
+    KernelLaunchArgs modified_args(orig_args);
     Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
     int blocks_per_grid = CheckedConvert::toInt32(big_b);
-    return { blocks_per_grid, computed_block_size, wanted_shared_memory };
+    modified_args.setNbBlockPerGrid(blocks_per_grid);
+    modified_args.setNbThreadPerBlock(computed_block_size);
+    return modified_args;
   }
 
  public:
@@ -889,7 +912,8 @@ class CudaRunnerRuntime
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
   bool m_use_computed_occupancy = false;
-  impl::DeviceInfoList m_device_info_list;
+  Int32 m_multi_processor_count = 0;
+  Impl::DeviceInfoList m_device_info_list;
   OccupancyMap m_occupancy_map;
 };
 
@@ -941,6 +965,7 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
 #if !defined(ARCCORE_USING_CUDA13_OR_GREATER)
     o << " clockRate = " << dp.clockRate << "\n";
     o << " deviceOverlap = " << dp.deviceOverlap << "\n";
@@ -948,19 +973,26 @@ fillDevices(bool is_verbose)
     o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
 #endif
 
+    // TODO: On suppose que tous les GPUs sont les mêmes et donc
+    // que le nombre de SM par GPU est le même. Cela est utilisé pour
+    // calculer le nombre de blocs en mode coopératif.
+    m_multi_processor_count = dp.multiProcessorCount;
+
     {
       int least_val = 0;
       int greatest_val = 0;
       ARCCORE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
       o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
     }
+    std::ostringstream device_uuid_ostr;
     {
       CUdevice device;
       ARCCORE_CHECK_CUDA(cuDeviceGet(&device, i));
       CUuuid device_uuid;
       ARCCORE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      impl::printUUID(o, device_uuid.bytes);
+      Impl::printUUID(device_uuid_ostr, device_uuid.bytes);
+      o << device_uuid_ostr.str();
       o << "\n";
     }
     String description(ostr.str());
@@ -972,9 +1004,14 @@ fillDevices(bool is_verbose)
     device_info.setDeviceId(DeviceId(i));
     device_info.setName(dp.name);
     device_info.setWarpSize(dp.warpSize);
+    device_info.setUUIDAsString(device_uuid_ostr.str());
     device_info.setSharedMemoryPerBlock(static_cast<Int32>(dp.sharedMemPerBlock));
     device_info.setSharedMemoryPerMultiprocessor(static_cast<Int32>(dp.sharedMemPerMultiprocessor));
     device_info.setSharedMemoryPerBlockOptin(static_cast<Int32>(dp.sharedMemPerBlockOptin));
+    device_info.setTotalConstMemory(static_cast<Int32>(dp.totalConstMem));
+    device_info.setPCIDomainID(dp.pciDomainID);
+    device_info.setPCIBusID(dp.pciBusID);
+    device_info.setPCIDeviceID(dp.pciDeviceID);
     m_device_info_list.addDevice(device_info);
   }
 
@@ -1024,10 +1061,21 @@ class CudaMemoryCopier
 
 } // End namespace Arcane::Accelerator::Cuda
 
+using namespace Arcane;
+
 namespace
 {
-Arcane::Accelerator::Cuda::CudaRunnerRuntime global_cuda_runtime;
-Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
+Accelerator::Cuda::CudaRunnerRuntime global_cuda_runtime;
+Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
+
+void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
+{
+  IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
+  eMemoryResource mem = allocator->memoryResource();
+  mrm->setAllocator(mem, allocator);
+  mrm->setMemoryPool(mem, allocator->memoryPool());
+}
+
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -1038,19 +1086,18 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
-  using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
   global_cuda_runtime.build();
-  Arcane::Accelerator::impl::setUsingCUDARuntime(true);
-  Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
+  Accelerator::Impl::setUsingCUDARuntime(true);
+  Accelerator::Impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_cuda_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_cuda_memory_allocator);
-  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_cuda_memory_allocator);
-  mrm->setAllocator(eMemoryResource::Device, &device_cuda_memory_allocator);
+  _setAllocator(&unified_memory_cuda_memory_allocator);
+  _setAllocator(&host_pinned_cuda_memory_allocator);
+  _setAllocator(&device_cuda_memory_allocator);
   mrm->setCopier(&global_cuda_memory_copier);
   global_cuda_runtime.fillDevices(init_info.isVerbose());
 }

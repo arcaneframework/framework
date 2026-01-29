@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2025 */
+/* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -39,6 +39,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#endif
+
+#if defined(ARCCORE_OS_MACOS)
+#include <cstdlib>
+#include <mach-o/dyld.h>
+#include <crt_externs.h>
 #endif
 
 // SD: Useless ? Bug with MacOS
@@ -85,6 +91,7 @@ arccoreCallExplainInExceptionConstructor(bool v);
 namespace Platform
 {
   IStackTraceService* global_stack_trace_service = nullptr;
+  ISymbolizerService* global_symbolizer_service = nullptr;
   bool global_has_color_console = false;
 }
 
@@ -454,6 +461,26 @@ getStackTrace()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ISymbolizerService* Platform::
+getSymbolizerService()
+{
+  return global_symbolizer_service;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ISymbolizerService* Platform::
+setSymbolizerService(ISymbolizerService* service)
+{
+  ISymbolizerService* old_service = global_symbolizer_service;
+  global_symbolizer_service = service;
+  return old_service;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
 safeStringCopy(char* output,Integer /*output_len*/,const char* input)
 {
@@ -801,6 +828,62 @@ extern "C++" bool Platform::
 getConsoleHasColor()
 {
   return global_has_color_console;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" String Platform::
+getLoadedSharedLibraryFullPath(const String& dll_name)
+{
+  String full_path;
+  if (dll_name.null())
+    return full_path;
+#if defined(ARCCORE_OS_LINUX)
+  {
+    std::ifstream ifile("/proc/self/maps");
+    String v;
+    String true_name = "lib" + dll_name + ".so";
+    while (ifile.good()){
+      ifile >> v;
+      Span<const Byte> vb = v.bytes();
+      if (vb.size()>0 && vb[0]=='/'){
+        if (v.endsWith(true_name)){
+          full_path = v;
+          //std::cout << "V='" << v << "'\n";
+          break;
+        }
+      }
+    }
+  }
+#elif defined(ARCCORE_OS_WIN32)
+  HMODULE hModule = GetModuleHandleA(dll_name.localstr());
+  if (!hModule)
+    return full_path;
+  TCHAR dllPath[_MAX_PATH];
+  GetModuleFileName(hModule, dllPath, _MAX_PATH);
+  full_path = StringView(dllPath);
+#elif defined(ARCCORE_OS_MACOS)
+  {
+    String true_name = "lib" + dll_name + ".dylib";
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+      const char* image_name = _dyld_get_image_name(i);
+      if (image_name) {
+        String image_path(image_name);
+        if (image_path.endsWith(true_name)) {
+          full_path = image_path;
+          break;
+        }
+      }
+    }
+  }
+#else
+  throw NotSupportedException(A_FUNCINFO);
+//#error "platform::getSymbolFullPath() not implemented for this platform"
+#endif
+  return full_path;
 }
 
 /*---------------------------------------------------------------------------*/

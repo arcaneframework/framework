@@ -181,7 +181,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 class SyclRunQueueStream
-: public impl::IRunQueueStream
+: public Impl::IRunQueueStream
 {
  public:
 
@@ -192,11 +192,11 @@ class SyclRunQueueStream
 
  public:
 
-  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] Impl::RunCommandImpl& c) override
   {
     return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  void notifyEndLaunchKernel(Impl::RunCommandImpl&) override
   {
     return m_runtime->notifyEndLaunchKernel();
   }
@@ -272,7 +272,7 @@ class SyclRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime;
+  Impl::IRunnerRuntime* m_runtime;
   std::unique_ptr<sycl::queue> m_sycl_stream;
   sycl::event m_last_command_event;
 };
@@ -281,7 +281,7 @@ class SyclRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class SyclRunQueueEvent
-: public impl::IRunQueueEventImpl
+: public Impl::IRunQueueEventImpl
 {
  public:
 
@@ -295,7 +295,7 @@ class SyclRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue([[maybe_unused]] impl::IRunQueueStream* stream) final
+  void recordQueue([[maybe_unused]] Impl::IRunQueueStream* stream) final
   {
     ARCCORE_CHECK_POINTER(stream);
     auto* rq = static_cast<SyclRunQueueStream*>(stream);
@@ -317,7 +317,7 @@ class SyclRunQueueEvent
     m_sycl_event.wait();
   }
 
-  void waitForEvent([[maybe_unused]] impl::IRunQueueStream* stream) final
+  void waitForEvent([[maybe_unused]] Impl::IRunQueueStream* stream) final
   {
 #if defined(__ADAPTIVECPP__)
     auto* rq = static_cast<SyclRunQueueStream*>(stream);
@@ -358,14 +358,14 @@ class SyclRunQueueEvent
  private:
 
   sycl::event m_sycl_event;
-  impl::IRunQueueStream* m_recorded_stream = nullptr;
+  Impl::IRunQueueStream* m_recorded_stream = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class SyclRunnerRuntime
-: public impl::IRunnerRuntime
+: public Impl::IRunnerRuntime
 {
   friend class SyclRunQueueStream;
 
@@ -387,15 +387,15 @@ class SyclRunnerRuntime
   {
     return eExecutionPolicy::SYCL;
   }
-  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  Impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new SyclRunQueueStream(this, bi);
   }
-  impl::IRunQueueEventImpl* createEventImpl() override
+  Impl::IRunQueueEventImpl* createEventImpl() override
   {
     return new SyclRunQueueEvent(false);
   }
-  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  Impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
     return new SyclRunQueueEvent(true);
   }
@@ -461,7 +461,7 @@ class SyclRunnerRuntime
 
  private:
 
-  impl::DeviceInfoList m_device_info_list;
+  Impl::DeviceInfoList m_device_info_list;
   std::unique_ptr<sycl::device> m_default_device;
   std::unique_ptr<sycl::context> m_default_context;
   std::unique_ptr<sycl::queue> m_default_queue;
@@ -588,8 +588,8 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& i
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Sycl;
-  Arcane::Accelerator::impl::setUsingSYCLRuntime(true);
-  Arcane::Accelerator::impl::setSYCLRunQueueRuntime(&global_sycl_runtime);
+  Arcane::Accelerator::Impl::setUsingSYCLRuntime(true);
+  Arcane::Accelerator::Impl::setSYCLRunQueueRuntime(&global_sycl_runtime);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_sycl_memory_allocator);
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();

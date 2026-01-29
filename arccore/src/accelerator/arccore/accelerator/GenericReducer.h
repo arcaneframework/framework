@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericReducer.h                                            (C) 2000-2025 */
+/* GenericReducer.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 template <typename DataType>
 class GenericReducerIf;
@@ -137,13 +137,13 @@ class GenericReducerIf
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCCORE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
-                                                    nb_item, reduce_op, init_value, stream));
+                                                     nb_item, reduce_op, init_value, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
       reduced_value_ptr = s.m_device_reduce_storage.allocate();
       ARCCORE_CHECK_CUDA(::cub::DeviceReduce::Reduce(s.m_algo_storage.address(), temp_storage_size,
-                                                    input_iter, reduced_value_ptr, nb_item,
-                                                    reduce_op, init_value, stream));
+                                                     input_iter, reduced_value_ptr, nb_item,
+                                                     reduce_op, init_value, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
     } break;
 #endif
@@ -154,13 +154,13 @@ class GenericReducerIf
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCCORE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
-                                       nb_item, reduce_op, stream));
+                                        nb_item, reduce_op, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
       reduced_value_ptr = s.m_device_reduce_storage.allocate();
 
       ARCCORE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
-                                       nb_item, reduce_op, stream));
+                                        nb_item, reduce_op, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
     } break;
 #endif
@@ -201,7 +201,7 @@ class GenericReducerIf
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -247,12 +247,12 @@ namespace Arcane::Accelerator
  */
 template <typename DataType>
 class GenericReducer
-: private impl::GenericReducerBase<DataType>
+: private Impl::GenericReducerBase<DataType>
 {
  public:
 
   explicit GenericReducer(const RunQueue& queue)
-  : impl::GenericReducerBase<DataType>(queue)
+  : Impl::GenericReducerBase<DataType>(queue)
   {
     this->_allocate();
   }
@@ -262,40 +262,40 @@ class GenericReducer
   //! Applique une réduction 'Min' sur les valeurs \a values
   void applyMin(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MinOperator<DataType>{}, trace_info);
+    _apply(values.size(), values.data(), Impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs \a values
   void applyMax(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{}, trace_info);
+    _apply(values.size(), values.data(), Impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs \a values
   void applySum(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::SumOperator<DataType>{}, trace_info);
+    _apply(values.size(), values.data(), Impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Min' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
   void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{}, trace_info);
+    _applyWithIndex(nb_value, select_lambda, Impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
   void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{}, trace_info);
+    _applyWithIndex(nb_value, select_lambda, Impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
   void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{}, trace_info);
+    _applyWithIndex(nb_value, select_lambda, Impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Valeur de la réduction
@@ -315,8 +315,8 @@ class GenericReducer
   void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
-    impl::GenericReducerBase<DataType>* base_ptr = this;
-    impl::GenericReducerIf<DataType> gf;
+    Impl::GenericReducerBase<DataType>* base_ptr = this;
+    Impl::GenericReducerIf<DataType> gf;
     DataType init_value = reduce_op.defaultValue();
     gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }
@@ -326,9 +326,9 @@ class GenericReducer
                        ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
-    impl::GenericReducerBase<DataType>* base_ptr = this;
-    impl::GenericReducerIf<DataType> gf;
-    impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
+    Impl::GenericReducerBase<DataType>* base_ptr = this;
+    Impl::GenericReducerIf<DataType> gf;
+    Impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     DataType init_value = reduce_op.defaultValue();
     gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }

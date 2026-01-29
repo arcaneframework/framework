@@ -1,0 +1,144 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<module name="AMRCartesianMeshTester" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Module de test du gestionnaire de maillages cartésiens avec AMR
+  </description>
+
+  <options>
+    <complex name="refinement-2d" type="Refinement2D" minOccurs="0" maxOccurs="unbounded">
+      <simple name="position" type="real2"/>
+      <simple name="length" type="real2"/>
+    </complex>
+    <complex name="refinement-3d" type="Refinement3D" minOccurs="0" maxOccurs="unbounded">
+      <simple name="position" type="real3"/>
+      <simple name="length" type="real3"/>
+    </complex>
+    <service-instance name="post-processor" type="Arcane::IPostProcessorWriter" default="Ensight7PostProcessor">
+      <description>
+        Indique le type de bibliothèque à utiliser pour les sorties de dépouillement.
+      </description>
+    </service-instance>
+
+    <simple name="expected-number-of-cells-in-patchs" type="int32[]">
+      <description>
+        Si non vide, nombre de mailles que doit avoir chaque patch
+      </description>
+    </simple>
+
+    <simple name="expected-number-of-ghost-cells-in-patchs" type="int32[]" optional="true">
+      <description>
+        Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch
+      </description>
+    </simple>
+
+    <simple name="merge-patches" type="bool" default="true">
+      <description>
+        Indique si on souhaite fusionner les patchs après raffinement/déraffinement.
+        Permet de réduire le nombre de patchs s'ils ont côte-à-côte.
+        Fonctionne uniquement avec amr-type=3.
+      </description>
+    </simple>
+
+    <simple name="hash-with-ghost" type="bool" default="false">
+      <description>
+        Doit-on include les items fantômes dans les comparaisons de hash ?
+        Attention néanmoins à gérer le séquentiel/parallèle.
+      </description>
+    </simple>
+
+    <simple name="nodes-uid-hash" type="string">
+      <description>Hash des uniqueId() des noeuds</description>
+    </simple>
+    <simple name="faces-uid-hash" type="string">
+      <description>Hash des uniqueId() des faces</description>
+    </simple>
+    <simple name="cells-uid-hash" type="string">
+      <description>Hash des uniqueId() des mailles</description>
+    </simple>
+    <simple name="nodes-direction-hash" type="string" default="">
+      <description>Hash des uniqueId() des noeuds incluant les uniqueId() des noeuds autour</description>
+    </simple>
+    <simple name="faces-direction-hash" type="string" default="">
+      <description>Hash des uniqueId() des faces incluant les uniqueId() des mailles autour</description>
+    </simple>
+    <simple name="cells-direction-hash" type="string" default="">
+      <description>Hash des uniqueId() des mailles incluant les uniqueId() des mailles autour</description>
+    </simple>
+    <simple name="renumber-patch-method" type="integer" default="1">
+      <description>
+        Méthode de renumérotation des patchs (0 ou 1 ou 2).
+      </description>
+    </simple>
+    <simple name="coarse-at-init" type="bool" default="false">
+      <description>
+        Indique si on dé-raffine à l'initialisation
+      </description>
+    </simple>
+    <simple name="verbosity-level" type="int32" default="1">
+      <description>
+        Niveau de verbosité
+      </description>
+    </simple>
+    <simple name="dump-svg" type="bool" default="true">
+      <description>
+        Indique si on exporte au format SVG les patchs
+      </description>
+    </simple>
+
+    <complex name="coarse-zone-2d" type="CoarseZone2D" minOccurs="0" maxOccurs="unbounded">
+      <simple name="position" type="real2">
+        <description>
+          Indique la taille de la zone de dé-raffinement
+        </description>
+      </simple>
+      <simple name="length" type="real2">
+        <description>
+          Indique la taille de la zone de dé-raffinement
+        </description>
+      </simple>
+    </complex>
+    <complex name="coarse-zone-3d" type="CoarseZone3D" minOccurs="0" maxOccurs="unbounded">
+      <simple name="position" type="real3">
+        <description>
+          Indique la taille de la zone de dé-raffinement
+        </description>
+      </simple>
+      <simple name="length" type="real3">
+        <description>
+          Indique la taille de la zone de dé-raffinement
+        </description>
+      </simple>
+    </complex>
+
+    <complex name="reduce-nb-ghost-layers" type="ReduceNbGhostLayers" minOccurs="0" maxOccurs="unbounded">
+      <simple name="level" type="int32">
+        <description>
+          Indique le niveau de raffinement où retirer les couches.
+        </description>
+      </simple>
+      <simple name="nb-ghost-layers" type="int32">
+        <description>
+          Indique le nombre de couche qu'il devra y avoir au final.
+        </description>
+      </simple>
+    </complex>
+
+    <simple name="overlap-layer-size-top-level" type="int32" default="-1">
+      <description>
+        Indique le nombre de couches de mailles de recouvrement pour le niveau le plus haut (le nombre
+        de couches des niveaux inférieurs est calculé en se basant sur le nombre de couches du niveau
+        juste au-dessus).
+        Doit être pair.
+        Si -1, alors pas de mailles de recouvrement.
+      </description>
+    </simple>
+
+  </options>
+
+  <entry-points>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="buildInit" name="buildInit" where="build" property="none"/>
+  </entry-points>
+
+</module>

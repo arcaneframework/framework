@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2025 */
+/* RunCommandLoop.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une commande.                         */
 /*---------------------------------------------------------------------------*/
@@ -14,10 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec l'existant
-//#include "arcane/utils/ConcurrencyUtils.h"
-
 #include "arccore/common/SequentialFor.h"
+#include "arccore/common/StridedLoopRanges.h"
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/concurrency/ParallelFor.h"
 #include "arccore/accelerator/KernelLauncher.h"
@@ -94,17 +92,31 @@ namespace Arcane::Accelerator::Impl
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
 doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
+  using namespace Arcane::Accelerator::Impl;
+
   // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  using namespace Arcane::Accelerator::Impl;
-
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < bounds.nbElement()) {
-    body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+  if constexpr (requires { bounds.nbStride(); }) {
+    // Test expérimental pour utiliser un pas de la taille
+    // de la grille. Le nombre de pas est donné par bounds.nbStride().
+    Int32 nb_grid_stride = bounds.nbStride();
+    Int32 offset = blockDim.x * gridDim.x;
+    for (Int32 k = 0; k < nb_grid_stride; ++k) {
+      Int32 true_i = i + (offset * k);
+      if (true_i < bounds.nbOriginalElement()) {
+        body(arcaneGetLoopIndexCudaHip(bounds, true_i), remaining_args...);
+      }
+    }
+  }
+  else {
+    if (i < bounds.nbElement()) {
+      body(arcaneGetLoopIndexCudaHip(bounds, i), remaining_args...);
+    }
   }
   CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
 }
@@ -158,7 +170,7 @@ class DoDirectSYCLLambdaArrayBounds
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -183,20 +195,28 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
   Int64 vsize = bounds.nbElement();
   if (vsize == 0)
     return;
+#if defined(ARCCORE_EXPERIMENTAL_GRID_STRIDE) && defined(ARCCORE_COMPILING_CUDA_OR_HIP)
+  using TrueLoopBoundType = Impl::StridedLoopRanges<LoopBoundType>;
+  TrueLoopBoundType bounds2(command.nbStride(), bounds);
+  Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue());
+#else
+  using TrueLoopBoundType = LoopBoundType;
+  [[maybe_unused]] const TrueLoopBoundType& bounds2 = bounds;
   Impl::RunCommandLaunchInfo launch_info(command, vsize);
-  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+#endif
   launch_info.beginExecute();
+  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
-                             launch_info, func, bounds, other_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((Impl::doDirectGPULambdaArrayBounds2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                             launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((Impl::doDirectGPULambdaArrayBounds2<LoopBoundType, Lambda, RemainingArgs...>),
-                            launch_info, func, bounds, other_args...);
+    ARCCORE_KERNEL_HIP_FUNC((Impl::doDirectGPULambdaArrayBounds2<TrueLoopBoundType, Lambda, RemainingArgs...>),
+                            launch_info, func, bounds2, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoDirectSYCLLambdaArrayBounds < LoopBoundType, Lambda, RemainingArgs... > {}),
+    ARCCORE_KERNEL_SYCL_FUNC((Impl::DoDirectSYCLLambdaArrayBounds<LoopBoundType, Lambda, RemainingArgs...>{}),
                              launch_info, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
@@ -295,7 +315,7 @@ runExtended(RunCommand& command, LoopBoundType bounds,
 template <typename LoopBoundType, typename Lambda> void
 runGeneric(RunCommand& command, const LoopBoundType& bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, bounds, func);
+  Impl::_applyGenericLoop(command, bounds, func);
 }
 
 // Spécialisation pour ArrayBound.
@@ -303,13 +323,13 @@ runGeneric(RunCommand& command, const LoopBoundType& bounds, const Lambda& func)
 template <typename ExtentType, typename Lambda> void
 runGeneric(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
+  Impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -322,7 +342,7 @@ namespace Arcane::Accelerator
 template <typename ExtentType, typename Lambda> void
 run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
+  Impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,7 +353,7 @@ run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 template <int N, typename Lambda> void
 run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, bounds, func);
+  Impl::_applyGenericLoop(command, bounds, func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -344,7 +364,7 @@ run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& fun
 template <int N, typename Lambda> void
 run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, bounds, func);
+  Impl::_applyGenericLoop(command, bounds, func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -352,25 +372,25 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
 
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
-  -> impl::ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
+-> Impl::ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
 {
   return { command, bounds };
 }
 
 template <typename LoopBoundType, typename... RemainingArgs> auto
-operator<<(RunCommand& command, const impl::ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>& ex_loop)
-  -> impl::ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>
+operator<<(RunCommand& command, const Impl::ExtendedArrayBoundLoop<LoopBoundType, RemainingArgs...>& ex_loop)
+-> Impl::ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>
 {
   return { command, ex_loop.m_bounds, ex_loop.m_remaining_args };
 }
 
-template <int N> impl::ArrayBoundRunCommand<SimpleForLoopRanges<N>>
+template <int N> Impl::ArrayBoundRunCommand<SimpleForLoopRanges<N>>
 operator<<(RunCommand& command, const SimpleForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
-template <int N> impl::ArrayBoundRunCommand<ComplexForLoopRanges<N>>
+template <int N> Impl::ArrayBoundRunCommand<ComplexForLoopRanges<N>>
 operator<<(RunCommand& command, const ComplexForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
@@ -384,7 +404,7 @@ operator<<(RunCommand& command, const ComplexForLoopRanges<N, Int32>& bounds)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -404,14 +424,14 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 //! Boucle sur accélérateur
@@ -436,19 +456,18 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
  * Cette macro permet d'ajouter des arguments. Ces arguments peuvent être
  * des valeurs à réduire (telles que les classes Arcane::Accelerator::ReducerSum2,
  * Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2) ou des données
- * en mémoire locale (via la classe Arcane::Accelerator::RunCommandLocalMemory).
+ * en mémoire locale (via la classe Arcane::Accelerator::LocalMemory).
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 /*!
  * \brief Boucle sur accélérateur pour exécution avec un seul thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \
+  A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

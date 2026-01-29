@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshGlobal.h                                       (C) 2000-2025 */
+/* CartesianMeshGlobal.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations de la composante 'arcane_cartesianmesh'.                     */
 /*---------------------------------------------------------------------------*/
@@ -55,6 +55,7 @@ class CartesianPatchGroup;
 class ICartesianMeshAMRPatchMng;
 class ICartesianMeshNumberingMngInternal;
 class ICartesianMeshPatchInternal;
+class SimpleHTMLMeshAMRPatchExporter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,9 +79,14 @@ enum eCellNodePosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef Int32 CartCoordType;
-typedef Int32x3 CartCoord3Type;
-typedef Int32x2 CartCoord2Type;
+//! Représente une coordonnée d'un élément dans la grille cartésienne (en X ou en Y ou en Z).
+typedef Int32 CartCoord;
+
+//! Représente les coordonnées 2D d'un élément dans la grille cartésienne {x, y}.
+typedef Int32x2 CartCoord2;
+
+//! Représente les coordonnées 3D d'un élément dans la grille cartésienne {x, y, z}.
+typedef Int32x3 CartCoord3;
 
 } // End namespace Arcane
 

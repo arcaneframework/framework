@@ -76,9 +76,9 @@ if(ALIEN_USE_SYCL)
                            SOURCES AlienBenchSYCL.cc)
     ENDIF()
     IF(ALIEN_USE_ACPPSYCL)
-      IF(CMAKE_COMPILER_IS_GNUCXX)
+      #IF(CMAKE_COMPILER_IS_GNUCXX)
         target_compile_options(alien_bench.exe PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
-      ENDIF()
+      #ENDIF()
       IF(ALIEN_USE_HIP)
         set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
         target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
@@ -92,19 +92,24 @@ if(ALIEN_USE_SYCL)
        add_sycl_to_target(TARGET  alien_bench.exe
                            SOURCES AlienBenchSYCL.cc)
     ENDIF()
-     
+
 ENDIF()
 
 if (TARGET intel)
     linkLibraries(alien_bench.exe intel)
 endif ()
 
+#        arcane_full
 linkLibraries(alien_bench.exe
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_arcane_tools
         arcane_full
         )
+
+if (TARGET  alien_core_solvers)
+    linkLibraries(alien_bench.exe alien_core_solvers)
+endif ()
 
 if (TARGET  alien_external_packages)
     linkLibraries(alien_bench.exe alien_external_packages)
@@ -138,6 +143,23 @@ if(TARGET COMPOSYX::composyx)
   addSources(test_composyx.exe test_composyx.cpp )
   linkLibraries(test_composyx.exe mpi COMPOSYX::composyx)
   commit(test_composyx.exe)
+endif()
+
+if (TARGET petsc)
+if (TARGET CUDA::cudart)
+createExecutable(test_petsc_cuda.exe)
+
+addSources(test_petsc_cuda.exe test_petsc.cpp)
+linkLibraries(test_petsc_cuda.exe mpi)
+
+linkLibraries(test_petsc_cuda.exe
+              Boost::program_options)
+
+linkLibraries(test_petsc_cuda.exe petsc)
+linkLibraries(test_petsc_cuda.exe CUDA::cudart)
+
+commit(test_petsc_cuda.exe)
+endif()
 endif()
 
 if(ALIEN_USE_SYCL)
@@ -179,30 +201,39 @@ if(ALIEN_USE_SYCL)
         set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
         target_compile_options(alien_hypre_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
       ENDIF()
-       IF(ALIEN_USE_CUDA)
+      IF(ALIEN_USE_CUDA)
          #set(ACPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
          #target_compile_options(alien_hypre_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
          #target_link_options(alien_hypre_sycl.exe PRIVATE ${ACPP_FLAGS})
-       ENDIF()
-       target_compile_definitions(alien_hypre_sycl.exe PRIVATE USE_ACPPSYCL)
-        add_sycl_to_target(TARGET  alien_hypre_sycl.exe
+      ENDIF()
+      target_compile_definitions(alien_hypre_sycl.exe PRIVATE USE_ACPPSYCL)
+      add_sycl_to_target(TARGET  alien_hypre_sycl.exe
                            SOURCES hypre_sycl.cpp)
     ENDIF()
-     
+
 ENDIF()
 
 linkLibraries(alien_hypre_sycl.exe mpi)
 
-linkLibraries(alien_hypre_sycl.exe 
+linkLibraries(alien_hypre_sycl.exe
               Boost::program_options)
 
 linkLibraries(alien_hypre_sycl.exe hypre)
+if (TARGET  alien_external_packages)
+    linkLibraries(alien_hypre_sycl.exe alien_external_packages)
+endif ()
 
+if (TARGET intel)
+    linkLibraries(alien_hypre_sycl.exe intel)
+endif ()
+
+if(TARGET CUDA::cudart)
 linkLibraries(alien_hypre_sycl.exe CUDA::cudart)
+endif()
 
 if(ALIEN_USE_SYCL)
     IF(ALIEN_USE_ACPPSYCL)
-        linkLibraries(alien_hypre_sycl.exe 
+        linkLibraries(alien_hypre_sycl.exe
                       Boost::fiber Boost::context)
     ENDIF()
 ENDIF()
@@ -219,20 +250,41 @@ endif ()
 
 configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
 configure_file(AlienBench-aliensolver.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0-2P.arc COPYONLY)
+configure_file(AlienBench-aliensolver-ilu0-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-ilu0-bs2.arc COPYONLY)
+configure_file(AlienBench-aliensolver-filu0.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-filu0.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb-2P.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cheb-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cheb-bs2.arc COPYONLY)
+configure_file(AlienBench-aliensolver-amg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-amg.arc COPYONLY)
+configure_file(AlienBench-aliensolver-cxramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver-cxramg-bs2.arc COPYONLY)
 
 list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.config
             AlienBench-aliensolver.arc
+            AlienBench-aliensolver-ilu0.arc
+            AlienBench-aliensolver-ilu0-2P.arc
+            AlienBench-aliensolver-ilu0-bs2.arc
+            AlienBench-aliensolver-filu0.arc
+            AlienBench-aliensolver-cheb.arc
+            AlienBench-aliensolver-cheb-2P.arc
+            AlienBench-aliensolver-cheb-bs2.arc
+            AlienBench-aliensolver-amg.arc
+            AlienBench-aliensolver-cxramg.arc
             )
 
 if (TARGET petsc)
     configure_file(AlienBench.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.arc COPYONLY)
     configure_file(AlienBench-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-4P.arc COPYONLY)
+    configure_file(AlienBench-petsc-gamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-gamg.arc COPYONLY)
+    configure_file(AlienBench-petsc-gamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-gamg-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.arc
             AlienBench-4P.arc
-            AlienBench-petsc-spai.arc
+            AlienBench-petsc-gamg.arc
+            AlienBench-petsc-gamg-4P.arc
             )
 
     if (TARGET petsc::spai)
@@ -271,12 +323,16 @@ endif ()
 if (TARGET trilinos)
     configure_file(AlienBench-trilinos.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos.arc COPYONLY)
     configure_file(AlienBench-trilinos-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-2P.arc COPYONLY)
+    configure_file(AlienBench-trilinos-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-bs2.arc COPYONLY)
+    configure_file(AlienBench-trilinos-bs2-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-bs2-4P.arc COPYONLY)
     configure_file(AlienBench-trilinosmuelu.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu.arc COPYONLY)
     configure_file(AlienBench-trilinosmuelu-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-trilinos.arc
             AlienBench-trilinos-2P.arc
+            AlienBench-trilinos-bs2.arc
+            AlienBench-trilinos-bs2-4P.arc
             AlienBench-trilinosmuelu.arc
             AlienBench-trilinosmuelu-4P.arc
             )
@@ -284,15 +340,37 @@ endif ()
 
 if (TARGET ifpsolver)
     configure_file(AlienBench-ifps.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps.arc COPYONLY)
+    configure_file(AlienBench-ifps-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps-bs2.arc COPYONLY)
     configure_file(AlienBench-ifps-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps-2P.arc COPYONLY)
     configure_file(AlienBench-ifpsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg.arc COPYONLY)
     configure_file(AlienBench-ifpsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg-4P.arc COPYONLY)
+    configure_file(AlienBench-ifpscpramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpscpramg-bs2.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-ifps.arc
+            AlienBench-ifps-bs2.arc
             AlienBench-ifps-2P.arc
             AlienBench-ifpsamg.arc
             AlienBench-ifpsamg-4P.arc
+            AlienBench-ifpscpramg-bs2.arc
+            )
+endif ()
+
+if (TARGET htssolver)
+    configure_file(AlienBench-hts.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts.arc COPYONLY)
+    configure_file(AlienBench-hts-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts-bs2.arc COPYONLY)
+    configure_file(AlienBench-hts-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hts-2P.arc COPYONLY)
+    configure_file(AlienBench-htsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg.arc COPYONLY)
+    configure_file(AlienBench-htsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htsamg-4P.arc COPYONLY)
+    configure_file(AlienBench-htscpramg-bs2.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-htscpramg-bs2.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-hts.arc
+            AlienBench-hts-bs2.arc
+            AlienBench-hts-2P.arc
+            AlienBench-htsamg.arc
+            AlienBench-htsamg-4P.arc
+            AlienBench-htscpramg-bs2.arc
             )
 endif ()
 
@@ -342,6 +420,86 @@ alien_test(
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+alien_test(
+            BENCH bench.aliensolver-ilu0
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-ilu0-b2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+
+alien_test(
+            BENCH bench.aliensolver-ilu0
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-ilu0-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+alien_test(
+            BENCH bench.aliensolver-cheb
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-cheb-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+
+alien_test(
+            BENCH bench.aliensolver-cheb
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cheb-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET hypre)
+alien_test(
+            BENCH bench.aliensolver-amg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-amg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+if(TARGET eigen3)
+alien_test(
+            BENCH bench.aliensolver-cxramg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver-cxramg-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif()
+endif()
+
 if (TARGET petsc)
 
     alien_test(
@@ -359,6 +517,24 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.petsc-gamg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-petsc-gamg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.petsc.gamg
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-petsc-gamg-4P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
@@ -403,7 +579,7 @@ if (TARGET hypre)
             OPTIONS AlienBench-hypre-2P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-            
+
 if(ALIEN_USE_SYCL)
     alien_test(
             BENCH bench.hypre.ilu
@@ -413,7 +589,7 @@ if(ALIEN_USE_SYCL)
             OPTIONS AlienBench-hypreilu.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-     
+
     alien_test(
             BENCH bench.hypre.fsai
             NAME seq
@@ -432,7 +608,7 @@ if(ALIEN_USE_SYCL)
             OPTIONS AlienBench-hypreilu-sycl.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-     
+
     alien_test(
             BENCH bench.hypre.fsai.sycl
             NAME seq
@@ -458,6 +634,15 @@ if (TARGET trilinos)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
+            BENCH bench.trilinos-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinos-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
             BENCH bench.trilinosmuelu
             NAME seq
             PROCS 1
@@ -472,6 +657,15 @@ if (TARGET trilinos)
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.trilinos-bs2
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinos-bs2-4P.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
@@ -494,6 +688,15 @@ if (TARGET ifpsolver)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-ifps.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifps-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifps-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
@@ -521,6 +724,63 @@ if (TARGET ifpsolver)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-ifpsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifpscpramg-bs2
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifpscpramg-bs2.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif ()
+
+if (TARGET htssolver)
+
+    alien_test(
+            BENCH bench.hts
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hts.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htsamg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htsamg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.hts
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hts-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htsamg
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.htscpramg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-htscpramg-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()

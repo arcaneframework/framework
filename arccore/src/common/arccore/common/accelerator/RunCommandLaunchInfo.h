@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.h                                      (C) 2000-2025 */
+/* RunCommandLaunchInfo.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
  public:
 
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
+  RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative);
   ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
@@ -89,11 +90,13 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
+  bool m_is_need_barrier = false;
+  bool m_is_cooperative_launch = false;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
   Int64 m_total_loop_size = 0;
-  impl::RunQueueImpl* m_queue_impl = nullptr;
+  RunQueueImpl* m_queue_impl = nullptr;
 
  private:
 
@@ -106,6 +109,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   // Pour test uniquement avec CUDA
   bool _isUseCooperativeLaunch() const;
   bool _isUseCudaLaunchKernel() const;
+  void _setIsNeedBarrier(bool v);
 
  private:
 
@@ -114,14 +118,15 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
   // \a sycl_event_ptr est de type 'sycl::event*'.
   void _addSyclEvent(void* sycl_event_ptr);
+  void _init();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

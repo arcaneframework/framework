@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericSorter.h                                             (C) 2000-2025 */
+/* GenericSorter.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Algorithme de tri.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -165,7 +165,7 @@ class GenericSorterMergeSort
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 namespace Arcane::Accelerator
 {
@@ -176,12 +176,12 @@ namespace Arcane::Accelerator
  * \brief Algorithme générique de tri sur accélérateur.
  */
 class GenericSorter
-: private impl::GenericSorterBase
+: private Impl::GenericSorterBase
 {
  public:
 
   explicit GenericSorter(const RunQueue& queue)
-  : impl::GenericSorterBase(queue)
+  : Impl::GenericSorterBase(queue)
   {
   }
 
@@ -198,8 +198,8 @@ class GenericSorter
   template <typename DataType>
   void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::GenericSorterBase* base_ptr = this;
-    impl::GenericSorterMergeSort gf;
+    Impl::GenericSorterBase* base_ptr = this;
+    Impl::GenericSorterMergeSort gf;
     Int32 nb_item = input.size();
     if (output.size() < nb_item)
       ARCCORE_FATAL("Output size '{0}' is smaller than input size '{1}'",

@@ -1,26 +1,9 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
 #pragma once
 
@@ -210,6 +193,32 @@ class KernelInternal
     }
   }
 
+
+  template <typename T>
+  void axpy(T const a,
+            sycl::buffer<T>& x,
+            Integer stride_x,
+            sycl::buffer<T>& y,
+            Integer stride_y)
+  {
+    sycl::range<1> work_items{ m_total_threads };
+    {
+      // clang-format off
+       m_env->internal()->queue().submit([&](sycl::handler& cgh)
+                                         {
+                                           auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+                                           auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
+                                           auto x_length = x.size()/stride_x ;
+                                           cgh.parallel_for<class vector_axpy>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                                                              {
+                                                                                 auto id = itemId.get_id(0);
+                                                                                 for (auto i = id; i < x_length; i += itemId.get_range()[0])
+                                                                                    access_y[i*stride_y] += a * access_x[i*stride_x];
+                                                                              });
+                                         });
+      // clang-format on
+    }
+  }
   template <typename T>
   void pointwiseMult(sycl::buffer<T>& x,
                      sycl::buffer<T>& y,
@@ -252,6 +261,31 @@ class KernelInternal
                                                                                  auto id = itemId.get_id(0);
                                                                                  for (auto i = id; i < y_length; i += itemId.get_range()[0])
                                                                                     access_y[i] = access_x[i];
+                                                                              });
+                                         });
+      // clang-format on
+    }
+  }
+
+  template <typename T>
+  void copy(sycl::buffer<T>& x,
+            Integer stride_x,
+            sycl::buffer<T>& y,
+            Integer stride_y)
+  {
+    sycl::range<1> work_items{ m_total_threads };
+    {
+      // clang-format off
+      m_env->internal()->queue().submit( [&](sycl::handler& cgh)
+                                         {
+                                           auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+                                           auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
+                                           auto x_length = x.size()/stride_x ;
+                                           cgh.parallel_for<class vector_copy>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                                                              {
+                                                                                 auto id = itemId.get_id(0);
+                                                                                 for (auto i = id; i < x_length; i += itemId.get_range()[0])
+                                                                                    access_y[i*stride_y] = access_x[i*stride_x];
                                                                               });
                                          });
       // clang-format on

@@ -63,10 +63,12 @@ set(ARCANE_MATERIALS_SOURCES
 set(ARCANE_INTERNAL_SOURCES
   internal/ICaseMngInternal.h
   internal/IDataInternal.h
+  internal/DotNetRuntimeInitialisationInfoProperties.h
   internal/MshMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
   internal/CartesianMeshAllocateBuildInfoInternal.h
+  internal/ConfigurationPropertyReader.h
   internal/UnstructuredMeshAllocateBuildInfoInternal.h
   internal/IParallelMngInternal.h
   internal/IItemFamilyInternal.h
@@ -481,7 +483,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Concurrency.cc
   Concurrency.h
   Configuration.h
-  ConfigurationPropertyReader.h
   Connectivity.cc
   Connectivity.h
   ConnectivityItemVector.h

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2025 */
+/* NumArray.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 namespace Arcane
 {
@@ -107,7 +107,7 @@ template class ArrayStridesBase<2>;
 template class ArrayStridesBase<3>;
 template class ArrayStridesBase<4>;
 
-namespace impl
+namespace Impl
 {
   template class NumArrayContainer<Real>;
 }

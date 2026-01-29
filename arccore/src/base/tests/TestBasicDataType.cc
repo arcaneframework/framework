@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -207,6 +207,18 @@ TEST(BasicDataType, Float128)
   double c_as_double = static_cast<double>(c);
   std::cout << "F128=" << c_as_double << "\n";
   ASSERT_EQ(sizeof(Float128), 16);
+
+#if defined(ARCCORE_HAS_NATIVE_FLOAT128)
+  Float128 FLT128_MAX = 1.18973149535723176508575932662800702e+4932Q;
+  Float128 FLT128_MAX0 = 1.12973149535723176508575932662800702e+4932Q;
+  __float128 FLT128_MAX1 = 1.12973149535723176508575932662800702e+4932Q;
+  //#define __FLT128_NORM_MAX__ 1.18973149535723176508575932662800702e+4932F128
+  //#define __FLT128_MIN__ 3.36210314311209350626267781732175260e-4932F128
+  //#define __FLT128_EPSILON__ 1.92592994438723585305597794258492732e-34F128
+  //#define __FLT128_DENORM_MIN__ 6.47517511943802511092443895822764655e-4966F128
+  std::cout << "F128=" << FLT128_MAX << "\n";
+  std::cout << "F128=" << FLT128_MAX0 << "\n";
+#endif
 }
 
 TEST(BasicDataType, Int128)

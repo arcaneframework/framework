@@ -10,6 +10,8 @@ set(SOURCES
   ArraySimdPadder.h
   Collection.h
   Collection.cc
+  CommandLineArguments.h
+  CommandLineArguments.cc
   CommonGlobal.h
   CommonGlobal.cc
   DataView.h
@@ -20,7 +22,12 @@ set(SOURCES
   ExceptionUtils.cc
   HostKernelRemainingArgsHelper.h
   IMemoryAllocator.h
+  IMemoryPool.h
   IMemoryResourceMng.h
+  JSONReader.cc
+  JSONReader.h
+  JSONWriter.cc
+  JSONWriter.h
   List.h
   MemoryAllocator.cc
   MemoryAllocationArgs.h
@@ -33,16 +40,31 @@ set(SOURCES
   NumArray.h
   NumArray.cc
   NumArrayContainer.h
+  ParameterList.h
+  ParameterList.cc
+  Process.cc
+  Property.cc
   SequentialFor.h
   SmallArray.h
   SmallArray.cc
   SpecificMemoryCopy.cc
+  StridedLoopRanges.h
+  StringDictionary.h
+  StringDictionary.cc
+  StringVector.h
+  StringVector.cc
 
+  internal/FieldProperty.h
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/JSONPropertyReader.h
   internal/MemoryPool.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
+  internal/ParameterListPropertyReader.h
+  internal/Process.h
+  internal/Property.h
+  internal/PropertyDeclarations.h
   internal/SpecificMemoryCopyList.h
   internal/HostSpecificMemoryCopy.h
 

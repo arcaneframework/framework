@@ -47,7 +47,7 @@
         <iluk>
           <level-of-fill>0</level-of-fill>
         </iluk>
-        <output>1</output>
+        <output>0</output>
       </linear-solver>
 
     

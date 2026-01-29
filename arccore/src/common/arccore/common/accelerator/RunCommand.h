@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.h                                                (C) 2000-2025 */
+/* RunCommand.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 
 namespace Arcane::Accelerator
 {
-namespace impl
+namespace Impl
 {
 extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command);
@@ -44,11 +44,11 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
  */
 class ARCCORE_COMMON_EXPORT RunCommand
 {
-  friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  friend Impl::IReduceMemoryImpl* Impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend Impl::RunCommandLaunchInfo;
-  friend impl::RunQueueImpl;
+  friend Impl::RunQueueImpl;
   friend class ViewBuildInfo;
-  template<typename T, Int32 Extent> friend class LocalMemory;
+  template <typename T, Int32 Extent> friend class LocalMemory;
 
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -69,6 +69,9 @@ class ARCCORE_COMMON_EXPORT RunCommand
   RunCommand& operator=(RunCommand&&) = delete;
 
  public:
+
+  //! Politique d'exécution de la commande
+  eExecutionPolicy executionPolicy() const;
 
   /*!
    * \brief Positionne le informations de trace.
@@ -94,6 +97,22 @@ class ARCCORE_COMMON_EXPORT RunCommand
    * de l'accélérateur. En général c'est au moins 32.
    */
   RunCommand& addNbThreadPerBlock(Int32 v);
+
+  /*!
+   * \brief Positionne le nombre de pas pour la décomposition de la boucle
+   * sur accélérateur/
+   *
+   * La valeur par défaut est 1, ce qui indique qu'on ne décompose pas
+   * la boucle. Cette méthode ne fait rien si la commande ne s'exécute
+   * pas sur accélérateur. Cette valeur n'est utilisée que pour les boucles
+   * classiques (RUNCOMMAND_LOOP()) ou sur les entités (RUNCOMMAND_ENUMERATE()).
+   *
+   * \warning API EXPERIMENTALE. A UTILISER UNIQUEMENT DANS ARCANE
+   */
+  RunCommand& addNbStride(Int32 v);
+
+  //! Nombre de pas de décomposition de la boucle
+  Int32 nbStride() const;
 
   //! Informations pour les traces
   const TraceInfo& traceInfo() const;
@@ -129,10 +148,10 @@ class ARCCORE_COMMON_EXPORT RunCommand
  private:
 
   //! \internal
-  impl::RunQueueImpl* _internalQueueImpl() const;
+  Impl::RunQueueImpl* _internalQueueImpl() const;
   Impl::NativeStream _internalNativeStream() const;
-  static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
-  static void _internalDestroyImpl(impl::RunCommandImpl* p);
+  static Impl::RunCommandImpl* _internalCreateImpl(Impl::RunQueueImpl* queue);
+  static void _internalDestroyImpl(Impl::RunCommandImpl* p);
   Int32 _addSharedMemory(Int32 size);
   Int32 _sharedMemory() const;
 
@@ -142,7 +161,7 @@ class ARCCORE_COMMON_EXPORT RunCommand
 
  private:
 
-  impl::RunCommandImpl* m_p;
+  Impl::RunCommandImpl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/

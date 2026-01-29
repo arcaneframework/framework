@@ -11,10 +11,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/internal/AcceleratorRuntimeInitialisationInfoProperties.h"
 #include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 
-#include "arcane/utils/Property.h"
+#include "arccore/common/internal/Property.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

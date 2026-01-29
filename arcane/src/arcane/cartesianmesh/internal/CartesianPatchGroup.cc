@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianPatchGroup.cc                                      (C) 2000-2025 */
+/* CartesianPatchGroup.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Gestion du groupe de patchs du maillage cartésien.                        */
 /*---------------------------------------------------------------------------*/
@@ -41,20 +41,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Le patch 0 est un patch spécial "ground". Il ne possède pas de cell_group
-// dans le tableau "m_amr_patch_cell_groups".
-// Pour les index, on utilise toujours celui des tableaux m_amr_patches_pointer
-// et m_amr_patches.
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 CartesianPatchGroup::
 CartesianPatchGroup(ICartesianMesh* cmesh)
-: m_cmesh(cmesh)
+: TraceAccessor(cmesh->traceMng())
+, m_cmesh(cmesh)
 , m_index_new_patches(1)
-, m_size_of_overlap_layer_sub_top_level(0)
+, m_size_of_overlap_layer_top_level(0)
 , m_higher_level(0)
+, m_target_nb_levels(0)
+, m_latest_call_level(-2)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -87,8 +82,8 @@ saveInfosInProperties()
     UniqueArray<Int32> level(m_amr_patches_pointer.size());
     UniqueArray<Int32> overlap(m_amr_patches_pointer.size());
     UniqueArray<Int32> index(m_amr_patches_pointer.size());
-    UniqueArray<CartCoordType> min_point(m_amr_patches_pointer.size() * 3);
-    UniqueArray<CartCoordType> max_point(m_amr_patches_pointer.size() * 3);
+    UniqueArray<CartCoord> min_point(m_amr_patches_pointer.size() * 3);
+    UniqueArray<CartCoord> max_point(m_amr_patches_pointer.size() * 3);
 
     for (Integer i = 0; i < m_amr_patches_pointer.size(); ++i) {
       const AMRPatchPosition& position = m_amr_patches_pointer[i]->_internalApi()->positionRef();
@@ -130,6 +125,8 @@ saveInfosInProperties()
 void CartesianPatchGroup::
 recreateFromDump()
 {
+  Trace::Setter mci(traceMng(), "CartesianPatchGroup");
+
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   Int32 v = m_properties->getInt32("Version");
   if (v != 1) {
@@ -137,13 +134,14 @@ recreateFromDump()
   }
 
   clear();
+  _createGroundPatch();
 
   // Récupère les noms des groupes des patchs
   UniqueArray<String> patch_group_names;
   m_properties->get("PatchGroupNames", patch_group_names);
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_cmesh->traceMng()->info(4) << "Found n=" << patch_group_names.size() << " patchs";
+    info(4) << "Found n=" << patch_group_names.size() << " patchs";
 
     IItemFamily* cell_family = m_cmesh->mesh()->cellFamily();
     for (const String& x : patch_group_names) {
@@ -157,8 +155,8 @@ recreateFromDump()
     UniqueArray<Int32> level;
     UniqueArray<Int32> overlap;
     UniqueArray<Int32> index;
-    UniqueArray<CartCoordType> min_point;
-    UniqueArray<CartCoordType> max_point;
+    UniqueArray<CartCoord> min_point;
+    UniqueArray<CartCoord> max_point;
 
     m_properties->get("LevelPatches", level);
     m_properties->get("OverlapSizePatches", overlap);
@@ -202,7 +200,7 @@ recreateFromDump()
 
       auto* cdi = new CartesianMeshPatch(m_cmesh, index[i], position);
       _addPatchInstance(makeRef(cdi));
-      _addCellGroup(cell_group, cdi);
+      _addCellGroup(cell_group, cdi, true);
     }
 
     UniqueArray<Int32> available_index;
@@ -266,6 +264,9 @@ void CartesianPatchGroup::
 addPatch(CellGroup cell_group, Integer group_index)
 {
   _createGroundPatch();
+  if (group_index == -1) {
+    return;
+  }
   if (cell_group.null())
     ARCANE_FATAL("Null cell group");
 
@@ -273,7 +274,7 @@ addPatch(CellGroup cell_group, Integer group_index)
 
   auto* cdi = new CartesianMeshPatch(m_cmesh, group_index, position);
   _addPatchInstance(makeRef(cdi));
-  _addCellGroup(cell_group, cdi);
+  _addCellGroup(cell_group, cdi, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -282,17 +283,59 @@ addPatch(CellGroup cell_group, Integer group_index)
 void CartesianPatchGroup::
 addPatch(const AMRZonePosition& zone_position)
 {
+  Trace::Setter mci(traceMng(), "CartesianPatchGroup");
+
+  info() << "addPatch() with zone"
+         << " -- Position : " << zone_position.position()
+         << " -- Length : " << zone_position.length();
+
   clearRefineRelatedFlags();
 
   auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  auto position = zone_position.toAMRPatchPosition(m_cmesh);
+  AMRPatchPosition position = zone_position.toAMRPatchPosition(m_cmesh);
   Int32 level = position.level();
+  Int32 level_up = level + 1;
+  Int32 nb_overlap_cells = 0;
+
+  Int32 higher_level = m_higher_level;
+
+  // Dans ce cas, on a un patch qui sera plus haut que tous les autres.
+  // La méthode patchUp() aura besoin du futur higher_level pour calculer
+  // correctement le nombre de couche de mailles de recouvrement.
+  if (level_up >= higher_level) {
+    higher_level = level_up;
+    nb_overlap_cells = m_size_of_overlap_layer_top_level / numbering->pattern();
+    debug() << "Higher level -- Old : " << m_higher_level << " -- New : " << higher_level;
+  }
+
+  else {
+    // Le nombre de couches de mailles de recouvrements.
+    // +1 car le patch créé sera de niveau level + 1.
+    // /pattern car les mailles à raffiner sont sur le niveau level.
+    //
+    // Explication :
+    //  level=0,
+    //  le futur patch sera de niveau 1, donc le nombre de couches de
+    //  recouvrement doit être celui correspondant au niveau 1
+    //  (donc level+1),
+    //  or, les mailles à raffiner sont de niveau 0, donc on doit diviser le
+    //  nombre de couches par le nombre de mailles enfants qui seront créées
+    //  (pour une dimension) (donc numbering->pattern()).
+    nb_overlap_cells = overlapLayerSize(level + 1) / numbering->pattern();
+  }
+  position.setOverlapLayerSize(nb_overlap_cells);
+
+  debug() << "Zone to intermediary patch"
+          << " -- minPoint : " << position.minPoint()
+          << " -- maxPoint : " << position.maxPoint()
+          << " -- overlapLayerSize : " << position.overlapLayerSize()
+          << " -- level : " << level;
 
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
     if (!icell->hasHChildren()) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
       if (position.isInWithOverlap(pos)) {
         icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
       }
@@ -301,7 +344,20 @@ addPatch(const AMRZonePosition& zone_position)
 
   amr->refine();
 
-  _addPatch(position.patchUp(m_cmesh->mesh()->dimension()));
+  AMRPatchPosition position_up = position.patchUp(m_cmesh->mesh()->dimension(), higher_level, m_size_of_overlap_layer_top_level);
+
+  info() << "Zone to Patch"
+         << " -- minPoint : " << position_up.minPoint()
+         << " -- maxPoint : " << position_up.maxPoint()
+         << " -- overlapLayerSize : " << position_up.overlapLayerSize()
+         << " -- level : " << position_up.level();
+
+  _addPatch(position_up);
+  _updateHigherLevel();
+
+#ifdef ARCANE_CHECK
+  _checkPatchesAndMesh();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -338,10 +394,7 @@ patchListView() const
 CellGroup CartesianPatchGroup::
 allCells(const Integer index)
 {
-  if (index == 0) {
-    ARCANE_FATAL("You cannot get cells of ground patch with this method");
-  }
-  return m_amr_patch_cell_groups_all[index - 1];
+  return m_amr_patch_cell_groups_all[index];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -353,36 +406,30 @@ inPatchCells(Integer index)
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-  if (index == 0) {
-    ARCANE_FATAL("You cannot get cells of ground patch with this method");
-  }
-  return m_amr_patch_cell_groups_inpatch[index - 1];
+  return m_amr_patch_cell_groups_inpatch[index];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 CellGroup CartesianPatchGroup::
-overallCells(Integer index)
+overlapCells(Integer index)
 {
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-  if (index == 0) {
-    ARCANE_FATAL("You cannot get cells of ground patch with this method");
-  }
-  return m_amr_patch_cell_groups_overall[index - 1];
+  return m_amr_patch_cell_groups_overlap[index];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // Attention : efface aussi le ground patch. Nécessaire de le récupérer après coup.
+// (le m_all_items_direction_info de CartesianMeshImpl)
 void CartesianPatchGroup::
 clear()
 {
   _removeAllPatches();
-  _createGroundPatch();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,8 +460,9 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR Cell");
   }
-  for (CellGroup cells : m_amr_patch_cell_groups_all) {
-    cells.removeItems(cells_local_id);
+
+  for (Integer i = 1; i < m_amr_patch_cell_groups_all.size(); ++i) {
+    allCells(i).removeItems(cells_local_id);
   }
 }
 
@@ -424,12 +472,12 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 void CartesianPatchGroup::
 _removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
 {
-  // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
+  // Attention si suppression de la suppression en deux étapes : _removePartOfPatch() supprime aussi des patchs.
   // i = 1 car on ne peut pas déraffjner le patch ground.
   const Integer nb_patchs = m_amr_patches_pointer.size();
   for (Integer i = 1; i < nb_patchs; ++i) {
     ICartesianMeshPatch* patch = m_amr_patches_pointer[i];
-    // m_cmesh->traceMng()->info() << "I : " << i
+    // info() << "I : " << i
     //                                     << " -- Compare Patch (min : " << patch->position().minPoint()
     //                                     << ", max : " << patch->position().maxPoint()
     //                                     << ", level : " << patch->position().level()
@@ -438,7 +486,7 @@ _removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete)
     //                                     << ", level : " << zone_to_delete.level() << ")";
 
     if (zone_to_delete.haveIntersection(patch->position())) {
-      _splitPatch(i, zone_to_delete);
+      _removePartOfPatch(i, zone_to_delete);
     }
   }
 }
@@ -460,29 +508,21 @@ removeCellsInZone(const AMRZonePosition& zone_to_delete)
   zone_to_delete.cellsInPatch(m_cmesh, cells_local_id, patch_position);
 
   _removeCellsInAllPatches(patch_position);
-  applyPatchEdit(false);
-  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
-  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+  applyPatchEdit(false, false);
+  _updatePatchFlagsOfItemsLevel(patch_position.level(), true);
+  _updateHigherLevel();
+  _coarsenUselessCells(true);
 
-  Int32 level = patch_position.level();
-
-  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-    if (!icell->hasHChildren()) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
-      if (patch_position.isIn(pos)) {
-        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
-      }
-    }
-  }
-
-  amr->coarsen(true);
+#ifdef ARCANE_CHECK
+  _checkPatchesAndMesh();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-applyPatchEdit(bool remove_empty_patches)
+applyPatchEdit(bool remove_empty_patches, bool update_higher_level)
 {
   // m_cmesh->mesh()->traceMng()->info() << "applyPatchEdit() -- Remove nb patch : " << m_patches_to_delete.size();
 
@@ -505,19 +545,16 @@ applyPatchEdit(bool remove_empty_patches)
     m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches);
     for (Integer i = 0; i < size_of_patches.size(); ++i) {
       if (size_of_patches[i] == 0) {
-        m_patches_to_delete.add(i + 1);
+        m_patches_to_delete.add(i);
       }
     }
     _removeMultiplePatches(m_patches_to_delete);
     m_patches_to_delete.clear();
   }
 
-  m_higher_level = 0;
-  for (const auto patch : m_amr_patches_pointer) {
-    const Int32 level = patch->_internalApi()->positionRef().level();
-    if (level > m_higher_level) {
-      m_higher_level = level;
-    }
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly && update_higher_level) {
+    _updateHigherLevel();
+    _coarsenUselessCells(true);
   }
 }
 
@@ -534,13 +571,11 @@ updateLevelsAndAddGroundPatch()
 
   // Attention : on suppose que numbering->updateFirstLevel(); a déjà été appelé !
 
-  // TODO : Mettre à jour la taille des couches de recouvrement !
-
   for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
     const Int32 level = patch->position().level();
     // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
     if (level == 0) {
-      const CartCoord3Type max_point = patch->position().maxPoint();
+      const CartCoord3 max_point = patch->position().maxPoint();
       if (m_cmesh->mesh()->dimension() == 2) {
         patch->_internalApi()->positionRef().setMaxPoint({
         numbering->offsetLevelToLevel(max_point.x, level, level - 1),
@@ -559,9 +594,6 @@ updateLevelsAndAddGroundPatch()
     // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
     else {
       patch->_internalApi()->positionRef().setLevel(level + 1);
-      if (level + 1 > m_higher_level) {
-        m_higher_level = level + 1;
-      }
     }
   }
 
@@ -569,9 +601,15 @@ updateLevelsAndAddGroundPatch()
   old_ground.setLevel(1);
   old_ground.setMinPoint({ 0, 0, 0 });
   old_ground.setMaxPoint({ numbering->globalNbCellsX(1), numbering->globalNbCellsY(1), numbering->globalNbCellsZ(1) });
-  old_ground.setOverlapLayerSize(0);
+  old_ground.computeOverlapLayerSize(m_higher_level + 1, m_size_of_overlap_layer_top_level);
 
   _addPatch(old_ground);
+  _updatePatchFlagsOfItemsGroundLevel();
+  _updateHigherLevel();
+
+#ifdef ARCANE_CHECK
+  _checkPatchesAndMesh();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -597,7 +635,9 @@ mergePatches()
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     return;
   }
-  // m_cmesh->traceMng()->info() << "Global fusion";
+  UniqueArray<Int32> new_merged_patches;
+
+  // info() << "Global fusion";
   UniqueArray<std::pair<Integer, Int64>> index_n_nb_cells;
   {
     Integer index = 0;
@@ -637,7 +677,7 @@ mergePatches()
         if (patch_fusion_1.isNull())
           continue;
 
-        // m_cmesh->traceMng()->info() << "\tCheck fusion"
+        // info() << "\tCheck fusion"
         //                                     << " -- 0 Min point : " << patch_fusion_0.minPoint()
         //                                     << " -- 0 Max point : " << patch_fusion_0.maxPoint()
         //                                     << " -- 0 Level : " << patch_fusion_0.level()
@@ -646,16 +686,20 @@ mergePatches()
         //                                     << " -- 1 Level : " << patch_fusion_1.level();
 
         if (patch_fusion_0.fusion(patch_fusion_1)) {
-          // m_cmesh->traceMng()->info() << "Fusion OK";
-          patch_fusion_1.setLevel(-2); // Devient null.
+          // info() << "Fusion OK";
           index_n_nb_cells[p0].second = patch_fusion_0.nbCells();
 
-          UniqueArray<Int32> local_ids;
-          allCells(index_p1).view().fillLocalIds(local_ids);
-          allCells(index_p0).addItems(local_ids, false);
-
-          // m_cmesh->traceMng()->info() << "Remove patch : " << index_p1;
+          // info() << "Remove patch : " << index_p1;
           removePatch(index_p1);
+
+          if (!new_merged_patches.contains(index_p0)) {
+            new_merged_patches.add(index_p0);
+          }
+
+          auto find_p1 = new_merged_patches.span().findFirst(index_p1);
+          if (find_p1.has_value()) {
+            new_merged_patches.remove(find_p1.value());
+          }
 
           fusion = true;
           break;
@@ -666,313 +710,1106 @@ mergePatches()
       }
     }
   }
+
+  UniqueArray<Int32> levels_edited;
+  for (Int32 patch_index : new_merged_patches) {
+    _updateCellGroups(patch_index, false);
+
+    Int32 level = patch(patch_index)->_internalApi()->positionRef().level();
+    if (!levels_edited.contains(level)) {
+      levels_edited.add(level);
+    }
+  }
+  applyPatchEdit(false, false);
+
+  for (Int32 level : levels_edited) {
+    _updatePatchFlagsOfItemsLevel(level, true);
+  }
+
+#ifdef ARCANE_CHECK
+  _checkPatchesAndMesh();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
-refine(bool clear_refine_flag)
+beginAdaptMesh(Int32 nb_levels, Int32 level_to_refine_first)
 {
-  // TODO : Le paramètre clear_refine_flag doit être à true pour l'instant.
-  //        À cause des mailles de recouvrements, on doit regénérer les patchs
-  //        de tous les niveaux à chaque fois. Pour que ça fonctionne, il
-  //        faudrait demander le nombre de niveaux qui sera généré en tout,
-  //        pour cette itération, pour calculer en avance la taille de la
-  //        couche de recouvrement de chaque niveau.
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
   }
-  Integer dimension = m_cmesh->mesh()->dimension();
-  Int32 nb_overlap_cells = m_size_of_overlap_layer_sub_top_level;
-  Int32 min_level = 0;
-  Int32 future_max_level = -1; // Désigne le niveau max qui aura des enfants, donc le futur level max +1.
-  Int32 old_max_level = -1; // Mais s'il reste des mailles à des niveaux plus haut, il faut les retirer.
+  if (m_latest_call_level != -2) {
+    ARCANE_FATAL("Call endAdaptMesh() before restart mesh adaptation");
+  }
+  if (level_to_refine_first > m_higher_level) {
+    ARCANE_FATAL("Cannot begin to refine level higher than the actual higher level -- Level to refine first : {0} -- Higher level : {1}", level_to_refine_first, m_higher_level);
+  }
+
+  Trace::Setter mci(traceMng(), "CartesianPatchGroup");
+  info() << "Begin adapting mesh with higher level = " << (nb_levels - 1);
+
+  // On supprime tous les patchs au-dessus du premier niveau à raffiner.
+  Int32 max_level = 0;
+  for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+    Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+    if (level > level_to_refine_first) {
+      removePatch(p);
+      max_level = level;
+    }
+  }
+  applyPatchEdit(false, false);
+
+  // On enlève aussi les flags II_InPatch et II_Overlap des mailles pour que
+  // celles qui ne sont plus utilisées par la suite dans un des nouveaux
+  // patchs soit supprimées dans la méthode finalizeAdaptMesh().
+  for (Integer l = level_to_refine_first + 1; l <= max_level; ++l) {
+    _removePatchFlagsOfItemsLevel(l);
+  }
+  // On doit adapter tous les niveaux sous le niveau à adapter.
+  // Les patchs du niveau "level_to_refine_first" (exclus) et plus seront supprimés.
+  if (nb_levels - 1 != m_higher_level) {
+    debug() << "beginAdaptMesh() -- Change overlap layer size -- Old higher level : " << m_higher_level
+            << " -- Asked higher level : " << (nb_levels - 1)
+            << " -- Adapt level lower than : " << level_to_refine_first;
+
+    for (Int32 level = 1; level <= level_to_refine_first; ++level) {
+      _changeOverlapSizeLevel(level, m_higher_level, nb_levels - 1);
+    }
+  }
+
+  m_target_nb_levels = nb_levels;
+  m_latest_call_level = level_to_refine_first - 1;
+  // m_higher_level conserve son ancienne valeur.
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+endAdaptMesh()
+{
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+  if (m_latest_call_level == -2) {
+    ARCANE_FATAL("Call beginAdaptMesh() before");
+  }
+  Trace::Setter mci(traceMng(), "CartesianPatchGroup");
+  info() << "Finalizing adapting mesh with higher level = " << (m_target_nb_levels - 1);
+
   auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
 
-  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-    Integer level = icell->level();
-    if (icell->hasFlags(ItemFlags::II_Refine)) {
-      if (level > future_max_level)
-        future_max_level = level;
-    }
-    if (level > old_max_level)
-      old_max_level = level;
-  }
-  future_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, future_max_level);
-  old_max_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, old_max_level);
+  // Le plus haut niveau devient le dernier niveau adapté (+1 pour avoir le
+  // niveau raffiné).
+  // On est sûr que c'est le niveau le plus haut étant donné que l'on supprime
+  // systématiquement les patchs au-dessus dans adaptLevel().
+  // beginAdaptMesh() met le premier niveau à raffiner donné par l'utilisateur
+  // dans l'attribut m_latest_call_level et vérifie si le niveau existe. Le
+  // premier m_latest_call_level est donc valide.
+  m_higher_level = m_latest_call_level + 1;
 
-  // m_cmesh->traceMng()->info() << "Min level : " << min_level << " -- Max level : " << future_max_level;
+  // Si m_latest_call_level == 0, alors adaptLevel() a créée le niveau 1 donc
+  // il y a 2 niveaux.
+  // Si le niveau le plus haut créé est inférieur au niveau le plus haut donné
+  // par l'utilisateur dans la méthode beginAdaptMesh(), on est obligé de
+  // réadapter le nombre de couche de mailles de recouvrement pour chaque
+  // patch.
+  if (m_higher_level + 1 < m_target_nb_levels) {
+    info() << "Reduce higher level from " << (m_target_nb_levels - 1) << " to " << m_higher_level;
+
+    for (Int32 level = 1; level <= m_higher_level; ++level) {
+      _changeOverlapSizeLevel(level, m_target_nb_levels - 1, m_higher_level);
+    }
+  }
+
+  _coarsenUselessCells(true);
+
+  m_target_nb_levels = 0;
+  m_latest_call_level = -2;
+  clearRefineRelatedFlags();
+
+  info() << "Patch list:";
+
+  for (Integer i = 0; i <= m_higher_level; ++i) {
+    for (auto p : m_amr_patches_pointer) {
+      auto& position = p->_internalApi()->positionRef();
+      if (position.level() == i) {
+        info() << "\tPatch #" << p->index()
+               << " -- Level : " << position.level()
+               << " -- Min point : " << position.minPoint()
+               << " -- Max point : " << position.maxPoint()
+               << " -- Overlap layer size : " << position.overlapLayerSize();
+      }
+    }
+  }
+#ifdef ARCANE_CHECK
+  _checkPatchesAndMesh();
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless)
+{
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+  if (m_latest_call_level == -2) {
+    ARCANE_FATAL("Call beginAdaptMesh() before to begin a mesh adaptation");
+  }
+  if (level_to_adapt + 1 >= m_target_nb_levels || level_to_adapt < 0) {
+    ARCANE_FATAL("Bad level to adapt -- Level to adapt : {0} (creating level {1}) -- Max nb levels : {2}", level_to_adapt, level_to_adapt + 1, m_target_nb_levels);
+  }
+
+  Trace::Setter mci(traceMng(), "CartesianPatchGroup");
+
+  if (level_to_adapt > m_latest_call_level + 1) {
+    if (do_fatal_if_useless) {
+      ARCANE_FATAL("You must refine level {0} before.", (m_latest_call_level + 1));
+    }
+    warning() << String::format("Useless call -- You must refine level {0} before.", (m_latest_call_level + 1));
+    return;
+  }
+
+  // On supprime tous les patchs au-dessus du niveau que l'on souhaite adapter.
+  // On le fait aussi ici dans le cas où l'utilisateur appelle cette méthode
+  // avec un niveau inférieur à son précedent appel (ce qui n'est pas
+  // forcément optimal vu qu'on supprime ce qui a été calculé
+  // précédemment...).
+  if (level_to_adapt < m_latest_call_level) {
+    Int32 max_level = 0;
+    for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+      Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+      if (level > level_to_adapt) {
+        removePatch(p);
+        max_level = level;
+      }
+    }
+    applyPatchEdit(false, false);
+
+    for (Integer l = level_to_adapt + 1; l <= max_level; ++l) {
+      _removePatchFlagsOfItemsLevel(l);
+    }
+  }
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  AMRPatchPositionLevelGroup all_patches(future_max_level);
-
-  for (Int32 level = future_max_level; level >= min_level; --level) {
-    // m_cmesh->traceMng()->info() << "Refine Level " << level << " with " << nb_overlap_cells << " layers of overlap cells";
-    if (level != future_max_level) {
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-        if (icell->level() == level && icell->hasFlags(ItemFlags::II_Refine)) {
-          const CartCoord3Type pos = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoord(*icell), level, level + 1);
-          for (const auto& patch : all_patches.patches(level)) {
-            if (patch.isInWithOverlap(pos, patch.overlapLayerSize() + 1)) {
-              icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
-            }
-          }
-        }
-      }
-      // m_cmesh->traceMng()->info() << "All patch level+1 with margin (can be overlap) : ";
-      // for (auto& elem : all_patches.patches(level + 1)) {
-      //   m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.minPointWithOverlap() << " -- max = " << elem.maxPointWithOverlap();
-      // }
-    }
-
-    AMRPatchPosition all_level;
-    all_level.setLevel(level);
-    all_level.setMinPoint({ 0, 0, 0 });
-    all_level.setMaxPoint({ numbering->globalNbCellsX(level), numbering->globalNbCellsY(level), numbering->globalNbCellsZ(level) });
-    all_level.setOverlapLayerSize(nb_overlap_cells);
-
-    AMRPatchPositionSignature sig(all_level, m_cmesh, &all_patches);
-    UniqueArray<AMRPatchPositionSignature> sig_array;
-    sig_array.add(sig);
-
-    AMRPatchPositionSignatureCut::cut(sig_array);
-
-    for (const auto& elem : sig_array) {
-      all_patches.addPatch(elem.patch());
-    }
-    nb_overlap_cells /= 2;
-    nb_overlap_cells += 1;
-
-    /////////
-    /*
-    {
-      Real global_efficacity = 0;
-      m_cmesh->traceMng()->info() << "All patch : ";
-      for (auto& elem : sig_array) {
-        m_cmesh->traceMng()->info() << "\tPatch -- min = " << elem.patch().minPoint() << " -- max = " << elem.patch().maxPoint() << " -- Efficacité : " << elem.efficacity();
-        global_efficacity += elem.efficacity();
-      }
-      global_efficacity /= sig_array.size();
-      m_cmesh->traceMng()->info() << "Global efficacity : " << global_efficacity;
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-        if (icell->level() != level)
-          continue;
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
-        Integer patch = -1;
-        for (Integer i = 0; i < sig_array.size(); ++i) {
-          const AMRPatchPositionSignature& elem = sig_array[i];
-          if (elem.patch().isInWithOverlap(pos_x, pos_y, pos_z)) {
-            patch = -2;
-          }
-          if (elem.isIn(pos_x, pos_y, pos_z)) {
-            if (patch >= 0) {
-              ARCANE_FATAL("ABCDEFG -- old : {0} -- new : {1}", patch, i);
-            }
-            patch = i;
-          }
-        }
-        if (patch == -1 && icell->hasFlags(ItemFlags::II_Refine)) {
-          ARCANE_FATAL("Bad Patch");
-        }
-        av_out(pos_y, pos_x) = patch;
-      }
-
-      StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
-        str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
-          Integer c = av_out(i, j);
-          if (c >= 0) {
-            str += "[";
-            if (c < 10)
-              str += " ";
-            str += c;
-            str += "]";
-          }
-          else if (c == -2) {
-            str += "[RE]";
-          }
-          else
-            str += "[  ]";
-        }
-      }
-      m_cmesh->traceMng()->info() << str;
-    }
-    */
-    ////////////
-  }
-
-
-  {
-    clearRefineRelatedFlags();
-  }
-
-  _removeAllPatches();
-  applyPatchEdit(false);
-
-  for (Int32 level = min_level; level <= future_max_level; ++level) {
-    all_patches.fusionPatches(level);
-
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-      if (!icell->hasHChildren()) {
-        const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
-        for (const AMRPatchPosition& patch : all_patches.patches(level)) {
-          if (patch.isInWithOverlap(pos)) {
-            icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
-          }
-        }
-      }
-    }
-
-    /*
-    {
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level) * numbering->globalNbCellsX(level), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level), numbering->globalNbCellsX(level));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
-        if (icell->hasHChildren()) {
-          av_out(pos_y, pos_x) = 0;
-        }
-        if (icell->hasFlags(ItemFlags::II_Refine)) {
-          av_out(pos_y, pos_x) = 1;
-        }
-        if (icell->hasHChildren() && icell->hasFlags(ItemFlags::II_Refine)) {
-          ARCANE_FATAL("Bad refine cell");
-        }
-      }
-
-      StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level); ++i) {
-        str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level); ++j) {
-          Integer c = av_out(i, j);
-          if (c == 1)
-            str += "[++]";
-          else if (c == 0)
-            str += "[XX]";
-          else
-            str += "[  ]";
-        }
-      }
-      m_cmesh->traceMng()->info() << str;
-    }
-    */
-
-    amr->refine();
-
-    // // Pour debug, forcer le else de la methode addPatch(AV<Int32>).
-    // UniqueArray<Int32> d_cell_ids;
-    // ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level + 1)) {
-    //   d_cell_ids.add(icell.localId());
-    // }
-    // addPatch(d_cell_ids);
-
-    for (const AMRPatchPosition& patch : all_patches.patches(level)) {
-      _addPatch(patch.patchUp(dimension));
-    }
-  }
-
-  // m_cmesh->traceMng()->info() << "max_level : " << future_max_level << " -- min_level : " << min_level;
-
-  // On retire les mailles qui n'auront plus de parent.
-  // Exemple :
-  // À l'itération précédente, on a mis des flags II_Refine sur des mailles de niveau 0 et 1,
-  // le niveau max était 2.
-  // Alors, dans cette itération, old_max_level = 2.
-  // À cette itération, on a mis des flags II_Refine uniquement sur des mailles de niveau 0.
-  // Alors, future_max_level = 0.
+  // Le nombre de couches de mailles de recouvrements.
+  // +1 car les patchs créés seront de niveau level_to_adapt + 1.
+  // /pattern car les mailles à raffiner sont sur le niveau level_to_adapt.
   //
-  // On doit retirer toutes les mailles de niveau 2 pour éviter les mailles orphelines.
-  {
-    for (Int32 level = old_max_level; level > future_max_level + 1; --level) {
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+  // Explication :
+  //  level_to_adapt=0,
+  //  les futurs patchs seront de niveau 1, donc le nombre de couches de
+  //  recouvrement doit être celui correspondant au niveau 1
+  //  (donc level_to_adapt+1),
+  //  or, les mailles à raffiner sont de niveau 0, donc on doit diviser le
+  //  nombre de couches par le nombre de mailles enfants qui seront créées
+  //  (pour une dimension) (donc numbering->pattern()).
+  Int32 nb_overlap_cells = overlapLayerSize(level_to_adapt + 1) / numbering->pattern();
+
+  info() << "adaptLevel()"
+         << " -- Level to adapt : " << level_to_adapt
+         << " -- Nb of overlap cells (intermediary patch) : " << nb_overlap_cells;
+
+  // Deux vérifications :
+  // - on ne peut pas raffiner plusieurs niveaux d'un coup,
+  // - on ne peut pas raffiner des mailles qui ne sont pas dans un patch (les
+  // mailles de recouvrements ne sont pas forcément dans un patch).
+  // De plus, on doit savoir s'il y a au moins une maille avec le flag
+  // II_Refine pour savoir si c'est utile de continuer la méthode ou non.
+  bool has_cell_to_refine = false;
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+    if (icell->hasFlags(ItemFlags::II_Refine)) {
+      if (icell->level() != level_to_adapt) {
+        ARCANE_FATAL("Flag II_Refine found on Cell (UID={0} - Level={1}) not in level to refine (={2})", icell->uniqueId(), icell->level(), level_to_adapt);
       }
-      amr->coarsen(true);
+      if (level_to_adapt != 0 && !icell->hasFlags(ItemFlags::II_InPatch)) {
+        const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+        ARCANE_FATAL("Cannot refine cell not in patch -- Pos : {0} -- CellUID : {1} -- CellLevel : {2}", pos, icell->uniqueId(), icell->level());
+      }
+      has_cell_to_refine = true;
+    }
+  }
+  has_cell_to_refine = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_refine);
+
+  if (!has_cell_to_refine) {
+    if (do_fatal_if_useless) {
+      ARCANE_FATAL("There are no cells to refine.");
+    }
+    // On rappelle que, dans endAdaptMesh(), m_higher_level prendra la valeur
+    // de m_latest_call_level +1.
+    //
+    // Il est important de mettre -1 ici dans le cas où (exemple) :
+    // - Initialement, pas de patchs (m_latest_call_level == -1), adaptLevel(0) :
+    //  -> On raffine des mailles niveau 0, donc m_latest_call_level = 0 et
+    //  donc, m_higher_level sera égal à 1
+    // - On refait une seconde fois adaptLevel(0) :
+    //  -> L'utilisateur n'a marqué aucune maille de niveau 0, donc
+    //  m_latest_call_level = -1 et donc m_higher_level = 0.
+    // Au-dessus, on supprime les niveaux supérieurs à level_to_adapt même si
+    // l'appel à adaptLevel() ne raffine pas de maille, on doit donc mettre à
+    // jour m_latest_call_level.
+    m_latest_call_level = level_to_adapt - 1;
+    debug() << "adaptLevel() -- End call -- No refine -- Actual patch list:";
+
+    for (Integer i = 0; i <= m_target_nb_levels; ++i) {
+      for (auto p : m_amr_patches_pointer) {
+        auto& position = p->_internalApi()->positionRef();
+        if (position.level() == i) {
+          debug() << "\tPatch #" << p->index()
+                  << " -- Level : " << position.level()
+                  << " -- Min point : " << position.minPoint()
+                  << " -- Max point : " << position.maxPoint()
+                  << " -- Overlap layer size : " << position.overlapLayerSize();
+        }
+      }
+    }
+    return;
+  }
+
+  m_latest_call_level = level_to_adapt;
+
+  UniqueArray<AMRPatchPositionSignature> sig_array;
+
+  // On doit donner un ou plusieurs patchs initiaux, pour être réduit et
+  // découpé.
+  // Si le niveau à adapter est le niveau 0, on peut créer un patch initial
+  // qui fait la taille du patch ground.
+  // On n'a pas besoin de le réduire, AMRPatchPositionSignature::fillSig()
+  // s'en occupera.
+  if (level_to_adapt == 0) {
+    AMRPatchPosition all_level;
+    all_level.setLevel(level_to_adapt);
+    all_level.setMinPoint({ 0, 0, 0 });
+    all_level.setMaxPoint({ numbering->globalNbCellsX(level_to_adapt), numbering->globalNbCellsY(level_to_adapt), numbering->globalNbCellsZ(level_to_adapt) });
+    // Pour ce setOverlapLayerSize(), voir l'explication au-dessus.
+    all_level.setOverlapLayerSize(nb_overlap_cells);
+    AMRPatchPositionSignature sig(all_level, m_cmesh);
+    sig_array.add(sig);
+  }
+
+  // Pour les autres niveaux, on crée les patchs initiaux en copiant les
+  // patchs du niveau level_to_adapt.
+  // On ne peut pas créer un patch qui fait la taille du niveau level_to_adapt
+  // car il est impératif que le ou les patchs générés par
+  // AMRPatchPositionSignatureCut (futurs patchs du niveau level_to_adapt+1)
+  // soit inclus dans le ou les patchs du niveau level_to_adapt ! (sinon on
+  // aurait des mailles orphelines).
+  // On peut prendre ces patchs comme patchs initiaux car on sait que les
+  // seules mailles que l'on aura à raffiner sont dans le ou les patchs du
+  // niveau level_to_adapt (les mailles ayant le flag II_InPatch).
+  // On sait aussi que les méthodes de AMRPatchPositionSignatureCut ne peuvent
+  // pas agrandir les patchs initiaux (uniquement réduire ou couper).
+  // (et oui, le if(level_to_adapt == 0) n'est pas indispensable, mais comme
+  // on sait qu'il y a qu'un seul patch de niveau 0, c'est plus rapide).
+  else {
+    for (auto patch : m_amr_patches_pointer) {
+      Integer level = patch->_internalApi()->positionRef().level();
+      if (level == level_to_adapt) {
+        auto position = patch->position();
+        position.setOverlapLayerSize(nb_overlap_cells);
+        AMRPatchPositionSignature sig(position, m_cmesh);
+        sig_array.add(sig);
+      }
     }
   }
 
-  for (Int32 level = future_max_level + 1; level > min_level; --level) {
-    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+  AMRPatchPositionSignatureCut::cut(sig_array);
 
-      bool is_in = false;
-      for (const AMRPatchPosition& patch : all_patches.patches(level - 1)) {
-        if (patch.patchUp(dimension).isInWithOverlap(pos)) {
-          is_in = true;
+  // Une fois les patchs découpés, on ajoute le flag II_Refine aux mailles de
+  // ces patchs.
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_adapt)) {
+    if (!icell->hasHChildren()) {
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+      for (const AMRPatchPositionSignature& patch_signature : sig_array) {
+        if (patch_signature.patch().isInWithOverlap(pos)) {
+          if (!icell->hasFlags(ItemFlags::II_InPatch) && !icell->hasFlags(ItemFlags::II_Overlap)) {
+            ARCANE_FATAL("Internal error -- Refine algo error -- Pos : {0}", pos);
+          }
+          icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+        }
+      }
+    }
+  }
+
+  {
+    //   UniqueArray<CartCoord> out(numbering->globalNbCellsY(level_to_adapt) * numbering->globalNbCellsX(level_to_adapt), -1);
+    //   Array2View av_out(out.data(), numbering->globalNbCellsY(level_to_adapt), numbering->globalNbCellsX(level_to_adapt));
+    //   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_adapt)) {
+    //     CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+    //     if (icell->hasHChildren()) {
+    //       av_out(pos.y, pos.x) = 0;
+    //     }
+    //     if (icell->hasFlags(ItemFlags::II_Refine)) {
+    //       av_out(pos.y, pos.x) = 1;
+    //     }
+    //   }
+    //
+    //   StringBuilder str = "";
+    //   for (CartCoord i = 0; i < numbering->globalNbCellsX(level_to_adapt); ++i) {
+    //     str += "\n";
+    //     for (CartCoord j = 0; j < numbering->globalNbCellsY(level_to_adapt); ++j) {
+    //       CartCoord c = av_out(i, j);
+    //       if (c == 1)
+    //         str += "[++]";
+    //       else if (c == 0)
+    //         str += "[XX]";
+    //       else
+    //         str += "[  ]";
+    //     }
+    //   }
+    //   info() << str;
+  }
+
+  // On raffine.
+  amr->refine();
+
+  // TODO : Normalement, il n'y a pas besoin de faire ça, à corriger dans amr->refine().
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_adapt)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
+  }
+
+  // Les patchs de sig_array sont des patchs "intermédiaires". Ce sont des
+  // patchs de niveau level_to_adapt représentant des patchs de niveau
+  // level_to_adapt+1.
+  // Il est maintenant nécessaire de les convertir en patch de niveau
+  // level_to_adapt+1.
+  UniqueArray<AMRPatchPosition> all_patches;
+  for (const auto& elem : sig_array) {
+    all_patches.add(elem.patch().patchUp(m_cmesh->mesh()->dimension(), m_target_nb_levels - 1, m_size_of_overlap_layer_top_level));
+  }
+
+  // On fusionne les patchs qui peuvent l'être avant de les "ajouter" dans le maillage.
+  AMRPatchPositionLevelGroup::fusionPatches(all_patches, true);
+
+  // for (const AMRPatchPosition& patch : all_patches) {
+  //   debug() << "\tPatch AAA"
+  //           << " -- Level : " << patch.level()
+  //           << " -- Min point : " << patch.minPoint()
+  //           << " -- Max point : " << patch.maxPoint()
+  //           << " -- overlapLayerSize : " << patch.overlapLayerSize();
+  // }
+
+  {
+    //   UniqueArray<CartCoord> out(numbering->globalNbCellsY(level_to_adapt + 1) * numbering->globalNbCellsX(level_to_adapt + 1), -1);
+    //   Array2View av_out(out.data(), numbering->globalNbCellsY(level_to_adapt + 1), numbering->globalNbCellsX(level_to_adapt + 1));
+    //   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_adapt + 1)) {
+    //
+    //     CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+    //     Integer patch = -1;
+    //
+    //     if (icell->hasFlags(ItemFlags::II_Overlap) && icell->hasFlags(ItemFlags::II_InPatch)) {
+    //       patch = -2;
+    //     }
+    //     else if (icell->hasFlags(ItemFlags::II_Overlap)) {
+    //       patch = -3;
+    //     }
+    //     else if (icell->hasFlags(ItemFlags::II_InPatch)) {
+    //       patch = -4;
+    //     }
+    //     else {
+    //       patch = -5;
+    //     }
+    //     av_out(pos.y, pos.x) = patch;
+    //     if (icell->uniqueId() == 3310) {
+    //       info() << "Maille présente ! -- Coord : " << pos << " -- Flags : " << patch;
+    //     }
+    //   }
+    //
+    //   StringBuilder str = "";
+    //   for (CartCoord i = 0; i < numbering->globalNbCellsX(level_to_adapt + 1); ++i) {
+    //     str += "\n";
+    //     for (CartCoord j = 0; j < numbering->globalNbCellsY(level_to_adapt + 1); ++j) {
+    //       CartCoord c = av_out(i, j);
+    //       if (c >= 0) {
+    //         str += "[";
+    //         if (c < 10)
+    //           str += " ";
+    //         str += c;
+    //         str += "]";
+    //       }
+    //       else if (c == -2) {
+    //         str += "[OI]";
+    //       }
+    //       else if (c == -3) {
+    //         str += "[OO]";
+    //       }
+    //       else if (c == -4) {
+    //         str += "[II]";
+    //       }
+    //       else if (c == -5) {
+    //         str += "[XX]";
+    //       }
+    //       else
+    //         str += "[  ]";
+    //     }
+    //   }
+    //   info() << str;
+  }
+
+  // On ajoute les patchs au maillage (on crée les groupes) et on calcule les
+  // directions pour chacun d'eux (pour que l'utilisateur puisse les utiliser
+  // directement).
+  for (const AMRPatchPosition& patch : all_patches) {
+    Integer index = _addPatch(patch);
+    // TODO : Mais alors pas une bonne idée du tout !
+    m_cmesh->computeDirectionsPatchV2(index);
+  }
+
+  debug() << "adaptLevel() -- End call -- Actual patch list:";
+
+  for (Integer i = 0; i <= m_target_nb_levels; ++i) {
+    for (auto p : m_amr_patches_pointer) {
+      auto& position = p->_internalApi()->positionRef();
+      if (position.level() == i) {
+        debug() << "\tPatch #" << p->index()
+                << " -- Level : " << position.level()
+                << " -- Min point : " << position.minPoint()
+                << " -- Max point : " << position.maxPoint()
+                << " -- Overlap layer size : " << position.overlapLayerSize();
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_increaseOverlapSizeLevel(Int32 level_to_increate, Int32 new_size)
+{
+  if (level_to_increate == 0) {
+    ARCANE_FATAL("Level 0 has not overlap layer");
+  }
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  bool has_cell_to_refine = false;
+
+  // Trois grandes étapes :
+  // - d'abord, on agrandit le nombre de couches dans les structures position,
+  //   puis on ajoute le flag II_Refine aux mailles parentes qui n'ont pas
+  //   d'enfant,
+  // - on raffine les mailles,
+  // - on ajoute les flags aux nouvelles mailles et on les ajoute aux groupes
+  //   de mailles des patchs.
+  for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+    Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+    if (level == level_to_increate) {
+      AMRPatchPosition& position = m_amr_patches_pointer[p]->_internalApi()->positionRef();
+
+      Int32 size_layer = position.overlapLayerSize();
+      if (size_layer > new_size) {
+        ARCANE_FATAL("Cannot reduce layer with _increaseOverlapSizeLevel method");
+      }
+
+      // On pourrait vérifier que le nombre de couches de tous les patchs d'un
+      // niveau est identique.
+
+      if (size_layer == new_size) {
+        continue;
+      }
+
+      has_cell_to_refine = true;
+      position.setOverlapLayerSize(new_size);
+
+      // Les mailles à raffiner sont sur le niveau inférieur.
+      // Pour chaque maille, pour savoir si l'on doit la raffiner ou non, on
+      // la monte d'un niveau et on regarde si elle est dans les couches de
+      // recouvrement.
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_increate - 1)) {
+        const CartCoord3 pos = numbering->offsetLevelToLevel(numbering->cellUniqueIdToCoord(*icell), level_to_increate - 1, level_to_increate);
+        if (position.isInWithOverlap(pos) && !icell->hasHChildren()) {
+          icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+        }
+      }
+    }
+  }
+  has_cell_to_refine = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_refine);
+  if (!has_cell_to_refine) {
+    return;
+  }
+
+  // On raffine les mailles.
+  amr->refine();
+
+  // TODO : Normalement, il n'y a pas besoin de faire ça, à corriger dans amr->refine().
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_increate - 1)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
+  }
+
+  UniqueArray<Int32> cell_to_add;
+
+  // Ajoute les flags et on actualise les groupes de mailles des patchs.
+  for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+    Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+    if (level == level_to_increate) {
+      AMRPatchPosition& position = m_amr_patches_pointer[p]->_internalApi()->positionRef();
+
+      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_increate)) {
+        if (!icell->hasFlags(ItemFlags::II_JustAdded))
+          continue;
+
+        const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+
+        if (position.isInWithOverlap(pos)) {
+          cell_to_add.add(icell.localId());
+          icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+          for (Face face : icell->faces()) {
+            face.mutableItemBase().addFlags(ItemFlags::II_Overlap);
+          }
+          for (Node node : icell->nodes()) {
+            node.mutableItemBase().addFlags(ItemFlags::II_Overlap);
+          }
+        }
+        else if (position.isIn(pos)) {
+          icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+          for (Face face : icell->faces()) {
+            face.mutableItemBase().addFlags(ItemFlags::II_InPatch);
+          }
+          for (Node node : icell->nodes()) {
+            node.mutableItemBase().addFlags(ItemFlags::II_InPatch);
+          }
+        }
+      }
+
+      allCells(p).addItems(cell_to_add, true); //TODO Normalement, mettre check = false
+      overlapCells(p).addItems(cell_to_add, true);
+      cell_to_add.clear();
+
+      // On calcule les directions pour que le patch soit utilisable.
+      m_cmesh->computeDirectionsPatchV2(p);
+    }
+  }
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level_to_increate)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_JustAdded);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_reduceOverlapSizeLevel(Int32 level_to_reduce, Int32 new_size)
+{
+  // Attention : Le reduce est possible car on ne supprime pas de mailles, on
+  // leur enlève leurs flags InPatch/Overlap pour pouvoir les supprimer
+  // ensuite.
+  // On les enlève uniquement des groupes de mailles des patchs.
+  // Il est donc nécessaire d'avoir une autre méthode après celle-ci pour
+  // supprimer les mailles sans flags.
+
+  if (level_to_reduce == 0) {
+    ARCANE_FATAL("Level 0 has not overlap layer");
+  }
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  // Deux étapes :
+  // - d'abord, on actualise les structures position des patchs puis on
+  //   supprime des groupes de mailles des patchs les mailles qui ne sont plus
+  //   dans les couches de recouvrement,
+  // - enfin, on recalcule les flags de tout le niveau.
+  bool has_cell_to_mark = false;
+  UniqueArray<Int32> cell_to_remove;
+
+  for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+    Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+    if (level == level_to_reduce) {
+      AMRPatchPosition& position = m_amr_patches_pointer[p]->_internalApi()->positionRef();
+
+      Int32 size_layer = position.overlapLayerSize();
+      if (size_layer < new_size) {
+        ARCANE_FATAL("Cannot add layer with _reduceOverlapSizeLevel method");
+      }
+      if (size_layer == new_size) {
+        continue;
+      }
+
+      has_cell_to_mark = true;
+      position.setOverlapLayerSize(new_size);
+
+      ENUMERATE_ (Cell, icell, overlapCells(p)) {
+        const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+        if (!position.isInWithOverlap(pos)) {
+          cell_to_remove.add(icell.localId());
+        }
+      }
+
+      allCells(p).removeItems(cell_to_remove, true); //TODO Normalement, mettre check = false
+      overlapCells(p).removeItems(cell_to_remove, true);
+      cell_to_remove.clear();
+    }
+  }
+  has_cell_to_mark = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, has_cell_to_mark);
+  if (!has_cell_to_mark) {
+    return;
+  }
+
+  // À cause du mélange des deux flags, on doit recalculer les flags.
+  _updatePatchFlagsOfItemsLevel(level_to_reduce, true);
+
+  for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+    Int32 level = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+    if (level == level_to_reduce) {
+      m_cmesh->computeDirectionsPatchV2(p);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_updateHigherLevel()
+{
+  // On regarde quel est le patch le plus haut.
+  Int32 higher_level_patch = 0;
+
+  for (const auto patch : m_amr_patches_pointer) {
+    const Int32 level = patch->_internalApi()->positionRef().level();
+    if (level > higher_level_patch) {
+      higher_level_patch = level;
+    }
+  }
+
+  if (higher_level_patch != m_higher_level) {
+    for (Int32 level = 1; level <= higher_level_patch; ++level) {
+      _changeOverlapSizeLevel(level, m_higher_level, higher_level_patch);
+    }
+
+    m_higher_level = higher_level_patch;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_changeOverlapSizeLevel(Int32 level, Int32 previous_higher_level, Int32 new_higher_level)
+{
+  if (previous_higher_level == new_higher_level) {
+    return;
+  }
+
+  Int32 old_overlap_size = ((level > previous_higher_level) ? 0 : AMRPatchPosition::computeOverlapLayerSize(level, previous_higher_level, m_size_of_overlap_layer_top_level));
+  Int32 new_overlap_size = AMRPatchPosition::computeOverlapLayerSize(level, new_higher_level, m_size_of_overlap_layer_top_level);
+
+  if (old_overlap_size == new_overlap_size) {
+    return;
+  }
+  if (old_overlap_size < new_overlap_size) {
+    _increaseOverlapSizeLevel(level, new_overlap_size);
+  }
+  else {
+    _reduceOverlapSizeLevel(level, new_overlap_size);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_coarsenUselessCells(bool use_cells_level)
+{
+  Int32 higher_level_patch = m_higher_level;
+  if (use_cells_level) {
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+      if (icell->level() > higher_level_patch) {
+        higher_level_patch = icell->level();
+      }
+    }
+    higher_level_patch = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, higher_level_patch);
+  }
+
+  // On supprime les mailles qui ne sont pas/plus dans un patch.
+  for (Integer level = higher_level_patch; level > 0; --level) {
+    _coarsenUselessCellsInLevel(level);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_coarsenUselessCellsInLevel(Int32 level)
+{
+  Integer nb_cells_to_coarse = 0;
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    if (!icell->hasFlags(ItemFlags::II_InPatch) && !icell->hasFlags(ItemFlags::II_Overlap)) {
+      //debug() << "Coarse CellUID : " << icell->uniqueId();
+      icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+      nb_cells_to_coarse++;
+    }
+  }
+  debug() << "Remove " << nb_cells_to_coarse << " refined cells without flag in level " << level;
+  nb_cells_to_coarse = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, nb_cells_to_coarse);
+
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+  if (nb_cells_to_coarse != 0) {
+    amr->coarsen(true);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_updatePatchFlagsOfItemsLevel(Int32 level, bool use_cell_groups)
+{
+  if (level == 0) {
+    _updatePatchFlagsOfItemsGroundLevel();
+    return;
+  }
+
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
+  }
+  ENUMERATE_ (Face, iface, m_cmesh->mesh()->allLevelCells(level).faceGroup()) {
+    iface->mutableItemBase().removeFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
+  }
+  ENUMERATE_ (Node, inode, m_cmesh->mesh()->allLevelCells(level).nodeGroup()) {
+    inode->mutableItemBase().removeFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
+  }
+
+  // En utilisant les cell_groups des patchs, on n'a pas besoin de rechercher,
+  // pour chaque maille, si elle est dans chaque patch.
+  // Mais ça nécessite que les cell_groups soit disponibles.
+  if (use_cell_groups) {
+    for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+      Int32 level_patch = m_amr_patches_pointer[p]->_internalApi()->positionRef().level();
+      if (level_patch == level) {
+        ENUMERATE_ (Cell, icell, inPatchCells(p)) {
+          icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        }
+        ENUMERATE_ (Face, iface, inPatchCells(p).faceGroup()) {
+          iface->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        }
+        ENUMERATE_ (Node, inode, inPatchCells(p).nodeGroup()) {
+          inode->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        }
+
+        ENUMERATE_ (Cell, icell, overlapCells(p)) {
+          icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+        }
+        ENUMERATE_ (Face, iface, overlapCells(p).faceGroup()) {
+          iface->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+        }
+        ENUMERATE_ (Node, inode, overlapCells(p).nodeGroup()) {
+          inode->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+        }
+      }
+    }
+  }
+
+  // Sinon, méthode brute qui fonctionne toujours.
+  else {
+    // On ajoute les flags sur les mailles des patchs.
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+      bool in_overlap = false;
+      bool in_patch = false;
+
+      // Si une maille est dans un patch, elle prend le flag II_InPatch.
+      // Si une maille est une maille de recouvrement pour un patch, elle prend
+      // le flag II_Overlap.
+      // Comme son nom l'indique, une maille de recouvrement peut recouvrir un
+      // autre patch. Donc une maille peut être à la fois II_InPatch et
+      // II_Overlap.
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+
+      for (Integer p = 1; p < m_amr_patches_pointer.size(); ++p) {
+        auto& patch = m_amr_patches_pointer[p]->_internalApi()->positionRef();
+        if (patch.level() != level) {
+          continue;
+        }
+
+        if (patch.isIn(pos)) {
+          in_patch = true;
+        }
+        else if (patch.isInWithOverlap(pos)) {
+          in_overlap = true;
+        }
+        if (in_patch && in_overlap) {
           break;
         }
       }
-      if (!is_in) {
-        icell->mutableItemBase().addFlags(ItemFlags::II_Coarsen);
-      }
-    }
-    /*
-    {
-      UniqueArray<Integer> out(numbering->globalNbCellsY(level - 1) * numbering->globalNbCellsX(level - 1), -1);
-      Array2View<Integer> av_out(out.data(), numbering->globalNbCellsY(level - 1), numbering->globalNbCellsX(level - 1));
-      ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level - 1)) {
-        Integer pos_x = numbering->cellUniqueIdToCoordX(*icell);
-        Integer pos_y = numbering->cellUniqueIdToCoordY(*icell);
-        Integer pos_z = numbering->cellUniqueIdToCoordZ(*icell);
-        if (icell->hasHChildren()) {
-          if (icell->hChild(0).hasFlags(ItemFlags::II_Coarsen)) {
-            av_out(pos_y, pos_x) = 1;
-          }
-          else {
-            av_out(pos_y, pos_x) = 0;
-          }
+      if (in_patch && in_overlap) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
+        for (Face face : icell->faces()) {
+          face.mutableItemBase().addFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
+        }
+        for (Node node : icell->nodes()) {
+          node.mutableItemBase().addFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap);
         }
       }
-
-      StringBuilder str = "";
-      for (Integer i = 0; i < numbering->globalNbCellsX(level - 1); ++i) {
-        str += "\n";
-        for (Integer j = 0; j < numbering->globalNbCellsY(level - 1); ++j) {
-          Integer c = av_out(i, j);
-          if (c == 1)
-            str += "[--]";
-          else if (c == 0)
-            str += "[XX]";
-          else
-            str += "[  ]";
+      else if (in_overlap) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+        icell->mutableItemBase().removeFlags(ItemFlags::II_InPatch); //Au cas où.
+        for (Face face : icell->faces()) {
+          face.mutableItemBase().addFlags(ItemFlags::II_Overlap);
+        }
+        for (Node node : icell->nodes()) {
+          node.mutableItemBase().addFlags(ItemFlags::II_Overlap);
         }
       }
-      m_cmesh->traceMng()->info() << str;
+      else if (in_patch) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap); //Au cas où.
+        for (Face face : icell->faces()) {
+          face.mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        }
+        for (Node node : icell->nodes()) {
+          node.mutableItemBase().addFlags(ItemFlags::II_InPatch);
+        }
+      }
+      else {
+        icell->mutableItemBase().removeFlags(ItemFlags::II_InPatch | ItemFlags::II_Overlap); //Au cas où.
+      }
     }
-    */
-
-    amr->coarsen(true);
   }
-  m_cmesh->computeDirections();
+}
 
-  if (clear_refine_flag) {
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_updatePatchFlagsOfItemsGroundLevel()
+{
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(0)) {
+    icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Face, iface, m_cmesh->mesh()->allLevelCells(0).faceGroup()) {
+    iface->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Node, inode, m_cmesh->mesh()->allLevelCells(0).nodeGroup()) {
+    inode->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_removePatchFlagsOfItemsLevel(Int32 level)
+{
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    icell->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Face, iface, m_cmesh->mesh()->allLevelCells(level).faceGroup()) {
+    iface->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
+  }
+  ENUMERATE_ (Node, inode, m_cmesh->mesh()->allLevelCells(level).nodeGroup()) {
+    inode->mutableItemBase().removeFlags(ItemFlags::II_Overlap | ItemFlags::II_InPatch);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_checkPatchesAndMesh()
+{
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+  {
+    Int32 higher_level = 0;
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
-      if (icell->hasFlags(ItemFlags::II_Coarsen)) {
-        ARCANE_FATAL("Pas normal");
+      if (icell->level() > higher_level) {
+        higher_level = icell->level();
       }
-      icell->mutableItemBase().removeFlags(ItemFlags::II_Refine);
+    }
+    higher_level = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, higher_level);
+    if (higher_level != m_higher_level) {
+      ARCANE_FATAL("_checkPatchesAndMesh -- Bad higher level -- m_higher_level : {0} -- Found : {1}", m_higher_level, higher_level);
     }
   }
+  {
+    for (Int32 level = 0; level < m_higher_level; ++level) {
+      Int32 check_overlap = overlapLayerSize(level);
+      for (Integer p = 0; p < m_amr_patches_pointer.size(); ++p) {
+        auto& position = m_amr_patches_pointer[p]->_internalApi()->positionRef();
+        if (position.level() == level) {
+          if (check_overlap == -1) {
+            check_overlap = position.overlapLayerSize();
+          }
+          else if (check_overlap != position.overlapLayerSize()) {
+            ARCANE_FATAL("_checkPatchesAndMesh -- Overlap size incoherence -- Patch pos : {0} -- Previous size : {1} -- Found : {2}", p, check_overlap, position.overlapLayerSize());
+          }
+        }
+      }
+    }
+  }
+  {
+    // II_UserMark1 = II_Overlap
+    // II_UserMark2 = II_InPatch
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+      Integer level = icell->level();
 
-  // m_cmesh->traceMng()->info() << "NbPatch : " << m_cmesh->patches().size();
-  //
-  // for (Integer i = 0; i < m_cmesh->patches().size(); ++i) {
-  //   auto patch = m_cmesh->amrPatch(i);
-  //   m_cmesh->traceMng()->info() << "Patch #" << i;
-  //   m_cmesh->traceMng()->info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
-  //   m_cmesh->traceMng()->info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
-  //   m_cmesh->traceMng()->info() << "\tLevel : " << patch.patchInterface()->position().level();
-  //   m_cmesh->traceMng()->info() << "\tNbCells : " << patch.patchInterface()->cells().size();
-  //   m_cmesh->traceMng()->info() << "\tIndex : " << patch.patchInterface()->index();
-  // }
+      bool in_overlap = false;
+      bool in_patch = false;
+
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+
+      for (auto p : m_amr_patches_pointer) {
+        auto& patch = p->_internalApi()->positionRef();
+        if (patch.level() != level) {
+          continue;
+        }
+
+        if (patch.isIn(pos)) {
+          in_patch = true;
+        }
+        else if (patch.isInWithOverlap(pos)) {
+          in_overlap = true;
+        }
+        if (in_patch && in_overlap) {
+          break;
+        }
+      }
+      if (in_patch && in_overlap) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
+        icell->mutableItemBase().addFlags(ItemFlags::II_UserMark2); // II_InPatch
+      }
+      else if (in_overlap) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
+        icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
+      }
+      else if (in_patch) {
+        icell->mutableItemBase().addFlags(ItemFlags::II_UserMark2); // II_InPatch
+        icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
+      }
+      else {
+        icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
+        icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
+      }
+    }
+    ENUMERATE_ (Face, iface, m_cmesh->mesh()->allFaces()) {
+      Int32 max_level = 0;
+      for (Cell cell : iface->cells()) {
+        if (cell.level() > max_level) {
+          max_level = cell.level();
+        }
+      }
+      for (Cell cell : iface->cells()) {
+        if (cell.level() != max_level) {
+          continue;
+        }
+        if (cell.hasFlags(ItemFlags::II_UserMark1)) {
+          iface->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
+        }
+        if (cell.hasFlags(ItemFlags::II_UserMark2)) {
+          iface->mutableItemBase().addFlags(ItemFlags::II_UserMark2); // II_InPatch
+        }
+      }
+    }
+    ENUMERATE_ (Node, inode, m_cmesh->mesh()->allNodes()) {
+      Int32 max_level = 0;
+      for (Cell cell : inode->cells()) {
+        if (cell.level() > max_level) {
+          max_level = cell.level();
+        }
+      }
+      for (Cell cell : inode->cells()) {
+        if (cell.level() != max_level) {
+          continue;
+        }
+        if (cell.hasFlags(ItemFlags::II_UserMark1)) {
+          inode->mutableItemBase().addFlags(ItemFlags::II_UserMark1); // II_Overlap
+        }
+        if (cell.hasFlags(ItemFlags::II_UserMark2)) {
+          inode->mutableItemBase().addFlags(ItemFlags::II_UserMark2); // II_InPatch
+        }
+      }
+    }
+
+    ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allCells()) {
+      if (icell->hasFlags(ItemFlags::II_UserMark1)) {
+        if (!icell->hasFlags(ItemFlags::II_Overlap)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark1 but not II_Overlap -- CellUID : {0}", icell->uniqueId());
+        }
+      }
+      if (icell->hasFlags(ItemFlags::II_UserMark2)) {
+        if (!icell->hasFlags(ItemFlags::II_InPatch)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark2 but not II_InPatch -- CellUID : {0}", icell->uniqueId());
+        }
+      }
+      if (icell->hasFlags(ItemFlags::II_Overlap)) {
+        if (!icell->hasFlags(ItemFlags::II_UserMark1)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_Overlap but not II_UserMark1 -- CellUID : {0}", icell->uniqueId());
+        }
+      }
+      if (icell->hasFlags(ItemFlags::II_InPatch)) {
+        if (!icell->hasFlags(ItemFlags::II_UserMark2)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_InPatch but not II_UserMark2 -- CellUID : {0}", icell->uniqueId());
+        }
+      }
+
+      // Aujourd'hui, on peut avoir des mailles raffinées mais dans aucun patch.
+
+      icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
+      icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
+    }
+    ENUMERATE_ (Face, iface, m_cmesh->mesh()->allFaces()) {
+      if (iface->hasFlags(ItemFlags::II_UserMark1)) {
+        if (!iface->hasFlags(ItemFlags::II_Overlap)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark1 but not II_Overlap -- FaceUID : {0}", iface->uniqueId());
+        }
+      }
+      if (iface->hasFlags(ItemFlags::II_UserMark2)) {
+        if (!iface->hasFlags(ItemFlags::II_InPatch)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark2 but not II_InPatch -- FaceUID : {0}", iface->uniqueId());
+        }
+      }
+      if (iface->hasFlags(ItemFlags::II_Overlap)) {
+        if (!iface->hasFlags(ItemFlags::II_UserMark1)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_Overlap but not II_UserMark1 -- FaceUID : {0}", iface->uniqueId());
+        }
+      }
+      if (iface->hasFlags(ItemFlags::II_InPatch)) {
+        if (!iface->hasFlags(ItemFlags::II_UserMark2)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_InPatch but not II_UserMark2 -- FaceUID : {0}", iface->uniqueId());
+        }
+      }
+
+      iface->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
+      iface->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
+    }
+    ENUMERATE_ (Node, inode, m_cmesh->mesh()->allNodes()) {
+      if (inode->hasFlags(ItemFlags::II_UserMark1)) {
+        if (!inode->hasFlags(ItemFlags::II_Overlap)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark1 but not II_Overlap -- NodeUID : {0}", inode->uniqueId());
+        }
+      }
+      if (inode->hasFlags(ItemFlags::II_UserMark2)) {
+        if (!inode->hasFlags(ItemFlags::II_InPatch)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_UserMark2 but not II_InPatch -- NodeUID : {0}", inode->uniqueId());
+        }
+      }
+      if (inode->hasFlags(ItemFlags::II_Overlap)) {
+        if (!inode->hasFlags(ItemFlags::II_UserMark1)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_Overlap but not II_UserMark1 -- NodeUID : {0}", inode->uniqueId());
+        }
+      }
+      if (inode->hasFlags(ItemFlags::II_InPatch)) {
+        if (!inode->hasFlags(ItemFlags::II_UserMark2)) {
+          ARCANE_FATAL("_checkPatchesAndMesh -- II_InPatch but not II_UserMark2 -- NodeUID : {0}", inode->uniqueId());
+        }
+      }
+
+      inode->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
+      inode->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1013,7 +1850,39 @@ availableGroupIndex()
 void CartesianPatchGroup::
 setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
 {
-  m_size_of_overlap_layer_sub_top_level = (size_of_overlap_layer_top_level + 1) / 2;
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  Int32 new_size_of_overlap_layer_top_level = 0;
+  // La valeur -1 est une valeur spéciale qui permet de désactiver les mailles
+  // de recouvrement.
+  if (size_of_overlap_layer_top_level == -1)
+    new_size_of_overlap_layer_top_level = -1;
+  else
+    // On s'assure que la taille fournie par l'utilisateur est un multiple de
+    // pattern (2 aujourd'hui).
+    new_size_of_overlap_layer_top_level = size_of_overlap_layer_top_level + (size_of_overlap_layer_top_level % numbering->pattern());
+
+  if (new_size_of_overlap_layer_top_level == m_size_of_overlap_layer_top_level) {
+    return;
+  }
+
+  // S'il y a changement de la taille de la couche du niveau le plus haut, il
+  // y aura un changement de taille sur les autres niveaux.
+  for (Int32 level = 1; level <= m_higher_level; ++level) {
+    Int32 old_overlap_size = AMRPatchPosition::computeOverlapLayerSize(level, m_higher_level, m_size_of_overlap_layer_top_level);
+    Int32 new_overlap_size = AMRPatchPosition::computeOverlapLayerSize(level, m_higher_level, new_size_of_overlap_layer_top_level);
+
+    if (old_overlap_size == new_overlap_size) {
+      continue;
+    }
+    if (old_overlap_size < new_overlap_size) {
+      _increaseOverlapSizeLevel(level, new_overlap_size);
+    }
+    else {
+      _reduceOverlapSizeLevel(level, new_overlap_size);
+    }
+  }
+  m_size_of_overlap_layer_top_level = new_size_of_overlap_layer_top_level;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1022,18 +1891,18 @@ setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
 Int32 CartesianPatchGroup::
 overlapLayerSize(Int32 level)
 {
-  if (level < 0 || level > m_higher_level) {
-    ARCANE_FATAL("Level doesn't exist");
+  if (level == 0) {
+    return 0;
   }
-  if (level == m_higher_level) {
-    return m_size_of_overlap_layer_sub_top_level * 2;
+  // Deux cas :
+  // - on est dans une phase de raffinement (beginAdaptMesh()), on doit donc
+  //   considérer que le niveau le plus haut est m_target_nb_levels-1,
+  // - sinon, on prend le niveau le plus haut actuel.
+  Int32 higher_level = m_higher_level;
+  if (m_target_nb_levels != 0) {
+    higher_level = m_target_nb_levels - 1;
   }
-  Integer nb_overlap_cells = m_size_of_overlap_layer_sub_top_level;
-  for (Integer i = m_higher_level - 1; i > level; --i) {
-    nb_overlap_cells /= 2;
-    nb_overlap_cells += 1;
-  }
-  return nb_overlap_cells;
+  return AMRPatchPosition::computeOverlapLayerSize(level, higher_level, m_size_of_overlap_layer_top_level);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1053,16 +1922,16 @@ void CartesianPatchGroup::
 _removeOnePatch(Integer index)
 {
   m_available_group_index.add(m_amr_patches[index]->index());
-  // m_cmesh->traceMng()->info() << "_removeOnePatch() -- Save group_index : " << m_available_group_index.back();
+  // info() << "_removeOnePatch() -- Save group_index : " << m_available_group_index.back();
 
-  m_amr_patch_cell_groups_all[index - 1].clear();
-  m_amr_patch_cell_groups_all.remove(index - 1);
+  m_amr_patch_cell_groups_all[index].clear();
+  m_amr_patch_cell_groups_all.remove(index);
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_amr_patch_cell_groups_inpatch[index - 1].clear();
-    m_amr_patch_cell_groups_inpatch.remove(index - 1);
-    m_amr_patch_cell_groups_overall[index - 1].clear();
-    m_amr_patch_cell_groups_overall.remove(index - 1);
+    m_amr_patch_cell_groups_inpatch[index].clear();
+    m_amr_patch_cell_groups_inpatch.remove(index);
+    m_amr_patch_cell_groups_overlap[index].clear();
+    m_amr_patch_cell_groups_overlap.remove(index);
   }
 
   m_amr_patches_pointer.remove(index);
@@ -1089,22 +1958,18 @@ _removeMultiplePatches(ConstArrayView<Integer> indexes)
 void CartesianPatchGroup::
 _removeAllPatches()
 {
-  Ref<CartesianMeshPatch> ground_patch = m_amr_patches.front();
-
-  for (CellGroup cell_group : m_amr_patch_cell_groups_all) {
-    cell_group.clear();
+  for (Integer i = 1; i < m_amr_patch_cell_groups_all.size(); ++i) {
+    m_amr_patch_cell_groups_all[i].clear();
   }
   m_amr_patch_cell_groups_all.clear();
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
-    for (CellGroup cell_group : m_amr_patch_cell_groups_inpatch) {
-      cell_group.clear();
-    }
-    for (CellGroup cell_group : m_amr_patch_cell_groups_overall) {
-      cell_group.clear();
+    for (Integer i = 0; i < m_amr_patch_cell_groups_inpatch.size(); ++i) {
+      m_amr_patch_cell_groups_inpatch[i].clear();
+      m_amr_patch_cell_groups_overlap[i].clear();
     }
     m_amr_patch_cell_groups_inpatch.clear();
-    m_amr_patch_cell_groups_overall.clear();
+    m_amr_patch_cell_groups_overlap.clear();
   }
 
   m_amr_patches_pointer.clear();
@@ -1113,8 +1978,7 @@ _removeAllPatches()
   m_patches_to_delete.clear();
   m_index_new_patches = 1;
 
-  m_amr_patches.add(ground_patch);
-  m_amr_patches_pointer.add(ground_patch.get());
+  m_higher_level = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1126,7 +1990,6 @@ _createGroundPatch()
   if (!m_amr_patches.empty())
     return;
   auto patch = makeRef(new CartesianMeshPatch(m_cmesh, -1));
-  _addPatchInstance(patch);
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
     auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
@@ -1134,46 +1997,147 @@ _createGroundPatch()
     patch->_internalApi()->positionRef().setMaxPoint({ numbering->globalNbCellsX(0), numbering->globalNbCellsY(0), numbering->globalNbCellsZ(0) });
     patch->_internalApi()->positionRef().setLevel(0);
   }
+
+  _addPatchInstance(patch);
+  _addCellGroup(m_cmesh->mesh()->allLevelCells(0), patch.get(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianPatchGroup::
-_addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
+Integer CartesianPatchGroup::
+_addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch, bool add_flags)
 {
   m_amr_patch_cell_groups_all.add(cell_group);
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
     // Patch non-régulier.
     // m_amr_patch_cell_groups_inpatch.add(cell_group);
-    // m_amr_patch_cell_groups_overall.add(CellGroup());
-    return;
+    // m_amr_patch_cell_groups_overlap.add(CellGroup());
+    return m_amr_patch_cell_groups_all.size() - 1;
   }
 
   AMRPatchPosition patch_position = patch->position();
   Ref<ICartesianMeshNumberingMngInternal> numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   UniqueArray<Int32> inpatch_items_lid;
-  UniqueArray<Int32> overall_items_lid;
+  UniqueArray<Int32> overlap_items_lid;
 
   ENUMERATE_ (Cell, icell, cell_group) {
     Cell cell = *icell;
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
 
-    if (cell.isOwn() && patch_position.isIn(pos)) {
+    if (patch_position.isIn(pos)) {
       inpatch_items_lid.add(cell.localId());
     }
     else {
-      overall_items_lid.add(cell.localId());
+      overlap_items_lid.add(cell.localId());
     }
   }
 
   CellGroup own = m_cmesh->mesh()->cellFamily()->createGroup(cell_group.name().clone() + "_InPatch", inpatch_items_lid, true);
   m_amr_patch_cell_groups_inpatch.add(own);
 
-  CellGroup overall = m_cmesh->mesh()->cellFamily()->createGroup(cell_group.name().clone() + "_Overall", overall_items_lid, true);
-  m_amr_patch_cell_groups_overall.add(overall);
+  CellGroup overlap = m_cmesh->mesh()->cellFamily()->createGroup(cell_group.name().clone() + "_Overlap", overlap_items_lid, true);
+  m_amr_patch_cell_groups_overlap.add(overlap);
+
+  if (add_flags) {
+    // Si une entité est dans un patch, elle prend le flag II_InPatch.
+    // Si une entité est une entité de recouvrement pour un patch, elle prend
+    // le flag II_Overlap.
+    // Comme son nom l'indique, une entité de recouvrement peut recouvrir un
+    // autre patch. Donc une entité peut être à la fois II_InPatch et
+    // II_Overlap.
+    ENUMERATE_ (Cell, icell, own) {
+      icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+    ENUMERATE_ (Face, iface, own.faceGroup()) {
+      iface->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+    ENUMERATE_ (Node, inode, own.nodeGroup()) {
+      inode->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+
+    ENUMERATE_ (Cell, icell, overlap) {
+      icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+    ENUMERATE_ (Face, iface, overlap.faceGroup()) {
+      iface->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+    ENUMERATE_ (Node, inode, overlap.nodeGroup()) {
+      inode->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+  }
+
+  return m_amr_patch_cell_groups_all.size() - 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianPatchGroup::
+_updateCellGroups(Integer index, bool update_flags)
+{
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() != eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_FATAL("Method available only with AMR PatchCartesianMeshOnly");
+  }
+
+  CellGroup patch_all_cells = allCells(index);
+  CellGroup patch_inpatch = inPatchCells(index);
+  CellGroup patch_overlap = overlapCells(index);
+
+  patch_all_cells.clear();
+  patch_inpatch.clear();
+  patch_overlap.clear();
+
+  const auto& position = patch(index)->_internalApi()->positionRef();
+
+  Int32 level = position.level();
+
+  UniqueArray<Int32> inpatch_items_lid;
+  UniqueArray<Int32> overlap_items_lid;
+
+  auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  // On ajoute les flags sur les mailles des patchs.
+  ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+
+    if (position.isIn(pos)) {
+      inpatch_items_lid.add(icell.localId());
+    }
+    else if (position.isInWithOverlap(pos)) {
+      overlap_items_lid.add(icell.localId());
+    }
+  }
+
+  patch_all_cells.addItems(inpatch_items_lid, false);
+  patch_all_cells.addItems(overlap_items_lid, false);
+
+  patch_inpatch.addItems(inpatch_items_lid, false);
+  patch_overlap.addItems(overlap_items_lid, false);
+
+  if (update_flags) {
+    ENUMERATE_ (Cell, icell, patch_inpatch) {
+      icell->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+    ENUMERATE_ (Face, iface, patch_inpatch.faceGroup()) {
+      iface->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+    ENUMERATE_ (Node, inode, patch_inpatch.nodeGroup()) {
+      inode->mutableItemBase().addFlags(ItemFlags::II_InPatch);
+    }
+
+    ENUMERATE_ (Cell, icell, patch_overlap) {
+      icell->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+    ENUMERATE_ (Face, iface, patch_overlap.faceGroup()) {
+      iface->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+    ENUMERATE_ (Node, inode, patch_overlap.nodeGroup()) {
+      inode->mutableItemBase().addFlags(ItemFlags::II_Overlap);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1185,9 +2149,9 @@ _addCellGroup(CellGroup cell_group, CartesianMeshPatch* patch)
 // Il est nécessaire que le patch source et le patch part_to_remove soient
 // en contact pour que cette méthode fonctionne.
 void CartesianPatchGroup::
-_splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
+_removePartOfPatch(Integer index_patch_to_edit, const AMRPatchPosition& part_to_remove)
 {
-  // m_cmesh->traceMng()->info() << "Coarse Zone"
+  // info() << "Coarse Zone"
   //                             << " -- Min point : " << part_to_remove.minPoint()
   //                             << " -- Max point : " << part_to_remove.maxPoint()
   //                             << " -- Level : " << part_to_remove.level();
@@ -1215,7 +2179,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
   // p0   |-----|
   // p1    |---|
   // r = {p1_min, p1_max}
-  auto cut_points_p0 = [](CartCoordType p0_min, CartCoordType p0_max, CartCoordType p1_min, CartCoordType p1_max) -> std::pair<CartCoordType, CartCoordType> {
+  auto cut_points_p0 = [](CartCoord p0_min, CartCoord p0_max, CartCoord p1_min, CartCoord p1_max) -> std::pair<CartCoord, CartCoord> {
     std::pair to_return{ -1, -1 };
     if (p1_min > p0_min && p1_min < p0_max) {
       to_return.first = p1_min;
@@ -1226,12 +2190,12 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     return to_return;
   };
 
-  ICartesianMeshPatch* patch = m_amr_patches_pointer[index_patch];
+  ICartesianMeshPatch* patch = m_amr_patches_pointer[index_patch_to_edit];
   AMRPatchPosition patch_position = patch->position();
 
   UniqueArray<AMRPatchPosition> new_patch_out;
 
-  CartCoord3Type min_point_of_patch_to_exclude(-1, -1, -1);
+  CartCoord3 min_point_of_patch_to_exclude(-1, -1, -1);
 
   // Partie découpe du patch autour de la zone à exclure.
   {
@@ -1378,8 +2342,8 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     if (m_cmesh->mesh()->dimension() == 2) {
       min_point_of_patch_to_exclude.z = 0;
     }
-    // m_cmesh->traceMng()->info() << "Nb of new patch before fusion : " << new_patch_out.size();
-    // m_cmesh->traceMng()->info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
+    // info() << "Nb of new patch before fusion : " << new_patch_out.size();
+    // info() << "min_point_of_patch_to_exclude : " << min_point_of_patch_to_exclude;
 
     // On met à null le patch représentant le bout de patch à retirer.
     for (AMRPatchPosition& new_patch : new_patch_out) {
@@ -1387,7 +2351,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         new_patch.setLevel(-2); // Devient null.
       }
       // else {
-      //   m_cmesh->traceMng()->info() << "\tPatch before fusion"
+      //   info() << "\tPatch before fusion"
       //                               << " -- Min point : " << new_patch.minPoint()
       //                               << " -- Max point : " << new_patch.maxPoint()
       //                               << " -- Level : " << new_patch.level();
@@ -1397,21 +2361,21 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     AMRPatchPositionLevelGroup::fusionPatches(new_patch_out, false);
 
     // On ajoute les nouveaux patchs dans la liste des patchs.
-    Integer d_nb_patch_final = 0;
+    // Integer d_nb_patch_final = 0;
     for (const auto& new_patch : new_patch_out) {
       if (!new_patch.isNull()) {
-        // m_cmesh->traceMng()->info() << "\tNew cut patch"
+        // info() << "\tNew cut patch"
         //                                     << " -- Min point : " << new_patch.minPoint()
         //                                     << " -- Max point : " << new_patch.maxPoint()
         //                                     << " -- Level : " << new_patch.level();
-        _addCutPatch(new_patch, m_amr_patch_cell_groups_all[index_patch - 1]);
-        d_nb_patch_final++;
+        _addCutPatch(new_patch, allCells(index_patch_to_edit));
+        // d_nb_patch_final++;
       }
     }
-    // m_cmesh->traceMng()->info() << "Nb of new patch after fusion : " << d_nb_patch_final;
+    // info() << "Nb of new patch after fusion : " << d_nb_patch_final;
   }
 
-  removePatch(index_patch);
+  removePatch(index_patch_to_edit);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1420,7 +2384,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 void CartesianPatchGroup::
 _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group)
 {
-  // Si cette méthode est utilisé par une autre méthode que _splitPatch(),
+  // Si cette méthode est utilisé par une autre méthode que _removePartOfPatch(),
   // voir si la mise à jour de m_higher_level est nécessaire.
   // (jusque-là, ce n'est pas utile vu qu'il y aura appel à applyPatchEdit()).
   if (parent_patch_cell_group.null())
@@ -1437,16 +2401,17 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
   ENUMERATE_ (Cell, icell, parent_patch_cell_group) {
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
     if (new_patch_position.isIn(pos)) {
       cells_local_id.add(icell.localId());
     }
   }
 
   CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
-  _addCellGroup(parent_cells, cdi);
+  // False car les flags sont mis à jour après.
+  _addCellGroup(parent_cells, cdi, false);
 
-  // m_cmesh->traceMng()->info() << "_addCutPatch()"
+  // info() << "_addCutPatch()"
   //                             << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
   //                             << " -- m_amr_patches : " << m_amr_patches.size()
   //                             << " -- group_index : " << group_index
@@ -1456,14 +2421,17 @@ _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianPatchGroup::
+Integer CartesianPatchGroup::
 _addPatch(const AMRPatchPosition& new_patch_position)
 {
   UniqueArray<Int32> cells_local_id;
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+
+  // On ajoute les flags sur les mailles des patchs.
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(new_patch_position.level())) {
-    const CartCoord3Type pos = numbering->cellUniqueIdToCoord(*icell);
+    const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
+
     if (new_patch_position.isInWithOverlap(pos)) {
       cells_local_id.add(icell.localId());
     }
@@ -1477,17 +2445,10 @@ _addPatch(const AMRPatchPosition& new_patch_position)
 
   _addPatchInstance(makeRef(cdi));
   CellGroup parent_cells = cell_family->createGroup(patch_group_name, cells_local_id, true);
-  _addCellGroup(parent_cells, cdi);
+  Integer array_index = _addCellGroup(parent_cells, cdi, true);
 
-  if (new_patch_position.level() > m_higher_level) {
-    m_higher_level = new_patch_position.level();
-  }
-
-  // m_cmesh->traceMng()->info() << "_addPatch()"
-  //                             << " -- m_amr_patch_cell_groups : " << m_amr_patch_cell_groups_all.size()
-  //                             << " -- m_amr_patches : " << m_amr_patches.size()
-  //                             << " -- group_index : " << group_index
-  //                             << " -- cell_group name : " << m_amr_patch_cell_groups_all.back().name();
+  // TODO : Ces deux index, c'est vraiment pas une bonne idée...
+  return array_index;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KernelLauncher.h                                            (C) 2000-2025 */
+/* KernelLauncher.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Gestion du lancement des noyaux de calcul sur accélérateur.               */
 /*---------------------------------------------------------------------------*/
@@ -77,6 +77,14 @@ class CudaHipKernelRemainingArgsHelper
     (_doOneAtEnd(index, remaining_args), ...);
   }
 
+  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  template <typename... RemainingArgs> static inline bool
+  isNeedBarrier(const RemainingArgs&... remaining_args)
+  {
+    bool is_need_barrier = (_isOneNeedBarrier(remaining_args) || ...);
+    return is_need_barrier;
+  }
+
  private:
 
   template <typename OneArg> static inline ARCCORE_DEVICE void
@@ -90,6 +98,12 @@ class CudaHipKernelRemainingArgsHelper
   {
     using HandlerType = OneArg::RemainingArgHandlerType;
     HandlerType::execWorkItemAtEndForCudaHip(one_arg, index);
+  }
+  template <typename OneArg> static inline bool
+  _isOneNeedBarrier([[maybe_unused]] const OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    return HandlerType::isNeedBarrier(one_arg);
   }
 };
 
@@ -120,6 +134,14 @@ class SyclKernelRemainingArgsHelper
     (_doOneAtEnd(x, shm_view, remaining_args), ...);
   }
 
+  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  template <typename... RemainingArgs> static inline bool
+  isNeedBarrier(const RemainingArgs&... remaining_args)
+  {
+    bool is_need_barrier = (_isOneNeedBarrier(remaining_args) || ...);
+    return is_need_barrier;
+  }
+
  private:
 
   template <typename OneArg> static void
@@ -139,6 +161,12 @@ class SyclKernelRemainingArgsHelper
       HandlerType::execWorkItemAtEndForSycl(one_arg, x, shm_memory);
     else
       HandlerType::execWorkItemAtEndForSycl(one_arg, x);
+  }
+  template <typename OneArg> static inline bool
+  _isOneNeedBarrier([[maybe_unused]] const OneArg& one_arg)
+  {
+    using HandlerType = OneArg::RemainingArgHandlerType;
+    return HandlerType::isNeedBarrier(one_arg);
   }
 
 #endif
@@ -165,97 +193,6 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{ item };
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
-
-template <typename TraitsType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args)
-{
-  using BuilderType = TraitsType::BuilderType;
-  using LocalIdType = BuilderType::ValueType;
-
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < ids.size()) {
-    LocalIdType lid(ids[i]);
-    body(BuilderType::create(i, lid), remaining_args...);
-  }
-  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
-}
-
-template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambda2(Int32 vsize, Lambda func, RemainingArgs... remaining_args)
-{
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-
-  CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  if (i < vsize) {
-    body(i, remaining_args...);
-  }
-  CudaHipKernelRemainingArgsHelper::applyAtEnd(i, remaining_args...);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif // ARCCORE_COMPILING_CUDA_OR_HIP
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCCORE_COMPILING_SYCL)
-
-//! Boucle 1D avec indirection
-template <typename TraitsType, typename Lambda, typename... RemainingArgs>
-class DoIndirectSYCLLambda
-{
- public:
-
-  void operator()(sycl::nd_item<1> x, SmallSpan<std::byte> shared_memory,
-                  SmallSpan<const Int32> ids, Lambda func,
-                  RemainingArgs... remaining_args) const
-  {
-    using BuilderType = TraitsType::BuilderType;
-    using LocalIdType = BuilderType::ValueType;
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x.get_global_id(0));
-    SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
-    if (i < ids.size()) {
-      LocalIdType lid(ids[i]);
-      body(BuilderType::create(i, lid), remaining_args...);
-    }
-    SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
-  }
-  void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
-  {
-    using BuilderType = TraitsType::BuilderType;
-    using LocalIdType = BuilderType::ValueType;
-    auto privatizer = privatize(func);
-    auto& body = privatizer.privateCopy();
-
-    Int32 i = static_cast<Int32>(x);
-    if (i < ids.size()) {
-      LocalIdType lid(ids[i]);
-      body(BuilderType::create(i, lid));
-    }
-  }
-};
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -316,8 +253,10 @@ class CudaKernelLauncher
     cudaStream_t s = CudaUtils::toNativeStream(launch_info._internalNativeStream());
     bool is_cooperative = launch_info._isUseCooperativeLaunch();
     bool use_cuda_launch = launch_info._isUseCudaLaunchKernel();
+    bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
     if (use_cuda_launch || is_cooperative)
-      _applyKernelCUDAVariadic(is_cooperative, tbi, s, shared_memory, kernel_ptr, bounds, func, other_args...);
+      _applyKernelCUDAVariadic(is_cooperative, tbi, s, kernel_ptr, bounds, func, other_args...);
     else {
       kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), shared_memory, s>>>(bounds, func, other_args...);
     }
@@ -327,14 +266,13 @@ class CudaKernelLauncher
 
   template <typename... KernelArgs> static inline void
   _applyKernelCUDAVariadic(bool is_cooperative, const KernelLaunchArgs& tbi,
-                           cudaStream_t& s, Int32 shared_memory,
-                           const void* kernel_ptr, KernelArgs... args)
+                           cudaStream_t& s, const void* kernel_ptr, KernelArgs... args)
   {
     void* all_args[] = { (reinterpret_cast<void*>(&args))... };
     if (is_cooperative)
-      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+      cudaLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
     else
-      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, shared_memory, s);
+      cudaLaunchKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
   }
 };
 
@@ -366,7 +304,25 @@ class HipKernelLauncher
     auto tbi = launch_info._computeKernelLaunchArgs(kernel_ptr);
     Int32 wanted_shared_memory = tbi.sharedMemorySize();
     hipStream_t s = HipUtils::toNativeStream(launch_info._internalNativeStream());
-    hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
+    bool is_need_barrier = CudaHipKernelRemainingArgsHelper::isNeedBarrier(other_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
+    bool is_cooperative = launch_info._isUseCooperativeLaunch();
+    if (is_cooperative) {
+      _applyCooperativeKernel(tbi, s, kernel_ptr, bounds, func, other_args...);
+    }
+    else
+      hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, s, bounds, func, other_args...);
+  }
+
+ private:
+
+  template <typename... KernelArgs> static inline void
+  _applyCooperativeKernel(const KernelLaunchArgs& tbi, hipStream_t& s,
+                          const void* kernel_ptr, KernelArgs... args)
+  {
+    void* all_args[] = { (reinterpret_cast<void*>(&args))... };
+    // TODO: Regarder tester le code retour
+    (void)hipLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
   }
 };
 
@@ -396,6 +352,8 @@ class SyclKernelLauncher
   {
     sycl::queue s = SyclUtils::toNativeStream(launch_info._internalNativeStream());
     sycl::event event;
+    bool is_need_barrier = SyclKernelRemainingArgsHelper::isNeedBarrier(remaining_args...);
+    launch_info._setIsNeedBarrier(is_need_barrier);
     if constexpr (IsAlwaysUseSyclNdItem<LoopBoundType>::value || sizeof...(RemainingArgs) > 0) {
       //TODO: regarder comment convertir \a kernel en un functor
       auto tbi = launch_info._computeKernelLaunchArgs(nullptr);

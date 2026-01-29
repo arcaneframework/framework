@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2025 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
 {
+using Impl::KernelLaunchArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -259,11 +260,11 @@ void finalizeHipMemoryAllocators(ITraceMng* tm)
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueStream
-: public impl::IRunQueueStream
+: public Impl::IRunQueueStream
 {
  public:
 
-  HipRunQueueStream(impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
+  HipRunQueueStream(Impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -280,7 +281,7 @@ class HipRunQueueStream
 
  public:
 
-  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] Impl::RunCommandImpl& c) override
   {
 #ifdef ARCCORE_HAS_ROCTX
     auto kname = c.kernelName();
@@ -291,7 +292,7 @@ class HipRunQueueStream
 #endif
     return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  void notifyEndLaunchKernel(Impl::RunCommandImpl&) override
   {
 #ifdef ARCCORE_HAS_ROCTX
     roctxRangePop();
@@ -342,7 +343,7 @@ class HipRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime;
+  Impl::IRunnerRuntime* m_runtime;
   hipStream_t m_hip_stream;
 };
 
@@ -350,7 +351,7 @@ class HipRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueEvent
-: public impl::IRunQueueEventImpl
+: public Impl::IRunQueueEventImpl
 {
  public:
 
@@ -369,7 +370,7 @@ class HipRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) final
+  void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCCORE_CHECK_HIP(hipEventRecord(m_hip_event, rq->trueStream()));
@@ -380,7 +381,7 @@ class HipRunQueueEvent
     ARCCORE_CHECK_HIP(hipEventSynchronize(m_hip_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) final
+  void waitForEvent(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCCORE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
@@ -415,7 +416,7 @@ class HipRunQueueEvent
 /*---------------------------------------------------------------------------*/
 
 class HipRunnerRuntime
-: public impl::IRunnerRuntime
+: public Impl::IRunnerRuntime
 {
  public:
 
@@ -443,15 +444,15 @@ class HipRunnerRuntime
   {
     return eExecutionPolicy::HIP;
   }
-  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  Impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new HipRunQueueStream(this, bi);
   }
-  impl::IRunQueueEventImpl* createEventImpl() override
+  Impl::IRunQueueEventImpl* createEventImpl() override
   {
     return new HipRunQueueEvent(false);
   }
-  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  Impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
     return new HipRunQueueEvent(true);
   }
@@ -583,6 +584,29 @@ class HipRunnerRuntime
     finalizeHipMemoryAllocators(tm);
   }
 
+  KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                           const void* kernel_ptr,
+                                           Int64 total_loop_size) override
+  {
+    Int32 shared_memory = orig_args.sharedMemorySize();
+    if (orig_args.isCooperative()) {
+      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
+      // que le maximum qui peut résider sur le GPU.
+      Int32 nb_thread = orig_args.nbThreadPerBlock();
+      Int32 nb_block = orig_args.nbBlockPerGrid();
+      int nb_block_per_sm = 0;
+      ARCCORE_CHECK_HIP(hipOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
+
+      int max_block = nb_block_per_sm * m_multi_processor_count;
+      if (nb_block > max_block) {
+        KernelLaunchArgs modified_args(orig_args);
+        modified_args.setNbBlockPerGrid(max_block);
+        return modified_args;
+      }
+    }
+    return orig_args;
+  }
+
  public:
 
   void fillDevices(bool is_verbose);
@@ -591,7 +615,8 @@ class HipRunnerRuntime
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
-  impl::DeviceInfoList m_device_info_list;
+  Int32 m_multi_processor_count = 0;
+  Impl::DeviceInfoList m_device_info_list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -635,9 +660,6 @@ fillDevices(bool is_verbose)
     o << " Runtime version = " << runtime_major << "." << (runtime_minor) << "." << (runtime_version % 100000) << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
-    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
-    o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
-    o << " sharedMemPerBlockOptin = " << dp.sharedMemPerBlockOptin << "\n";
     o << " regsPerBlock = " << dp.regsPerBlock << "\n";
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
@@ -660,18 +682,30 @@ fillDevices(bool is_verbose)
     o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
     o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
+    o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
 #if HIP_VERSION_MAJOR >= 6
+    o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
+    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
+    o << " sharedMemPerBlockOptin = " << dp.sharedMemPerBlockOptin << "\n";
     o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
     o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
 #endif
+
+    // TODO: On suppose que tous les GPUs sont les mêmes et donc
+    // que le nombre de SM par GPU est le même. Cela est utilisé pour
+    // calculer le nombre de blocs en mode coopératif.
+    m_multi_processor_count = dp.multiProcessorCount;
+
+    std::ostringstream device_uuid_ostr;
     {
       hipDevice_t device;
       ARCCORE_CHECK_HIP(hipDeviceGet(&device, i));
       hipUUID device_uuid;
       ARCCORE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      impl::printUUID(o, device_uuid.bytes);
+      Impl::printUUID(device_uuid_ostr, device_uuid.bytes);
+      o << device_uuid_ostr.str();
       o << "\n";
     }
 
@@ -684,9 +718,16 @@ fillDevices(bool is_verbose)
     device_info.setDeviceId(DeviceId(i));
     device_info.setName(dp.name);
     device_info.setWarpSize(dp.warpSize);
+    device_info.setUUIDAsString(device_uuid_ostr.str());
     device_info.setSharedMemoryPerBlock(static_cast<Int32>(dp.sharedMemPerBlock));
+#if HIP_VERSION_MAJOR >= 6
     device_info.setSharedMemoryPerMultiprocessor(static_cast<Int32>(dp.sharedMemPerMultiprocessor));
     device_info.setSharedMemoryPerBlockOptin(static_cast<Int32>(dp.sharedMemPerBlockOptin));
+#endif
+    device_info.setTotalConstMemory(static_cast<Int32>(dp.totalConstMem));
+    device_info.setPCIDomainID(dp.pciDomainID);
+    device_info.setPCIBusID(dp.pciBusID);
+    device_info.setPCIDeviceID(dp.pciDeviceID);
     m_device_info_list.addDevice(device_info);
   }
 }
@@ -717,10 +758,20 @@ class HipMemoryCopier
 
 } // End namespace Arcane::Accelerator::Hip
 
-namespace 
+using namespace Arcane;
+
+namespace
 {
 Arcane::Accelerator::Hip::HipRunnerRuntime global_hip_runtime;
 Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
+
+void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
+{
+  IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
+  eMemoryResource mem = allocator->memoryResource();
+  mrm->setAllocator(mem, allocator);
+  mrm->setMemoryPool(mem, allocator->memoryPool());
+}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -731,18 +782,17 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
-  using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;
-  Arcane::Accelerator::impl::setUsingHIPRuntime(true);
-  Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
+  Arcane::Accelerator::Impl::setUsingHIPRuntime(true);
+  Arcane::Accelerator::Impl::setHIPRunQueueRuntime(&global_hip_runtime);
   initializeHipMemoryAllocators();
   MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
   MemoryUtils::setAcceleratorHostMemoryAllocator(&unified_memory_hip_memory_allocator);
   IMemoryResourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
-  mrm->setAllocator(eMemoryResource::UnifiedMemory, &unified_memory_hip_memory_allocator);
-  mrm->setAllocator(eMemoryResource::HostPinned, &host_pinned_hip_memory_allocator);
-  mrm->setAllocator(eMemoryResource::Device, &device_hip_memory_allocator);
+  _setAllocator(&unified_memory_hip_memory_allocator);
+  _setAllocator(&host_pinned_hip_memory_allocator);
+  _setAllocator(&device_hip_memory_allocator);
   mrm->setCopier(&global_hip_memory_copier);
   global_hip_runtime.fillDevices(init_info.isVerbose());
 }

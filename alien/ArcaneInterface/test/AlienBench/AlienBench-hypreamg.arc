@@ -18,11 +18,11 @@
   <mesh>
     <meshgenerator>
       <cartesian>
-        <origine></origine>
+        <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="100">1.</lx>
-        <ly ny="100">1.</ly>
-        <lz nz="100">1.</lz>
+        <lx nx="10">1.</lx>
+        <ly ny="10">1.</ly>
+        <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>
@@ -31,7 +31,8 @@
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
-      <homogeneous>false</homogeneous>
+      <use-accelerator>false</use-accelerator>
+      <homogeneous>true</homogeneous>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
@@ -45,6 +46,7 @@
         <stop-criteria-value>1e-8</stop-criteria-value>
         <preconditioner>AMG</preconditioner>
         <verbose>true</verbose>
+        <output-level>2</output-level>
       </linear-solver>
 
     

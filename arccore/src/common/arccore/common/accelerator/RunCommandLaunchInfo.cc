@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.cc                                     (C) 2000-2025 */
+/* RunCommandLaunchInfo.cc                                     (C) 2000-2026 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -13,11 +13,11 @@
 
 #include "arccore/common/accelerator/RunCommandLaunchInfo.h"
 
-#include "KernelLaunchArgs.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/ConcurrencyBase.h"
 
+#include "arccore/common/accelerator/KernelLaunchArgs.h"
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
@@ -32,10 +32,8 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunCommandLaunchInfo::
-RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
-: m_command(command)
-, m_total_loop_size(total_loop_size)
+void RunCommandLaunchInfo::
+_init()
 {
   m_queue_impl = m_command._internalQueueImpl();
   m_exec_policy = m_queue_impl->executionPolicy();
@@ -45,6 +43,29 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
     _computeInitialKernelLaunchArgs();
     m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommandLaunchInfo::
+RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
+: m_command(command)
+, m_total_loop_size(total_loop_size)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommandLaunchInfo::
+RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative)
+: m_command(command)
+, m_total_loop_size(total_loop_size)
+, m_is_cooperative_launch(is_cooperative)
+{
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -99,8 +120,8 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  impl::RunQueueImpl* q = m_queue_impl;
-  if (!q->isAsync())
+  Impl::RunQueueImpl* q = m_queue_impl;
+  if (!q->isAsync() || m_is_need_barrier)
     q->_internalBarrier();
 }
 
@@ -127,7 +148,9 @@ _computeInitialKernelLaunchArgs()
     threads_per_block = 256;
   Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
-  m_kernel_launch_args = KernelLaunchArgs(blocks_per_grid, threads_per_block, m_command._sharedMemory());
+  m_kernel_launch_args = KernelLaunchArgs(blocks_per_grid, threads_per_block);
+  m_kernel_launch_args.setSharedMemorySize(m_command._sharedMemory());
+  m_kernel_launch_args.setIsCooperative(m_is_cooperative_launch);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,7 +205,7 @@ _computeLoopRunInfo()
 KernelLaunchArgs RunCommandLaunchInfo::
 _computeKernelLaunchArgs(const void* func) const
 {
-  impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
+  Impl::IRunnerRuntime* r = m_queue_impl->_internalRuntime();
 
   return r->computeKernalLaunchArgs(m_kernel_launch_args, func,
                                     totalLoopSize());
@@ -204,7 +227,7 @@ bool RunCommandLaunchInfo::
 _isUseCooperativeLaunch() const
 {
   // Indique si on utilise cudaLaunchCooperativeKernel()
-  return false;
+  return m_is_cooperative_launch;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,6 +237,15 @@ _isUseCudaLaunchKernel() const
 {
   // Indique si on utilise cudaLaunchKernel() au lieu de kernel<<<...>>>.
   return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
+_setIsNeedBarrier(bool v)
+{
+  m_is_need_barrier = v;
 }
 
 /*---------------------------------------------------------------------------*/

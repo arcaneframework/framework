@@ -1,16 +1,8 @@
-name: Header/Encoding checker
+name: Header/Encoding/Git checker
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - '**.cc'
-      - '**.h'
   pull_request:
     branches: [ main ]
-    paths:
-      - '**.cc'
-      - '**.h'
   workflow_dispatch:
 
 concurrency:
@@ -33,17 +25,19 @@ jobs:
           path: ${{ env.ARCANE_SOURCE_DIR }}
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-          
-      - name: Check files
+
+      - name: Get hash commits
         shell: bash
         run: |
           cd ${{ env.ARCANE_SOURCE_DIR }}
           
           MY_COMMIT=$(git rev-parse HEAD)
           echo "My commit : $MY_COMMIT"
+          echo "MY_COMMIT=${MY_COMMIT}" >> $GITHUB_ENV
           
           PARENT_BRANCH="$(git rev-parse origin/main)"
           echo "Parent branch : $PARENT_BRANCH"
+          echo "PARENT_BRANCH=${PARENT_BRANCH}" >> $GITHUB_ENV
           
           if [[ $MY_COMMIT == $PARENT_BRANCH ]]; then
             echo "Already on the parent branch, exit"
@@ -64,26 +58,67 @@ jobs:
           fi
           
           echo "Common commit : $COMMON_COMMIT"
+          echo "COMMON_COMMIT=${COMMON_COMMIT}" >> $GITHUB_ENV
+
+      - name: Merge detection
+        id: merge-detection
+        if: "${{ env.MY_COMMIT != env.PARENT_BRANCH }}"
+        shell: bash
+        run: |
+          cd ${{ env.ARCANE_SOURCE_DIR }}
           
-          export CC_H_FILES=$(git diff --name-only --no-renames --diff-filter=a "$MY_COMMIT..$COMMON_COMMIT" -- '*.cc' '*.h')
+          git log --merges --oneline --ancestry-path "${{ env.COMMON_COMMIT }}..${{ env.MY_COMMIT }}" > merge.log
+          if [ -s merge.log ]; then
+            echo "::error::Merge main into your branch detected. Use rebase instead (see commands to fix it in this section)."
+            echo "::group::Commit :"
+            cat merge.log
+            echo "::endgroup::"
+          
+            echo "::group::Commands to fix it (local changes) :"
+            echo "# Save your current working tree."
+            echo "git stash"          
+            echo " "
+            echo "# Fetch from origin and update your branch."
+            echo "git pull"
+            echo " "
+            echo "# Rebase branch to main."
+            echo "git rebase --no-rebase-merges origin/main"
+            echo " "
+            echo "# Get your working tree back."
+            echo "git stash pop"   
+            echo " "
+            echo "# Check your local new branch before git push -f !"
+            echo "::endgroup::"
+          
+            exit 1
+          fi
+
+      - name: Check files
+        id: check-files
+        if: "${{ always() && env.MY_COMMIT != env.PARENT_BRANCH }}"
+        shell: bash
+        run: |
+          cd ${{ env.ARCANE_SOURCE_DIR }}
+          
+          export CC_H_FILES=$(git diff --name-only --no-renames --diff-filter=a "${{ env.MY_COMMIT }}..${{ env.COMMON_COMMIT }}" -- '*.cc' '*.h')
           echo "::group::Files to check :"
           echo "$CC_H_FILES"
           echo "::endgroup::"
           
-          echo "::notice::In case of error, see the section 'Error details' or the artifact 'Header Check Logs'."
+          echo "::notice::In case of error, see the section 'Error details of Check files step' or the artifact 'Header Check Logs'."
           
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
-      - name: Error details
-        if: failure()
+      - name: Error details of Check files step
+        if: ${{ failure() && steps.check-files.conclusion == 'failure' }}
         shell: bash
         run: |
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Upload the logs artifact
-        uses: actions/upload-artifact@v4
-        if: failure()
+        uses: actions/upload-artifact@v6
+        if: ${{ failure() && steps.check-files.conclusion == 'failure' }}
         with:
           name: Header Check Logs
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log

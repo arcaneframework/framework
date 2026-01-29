@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReduceMemoryImpl.cc                                         (C) 2000-2025 */
+/* ReduceMemoryImpl.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Gestion de la mémoire pour les réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 namespace
 {
@@ -42,14 +42,12 @@ namespace
 ReduceMemoryImpl::
 ReduceMemoryImpl(RunCommandImpl* p)
 : m_command(p)
-, m_device_memory_bytes(_getAllocator(eMemoryResource::Device))
 , m_host_memory_bytes(_getAllocator(eMemoryResource::HostPinned))
 , m_grid_buffer(_getAllocator(eMemoryResource::Device))
 , m_grid_device_count(_getAllocator(eMemoryResource::Device))
 {
   _allocateMemoryForReduceData(128);
   _allocateMemoryForGridDeviceCount();
-  m_grid_memory_info.m_warp_size = p->runner()->deviceInfo().warpSize();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -64,22 +62,24 @@ release()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* ReduceMemoryImpl::
-allocateReduceDataMemory(ConstMemoryView identity_view)
+void ReduceMemoryImpl::
+allocateReduceDataMemory(Int32 data_type_size)
 {
-  auto identity_span = identity_view.bytes();
-  Int32 data_type_size = static_cast<Int32>(identity_span.size());
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
+}
 
-  // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
-  // et la zone pointée par \a identity_view n'est pas forcément conservée
-  m_identity_buffer.copy(identity_view.bytes());
-  MemoryCopyArgs copy_args(m_device_memory, m_identity_buffer.span().data(), data_type_size);
-  m_command->internalStream()->copyMemory(copy_args.addAsync());
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  return m_device_memory;
+void ReduceMemoryImpl::
+_allocateMemoryForReduceData(Int32 new_size)
+{
+  m_host_memory_bytes.resize(new_size);
+  m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
+
+  m_size = new_size;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -123,18 +123,6 @@ _allocateMemoryForGridDeviceCount()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ReduceMemoryImpl::
-copyReduceValueFromDevice()
-{
-  void* destination = m_grid_memory_info.m_host_memory_for_reduced_value;
-  void* source = m_device_memory;
-  MemoryCopyArgs copy_args(destination, source, m_data_type_size);
-  m_command->internalStream()->copyMemory(copy_args);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command)
 {
@@ -144,7 +132,7 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

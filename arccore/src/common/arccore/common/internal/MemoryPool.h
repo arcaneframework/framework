@@ -14,14 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/common/CommonGlobal.h"
+#include "arccore/common/IMemoryPool.h"
 
 #include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ namespace Arcane::impl
  * \brief Interface d'un allocateur pour un MemoryPool.
  *
  * Cette interface fonctionne à la manière d'un malloc/free à ceci prêt qu'il
- * faut fournir la taille alloué pour un bloc pour la libération de ce dernier.
+ * faut fournir la taille allouée pour un bloc pour la libération de ce dernier.
  * L'utilisateur de cette interface doit donc gérer la conservation de cette
  * information.
  */
@@ -53,7 +53,7 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe pour gérer une liste de zone allouées.
+ * \brief Classe pour gérer une liste de zones allouées.
  *
  * Cette classe utilise une sémantique par référence.
  *
@@ -61,14 +61,22 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
  * durant toute la vie de l'instance.
  */
 class ARCCORE_COMMON_EXPORT MemoryPool
-: public IMemoryPoolAllocator
+: public IMemoryPool
+, public IMemoryPoolAllocator
 {
   class Impl;
 
  public:
 
   explicit MemoryPool(IMemoryPoolAllocator* allocator, const String& name);
-  ~MemoryPool();
+  ~MemoryPool() override;
+
+ public:
+
+  MemoryPool(const MemoryPool&) = delete;
+  MemoryPool(MemoryPool&&) = delete;
+  MemoryPool& operator=(const MemoryPool&) = delete;
+  MemoryPool& operator=(MemoryPool&&) = delete;
 
  public:
 
@@ -78,27 +86,23 @@ class ARCCORE_COMMON_EXPORT MemoryPool
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
 
-  /*!
-   * \brief Positionne la taille en octet à partir de laquelle
-   * on ne conserve pas un bloc dans le cache.
-   *
-   * Cette méthode ne peut être appelé que s'il n'y a aucun bloc dans le
-   * cache.
-   */
-  void setMaxCachedBlockSize(size_t v);
-
-  //! Libère la mémoire dans le cache
-  void freeCachedMemory();
+  //! Implémentation de IMemoryPool
+  //@{
+  void setMaxCachedBlockSize(Int32 v) override;
+  void freeCachedMemory() override;
+  size_t totalAllocated() const override;
+  size_t totalCached() const override;
+  //@}
 
  private:
 
-  std::shared_ptr<Impl> m_p;
+  std::unique_ptr<Impl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SpecificMemoryCopy.cc                                       (C) 2000-2025 */
+/* SpecificMemoryCopy.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Classes pour gérer des fonctions spécialisées de copie mémoire.           */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 ISpecificMemoryCopyList* GlobalMemoryCopyList::default_global_copy_list = nullptr;
@@ -37,12 +37,13 @@ class HostIndexedCopyTraits
 
 //! Copieur spécifique lorsqu'aucun runtime accélérateur n'est initialisé
 class HostSpecificMemoryCopyList
-: public SpecificMemoryCopyList<impl::HostIndexedCopyTraits>
+: public SpecificMemoryCopyList<Impl::HostIndexedCopyTraits>
 {
  public:
 
   HostSpecificMemoryCopyList()
   {
+    using impl::ExtentValue;
     //! Ajoute des implémentations spécifiques pour les tailles courantes
     addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
     addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2

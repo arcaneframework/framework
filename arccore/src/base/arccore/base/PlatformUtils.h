@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.h                                             (C) 2000-2025 */
+/* PlatformUtils.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/base/BaseTypes.h"
 
 #include <iosfwd>
 
@@ -275,11 +275,13 @@ isDenormalized(Real v);
 extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
 getStackTraceService();
 
-/*! \brief Positionne le service utilisé pour obtenir la pile d'appel.
-  
-  Retourne l'ancien service utilisé.
-*/
-extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
+/*!
+ * \brief Positionne le service utilisé pour obtenir la pile d'appel.
+ *
+ * Retourne l'ancien service utilisé.
+ */
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCCORE_BASE_EXPORT IStackTraceService*
 setStackTraceService(IStackTraceService* service);
 
 /*!
@@ -290,6 +292,25 @@ setStackTraceService(IStackTraceService* service);
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getStackTrace();
+
+/*!
+ * \brief Service utilisé pour obtenir des informations
+ * sur les symboles du code source.
+ *
+ * Peut retourner nul si aucun service n'est disponible.
+ */
+extern "C++" ARCCORE_BASE_EXPORT ISymbolizerService*
+getSymbolizerService();
+
+/*!
+ * \brief Positionne le service pour obtenir des informations
+ * sur les symboles du code source.
+ *
+ * Retourne l'ancien service utilisé.
+ */
+extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
+ARCCORE_BASE_EXPORT ISymbolizerService*
+setSymbolizerService(ISymbolizerService* service);
 
 /*
  * \brief Copie une chaîne de caractère avec vérification de débordement.
@@ -370,6 +391,23 @@ getCompilerId();
 extern "C++" ARCCORE_BASE_EXPORT Int64
 getPageSize();
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
+ *
+ * Retourne le chemin complet de la bibliothèque dynamique de nom
+ * \a dll_name. \a dll_name doit contenir juste le nom de la bibliothèque
+ * sans les extensions spécifiques à la plateforme. Par exemple, sous Linux,
+ * il ne faut pas mettre 'libtoto.so' mais juste 'toto'.
+ *
+ * Retourne une chaîne nulle si le chemin complet ne peut
+ * par être déterminé.
+ */
+extern "C++" ARCCORE_BASE_EXPORT String
+getLoadedSharedLibraryFullPath(const String& dll_name);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -425,11 +463,15 @@ using Arcane::Platform::hasFloatingExceptionSupport;
 
 using Arcane::Platform::getStackTraceService;
 using Arcane::Platform::setStackTraceService;
+using Arcane::Platform::getSymbolizerService;
+using Arcane::Platform::setSymbolizerService;
 using Arcane::Platform::getStackTrace;
 using Arcane::Platform::dumpStackTrace;
 
 using Arcane::Platform::getConsoleHasColor;
 using Arcane::Platform::getCompilerId;
+
+using Arcane::Platform::getLoadedSharedLibraryFullPath;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -440,4 +482,3 @@ using Arcane::Platform::getCompilerId;
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

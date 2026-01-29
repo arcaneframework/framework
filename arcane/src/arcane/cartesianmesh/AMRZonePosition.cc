@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRZonePosition.cc                                          (C) 2000-2025 */
+/* AMRZonePosition.cc                                          (C) 2000-2026 */
 /*                                                                           */
 /* Definition d'une zone 2D ou 3D d'un maillage.                             */
 /*---------------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   }
   auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  FixedArray<CartCoordType, 6> min_n_max;
+  FixedArray<CartCoord, 6> min_n_max;
   min_n_max[0] = INT32_MAX;
   min_n_max[1] = INT32_MAX;
   min_n_max[2] = INT32_MAX;
@@ -90,8 +90,20 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
   cells_local_id.clear();
-  ENUMERATE_ (Cell, icell, mesh->mesh()->allActiveCells()) {
+
+  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
+  // les mailles sous les mailles de recouvrement (et non les mailles de
+  // recouvrement).
+  ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
+    if (!cell.hasFlags(ItemFlags::II_InPatch)) {
+      continue;
+    }
+    if (cell.hasHChildren()) {
+      if (cell.hChild(0).hasFlags(ItemFlags::II_InPatch)) {
+        continue;
+      }
+    }
     Real3 center;
     for (const Node node : cell.nodes())
       center += nodes_coord[node];
@@ -109,7 +121,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
       if (icell->isOwn())
         nb_cells++;
 
-      CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+      CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
       if (pos.x < min[MD_DirX])
         min[MD_DirX] = pos.x;
       if (pos.x > max[MD_DirX])
@@ -163,7 +175,7 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   AMRPatchPosition position;
   auto numbering = mesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  FixedArray<CartCoordType, 6> min_n_max;
+  FixedArray<CartCoord, 6> min_n_max;
   min_n_max[0] = INT32_MAX;
   min_n_max[1] = INT32_MAX;
   min_n_max[2] = INT32_MAX;
@@ -180,9 +192,21 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   const Real3 min_pos = m_position;
   const Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
+  Int64 d_cell_level = -1;
 
-  ENUMERATE_ (Cell, icell, mesh->mesh()->allActiveCells()) {
+  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
+  // les mailles sous les mailles de recouvrement (et non les mailles de
+  // recouvrement).
+  ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
+    if (!cell.hasFlags(ItemFlags::II_InPatch)) {
+      continue;
+    }
+    if (cell.hasHChildren()) {
+      if (cell.hChild(0).hasFlags(ItemFlags::II_InPatch)) {
+        continue;
+      }
+    }
     Real3 center;
     for (const Node node : cell.nodes())
       center += nodes_coord[node];
@@ -191,15 +215,17 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
     bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
     bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !m_is_3d;
     if (is_inside_x && is_inside_y && is_inside_z) {
-      if (level == -1)
+      if (level == -1) {
         level = cell.level();
+        d_cell_level = cell.uniqueId();
+      }
       else if (level != cell.level())
-        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, cell.level(), cell.uniqueId());
+        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- CellUID before : {1} -- Cell Level : {2} -- CellUID : {3}", level, d_cell_level, cell.level(), cell.uniqueId());
 
       if (icell->isOwn())
         nb_cells++;
 
-      const CartCoord3Type pos = numbering->cellUniqueIdToCoord(cell);
+      const CartCoord3 pos = numbering->cellUniqueIdToCoord(cell);
       if (pos.x < min[MD_DirX])
         min[MD_DirX] = pos.x;
       if (pos.x > max[MD_DirX])
@@ -240,7 +266,9 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
   position.setLevel(level_r);
 
-  mesh->traceMng()->info() << "Position test -- Min : " << position.minPoint() << " -- Max : " << position.maxPoint() << " -- Level : " << position.level();
+  // Attention : Pas assez d'infos pour mettre le bon overlapSize !
+
+  //mesh->traceMng()->info() << "Position test -- Min : " << position.minPoint() << " -- Max : " << position.maxPoint() << " -- Level : " << position.level();
 
   return position;
 }

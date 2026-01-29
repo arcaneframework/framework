@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.cc                                                  (C) 2000-2025 */
+/* Convert.cc                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -251,6 +251,20 @@ getValue(long long& v, StringView s)
   char* ptr2 = 0;
   v = ::strtoll(ptr, &ptr2, 0);
   return (ptr2 != (ptr + s.length()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool StringViewToIntegral::
+getValue(bool& v, StringView s)
+{
+  v = false;
+  int x = 0;
+  if (getValue(x, s))
+    return true;
+  v = (x != 0);
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

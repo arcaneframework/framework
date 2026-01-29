@@ -1,0 +1,61 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* SimpleHTMLMeshAMRPatchExporter.h                            (C) 2000-2026 */
+/*                                                                           */
+/* Écrivain d'un maillage au format HTML, avec un SVG.                       */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
+#define ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/cartesianmesh/CartesianPatch.h"
+
+#include "arcane/core/ItemTypes.h"
+
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
+#include <iosfwd>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CARTESIANMESH_EXPORT SimpleHTMLMeshAMRPatchExporter
+{
+  class Impl;
+
+ public:
+
+  SimpleHTMLMeshAMRPatchExporter();
+  SimpleHTMLMeshAMRPatchExporter(const SimpleHTMLMeshAMRPatchExporter& rhs) = delete;
+  SimpleHTMLMeshAMRPatchExporter& operator=(const SimpleHTMLMeshAMRPatchExporter& rhs) = delete;
+  ~SimpleHTMLMeshAMRPatchExporter();
+
+  void addPatch(const CartesianPatch& patch);
+  void write(std::ostream& ofile);
+
+ private:
+
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

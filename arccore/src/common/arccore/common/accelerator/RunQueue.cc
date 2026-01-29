@@ -52,7 +52,7 @@ RunQueue()
 
 RunQueue::
 RunQueue(const Runner& runner)
-: m_p(impl::RunQueueImpl::create(runner._impl()))
+: m_p(Impl::RunQueueImpl::create(runner._impl()))
 {
 }
 
@@ -61,7 +61,7 @@ RunQueue(const Runner& runner)
 
 RunQueue::
 RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
-: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
+: m_p(Impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
 
@@ -70,7 +70,7 @@ RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 
 RunQueue::
 RunQueue(const Runner& runner, bool)
-: m_p(impl::RunQueueImpl::create(runner._impl()))
+: m_p(Impl::RunQueueImpl::create(runner._impl()))
 {
 }
 
@@ -79,7 +79,7 @@ RunQueue(const Runner& runner, bool)
 
 RunQueue::
 RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool)
-: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
+: m_p(Impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
 
@@ -105,7 +105,7 @@ RunQueue(RunQueue&& x) noexcept
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(impl::RunQueueImpl* p)
+RunQueue(Impl::RunQueueImpl* p)
 : m_p(p)
 {
 }
@@ -176,7 +176,7 @@ executionPolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunnerRuntime* RunQueue::
+Impl::IRunnerRuntime* RunQueue::
 _internalRuntime() const
 {
   return m_p->_internalRuntime();
@@ -185,7 +185,7 @@ _internalRuntime() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunQueueStream* RunQueue::
+Impl::IRunQueueStream* RunQueue::
 _internalStream() const
 {
   return m_p->_internalStream();
@@ -194,7 +194,7 @@ _internalStream() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunCommandImpl* RunQueue::
+Impl::RunCommandImpl* RunQueue::
 _getCommandImpl() const
 {
   return m_p->_internalCreateOrGetRunCommandImpl();
@@ -203,7 +203,7 @@ _getCommandImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::RunQueueImpl* RunQueue::
+Impl::RunQueueImpl* RunQueue::
 _internalImpl() const
 {
   _checkNotNull();
@@ -368,6 +368,17 @@ memoryRessource() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+eMemoryResource RunQueue::
+memoryResource() const
+{
+  if (m_p)
+    return m_p->m_memory_ressource;
+  return eMemoryResource::Unknown;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void RunQueue::
 setConcurrentCommandCreation(bool v)
 {
@@ -396,16 +407,16 @@ getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_
 {
   if (!queue || queue->isNull())
     return ePointerAccessibility::Unknown;
-  return impl::RuntimeStaticInfo::getPointerAccessibility(queue->executionPolicy(), ptr, ptr_attr);
+  return Impl::RuntimeStaticInfo::getPointerAccessibility(queue->executionPolicy(), ptr, ptr_attr);
 }
 
-extern "C++" void impl::
+extern "C++" void Impl::
 arcaneCheckPointerIsAccessible(const RunQueue* queue, const void* ptr,
                                const char* name, const TraceInfo& ti)
 {
   if (!queue || queue->isNull())
     return;
-  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(queue->executionPolicy(), ptr, name, ti);
+  return Impl::RuntimeStaticInfo::checkPointerIsAcccessible(queue->executionPolicy(), ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/

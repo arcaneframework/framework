@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,9 +13,11 @@
 #include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/core/backend/KernelSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 #include <alien/AlienExternalPackagesPrecomp.h>
 
+#include <alien/kernels/hypre/HypreBackEnd.h>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,7 +39,7 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary(bool exec_on_device, bool use_device_momory) ;
+  HypreLibrary(bool exec_on_device, bool use_device_momory, int device_id=0) ;
   virtual ~HypreLibrary() ;
 
   BackEnd::Memory::eType getMemoryType() const {
@@ -51,13 +53,15 @@ class HypreLibrary
   private:
   BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
   BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
+  int m_device_id = 0 ;
 } ;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver 
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 : public IInternalLinearSolver<HypreMatrix, HypreVector>
+, public KernelSolverT<BackEnd::tag::hypre>
 , public ObjectWithTrace
 {
  public:
@@ -74,18 +78,26 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   static std::unique_ptr<HypreLibrary> m_library_plugin ;
 
-  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
-
-  virtual void init();
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false, int device_id=0) ;
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
 
-  void end();
-
   Arccore::String getBackEndName() const { return "hypre"; }
+
+  void init();
+
+  void init(HypreMatrix const& A) ;
+
+  void start() {
+
+  }
+
+  void end();
 
   //! Résolution du système linéaire
   bool solve(const HypreMatrix& A, const HypreVector& b, HypreVector& x);
+
+  bool solve(const HypreVector& b, HypreVector& x);
 
   //! Indicateur de support de résolution parallèle
   bool hasParallelSupport() const { return true; }
@@ -102,6 +114,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   void startNonLinear() final {}
 
  private:
+  struct Impl ;
+
+  std::unique_ptr<Impl> m_impl ;
+
   Status m_status;
 
   Integer m_gpu_device_id = 0 ;
@@ -110,8 +126,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   IOptionsHypreSolver* m_options;
 
- private:
-  void checkError(const Arccore::String& msg, int ierr, int skipError = 0) const;
 };
 
 /*---------------------------------------------------------------------------*/

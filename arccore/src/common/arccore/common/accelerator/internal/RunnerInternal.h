@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunnerInternal.h                                            (C) 2000-2025 */
+/* RunnerInternal.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* API interne à Arcane de 'Runner'.                                         */
 /*---------------------------------------------------------------------------*/
@@ -28,11 +28,11 @@ namespace Arcane::Accelerator
 class ARCCORE_COMMON_EXPORT RunnerInternal
 {
   friend ::Arcane::Accelerator::Runner;
-  friend ::Arcane::Accelerator::impl::RunnerImpl;
+  friend ::Arcane::Accelerator::Impl::RunnerImpl;
 
  private:
 
-  explicit RunnerInternal(impl::RunnerImpl* p)
+  explicit RunnerInternal(Impl::RunnerImpl* p)
   : m_runner_impl(p)
   {}
 
@@ -71,13 +71,13 @@ class ARCCORE_COMMON_EXPORT RunnerInternal
 
  private:
 
-  impl::RunnerImpl* m_runner_impl = nullptr;
+  Impl::RunnerImpl* m_runner_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

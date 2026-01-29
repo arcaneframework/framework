@@ -2,12 +2,9 @@
 
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
-    AdiProjectionModule.cc
     ${ARCANE_MATERIAL_SOURCES}
   )
   set(ARCANE_ACCELERATOR_SOURCES
-    AdiProjectionModule.cc
-    CartesianMeshTestUtils.cc
     MeshMaterialSyncUnitTest.cc
     MaterialHeatTestModule.cc
   )
@@ -46,6 +43,7 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
   set_property(SOURCE MaterialEosService.i PROPERTY USE_SWIG_DEPENDENCIES TRUE)
   set_property(SOURCE MaterialEosService.i PROPERTY INCLUDE_DIRECTORIES
     ${Arccore_SOURCE_DIR}/src/base
+    ${Arccore_SOURCE_DIR}/src/common
     ${Arcane_SOURCE_DIR}/src
     ${Arcane_SOURCE_DIR}/tools/wrapper
     ${Arcane_SOURCE_DIR}/ceapart/tools/wrapper)

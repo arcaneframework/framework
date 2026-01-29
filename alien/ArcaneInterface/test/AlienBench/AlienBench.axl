@@ -5,7 +5,7 @@
 	<description>Descripteur du module Laplacian</description>
 
    <variables>
-    
+
     <!--  NODE COORD   -->
     <variable
       field-name="node_coord"
@@ -15,7 +15,7 @@
       dim="0"
       dump="true"
       need-sync="true" />
-      
+
     <variable
       field-name="u"
       name="U"
@@ -23,9 +23,9 @@
       item-kind="cell"
       dim="0"
       dump="true"
-      need-sync="true" 
+      need-sync="true"
     />
-    
+
     <variable
       field-name="x"
       name="X"
@@ -33,10 +33,10 @@
       item-kind="cell"
       dim="0"
       dump="true"
-      need-sync="true" 
+      need-sync="true"
     />
-    
-    
+
+
     <variable
       field-name="k"
       name="K"
@@ -44,9 +44,9 @@
       item-kind="cell"
       dim="0"
       dump="true"
-      need-sync="true" 
+      need-sync="true"
     />
-    
+
     <variable
       field-name="s"
       name="S"
@@ -54,10 +54,10 @@
       item-kind="cell"
       dim="0"
       dump="true"
-      need-sync="true" 
+      need-sync="true"
     />
-    
-    
+
+
     <variable
       field-name="cell_center"
       name="CellCenter"
@@ -65,11 +65,11 @@
       item-kind="cell"
       dim="0"
       dump="true"
-      need-sync="true" 
+      need-sync="true"
     />
 
   </variables>
-  
+
   <entry-points>
     <entry-point method-name="init" name="Init" where="start-init" property="none" />
     <entry-point method-name="test" name="Test" where="compute-loop" property="none" />
@@ -80,57 +80,62 @@
     <simple name="redistribution" type="bool" default="true">
       <description>to activate redistribution test</description>
     </simple>
-    
+
     <simple name="use-accelerator" type="bool" default="false">
       <description>activate accelerator support</description>
     </simple>
-    
+
     <simple name="use-usm" type="bool" default="false">
       <description>use unified share memory support</description>
     </simple>
-    
+
     <simple name="unit-rhs" type="bool" default="false">
       <description>to initialize the right hand side vector to 1</description>
     </simple>
-    
-    
+
+
     <simple name="zero-rhs" type="bool" default="false">
       <description>to initialize the right hand side vector to 0</description>
     </simple>
-    
+
     <simple name="homogeneous" type="bool" default="false">
       <description>to activate homogeneous laplacian test</description>
+    </simple>
+
+
+    <simple name="block-size" type="integer" default="1">
+      <description>Linear system block size</description>
     </simple>
 
     <simple name="diagonal-coefficient" type="real">
       <description>Valeur du coefficient diagonal</description>
     </simple>
-    
+
     <simple name="off-diagonal-coefficient" type="real" default="0.5">
       <description>Valeur du coefficient hors diagonal</description>
     </simple>
-    
+
     <simple name="alpha" type="real" default="1.">
       <description>Valeur calcul transmissivity</description>
     </simple>
-    
+
     <simple name="lambdax" type="real" default="1.">
       <description>Valeur calcul transmissivity</description>
     </simple>
-    
+
     <simple name="lambday" type="real" default="1.">
       <description>Valeur calcul transmissivity</description>
     </simple>
-    
+
     <simple name="lambdaz" type="real" default="1.">
       <description>Valeur calcul transmissivity</description>
     </simple>
-    
-    
+
+
     <simple name="sigma" type="real" default="0.">
       <description>low eigen values</description>
     </simple>
-    
+
     <simple name="epsilon" type="real" default="0.">
       <description>small values</description>
     </simple>
@@ -138,98 +143,9 @@
     <simple name="nb-resolutions" type="integer" default="1">
       <description>number of solver resolution</description>
     </simple>
-    
+
     <service-instance name="linear-solver" type="Alien::ILinearSolver"  minOccurs="0" maxOccurs="1">
        <description>Service solveur</description>
     </service-instance>
-    
-    
-    <complex name="alien-core-solver" type="AlienCoreSolverType" minOccurs="0" maxOccurs="1">
-        <description> Internal Alien Core Solver options</description>
-        
-        <simple name="output-level" type="integer" default="0">
-            <description>solver output level</description>
-        </simple>
-         
-        <enumeration name="backend" type="AlienCoreSolverOptionTypes::eBackEnd" default="SimpleCSR">
-          <description>Backend definition</description>
-          <enumvalue name="SimpleCSR" genvalue="AlienCoreSolverOptionTypes::SimpleCSR">
-            <description>SimpleCSR backend</description>
-          </enumvalue>
-          
-          <enumvalue name="SYCL" genvalue="AlienCoreSolverOptionTypes::SYCL">
-            <description>SYCL backend</description>
-          </enumvalue>
-        </enumeration>
-        
-        <enumeration name="solver" type="AlienCoreSolverOptionTypes::eSolver" default="BCGS">
-          <description>Solveur type</description>
-          
-          <enumvalue name="BCGS" genvalue="AlienCoreSolverOptionTypes::BCGS">
-            <description>BiCGStab Solver</description>
-          </enumvalue>
-          
-          <enumvalue name="CG" genvalue="AlienCoreSolverOptionTypes::CG">
-            <description>CG Solver</description>
-          </enumvalue>
-        </enumeration>
-        
-        
-        <simple name="asynch" type="integer" default="1">
-            <description>enable async mode with future</description>
-        </simple>
-       
-        <enumeration name="preconditioner" type="AlienCoreSolverOptionTypes::ePreconditioner" default="Diag">
-            <description>type def preconditionnement</description>
-            <enumvalue name="Diag" genvalue="AlienCoreSolverOptionTypes::Diag">
-                <description>Id preconditioner</description>
-            </enumvalue>
-            <enumvalue name="NeumannPoly" genvalue="AlienCoreSolverOptionTypes::NeumannPoly">
-                <description>Neunmann Polynomial preconditioner</description>
-            </enumvalue>
-            <enumvalue name="ChebyshevPoly" genvalue="AlienCoreSolverOptionTypes::ChebyshevPoly">
-                <description>Chebyshev Polynomial preconditioner</description>
-            </enumvalue>
-            <enumvalue name="ILU0" genvalue="AlienCoreSolverOptionTypes::ILU0">
-                <description>0th order ILU preconditioner</description>
-            </enumvalue>
-            <enumvalue name="FILU0" genvalue="AlienCoreSolverOptionTypes::FILU0">
-                <description>0th order ILU preconditioner FixedPoint</description>
-            </enumvalue>
-        </enumeration>
-        
-         <simple name="max-iter" type="integer" default="1000">
-           <description>nb ML iter</description>
-         </simple>
-         
-         <simple name="tol" type="real" default="1.e-6">
-           <description>Solver tolerance</description>
-         </simple>
-         
-         <simple name="poly-factor" type="real" default="0.5">
-           <description>Polynomial preconditioner factor</description>
-         </simple>
-         
-         <simple name="poly-order" type="integer" default="3">
-           <description>Polynomial preconditioner order</description>
-         </simple>
-         
-         <simple name="poly-factor-max-iter" type="integer" default="10">
-           <description>Polynomial preconditioner factor max iteration</description>
-         </simple>
-         
-         <simple name="filu-factor-niter" type="integer" default="0">
-           <description>FILU0 factorization nb iterations</description>
-         </simple>
-         
-         <simple name="filu-solver-niter" type="integer" default="3">
-           <description>FILU0 solver nb iterations</description>
-         </simple>
-         
-         <simple name="filu-tol" type="real" default="1.e-6">
-           <description>FILU0 tolerance</description>
-         </simple>
-
-     </complex>
    </options>
 </module>

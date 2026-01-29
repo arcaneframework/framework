@@ -49,9 +49,6 @@ loadPackage(NAME FFTW3)
 
 # solveurs
 
-# Needed to use the find_package provided by Arccon
-set (Hypre_USE_CMAKE_CONFIG TRUE)
-
 #loadPackage(NAME Umfpack)
 loadPackage(NAME PETSc)
 loadPackage(NAME SLEPc)
@@ -125,6 +122,11 @@ if(TARGET petsc)
     if(EXISTS ${INC_DIR}/petscconf.h)
         file(READ ${INC_DIR}/petscconf.h PETSCCONF_H)
 
+        # check for Hypre in PETSc
+        if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_HYPRE")
+            add_library(petsc::hypre INTERFACE IMPORTED)
+        endif()
+
         # check for SPAI in PETSc
         if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SPAI")
             add_library(petsc::spai INTERFACE IMPORTED)
@@ -133,6 +135,14 @@ if(TARGET petsc)
         # check for MUMPS in PETSc
         if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_MUMPS")
             add_library(petsc::mumps INTERFACE IMPORTED)
+        endif()
+
+        if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SUPERLU")
+            add_library(petsc::superlu INTERFACE IMPORTED)
+        endif()
+
+        if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SUPERLU_DIST")
+            add_library(petsc::superlu_dist INTERFACE IMPORTED)
         endif()
     else()
         MESSAGE(WARNING "target petsc: file ${INC_DIR}/petscconf.h not found")

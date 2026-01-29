@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,6 +10,8 @@
 #include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/kernels/petsc/PETScPrecomp.h>
 #include <alien/core/impl/IMatrixImpl.h>
+#include <alien/core/backend/BackEnd.h>
+
 #include <alien/data/ISpace.h>
 #include <alien/ref/data/scalar/Vector.h>
 #include <alien/ref/handlers/scalar/VectorReader.h>
@@ -36,6 +38,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScMatrix : public IMatrixImpl
   PETScMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~PETScMatrix();
 
+  BackEnd::Memory::eType getMemoryType() const ;
+
+  BackEnd::Exec::eSpaceType getExecSpace() const ;
+
  public:
   void clear() {}
 
@@ -48,11 +54,24 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScMatrix : public IMatrixImpl
                   Arccore::ConstArrayView<Arccore::Integer> offdiag_lineSizes,
                   const bool parallel);
 
+  bool initMatrix(const int local_size,
+                  const int local_offset,
+                  const int global_size,
+                  const int block_size,
+                  const int nb_dofs,
+                  int const* dof_uids,
+                  const int nnz,
+                  int* rows,
+                  int* cols,
+                  const bool parallel) ;
+
   bool addMatrixValues(
       const int row, const int ncols, const int* cols, const Arccore::Real* values);
 
   bool setMatrixValues(
       const int row, const int ncols, const int* cols, const Arccore::Real* values);
+
+  bool setMatrixValuesFromCSR(const Arccore::Real* values);
 
 #ifdef PETSC_HAVE_MATSETBLOCKSIZE
   bool addMatrixBlockValues(
@@ -81,6 +100,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScMatrix : public IMatrixImpl
   }
 
   std::unique_ptr<MatrixInternal> m_internal ;
+
+  Arccore::MessagePassing::IMessagePassingMng* m_pm = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

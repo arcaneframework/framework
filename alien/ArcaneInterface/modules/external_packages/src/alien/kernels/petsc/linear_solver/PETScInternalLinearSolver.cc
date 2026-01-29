@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,6 +45,7 @@
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
 #include <alien/kernels/petsc/linear_solver/IPETScPC.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
+#include <alien/kernels/petsc/linear_solver/PETScOptionTypes.h>
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 
 
@@ -83,9 +84,69 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool PETScInternalLinearSolver::m_global_initialized = false;
-bool PETScInternalLinearSolver::m_global_want_trace = false;
+bool PETScInternalLinearSolver::m_library_plugin_is_initialized = false ;
 
+std::unique_ptr<PETScLibrary> PETScInternalLinearSolver::m_library_plugin ;
+
+PETScLibrary::PETScLibrary(std::vector<Arccore::String> const& petsc_options,
+                           bool use_trace,
+                           bool exec_on_device,
+                           bool use_device_memory)
+{
+
+  // Emulate argc,argv with dynamic options
+  // (since PetscOptionsInsertString cannot insert info options)
+  int petsc_argc = petsc_options.size() + 1;
+  const char** petsc_c_options = new const char*[petsc_argc];
+  petsc_c_options[0] = NULL;
+  for (std::size_t i = 0; i < petsc_options.size(); ++i)
+    petsc_c_options[i + 1] = petsc_options[i].localstr();
+  char** argv = (char**)petsc_c_options;
+
+  alien_debug([&] { cout() << "PETSc Initialisation"; });
+  PetscInitialize(&petsc_argc, &argv, NULL, "PETSc Initialisation");
+  delete[] petsc_c_options;
+
+  // Reduce memory due to log for graphical viewer
+  PetscLogActions(PETSC_FALSE);
+  PetscLogObjects(PETSC_FALSE);
+
+  m_global_want_trace = use_trace ;
+#if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
+  if (use_trace) {
+    alien_info([&] { cout() << "PETSc options:"; });
+    PetscOptionsPrint(stdout);
+  }
+#endif /* PETSC_VERSION */
+
+  m_global_initialized = true;
+
+  if(exec_on_device) {
+#if PETSC_VERSION_GE(3, 20, 0)
+    if(use_device_memory)
+    {
+      m_memory_type = BackEnd::Memory::Device ;
+      m_exec_space = BackEnd::Exec::Device ;
+    }
+    else
+    {
+      m_memory_type = BackEnd::Memory::Host ;
+      m_exec_space = BackEnd::Exec::Device ;
+    }
+#else
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Device Execution is not available");
+#endif
+  }
+  else
+  {
+    m_memory_type = BackEnd::Memory::Host ;
+    m_exec_space = BackEnd::Exec::Host ;
+  }
+}
+
+PETScLibrary::~PETScLibrary()
+{
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -106,77 +167,81 @@ PETScInternalLinearSolver::~PETScInternalLinearSolver()
 }
 
 /*---------------------------------------------------------------------------*/
+void
+PETScInternalLinearSolver::initializeLibrary(bool exec_on_device, bool use_device_memory)
+{
+  if(PETScInternalLinearSolver::m_library_plugin_is_initialized) return ;
+
+  std::vector<Arccore::String> petsc_options;
+  PETScInternalLinearSolver::m_library_plugin.reset(new PETScLibrary(petsc_options,
+                                                                     false,
+                                                                     exec_on_device,
+                                                                     use_device_memory)) ;
+  PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
+}
 
 void
 PETScInternalLinearSolver::init(int argc, char** argv)
 {
   if (m_parallel_mng == nullptr)
     return;
-  // m_stater.reset();
-  // m_stater.startInitializationMeasure();
 
-  if (not m_global_initialized) {
-    std::vector<std::string> petsc_options;
-    if (m_options->traceInfo()) {
-      // See PetscInitialize for details
-      // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
-      petsc_options.push_back("-info");
-      petsc_options.push_back("-log_trace");
-      petsc_options.push_back("petsc.log");
-      m_global_want_trace = true;
-    }
-    if (argc > 0) {
-      for (int i = 0; i < argc; ++i) {
-        std::stringstream stream;
-        stream << argv[i];
-        petsc_options.push_back(stream.str());
-      }
-    }
-    if (not petsc_options.empty()) {
-      alien_info([&] {
-        std::stringstream petsc_options_str("PETSC CMD : ");
-        for (std::size_t i = 0; i < petsc_options.size(); ++i)
-          petsc_options_str << petsc_options[i] << " ";
-        cout() << petsc_options_str.str();
-      });
-    }
+  if(PETScInternalLinearSolver::m_library_plugin_is_initialized) return ;
 
-    // Emulate argc,argv with dynamic options
-    // (since PetscOptionsInsertString cannot insert info options)
-    //    int petsc_argc = petsc_options.size()+1;
-    const char** petsc_c_options = new const char*[argc];
-    petsc_c_options[0] = NULL;
-    for (std::size_t i = 0; i < petsc_options.size(); ++i)
-      petsc_c_options[i + 1] = petsc_options[i].c_str();
-    char** argv2 = (char**)petsc_c_options;
-
-    alien_debug([&] { cout() << "PETSc Initialisation"; });
-    PetscInitialize(&argc, &argv2, NULL, "PETSc Initialisation");
-    delete[] petsc_c_options;
-
-    // Reduce memory due to log for graphical viewer
-    PetscLogActions(PETSC_FALSE);
-    PetscLogObjects(PETSC_FALSE);
-
-#if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
-    if (m_options->traceInfo()) {
-      alien_info([&] { cout() << "PETSc options:"; });
-      PetscOptionsPrint(stdout);
-    }
-#endif /* PETSC_VERSION */
-
-    m_global_initialized = true;
-  } else {
-    if (m_options->traceInfo() != m_global_want_trace) {
-      alien_warning([&] {
-        cout() << "PETSc trace-info option is global and given by the first "
-                  "initialisation; current state is "
-               << ((m_global_want_trace) ? "on" : "off");
-      });
-    }
+  std::vector<Arccore::String> petsc_options;
+  if (m_options->traceInfo()) {
+    // See PetscInitialize for details
+    // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
+    petsc_options.push_back("-info");
+    petsc_options.push_back("-log_trace");
+    petsc_options.push_back("petsc.log");
   }
 
-  // m_stater.stopInitializationMeasure();
+  if (argc > 0) {
+    for (int i = 0; i < argc; ++i) {
+      std::stringstream stream;
+      stream << argv[i];
+      petsc_options.push_back(stream.str());
+    }
+  }
+  if (not petsc_options.empty()) {
+    alien_info([&] {
+      std::stringstream petsc_options_str("PETSC CMD : ");
+      for (std::size_t i = 0; i < petsc_options.size(); ++i)
+        petsc_options_str << petsc_options[i] << " ";
+      cout() << petsc_options_str.str();
+    });
+  }
+
+  bool use_exec_device = m_options->execSpace() == PETScOptionTypes::Device ;
+  bool use_mem_device = m_options->memoryType() == PETScOptionTypes::DeviceMemory ;
+  PETScInternalLinearSolver::m_library_plugin.reset(new PETScLibrary(petsc_options,
+                                                                     m_options->traceInfo(),
+                                                                     use_exec_device,
+                                                                     use_mem_device)) ;
+  alien_info([&] {
+    if(use_exec_device)
+      cout()<<"PETSc Initialisation : Exec on Device ";
+    else
+      cout()<<"PETSc Initialisation : Exec on Host ";
+    switch(m_options->memoryType())
+    {
+      case PETScOptionTypes::HostMemory:
+        cout()<<"                       use Host Memory";
+        break ;
+      case PETScOptionTypes::DeviceMemory:
+        cout()<<"                       use Device Memory";
+        break ;
+      case PETScOptionTypes::ShareMemory:
+        cout()<<"                       use Share Memory";
+        break ;
+      default:
+        cout()<<"                       use Host Memory";
+    }
+  });
+
+   PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -186,66 +251,61 @@ PETScInternalLinearSolver::init()
 {
   if (m_parallel_mng == nullptr)
     return;
-  // m_stater.reset();
-  // m_stater.startInitializationMeasure();
 
-  if (not m_global_initialized) {
-    std::vector<Arccore::String> petsc_options;
-    if (m_options->traceInfo()) {
-      // See PetscInitialize for details
-      // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
-      petsc_options.push_back("-info");
-      petsc_options.push_back("-log_trace");
-      petsc_options.push_back("petsc.log");
-      m_global_want_trace = true;
-    }
-    if (m_options->cmdLineParam().size() > 0) {
-      petsc_options.push_back(" "); // separator
-      Arccore::String command = m_options->cmdLineParam()[0];
-      petsc_options.push_back(command);
-    }
-    if (not petsc_options.empty()) {
-      alien_info([&] {
-        std::stringstream petsc_options_str("PETSC CMD : ");
-        for (std::size_t i = 0; i < petsc_options.size(); ++i)
-          petsc_options_str << petsc_options[i] << " ";
-        cout() << petsc_options_str.str();
-      });
-    }
+  if(PETScInternalLinearSolver::m_library_plugin_is_initialized) return ;
 
-    // Emulate argc,argv with dynamic options
-    // (since PetscOptionsInsertString cannot insert info options)
-    int petsc_argc = petsc_options.size() + 1;
-    const char** petsc_c_options = new const char*[petsc_argc];
-    petsc_c_options[0] = NULL;
-    for (std::size_t i = 0; i < petsc_options.size(); ++i)
-      petsc_c_options[i + 1] = petsc_options[i].localstr();
-    char** argv = (char**)petsc_c_options;
-
-    alien_debug([&] { cout() << "PETSc Initialisation"; });
-    PetscInitialize(&petsc_argc, &argv, NULL, "PETSc Initialisation");
-    delete[] petsc_c_options;
-
-    // Reduce memory due to log for graphical viewer
-    PetscLogActions(PETSC_FALSE);
-    PetscLogObjects(PETSC_FALSE);
-#if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
-    if (m_options->traceInfo()) {
-      alien_info([&] { cout() << "PETSc options:"; });
-      PetscOptionsPrint(stdout);
-    }
-#endif /* PETSC_VERSION */
-
-    m_global_initialized = true;
-  } else {
-    if (m_options->traceInfo() != m_global_want_trace) {
-      alien_warning([&] {
-        cout() << "PETSc trace-info option is global and given by the first "
-                  "initialisation; current state is "
-               << ((m_global_want_trace) ? "on" : "off");
-      });
-    }
+  std::vector<Arccore::String> petsc_options;
+  if (m_options->traceInfo()) {
+    // See PetscInitialize for details
+    // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
+    petsc_options.push_back("-info");
+    petsc_options.push_back("-log_trace");
+    petsc_options.push_back("petsc.log");
   }
+  if (m_options->cmdLineParam().size() > 0) {
+    petsc_options.push_back(" "); // separator
+    Arccore::String command = m_options->cmdLineParam()[0];
+    petsc_options.push_back(command);
+  }
+  if (not petsc_options.empty()) {
+    alien_info([&] {
+      std::stringstream petsc_options_str("PETSC CMD : ");
+      for (std::size_t i = 0; i < petsc_options.size(); ++i)
+        petsc_options_str << petsc_options[i] << " ";
+      cout() << petsc_options_str.str();
+    });
+  }
+
+  bool use_exec_device = m_options->execSpace() == PETScOptionTypes::Device ;
+  bool use_mem_device = m_options->memoryType() == PETScOptionTypes::DeviceMemory ;
+
+  PETScInternalLinearSolver::m_library_plugin.reset(new PETScLibrary(petsc_options,
+                                                                     m_options->traceInfo(),
+                                                                     use_exec_device,
+                                                                     use_mem_device)) ;
+
+  PETScInternalLinearSolver::m_library_plugin_is_initialized = true ;
+
+  alien_info([&] {
+    if(use_exec_device)
+      cout()<<"PETSc Initialisation : Exec on Device ";
+    else
+      cout()<<"PETSc Initialisation : Exec on Host ";
+    switch(m_options->memoryType())
+    {
+      case PETScOptionTypes::HostMemory:
+        cout()<<"                       use Host Memory";
+        break ;
+      case PETScOptionTypes::DeviceMemory:
+        cout()<<"                       use Device Memory";
+        break ;
+      case PETScOptionTypes::ShareMemory:
+        cout()<<"                       use Share Memory";
+        break ;
+      default:
+        cout()<<"                       use Host Memory";
+    }
+  });
 
   m_verbose = m_options->verbose();
   m_null_space_constant_opt = m_options->nullSpaceConstantOpt() ;
@@ -386,11 +446,11 @@ PETScInternalLinearSolver::solve(
 // L'API devrait permettre de demander au solveur sa capacité de traiter les pbs à une
 // constante près, si oui
 // le prend en charge, sinon demande à l'utilisateur de le prendre en charge
-#ifdef PETSC_GETPCTYPE_NEW
+//#ifdef PETSC_GETPCTYPE_NEW
   PCType pctype;
-#else
-  const PCType pctype;
-#endif
+  //#else
+  //  const PCType pctype;
+  //#endif
   PC pc;
   KSPGetPC(ksp, &pc);
   PCGetType(pc, &pctype);

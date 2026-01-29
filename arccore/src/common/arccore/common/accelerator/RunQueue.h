@@ -44,7 +44,7 @@ namespace Arcane::Accelerator
  * Le constructeur par défaut construit Une file nulle qui ne peut pas être
  * utilisée pour lancer des commandes. Les seules opérations autorisées sur
  * la file nulle sont isNull(), executionPolicy(), isAcceleratorPolicy(),
- * barrier(), allocationOptions() et memoryRessource().
+ * barrier(), allocationOptions() et memoryResource().
  *
  * Les méthodes de cette classe ne sont pas thread-safe pour une même instance.
  */
@@ -185,7 +185,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
    * La valeur par défaut est eMemoryRessource::UnifiedMemory
    * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
    *
-   * \sa memoryRessource()
+   * \sa memoryResource()
    * \sa allocationOptions()
    *
    * \pre !isNull()
@@ -194,6 +194,8 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
   //! Ressource mémoire utilisée pour les allocations avec cette instance.
   eMemoryResource memoryRessource() const;
+  //! Ressource mémoire utilisée pour les allocations avec cette instance.
+  eMemoryResource memoryResource() const;
   //!@}
 
  public:
@@ -242,7 +244,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  public:
 
-  impl::RunQueueImpl* _internalImpl() const;
+  Impl::RunQueueImpl* _internalImpl() const;
 
  private:
 
@@ -252,13 +254,13 @@ class ARCCORE_COMMON_EXPORT RunQueue
   RunQueue(const Runner& runner, bool);
   //! Créé une file associée à \a runner avec les paramètres \a bi
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
-  explicit RunQueue(impl::RunQueueImpl* p);
+  explicit RunQueue(Impl::RunQueueImpl* p);
 
  private:
 
-  impl::IRunnerRuntime* _internalRuntime() const;
-  impl::IRunQueueStream* _internalStream() const;
-  impl::RunCommandImpl* _getCommandImpl() const;
+  Impl::IRunnerRuntime* _internalRuntime() const;
+  Impl::IRunQueueStream* _internalStream() const;
+  Impl::RunCommandImpl* _getCommandImpl() const;
   Impl::NativeStream _internalNativeStream() const;
   void _checkNotNull() const;
 
@@ -268,7 +270,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  private:
 
-  AutoRef2<impl::RunQueueImpl> m_p;
+  AutoRef2<Impl::RunQueueImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

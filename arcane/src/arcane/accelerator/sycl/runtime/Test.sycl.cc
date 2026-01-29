@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Test.sycl.cc                                                (C) 2000-2025 */
+/* Test.sycl.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Fichier contenant les tests pour l'implémentation SYCL.                   */
 /*---------------------------------------------------------------------------*/
@@ -282,7 +282,7 @@ extern "C" void arcaneTestSycl6()
     expected_inclusive_data[i] = total;
   }
 
-  Arcane::Accelerator::impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
+  Arcane::Accelerator::Impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
   scanner.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
 
   const bool do_verbose = (N < 256);
@@ -295,7 +295,7 @@ extern "C" void arcaneTestSycl6()
   }
   std::cout << "FINAL OUT_INCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_inclusive_data[N - 1] << "\n";
 
-  Arcane::Accelerator::impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
+  Arcane::Accelerator::Impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
   scanner2.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
 
   for (int i = 0; i < N; i++) {
@@ -334,7 +334,7 @@ extern "C" void arcaneTestSycl7()
     expected_inclusive_data[i] = total;
   }
 
-  Arcane::Accelerator::impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
+  Arcane::Accelerator::Impl::SyclScanner<false, Int64, ScannerSumOperator<Int64>> scanner;
   scanner.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
 
   const bool do_verbose = (N < 256);
@@ -347,7 +347,7 @@ extern "C" void arcaneTestSycl7()
   }
   std::cout << "FINAL OUT_INCL=" << (N - 1) << " v=" << out_data[N - 1] << " expected=" << expected_inclusive_data[N - 1] << "\n";
 
-  Arcane::Accelerator::impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
+  Arcane::Accelerator::Impl::SyclScanner<true, Int64, ScannerSumOperator<Int64>> scanner2;
   scanner2.doScan(queue, data.to1DSmallSpan(), out_data.to1DSmallSpan(), 7);
 
   for (int i = 0; i < N; i++) {

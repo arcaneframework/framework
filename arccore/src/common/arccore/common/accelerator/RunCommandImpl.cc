@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandImpl.cc                                           (C) 2000-2025 */
+/* RunCommandImpl.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation de la gestion d'une commande sur accélérateur.             */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,8 @@ namespace Arcane::Accelerator::impl
 RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
-, m_use_accelerator(impl::isAcceleratorPolicy(queue->runner()->executionPolicy()))
+, m_execution_policy(queue->runner()->executionPolicy())
+, m_use_accelerator(isAcceleratorPolicy(m_execution_policy))
 {
   _init();
 }
@@ -227,6 +228,7 @@ _reset()
   m_has_living_run_command = false;
   m_may_be_put_in_pool = false;
   m_shared_memory_size = 0;
+  m_nb_stride = 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -311,7 +313,7 @@ _notifyDestroyRunCommand()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

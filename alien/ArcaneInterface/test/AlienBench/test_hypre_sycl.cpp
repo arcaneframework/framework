@@ -65,7 +65,9 @@ int main(int argc, char *argv[])
   // clang-format on
 
   //cudaSetDevice(device_id); /* GPU binding */
+  std::cout<<"MPI INIT "<<std::endl ;
   MPI_Init(&argc, &argv);
+  std::cout<<"MPI INIT OK"<<std::endl ;
 
   if (!HYPRE_Initialized()){
     HYPRE_Initialize();
