@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMpi.cc                                                (C) 2000-2024 */
+/* ArcaneMpi.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations globales pour la partie MPI de Arcane.                       */
 /*---------------------------------------------------------------------------*/
@@ -78,6 +78,9 @@ arcaneIsHipAwareMPI()
   return is_aware;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCANE_MPI_EXPORT bool
 arcaneIsAcceleratorAwareMPI()
 {
@@ -94,8 +97,11 @@ arcaneIsAcceleratorAwareMPI()
 class MpiAutoInit
 {
  public:
-  MpiAutoInit() : m_need_finalize(false) {}
+
+  MpiAutoInit() = default;
+
  public:
+
   void initialize(int* argc,char*** argv,int wanted_thread_level)
   {
     int is_init = 0;
@@ -116,8 +122,10 @@ class MpiAutoInit
       m_need_finalize = false;
     }
   }
+
  private:
-  bool m_need_finalize;
+
+  bool m_need_finalize = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -148,6 +156,8 @@ class AutoDetecterMPI
 void AutoDetecterMPI::
 visit(ApplicationBuildInfo& app_build_info)
 {
+  String message_passing_service = app_build_info.messagePassingService();
+  bool need_init = message_passing_service != "SequentialParallelSuperMng";
   bool has_shared_memory_message_passing = app_build_info.nbSharedMemorySubDomain()>0;
 
   // Si MPI n'a pas été initialisé, on le fait ici.
@@ -158,15 +168,22 @@ visit(ApplicationBuildInfo& app_build_info)
   if (has_shared_memory_message_passing)
     thread_wanted = MPI_THREAD_MULTIPLE;
 
-  // TODO: utiliser les bons arguments.
-  int* argc = nullptr;
-  char*** argv = nullptr;
-  arcaneInitializeMPI(argc,argv,thread_wanted);
-
   int comm_size = 0;
-  MPI_Comm_size(MPI_COMM_WORLD,&comm_size);
 
-  String message_passing_service = "Sequential";
+  // On ne fait pas l'initialisation si le service demandé est 'Sequential'.
+  if (need_init){
+    // TODO: utiliser les bons arguments.
+    int* argc = nullptr;
+    char*** argv = nullptr;
+    arcaneInitializeMPI(argc,argv,thread_wanted);
+
+    MPI_Comm_size(MPI_COMM_WORLD,&comm_size);
+  }
+
+  // Positionne le service d'échange par défaut.
+  // A noter que ce ne sera pas utilisé si l'utilisateur
+  // a lui même spécifié un service
+  message_passing_service = "Sequential";
   if (comm_size>1){
     if (has_shared_memory_message_passing)
       message_passing_service = "Hybrid";
