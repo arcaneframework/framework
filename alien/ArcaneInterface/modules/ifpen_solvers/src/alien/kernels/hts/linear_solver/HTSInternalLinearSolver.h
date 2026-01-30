@@ -65,6 +65,8 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
   bool solve();
 
+  void startNonLinear() {}
+
   //! Indicateur de support de résolution parallèle
   bool hasParallelSupport() const { return true; }
 
