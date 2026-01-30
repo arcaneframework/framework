@@ -33,13 +33,6 @@ jobs:
             amdgpu-package: amdgpu-install_6.3.60301-1_all.deb
             driver-repo-name : amdgpu
             cmake_specific_args : ''
-          - os: ubuntu-22.04
-            ubuntu-name: jammy
-            full_name: 'ubuntu-22.04-rocm-5.7.1'
-            rocm-version: '5.7.1'
-            amdgpu-package: amdgpu-install_5.7.50701-1_all.deb
-            driver-repo-name : amdgpu
-            cmake_specific_args : '-DARCCORE_ENABLE_TBB=FALSE'
 
     env:
       # Indicates the CMake build directory where project files and binaries are being produced.
