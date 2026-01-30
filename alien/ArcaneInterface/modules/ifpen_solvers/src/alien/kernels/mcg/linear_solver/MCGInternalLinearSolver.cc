@@ -704,13 +704,15 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
     m_status.succeeded = true;
     m_status.error = 0;
 
-    printInfo();
-    alien_info([&] {
-      cout() << "Resolution info      :";
-      cout() << "Resolution status    : OK";
-      cout() << "Residual             : " << m_mcg_status.m_residual;
-      cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
-    });
+    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
+      printInfo();
+      alien_info([&] {
+        cout() << "Resolution info      :";
+        cout() << "Resolution status    : OK";
+        cout() << "Residual             : " << m_mcg_status.m_residual;
+        cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
+      });
+    }
 #if 0
     if(m_logger)
       m_logger->stop(eStep::solve, m_status);
