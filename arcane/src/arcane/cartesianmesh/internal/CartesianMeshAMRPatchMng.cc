@@ -2667,18 +2667,11 @@ createSubLevel()
     }
   }
 
-  //! Créé le patch avec les mailles filles
-  m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
-
   // Recalcule les informations de synchronisation
   // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées
   // lors du raffinement mais comme on ne sais pas si on va faire du raffinement
   // après il est préférable de calculer ces informations dans tous les cas.
   m_mesh->computeSynchronizeInfos();
-
-  // Il faut recalculer les nouvelles directions après les modifications
-  // et l'ajout de patch.
-  m_cmesh->computeDirections();
 
   //  ENUMERATE_(Cell, icell, m_mesh->allCells()){
   //    debug() << "\t" << *icell;
