@@ -149,7 +149,7 @@ void Neo::ItemLidsProperty::debugPrint(int rank) const {
     if (uid.second != Neo::utils::NULL_ITEM_LID)
       oss << " uid to lid  " << uid.first << " : " << uid.second << "\n";
   }
-  oss << "available lids : " << m_available_lids;
+  oss << "available lids : " << m_empty_lids;
   oss<< Neo::endline;
 }
 
