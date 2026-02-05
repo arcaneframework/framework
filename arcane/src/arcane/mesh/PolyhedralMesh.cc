@@ -819,7 +819,7 @@ namespace mesh
                                 auto connectivity_index_size = connectivity_proxy.arrayPropertyIndexSize();
                                 item_internal_connectivity_list->_setConnectivityIndex(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
-                              });
+                              },Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
       // If FaceToCellConnectivity Add face flags II_Boundary, II_SubdomainBoundary, II_HasFrontCell, II_HasBackCell
       if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
         std::string flag_definition_output_property_name{ "EndOfFlagDefinition" };
