@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                           (C) 2000-2025 */
+/* PolyhedralMesh.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
@@ -62,6 +62,7 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "neo/Mesh.h"
+#include "neo/Utils.h"
 #include "ItemConnectivityMng.h"
 
 #include "arcane/core/ItemPrinter.h"
@@ -796,6 +797,8 @@ namespace mesh
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this]
                                     (Neo::Mesh::ConnectivityPropertyType const& neo_connectivity,
                                      Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+                                auto rank = arcane_source_item_family->mesh()->parallelMng()->commRank();
+                                Neo::printer(rank) << "==Algorithm update Arcane connectivity: "<< neo_connectivity.name() << Neo::endline;
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
                                 auto connectivity = m_mesh.getConnectivity(source_family, target_family, neo_connectivity.name());
