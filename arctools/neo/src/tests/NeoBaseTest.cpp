@@ -404,10 +404,6 @@ TEST(NeoTestLidsProperty, test_lids_property) {
 
 /*-----------------------------------------------------------------------------*/
 
-}
-
-/*-----------------------------------------------------------------------------*/
-
 TEST(NeoTestFamily, test_family) {
   Neo::Family family(Neo::ItemKind::IK_Dof, "MyFamily");
   EXPECT_EQ(family.lidPropName(), family._lidProp().m_name);
