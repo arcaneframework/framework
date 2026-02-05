@@ -824,18 +824,21 @@ namespace mesh
       if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
         std::string flag_definition_output_property_name{ "EndOfFlagDefinition" };
         source_family.addScalarProperty<Neo::utils::Int32>(flag_definition_output_property_name);
+        // update Face flags after connectivity add
         mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_add_output_property_name }, Neo::MeshKernel::OutProperty{ source_family, flag_definition_output_property_name },
-                                [arcane_source_item_family, this, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
+                                [arcane_source_item_family, arcane_target_item_family,this, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
                                   auto current_face_index = 0;
                                   auto arcane_faces = arcane_source_item_family->itemInfoListView();
+                                  Int32UniqueArray target_item_lids(target_item_uids_local.size());
+                                  arcane_target_item_family->itemsUniqueIdToLocalId(target_item_lids,target_item_uids_local,false);
                                   for (auto face_lid : source_items.m_future_items.new_items) {
                                     Face current_face = arcane_faces[face_lid].toFace();
-                                    if (target_item_uids_local[2 * current_face_index + 1] == NULL_ITEM_LOCAL_ID) {
+                                    if (target_item_lids[2 * current_face_index + 1] == NULL_ITEM_LOCAL_ID) {
                                       // Only back cell or none
-                                      Int32 mod_flags = (target_item_uids_local[2 * current_face_index] != NULL_ITEM_LOCAL_ID) ? (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst) : 0;
+                                      Int32 mod_flags = (target_item_lids[2 * current_face_index] != NULL_ITEM_LOCAL_ID) ? (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst) : 0;
                                       _setFaceInfos(mod_flags, current_face);
                                     }
-                                    else if (target_item_uids_local[2 * current_face_index] == NULL_ITEM_LOCAL_ID) {
+                                    else if (target_item_lids[2 * current_face_index] == NULL_ITEM_LOCAL_ID) {
                                       // Only front cell or none
                                       _setFaceInfos(ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst, current_face);
                                     }
