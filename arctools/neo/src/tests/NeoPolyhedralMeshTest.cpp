@@ -143,10 +143,10 @@ namespace utilities
                            std::vector<int>& nb_connected_items_per_item_reversed,
                            std::vector<int> const& original_source_item_connected_item_orientations,
                            std::vector<int>& new_source_item_orientation_in_connected_items) {
-    assert(("Invalid argument size, utilities::reverseConnectivity", original_source_item_uids.size() == nb_connected_items_per_item_original.size()));
-    assert(("Invalid argument size, utilities::reverseConnectivity",
-            (int)original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0)));
-    assert(("Invalid argument size, utilities::reverseConnectivity", (original_source_item_connected_item_orientations.size() == 0 || original_source_item_connected_item_orientations.size() == original_connectivity.size())));
+    NEO_ASSERT(original_source_item_uids.size() == nb_connected_items_per_item_original.size(),"Invalid argument size, utilities::reverseConnectivity");
+    NEO_ASSERT((int)original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0),
+      "Invalid argument size, utilities::reverseConnectivity");
+    NEO_ASSERT(original_source_item_connected_item_orientations.size() == 0 || (original_source_item_connected_item_orientations.size() == original_connectivity.size()),"Invalid argument size, utilities::reverseConnectivity");
     bool reverse_orientation = original_source_item_connected_item_orientations.size() != 0;
     auto source_item_index = 0;
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_connectivity_map;

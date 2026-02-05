@@ -35,6 +35,7 @@ static constexpr bool ndebug = false;
 static constexpr bool _debug = true;
 #endif
 
+#define NEO_ASSERT(condition, message) assert((condition) && (message) )
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
 
