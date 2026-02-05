@@ -46,6 +46,15 @@ enum class Trace{
   Verbose, Silent, VerboseInFile
 };
 
+struct NeoOutputStream;
+namespace utils {
+  template <typename T> struct Span;
+  template <typename T> struct ConstSpan;
+  template <typename Container> NeoOutputStream&  _printContainer(Container const& container, NeoOutputStream& oss);
+}
+
+using NeoOutputStreamHandler = NeoOutputStream& (*)(NeoOutputStream&);
+
 struct NullBuffer : public std::streambuf
 {
   int overflow(int c) override {
@@ -106,6 +115,32 @@ struct NeoOutputStream
 
   std::ostream& stream() {
     return *m_stream;
+  }
+
+  friend inline NeoOutputStream& operator<<(NeoOutputStream& oss, NeoOutputStreamHandler handler) {
+    return handler(oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, T const& printable) {
+    oss.stream() << printable;
+    return oss;
+  }
+
+  template <typename Container>
+  requires std::ranges::range<Container> && (!std::same_as<std::ranges::range_value_t<Container>,char>)
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, Container const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, utils::Span<T> const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, utils::ConstSpan<T> const& container) {
+    return utils::_printContainer(container, oss);
   }
 };
 
@@ -169,16 +204,6 @@ inline Printer printer(int rank = 0) {
     case Trace::VerboseInFile: return Printer{NeoOutputStream{Neo::Trace::VerboseInFile, rank}};
   }
   return Printer{NeoOutputStream{Neo::Trace::Silent}};
-}
-
-inline NeoOutputStream& operator<<(NeoOutputStream& oss, NeoOutputStreamHandler handler) {
-  return handler(oss);
-}
-
-template <typename T>
-NeoOutputStream& operator<<(Neo::NeoOutputStream& oss, T const& printable) {
-  oss.stream() << printable;
-  return oss;
 }
 
 //----------------------------------------------------------------------------/
@@ -462,25 +487,6 @@ namespace utils
 
 namespace Neo
 {
-  template <typename Container>
-  requires std::ranges::range<Container> && (!std::same_as<std::ranges::range_value_t<Container>,char>)
-  NeoOutputStream& operator<<(NeoOutputStream& oss, Container const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-  template <typename T>
-  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::Span<T> const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-  template <typename T>
-  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::ConstSpan<T> const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-
-
-
   namespace utils
   {
     template <typename Container>
