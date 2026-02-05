@@ -171,7 +171,8 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
   EXPECT_EQ(future_item_range.size(), lids.size());
   Neo::ItemRange& internal_range = future_item_range;
   EXPECT_EQ(&future_item_range.new_items, &internal_range);
-  auto end_update = Neo::EndOfMeshUpdate{};
+  Neo::MeshKernel::AlgorithmPropertyGraph mock_mesh_kernel;
+  auto end_update = mock_mesh_kernel.applyAlgorithms();
   {
     // declare a filtered range -- filtered by indexes
     std::vector<int> filter{ 0, 1, 2 };
@@ -399,7 +400,9 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   auto new_lids = lid_prop[test_uids];
   Neo::printer() << "new lids: " << new_lids << Neo::endline;
   EXPECT_TRUE(std::equal(expected_lids.begin(),expected_lids.end(),new_lids.begin()));
+}
 
+/*-----------------------------------------------------------------------------*/
 
 }
 

@@ -155,7 +155,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
 
   // cell to node
   std::vector<Neo::utils::Int64> connected_node_uids{ 0, 1, 2, 1, 2, 0, 2, 1, 0 }; // on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
-  auto nb_node_per_cell = { 3, 0, 3, 3 };
+  std::vector nb_node_per_cell = { 3, 0, 3, 3 };
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
                     Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
                     Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
@@ -275,9 +275,9 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
   // WIP: test in construction
   // modify node coords
   // input data
-  std::array<int, 3> node_uids{ 0, 1, 3 };
-  Neo::utils::Real3 r = { 0, 0, 0 };
-  std::array<Neo::utils::Real3, 3> node_coords = { r, r, r }; // don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
+  //std::array<int, 3> node_uids{ 0, 1, 3 };
+  // Neo::utils::Real3 r = { 0, 0, 0 };
+  //std::array<Neo::utils::Real3, 3> node_coords = { r, r, r }; // don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
 
   // creating mesh as a graph of Algorithms and Properties
   auto mesh = Neo::MeshKernel::AlgorithmPropertyGraph{ "my_neo_mesh" };
@@ -288,7 +288,8 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
 
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
                     Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
-                    [&node_coords, &node_uids](
+                    //[&node_coords, &node_uids]( // todo
+                    [](
                     [[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
                       std::cout << "Algorithm: register node coords" << std::endl;

@@ -289,7 +289,6 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
   EXPECT_TRUE(std::equal(mesh_array_property_sizes.begin(), mesh_array_property_sizes.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
   auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
   EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_sizes.m_ptr);
-  return;
   [[maybe_unused]] auto property_values = mesh_array_property.view();
   [[maybe_unused]] auto property_data = mesh_array_property_proxy.arrayPropertyData();
   auto property_indexes = mesh_array_property_proxy.arrayPropertyIndex();

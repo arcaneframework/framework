@@ -49,7 +49,7 @@ struct PropertyViewIterator
   using reference = DataType&;
   using PropertyViewIteratorType = PropertyViewIterator<DataType>;
   std::vector<int> const& m_indexes;
-  typename std::vector<int>::const_iterator m_indexes_interator;
+  std::vector<int>::const_iterator m_indexes_interator;
   DataType* m_data_iterator;
 
   DataType& operator*() const noexcept { return *m_data_iterator; }
@@ -516,7 +516,7 @@ class MeshArrayPropertyT : public PropertyBase
   std::vector<DataType> m_data;
   std::vector<PropertyOffsetType> m_offsets;
   std::vector<PropertyIndexType> m_indexes;
-  int m_data_size;
+  int m_data_size = 0;
 
  public:
 
@@ -544,7 +544,7 @@ class MeshArrayPropertyT : public PropertyBase
    * @brief Initialize an \b empty array property. Must call resize first.
    * @param item_range must be a contiguous, 0-starting item range
    * @param values: to be efficient a rvalue should be passed (temporary or moved array).
-   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   * This method tries to avoid copy via move construct. Works only if a rvalue is passed for \a values argument. Property must be empty.
    */
   void init(const ItemRange& item_range, std::vector<DataType> values) {
     if (item_range.isEmpty() && values.empty()) return;
@@ -780,12 +780,12 @@ class ItemLidsProperty : public PropertyBase
 
   /*! Remove item with uids \a uids.
    *
-   * @param uids :unique ids of item to remove. If a non existing uid is given,
+   * @param uids :unique ids of item to remove. If a non-existing uid is given,
    * the code won't throw. The return range will contain a NULL_ITEM_LID for this
    * unexisting uid.
    * @return Returns a range  containing the local ids of removed items. They can
    * be used to update properties. If a local id is NULL_ITEM_LID, it means the
-   * corresponding uids was not existing.
+   * corresponding uid was not existing.
    *
    */
   ItemRange remove(std::vector<utils::Int64> const& uids) noexcept;

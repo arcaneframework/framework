@@ -86,20 +86,20 @@ TEST(NeoMeshApiTest, AddItemTest) {
   auto cell_uids2 = mesh.uniqueIds(cell_family, new_cells2.localIds());
   auto new_cells3_local_ids = new_cells3.localIds();
   auto cell_uids3 = mesh.uniqueIds(cell_family, Neo::utils::Int32ConstSpan{ new_cells3_local_ids.data(), new_cells3_local_ids.size()  }); // to test span API
-  auto i = 0;
+  auto index = 0;
   for (auto item : new_cells) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(cell_uids[i++], cell_uid_property[item]);
+    EXPECT_EQ(cell_uids[index++], cell_uid_property[item]);
   }
-  i = 0;
+  index = 0;
   for (auto item : new_cells2) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(cell_uids2[i++], cell_uid_property[item]);
+    EXPECT_EQ(cell_uids2[index++], cell_uid_property[item]);
   }
-  i = 0;
+  index = 0;
   for (auto item : new_cells3) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(cell_uids3[i++], cell_uid_property[item]);
+    EXPECT_EQ(cell_uids3[index++], cell_uid_property[item]);
   }
   EXPECT_TRUE(std::equal(cell_uids.begin(), cell_uids.end(), cell_uids_ref.begin()));
   EXPECT_TRUE(std::equal(cell_uids2.begin(), cell_uids2.end(), cell_uids2_ref.begin()));
@@ -757,7 +757,7 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   // Get the 0th cell back
   Neo::FutureItemRange future_cells2;
   mesh.scheduleAddItems(cell_family, removed_cell_uids, future_cells2);
-  auto end_update2 = mesh.applyScheduledOperations();
+  mesh.applyScheduledOperations();
   // Check cell 0 has no connected items
   auto cells_new2 = cell_family.all();
   std::cout << "nb cell after re-add " << cells_new2.size() << std::endl;

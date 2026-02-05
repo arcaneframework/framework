@@ -145,8 +145,8 @@ struct ItemIterator
     return retval;
   } // todo (handle traversal order...)
   int operator*() const { return m_item_indexes(m_index); }
-  bool operator==(const ItemIterator& item_iterator) { return m_index == item_iterator.m_index; }
-  bool operator!=(const ItemIterator& item_iterator) { return !(*this == item_iterator); }
+  bool operator==(const ItemIterator& item_iterator) const { return m_index == item_iterator.m_index; }
+  bool operator!=(const ItemIterator& item_iterator) const { return !(*this == item_iterator); }
   int m_index;
   ItemLocalIds m_item_indexes;
 };

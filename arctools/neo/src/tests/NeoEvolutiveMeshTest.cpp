@@ -139,7 +139,7 @@ TEST(NeoEvolutiveMeshTest, RemoveCells) {
   EXPECT_EQ(cell_family2.nbElements(), 0);
 
   // test several scheduleRemove in the same applyMeshOperations, no real mesh, only ids to test
-  auto node_uids = cell_uids;
+  auto const& node_uids = cell_uids;
   Neo::FutureItemRange future_nodes{};
   future_cells = Neo::FutureItemRange{};
   auto& node_family2 = mesh2.addFamily(Neo::ItemKind::IK_Node, "node_family2");
