@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2025             */
+/* NeoBaseTest.cpp                                 (C) 2000-2026             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ TEST(NeoTestItemRange, test_item_range) {
     local_ids.push_back(item);
   }
   auto local_ids_stored = ir.localIds();
-  std::cout << local_ids_stored << std::endl;
+  Neo::printer() << local_ids_stored << Neo::endline;
   EXPECT_TRUE(std::equal(local_ids_stored.begin(), local_ids_stored.end(), local_ids.begin()));
   local_ids.clear();
   // Test with only non contiguous local ids
@@ -123,7 +123,7 @@ TEST(NeoTestItemRange, test_item_range) {
     local_ids.push_back(item);
   }
   local_ids_stored = ir.localIds();
-  std::cout << local_ids_stored << std::endl;
+  Neo::printer() << local_ids_stored << Neo::endline;
   EXPECT_TRUE(std::equal(local_ids_stored.begin(), local_ids_stored.end(), local_ids.begin()));
   local_ids.clear();
   // Test range mixing contiguous and non contiguous local ids
@@ -138,7 +138,7 @@ TEST(NeoTestItemRange, test_item_range) {
     local_ids.push_back(item);
   }
   local_ids_stored = ir.localIds();
-  std::cout << local_ids_stored << std::endl;
+  Neo::printer() << local_ids_stored << Neo::endline;
   EXPECT_TRUE(std::equal(local_ids_stored.begin(), local_ids_stored.end(), local_ids.begin()));
   local_ids.clear();
   // Internal test for out of bound
@@ -171,7 +171,8 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
   EXPECT_EQ(future_item_range.size(), lids.size());
   Neo::ItemRange& internal_range = future_item_range;
   EXPECT_EQ(&future_item_range.new_items, &internal_range);
-  auto end_update = Neo::EndOfMeshUpdate{};
+  Neo::MeshKernel::AlgorithmPropertyGraph mock_mesh_kernel;
+  auto end_update = mock_mesh_kernel.applyAlgorithms();
   {
     // declare a filtered range -- filtered by indexes
     std::vector<int> filter{ 0, 1, 2 };
@@ -304,6 +305,8 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   auto added_item_range = lid_prop.append(uids);
   lid_prop.debugPrint();
   EXPECT_EQ(uids.size(), lid_prop.size());
+  EXPECT_EQ(uids.size(), added_item_range.size());
+  Neo::printer() << added_item_range << Neo::endline;
   auto i = 0;
   auto added_local_ids = lid_prop[uids];
   auto added_local_ids_ref = added_item_range.localIds();
@@ -324,6 +327,7 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   added_item_range = lid_prop.append(uids);
   lid_prop.debugPrint();
   i = 0;
+  Neo::printer() << added_item_range << Neo::endline;
   for (auto item : added_item_range) {
     std::cout << " uid " << uids[i++] << " lid " << item << std::endl;
   }
@@ -394,10 +398,8 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   lid_prop.debugPrint();
   std::vector<int> expected_lids{11,10}; // should use empty lids
   auto new_lids = lid_prop[test_uids];
-  Neo::print() << "new lids: " << new_lids << std::endl;
+  Neo::printer() << "new lids: " << new_lids << Neo::endline;
   EXPECT_TRUE(std::equal(expected_lids.begin(),expected_lids.end(),new_lids.begin()));
-
-
 }
 
 /*-----------------------------------------------------------------------------*/

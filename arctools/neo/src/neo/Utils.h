@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Utils.h                                         (C) 2000-2025             */
+/* Utils.h                                         (C) 2000-2026             */
 /*                                                                           */
 /* Neo utils                                                                 */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,6 @@
 #include <sstream>
 #include <vector>
 #include <cassert>
-#include <cstdint>
 #include <string>
 #include <chrono>
 #include <iterator>
@@ -36,6 +35,7 @@ static constexpr bool ndebug = false;
 static constexpr bool _debug = true;
 #endif
 
+#define NEO_ASSERT(condition, message) assert((condition) && (message) )
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
 
@@ -53,60 +53,86 @@ struct NullBuffer : public std::streambuf
   }
 };
 
+static std::ostream& nullStream() {
+  static NullBuffer nullBuffer;
+  static std::ostream nullStream(&nullBuffer);
+  return nullStream;
+}
+
 struct NeoOutputStream
 {
-  explicit NeoOutputStream(Neo::Trace trace_level)
-  : m_null_ostream{&m_null_buffer}
-  , m_trace_level(trace_level) {
-    _openOutputFile();
-  }
-
-  explicit NeoOutputStream(Neo::Trace trace_level, int rank)
-  : m_null_ostream{&m_null_buffer}
-  , m_trace_level(trace_level)
-  , m_rank(rank) {
-    _openOutputFile();
+  explicit NeoOutputStream(Neo::Trace trace_level, int rank = 0)
+    : m_trace_level(trace_level)
+    , m_rank(rank) {
+      switch (m_trace_level) {
+      case Trace::Verbose:
+        m_stream = &std::cout;
+        break;
+      case Trace::Silent:
+        m_stream = &nullStream();
+        break;
+      case Trace::VerboseInFile:
+        m_file_name = std::string{"Neo_output_"} + std::to_string(m_rank) + ".txt";
+        m_file_stream = std::make_unique<std::ofstream>(m_file_name,std::ios::out | std::ios::app);
+        if (!m_file_stream->is_open())
+          throw std::runtime_error(std::string{"Cannot open file"} + m_file_name);
+        m_stream = m_file_stream.get();
+      }
   }
 
   ~NeoOutputStream() {
-    if (m_file_stream && m_file_stream->is_open())
-      m_file_stream->close();
+    if (! m_stream) return;
+    try {
+      m_stream->flush();
+    }
+    catch (...) {}
   }
 
-  mutable std::ostream m_null_ostream;
+  std::ostream* m_stream = nullptr;
   Neo::Trace m_trace_level;
   int m_rank = 0;
   std::string m_file_name;
   std::shared_ptr<std::ofstream> m_file_stream = nullptr;
-  NullBuffer m_null_buffer;
+  static NullBuffer m_null_buffer;
 
   std::string const& fileName() const {return m_file_name;}
 
-  std::ostream& stream() const {
-    switch (m_trace_level) {
-    case Neo::Trace::Silent:
-      return m_null_ostream;
-      break;
-    case Neo::Trace::Verbose:
-      return std::cout;
-      break;
-    case Neo::Trace::VerboseInFile:
-      return *m_file_stream;
-      break;
-    }
-    return m_null_ostream;
-  }
-
-private:
-  void _openOutputFile() {
-    if (m_trace_level == Trace::VerboseInFile) {
-      m_file_name = std::string{"Neo_output_"} + std::to_string(m_rank) + ".txt";
-      m_file_stream = std::make_unique<std::ofstream>(m_file_name,std::ios::out | std::ios::app);
-      if (!m_file_stream->is_open())
-        throw std::runtime_error(std::string{"Cannot open file"} + m_file_name);
-    }
+  std::ostream& stream() {
+    return *m_stream;
   }
 };
+
+inline NeoOutputStream& endline(NeoOutputStream& oss) {
+  oss.stream() << std::endl;
+  return oss;
+};
+
+using NeoOutputStreamHandler = NeoOutputStream& (*)(NeoOutputStream&);
+
+class Printer
+{
+  NeoOutputStream m_oss;
+public:
+  NeoOutputStream& operator()() {
+    return m_oss;
+  }
+  explicit Printer(NeoOutputStream oss) : m_oss(oss) {}
+
+  template <typename T>
+  NeoOutputStream& operator<<(T const& printable) {
+    m_oss << printable;
+    return m_oss;
+  }
+};
+
+inline Trace traceLevel() {
+  if (std::getenv("NEO_DEBUG_PRINT"))
+    return Trace::Verbose;
+  else if (std::getenv("NEO_DEBUG_PRINT_IN_FILE"))
+    return Trace::VerboseInFile;
+  else
+    return Trace::Silent;
+}
 
 /*!
  *
@@ -116,14 +142,36 @@ private:
  * Neo debug logs are activated by environment variables:
  * - NEO_DEBUG_PRINT=1 to activate console debug outputs
  * - NEO_DEBUG_PRINT_IN_FILE=1 to activate file debug outputs (file named Neo_output_rank.txt)
+ *
+ * Usage: two ways
+ * - first:
+ * \code
+ * auto printer = Neo::printer(my_rank);
+ * printer() << printed_data << Neo::endl;
+ * \endcode
+ * - second
+ * \code
+ * Neo::printer(my_rank) << printed_data << Neo::endl;
+ * \endcode
  */
-inline NeoOutputStream print(int rank = 0) {
-  if (std::getenv("NEO_DEBUG_PRINT"))
-    return NeoOutputStream{Neo::Trace::Verbose};
-  else if (std::getenv("NEO_DEBUG_PRINT_IN_FILE"))
-    return NeoOutputStream{Neo::Trace::VerboseInFile, rank};
-  else
-    return NeoOutputStream{Neo::Trace::Silent};
+inline Printer printer(int rank = 0) {
+  auto trace_level = Neo::traceLevel();
+  switch (trace_level) {
+    case Trace::Verbose: return Printer{NeoOutputStream{Neo::Trace::Verbose}};
+    case Trace::Silent: return Printer{NeoOutputStream{Neo::Trace::Silent}};
+    case Trace::VerboseInFile: return Printer{NeoOutputStream{Neo::Trace::VerboseInFile, rank}};
+  }
+  return Printer{NeoOutputStream{Neo::Trace::Silent}};
+}
+
+inline NeoOutputStream& operator<<(NeoOutputStream& oss, NeoOutputStreamHandler handler) {
+  return handler(oss);
+}
+
+template <typename T>
+NeoOutputStream& operator<<(Neo::NeoOutputStream& oss, T const& printable) {
+  oss.stream() << printable;
+  return oss;
 }
 
 //----------------------------------------------------------------------------/
@@ -346,9 +394,9 @@ namespace utils
   //----------------------------------------------------------------------------/
 
   template <typename Container>
-  std::ostream&  _printContainer(Container&& container, std::ostream& oss){
-    std::copy(container.begin(), container.end(), std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(oss, " "));
-    oss << std::endl;
+  NeoOutputStream&  _printContainer(Container const& container, NeoOutputStream& oss){
+    std::copy(container.begin(), container.end(), std::ostream_iterator<typename Container::value_type>(oss.stream(), " "));
+    oss << Neo::endline;
     return oss;
   }
 
@@ -405,64 +453,43 @@ namespace utils
 
 // Array utilities
 
-#ifdef _MSC_VER // problem with operator<< overload with MSVC
-namespace std
-{ // is undefined behavior, but can't find another way with MSVC. MSVC cannot find an operator<< outside the arguments' namespace...
-#endif
-
-template <typename T>
-std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container) {
-  return Neo::utils::_printContainer(container, oss);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& oss, Neo::utils::Span<T> const& container) {
-  return Neo::utils::_printContainer(container, oss);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstSpan<T> const& container) {
-  return Neo::utils::_printContainer(container, oss);
-}
-
-#ifdef _MSC_VER // problem with operator<< overload with MSVC
-} // namespace std
-#endif
-
-#ifdef _MSC_VER // problem with operator<< overload with MSVC
-namespace Neo
-{ // MSVC cannot find an operator<< outside the arguments' namespace...
-#endif
-
-template <typename T>
-std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
-  return oss.stream() << printable;
-}
-
-#ifdef _MSC_VER // problem with operator<< overload with MSVC
-} // namespace Neo
-#endif
-
 namespace Neo
 {
+  template <typename Container>
+  requires std::ranges::range<Container> && (!std::same_as<std::ranges::range_value_t<Container>,char>)
+  NeoOutputStream& operator<<(NeoOutputStream& oss, Container const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::Span<T> const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::ConstSpan<T> const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+
+
+
   namespace utils
   {
     template <typename Container>
     void printContainer(Container&& container, std::string const& name = "Container", int rank = 0) {
-      std::ostringstream oss;
-      oss << name << ", size : " << container.size() << std::endl;
+      Neo::NeoOutputStream oss{traceLevel(),rank};
+      oss << name << ", size : " << container.size() << Neo::endline;
       _printContainer(container, oss);
-      Neo::print(rank) << oss.str();
     }
+
     template <typename Container>
-    void printContainer(std::ostringstream& oss, Container&& container, std::string const& name = "Container") {
-      oss << name << ", size : " << container.size() << std::endl;
+    void printContainer(NeoOutputStream& oss, Container&& container, std::string const& name = "Container") {
+      oss << name << ", size : " << container.size() << Neo::endline;
       _printContainer(container, oss);
     }
   }
 }
-
-
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/

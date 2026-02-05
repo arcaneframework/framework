@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Items                                     (C) 2000-2025                   */
+/* Items                                     (C) 2000-2026                   */
 /*                                                                           */
 /* Tooling to manipulate Mesh Items                                          */
 /*---------------------------------------------------------------------------*/
@@ -145,8 +145,8 @@ struct ItemIterator
     return retval;
   } // todo (handle traversal order...)
   int operator*() const { return m_item_indexes(m_index); }
-  bool operator==(const ItemIterator& item_iterator) { return m_index == item_iterator.m_index; }
-  bool operator!=(const ItemIterator& item_iterator) { return !(*this == item_iterator); }
+  bool operator==(const ItemIterator& item_iterator) const { return m_index == item_iterator.m_index; }
+  bool operator!=(const ItemIterator& item_iterator) const { return !(*this == item_iterator); }
   int m_index;
   ItemLocalIds m_item_indexes;
 };
@@ -167,7 +167,7 @@ struct ItemRange
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId(); }
   void clear() noexcept { m_item_lids.clear(); }
 
-  friend inline std::ostream& operator<<(std::ostream& os, const Neo::ItemRange& item_range) {
+  friend inline NeoOutputStream& operator<<(NeoOutputStream& os, const Neo::ItemRange& item_range) {
     os << "Item Range : lids ";
     for (auto lid : item_range.m_item_lids.m_non_contiguous_lids) {
       os << lid;
@@ -178,7 +178,7 @@ struct ItemRange
       os << i;
       os << " ";
     }
-    os << std::endl;
+    os << Neo::endline;
     return os;
   }
 };

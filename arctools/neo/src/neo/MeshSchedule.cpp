@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshSchedule.cpp                                            (C) 2000-2025 */
+/* MeshSchedule.cpp                                            (C) 2000-2026 */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   }
   auto nb_connected_item_sum = std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0);
   if (connected_item_uids.empty() || nb_connected_item_per_item.empty() || nb_connected_item_sum == 0) {
-    Neo::print(m_rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+    Neo::printer(m_rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << Neo::endline;
     return;
   }
   m_mesh_graph->addAlgorithm(
@@ -88,13 +88,13 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
    source_items_wrapper, &source_family, &target_family, rank(m_rank),this](Neo::ItemLidsProperty const& source_family_lids_property,
                                                          Neo::ItemLidsProperty const& target_family_lids_property,
                                                          Neo::MeshArrayPropertyT<Neo::utils::Int32>& source2target) mutable {
-    Neo::print(rank) << "== Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+    Neo::printer(rank) << "== Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << Neo::endline;
     ItemRange const& source_items = source_items_wrapper.get();
     auto connected_item_lids = target_family_lids_property[connected_item_uids];
     _filterNullItems(connected_item_lids, nb_connected_item_per_item);
     auto nb_connected_item_sum = std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0);
     if (nb_connected_item_sum == 0) {
-      Neo::print(rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+      Neo::printer(rank) << "== Algorithm: register empty connectivity between " << source_family.m_name << "  and  " << target_family.m_name << Neo::endline;
       return;
     }
     if (connected_item_lids.empty() || nb_connected_item_per_item.empty()) return;
@@ -122,7 +122,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& target_family_removed_items,
   Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity,
   Neo::MeshScalarPropertyT<Neo::utils::Int32>& isolated_items) {
-    Neo::print(rank) << "== Algorithm: update connectivity after target family remove items " << connectivity.m_name << std::endl;
+    Neo::printer(rank) << "== Algorithm: update connectivity after target family remove items " << connectivity.m_name << Neo::endline;
     isolated_items.init(source_family.all(), 0);
     for (auto item : source_family.all()) {
       auto connected_items = connectivity[item];
@@ -152,7 +152,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   [&source_family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& source_family_removed_items,
   Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity) {
-    Neo::print(rank) << "== Algorithm: update connectivity after source family remove items " << connectivity.m_name << std::endl;
+    Neo::printer(rank) << "== Algorithm: update connectivity after source family remove items " << connectivity.m_name << Neo::endline;
     std::vector<Neo::utils::Int32> removed_source_items{};
     removed_source_items.reserve(source_family.nbElements());
     auto index = 0;
@@ -176,7 +176,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   [&source_family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items,
   Neo::ItemLidsProperty& item_lids_property){
-    Neo::print(rank) << "== Algorithm: remove isolated items in " << source_family.name() << std::endl;
+    Neo::printer(rank) << "== Algorithm: remove isolated items in " << source_family.name() << Neo::endline;
     std::vector<utils::Int32> removed_item_lids{};
     removed_item_lids.reserve(source_family.nbElements());
     for (auto item : source_family.all()) {
@@ -208,9 +208,9 @@ void Neo::Mesh::_scheduleAddConnectivityOrientation(Neo::Family& source_family, 
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) }, source_items_wrapper,
    &source_family, &target_family,rank(m_rank)](Neo::ItemLidsProperty const& source_family_lids_property,
                                    Neo::MeshArrayPropertyT<int>& item_orientation) {
-    Neo::print(rank) << "== Algorithm: add orientation in connectivity between "
+    Neo::printer(rank) << "== Algorithm: add orientation in connectivity between "
                  << source_family.m_name << "  and  " << target_family.m_name
-                 << std::endl;
+                 << Neo::endline;
     ItemRange const& source_items = source_items_wrapper.get();
     if (item_orientation.isInitializableFrom(source_items)) {
       item_orientation.resize(std::move(nb_connected_item_per_item));
@@ -260,8 +260,8 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name,
                                         ConnectivityOperation add_or_modify) {
-  assert(("source items and connected item uids sizes are not coherent with nb_connected_item_per_item",
-          source_items.size() * nb_connected_item_per_item == (int)connected_item_uids.size()));
+  NEO_ASSERT(source_items.size() * nb_connected_item_per_item == static_cast<int>(connected_item_uids.size()),
+    "source items and connected item uids sizes are not coherent with nb_connected_item_per_item");
   std::vector<int> nb_connected_item_per_item_array(source_items.size(), nb_connected_item_per_item);
   scheduleAddConnectivity(source_family, source_items, target_family,
                           std::move(nb_connected_item_per_item_array),
@@ -276,8 +276,8 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureI
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name,
                                         ConnectivityOperation add_or_modify) {
-  assert(("Connected item uids size is not compatible with nb_connected_item_per_item",
-          connected_item_uids.size() % nb_connected_item_per_item == 0));
+  NEO_ASSERT(connected_item_uids.size() % nb_connected_item_per_item == 0,
+    "Connected item uids size is not compatible with nb_connected_item_per_item");
   auto source_item_size = connected_item_uids.size() / nb_connected_item_per_item;
   std::vector<int> nb_connected_item_per_item_array(source_item_size, nb_connected_item_per_item);
   _scheduleAddConnectivity(source_family, Neo::ItemRangeWrapper<FutureItemRange>{ source_items }, target_family,

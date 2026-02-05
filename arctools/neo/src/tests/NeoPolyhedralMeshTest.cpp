@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2025             */
+/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2026             */
 /*                                                                           */
 /* First polyhedral mesh tests                                               */
 /*---------------------------------------------------------------------------*/
@@ -143,10 +143,10 @@ namespace utilities
                            std::vector<int>& nb_connected_items_per_item_reversed,
                            std::vector<int> const& original_source_item_connected_item_orientations,
                            std::vector<int>& new_source_item_orientation_in_connected_items) {
-    assert(("Invalid argument size, utilities::reverseConnectivity", original_source_item_uids.size() == nb_connected_items_per_item_original.size()));
-    assert(("Invalid argument size, utilities::reverseConnectivity",
-            (int)original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0)));
-    assert(("Invalid argument size, utilities::reverseConnectivity", (original_source_item_connected_item_orientations.size() == 0 || original_source_item_connected_item_orientations.size() == original_connectivity.size())));
+    NEO_ASSERT(original_source_item_uids.size() == nb_connected_items_per_item_original.size(),"Invalid argument size, utilities::reverseConnectivity");
+    NEO_ASSERT((int)original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0),
+      "Invalid argument size, utilities::reverseConnectivity");
+    NEO_ASSERT(original_source_item_connected_item_orientations.size() == 0 || (original_source_item_connected_item_orientations.size() == original_connectivity.size()),"Invalid argument size, utilities::reverseConnectivity");
     bool reverse_orientation = original_source_item_connected_item_orientations.size() != 0;
     auto source_item_index = 0;
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_connectivity_map;
@@ -267,9 +267,9 @@ void _createMesh(Neo::Mesh& mesh,
   auto new_cells = added_cells.get(valid_mesh_state);
   auto new_nodes = added_nodes.get(valid_mesh_state);
   auto new_faces = added_faces.get(valid_mesh_state);
-  std::cout << "Added cells range after applyAlgorithms: " << new_cells;
-  std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
-  std::cout << "Added faces range after applyAlgorithms: " << new_faces;
+  Neo::printer() << "Added cells range after applyAlgorithms: " << new_cells;
+  Neo::printer() << "Added nodes range after applyAlgorithms: " << new_nodes;
+  Neo::printer() << "Added faces range after applyAlgorithms: " << new_faces;
 }
 
 void createMesh(Neo::Mesh& mesh) {
