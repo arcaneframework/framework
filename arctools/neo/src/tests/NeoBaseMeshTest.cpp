@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2023             */
+/* NeoBaseTest.cpp                                 (C) 2000-2026             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
     std::cout << "Algorithm: create nodes" << std::endl;
     added_nodes = node_lids_property.append(node_uids);
     node_lids_property.debugPrint();
-    std::cout << "Inserted item range : " << added_nodes;
+    Neo::printer() << "Inserted item range : " << added_nodes;
   });
 
   // register node uids
@@ -112,7 +112,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
     std::cout << "Algorithm: create cells" << std::endl;
     added_cells = cell_lids_property.append(cell_uids);
     cell_lids_property.debugPrint();
-    std::cout << "Inserted item range : " << added_cells;
+    Neo::printer() << "Inserted item range : " << added_cells;
   });
 
   // register cell uids
@@ -183,7 +183,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
                       std::cout << "Algorithm: add new cells" << std::endl;
                       new_cell_added = cell_lids_property.append(new_cell_uids);
                       cell_lids_property.debugPrint();
-                      std::cout << "Inserted item range : " << new_cell_added;
+                      Neo::printer() << "Inserted item range : " << new_cell_added;
                     });
 
   // register new cell uids
@@ -240,7 +240,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
     std::cout << "Algorithm: remove nodes" << std::endl;
     removed_nodes = node_lids_property.remove(removed_node_uids);
     node_lids_property.debugPrint();
-    std::cout << "removed item range : " << removed_nodes;
+    Neo::printer() << "removed item range : " << removed_nodes;
   });
 
   // handle node removal in connectivity with node family = target family

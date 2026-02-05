@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2023             */
+/* NeoBaseTest.cpp                                 (C) 2000-2026             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property2[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   item_range = { Neo::ItemLocalIds{ {}, 0, 2 } };
   values = { 0, 1, 1 };
@@ -182,7 +182,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property3[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 0, 2 } } };
@@ -238,7 +238,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property4[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 2, 3 }, 0, 2 } };

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshSchedule2.cpp                                           (C) 2000-2025 */
+/* MeshSchedule2.cpp                                           (C) 2000-2026 */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
         moved_item_new_coords = std::move(moved_item_new_coords),rank(m_rank)]
         (Neo::ItemLidsProperty const& item_lids_property,
         Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
-    Neo::print(rank) << "== Algorithm: move items" << std::endl;
+    Neo::printer(rank) << "== Algorithm: move items" << Neo::endline;
     // get range from uids and append
     auto moved_item_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(item_lids_property[moved_item_uids]) };
     item_coords_property.append(moved_item_range, moved_item_new_coords);

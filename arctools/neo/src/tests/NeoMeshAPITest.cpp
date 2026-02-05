@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoMeshAPITest.h                                (C) 2000-2025             */
+/* NeoMeshAPITest.h                                (C) 2000-2026             */
 /*                                                                           */
 /* First tests for mesh class using Neo                                      */
 /*---------------------------------------------------------------------------*/
@@ -335,8 +335,8 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   auto i = 0;
   for (auto const cell : added_cells) {
     auto current_cell_nodes = cell_to_nodes[cell];
-    std::cout << "cell lid " << cell << " connected nodes lids " << current_cell_nodes
-              << std::endl;
+    Neo::printer() << "cell lid " << cell << " connected nodes lids " << current_cell_nodes
+              << Neo::endline;
     for (auto const& node_lid : current_cell_nodes) {
       EXPECT_EQ(node_lid, cell_nodes_lids_ref[i++]);
     }
@@ -354,8 +354,8 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   i = 0;
   for (auto const cell : added_cells) {
     auto current_cell_dofs = cell_to_dofs[cell];
-    std::cout << "cell lid " << cell << " connected dofs lids " << current_cell_dofs
-              << std::endl;
+    Neo::printer() << "cell lid " << cell << " connected dofs lids " << current_cell_dofs
+              << Neo::endline;
     for (auto const& dof_lid : current_cell_dofs) {
       EXPECT_EQ(dof_lid, cell_dofs_lids_ref[i++]);
     }
@@ -373,8 +373,8 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   i = 0;
   for (auto const node : added_nodes) {
     auto current_node_cells = node_to_cells[node];
-    std::cout << "node lid " << node << " connected cell lids " << current_node_cells
-              << std::endl;
+    Neo::printer() << "node lid " << node << " connected cell lids " << current_node_cells
+              << Neo::endline;
     for (auto const& cell_lid : current_node_cells) {
       EXPECT_EQ(cell_lid, node_cells_lids_ref[i++]);
     }
@@ -392,8 +392,8 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   i = 0;
   for (auto const node : added_nodes) {
     auto current_node_dofs = node_to_dofs[node];
-    std::cout << "node lid " << node << " connected dof lids " << current_node_dofs
-              << std::endl;
+    Neo::printer() << "node lid " << node << " connected dof lids " << current_node_dofs
+              << Neo::endline;
     for (auto const& dof_lid : current_node_dofs) {
       EXPECT_EQ(dof_lid, node_dofs_lids_ref[i++]);
     }
@@ -623,7 +623,7 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterAddingItem) {
   auto& lid_sum_property = cell_family.getConcreteProperty<Neo::ScalarPropertyT<Neo::utils::Int32>>("lid_sum");
   std::vector<Neo::utils::Int32> cell_lids = cell_family.itemUniqueIdsToLocalids(cell_uids);
   auto lid_sum_ref = std::accumulate(cell_lids.begin(), cell_lids.end(), 0);
-  Neo::print() << "--- lid sum = " << lid_sum_property() << " lid sum ref value " << lid_sum_ref << std::endl;
+  Neo::printer() << "--- lid sum = " << lid_sum_property() << " lid sum ref value " << lid_sum_ref << Neo::endline;
   EXPECT_EQ(lid_sum_property(), lid_sum_ref);
 }
 
@@ -724,7 +724,7 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   // Check connectivities
   auto cell_2_nodes = mesh.getConnectivity(cell_family, node_family, cell_to_nodes_connectivity_name);
   for (auto cell : cells) {
-    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+    Neo::printer() << "cell " << cell << " has nodes " << cell_2_nodes[cell] << Neo::endline;
   }
   std::cout << "nb cell before remove " << cell_family.nbElements() << std::endl;
   EXPECT_EQ(cell_family.nbElements(), 2);
@@ -740,7 +740,7 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   std::cout << "nb cell after remove " << cells_new.size() << std::endl;
   // Cell to nodes
   for (auto cell : cells_new) {
-    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+    Neo::printer() << "cell " << cell << " has nodes " << cell_2_nodes[cell] << Neo::endline;
   }
   EXPECT_EQ(cells_new.size(), 1);
   EXPECT_EQ(cell_family.nbElements(), 1);
@@ -762,7 +762,7 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   auto cells_new2 = cell_family.all();
   std::cout << "nb cell after re-add " << cells_new2.size() << std::endl;
   for (auto cell : cells_new2) {
-    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+    Neo::printer() << "cell " << cell << " has nodes " << cell_2_nodes[cell] << Neo::endline;
   }
   EXPECT_EQ(cells_new2.size(), 2);
   EXPECT_EQ(cell_family.nbElements(), 2);

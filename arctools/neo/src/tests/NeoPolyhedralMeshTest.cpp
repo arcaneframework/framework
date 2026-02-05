@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2025             */
+/* NeoPolyhedralMeshTest.cpp                       (C) 2000-2026             */
 /*                                                                           */
 /* First polyhedral mesh tests                                               */
 /*---------------------------------------------------------------------------*/
@@ -267,9 +267,9 @@ void _createMesh(Neo::Mesh& mesh,
   auto new_cells = added_cells.get(valid_mesh_state);
   auto new_nodes = added_nodes.get(valid_mesh_state);
   auto new_faces = added_faces.get(valid_mesh_state);
-  std::cout << "Added cells range after applyAlgorithms: " << new_cells;
-  std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
-  std::cout << "Added faces range after applyAlgorithms: " << new_faces;
+  Neo::printer() << "Added cells range after applyAlgorithms: " << new_cells;
+  Neo::printer() << "Added nodes range after applyAlgorithms: " << new_nodes;
+  Neo::printer() << "Added faces range after applyAlgorithms: " << new_faces;
 }
 
 void createMesh(Neo::Mesh& mesh) {

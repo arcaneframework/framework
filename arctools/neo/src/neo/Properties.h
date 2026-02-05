@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Property                                        (C) 2000-2025             */
+/* Property                                        (C) 2000-2026             */
 /*                                                                           */
 /* Classes and tools for Property                                            */
 /*---------------------------------------------------------------------------*/
@@ -342,10 +342,9 @@ class ArrayPropertyT : public PropertyBase
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss  << "= Print array property " << m_name << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss  << "= Print array property " << m_name << Neo::endline;
     utils::printContainer(oss, m_data,"Data");
-    Neo::print(rank) << oss.str() << std::endl;
   }
 
   utils::Span<DataType> view() { return utils::Span<DataType>{ m_data.data(), m_data.size() }; }
@@ -454,10 +453,9 @@ class MeshScalarPropertyT : public PropertyBase
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss << "= Print mesh scalar property " << m_name << " size = " << size() << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss << "= Print mesh scalar property " << m_name << " size = " << size() << Neo::endline;
     utils::printContainer(oss, m_data, "Data");
-    Neo::print(rank) << oss.str() << std::endl;
   }
 
   utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.data(), m_data.size() }; }
@@ -590,12 +588,12 @@ class MeshArrayPropertyT : public PropertyBase
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss << "= Print mesh array property " << m_name << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss << "= Print mesh array property " << m_name << Neo::endline;
     utils::printContainer(oss,m_data, "Data");
     utils::printContainer(oss,m_offsets, "Offsets");
     utils::printContainer(oss,m_indexes, "Indexes");
-    Neo::print(rank) << oss.str() << std::endl;
+    oss << Neo::endline;
   }
 
   /*!
@@ -658,7 +656,8 @@ class MeshArrayPropertyT : public PropertyBase
 
  private:
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
-    Neo::print() << "Append in MeshArrayPropertyT by reconstruction" << std::endl;
+    // SdC debug
+    Neo::printer() << "Append in MeshArrayPropertyT by reconstruction. Prop: " << m_name << Neo::endline;
     // Compute new offsets
     std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size())
@@ -699,7 +698,7 @@ class MeshArrayPropertyT : public PropertyBase
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
     if (item_range.isContiguous()) {
-      Neo::print() << "Append in MeshArrayPropertyT by back insertion, contiguous range" << std::endl;
+      Neo::printer() << "Append in MeshArrayPropertyT by back insertion, contiguous range" << Neo::endline;
       auto max_existing_lid = m_offsets.size() - 1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid + 1) {
@@ -712,7 +711,7 @@ class MeshArrayPropertyT : public PropertyBase
       _updateIndexes();
     }
     else {
-      Neo::print() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << std::endl;
+      Neo::printer() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << Neo::endline;
       m_offsets.resize(utils::maxItem(item_range) + 1);
       auto index = 0;
       for (auto item : item_range)

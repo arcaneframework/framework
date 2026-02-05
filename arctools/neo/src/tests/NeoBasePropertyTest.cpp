@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2023             */
+/* NeoBaseTest.cpp                                 (C) 2000-2026             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -138,8 +138,8 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   std::transform(item_indexes.begin(), item_indexes.end(), std::back_inserter(extracted_lids),
                  [&local_ids](auto index) { return local_ids[index]; });
   auto extracted_values = property[extracted_lids];
-  std::cout << "extracted_values " << extracted_values << std::endl;
-  std::cout << "extracted_values_ref " << extracted_values_ref << std::endl;
+  Neo::printer() << "extracted_values " << extracted_values << Neo::endline;
+  Neo::printer() << "extracted_values_ref " << extracted_values_ref << Neo::endline;
   EXPECT_TRUE(std::equal(extracted_values.begin(), extracted_values.end(), extracted_values_ref.begin()));
   // todo check throw if lids out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
