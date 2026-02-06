@@ -826,7 +826,7 @@ namespace mesh
         source_family.addScalarProperty<Neo::utils::Int32>(flag_definition_output_property_name);
         // update Face flags after connectivity add
         mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_add_output_property_name }, Neo::MeshKernel::OutProperty{ source_family, flag_definition_output_property_name },
-                                [arcane_source_item_family, arcane_target_item_family,this, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
+                                [arcane_source_item_family, arcane_target_item_family, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
                                   auto current_face_index = 0;
                                   auto arcane_faces = arcane_source_item_family->itemInfoListView();
                                   Int32UniqueArray target_item_lids(target_item_uids_local.size());
