@@ -288,7 +288,7 @@ namespace utils
   struct Span
   {
     using value_type = T;
-    using non_const_value_type = std::remove_const<T>::type;
+    using non_const_value_type = std::remove_const_t<T>;
     using size_type = int;
     using vector_size_type = std::vector<non_const_value_type>::size_type;
 
@@ -333,7 +333,7 @@ namespace utils
   struct ConstSpan
   {
     using value_type = T;
-    using non_const_value_type = std::remove_const<T>::type;
+    using non_const_value_type = std::remove_const_t<T>;
     using size_type = int;
     using vector_size_type = std::vector<non_const_value_type>::size_type;
 
