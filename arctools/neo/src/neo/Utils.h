@@ -46,6 +46,15 @@ enum class Trace{
   Verbose, Silent, VerboseInFile
 };
 
+struct NeoOutputStream;
+namespace utils {
+  template <typename T> struct Span;
+  template <typename T> struct ConstSpan;
+  template <typename Container> NeoOutputStream&  _printContainer(Container const& container, NeoOutputStream& oss);
+}
+
+using NeoOutputStreamHandler = NeoOutputStream& (*)(NeoOutputStream&);
+
 struct NullBuffer : public std::streambuf
 {
   int overflow(int c) override {
@@ -80,12 +89,19 @@ struct NeoOutputStream
       }
   }
 
+  NeoOutputStream(NeoOutputStream const&) = delete;
+  NeoOutputStream& operator=(NeoOutputStream const&) = delete;
+  NeoOutputStream(NeoOutputStream&& other) noexcept = default;
+  NeoOutputStream& operator=(NeoOutputStream&& other) noexcept = default;
+
   ~NeoOutputStream() {
     if (! m_stream) return;
     try {
       m_stream->flush();
     }
-    catch (...) {}
+    catch (...) {
+      // Desctructors must not throw
+    }
   }
 
   std::ostream* m_stream = nullptr;
@@ -99,6 +115,32 @@ struct NeoOutputStream
 
   std::ostream& stream() {
     return *m_stream;
+  }
+
+  friend inline NeoOutputStream& operator<<(NeoOutputStream& oss, NeoOutputStreamHandler handler) {
+    return handler(oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, T const& printable) {
+    oss.stream() << printable;
+    return oss;
+  }
+
+  template <typename Container>
+  requires std::ranges::range<Container> && (!std::same_as<std::ranges::range_value_t<Container>,char>)
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, Container const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, utils::Span<T> const& container) {
+    return utils::_printContainer(container, oss);
+  }
+
+  template <typename T>
+  friend NeoOutputStream& operator<<(NeoOutputStream& oss, utils::ConstSpan<T> const& container) {
+    return utils::_printContainer(container, oss);
   }
 };
 
@@ -116,7 +158,7 @@ public:
   NeoOutputStream& operator()() {
     return m_oss;
   }
-  explicit Printer(NeoOutputStream oss) : m_oss(oss) {}
+  explicit Printer(NeoOutputStream&& oss) : m_oss(std::move(oss)) {}
 
   template <typename T>
   NeoOutputStream& operator<<(T const& printable) {
@@ -162,16 +204,6 @@ inline Printer printer(int rank = 0) {
     case Trace::VerboseInFile: return Printer{NeoOutputStream{Neo::Trace::VerboseInFile, rank}};
   }
   return Printer{NeoOutputStream{Neo::Trace::Silent}};
-}
-
-inline NeoOutputStream& operator<<(NeoOutputStream& oss, NeoOutputStreamHandler handler) {
-  return handler(oss);
-}
-
-template <typename T>
-NeoOutputStream& operator<<(Neo::NeoOutputStream& oss, T const& printable) {
-  oss.stream() << printable;
-  return oss;
 }
 
 //----------------------------------------------------------------------------/
@@ -241,9 +273,9 @@ namespace utils
   struct Span
   {
     using value_type = T;
-    using non_const_value_type = typename std::remove_const<T>::type;
+    using non_const_value_type = std::remove_const<T>::type;
     using size_type = int;
-    using vector_size_type = typename std::vector<non_const_value_type>::size_type;
+    using vector_size_type = std::vector<non_const_value_type>::size_type;
 
     T* m_ptr = nullptr;
     size_type m_size = 0;
@@ -286,9 +318,9 @@ namespace utils
   struct ConstSpan
   {
     using value_type = T;
-    using non_const_value_type = typename std::remove_const<T>::type;
+    using non_const_value_type = std::remove_const<T>::type;
     using size_type = int;
-    using vector_size_type = typename std::vector<non_const_value_type>::size_type;
+    using vector_size_type = std::vector<non_const_value_type>::size_type;
 
     const T* m_ptr = nullptr;
     int m_size = 0;
@@ -455,25 +487,6 @@ namespace utils
 
 namespace Neo
 {
-  template <typename Container>
-  requires std::ranges::range<Container> && (!std::same_as<std::ranges::range_value_t<Container>,char>)
-  NeoOutputStream& operator<<(NeoOutputStream& oss, Container const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-  template <typename T>
-  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::Span<T> const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-  template <typename T>
-  NeoOutputStream& operator<<(NeoOutputStream& oss, utils::ConstSpan<T> const& container) {
-    return utils::_printContainer(container, oss);
-  }
-
-
-
-
   namespace utils
   {
     template <typename Container>
