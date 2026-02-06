@@ -27,12 +27,14 @@
 #ifdef NDEBUG
 static constexpr bool ndebug = true;
 static constexpr bool _debug = false;
+#define NEO_RELEASE
 #ifdef _MSC_VER
 #define _MS_REL_
 #endif
 #else
 static constexpr bool ndebug = false;
 static constexpr bool _debug = true;
+#define NEO_DEBUG
 #endif
 
 #define NEO_ASSERT(condition, message) assert((condition) && (message) )
