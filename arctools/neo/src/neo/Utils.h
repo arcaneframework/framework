@@ -115,6 +115,7 @@ struct NeoOutputStream
     }
     catch (...) {
       // Desctructors must not throw
+      NEO_FATAL("NeoOutputStream could not close properly debug log file Neo_output_rank-index.txt");
     }
   }
 
