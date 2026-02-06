@@ -44,6 +44,18 @@ static constexpr bool _debug = true;
 namespace Neo
 {
 
+[[noreturn]] inline void fatal(char const* message,char const* file, int line) {
+  std::fprintf(stderr, "\nFatal error: %s\n in file %s at line: %d\n", message, file, line);
+  std::fflush(stderr);
+#ifdef NEO_DEBUG
+  std::abort();
+#else
+  std::terminate();
+#endif
+}
+
+#define NEO_FATAL(message) Neo::fatal(message,__FILE__,__LINE__)
+
 enum class Trace{
   Verbose, Silent, VerboseInFile
 };
