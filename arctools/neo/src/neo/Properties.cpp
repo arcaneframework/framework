@@ -21,59 +21,47 @@
 
 Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> const& uids) {
   ItemLocalIds item_local_ids{};
-  // handle mutliple insertion
-  auto empty_lid_size = m_empty_lids.size();
-  auto min_size = std::min(empty_lid_size, uids.size());
-  auto& non_contiguous_lids = item_local_ids.m_non_contiguous_lids;
-  non_contiguous_lids.resize(min_size);
-  auto used_empty_lid_count = 0;
-  for (auto i = 0; i < (int)min_size; ++i) {
-    const auto [inserted, do_insert] = m_uid2lid.insert({ uids[i], m_empty_lids[empty_lid_size - 1 - used_empty_lid_count] });
-    non_contiguous_lids[i] = inserted->second;
-    if (do_insert)
-      ++used_empty_lid_count;
-  }
-  // Use remaining empty lids if needed (if insertion of existing items)
-  auto remaining_empty_lids = empty_lid_size - used_empty_lid_count;
-  auto remaining_items = uids.size() - min_size;
-  auto remaining_lids_to_take = std::min(remaining_empty_lids, remaining_items);
-  non_contiguous_lids.resize(min_size + remaining_lids_to_take);
-  for (auto i = 0; i < (int)remaining_lids_to_take; ++i) {
-    const auto [inserted, do_insert] = m_uid2lid.insert({ uids[min_size + i], m_empty_lids[empty_lid_size - 1 - used_empty_lid_count] });
-    non_contiguous_lids[min_size + i] = inserted->second;
-    if (do_insert)
-      ++used_empty_lid_count;
-  }
-  m_empty_lids.resize(empty_lid_size - used_empty_lid_count);
-  min_size += remaining_lids_to_take;
-  using item_index_and_lid = std::pair<int, Neo::utils::Int32>;
-  std::vector<item_index_and_lid> existing_items;
-  existing_items.reserve(uids.size() - min_size);
-  auto first_contiguous_id = m_last_id + 1;
-  item_local_ids.m_first_contiguous_lid = first_contiguous_id;
-  for (auto i = min_size; i < uids.size(); ++i) {
-    const auto [inserted, do_insert] = m_uid2lid.insert({ uids[i], ++m_last_id });
-    if (!do_insert) {
-      existing_items.push_back({ i - min_size, inserted->second });
-      --m_last_id;
+  item_local_ids.m_non_contiguous_lids.reserve(uids.size());
+  item_local_ids.m_nb_contiguous_lids = 0;
+  // These commented lines should be used when a mode mixing contiguous and not contiguous items will work
+  //std::vector<Neo::utils::Int32> lids(uids.size());
+  //_getLidsFromUids(lids,uids);
+  //bool has_existing_items = (std::count(lids.begin(), lids.end(), utils::NULL_ITEM_LID) != std::size_t(lids.size()));
+  bool use_contiguous_indexes = false; // temporary to make things work. Todo : refactor ItemLocalIds (change order between non contiguous and contiguous ?)
+  auto nb_available_lids = m_available_lids.size();
+  auto lid_index = 0;
+  bool is_first_contiguous_lid = true;
+  for (auto uid : uids) {
+    auto lid = _getLidFromUid(uid);
+    if (lid != utils::NULL_ITEM_LID) {// existing item
+        item_local_ids.m_non_contiguous_lids.push_back(lid);
+      use_contiguous_indexes = false;
     }
-    ++item_local_ids.m_nb_contiguous_lids;
-  }
-  // if an existing item is inserted, cannot use contiguous indexes, otherwise the range
-  // will not handle the items in their insertion order, all lids must be in non_contiguous_indexes
-  if (!existing_items.empty()) {
-    std::vector<Neo::utils::Int32> non_contiguous_from_contigous_lids(
-    item_local_ids.m_nb_contiguous_lids);
-    std::iota(non_contiguous_from_contigous_lids.begin(), non_contiguous_from_contigous_lids.end(), first_contiguous_id);
-    for (const auto& [item_index, item_lid] : existing_items) {
-      non_contiguous_from_contigous_lids[item_index] = item_lid;
-      std::for_each(non_contiguous_from_contigous_lids.begin() + item_index + 1, non_contiguous_from_contigous_lids.end(), [](auto& current_lid) { return --current_lid; });
+    else {
+      if (nb_available_lids > 0) {
+        auto available_lid = m_available_lids[nb_available_lids - 1];
+        m_uid2lid.emplace(uids[lid_index], available_lid);
+        --nb_available_lids;
+        m_available_lids.pop_back();
+        item_local_ids.m_non_contiguous_lids.push_back(available_lid);
+        use_contiguous_indexes = false;
+      }
+      else {
+        auto new_lid = ++m_last_id;
+        m_uid2lid.emplace(uids[lid_index], new_lid);
+        if (use_contiguous_indexes) {
+          item_local_ids.m_nb_contiguous_lids++;
+          if (is_first_contiguous_lid) {
+            item_local_ids.m_first_contiguous_lid = new_lid;
+            is_first_contiguous_lid = false;
+          }
+        }
+        else {
+          item_local_ids.m_non_contiguous_lids.push_back(new_lid);
+        }
+      }
     }
-    item_local_ids.m_nb_contiguous_lids = 0;
-    item_local_ids.m_non_contiguous_lids.insert(
-    item_local_ids.m_non_contiguous_lids.end(),
-    non_contiguous_from_contigous_lids.begin(),
-    non_contiguous_from_contigous_lids.end());
+    ++lid_index;
   }
   return ItemRange{ std::move(item_local_ids) };
 }
@@ -83,8 +71,8 @@ Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> cons
 Neo::ItemRange Neo::ItemLidsProperty::remove(std::vector<utils::Int64> const& uids) noexcept {
   ItemLocalIds item_local_ids{};
   item_local_ids.m_non_contiguous_lids.resize(uids.size());
-  auto empty_lids_size = m_empty_lids.size();
-  m_empty_lids.resize(empty_lids_size + uids.size());
+  auto empty_lids_size = m_available_lids.size();
+  m_available_lids.resize(empty_lids_size + uids.size());
   auto counter = 0;
   auto empty_lids_index = empty_lids_size;
   for (auto uid : uids) {
@@ -97,7 +85,7 @@ Neo::ItemRange Neo::ItemLidsProperty::remove(std::vector<utils::Int64> const& ui
       m_uid2lid.erase(uid_lid_ite);
     } // uid_lid_ite is now invalid
     if (lid != utils::NULL_ITEM_LID)
-      m_empty_lids[empty_lids_index++] = lid;
+      m_available_lids[empty_lids_index++] = lid;
     item_local_ids.m_non_contiguous_lids[counter++] = lid;
   }
   return ItemRange{ std::move(item_local_ids) };
@@ -106,7 +94,7 @@ Neo::ItemRange Neo::ItemLidsProperty::remove(std::vector<utils::Int64> const& ui
 /*---------------------------------------------------------------------------*/
 
 std::size_t Neo::ItemLidsProperty::size() const {
-  return m_last_id + 1 - m_empty_lids.size();
+  return m_uid2lid.size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,18 +106,18 @@ Neo::ItemRange Neo::ItemLidsProperty::values() const {
   if (size() == 0)
     return ItemRange{};
   ItemLocalIds item_local_ids{};
-  if (m_empty_lids.empty()) { // range contiguous
+  if (m_available_lids.empty()) { // range contiguous
     item_local_ids = ItemLocalIds{ {}, 0, m_last_id + 1 };
   }
   else { // range discontiguous
     std::vector<Neo::utils::Int32> lids(m_last_id + 1);
     std::iota(lids.begin(), lids.end(), 0);
-    std::for_each(m_empty_lids.begin(), m_empty_lids.end(),
+    std::for_each(m_available_lids.begin(), m_available_lids.end(),
                   [&lids](auto const& empty_lid) {
                     lids[empty_lid] = Neo::utils::NULL_ITEM_LID;
                   });
     auto& active_lids = item_local_ids.m_non_contiguous_lids;
-    active_lids.resize(lids.size() - m_empty_lids.size());
+    active_lids.resize(lids.size() - m_available_lids.size());
     std::copy_if(lids.begin(), lids.end(), active_lids.begin(),
                  [](auto const& lid_source) {
                    return lid_source != Neo::utils::NULL_ITEM_LID;
@@ -149,7 +137,7 @@ void Neo::ItemLidsProperty::debugPrint(int rank) const {
     if (uid.second != Neo::utils::NULL_ITEM_LID)
       oss << " uid to lid  " << uid.first << " : " << uid.second << "\n";
   }
-  oss << "available lids : " << m_empty_lids;
+  oss << "available lids : " << m_available_lids;
   oss<< Neo::endline;
 }
 
@@ -166,13 +154,14 @@ Neo::utils::Int32 Neo::ItemLidsProperty::_getLidFromUid(utils::Int64 const uid) 
 /*---------------------------------------------------------------------------*/
 
 void Neo::ItemLidsProperty::_getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
-  std::transform(uids.begin(), uids.end(), std::back_inserter(lids), [this](auto const& uid) { return this->_getLidFromUid(uid); });
+  // todo check size
+  std::transform(uids.begin(), uids.end(), lids.begin(), [this](auto const& uid) { return this->_getLidFromUid(uid); });
 }
 
 /*---------------------------------------------------------------------------*/
 
 std::vector<Neo::utils::Int32> Neo::ItemLidsProperty::operator[](std::vector<utils::Int64> const& uids) const {
-  std::vector<utils::Int32> lids;
+  std::vector<utils::Int32> lids(uids.size());
   _getLidsFromUids(lids, uids);
   return lids;
 }

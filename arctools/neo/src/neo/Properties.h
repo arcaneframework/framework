@@ -807,7 +807,7 @@ class ItemLidsProperty : public PropertyBase
   std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const;
 
  private:
-  std::vector<Neo::utils::Int32> m_empty_lids;
+  std::vector<Neo::utils::Int32> m_available_lids;
   std::unordered_map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid;
   int m_last_id = -1;
 };

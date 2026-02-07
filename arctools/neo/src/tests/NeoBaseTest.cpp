@@ -404,6 +404,27 @@ TEST(NeoTestLidsProperty, test_lids_property) {
 
 /*-----------------------------------------------------------------------------*/
 
+TEST(NeoTestLidsProperty, test_lids_property_use_available_lids) {
+  std::cout << "Test lids_range Property use available lids" << std::endl;
+  auto lid_prop = Neo::ItemLidsProperty{ "test_property" };
+  std::vector<Neo::utils::Int64> uids{ 0, 1, 2, 3, 4};
+  auto added_item_range = lid_prop.append(uids);
+  Neo::printer() << added_item_range;
+  std::copy(added_item_range.m_item_lids.m_non_contiguous_lids.begin(),added_item_range.m_item_lids.m_non_contiguous_lids.end(),std::ostream_iterator<int>(std::cout,", "));
+  std::cout << std::endl;
+  std::cout << added_item_range.m_item_lids.m_nb_contiguous_lids << std::endl;
+  std::cout << added_item_range.m_item_lids.m_first_contiguous_lid << std::endl;
+  lid_prop.remove({0,1});
+  added_item_range = lid_prop.append({2,3,4,5,6});
+  Neo::printer() << added_item_range;
+  std::vector<int> expected_lids{2,3,4,1,0};
+  EXPECT_TRUE(std::equal(expected_lids.begin(),expected_lids.end(),added_item_range.localIds().begin()));
+  lid_prop.debugPrint();
+}
+
+
+/*-----------------------------------------------------------------------------*/
+
 TEST(NeoTestFamily, test_family) {
   Neo::Family family(Neo::ItemKind::IK_Dof, "MyFamily");
   EXPECT_EQ(family.lidPropName(), family._lidProp().m_name);
