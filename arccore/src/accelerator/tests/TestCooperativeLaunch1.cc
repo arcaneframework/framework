@@ -82,7 +82,7 @@ void _doTestCooperativeLaunch(bool use_accelerator)
     {
       Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop);
       Int64 v2 = v / nb_loop;
-      if (policy==eExecutionPolicy::CUDA || policy==eExecutionPolicy::HIP){
+      if (policy==eExecutionPolicy::CUDA || policy==eExecutionPolicy::HIP || policy==eExecutionPolicy::Sequential){
         ASSERT_EQ(v2, expected_value);
       }
     }

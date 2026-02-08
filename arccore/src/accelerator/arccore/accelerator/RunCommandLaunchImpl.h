@@ -202,6 +202,7 @@ doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
+  // TODO: regarder s'il faut faire ce test
   if (i < bounds.nbOriginalElement()) {
     func(WorkGroupLoopContextBuilder::build(bounds.originalLoop()), remaining_args...);
   }
@@ -223,6 +224,7 @@ class doHierarchicalLaunchSycl
   {
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
+    // TODO: regarder s'il faut faire ce test
     if (i < bounds.nbOriginalElement()) {
       func(WorkGroupLoopContextBuilder::build(bounds.originalLoop(), x), remaining_args...);
     }
@@ -255,7 +257,9 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
   if (nb_orig_element == 0)
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
-  if (bounds.blockSize() == 0)
+  // En mode coopératif, il faut toujours appeler setBlockSize()
+  // pour être certain que la taille de bloc est cohérente.
+  if ((bounds.blockSize() == 0) || bounds.isCooperativeLaunch())
     bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
   TrueLoopBoundType bounds2(bounds);
@@ -263,6 +267,7 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
     command.addNbThreadPerBlock(bounds.blockSize());
     bounds2.setNbStride(command.nbStride());
   }
+
   using HostLoopBoundType = HostLaunchLoopRange<LoopBoundType>;
 
   Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue(), bounds.isCooperativeLaunch());

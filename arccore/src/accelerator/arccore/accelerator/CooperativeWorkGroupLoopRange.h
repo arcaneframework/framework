@@ -233,21 +233,18 @@ class SyclCooperativeWorkGroupLoopContext
  */
 template <typename IndexType_>
 class CooperativeWorkGroupLoopRange
-: public WorkGroupLoopRangeBase<IndexType_>
+: public WorkGroupLoopRangeBase<true, IndexType_>
 {
  public:
 
   using LoopIndexType = CooperativeWorkGroupLoopContext<IndexType_>;
   using IndexType = IndexType_;
 
-  // Pour indiquer au KernelLauncher qu'on souhaite un lancement coopératif.
-  static constexpr bool isCooperativeLaunch() { return true; }
-
  public:
 
   CooperativeWorkGroupLoopRange() = default;
   explicit CooperativeWorkGroupLoopRange(IndexType total_nb_element)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
+  : WorkGroupLoopRangeBase<true, IndexType_>(total_nb_element)
   {}
 
  public:

@@ -718,7 +718,7 @@ class SyclWorkGroupLoopContext
  * et être un multiple de 32.
  *
  */
-template <typename IndexType_>
+template <bool IsCooperativeLaunch, typename IndexType_>
 class WorkGroupLoopRangeBase
 {
  public:
@@ -734,6 +734,8 @@ class WorkGroupLoopRangeBase
   }
 
  public:
+
+  static constexpr bool isCooperativeLaunch() { return IsCooperativeLaunch; }
 
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_nb_element; }
@@ -776,7 +778,7 @@ class WorkGroupLoopRangeBase
  */
 template <typename IndexType_>
 class WorkGroupLoopRange
-: public WorkGroupLoopRangeBase<IndexType_>
+: public WorkGroupLoopRangeBase<false, IndexType_>
 {
  public:
 
@@ -787,12 +789,8 @@ class WorkGroupLoopRange
 
   WorkGroupLoopRange() = default;
   explicit WorkGroupLoopRange(IndexType total_nb_element)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
+  : WorkGroupLoopRangeBase<false, IndexType_>(total_nb_element)
   {}
-
- public:
-
-  static constexpr bool isCooperativeLaunch() { return false; }
 };
 
 /*---------------------------------------------------------------------------*/
