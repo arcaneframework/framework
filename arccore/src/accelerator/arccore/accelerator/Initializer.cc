@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Initializer.h                                               (C) 2000-2025 */
+/* Initializer.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Classe pour initialiser le runtime accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -18,9 +18,11 @@
 
 #include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 #include "arccore/common/accelerator/internal/RuntimeLoader.h"
+#include "arccore/common/accelerator/internal/RunnerInternal.h"
 #include "arccore/common/accelerator/AcceleratorRuntimeInitialisationInfo.h"
 
 #include <iostream>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,7 +54,7 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
     if (library_path.null())
       library_path = Platform::getCurrentDirectory();
 
-    std::cout << "INIT_ACCELERATOR default_runtime=" <<  default_runtime_name << " lib_path=" << library_path << "\n";
+    std::cout << "INIT_ACCELERATOR default_runtime=" << default_runtime_name << " lib_path=" << library_path << "\n";
     bool has_accelerator = false;
     init_info.setIsUsingAcceleratorRuntime(true);
     int r = Impl::RuntimeLoader::loadRuntime(init_info, default_runtime_name, library_path, has_accelerator);
@@ -61,10 +63,19 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
         m_policy = eExecutionPolicy::CUDA;
       else if (Impl::isUsingHIPRuntime())
         m_policy = eExecutionPolicy::HIP;
-      else if (Impl::isUsingHIPRuntime())
+      else if (Impl::isUsingSYCLRuntime())
         m_policy = eExecutionPolicy::SYCL;
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Initializer::
+~Initializer() noexcept(false)
+{
+  Accelerator::RunnerInternal::finalize(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/

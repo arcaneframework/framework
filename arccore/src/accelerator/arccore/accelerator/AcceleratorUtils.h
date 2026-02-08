@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorUtils.h                                          (C) 2000-2025 */
+/* AcceleratorUtils.h                                          (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires communes à tous les runtimes.                       */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@
 #if defined(ARCCORE_HAS_CUDA)
 #include "arccore/accelerator_native/CudaAccelerator.h"
 #endif
-#if defined(ARCCORE_HAS_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 #include "arccore/accelerator_native/SyclAccelerator.h"
 #endif
 
@@ -63,7 +63,7 @@ class ARCCORE_ACCELERATOR_EXPORT HipUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_HAS_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 class ARCCORE_ACCELERATOR_EXPORT SyclUtils
 {
  public:
@@ -114,7 +114,7 @@ toHipNativeStream(const RunQueue& queue)
 }
 #endif
 
-#if defined(ARCCORE_HAS_SYCL)
+#if defined(ARCCORE_COMPILING_SYCL)
 /*!
  * \brief Retourne l'instance de hipStream_t associée à \q queue.
  *
