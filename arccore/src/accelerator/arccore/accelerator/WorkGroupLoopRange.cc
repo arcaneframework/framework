@@ -25,8 +25,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
-WorkGroupLoopRangeBase<IndexType_>::
+template <bool IsCooperativeLaunch, typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IsCooperativeLaunch, IndexType_>::
 setBlockSize(Int32 block_size)
 {
   if ((block_size <= 0) || ((block_size % 32) != 0))
@@ -38,8 +38,8 @@ setBlockSize(Int32 block_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
-WorkGroupLoopRangeBase<IndexType_>::
+template <bool IsCooperativeLaunch, typename IndexType_> ARCCORE_ACCELERATOR_EXPORT void
+WorkGroupLoopRangeBase<IsCooperativeLaunch, IndexType_>::
 setBlockSize(const RunCommand& command)
 {
   // TODO: en multi-threading, à calculer en fonction du nombre de threads
@@ -53,7 +53,8 @@ setBlockSize(const RunCommand& command)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename IndexType_> void WorkGroupLoopRangeBase<IndexType_>::
+template <bool IsCooperativeLaunch, typename IndexType_> void
+WorkGroupLoopRangeBase<IsCooperativeLaunch, IndexType_>::
 _setNbBlock()
 {
   m_nb_block = static_cast<Int32>((m_nb_element + (m_block_size - 1)) / m_block_size);
@@ -62,8 +63,10 @@ _setNbBlock()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class WorkGroupLoopRangeBase<Int32>;
-template class WorkGroupLoopRangeBase<Int64>;
+template class WorkGroupLoopRangeBase<true, Int32>;
+template class WorkGroupLoopRangeBase<true, Int64>;
+template class WorkGroupLoopRangeBase<false, Int32>;
+template class WorkGroupLoopRangeBase<false, Int64>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
