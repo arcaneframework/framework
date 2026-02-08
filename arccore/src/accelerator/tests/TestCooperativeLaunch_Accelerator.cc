@@ -65,15 +65,14 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread
         for (Int32 i : w.linearIndexes())
           my_v += c_view[i];
         block.barrier();
-        Int32 nb_block = 0;
+        Int32 nb_block = grid.nbBlock();
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP) && defined(ARCCORE_DEVICE_CODE)
-        nb_block = grid.nbBlock();
-        Int64 v = Arcane::Accelerator::Impl::block_reduce<Arcane::Accelerator::Impl::ReduceFunctorSum<Int64>, 32, Int64>(my_v);
+        my_v = Arcane::Accelerator::Impl::block_reduce<Arcane::Accelerator::Impl::ReduceFunctorSum<Int64>, 32, Int64>(my_v);
+#endif
         if (w.rankInBlock() == 0) {
           //printf("V0=%d %ld\n", block.groupRank(), v);
-          partial_sum_span[block.groupRank()] = v;
+          partial_sum_span[block.groupRank()] = my_v;
         }
-#endif
         grid.barrier();
         if (w.rankInBlock() == 0 && block.groupRank() == 0) {
           Int64 final_sum = 0;
