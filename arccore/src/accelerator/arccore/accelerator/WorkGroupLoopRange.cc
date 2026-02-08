@@ -45,8 +45,17 @@ setBlockSize(const RunCommand& command)
   // TODO: en multi-threading, à calculer en fonction du nombre de threads
   // disponibles et du nombre total d'éléments
   Int32 block_size = 1024;
-  if (isAcceleratorPolicy(command.executionPolicy()))
+  eExecutionPolicy policy = command.executionPolicy();
+  if (isAcceleratorPolicy(policy))
     block_size = 256;
+  else if (IsCooperativeLaunch) {
+    // TODO: gérer le multi-threading.
+    // En séquentiel, il n'y a qu'un seul bloc dont la taille est le nombre
+    // d'éléments.
+    m_block_size = m_nb_element;
+    m_nb_block = 1;
+    return;
+  }
   setBlockSize(block_size);
 }
 
