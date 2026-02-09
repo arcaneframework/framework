@@ -59,20 +59,20 @@ addKeyValue(const String& name, const String& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ApplicationCoreBuildInfo::
-ApplicationCoreBuildInfo()
+ArccoreApplicationBuildInfo::
+ArccoreApplicationBuildInfo()
 : m_core(new ArccoreApplicationBuildInfoImpl())
 {
 }
 
-ApplicationCoreBuildInfo::
-ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs)
+ArccoreApplicationBuildInfo::
+ArccoreApplicationBuildInfo(const ArccoreApplicationBuildInfo& rhs)
 : m_core(new ArccoreApplicationBuildInfoImpl(*rhs.m_core))
 {
 }
 
-ApplicationCoreBuildInfo& ApplicationCoreBuildInfo::
-operator=(const ApplicationCoreBuildInfo& rhs)
+ArccoreApplicationBuildInfo& ArccoreApplicationBuildInfo::
+operator=(const ArccoreApplicationBuildInfo& rhs)
 {
   if (&rhs != this) {
     delete m_core;
@@ -81,8 +81,8 @@ operator=(const ApplicationCoreBuildInfo& rhs)
   return (*this);
 }
 
-ApplicationCoreBuildInfo::
-~ApplicationCoreBuildInfo()
+ArccoreApplicationBuildInfo::
+~ArccoreApplicationBuildInfo()
 {
   delete m_core;
 }
@@ -93,7 +93,7 @@ ApplicationCoreBuildInfo::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setDefaultValues()
 {
   {
@@ -105,7 +105,7 @@ setDefaultValues()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setDefaultServices()
 {
   {
@@ -125,19 +125,19 @@ setDefaultServices()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setTaskImplementationService(const String& name)
 {
   StringList s;
   s.add(name);
   m_core->m_task_implementation_services = s;
 }
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setTaskImplementationServices(const StringList& names)
 {
   m_core->m_task_implementation_services = names;
 }
-StringList ApplicationCoreBuildInfo::
+StringList ArccoreApplicationBuildInfo::
 taskImplementationServices() const
 {
   return m_core->m_task_implementation_services;
@@ -146,19 +146,19 @@ taskImplementationServices() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setThreadImplementationService(const String& name)
 {
   StringList s;
   s.add(name);
   m_core->m_thread_implementation_services = s;
 }
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setThreadImplementationServices(const StringList& names)
 {
   m_core->m_thread_implementation_services = names;
 }
-StringList ApplicationCoreBuildInfo::
+StringList ArccoreApplicationBuildInfo::
 threadImplementationServices() const
 {
   return m_core->m_thread_implementation_services;
@@ -167,7 +167,7 @@ threadImplementationServices() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 ApplicationCoreBuildInfo::
+Int32 ArccoreApplicationBuildInfo::
 nbTaskThread() const
 {
   return m_core->m_nb_task_thread;
@@ -176,7 +176,7 @@ nbTaskThread() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 setNbTaskThread(Int32 v)
 {
   m_core->m_nb_task_thread = v;
@@ -185,7 +185,7 @@ setNbTaskThread(Int32 v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 addParameter(const String& name, const String& value)
 {
   m_core->addKeyValue(name, value);
@@ -194,7 +194,7 @@ addParameter(const String& name, const String& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ApplicationCoreBuildInfo::
+void ArccoreApplicationBuildInfo::
 parseArgumentsAndSetDefaultsValues(const CommandLineArguments& command_line_args)
 {
   // On ne récupère que les arguments du style:

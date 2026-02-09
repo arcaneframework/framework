@@ -28,16 +28,14 @@ class ArccoreApplicationBuildInfoImpl;
 /*!
  * \brief Informations pour initialiser une application.
  */
-class ARCCORE_COMMON_EXPORT ApplicationCoreBuildInfo
+class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfo
 {
-  class CoreImpl;
-
  public:
 
-  ApplicationCoreBuildInfo();
-  ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs);
-  virtual ~ApplicationCoreBuildInfo();
-  ApplicationCoreBuildInfo& operator=(const ApplicationCoreBuildInfo& rhs);
+  ArccoreApplicationBuildInfo();
+  ArccoreApplicationBuildInfo(const ArccoreApplicationBuildInfo& rhs);
+  ArccoreApplicationBuildInfo& operator=(const ArccoreApplicationBuildInfo& rhs);
+  virtual ~ArccoreApplicationBuildInfo();
 
  public:
 

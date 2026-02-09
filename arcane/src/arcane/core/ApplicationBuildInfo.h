@@ -30,7 +30,7 @@ class CaseDatasetSource;
  * \brief Informations pour construire une instance de IApplication.
  */
 class ARCANE_CORE_EXPORT ApplicationBuildInfo
-: public ApplicationCoreBuildInfo
+: public ArccoreApplicationBuildInfo
 {
   class Impl;
 
