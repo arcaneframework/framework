@@ -14,8 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/common/Array.h"
+#include "arccore/base/String.h"
+#include "arccore/base/PlatformUtils.h"
 #include "arccore/base/internal/ConvertInternal.h"
+
+#include "arccore/common/Array.h"
+#include "arccore/common/List.h"
+
+#include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -198,7 +204,7 @@ class PropertyImpl
           return v;
       }
       for (const auto& x : env_values) {
-        String ev = platform::getEnvironmentVariable(x);
+        String ev = Platform::getEnvironmentVariable(x);
         if (!ev.null())
           return ev;
       }

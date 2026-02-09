@@ -23,6 +23,7 @@
 #include "arcane/core/CaseDatasetSource.h"
 
 #include "arccore/common/internal/FieldProperty.h"
+#include "arccore/common/internal/ArccoreApplicationBuildInfoCoreImpl.h"
 
 #include <functional>
 
@@ -42,45 +43,6 @@ void _clamp(Int32& x,Int32 min_value,Int32 max_value)
   x = std::min(std::max(x,min_value),max_value);
 }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ApplicationCoreBuildInfo::CoreImpl
-{
- public:
-
-  template <typename T> using FieldProperty = PropertyImpl::FieldProperty<T>;
-
-  CoreImpl()
-  : m_nb_task_thread(-1)
-  {
-    // Fixe une limite pour le nombre de tâches
-    m_nb_task_thread.setValidator([](Int32& x) { _clamp(x, -1, 512); });
-  }
-
- public:
-
-  String getValue(const UniqueArray<String>& env_values, const String& param_name,
-                  const String& default_value)
-  {
-    return m_property_key_values.getValue(env_values, param_name, default_value);
-  }
-  void addKeyValue(const String& name, const String& value)
-  {
-    m_property_key_values.add(name, value);
-  }
-
- public:
-
-  FieldProperty<StringList> m_task_implementation_services;
-  FieldProperty<StringList> m_thread_implementation_services;
-  FieldProperty<Int32> m_nb_task_thread;
-
- private:
-
-  PropertyImpl::PropertyKeyValues m_property_key_values;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -130,37 +92,6 @@ class ApplicationBuildInfo::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ApplicationCoreBuildInfo::
-ApplicationCoreBuildInfo()
-: m_core(new CoreImpl())
-{
-}
-
-ApplicationCoreBuildInfo::
-ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs)
-: m_core(new CoreImpl(*rhs.m_core))
-{
-}
-
-ApplicationCoreBuildInfo& ApplicationCoreBuildInfo::
-operator=(const ApplicationCoreBuildInfo& rhs)
-{
-  if (&rhs != this) {
-    delete m_core;
-    m_core = new CoreImpl(*(rhs.m_core));
-  }
-  return (*this);
-}
-
-ApplicationCoreBuildInfo::
-~ApplicationCoreBuildInfo()
-{
-  delete m_core;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 ApplicationBuildInfo::
 ApplicationBuildInfo()
 : m_p(new Impl())
@@ -195,18 +126,6 @@ ApplicationBuildInfo::
 ~ApplicationBuildInfo()
 {
   delete m_p;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ApplicationCoreBuildInfo::
-setDefaultValues()
-{
-  {
-    String str = m_core->getValue({ "ARCANE_NB_TASK" }, "T", String());
-    PropertyImpl::checkSet(m_core->m_nb_task_thread, str);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
