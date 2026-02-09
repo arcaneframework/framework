@@ -142,7 +142,7 @@ class MeshScalarPropertyViewBase
   : m_item_lids(std::move(item_lids))
   , m_data_view(data_view) {}
 
-  int size() const noexcept { return m_item_lids.size(); }
+  [[nodiscard]] int size() const noexcept { return m_item_lids.size(); }
 
   PropertyViewIterator<DataType> begin() { return { m_item_lids, m_item_lids.begin()++, m_data_view.begin() + m_item_lids[0] }; }
   PropertyViewIterator<DataType> end() { return { m_item_lids, m_item_lids.end(), m_data_view.end() }; }
@@ -210,7 +210,7 @@ class MeshArrayPropertyViewBase
    *
    * @return the number of items in the view
    */
-  int size() const noexcept { return m_item_lids.size(); }
+  [[nodiscard]] int size() const noexcept { return m_item_lids.size(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -265,7 +265,7 @@ class PropertyBase
   explicit PropertyBase(std::string name)
   : m_name(std::move(name)) {}
 
-  std::string name() const noexcept {
+  [[nodiscard]] std::string name() const noexcept {
     return m_name;
   }
 };
@@ -316,7 +316,7 @@ class ArrayPropertyT : public PropertyBase
   explicit ArrayPropertyT(std::string name)
   : PropertyBase(std::move(name)) {}
 
-  std::size_t size() const noexcept { return m_data.size(); };
+  [[nodiscard]] std::size_t size() const noexcept { return m_data.size(); };
 
   void resize(int new_size) { m_data.resize(new_size); }
 
@@ -385,7 +385,7 @@ class MeshScalarPropertyT : public PropertyBase
       append(item_range, std::vector<DataType>(item_range.size(), value));
   }
 
-  bool isInitializableFrom(const ItemRange& item_range) const { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
+  [[nodiscard]] bool isInitializableFrom(const ItemRange& item_range) const { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
 
   /*!
    * @brief Fill an \b empty property with an array of values indexed by a range. May copy or move the values.
@@ -459,7 +459,7 @@ class MeshScalarPropertyT : public PropertyBase
 
   utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.data(), m_data.size() }; }
 
-  std::size_t size() const { return m_data.size(); }
+  [[nodiscard]] std::size_t size() const { return m_data.size(); }
 
   void clear() {
     m_data.clear();
@@ -500,7 +500,7 @@ class MeshScalarPropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class MeshArrayPropertyProxyT;
+struct MeshArrayPropertyProxyT;
 
 template <typename DataType>
 class MeshArrayPropertyT : public PropertyBase
@@ -597,7 +597,7 @@ class MeshArrayPropertyT : public PropertyBase
   /*!
    * @return number of items of property support
    */
-  int size() const noexcept {
+  [[nodiscard]] int size() const noexcept {
     return m_offsets.size();
   }
 
@@ -605,7 +605,7 @@ class MeshArrayPropertyT : public PropertyBase
    *
    * @return an array with the size of each item array
    */
-  utils::ConstSpan<int> sizes() const noexcept {
+  [[nodiscard]] utils::ConstSpan<int> sizes() const noexcept {
     return { m_offsets.data(), m_offsets.size() };
   }
 
@@ -613,7 +613,7 @@ class MeshArrayPropertyT : public PropertyBase
    *
    * @return sum of each item array size
    */
-  int cumulatedSize() const noexcept {
+  [[nodiscard]] int cumulatedSize() const noexcept {
     return m_data_size;
   }
 
@@ -753,8 +753,8 @@ template <typename DataType>
 struct MeshArrayPropertyProxyT {
   MeshArrayPropertyT<DataType> & m_mesh_array_property;
 
-  using OffsetType = typename MeshArrayPropertyT<DataType>::PropertyOffsetType;
-  using IndexType = typename MeshArrayPropertyT<DataType>::PropertyIndexType;
+  using OffsetType = MeshArrayPropertyT<DataType>::PropertyOffsetType;
+  using IndexType  = MeshArrayPropertyT<DataType>::PropertyIndexType;
 
   DataType* arrayPropertyData() noexcept { return m_mesh_array_property.m_data.data(); }
   DataType const* arrayPropertyData() const noexcept { return m_mesh_array_property.m_data.data(); }
@@ -800,7 +800,7 @@ class ItemLidsProperty : public PropertyBase
 
   void debugPrint(int rank = 0) const;
 
-  utils::Int32 _getLidFromUid(utils::Int64 const uid) const;
+  utils::Int32 _getLidFromUid(utils::Int64 uid) const;
 
   void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const;
 
