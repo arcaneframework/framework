@@ -553,6 +553,14 @@ class MeshArrayPropertyT : public PropertyBase
     m_data = std::move(values);
   }
 
+  void init(std::vector<int> sizes, std::vector<DataType> values) {
+    NEO_ASSERT(values.size() == (std::size_t)std::accumulate(sizes.begin(), sizes.end(), 0), "sizes and values are not compatible");
+    if (sizes.empty() || values.empty()) return;
+    m_offsets = std::move(sizes);
+    _updateIndexes();
+    m_data = std::move(values);
+  }
+
   /*!
    * @brief Fill an array property (empty or not) with an array of values. Always copy values.
    * @param item_range
