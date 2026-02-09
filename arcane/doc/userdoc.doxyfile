@@ -1035,6 +1035,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf/subchap_profiling \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities \
+                         @ARCANESRCROOT@/doc/doc_user/chap_entities/subchap_amr_cartesianmesh \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_simple_example \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_concret_example \
@@ -1190,6 +1191,7 @@ IMAGE_PATH             = @ARCANESRCROOT@/doc/specifs/images \
                          @ARCANESRCROOT@/doc/theme/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities/img \
+                         @ARCANESRCROOT@/doc/doc_user/chap_entities/subchap_amr_cartesianmesh/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_simple_example/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_concret_example/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_io/subchap_timehistory/img \
