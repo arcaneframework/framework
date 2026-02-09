@@ -2,6 +2,8 @@ set(SOURCES
   AbstractArray.h
   AllocatedMemoryInfo.h
   AlignedMemoryAllocator.h
+  ArccoreApplicationBuildInfo.h
+  ArccoreApplicationBuildInfo.cc
   ArrayDebugInfo.h
   Array.h
   Array.cc
@@ -54,6 +56,7 @@ set(SOURCES
   StringVector.h
   StringVector.cc
 
+  internal/ArccoreApplicationBuildInfoImpl.h
   internal/FieldProperty.h
   internal/IMemoryResourceMngInternal.h
   internal/IMemoryCopier.h
