@@ -10,39 +10,23 @@
 
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
+
+#include <alien/handlers/accelerator/HCSRViewT.h>
+
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 
 #include <alien/kernels/hypre/HypreBackEnd.h>
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 
+#include "SYCL_to_Hypre_VectorConverter.h"
+
 #include <alien/kernels/sycl/SYCLBackEnd.h>
 
 #include <alien/kernels/sycl/data/SYCLVector.h>
 
+#include "SYCL_to_Hypre_VectorConverter.h"
 
 using namespace Alien;
-
-/*---------------------------------------------------------------------------*/
-class SYCL_to_Hypre_VectorConverter : public IVectorConverter
-{
- public:
-  SYCL_to_Hypre_VectorConverter();
-  virtual ~SYCL_to_Hypre_VectorConverter() {}
-
- public:
-  Alien::BackEndId sourceBackend() const
-  {
-    return AlgebraTraits<BackEnd::tag::sycl>::name();
-  }
-
-  Alien::BackEndId targetBackend() const
-  {
-    return AlgebraTraits<BackEnd::tag::hypre>::name();
-  }
-
-  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
-};
-
 /*---------------------------------------------------------------------------*/
 
 SYCL_to_Hypre_VectorConverter::SYCL_to_Hypre_VectorConverter()
@@ -55,21 +39,63 @@ void
 SYCL_to_Hypre_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const SYCLVector<double>& v =
+  const SYCLVector<double>& source =
   cast<SYCLVector<double>>(sourceImpl, sourceBackend());
-  auto& v2 = cast<HypreVector>(targetImpl, targetBackend());
+  auto& target = cast<HypreVector>(targetImpl, targetBackend());
 
   alien_debug([&] {
-    cout() << "Converting SYCLVector: " << &v << " to HypreVector " << &v2;
+    cout() << "Converting SYCLVector: " << &source << " to HypreVector " << &target;
   });
 
-  Alien::HypreVector::IndexType* rows_d = nullptr;
-  Alien::HypreVector::ValueType* values_d = nullptr ;
-  v.initDevicePointers(&rows_d, &values_d) ;
-  v2.setValues(v.getAllocSize(), rows_d, values_d);
-  v2.assemble() ;
-  Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
+
+  if(target.getMemoryType()==Alien::BackEnd::Memory::Host)
+  {
+    UniqueArray<Arccore::Real> values(source.getAllocSize()) ;
+    source.copyValuesTo(values.size(),values.data());
+    target.setValues(values.size(), values.unguardedBasePointer());
+    target.assemble() ;
+  }
+  else
+  {
+#ifdef ALIEN_USE_SYCL
+      std::size_t alloc_size = source.getAllocSize();
+      auto view = HVectorViewT<HypreVector>{&target,BackEnd::Memory::Device,alloc_size} ;
+      source.copyValuesToDevice(view.m_values) ;
+      target.setValues(alloc_size, view.m_values);
+      target.assemble() ;
+#endif
+  }
 }
+
+void
+SYCL_to_Hypre_VectorConverter::convert(const SYCLVector<double>& source,
+                                       HypreVector& target) const
+{
+
+  alien_debug([&] {
+    cout() << "Converting SYCLVector: " << &source << " to HypreVector " << &target;
+  });
+
+
+  if(target.getMemoryType()==Alien::BackEnd::Memory::Host)
+  {
+    UniqueArray<Arccore::Real> values(source.getAllocSize()) ;
+    source.copyValuesTo(values.size(),values.data());
+    target.setValues(values.size(), values.unguardedBasePointer());
+    target.assemble() ;
+  }
+  else
+  {
+#ifdef ALIEN_USE_SYCL
+    std::size_t alloc_size = source.getAllocSize();
+    auto view = HVectorViewT<HypreVector>{&target,BackEnd::Memory::Device,alloc_size} ;
+    source.copyValuesToDevice(view.m_values) ;
+    target.setValues(alloc_size, view.m_values);
+    target.assemble() ;
+#endif
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 
 REGISTER_VECTOR_CONVERTER(SYCL_to_Hypre_VectorConverter);

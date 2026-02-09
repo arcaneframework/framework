@@ -59,7 +59,7 @@ const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
   [&] { cout() << "Converting SimpleCSRVector: " << &v << " to SYCLVector " << &v2; });
 
   ConstArrayView<Real> values = v.values();
-  v2.setValues(v.scalarizedLocalSize(), values.data());
+  v2.setValues(values.size(), values.data());
 }
 
 /*---------------------------------------------------------------------------*/

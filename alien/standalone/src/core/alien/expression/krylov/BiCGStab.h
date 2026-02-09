@@ -324,7 +324,7 @@ class BiCGStab
     m_algebra.copy(r, p);
     m_algebra.dot(r, r0, frho1);
     if (m_output_level > 1)
-      _print(0, "Seq 0", "rho1", rho1);
+      _print(0, "Seq 0", "rho1", frho1.get());
 
     /*
            phat = solve(M, p);

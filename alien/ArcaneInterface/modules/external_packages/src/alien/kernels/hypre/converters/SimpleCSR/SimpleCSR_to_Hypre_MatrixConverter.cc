@@ -119,6 +119,19 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
       alien_info([&] {
           cout() << "Copy values From Host to Host";
         });
+
+      auto values = matrixInternal.getValues();
+      auto cols = profile.getCols();
+      const bool success = targetImpl.setMatrixValues(localSize,
+                                                      row_uids.data(),
+                                                      sizes.data(),
+                                                      cols.data(),
+                                                      values.data()) ;
+      if (not success) {
+        throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot set Hypre Matrix Values from Host to Host");
+      }
+
+      /*
       // Buffer de construction
       Arccore::UniqueArray<double> values(std::max(localSize, max_line_size));
       Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
@@ -141,11 +154,13 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
         const bool success =
             targetImpl.setMatrixValues(1, &row, &ncols, indices.data(), values.data());
 
+
+
         if (not success) {
           throw Arccore::FatalErrorException(A_FUNCINFO,
               Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
         }
-      }
+      }*/
     }
     else
     {

@@ -88,7 +88,20 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreVector : public IVectorImpl
 
   bool getValues(const int nrow, double* values) const;
 
-  bool setValue(ValueType value) ;
+  bool copyValuesToDevice(std::size_t nrow,
+                          IndexType* rows_d,
+                          ValueType* values_d) const ;
+
+  bool copyValuesToHost(std::size_t nrow,
+                        IndexType* rows_d,
+                        ValueType* values_d) const ;
+
+  bool setValuesToZeros() ;
+
+
+  void allocateDevicePointers(std::size_t local_size, ValueType** values) const;
+
+  void freeDevicePointers(ValueType* values) const;
 
  public:
   // Méthodes restreintes à usage interne de l'implémentation HYPRE

@@ -94,6 +94,63 @@ class VectorInternal
     queue.wait() ;
   }
 
+  void setValuesFromDevice(std::size_t size, ValueT const* ptr) const
+  {
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    auto access_x = m_values.template get_access<sycl::access::mode::discard_write>(cgh);
+                    std::size_t y_length = size ;
+                    cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                            access_x[i] = ptr[i];
+                                                      });
+                  });
+    queue.wait() ;
+    {
+      sycl::host_accessor<ValueT, 1, sycl::access::mode::read> vec_acc(m_values);
+      for(int irow=0;irow<size;++irow)
+      {
+         std::cout<<"VEC["<<irow<<"]"<<vec_acc[irow]<<std::endl;
+      }
+    }
+  }
+
+  void setValuesFromHost(std::size_t size, ValueT const* ptr) const
+  {
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    auto rhs = ValueBufferType(ptr,sycl::range<1>(size)) ;
+
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    auto access_x = m_values.template get_access<sycl::access::mode::discard_write>(cgh);
+                    auto access_rhs = rhs.template get_access<sycl::access::mode::read>(cgh);
+                    std::size_t y_length = size ;
+                    cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                            access_x[i] = access_rhs[i];
+                                                      });
+                  });
+    queue.wait() ;
+    {
+      sycl::host_accessor<ValueT, 1, sycl::access::mode::read> vec_acc(m_values);
+      for(int irow=0;irow<size;++irow)
+      {
+         std::cout<<"VEC["<<irow<<"]"<<vec_acc[irow]<<std::endl;
+      }
+    }
+  }
+
   void copy(ValueBufferType& src)
   {
     auto env = SYCLEnv::instance() ;

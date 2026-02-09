@@ -35,6 +35,7 @@ IF(ALIEN_USE_SYCL)
     addSources(alien_external_packages
                converters/HCSR/HCSR_to_Hypre_VectorConverter.cc
                converters/HCSR/SYCL_to_Hypre_VectorConverter.cc
+               converters/HCSR/Hypre_to_SYCL_VectorConverter.cc
                converters/HCSR/HCSR_to_Hypre_MatrixConverter.cc
               )
 ENDIF()

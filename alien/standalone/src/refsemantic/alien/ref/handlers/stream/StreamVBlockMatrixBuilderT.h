@@ -150,7 +150,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::init()
   if (m_state == eInit)
     return;
 
-  const ISpace& space = m_matrix.rowSpace();
+  //const ISpace& space = m_matrix.rowSpace();
   // if (space != m_matrix.colSpace())
   //  throw FatalErrorException(
   //      "stream matrix builder must be used with square matrix");
@@ -373,7 +373,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   profile.allocate();
   ArrayView<Integer> m_cols = profile.getCols();
 
-  Integer icount = 0;
+  //Integer icount = 0;
   Integer offset = 0;
   for (Integer row = 0; row < m_local_size; ++row) {
     const Integer ghost_offset = m_row_size[row] - m_ghost_row_size[row];
@@ -384,7 +384,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
       if (!isLocal(col_uid))
         iter.value() += ghost_offset;
       m_cols[offset + VALUE_OF(iter)] = col_uid;
-      ++icount;
+      //++icount;
     }
     offset += m_row_size[row];
   }

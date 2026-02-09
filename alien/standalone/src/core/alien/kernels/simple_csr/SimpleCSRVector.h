@@ -31,15 +31,11 @@ class SimpleCSRVector : public IVectorImpl
   //! Constructeur sans association ? un MultiImpl
   SimpleCSRVector()
   : IVectorImpl(nullptr, AlgebraTraits<BackEnd::tag::simplecsr>::name())
-  , m_local_size(0)
-  , m_vblock(nullptr)
   {}
 
   //! Constructeur avec association ? un MultiImpl
   SimpleCSRVector(const MultiVectorImpl* multi_impl)
   : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::simplecsr>::name())
-  , m_local_size(0)
-  , m_vblock(nullptr)
   {}
 
   Integer blockSize() const
@@ -52,7 +48,7 @@ class SimpleCSRVector : public IVectorImpl
       return -1 ;
     }
     else {
-      return 1 ;
+      return m_own_block_size ;
     }
   }
 
@@ -66,9 +62,10 @@ class SimpleCSRVector : public IVectorImpl
 
   void allocate()
   {
-    m_values.resize(m_local_size);
+    auto block_size = blockSize() ;
+    m_values.resize(m_local_size*block_size);
     if (this->vblock())
-      m_vblock = new VBlockImpl(*this->vblock(), this->distribution());
+      m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
   }
 
   void resize(Integer alloc_size) const
@@ -76,8 +73,7 @@ class SimpleCSRVector : public IVectorImpl
     if (alloc_size > m_local_size)
       m_values.resize(alloc_size);
     if (this->vblock()) {
-      delete m_vblock;
-      m_vblock = new VBlockImpl(*this->vblock(), this->distribution());
+      m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
     }
   }
 
@@ -86,15 +82,14 @@ class SimpleCSRVector : public IVectorImpl
   void clear() override
   {
     m_values.dispose();
-    delete m_vblock;
-    m_vblock = nullptr;
+    m_vblock.reset();
   }
 
   // values on local part
-  Arccore::ArrayView<ValueType> values() { return m_values.subView(0, m_local_size); }
+  Arccore::ArrayView<ValueType> values() { return m_values.subView(0, m_local_size*blockSize()); }
   Arccore::ConstArrayView<ValueType> values() const
   {
-    return m_values.subConstView(0, m_local_size);
+    return m_values.subConstView(0, m_local_size*blockSize());
   }
 
   // Algebra adds ghost values
@@ -126,8 +121,7 @@ class SimpleCSRVector : public IVectorImpl
     alien_debug([&] { cout() << "Initializing SimpleCSRVector " << this; });
     if (this->m_multi_impl) {
       if (this->vblock()) {
-        delete m_vblock;
-        m_vblock = new VBlockImpl(*this->vblock(), this->distribution());
+        m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
       }
       m_local_size = this->scalarizedLocalSize();
     }
@@ -150,10 +144,9 @@ class SimpleCSRVector : public IVectorImpl
     setBlockSize(block_size) ;
     if (this->m_multi_impl) {
       if (this->vblock()) {
-        delete m_vblock;
-        m_vblock = new VBlockImpl(*this->vblock(), this->distribution());
+        m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
       }
-      m_local_size = this->scalarizedLocalSize();
+      m_local_size = this->distribution().localSize();
     }
     else {
       // Not associated vector
@@ -219,11 +212,11 @@ class SimpleCSRVector : public IVectorImpl
   }
 
  private:
-  mutable UniqueArray<ValueT> m_values;
-  Integer m_local_size = 0;
-  Integer m_own_block_size = 1 ;
-  mutable VBlockImpl* m_vblock = nullptr;
-  VectorDistribution m_own_distribution;
+  mutable UniqueArray<ValueT>         m_values;
+  Integer                             m_local_size = 0;
+  Integer                             m_own_block_size = 1 ;
+  VectorDistribution                  m_own_distribution;
+  mutable std::unique_ptr<VBlockImpl> m_vblock ;
 };
 
 /*---------------------------------------------------------------------------*/
