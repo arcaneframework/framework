@@ -575,6 +575,9 @@ updateLevelsAndAddGroundPatch()
     return;
   }
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
+  auto amr = m_cmesh->_internalApi()->cartesianMeshAMRPatchMng();
+
+  amr->createSubLevel();
 
   // Attention : on suppose que numbering->updateFirstLevel(); a déjà été appelé !
 
@@ -604,14 +607,23 @@ updateLevelsAndAddGroundPatch()
     }
   }
 
-  AMRPatchPosition old_ground;
-  old_ground.setLevel(1);
-  old_ground.setMinPoint({ 0, 0, 0 });
-  old_ground.setMaxPoint({ numbering->globalNbCellsX(1), numbering->globalNbCellsY(1), numbering->globalNbCellsZ(1) });
-  old_ground.computeOverlapLayerSize(m_higher_level + 1, m_size_of_overlap_layer_top_level);
+  {
+    AMRPatchPosition old_ground;
+    old_ground.setLevel(1);
+    old_ground.setMinPoint({ 0, 0, 0 });
+    old_ground.setMaxPoint({ numbering->globalNbCellsX(1), numbering->globalNbCellsY(1), numbering->globalNbCellsZ(1) });
+    old_ground.computeOverlapLayerSize(m_higher_level + 1, m_size_of_overlap_layer_top_level);
+    _addPatch(old_ground);
+  }
+  // Calcul des directions du nouveau patch ground.
+  m_cmesh->computeDirectionsPatchV2(0);
 
-  _addPatch(old_ground);
   _updatePatchFlagsOfItemsGroundLevel();
+
+  // Les méthodes _increaseOverlapSizeLevel() et _reduceOverlapSizeLevel()
+  // s'occuperont de recalculer les directions des patchs surélevés.
+  // Note : Le recalcul est nécessaire car on ajoute/supprime des mailles de
+  // recouvrement.
   _updateHigherLevel();
 
 #ifdef ARCANE_CHECK

@@ -184,7 +184,7 @@ createSubLevel() const
     coarser->createCoarseCells();
   }
   else if(amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_cmesh->_internalApi()->cartesianMeshAMRPatchMng()->createSubLevel();
+    m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
   }
   else if(amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
