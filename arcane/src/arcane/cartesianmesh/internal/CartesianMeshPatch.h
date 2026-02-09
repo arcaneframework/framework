@@ -76,6 +76,7 @@ class CartesianMeshPatch
  public:
   CellGroup cells() override;
   CellGroup inPatchCells() override;
+  CellGroup overlapCells() override;
   Integer index() override
   {
     return m_amr_patch_index;

@@ -61,6 +61,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
    */
   CellGroup inPatchCells() const;
 
+  /*!
+   * \brief Groupe de mailles de recouvrement du patch.
+   *
+   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   */
+  CellGroup overlapCells() const;
+
   //! Index du patch dans le tableau des patchs.
   Integer index() const;
 

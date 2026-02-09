@@ -93,6 +93,16 @@ inPatchCells()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+CellGroup CartesianMeshPatch::
+overlapCells()
+{
+  return cellDirection(MD_DirX).overlapCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*
  * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
  * pour chaque direction.
