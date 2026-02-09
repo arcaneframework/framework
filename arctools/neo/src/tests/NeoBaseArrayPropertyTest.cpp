@@ -304,4 +304,25 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
 }
 
 /*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestArrayProperty, test_mesh_array_property_new_init) {
+  Neo::MeshArrayPropertyT<Neo::utils::Int32> mesh_array_property{"mesh_array_property_new_init"};
+  std::vector<Neo::utils::Int32> sizes{0,1,2,0,1,2};
+  std::vector<Neo::utils::Int32> values(6);
+  std::iota(values.begin(), values.end(), 0);
+  mesh_array_property.init(sizes,values);
+  auto sizes_check = mesh_array_property.sizes();
+  EXPECT_TRUE(std::equal(sizes_check.begin(),sizes_check.end(),sizes.begin()));
+  std::vector<Neo::utils::Int32> values_check;
+  Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,6}};
+  for (auto item : item_range) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_check.push_back(item_value);
+    }
+  }
+  Neo::printer() << values_check;
+  EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
+}
+
+/*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
