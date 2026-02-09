@@ -425,7 +425,7 @@ class HostDeviceReducerBase
   ARCCORE_HOST_DEVICE void
   _finalize()
   {
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_CODE)
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
     //if ((threadId%16)==0)
     //printf("Destroy device Id=%d\n",threadId);
@@ -438,7 +438,9 @@ class HostDeviceReducerBase
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     dvi.m_current_value = m_local_value;
+#if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
+#endif
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     // Code hôte
