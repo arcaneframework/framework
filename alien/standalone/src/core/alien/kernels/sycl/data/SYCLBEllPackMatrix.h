@@ -90,18 +90,10 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
  public:
   /** Constructeur de la classe */
-  SYCLBEllPackMatrix()
-  : IMatrixImpl(nullptr, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  {}
+  SYCLBEllPackMatrix() ;
 
   /** Constructeur de la classe */
-  SYCLBEllPackMatrix(const MultiMatrixImpl* multi_impl)
-  : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  {}
+  SYCLBEllPackMatrix(const MultiMatrixImpl* multi_impl) ;
 
   /** Destructeur de la classe */
   virtual ~SYCLBEllPackMatrix();
@@ -131,7 +123,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
                   std::size_t nrows,
                   int const* kcol,
                   int const* cols,
-                  SimpleCSRInternal::DistStructInfo const& matrix_dist_info);
+                  SimpleCSRInternal::DistStructInfo const& matrix_dist_info,
+                  int block_size=1);
 
   SYCLBEllPackMatrix* cloneTo(const MultiMatrixImpl* multi) const;
 
@@ -147,7 +140,29 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   Integer getAllocSize() const { return m_local_size + m_ghost_size; }
 
+  Integer blockSize() const
+  {
+    if (block())
+    {
+       return block()->size();
+    }
+    else if (vblock()) {
+      return -1 ;
+    }
+    else {
+      return 1 ;
+    }
+  }
+
+  void setBlockSize(Integer block_size)
+  {
+    if(this->m_multi_impl)
+      const_cast<MultiMatrixImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+  }
+
   bool setMatrixValues(Arccore::Real const* values, bool only_host);
+
+  void copy(SYCLBEllPackMatrix const& matrix) ;
 
   void notifyChanges();
   void endUpdate();
@@ -161,6 +176,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   void multInvDiag(SYCLVector<ValueType>& y) const;
   void computeInvDiag(SYCLVector<ValueType>& y) const;
 
+  void scal(SYCLVector<ValueType> const& diag) ;
+
   const DistStructInfo& getDistStructInfo() const { return m_matrix_dist_info; }
 
   Alien::SimpleCSRInternal::CommProperty::ePolicyType getSendPolicy() const
@@ -173,9 +190,9 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
     return m_recv_policy;
   }
 
-  MatrixInternal1024* internal() { return m_matrix1024; }
+  MatrixInternal1024* internal() { return m_matrix1024.get(); }
 
-  MatrixInternal1024 const* internal() const { return m_matrix1024; }
+  MatrixInternal1024 const* internal() const { return m_matrix1024.get(); }
 
  private:
   class IsLocal
@@ -196,12 +213,12 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   };
 
   // clang-format off
-  ProfileInternal1024*                    m_profile1024     = nullptr ;
-  MatrixInternal1024*                     m_matrix1024      = nullptr;
+  std::unique_ptr<ProfileInternal1024>    m_profile1024;
+  std::unique_ptr<MatrixInternal1024>     m_matrix1024;
 
-  ProfileInternal1024*                    m_ext_profile1024 = nullptr ;
+  std::unique_ptr<ProfileInternal1024>    m_ext_profile1024;
 
-  int                                     m_block_size      = 1024 ;
+  int                                     m_ellpack_size = 1024 ;
   std::vector<int>                        m_block_row_offset ;
   std::vector<int>                        m_ext_block_row_offset ;
 

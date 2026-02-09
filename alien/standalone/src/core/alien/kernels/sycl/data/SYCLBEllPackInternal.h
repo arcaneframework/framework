@@ -30,16 +30,16 @@ namespace Alien::SYCLInternal
   using namespace cl ;
 #endif
 
-template <int BlockSize, typename IndexT>
+template <int EllPackSize, typename IndexT>
 struct ALIEN_EXPORT StructInfoInternal
 {
   // clang-format off
-  static const int                    block_size = BlockSize ;
-  typedef IndexT                      index_type ;
-  typedef IndexT                      IndexType ;
-  typedef sycl::buffer<index_type, 1> index_buffer_type ;
-  typedef sycl::buffer<index_type, 1> IndexBufferType ;
-  typedef sycl::buffer<uint8_t, 1>    MaskBufferType ;
+  static const int ellpack_size = EllPackSize ;
+  using index_type              = IndexT;
+  using IndexType               = IndexT;
+  using index_buffer_type       = sycl::buffer<index_type, 1>;
+  using IndexBufferType         = sycl::buffer<index_type, 1>;
+  using MaskBufferType          = sycl::buffer<uint8_t, 1>;
   // clang-format on
 
   StructInfoInternal(std::size_t nrows,
@@ -102,34 +102,74 @@ struct ALIEN_EXPORT StructInfoInternal
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT, int BlockSize>
+template <typename ValueT, int EllPackSize>
 class MatrixInternal
 {
  public:
   // clang-format off
-  typedef MatrixInternal<ValueT,BlockSize>        ThisType;
+  using ThisType = MatrixInternal<ValueT,EllPackSize>;
 
-  typedef ValueT                                  ValueType;
-  typedef ValueT                                  value_type;
-  static const int                                block_size = BlockSize ;
+  static const int ellpack_size = EllPackSize ;
 
-  typedef BEllPackStructInfo<BlockSize,int>       ProfileType;
-  typedef typename ProfileType::InternalType      InternalProfileType ;
-  typedef typename InternalProfileType::IndexType IndexType ;
-  typedef typename
-      InternalProfileType::IndexBufferType        IndexBufferType ;
-  typedef std::unique_ptr<IndexBufferType>        IndexBufferPtrType ;
+  using ValueType           = ValueT;
+  using value_type          = ValueT;
 
-  typedef sycl::buffer<value_type, 1>             value_buffer_type ;
+  using ProfileType         = BEllPackStructInfo<EllPackSize,int>;
+  using InternalProfileType = typename ProfileType::InternalType;
+  using IndexType           = typename InternalProfileType::IndexType;
+  using IndexBufferType     = typename InternalProfileType::IndexBufferType;
+  using IndexBufferPtrType  = std::unique_ptr<IndexBufferType>;
 
-  typedef sycl::buffer<value_type, 1>             ValueBufferType ;
-  typedef std::unique_ptr<ValueBufferType>        ValueBufferPtrType ;
+  using value_buffer_type   = sycl::buffer<value_type, 1>;
+  using ValueBufferType     = sycl::buffer<value_type, 1>;
+  using ValueBufferPtrType  = std::unique_ptr<ValueBufferType>;
 
-  typedef sycl::queue                             QueueType ;
+  using QueueType           = sycl::queue;
   // clang-format on
 
+  struct Tile
+  {
+    static const int ellpack_size = EllPackSize ;
+    int m_N = 0 ;
+    int m_NxN = 0 ;
+
+    Tile(int N)
+    : m_N(N)
+    , m_NxN(N*N)
+    {}
+
+    inline std::size_t _ijk(std::size_t k, int i, int j) const
+    {
+      return (k*m_NxN + i*m_N + j)*ellpack_size;
+    }
+
+    template<typename MatrixValueAccessorT,
+             typename MatrixColAccessorT,
+             typename VectorAccessorT>
+    ValueType mult(int ieq,
+                std::size_t local_id,
+                std::size_t k,
+                MatrixColAccessorT& cols,
+                MatrixValueAccessorT& matrix,
+                VectorAccessorT& x) const
+    {
+      ValueType value = 0. ;
+      auto x_offset = cols[k*ellpack_size+local_id]*m_N ;
+      if(x_offset>=0)
+      {
+        for(int j=0;j<m_N;++j)
+        {
+          auto mat_offset = _ijk(k,ieq,j)+local_id ;
+          value += matrix[mat_offset]*x[x_offset+j] ;
+          //printf("\n %d %d %d %d : %f += %f*%f ",ieq,j,int(k),int(mat_offset),value,matrix[mat_offset],x[x_offset+j]) ;
+        }
+      }
+      return value ;
+    }
+  };
+
  public:
-  MatrixInternal(ProfileType const* profile);
+  MatrixInternal(ProfileType const* profile, int blk_size=1);
 
   ~MatrixInternal() {}
 
@@ -137,6 +177,11 @@ class MatrixInternal
   bool setMatrixValuesFromHost();
 
   bool setMatrixValues(ValueBufferType& values);
+
+  bool copy(std::size_t nb_blocks,
+            Integer block_size,
+            ValueBufferType& rhs_values,
+            Integer rhs_block_size);
 
   bool needUpdate();
   void notifyChanges();
@@ -161,6 +206,10 @@ class MatrixInternal
   void computeInvDiag(ValueBufferType& y) const;
 
   void computeInvDiag(ValueBufferType& y, QueueType& queue) const;
+
+  void scal(ValueBufferType& y);
+
+  void scal(ValueBufferType& y, QueueType& queue);
 
   ValueBufferType& getValues() { return m_values; }
 
@@ -190,6 +239,8 @@ class MatrixInternal
   }
 
   // clang-format off
+  int                        m_N           = 1;
+  int                        m_NxN         = 1;
   ProfileType const*         m_profile     = nullptr;
   ProfileType const*         m_ext_profile = nullptr;
 

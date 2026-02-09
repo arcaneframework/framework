@@ -109,6 +109,7 @@ HypreVector::allocate(const VectorDistribution& dist)
   m_rows.resize(dist.localSize() * m_block_size);
   for (int i = 0; i < dist.localSize() * m_block_size; ++i)
     m_rows[i] = ilower + i;
+  m_internal->setRows(m_rows.size(),m_rows.data()) ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,7 +117,7 @@ HypreVector::allocate(const VectorDistribution& dist)
 bool
 HypreVector::setValues(const int nrow, const int* rows, const double* values)
 {
-  if (m_internal == NULL)
+  if (m_internal == nullptr)
     return false;
   return m_internal->setValues(nrow, rows, values);
 }
@@ -124,21 +125,26 @@ HypreVector::setValues(const int nrow, const int* rows, const double* values)
 /*---------------------------------------------------------------------------*/
 
 bool
-HypreVector::setValues([[maybe_unused]] const int nrow, const double* values)
+HypreVector::setValues(const int nrow, const double* values)
 {
-  if (m_internal == NULL)
+  if (m_internal == nullptr)
     return false;
-
-  return m_internal->setValues(m_rows.size(), m_rows.data(), values);
+  if(getMemoryType()==BackEnd::Memory::Host)
+    return m_internal->setValues(nrow, m_rows.data(), values);
+  else
+    return m_internal->setValuesOnDevice(nrow, m_rows.data(), values);
 }
 
 
-bool HypreVector::setValue(ValueType value)
+bool HypreVector::setValuesToZeros()
 {
-  if (m_internal == NULL)
+  if (m_internal == nullptr)
     return false;
-  std::vector<ValueType> values(m_rows.size(),value) ;
-  return m_internal->setValues(m_rows.size(), m_rows.data(), values.data());
+  bool ok = m_internal->setValuesToZeros(m_rows.size(), m_rows.data()) ;
+  if(ok)
+    return m_internal->assemble();
+  else
+    return false ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,39 +152,68 @@ bool HypreVector::setValue(ValueType value)
 bool
 HypreVector::getValues(const int nrow, const int* rows, double* values) const
 {
-  if (m_internal == NULL)
+  if (m_internal == nullptr)
     return false;
   return m_internal->getValues(nrow, rows, values);
 }
 
+
+bool
+HypreVector::getValues(const int nrow, double* values) const
+{
+  if (m_internal == nullptr)
+    return false;
+
+  return m_internal->getValues(nrow, m_rows.data(), values);
+}
 /*---------------------------------------------------------------------------*/
 
 bool
-HypreVector::getValues([[maybe_unused]] const int nrow, double* values) const
+HypreVector::copyValuesToDevice(std::size_t nrows,
+                                IndexType* rows_d,
+                                ValueType* values_d) const
 {
-  if (m_internal == NULL)
-    return false;
-  if(m_internal->getMemoryType()==Alien::BackEnd::Memory::Host)
-    return m_internal->getValues(m_rows.size(), m_rows.data(), values);
-  else
-  {
+  if (m_internal == nullptr) return false ;
 #ifdef ALIEN_USE_SYCL
-      Alien::HypreVector::IndexType* rows_d = nullptr;
-      Alien::HypreVector::ValueType* values_d = nullptr ;
-      Alien::SYCLVector<Arccore::Real>::allocateDevicePointers(m_rows.size(),
-                                                               &rows_d,
-                                                               &values_d) ;
-      m_internal->getValues(m_rows.size(), rows_d, values_d);
-      Alien::SYCLVector<Arccore::Real>::copyDeviceToHost(m_rows.size(), values_d, values) ;
-      Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
-      return true ;
+  if(rows_d)
+    return m_internal->getValuesToDevice(nrows, rows_d, values_d);
+  else
+    return m_internal->getValuesToDevice(nrows, m_rows.data(), values_d);
 #else
-      alien_fatal([&] {
-        cout()<<"Error SYCL Support is required to get values of Hypre Vector from Device Memory";
-      });
-      return false ;
+  alien_fatal([&] {
+    cout()<<"Error SYCL Support is required to get values of Hypre Vector from Device Memory";
+  });
+  return false ;
 #endif
-  }
+}
+
+bool
+HypreVector::copyValuesToHost(std::size_t nrows,
+                              IndexType* rows_h,
+                              ValueType* values_h) const
+{
+  if (m_internal == nullptr) return false ;
+#ifdef ALIEN_USE_SYCL
+  if(rows_h)
+    return m_internal->getValuesToHost(nrows, rows_h, values_h);
+  else
+    return m_internal->getValuesToHost(nrows, m_rows.data(), values_h);
+#else
+  alien_fatal([&] {
+    cout()<<"Error SYCL Support is required to get values of Hypre Vector from Device Memory";
+  });
+  return false ;
+#endif
+}
+
+void HypreVector::allocateDevicePointers(std::size_t local_size, ValueType** values) const
+{
+  Internal::VectorInternal::allocateDevicePointers(local_size,values) ;
+}
+
+void HypreVector::freeDevicePointers(ValueType* values) const
+{
+  Internal::VectorInternal::freeDevicePointers(values) ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -186,7 +221,7 @@ HypreVector::getValues([[maybe_unused]] const int nrow, double* values) const
 bool
 HypreVector::assemble()
 {
-  if (m_internal == NULL)
+  if (m_internal == nullptr)
     return false;
   return m_internal->assemble();
 }

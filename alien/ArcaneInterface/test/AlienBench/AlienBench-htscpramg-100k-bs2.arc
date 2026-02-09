@@ -19,7 +19,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>1 1 1</nsd>
+        <nsd>2 2 1</nsd>
         <lx nx="100">1.</lx>
         <ly ny="100">1.</ly>
         <lz nz="10">1.</lz>
@@ -29,8 +29,10 @@
 
 
     <alien-bench>
-      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
+      <block-size>2</block-size>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <unit-rhs>false</unit-rhs>
       <homogeneous>false</homogeneous>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
@@ -39,14 +41,14 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-     <linear-solver name="HypreSolver">
-        <exec-space>Device</exec-space>
-        <memory-type>Host</memory-type>
+      <linear-solver name="HTSSolver">
         <solver>BiCGStab</solver>
-        <num-iterations-max>1000</num-iterations-max>
+        <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
-        <preconditioner>AMG</preconditioner>
-        <verbose>true</verbose>
+        <preconditioner>CprAMG</preconditioner>
+        <output>1</output>
+        <nb-part>1</nb-part>
+        <nb-subpart>1</nb-subpart>
       </linear-solver>
 
     

@@ -61,7 +61,7 @@ public:
     m_cxr_diag_scal.init(diag.distribution(),true) ;
     algebra.copy(diag,m_cxr_diag_scal) ;
     m_block_size = algebra.computeCxr(m_matrix,m_cxr_matrix);
-    m_cxr_matrix.scal(m_cxr_diag_scal.data()) ;
+    algebra.scal(m_cxr_diag_scal, m_cxr_matrix) ;
   }
 
 

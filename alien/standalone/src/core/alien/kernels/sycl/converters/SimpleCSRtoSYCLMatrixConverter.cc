@@ -72,6 +72,8 @@ const SimpleCSRMatrix<Real>& sourceImpl, SYCLBEllPackMatrix<Real>& targetImpl) c
   const Integer localOffset = dist.rowOffset();
   auto const& matrixInternal = *sourceImpl.internal();
 
+  auto block_size = sourceImpl.blockSize() ;
+
   {
     auto const& matrix_profile = sourceImpl.internal()->getCSRProfile();
     int nrows = matrix_profile.getNRow();
@@ -84,7 +86,8 @@ const SimpleCSRMatrix<Real>& sourceImpl, SYCLBEllPackMatrix<Real>& targetImpl) c
                                   nrows,
                                   kcol,
                                   cols,
-                                  sourceImpl.getDistStructInfo())) {
+                                  sourceImpl.getDistStructInfo(),
+                                  block_size)) {
       throw FatalErrorException(A_FUNCINFO, "SYCL Initialisation failed");
     }
 

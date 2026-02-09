@@ -11,11 +11,14 @@
       <variable>U</variable>
       <variable>X</variable>
       <variable>K</variable>
-      <variable>S</variable>
     </output>
   </arcane-post-processing>
 
   <mesh>
+    <!--file internal-partition='true'>cube3D.vt2</file-->
+     <!--file internal-partition='true'>tube5x5x100.vtk</file-->
+     <!--file internal-partition='true'>tube2x2x4.vtk</file-->
+     
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
@@ -29,9 +32,8 @@
 
 
     <alien-bench>
-      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
-      <homogeneous>false</homogeneous>
+      <block-size>2</block-size>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
@@ -39,14 +41,12 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-     <linear-solver name="HypreSolver">
-        <exec-space>Device</exec-space>
-        <memory-type>Host</memory-type>
-        <solver>BiCGStab</solver>
-        <num-iterations-max>1000</num-iterations-max>
-        <stop-criteria-value>1e-8</stop-criteria-value>
-        <preconditioner>AMG</preconditioner>
-        <verbose>true</verbose>
+
+      <linear-solver name="IFPSolver">
+          <num-iterations-max>1000</num-iterations-max>
+          <stop-criteria-value>1e-8</stop-criteria-value>
+          <precond-option>CprAmg</precond-option>
+          <output>2</output>
       </linear-solver>
 
     

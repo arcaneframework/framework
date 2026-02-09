@@ -37,16 +37,24 @@ void
 Hypre_to_SimpleCSR_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const auto& v = cast<HypreVector>(sourceImpl, sourceBackend());
-  SimpleCSRVector<Arccore::Real>& v2 =
+  const auto& source = cast<HypreVector>(sourceImpl, sourceBackend());
+  SimpleCSRVector<Arccore::Real>& target =
       cast<SimpleCSRVector<Arccore::Real>>(targetImpl, targetBackend());
 
   alien_debug([&] {
-    cout() << "Converting HypreVector: " << &v << " to SimpleCSRVector " << &v2;
+    cout() << "Converting HypreVector: " << &source << " to SimpleCSRVector " << &target;
   });
 
-  Arccore::ArrayView<Arccore::Real> values = v2.values();
-  v.getValues(values.size(), values.unguardedBasePointer());
+  if(source.getMemoryType()==Alien::BackEnd::Memory::Device)
+  {
+    Arccore::ArrayView<Arccore::Real> values = target.values();
+    source.copyValuesToHost(values.size(), nullptr, values.data());
+  }
+  else
+  {
+    Arccore::ArrayView<Arccore::Real> values = target.values();
+    source.getValues(values.size(), values.data());
+  }
 }
 
 void
@@ -57,8 +65,16 @@ Hypre_to_SimpleCSR_VectorConverter::convert(const HypreVector& source,
     cout() << "Converting HypreVector: " << &source << " to SimpleCSRVector " << &target;
   });
 
-  Arccore::ArrayView<Arccore::Real> values = target.values();
-  source.getValues(values.size(), values.unguardedBasePointer());
+  if(source.getMemoryType()==Alien::BackEnd::Memory::Device)
+  {
+    Arccore::ArrayView<Arccore::Real> values = target.values();
+    source.copyValuesToHost(values.size(), nullptr, values.data());
+  }
+  else
+  {
+    Arccore::ArrayView<Arccore::Real> values = target.values();
+    source.getValues(values.size(), values.data());
+  }
 
 }
 /*---------------------------------------------------------------------------*/

@@ -29,11 +29,11 @@ namespace Exception
       this->msg = oss.str();
     }
 
-    virtual ~BaseException() throw()
+    virtual ~BaseException() noexcept(true)
     {
     }
 
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept(true)
     {
       return this->msg.c_str();
     }

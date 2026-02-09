@@ -21,10 +21,12 @@
 /*! Separate data from header;
  *  can be only included by HypreLinearSystem and HypreLinearSolver
  */
+#include <vector>
 
 #include <alien/utils/Precomp.h>
 
 #include <alien/core/backend/BackEnd.h>
+#include <alien/AlienExternalPackagesPrecomp.h>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -121,6 +123,9 @@ class MatrixInternal
 class VectorInternal
 {
  public:
+  using ValueType = Arccore::Real;
+  using IndexType = int;
+
   VectorInternal(const MPI_Comm comm,
                  BackEnd::Memory::eType memory_type,
                  BackEnd::Exec::eSpaceType exec_space)
@@ -140,15 +145,23 @@ class VectorInternal
 
   bool init(const int ilower, const int iupper);
 
+  void setRows(std::size_t nrow, IndexType const* rows) ;
+
   bool addValues(const int nrow, const int* rows, const Arccore::Real* values);
 
   bool setValues(const int nrow, const int* rows, const Arccore::Real* values);
 
+  bool setValuesOnDevice(const int nrow, const int* rows, const Arccore::Real* values);
+
   bool setInitValues(const int nrow, const int* rows, const Arccore::Real* values);
+
+  bool setValuesToZeros(const int nrow, const int* rows) ;
 
   bool assemble();
 
   bool getValues(const int nrow, const int* rows, Arccore::Real* values);
+  bool getValuesToDevice(const int nrow, const int* rows, Arccore::Real* values);
+  bool getValuesToHost(const int nrow, const int* rows, Arccore::Real* values);
 
   BackEnd::Memory::eType getMemoryType() const {
     return m_memory_type ;
@@ -157,9 +170,17 @@ class VectorInternal
   BackEnd::Exec::eSpaceType getExecSpace() const {
     return m_exec_space  ;
   }
+
+  static void allocateDevicePointers(std::size_t local_size, ValueType** values);
+
+  static void freeDevicePointers(ValueType* values) ;
+
  private:
   vector_type m_internal;
   MPI_Comm m_comm;
+  IndexType* m_rows = nullptr ;
+  std::vector<ValueType> m_zeros ;
+  ValueType* m_zeros_device = nullptr ;
   BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
   BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
 };

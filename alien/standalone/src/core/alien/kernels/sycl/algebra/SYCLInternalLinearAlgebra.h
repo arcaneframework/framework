@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <tuple>
+
 #include <alien/utils/Precomp.h>
 
 #include <alien/core/backend/IInternalLinearAlgebraExprT.h>
@@ -38,7 +40,8 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
  public:
   typedef BackEnd::tag::sycl BackEndType;
 
-  typedef VectorDistribution ResourceType;
+  //typedef VectorDistribution ResourceType;
+  typedef std::tuple<VectorDistribution const*,Integer> ResourceType;
 
   class NullValueException
   : public Exception::NumericException
@@ -88,6 +91,7 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
   void dot(const Vector& x, const Vector& y, SYCLInternal::Future<Real>& res) const;
 
   void scal(Real alpha, Vector& x) const;
+  void scal(const Vector& x, Matrix& a) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
@@ -107,12 +111,15 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
     return precond.solve(*this, x, y);
   }
 
-  static ResourceType const& resource(Matrix const& A);
+  Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
+  Integer computeCxr(const Matrix& a, Vector const& diag_scal, Matrix& cxr_a) const ;
 
-  void allocate(ResourceType const& resource, Vector& v);
+  static ResourceType resource(Matrix const& A);
+
+  void allocate(ResourceType resource, Vector& v);
 
   template <typename T0, typename... T>
-  void allocate(ResourceType const& resource, T0& v0, T&... args)
+  void allocate(ResourceType resource, T0& v0, T&... args)
   {
     allocate(resource, v0);
     allocate(resource, args...);

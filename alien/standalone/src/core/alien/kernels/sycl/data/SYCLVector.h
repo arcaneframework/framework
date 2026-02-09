@@ -8,11 +8,14 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
+
+#include <alien/core/block/VBlockOffsets.h>
 #include <alien/core/impl/IVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/data/ISpace.h>
 #include <alien/kernels/sycl/SYCLBackEnd.h>
 #include <alien/kernels/sycl/SYCLPrecomp.h>
-#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 
@@ -40,6 +43,8 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   //! Constructeur avec association ? un MultiImpl
   SYCLVector(const MultiVectorImpl* multi_impl) ;
 
+  virtual ~SYCLVector() ;
+
   //virtual ~SYCLVector();
 
   VectorInternal* internal()
@@ -52,9 +57,31 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
     return m_internal.get();
   }
 
+  Integer blockSize() const
+  {
+    if (block())
+    {
+       return block()->size();
+    }
+    else if (vblock()) {
+      return -1 ;
+    }
+    else {
+      return m_own_block_size ;
+    }
+  }
+
+  void setBlockSize(Integer block_size)
+  {
+    if(this->m_multi_impl)
+      const_cast<MultiVectorImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+    else
+      m_own_block_size = block_size ;
+  }
+
   Integer getAllocSize() const
   {
-    return Integer(m_local_size);
+    return Integer(m_local_size*blockSize());
   }
 
   void allocate();
@@ -67,7 +94,30 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   {
     //alien_debug([&] { cout() << "Initializing SYCLVector " << this; });
     if (this->m_multi_impl) {
-      m_local_size = this->scalarizedLocalSize();
+      m_local_size = dist.localSize();
+    }
+    else
+    {
+      // Not associated vector
+      m_own_distribution = dist;
+      m_local_size = m_own_distribution.localSize();
+    }
+    if (need_allocate) {
+      allocate();
+    }
+    //alien_debug([&] { cout() << "After Initializing SYCLVector " << m_local_size<<" "<<m_h_values.size(); });
+    //Universe().traceMng()->flush() ;
+  }
+
+  void init(const VectorDistribution& dist, Integer block_size, const bool need_allocate)
+  {
+    alien_debug([&] { cout() << "Initializing SYCLVector " << this; });
+    setBlockSize(block_size) ;
+    if (this->m_multi_impl) {
+      if (this->vblock()) {
+        m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
+      }
+      m_local_size = this->distribution().localSize();
     }
     else {
       // Not associated vector
@@ -94,7 +144,7 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedLocalSize();
     else
-      return m_own_distribution.localSize();
+      return m_own_distribution.localSize()*m_own_block_size;
   }
 
   Arccore::Integer scalarizedGlobalSize() const
@@ -102,7 +152,7 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedGlobalSize();
     else
-      return m_own_distribution.globalSize();
+      return m_own_distribution.globalSize()*m_own_block_size;
   }
 
   Arccore::Integer scalarizedOffset() const
@@ -110,7 +160,7 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedOffset();
     else
-      return m_own_distribution.offset();
+      return m_own_distribution.offset()*m_own_block_size;
   }
 
   ValueType* getDataPtr() { return m_h_values.data(); }
@@ -125,7 +175,13 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   static void allocateDevicePointers(std::size_t local_size,
                                      int** rows,
                                      ValueType** values);
+
+  static void allocateDevicePointers(std::size_t local_size,
+                                     ValueType** values);
+
   static void freeDevicePointers(int* rows, ValueType* values);
+
+  static void freeDevicePointers(ValueType* values);
 
   static void initDevicePointers(std::size_t local_size,
                                  ValueType const* host_values,
@@ -146,6 +202,10 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   }
 
   void setValues(std::size_t size, ValueType const* ptr);
+
+  void setValuesFromHost(std::size_t size, ValueType const* ptr);
+
+  void setValuesFromDevice(std::size_t size, ValueType const* ptr);
 
   void setValuesFromHost();
 
@@ -168,7 +228,9 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   mutable std::unique_ptr<VectorInternal> m_internal ;
   mutable std::vector<ValueType>          m_h_values ;
   std::size_t                             m_local_size = 0;
+  Integer                                 m_own_block_size = 1 ;
   VectorDistribution                      m_own_distribution ;
+  mutable std::unique_ptr<VBlockImpl>     m_vblock ;
   // clang-format on
 };
 
