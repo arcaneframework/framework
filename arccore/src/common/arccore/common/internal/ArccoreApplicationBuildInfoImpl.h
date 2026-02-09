@@ -26,13 +26,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_COMMON_EXPORT ApplicationCoreBuildInfo::CoreImpl
+class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfoImpl
 {
  public:
 
   template <typename T> using FieldProperty = PropertyImpl::FieldProperty<T>;
 
-  CoreImpl();
+  ArccoreApplicationBuildInfoImpl();
 
  public:
 

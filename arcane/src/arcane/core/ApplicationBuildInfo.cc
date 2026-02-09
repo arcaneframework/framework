@@ -23,7 +23,7 @@
 #include "arcane/core/CaseDatasetSource.h"
 
 #include "arccore/common/internal/FieldProperty.h"
-#include "arccore/common/internal/ArccoreApplicationBuildInfoCoreImpl.h"
+#include "arccore/common/internal/ArccoreApplicationBuildInfoImpl.h"
 
 #include <functional>
 

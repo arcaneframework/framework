@@ -14,7 +14,7 @@
 #include "arccore/common/ArccoreApplicationBuildInfo.h"
 #include "arccore/common/CommandLineArguments.h"
 #include "arccore/common/internal/FieldProperty.h"
-#include "arccore/common/internal/ArccoreApplicationBuildInfoCoreImpl.h"
+#include "arccore/common/internal/ArccoreApplicationBuildInfoImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,21 +36,21 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ApplicationCoreBuildInfo::CoreImpl::CoreImpl()
+ArccoreApplicationBuildInfoImpl::ArccoreApplicationBuildInfoImpl()
 : m_nb_task_thread(-1)
 {
   // Fixe une limite pour le nombre de tâches
   m_nb_task_thread.setValidator([](Int32& x) { _clamp(x, -1, 512); });
 }
 
-String ApplicationCoreBuildInfo::CoreImpl::
+String ArccoreApplicationBuildInfoImpl::
 getValue(const UniqueArray<String>& env_values, const String& param_name,
          const String& default_value)
 {
   return m_property_key_values.getValue(env_values, param_name, default_value);
 }
 
-void ApplicationCoreBuildInfo::CoreImpl::
+void ArccoreApplicationBuildInfoImpl::
 addKeyValue(const String& name, const String& value)
 {
   m_property_key_values.add(name, value);
@@ -61,13 +61,13 @@ addKeyValue(const String& name, const String& value)
 
 ApplicationCoreBuildInfo::
 ApplicationCoreBuildInfo()
-: m_core(new CoreImpl())
+: m_core(new ArccoreApplicationBuildInfoImpl())
 {
 }
 
 ApplicationCoreBuildInfo::
 ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs)
-: m_core(new CoreImpl(*rhs.m_core))
+: m_core(new ArccoreApplicationBuildInfoImpl(*rhs.m_core))
 {
 }
 
@@ -76,7 +76,7 @@ operator=(const ApplicationCoreBuildInfo& rhs)
 {
   if (&rhs != this) {
     delete m_core;
-    m_core = new CoreImpl(*(rhs.m_core));
+    m_core = new ArccoreApplicationBuildInfoImpl(*(rhs.m_core));
   }
   return (*this);
 }

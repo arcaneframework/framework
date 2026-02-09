@@ -21,6 +21,7 @@
 
 namespace Arcane
 {
+class ArccoreApplicationBuildInfoImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +36,7 @@ class ARCCORE_COMMON_EXPORT ApplicationCoreBuildInfo
 
   ApplicationCoreBuildInfo();
   ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs);
-  ~ApplicationCoreBuildInfo();
+  virtual ~ApplicationCoreBuildInfo();
   ApplicationCoreBuildInfo& operator=(const ApplicationCoreBuildInfo& rhs);
 
  public:
@@ -67,7 +68,7 @@ class ARCCORE_COMMON_EXPORT ApplicationCoreBuildInfo
 
  protected:
 
-  CoreImpl* m_core = nullptr;
+  ArccoreApplicationBuildInfoImpl* m_core = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
