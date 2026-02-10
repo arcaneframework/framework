@@ -45,7 +45,7 @@ class SimpleCSRVector : public IVectorImpl
        return block()->size();
     }
     else if (vblock()) {
-      return -1 ;
+      return 1 ;
     }
     else {
       return m_own_block_size ;
