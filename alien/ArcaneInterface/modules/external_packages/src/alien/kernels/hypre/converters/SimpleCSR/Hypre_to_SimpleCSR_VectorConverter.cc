@@ -41,20 +41,7 @@ Hypre_to_SimpleCSR_VectorConverter::convert(
   SimpleCSRVector<Arccore::Real>& target =
       cast<SimpleCSRVector<Arccore::Real>>(targetImpl, targetBackend());
 
-  alien_debug([&] {
-    cout() << "Converting HypreVector: " << &source << " to SimpleCSRVector " << &target;
-  });
-
-  if(source.getMemoryType()==Alien::BackEnd::Memory::Device)
-  {
-    Arccore::ArrayView<Arccore::Real> values = target.values();
-    source.copyValuesToHost(values.size(), nullptr, values.data());
-  }
-  else
-  {
-    Arccore::ArrayView<Arccore::Real> values = target.values();
-    source.getValues(values.size(), values.data());
-  }
+  convert(source,target);
 }
 
 void
