@@ -257,7 +257,7 @@ bool
 VectorInternal::setValuesToZeros(const int nrow,  const int* rows)
 {
   HYPRE_ParVector par_vector;
-  HYPRE_IJVectorGetObject(m_internal, (void **) &par_vector);
+  HYPRE_IJVectorGetObject(m_internal, static_cast<void **>(&par_vector));
   int ierr = HYPRE_ParVectorSetConstantValues(par_vector, 0.0);
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
   /*

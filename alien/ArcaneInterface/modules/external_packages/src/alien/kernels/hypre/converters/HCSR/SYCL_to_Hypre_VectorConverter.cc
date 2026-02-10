@@ -43,28 +43,7 @@ SYCL_to_Hypre_VectorConverter::convert(
   cast<SYCLVector<double>>(sourceImpl, sourceBackend());
   auto& target = cast<HypreVector>(targetImpl, targetBackend());
 
-  alien_debug([&] {
-    cout() << "Converting SYCLVector: " << &source << " to HypreVector " << &target;
-  });
-
-
-  if(target.getMemoryType()==Alien::BackEnd::Memory::Host)
-  {
-    UniqueArray<Arccore::Real> values(source.getAllocSize()) ;
-    source.copyValuesTo(values.size(),values.data());
-    target.setValues(values.size(), values.unguardedBasePointer());
-    target.assemble() ;
-  }
-  else
-  {
-#ifdef ALIEN_USE_SYCL
-      std::size_t alloc_size = source.getAllocSize();
-      auto view = HVectorViewT<HypreVector>{&target,BackEnd::Memory::Device,alloc_size} ;
-      source.copyValuesToDevice(view.m_values) ;
-      target.setValues(alloc_size, view.m_values);
-      target.assemble() ;
-#endif
-  }
+  convert(source,target) ;
 }
 
 void

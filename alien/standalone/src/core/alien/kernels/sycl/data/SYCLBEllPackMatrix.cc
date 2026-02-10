@@ -1256,7 +1256,7 @@ namespace SYCLInternal
 
     // clang-format off
     int N                  = this->m_N;
-    int NxN                = this->m_NxN;
+    //int NxN                = this->m_NxN;
     int pack_size          = ellpack_size;
     auto nrows             = m_profile->getNRows();
     auto nnz               = m_profile->getNnz();
