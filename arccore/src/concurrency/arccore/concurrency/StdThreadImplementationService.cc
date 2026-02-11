@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdThreadImplementationService.cc                           (C) 2000-2025 */
+/* StdThreadImplementationService.cc                           (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des threads utilisant la bibliothèque standard C++.        */
 /*---------------------------------------------------------------------------*/
@@ -13,11 +13,11 @@
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/base/internal/DependencyInjection.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/IThreadImplementationService.h"
+#include "arccore/concurrency/IThreadImplementation.h"
+#include "arccore/concurrency/IThreadImplementationService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

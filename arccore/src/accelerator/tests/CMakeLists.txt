@@ -24,6 +24,9 @@ target_link_libraries(arccore_accelerator.tests PUBLIC GTest::GTest GTest::Main)
 target_link_libraries(arccore_accelerator.tests PRIVATE
   arccore_accelerator
 )
+if (ARCCORE_ENABLE_TBB)
+  target_compile_definitions(arccore_accelerator.tests PRIVATE ARCCORE_HAS_ACCELERATOR_THREAD)
+endif()
 
 gtest_discover_tests(arccore_accelerator.tests DISCOVERY_TIMEOUT 30)
 

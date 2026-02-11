@@ -30,9 +30,9 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void _doTestMemoryBandwidth(bool use_accelerator)
+void _doTestMemoryBandwidth(bool use_accelerator, Int32 max_allowed_thread)
 {
-  Accelerator::Initializer init(use_accelerator, 0);
+  Accelerator::Initializer init(use_accelerator, max_allowed_thread);
   Runner runner(init.executionPolicy());
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())
