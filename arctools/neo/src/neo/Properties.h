@@ -677,6 +677,26 @@ class MeshArrayPropertyT : public PropertyBase
   auto end() noexcept { return m_data.end(); }
   auto end() const noexcept { return m_data.end(); }
 
+  auto removeValues(MeshArrayPropertyT<utils::Int32> const& removed_value_indexes) {
+    NEO_ASSERT(removed_value_indexes.size() == size(), "removed_value_indexes size must be equal to property size");
+    if (size() == 0) return;
+    ItemRange item_range{ ItemLocalIds{ {}, 0, (int)m_offsets.size() } };
+    for (auto item : item_range) {
+      NEO_ASSERT(removed_value_indexes[item].size() <= m_sizes[item],
+        "Cannot remove more element than contained in the item array, In MeshArrayPropertyT::removeValues");
+      if (removed_value_indexes[item].size() >= m_sizes[item]) {
+        m_sizes[item] = 0;
+        continue;
+      }
+      for (auto removed_value_index : removed_value_indexes[item]) {
+        Neo::printer() << "Remove value " << (*this)[item][removed_value_index] << " with index " << removed_value_index << " from item " << item << Neo::endline;
+        std::swap(m_data[m_indexes[item] + removed_value_index], m_data[m_indexes[item] + m_sizes[item] - 1]);
+        --m_sizes[item];
+      }
+    }
+    m_data_size = _computeCumulatedSize(m_sizes);
+  }
+
  private:
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
     // SdC debug
