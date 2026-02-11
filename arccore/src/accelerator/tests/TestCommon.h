@@ -52,11 +52,15 @@
 #define ARCCORE_TEST_DO_TEST_SYCL(name1, name2, func)
 #endif
 
+#if defined(ARCCORE_HAS_ACCELERATOR_THREAD)
 #define ARCCORE_TEST_DO_TEST_TASK(name1, name2, func) \
   TEST(name1, name2##_task4) \
   { \
     func(false, 4); \
   }
+#else
+#define ARCCORE_TEST_DO_TEST_TASK(name1, name2, func)
+#endif
 
 #define ARCCORE_TEST_DO_TEST_SEQUENTIAL(name1, name2, func) \
   TEST(name1, name2) \
