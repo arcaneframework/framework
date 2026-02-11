@@ -34,7 +34,9 @@
 #include "arcane/core/IParallelNonBlockingCollective.h"
 #include "arcane/core/MachineMemoryWindow.h"
 #include "arcane/core/DynamicMachineMemoryWindow.h"
+#include "arcane/core/DynamicMachineMemoryWindowMemoryAllocator.h"
 #include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -1312,6 +1314,31 @@ _testMachineMemoryWindow()
     info() << "Segment final : " << window.segmentConstView();
     window.shrink();
     //![snippet_arcanedoc_parallel_shmem_usage_13]
+  }
+
+  {
+    IParallelMng* pm = m_parallel_mng;
+    DynamicMachineMemoryWindowMemoryAllocator memory_allocator(pm);
+
+    {
+      UniqueArray<Integer> array(&memory_allocator, 10);
+
+      for (Integer& a : array) {
+        a = pm->commRank();
+      }
+
+      info() << "array : " << array;
+    }
+
+    {
+      AllocatedMemoryInfo ptr_info = memory_allocator.allocate({}, sizeof(Integer));
+      auto* ptr = static_cast<Integer*>(ptr_info.baseAddress());
+      ptr[0] = pm->commRank();
+
+      info() << "ptr[0] : " << ptr[0];
+
+      memory_allocator.deallocate({}, ptr_info);
+    }
   }
 }
 
