@@ -31,6 +31,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
+ * \ingroup ArcaneCartesianMesh
  * \brief Classe permettant d'accéder aux méthodes spécifiques AMR du maillage
  * cartesien.
  *

@@ -23,6 +23,7 @@
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 #include "arcane/cartesianmesh/CartesianPatch.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
@@ -159,6 +160,7 @@ init()
   // On demande au manageur AMR deux couches de mailles de recouvrement pour
   // le niveau le plus haut.
   amr_mng.setOverlapLayerSizeTopLevel(2);
+  m_cartesian_mesh->computeDirections();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +172,6 @@ compute()
   info() << "Module SayHello COMPUTE";
 
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
-  m_cartesian_mesh->computeDirections();
 
   m_refine_tracer.fill(0);
   m_amr.fill(0);
@@ -335,6 +336,7 @@ computeValue(CartesianPatch& patch)
 Integer DynamicCircleAMRModule::
 computeRefine(CartesianPatch& patch)
 {
+  CartesianMeshNumberingMng numbering(m_cartesian_mesh);
   // Real ref = 0.04;
   // Real ref_level = ref * pow(10, patch.level());
 
@@ -364,9 +366,11 @@ computeRefine(CartesianPatch& patch)
   // "inPatchCells()".
   CellDirectionMng cdm_x{ patch.cellDirection(MD_DirX) };
   ENUMERATE_ (Cell, icell, cdm_x.inPatchCells()) {
-    //info() << "m_amr[icell] : " << m_amr[icell];
+    //debug() << "m_amr[icell] : " << m_amr[icell];
     if (m_amr[icell] > ref_level) {
       icell->mutableItemBase().addFlags(ItemFlags::II_Refine);
+      debug() << "Need refine CellUID : " << icell->uniqueId()
+              << " -- Pos : " << numbering.cellUniqueIdToCoord(*icell);
       m_refine_tracer[icell] = 1;
       nb_cell_refine++;
     }

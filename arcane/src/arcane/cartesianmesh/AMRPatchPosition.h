@@ -27,6 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
+ * \ingroup ArcaneCartesianMesh
  * \brief Classe permettant de définir la position d'un patch dans le maillage
  * cartésien.
  *

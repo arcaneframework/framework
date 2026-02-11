@@ -354,6 +354,23 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
   CartCoord faceOffsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const;
 
   /*!
+   * \brief Méthode permettant de récupérer les coordonnées d'une maille grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId de la maille.
+   * \param level Le niveau de la maille.
+   * \return La position de la maille.
+   */
+  CartCoord3 cellUniqueIdToCoord(Int64 uid, Int32 level) const;
+
+  /*!
+   * \brief Méthode permettant de récupérer les coordonnées d'une maille.
+   *
+   * \param cell La maille.
+   * \return La position de la maille.
+   */
+  CartCoord3 cellUniqueIdToCoord(Cell cell) const;
+
+  /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une maille grâce à son uniqueId.
    *
    * \param uid L'uniqueId de la maille.
