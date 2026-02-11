@@ -285,10 +285,10 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
   EXPECT_EQ(mesh_array_property.view().size(),mesh_array_property_proxy.arrayPropertyDataSize());
   EXPECT_EQ(mesh_array_property.sizes().size(),mesh_array_property_proxy.arrayPropertyOffsetsSize());
   EXPECT_EQ(mesh_array_property.size(),mesh_array_property_proxy.arrayPropertyIndexSize()); // todo must be ok !!
-  auto mesh_array_property_sizes = mesh_array_property.sizes();
-  EXPECT_TRUE(std::equal(mesh_array_property_sizes.begin(), mesh_array_property_sizes.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
+  auto mesh_array_property_offsets = mesh_array_property.capacity();
+  EXPECT_TRUE(std::equal(mesh_array_property_offsets.begin(), mesh_array_property_offsets.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
   auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
-  EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_sizes.m_ptr);
+  EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_offsets.m_ptr);
   [[maybe_unused]] auto property_values = mesh_array_property.view();
   [[maybe_unused]] auto property_data = mesh_array_property_proxy.arrayPropertyData();
   auto property_indexes = mesh_array_property_proxy.arrayPropertyIndex();
