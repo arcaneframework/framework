@@ -178,7 +178,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_entities_snippet_cartesianmesh
+\ref arcanedoc_entities_amr_cartesianmesh
 </span>
 <span class="next_section_button">
 \ref arcanedoc_entities_itemtype

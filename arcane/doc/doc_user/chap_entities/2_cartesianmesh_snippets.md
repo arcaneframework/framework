@@ -14,6 +14,6 @@ ____
 \ref arcanedoc_entities_cartesianmesh
 </span>
 <span class="next_section_button">
-\ref arcanedoc_entities_connectivity_internal
+\ref arcanedoc_entities_amr_cartesianmesh
 </span>
 </div>

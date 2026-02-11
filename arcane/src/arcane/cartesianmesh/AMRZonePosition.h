@@ -28,6 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
+ * \ingroup ArcaneCartesianMesh
  * \brief Classe permettant de définir une zone d'un maillage.
  */
 class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition

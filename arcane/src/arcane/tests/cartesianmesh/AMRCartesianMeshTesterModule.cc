@@ -565,7 +565,7 @@ _initAMR()
     // }
     amr_mng.createSubLevel();
 
-    CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
+    CartesianMeshPatchListView patches = amr_mng.patches();
     Int32 nb_patch = patches.size();
     {
       Int32 index = 0;
@@ -645,8 +645,9 @@ _mergePatches()
 void AMRCartesianMeshTesterModule::
 _reduceNbGhostLayers()
 {
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   for (auto& x : options()->reduceNbGhostLayers()) {
-    Integer final_nb_ghost_layer{ m_cartesian_mesh->reduceNbGhostLayers(x->level(), x->nbGhostLayers()) };
+    Integer final_nb_ghost_layer{ amr_mng.reduceNbGhostLayers(x->level(), x->nbGhostLayers()) };
 
     if (parallelMng()->commSize() != 1 && final_nb_ghost_layer != x->nbGhostLayers()) {
       ARCANE_FATAL("Bad nb ghost layers");
@@ -662,11 +663,13 @@ void AMRCartesianMeshTesterModule::
 compute()
 {
   _compute1();
-  // info() << "NbPatch : " << m_cartesian_mesh->nbPatch();
-  // info() << "NbPatch : " << m_cartesian_mesh->patches().size();
+  // CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+
+  // info() << "NbPatch : " << amr_mng.nbPatch();
+  // info() << "NbPatch : " << amr_mng.patches().size();
   //
-  // for (Integer i = 0; i < m_cartesian_mesh->patches().size(); ++i) {
-  //   auto patch = m_cartesian_mesh->amrPatch(i);
+  // for (Integer i = 0; i < amr_mng.patches().size(); ++i) {
+  //   auto patch = amr_mng.amrPatch(i);
   //   info() << "Patch #" << i;
   //   info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
   //   info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
@@ -805,6 +808,7 @@ _compute2()
 void AMRCartesianMeshTesterModule::
 _writePostProcessing()
 {
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   info() << "Post-process AMR";
   IPostProcessorWriter* post_processor = options()->postProcessor();
   Directory output_directory = Directory(subDomain()->exportDirectory(),"amrtestpost1");
@@ -824,7 +828,7 @@ _writePostProcessing()
   post_processor->setVariables(variables);
   ItemGroupList groups;
   groups.add(allCells());
-  for( CartesianPatch p : m_cartesian_mesh->patches() )
+  for (CartesianPatch p : amr_mng.patches())
     groups.add(p.cells());
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
@@ -837,7 +841,9 @@ _writePostProcessing()
 void AMRCartesianMeshTesterModule::
 _testDirections()
 {
-  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
+
+  Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = m_cartesian_mesh->mesh()->dimension();
   NodeDirectionMng node_dm2;
   for( Integer ipatch=0; ipatch<nb_patch; ++ipatch ){
@@ -975,12 +981,13 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
 {
   IParallelMng* pm = parallelMng();
   IMesh* mesh = m_cartesian_mesh->mesh();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
     ARCANE_FATAL("Pas compatible sans ghost");
   }
 
-  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->cellFamily()->allItems().own().size();
 
@@ -1077,12 +1084,13 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
 {
   IParallelMng* pm = parallelMng();
   IMesh* mesh = m_cartesian_mesh->mesh();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
     ARCANE_FATAL("Pas compatible sans ghost");
   }
 
-  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->faceFamily()->allItems().own().size();
 
@@ -1173,12 +1181,13 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
 {
   IParallelMng* pm = parallelMng();
   IMesh* mesh = m_cartesian_mesh->mesh();
+  CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
     ARCANE_FATAL("Pas compatible sans ghost");
   }
 
-  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->nodeFamily()->allItems().own().size();
 

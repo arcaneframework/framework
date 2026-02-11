@@ -52,34 +52,115 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void saveInfosInProperties();
   void recreateFromDump();
 
+  /*!
+   * \brief Méthode permettant de récupérer le patch de niveau 0.
+   *
+   * Création si non existant.
+   */
   Ref<CartesianMeshPatch> groundPatch();
 
+  /*!
+   * \brief Méthode permettant de créer un patch contenant les mailles données
+   * en paramètre.
+   *
+   * Cette méthode est compatible uniquement avec l'AMR type 1 (historique).
+   */
   void addPatch(ConstArrayView<Int32> cells_local_id);
-  Integer addPatchAfterRestore(CellGroup cell_group);
-  void addPatch(CellGroup cell_group, Integer group_index);
 
+  /*!
+   * \brief Méthode permettant de créer un patch à partir de la zone passée en
+   * paramètre.
+   *
+   * Cette méthode utilisant les mêmes méthodes que l'adaptation de maillage,
+   * elle peut être utilisée en cours de calcul.
+   *
+   * Cette méthode est compatible uniquement avec l'AMR type 3
+   * (AMR PatchCartesianMeshOnly).
+   */
   void addPatch(const AMRZonePosition& zone_position);
 
   Integer nbPatch() const;
-
   Ref<CartesianMeshPatch> patch(Integer index) const;
-
   CartesianMeshPatchListView patchListView() const;
 
+  /*!
+   * \brief Méthode permettant de récupérer le groupe de toutes les mailles du
+   * patch demandé.
+   *
+   * \param index Index (tableau) du patch.
+   */
   CellGroup allCells(Integer index);
+
+  /*!
+   * \brief Méthode permettant de récupérer le groupe des mailles du
+   * patch demandé.
+   *
+   * \param index Index (tableau) du patch.
+   */
   CellGroup inPatchCells(Integer index);
+
+  /*!
+   * \brief Méthode permettant de récupérer le groupe des mailles de
+   * recouvrement du patch demandé.
+   *
+   * \param index Index (tableau) du patch.
+   */
   CellGroup overlapCells(Integer index);
 
+  /*!
+   * \brief Méthode permettant de supprimer tous les patchs. Attention, les
+   * mailles des patchs ne seront pas supprimées.
+   */
   void clear();
 
+  /*!
+   * \brief Méthode permettant de supprimer un patch.
+   *
+   * \note Cette méthode est en deux temps. Pour déclencher la suppression du
+   * ou des patchs, il est nécessaire d'appeler la méthode \a applyPatchEdit().
+   *
+   * \param index Index (tableau) du patch.
+   */
   void removePatch(Integer index);
 
+  /*!
+   * \brief Méthode permettant de supprimer des mailles de tous les patchs.
+   *
+   * Les patchs vides seront supprimés.
+   *
+   * Cette méthode est compatible uniquement avec l'AMR type 1 (historique).
+   */
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
+  /*!
+   * \brief Méthode permettant de supprimer une zone de mailles.
+   *
+   * Cette zone peut être sur plusieurs patchs à la fois, mais doit désigner
+   * des mailles d'un même niveau.
+   *
+   * Une reconstruction des patchs sera réalisée afin qu'ils restent conforme.
+   * Les patchs devenus vides seront supprimés.
+   */
   void removeCellsInZone(const AMRZonePosition& zone_to_delete);
 
+  /*!
+   * \brief Méthode permettant de supprimer les patchs en attente de suppression.
+   *
+   * \param remove_empty_patches (AMR-Type=1 uniquement) Suppression des
+   * patchs vides.
+   * \param update_higher_level (AMR-Type=3 uniquement) Après une suppression,
+   * le niveau le plus haut peut devenir vide. Il est alors nécessaire de
+   * mettre ce paramètre à true pour mettre à jour les couches de mailles de
+   * recouvrement. Les mailles devenues inutiles seront supprimées.
+   */
   void applyPatchEdit(bool remove_empty_patches, bool update_higher_level);
 
+  /*!
+   * \brief Méthode permettant de remonter tous les patchs d'un niveau, de
+   * mettre à jour le niveau ground et de créer le nouveau niveau 1.
+   *
+   * À appeler une fois les mailles de niveau 0 créées.
+   */
   void updateLevelsAndAddGroundPatch();
 
   void mergePatches();
@@ -98,6 +179,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Int32 overlapLayerSize(Int32 level);
 
  private:
+
+  Integer _addPatchAfterRestore(CellGroup cell_group);
+  void _addPatch(CellGroup cell_group, Integer group_index);
 
   void _increaseOverlapSizeLevel(Int32 level_to_increate, Int32 new_size);
   void _reduceOverlapSizeLevel(Int32 level_to_reduce, Int32 new_size);

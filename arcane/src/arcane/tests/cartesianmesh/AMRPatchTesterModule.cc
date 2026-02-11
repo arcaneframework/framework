@@ -216,6 +216,15 @@ _test1()
       _test1_1();
       _test1_2();
     }
+    {
+      amr_mng.beginAdaptMesh(4, 1);
+      amr_mng.adaptLevel(1);
+      amr_mng.adaptLevel(2);
+      amr_mng.endAdaptMesh();
+
+      _test1_1();
+      _test1_2();
+    }
   }
 }
 

@@ -8,20 +8,25 @@ de la géométrie.
 <br>
 
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_entities_cartesianmesh
 
-2. \subpage arcanedoc_entities_snippet_cartesianmesh
+1. \subpage arcanedoc_entities_cartesianmesh </br>
 
-3. \subpage arcanedoc_entities_connectivity_internal <br>
+2. \subpage arcanedoc_entities_snippet_cartesianmesh </br>
+
+3. \subpage arcanedoc_entities_amr_cartesianmesh <br>
+   Décrit le fonctionnement de l'AMR pour les maillages cartésiens.</br>
+
+4. \subpage arcanedoc_entities_connectivity_internal <br>
   Décrit le nouveau mécanisme (à partir de la version 2.5) de gestion
-  des connectivités des entités.
+   des connectivités des entités.</br>
 
-4. \subpage arcanedoc_entities_itemtype <br>
-  Décrit les types de mailles classiques.
+5. \subpage arcanedoc_entities_itemtype <br>
+   Décrit les types de mailles classiques.</br>
 
-5. \subpage arcanedoc_entities_geometric
+6. \subpage arcanedoc_entities_geometric </br>
 
-6. \subpage arcanedoc_entities_tools
+7. \subpage arcanedoc_entities_tools
+
 ____
 
 <div class="section_buttons">
