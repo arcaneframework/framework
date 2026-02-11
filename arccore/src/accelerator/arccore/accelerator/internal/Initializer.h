@@ -16,6 +16,11 @@
 
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
+#include "arccore/trace/ITraceMng.h"
+
+#include "arccore/common/ArccoreApplicationBuildInfo.h"
+#include "arccore/concurrency/internal/ConcurrencyApplication.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +54,9 @@ class ARCCORE_ACCELERATOR_EXPORT Initializer
  private:
 
   eExecutionPolicy m_policy = eExecutionPolicy::Sequential;
+  ReferenceCounter<ITraceMng> m_trace_mng;
+  ArccoreApplicationBuildInfo m_application_build_info;
+  ConcurrencyApplication m_concurrency_application;
 };
 
 /*---------------------------------------------------------------------------*/
