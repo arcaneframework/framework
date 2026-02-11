@@ -14,6 +14,7 @@ set(SOURCES
   SpinLock.h
   SpinLock.cc
   StdThreadImplementation.cc
+  StdThreadImplementationService.cc
   Task.h
   TaskFactory.h
 

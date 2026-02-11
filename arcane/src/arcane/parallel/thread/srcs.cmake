@@ -18,8 +18,6 @@ set(ARCANE_SOURCES
   SharedMemoryParallelMng.cc
   SharedMemoryParallelMng.h
 
-  StdThreadImplementationService.cc
-
   internal/SharedMemoryThreadMng.h
   internal/SharedMemoryMachineMemoryWindowBaseInternal.cc
   internal/SharedMemoryMachineMemoryWindowBaseInternal.h
