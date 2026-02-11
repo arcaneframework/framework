@@ -509,14 +509,16 @@ class MeshArrayPropertyT : public PropertyBase
    public:
 
     using PropertyDataType = DataType;
-    using PropertyOffsetType = int;
-    using PropertyIndexType = int;
+    using PropertyOffsetType = utils::Int32;
+    using PropertyIndexType = utils::Int32;
 
  private:
   std::vector<DataType> m_data;
   std::vector<PropertyOffsetType> m_offsets;
   std::vector<PropertyIndexType> m_indexes;
+  std::vector<PropertyIndexType> m_sizes;
   int m_data_size = 0;
+  int m_data_capacity = 0;
 
  public:
 
@@ -533,10 +535,14 @@ class MeshArrayPropertyT : public PropertyBase
   * @param allocate_data: decides if data is allocated (otherwise only sizes array are constructed). Do not allocate data if init is used after.
   */
   void resize(std::vector<int> sizes, bool allocate_data = false) { // only 2 moves if a rvalue is passed. One copy + one move if lvalue
-    m_offsets = std::move(sizes);
-    _updateIndexes();
-    if (allocate_data)
-      m_data.resize(_computeSizeFromOffsets(m_offsets));
+    m_sizes = std::move(sizes);
+    m_data_size = _computeCumulatedSize(m_sizes);
+    auto are_offsets_updated = _updateOffsets();
+    if (are_offsets_updated) {
+      _updateIndexes();
+      if (allocate_data)
+        m_data.resize(m_data_capacity);
+    }
   }
   bool isInitializableFrom(const ItemRange& item_range) { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
 
@@ -559,6 +565,8 @@ class MeshArrayPropertyT : public PropertyBase
     m_offsets = std::move(sizes);
     _updateIndexes();
     m_data = std::move(values);
+    m_sizes = m_offsets;
+    m_data_size = _computeCumulatedSize(m_sizes);
   }
 
   /*!
@@ -580,15 +588,15 @@ class MeshArrayPropertyT : public PropertyBase
   }
 
   utils::Span<DataType> operator[](const utils::Int32 item) {
-    NEO_ASSERT(item < (int)m_offsets.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
+    NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
     NEO_ASSERT(item >= 0, "Item local id must be >=0 in MeshArrayPropertyT::[item_lid]");
-    return utils::Span<DataType>{ &m_data[m_indexes[item]], m_offsets[item] };
+    return utils::Span<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
   utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
-    NEO_ASSERT(item < (int)m_offsets.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
+    NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
     NEO_ASSERT(item >= 0, "Item local id must be >0 in MeshArrayPropertyT::[item_lid]");
-    return utils::ConstSpan<DataType>{ &m_data[m_indexes[item]], m_offsets[item] };
+    return utils::ConstSpan<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
   void debugPrint(int rank = 0) const {
@@ -597,7 +605,8 @@ class MeshArrayPropertyT : public PropertyBase
     Neo::NeoOutputStream oss{traceLevel(),rank};
     oss << "= Print mesh array property " << m_name << Neo::endline;
     utils::printContainer(oss,m_data, "Data");
-    utils::printContainer(oss,m_offsets, "Offsets");
+    utils::printContainer(oss,m_sizes, "Sizes");
+    utils::printContainer(oss,m_offsets, "Offsets (capacity)");
     utils::printContainer(oss,m_indexes, "Indexes");
     oss << Neo::endline;
   }
@@ -613,7 +622,15 @@ class MeshArrayPropertyT : public PropertyBase
    *
    * @return an array with the size of each item array
    */
-  [[nodiscard]] utils::ConstSpan<int> sizes() const noexcept {
+  [[nodiscard]] utils::ConstSpan<PropertyOffsetType> sizes() const noexcept {
+    return { m_sizes.data(), m_sizes.size() };
+  }
+
+  /*!
+   *
+   * @return an array with the capacity of each item array
+   */
+  [[nodiscard]] utils::ConstSpan<PropertyOffsetType> capacity() const noexcept {
     return { m_offsets.data(), m_offsets.size() };
   }
 
@@ -670,14 +687,15 @@ class MeshArrayPropertyT : public PropertyBase
       new_offsets.resize(utils::maxItem(item_range) + 1); // todo ajouter MeshArrayPropertyT::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
-      new_offsets[item] = nb_connected_item_per_item[index++];
+      new_offsets[item] = nb_connected_item_per_item[index];
+      ++index;
     }
     // Compute new indexes
     std::vector<int> new_indexes;
     _computeIndexesFromOffsets(new_indexes, new_offsets);
     // Compute new values
-    auto new_data_size = _computeSizeFromOffsets(new_offsets);
-    std::vector<DataType> new_data(new_data_size);
+    m_data_capacity = _computeCumulatedSize(new_offsets);
+    std::vector<DataType> new_data(m_data_capacity);
     // copy new_values
     auto global_index = 0;
     std::vector<bool> marked_items(new_offsets.size(), false);
@@ -699,7 +717,11 @@ class MeshArrayPropertyT : public PropertyBase
     m_offsets = std::move(new_offsets);
     m_indexes = std::move(new_indexes);
     m_data = std::move(new_data);
-    m_data_size = new_data_size;
+    m_sizes.resize(m_offsets.size());
+    for (auto item : item_range) {
+      m_sizes[item] =  m_offsets[item];
+    }
+    m_data_size = _computeCumulatedSize(m_sizes);
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
@@ -715,6 +737,12 @@ class MeshArrayPropertyT : public PropertyBase
                 std::back_inserter(m_offsets));
       std::copy(values.begin(), values.end(), std::back_inserter(m_data));
       _updateIndexes();
+      // update sizes
+      m_sizes.resize(m_offsets.size());
+      for (auto item : item_range) {
+        m_sizes[item] =  m_offsets[item];
+        m_data_size += m_offsets[item];
+      }
     }
     else {
       Neo::printer() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << Neo::endline;
@@ -724,6 +752,12 @@ class MeshArrayPropertyT : public PropertyBase
         m_offsets[item] = nb_connected_item_per_item[index++];
       m_data.resize(m_data.size() + values.size(), DataType());
       _updateIndexes();
+      // update sizes
+      m_sizes.resize(m_offsets.size());
+      for (auto item : item_range) {
+        m_sizes[item] =  m_offsets[item];
+        m_data_size += m_offsets[item];
+      }
       index = 0;
       for (auto item : item_range) {
         auto connected_items = (*this)[item];
@@ -736,7 +770,7 @@ class MeshArrayPropertyT : public PropertyBase
 
   void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
-    m_data_size = _computeSizeFromOffsets(m_offsets);
+    m_data_capacity = _computeCumulatedSize(m_offsets);
   }
 
   void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets) {
@@ -744,14 +778,34 @@ class MeshArrayPropertyT : public PropertyBase
     auto i = 0, offset_sum = 0;
     for (auto& index : new_indexes) {
       index = offset_sum;
-      offset_sum += new_offsets[i++];
+      offset_sum += new_offsets[i];
+      ++i;
     }
     // todo use algo version instead with more recent compilers (gcc >=9, clang >=5)
     //std::exclusive_scan(new_offsets.begin(),new_offsets.end(),new_indexes.begin(),0);
   }
 
-  int _computeSizeFromOffsets(std::vector<int> const& new_offsets) {
-    return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
+  int _computeCumulatedSize(std::vector<int> const& sizes) {
+    return std::accumulate(sizes.begin(), sizes.end(), 0);
+  }
+
+  bool _updateOffsets() {
+    if (m_offsets.empty()) {
+      m_offsets = m_sizes;
+      return true;
+    }
+    auto index = 0;
+    auto are_offsets_updated = false;
+    for (auto size : m_sizes) {
+      NEO_ASSERT(size >= 0, "Negative size in MeshArrayPropertyT::resize");
+      auto& offset = m_offsets[index];
+      if (size > offset) {
+        offset = size;
+        are_offsets_updated = true;
+      }
+      ++index;
+    }
+    return are_offsets_updated;
   }
 };
 
