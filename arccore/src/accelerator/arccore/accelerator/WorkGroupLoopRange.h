@@ -740,7 +740,7 @@ class WorkGroupLoopRangeBase
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_nb_element; }
   //! Taille d'un block
-  constexpr Int32 blockSize() const { return m_block_size; }
+  constexpr IndexType blockSize() const { return m_block_size; }
   /*!
    * \brief Nombre de blocs.
    *
@@ -761,8 +761,8 @@ class WorkGroupLoopRangeBase
  private:
 
   IndexType m_nb_element = 0;
+  IndexType m_block_size = 0;
   Int32 m_nb_block = 0;
-  Int32 m_block_size = 0;
 
  private:
 
