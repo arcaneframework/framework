@@ -500,6 +500,8 @@ set(ARCANE_ORIGINAL_SOURCES
   DynamicMachineMemoryWindowBase.cc
   DynamicMachineMemoryWindowBase.h
   DynamicMachineMemoryWindow.h
+  DynamicMachineMemoryWindowMemoryAllocator.cc
+  DynamicMachineMemoryWindowMemoryAllocator.h
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
