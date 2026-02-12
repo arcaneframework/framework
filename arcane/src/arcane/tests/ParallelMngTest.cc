@@ -1319,9 +1319,10 @@ _testMachineMemoryWindow()
   {
     IParallelMng* pm = m_parallel_mng;
     DynamicMachineMemoryWindowMemoryAllocator memory_allocator(pm);
+    MemoryAllocationOptions allocator_opt(&memory_allocator);
 
     {
-      UniqueArray<Integer> array(&memory_allocator, 10);
+      UniqueArray<Integer> array(allocator_opt, 10);
 
       for (Integer& a : array) {
         a = pm->commRank();
