@@ -343,12 +343,14 @@ TEST(NeoTestArrayProperty, test_remove_item_values) {
   // check sizes
   auto sizes_check = mesh_array_property.sizes();
   std::vector<Neo::utils::Int32> ref_sizes{0,1,1,0,0,0};
+  EXPECT_EQ(sizes_check.size(),ref_sizes.size());
   EXPECT_TRUE(std::equal(sizes_check.begin(),sizes_check.end(),ref_sizes.begin()));
   auto ref_size = std::accumulate(ref_sizes.begin(), ref_sizes.end(),0);
   EXPECT_EQ(mesh_array_property.cumulatedSize(),ref_size);
   // check capacity
   Neo::printer() << "mesh array capacity " << mesh_array_property.capacity() << Neo::endline;
   Neo::printer() << "original capacity " << original_sizes << Neo::endline;
+  EXPECT_EQ(mesh_array_property.capacity().size(),original_sizes.size());
   EXPECT_TRUE(std::equal(original_sizes.begin(),original_sizes.end(),mesh_array_property.capacity().begin()));
   std::vector<Neo::utils::Int32> values_ref{0,1};
   std::vector<Neo::utils::Int32> values_after_remove;
@@ -358,6 +360,7 @@ TEST(NeoTestArrayProperty, test_remove_item_values) {
     }
   }
   Neo::printer() << "values after remove " << values_after_remove << Neo::endline;
+  EXPECT_EQ(values_ref.size(),values_after_remove.size());
   EXPECT_TRUE(std::equal(values_ref.begin(),values_ref.end(),values_after_remove.begin()));
   // Remove one of the remaining value (the 0)
   sizes = {0,0,1,0,0,0};
@@ -377,6 +380,7 @@ TEST(NeoTestArrayProperty, test_remove_item_values) {
   removed_value_indexes.init(sizes, {0});
   mesh_array_property.removeValues(removed_value_indexes);
   EXPECT_EQ(mesh_array_property.cumulatedSize(),0);
+    EXPECT_EQ(values_ref.size(),values_after_remove.size());
 }
 
 /*-----------------------------------------------------------------------------*/
