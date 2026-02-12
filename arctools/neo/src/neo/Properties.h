@@ -800,6 +800,7 @@ class MeshArrayPropertyT : public PropertyBase
     for (auto& index : new_indexes) {
       index = offset_sum;
       offset_sum += new_offsets[i];
+      if (new_offsets[i] == 0) index = std::max(0, index - 1); // current index has no value
       ++i;
     }
     // todo use algo version instead with more recent compilers (gcc >=9, clang >=5)
