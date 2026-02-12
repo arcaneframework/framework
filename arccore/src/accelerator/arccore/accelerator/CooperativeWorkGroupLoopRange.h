@@ -38,19 +38,24 @@ class CooperativeHostWorkItemGrid
  private:
 
   //! Constructeur pour l'hôte
-  explicit CooperativeHostWorkItemGrid()
+  explicit CooperativeHostWorkItemGrid(Int32 nb_block)
+  : m_nb_block(nb_block)
   {}
 
  public:
 
   //! Nombre de blocs dans la grille
-  Int32 nbBlock() const { return 1; }
+  Int32 nbBlock() const { return m_nb_block; }
 
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   void barrier()
   {
     // TODO: A implementer pour le multi-threading via std::barrier()
   }
+
+ private:
+
+  Int32 m_nb_block = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,15 +131,18 @@ class CooperativeWorkGroupLoopContext
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   constexpr CooperativeWorkGroupLoopContext(IndexType loop_index, Int32 group_index,
-                                            Int32 group_size, Int32 nb_active_item, IndexType total_size)
+                                            Int32 group_size, Int32 nb_active_item,
+                                            IndexType total_size, Int32 nb_block)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
+  , m_nb_block(nb_block)
   {
   }
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size)
+  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size, Int32 nb_block)
   : BaseClass(total_size)
+  , m_nb_block(nb_block)
   {}
 
  public:
@@ -144,8 +152,12 @@ class CooperativeWorkGroupLoopContext
   __device__ CooperativeDeviceWorkItemGrid grid() const { return CooperativeDeviceWorkItemGrid{}; }
 #else
   //! Groupe courant
-  CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
+  CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid(m_nb_block); }
 #endif
+
+ private:
+
+  Int32 m_nb_block = 0;
 };
 
 /*---------------------------------------------------------------------------*/
