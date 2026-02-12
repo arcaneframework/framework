@@ -225,18 +225,24 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckArccoreTypeSize.cmake)
 # explicitement positionné alors il faut que google-test soit installé.
 # Par compatibilité avec l'existant, on supporte encore ARCCORE_WANT_TEST si
 # ARCCORE_ENABLE_TESTS n'est pas défini.
-set(ARCCORE_NEED_INSTALLED_GTEST FALSE)
 if (DEFINED ARCCORE_ENABLE_TESTS)
   message(STATUS "ARCCORE_ENABLE_TESTS = '${ARCCORE_ENABLE_TESTS}'")
-  set(ARCCORE_NEED_INSTALLED_GTEST TRUE)
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST TRUE)
+  endif ()
 else()
   if (NOT DEFINED ARCCORE_WANT_TEST)
     set(ARCCORE_WANT_TEST TRUE)
   endif()
   message(STATUS "Setting ARCCORE_ENABLE_TESTS from ARCCORE_WANT_TEST = ${ARCCORE_WANT_TEST}")
   set(ARCCORE_ENABLE_TESTS "${ARCCORE_WANT_TEST}")
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST FALSE)
+  endif ()
 endif()
+
 set(ARCCORE_ENABLE_TESTS ${ARCCORE_ENABLE_TESTS} CACHE BOOL "Are Arccore test enabled ?" FORCE)
+set(ARCCORE_NEED_INSTALLED_GTEST ${ARCCORE_NEED_INSTALLED_GTEST} CACHE BOOL "Are GTest force needed?" FORCE)
 
 if (ARCCORE_ENABLE_TESTS)
   enable_testing()
@@ -248,6 +254,10 @@ if (ARCCORE_ENABLE_TESTS)
       message(FATAL_ERROR
         "Tests for Arccore are enabled but google-test is not found. "
         "Install google-test or disable tests using -DARCCORE_ENABLE_TESTS=FALSE when running cmake command"
+      )
+    else ()
+      message(STATUS
+        "Tests for Arccore are enabled but google-test is not found."
       )
     endif()
   endif()
