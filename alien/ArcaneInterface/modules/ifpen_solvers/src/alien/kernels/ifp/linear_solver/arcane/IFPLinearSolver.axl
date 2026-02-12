@@ -96,6 +96,8 @@
       </enumvalue>
     </enumeration>
 
-
+    <simple name="solver-final-report" type="bool" default="false">
+        <description>Activate solver final report</description>
+    </simple>
   </options>
 </service>
