@@ -689,6 +689,7 @@ class MeshArrayPropertyT : public PropertyBase
         continue;
       }
       for (auto removed_value_index : removed_value_indexes[item]) {
+        NEO_ASSERT(removed_value_index < m_sizes[item], "removed_value_index must be < item array size, In MeshArrayPropertyT::removeValues");
         Neo::printer() << "Remove value " << (*this)[item][removed_value_index] << " with index " << removed_value_index << " from item " << item << Neo::endline;
         std::swap(m_data[m_indexes[item] + removed_value_index], m_data[m_indexes[item] + m_sizes[item] - 1]);
         --m_sizes[item];
