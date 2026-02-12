@@ -508,7 +508,8 @@ class WorkGroupLoopContext
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   explicit constexpr WorkGroupLoopContext(IndexType loop_index, Int32 group_index, Int32 group_size,
-                                          Int32 nb_active_item, IndexType total_size)
+                                          Int32 nb_active_item, IndexType total_size,
+                                          [[maybe_unused]] Int32 nb_block)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
@@ -753,10 +754,10 @@ class WorkGroupLoopRangeBase
    *
    * \a nb_block doit être un multiple de 32.
    */
-  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(Int32 nb_block);
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(IndexType nb_block);
 
   //! Positionne la taille d'un bloc en fonction de la commande \a command
-  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(const RunCommand& command);
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(RunCommand& command);
 
  private:
 

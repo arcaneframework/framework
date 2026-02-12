@@ -176,7 +176,7 @@ class WorkGroupSequentialForHelper
       // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
       // un multiple de \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
-      func(LoopIndexType(loop_index, i, group_size, nb_active, bounds.nbElement()), remaining_args...);
+      func(LoopIndexType(loop_index, i, group_size, nb_active, bounds.nbElement(), bounds.nbBlock()), remaining_args...);
       loop_index += group_size;
     }
 
@@ -193,12 +193,6 @@ class WorkGroupSequentialForHelper
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ static void
 doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  //auto privatizer = privatize(func);
-  //auto& body = privatizer.privateCopy();
-
-  //using LoopIndexType = LoopBoundType::LoopBoundType::LoopIndexType;
-
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
@@ -258,7 +252,8 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
   // En mode coopératif, il faut toujours appeler setBlockSize()
-  // pour être certain que la taille de bloc est cohérente.
+  // pour être certain que la taille de bloc est cohérente sur l'hôte
+  // (en séquentiel, il ne faut qu'un seul bloc dans ce cas).
   if ((bounds.blockSize() == 0) || bounds.isCooperativeLaunch())
     bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
