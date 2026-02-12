@@ -37,47 +37,49 @@ class ALIEN_EXPORT SolverStat
  public:
   template <typename SolverT> friend class SolverStater;
   /** Constructeur de la classe */
-  SolverStat();
+  SolverStat() = default;
 
   /** Destructeur de la classe */
-  virtual ~SolverStat() {}
+  virtual ~SolverStat() = default;
 
- public:
   Integer solveCount() const;
   Integer iterationCount() const;
   Real initializationTime() const;
-  Real initializationCpuTime() const;
   Real prepareTime() const;
-  Real prepareCpuTime() const;
   Real solveTime() const;
-  Real solveCpuTime() const;
 
   Integer lastIterationCount() const;
   Real lastPrepareTime() const;
-  Real lastPrepareCpuTime() const;
   Real lastSolveTime() const;
-  Real lastSolveCpuTime() const;
 
   void reset();
 
- public:
-  void print(
-  ITraceMng* traceMng, const SolverStatus& status, String title = String()) const;
+  void print(ITraceMng* traceMng, const SolverStatus& status, String title = String()) const;
+
+  void finalPrint(ITraceMng* traceMng, String title = String()) const;
 
  protected:
-  Integer m_solve_count;
-  Integer m_iteration_count;
+  Integer m_solve_count = 0;
+  Integer m_iteration_count = 0;
+  Integer m_failed_solve_count = 0;
+  Integer m_failed_iteration_count = 0;
+
+  Real m_initialization_time = 0;
+  Real m_prepare_time = 0;
+  Real m_solve_time = 0;
+
+  Real m_failed_prepare_time = 0;
+  Real m_failed_solve_time = 0;
+
   Integer m_last_iteration_count;
-  Real m_initialization_time, m_initialization_cpu_time;
-  Real m_prepare_time, m_prepare_cpu_time;
-  Real m_last_prepare_time, m_last_prepare_cpu_time;
-  Real m_solve_time, m_solve_cpu_time;
-  Real m_last_solve_time, m_last_solve_cpu_time;
+  Real m_last_prepare_time = 0;
+  Real m_last_solve_time = 0;
 
  private:
   class InternalTraceSizer;
   void _internalPrint(std::ostream& o, const Integer prefix_size,
                       const SolverStatus& status, String title) const;
+  void _internalFinalPrint(std::ostream& o, String title) const;
 };
 
 /*---------------------------------------------------------------------------*/
