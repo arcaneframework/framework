@@ -24,16 +24,60 @@
 #include <hip/hip_cooperative_groups.h>
 #endif
 
+#include <barrier>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Impl
+{
+
+class WorkGroupLoopContextBuilder;
+class WorkGroupSequentialForHelper;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Classe pour gérer la synchronisation de grille en multi-thread;
+class ThreadGridSynchronizer
+{
+ private:
+
+  class NullFunc
+  {
+   public:
+
+    void operator()() const noexcept { /* Nothing to do */ }
+  };
+
+ public:
+
+  explicit ThreadGridSynchronizer(Int32 nb_thread)
+  : m_barrier(nb_thread)
+  {}
+
+ public:
+
+  void sync() { m_barrier.arrive_and_wait(); }
+
+ private:
+
+  std::barrier<NullFunc> m_barrier;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
-namespace Impl
-{
-  class WorkGroupLoopContextBuilder;
-  class WorkGroupSequentialForHelper;
-} // namespace Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <typename IndexType_ = Int32>
 class HostWorkItem;
@@ -509,7 +553,8 @@ class WorkGroupLoopContext
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   explicit constexpr WorkGroupLoopContext(IndexType loop_index, Int32 group_index, Int32 group_size,
                                           Int32 nb_active_item, IndexType total_size,
-                                          [[maybe_unused]] Int32 nb_block)
+                                          [[maybe_unused]] Int32 nb_block,
+                                          [[maybe_unused]] Impl::ThreadGridSynchronizer* syncer)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
