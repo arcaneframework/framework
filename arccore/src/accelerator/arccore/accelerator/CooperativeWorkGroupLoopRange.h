@@ -140,9 +140,8 @@ class CooperativeWorkGroupLoopContext
 
   // Ce constructeur n'est utilisé que sur le device
   // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
-  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size, Int32 nb_block)
+  explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size)
   : BaseClass(total_size)
-  , m_nb_block(nb_block)
   {}
 
  public:
