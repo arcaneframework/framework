@@ -27,6 +27,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
 #include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
@@ -170,6 +171,7 @@ class HybridParallelMng::Impl
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
+  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -186,10 +188,16 @@ class HybridParallelMng::Impl
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
+  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  {
+    return m_alloc.get();
+  }
+
  private:
 
   HybridParallelMng* m_parallel_mng;
   HybridMachineMemoryWindowBaseInternalCreator* m_window_creator;
+  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/

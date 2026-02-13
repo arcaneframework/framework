@@ -10,7 +10,7 @@
 /* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"

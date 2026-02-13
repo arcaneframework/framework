@@ -91,6 +91,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/ParallelMngInternal.h
   internal/ParallelMngInternal.cc
   internal/IItemFamilySerializerMngInternal.h
+  internal/DynamicMachineMemoryWindowMemoryAllocator.cc
+  internal/DynamicMachineMemoryWindowMemoryAllocator.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -500,8 +502,6 @@ set(ARCANE_ORIGINAL_SOURCES
   DynamicMachineMemoryWindowBase.cc
   DynamicMachineMemoryWindowBase.h
   DynamicMachineMemoryWindow.h
-  DynamicMachineMemoryWindowMemoryAllocator.cc
-  DynamicMachineMemoryWindowMemoryAllocator.h
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
