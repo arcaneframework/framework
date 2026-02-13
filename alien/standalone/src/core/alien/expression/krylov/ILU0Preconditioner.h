@@ -101,8 +101,8 @@ namespace Alien
   {
    public:
     //! Type of the blocks
-    using ValueType = ValueT ;
-    using Block2D   = Block2D<ValueType> ;
+    using ValueType     = ValueT ;
+    using Block2DType   = Block2D<ValueType> ;
 
 
     LU(int N)
@@ -111,7 +111,7 @@ namespace Alien
       setZero() ;
     }
 
-    LU inv(Block2D const& r)
+    LU inv(Block2DType const& r)
     {
       std::copy(r.m_values,r.m_values+r.m_N*r.m_N,A.m_values) ;
       for (int k = 0; k < A.m_N; ++k)
@@ -154,7 +154,7 @@ namespace Alien
       }
     }
 
-    void LSolve(Block2D& X) const
+    void LSolve(Block2DType& X) const
     {
       for (int i = 1; i < A.m_N; ++i)
       {
@@ -166,7 +166,7 @@ namespace Alien
       }
     }
 
-    void USolve(Block2D& X) const
+    void USolve(Block2DType& X) const
     {
       for (int i = A.m_N - 1; i >= 0; --i) {
         for (int j = A.m_N - 1; j > i; --j) {
@@ -178,9 +178,9 @@ namespace Alien
       }
     }
 
-    Block2D solve(Block2D const& r) const
+    Block2DType solve(Block2DType const& r) const
     {
-      Block2D results(A.m_N) ;
+      Block2DType results(A.m_N) ;
       results = r ;
       LSolve(results);
       USolve(results);
@@ -188,7 +188,7 @@ namespace Alien
     }
 
    private:
-    Block2D A;
+    Block2DType A;
   };
 
   template<typename ValueT>
@@ -564,7 +564,7 @@ class LUFactorisationAlgo
 #if defined(EIGEN3_DISABLED)
     else
     {
-      using Block2D     = Block2D<ValueType> ;
+      using Block2DType     = Block2D<ValueType> ;
 
       int N   = m_block_size;
       int NxN = N*N;
@@ -579,7 +579,7 @@ class LUFactorisationAlgo
       auto cols   = modifier.cols() ;
       auto values = modifier.data() ;
 
-      Block2D aik{N};
+      Block2DType aik{N};
       LU<ValueType> lu{N};
       // clang-format on
       if (m_is_parallel)
@@ -593,8 +593,8 @@ class LUFactorisationAlgo
               int krow = cols[k];
               //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
               //values[k] = aik;
-              aik =  Block2D{values+k*NxN,N} * lu.inv(Block2D{values+dcol[krow]*NxN,N});
-              Block2D{values+k*NxN,N} = aik ;
+              aik =  Block2DType{values+k*NxN,N} * lu.inv(Block2DType{values+dcol[krow]*NxN,N});
+              Block2DType{values+k*NxN,N} = aik ;
               for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
                 m_work[cols[l]] = l;
               for (int j = k + 1; j < kcol[krow] + local_row_size[irow]; ++j) // j=k+1->n
@@ -603,7 +603,7 @@ class LUFactorisationAlgo
                 int kj = m_work[jcol];
                 if (kj != -1) {
                   //values[j] -= aik * values[kj]; // aij = aij - aik*akj
-                  Block2D{values+j*NxN,N} -= (aik * Block2D{values+kj*NxN,N}) ;
+                  Block2DType{values+j*NxN,N} -= (aik * Block2DType{values+kj*NxN,N}) ;
                 }
               }
               for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
@@ -622,7 +622,7 @@ class LUFactorisationAlgo
               int krow = cols[k];
               //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
               //values[k] = aik;
-              aik = Block2D{values+k*NxN,N} * lu.inv(Block2D{values+dcol[krow]*NxN,N}) ;
+              aik = Block2DType{values+k*NxN,N} * lu.inv(Block2DType{values+dcol[krow]*NxN,N}) ;
               for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
                 m_work[cols[l]] = l;
               for (int j = k + 1; j < kcol[irow] + local_row_size[irow]; ++j) // j=k+1->n
@@ -631,7 +631,7 @@ class LUFactorisationAlgo
                 int kj = m_work[jcol];
                 if (kj != -1) {
                   //values[j] -= aik * values[kj]; // aij = aij - aik*akj
-                  Block2D{values+j*NxN,N} -= aik * Block2D{values+kj*NxN,N} ;
+                  Block2DType{values+j*NxN,N} -= aik * Block2DType{values+kj*NxN,N} ;
                 }
               }
               for (int j = kcol[irow] + local_row_size[irow]; j < kcol[irow + 1]; ++j) // j=k+1->n
@@ -640,7 +640,7 @@ class LUFactorisationAlgo
                 int kj = m_work[jcol];
                 if ((kj != -1) && (jcol >= first_upper_ghost_index)) {
                   //values[j] -= aik * values[kj]; // aij = aij - aik*akj
-                  Block2D{values+j*NxN,N} -= aik * Block2D{values+kj*NxN,N} ;
+                  Block2DType{values+j*NxN,N} -= aik * Block2DType{values+kj*NxN,N} ;
                 }
               }
               for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
@@ -659,8 +659,8 @@ class LUFactorisationAlgo
             int krow = cols[k];
             //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
             //values[k] = aik;
-            aik = Block2D{values+k*NxN,N} * lu.inv(Block2D{values+dcol[krow]*NxN,N}) ;
-            Block2D{values+k*NxN,N} = aik ;
+            aik = Block2DType{values+k*NxN,N} * lu.inv(Block2DType{values+dcol[krow]*NxN,N}) ;
+            Block2DType{values+k*NxN,N} = aik ;
             for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
               m_work[cols[l]] = l;
             for (int j = k + 1; j < kcol[irow + 1]; ++j) // j=k+1->n
@@ -669,7 +669,7 @@ class LUFactorisationAlgo
               int kj = m_work[jcol];
               if (kj != -1) {
                 //values[j] -= aik * values[kj]; // aij = aij - aik*akj
-                Block2D{values+j*NxN,N} -= aik * Block2D{values+kj*NxN,N} ;
+                Block2DType{values+j*NxN,N} -= aik * Block2DType{values+kj*NxN,N} ;
               }
             }
             for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
