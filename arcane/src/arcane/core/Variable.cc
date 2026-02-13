@@ -59,6 +59,7 @@
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include <map>
 #include <set>
@@ -638,6 +639,18 @@ setUsed(bool is_used)
       // Attention à ne pas reinitialiser les valeurs lorsque ces dernières
       // sont valides, ce qui est le cas par exemple après une protection.
       if (!m_p->m_has_valid_data) {
+
+        if (m_p->m_property & IVariable::PInShMem) {
+          IParallelMng* pm{};
+          if (m_p->m_mesh_handle.hasMesh()) {
+            pm = m_p->m_mesh_handle.mesh()->parallelMng();
+          }
+          else {
+            pm = subDomain()->parallelMng();
+          }
+          m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+        }
+
         resizeFromGroup();
         // Historiquement on remplissait dans tous les cas la variable avec le
         // constructeur par défaut

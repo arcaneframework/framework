@@ -141,7 +141,16 @@ class ARCANE_CORE_EXPORT IVariable
      * Cela signifie qu'il est normal que les valeurs de la variable soient
      * différentes sur les mêmes sous-domaines des autres réplicas.
      */
-    PNoReplicaSync = (1 << 11)
+    PNoReplicaSync = (1 << 11),
+
+    /*!
+     * \brief Indique que la variable doit être alloué en mémoire partagée.
+     *
+     * L'allocateur DynamicMachineMemoryWindowMemoryAllocator sera utilisé.
+     * La classe DynamicMachineMemoryWindowVariable pourra être utilisé avec
+     * cette variable.
+     */
+    PInShMem = (1 << 12)
   };
 
  public:
