@@ -147,10 +147,10 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
        return block()->size();
     }
     else if (vblock()) {
-      return -1 ;
+      return 1 ;
     }
     else {
-      return 1 ;
+      return m_own_block_size ;
     }
   }
 
@@ -158,6 +158,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   {
     if(this->m_multi_impl)
       const_cast<MultiMatrixImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+    else
+      m_own_block_size = block_size;
   }
 
   bool setMatrixValues(Arccore::Real const* values, bool only_host);
@@ -172,6 +174,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   void addLMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
   void addUMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+
+  void multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
   void multInvDiag(SYCLVector<ValueType>& y) const;
   void computeInvDiag(SYCLVector<ValueType>& y) const;
@@ -222,6 +226,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   std::vector<int>                        m_block_row_offset ;
   std::vector<int>                        m_ext_block_row_offset ;
 
+  Integer                                 m_own_block_size = 1 ;
+
   bool                                    m_is_parallel  = false;
   IMessagePassingMng*                     m_parallel_mng = nullptr;
   Integer                                 m_nproc        = 1;
@@ -231,6 +237,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   Integer                                 m_local_offset = 0;
   Integer                                 m_global_size  = 0;
   Integer                                 m_ghost_size   = 0;
+
 
   //SimpleCSRInternal::DistStructInfo            m_matrix_dist_info;
   DistStructInfo                               m_matrix_dist_info;

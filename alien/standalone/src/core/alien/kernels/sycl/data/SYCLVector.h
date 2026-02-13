@@ -112,7 +112,8 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   void init(const VectorDistribution& dist, Integer block_size, const bool need_allocate)
   {
     alien_debug([&] { cout() << "Initializing SYCLVector " << this; });
-    setBlockSize(block_size) ;
+    if(blockSize()==1)
+      setBlockSize(block_size) ;
     if (this->m_multi_impl) {
       if (this->vblock()) {
         m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
@@ -217,6 +218,8 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   {
     copyValuesToDevice(m_local_size,ptr) ;
   }
+
+  void pointWiseMult(SYCLVector const& y, SYCLVector& z) const ;
 
   // FIXME: not implemented !
   template <typename E>

@@ -143,6 +143,11 @@ class MatrixInternal
       return (k*m_NxN + i*m_N + j)*ellpack_size;
     }
 
+    inline std::size_t _ij(std::size_t local_id,int i, int j) const
+    {
+      return local_id*m_NxN+ i*m_N + j;
+    }
+
     template<typename MatrixValueAccessorT,
              typename MatrixColAccessorT,
              typename VectorAccessorT>
@@ -165,6 +170,124 @@ class MatrixInternal
         }
       }
       return value ;
+    }
+
+    template<typename MatrixValueAccessorT,
+             typename MatrixColAccessorT,
+             typename MaskAccessorT,
+             typename VectorAccessorT>
+    ValueType mult(int ieq,
+                   std::size_t local_id,
+                   std::size_t k,
+                   MatrixColAccessorT& cols,
+                   MaskAccessorT& mask,
+                   MatrixValueAccessorT& matrix,
+                   VectorAccessorT& x) const
+    {
+      ValueType value = 0. ;
+      auto x_offset = cols[k*ellpack_size+local_id]*m_N ;
+      auto ma = mask[k*ellpack_size+local_id] ;
+      if(x_offset>=0 && ma==1)
+      {
+        for(int j=0;j<m_N;++j)
+        {
+          auto mat_offset = _ijk(k,ieq,j)+local_id ;
+          value += matrix[mat_offset]*x[x_offset+j] ;
+          //printf("\n %d %d %d %d : %f += %f*%f ",ieq,j,int(k),int(mat_offset),value,matrix[mat_offset],x[x_offset+j]) ;
+        }
+      }
+      return value ;
+    }
+  };
+
+  template<typename MatrixAccT,
+           typename VectorAccT,
+           typename LUAccT>
+  struct LU
+  {
+    static const int ellpack_size = EllPackSize ;
+    int        m_N = 0 ;
+    int        m_NxN = 0 ;
+    MatrixAccT m_matrix;
+    VectorAccT m_y;
+    LUAccT     m_LU;
+
+    LU(int N, MatrixAccT matrix, VectorAccT y, LUAccT lu)
+    : m_N(N)
+    , m_NxN(N*N)
+    , m_matrix(matrix)
+    , m_y(y)
+    , m_LU(lu)
+    {}
+
+     inline std::size_t _ijk(std::size_t k, int i, int j) const
+     {
+       return (k*m_NxN + i*m_N + j)*ellpack_size;
+     }
+
+     inline std::size_t _ij(std::size_t local_id,int i, int j) const
+     {
+       return local_id*m_NxN+ i*m_N + j;
+     }
+
+     void factorize(std::size_t global_id,
+                    std::size_t local_id,
+                    std::size_t block_id,
+                    std::size_t k) const
+    {
+      // Copy Diag Matrix in A
+      for(int i=0;i<m_N;++i)
+        for(int j=0;j<m_N;++j)
+          m_LU[_ijk(block_id,i,j)+local_id] = m_matrix[_ijk(k,i,j)+local_id] ;
+
+      //Factorize A = LU
+      for (int k = 0; k < m_N; ++k)
+      {
+        //assert(m_LU[_ijk(block_id,k,k)+local_id] != 0);
+        m_LU[_ijk(block_id,k,k)+local_id] = 1 / m_LU[_ijk(block_id,k,k)+local_id];
+        for (int i = k + 1; i < m_N; ++i) {
+          m_LU[_ijk(block_id,i,k)+local_id] *= m_LU[_ijk(block_id,k,k)+local_id];
+        }
+        for (int i = k + 1; i < m_N; ++i) {
+          for (int j = k + 1; j < m_N; ++j) {
+            m_LU[_ijk(block_id,i,j)+local_id] -= m_LU[_ijk(block_id,i,k)+local_id] * m_LU[_ijk(block_id,k,j)+local_id];
+          }
+        }
+      }
+    }
+
+    void inverse(std::size_t global_id,
+                 std::size_t local_id,
+                 std::size_t block_id) const
+    {
+      // SET Y to Id
+      for(int i=0;i<m_N;++i)
+        for(int j=0;j<m_N;++j)
+          m_y[_ij(global_id,i,j)] = 0. ;
+      for(int i=0;i<m_N;++i)
+        m_y[_ij(global_id,i,i)] = 1. ;
+
+      // L solve
+      for (int i = 1; i < m_N; ++i)
+      {
+        for (int j = 0; j < i; ++j)
+        {
+          for(int k=0;k<m_N;++k)
+            m_y[_ij(global_id,i,k)] -= m_LU[_ijk(block_id,i,j)+local_id] * m_y[_ij(global_id,j,k)];
+        }
+      }
+
+      // U solve
+      for (int i = m_N - 1; i >= 0; --i)
+      {
+        for (int j = m_N - 1; j > i; --j)
+        {
+          for(int k=0;k<m_N;++k)
+            m_y[_ij(global_id,i,k)] -= m_LU[_ijk(block_id,i,j)+local_id] * m_y[_ij(global_id,j,k)];
+        }
+        for(int k=0;k<m_N;++k)
+          m_y[_ij(global_id,i,k)] *= m_LU[_ijk(block_id,i,i)+local_id];
+      }
     }
   };
 
@@ -199,13 +322,19 @@ class MatrixInternal
   void addLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
   void addUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
-  void multInvDiag(ValueBufferType& y) const;
+  void multDiag(ValueBufferType& x, ValueBufferType& y) const;
+  void multDiag(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
+  void multInvDiag(ValueBufferType& y) const;
   void multInvDiag(ValueBufferType& y, QueueType& queue) const;
 
   void computeInvDiag(ValueBufferType& y) const;
 
   void computeInvDiag(ValueBufferType& y, QueueType& queue) const;
+
+  void computeInvBlockDiag(ValueBufferType& y) const;
+
+  void computeInvBlockDiag(ValueBufferType& y, QueueType& queue) const;
 
   void scal(ValueBufferType& y);
 

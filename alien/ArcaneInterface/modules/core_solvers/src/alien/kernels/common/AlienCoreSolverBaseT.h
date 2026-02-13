@@ -423,37 +423,72 @@ class AlienCoreSolverBaseT
             using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
             using CxrSolverType    = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
             //using RelaxSolverType  = Alien::DiagPreconditioner<AlgebraType> ;
-            using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
-            using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
+            using HRelaxSolverType = Alien::ILU0Preconditioner<AlgebraType> ;
+            using DRelaxSolverType = Alien::FILU0Preconditioner<AlgebraType> ;
+            using HCxrPrecondType  = Alien::CxrPreconditioner<AlgebraType,
                                                               MatrixType,
                                                               VectorType,
                                                               CxrSolverType,
                                                               CxrOpType,
-                                                              RelaxSolverType> ;
-
+                                                              HRelaxSolverType> ;
+            using DCxrPrecondType  = Alien::CxrPreconditioner<AlgebraType,
+                                                              MatrixType,
+                                                              VectorType,
+                                                              CxrSolverType,
+                                                              CxrOpType,
+                                                              DRelaxSolverType> ;
             auto cxr_op = CxrOpType(matrixA) ;
             auto cxr_solver = CxrSolverType{alg,amg_solver} ;
-            auto relax_solver = RelaxSolverType{alg,matrixA} ;
 
-            auto precond = CxrPrecondType{alg,
-                                          matrixA,
-                                          &cxr_op,
-                                          &cxr_solver,
-                                          &relax_solver,
-                                          traceMng()} ;
+            if constexpr (MatrixType::on_host_only)
             {
-              Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
-              if(m_use_diag_scaling)
-                precond.init(m_diag_scaling) ;
-              else
-                precond.init() ;
+              auto relax_solver = HRelaxSolverType{alg,matrixA} ;
+
+              auto precond = HCxrPrecondType{alg,
+                                            matrixA,
+                                            &cxr_op,
+                                            &cxr_solver,
+                                            &relax_solver,
+                                            traceMng()} ;
+              {
+                Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
+                if(m_use_diag_scaling)
+                  precond.init(m_diag_scaling) ;
+                else
+                  precond.init() ;
+              }
+              {
+                Alien::StdTimer::Sentry ts(m_timer,"Solve");
+                if(asynch==0)
+                  solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+                else
+                  solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              }
             }
+            else
             {
-              Alien::StdTimer::Sentry ts(m_timer,"Solve");
-              if(asynch==0)
-                solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
-              else
-                solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              auto relax_solver = DRelaxSolverType{alg,matrixA} ;
+
+              auto precond = DCxrPrecondType{alg,
+                                            matrixA,
+                                            &cxr_op,
+                                            &cxr_solver,
+                                            &relax_solver,
+                                            traceMng()} ;
+              {
+                Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
+                if(m_use_diag_scaling)
+                  precond.init(m_diag_scaling) ;
+                else
+                  precond.init() ;
+              }
+              {
+                Alien::StdTimer::Sentry ts(m_timer,"Solve");
+                if(asynch==0)
+                  solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+                else
+                  solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              }
             }
 #endif
           }

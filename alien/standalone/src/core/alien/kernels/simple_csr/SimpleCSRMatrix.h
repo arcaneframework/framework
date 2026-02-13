@@ -166,10 +166,10 @@ class SimpleCSRMatrix : public IMatrixImpl
        return block()->size();
     }
     else if (vblock()) {
-      return -1 ;
+      return 1 ;
     }
     else {
-      return 1 ;
+      return m_own_block_size ;
     }
   }
 
@@ -177,6 +177,8 @@ class SimpleCSRMatrix : public IMatrixImpl
   {
     if(this->m_multi_impl)
       const_cast<MultiMatrixImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+    else
+      m_own_block_size = block_size ;
   }
 
   IMessagePassingMng* getParallelMng()
@@ -304,6 +306,7 @@ class SimpleCSRMatrix : public IMatrixImpl
     matrix->m_myrank = m_myrank;
     matrix->m_parallel_mng = m_parallel_mng;
     matrix->m_trace = m_trace;
+    matrix->setBlockSize(blockSize()) ;
     matrix->m_matrix.copy(m_matrix);
     matrix->m_matrix_dist_info.copy(m_matrix_dist_info);
     return matrix;
@@ -431,6 +434,7 @@ class SimpleCSRMatrix : public IMatrixImpl
   SimpleCSRInternal::CommProperty::ePolicyType m_send_policy;
   SimpleCSRInternal::CommProperty::ePolicyType m_recv_policy;
   IMessagePassingMng* m_parallel_mng = nullptr;
+  Integer m_own_block_size = 1;
   Integer m_nproc = 1;
   Integer m_myrank = 0;
   ITraceMng* m_trace = nullptr;
