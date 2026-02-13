@@ -10,8 +10,8 @@
 /* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
-#define ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
+#ifndef ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
+#define ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

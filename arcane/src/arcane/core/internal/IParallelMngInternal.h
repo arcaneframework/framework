@@ -85,6 +85,8 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \return Une référence vers la nouvelle fenêtre.
    */
   virtual Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+
+  virtual IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

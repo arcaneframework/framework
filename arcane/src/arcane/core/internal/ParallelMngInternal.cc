@@ -125,6 +125,14 @@ createDynamicMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryAllocator* ParallelMngInternal::dynamicMachineMemoryWindowMemoryAllocator()
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

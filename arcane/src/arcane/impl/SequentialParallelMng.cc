@@ -41,6 +41,7 @@
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -825,6 +826,7 @@ class SequentialParallelMng::Impl
 
   explicit Impl(SequentialParallelMng* pm)
   : ParallelMngInternal(pm)
+  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -840,6 +842,15 @@ class SequentialParallelMng::Impl
   {
     return makeRef(new SequentialDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
   }
+
+  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  {
+    return m_alloc.get();
+  }
+
+ private:
+
+  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/
