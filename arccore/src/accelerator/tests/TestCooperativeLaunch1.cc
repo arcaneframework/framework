@@ -77,14 +77,11 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
   c.copy(host_c);
 
   nb_part = 1;
-  eExecutionPolicy policy = runner.executionPolicy();
   for (Int32 k = 1; k < 5; ++k) {
     {
       Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop);
       Int64 v2 = v / nb_loop;
-      if (policy==eExecutionPolicy::CUDA || policy==eExecutionPolicy::HIP || policy==eExecutionPolicy::Sequential){
-        ASSERT_EQ(v2, expected_value);
-      }
+      ASSERT_EQ(v2, expected_value);
     }
     nb_part *= 2;
   }
