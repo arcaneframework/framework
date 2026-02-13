@@ -47,12 +47,12 @@ class ThreadGridSynchronizer
   {
    public:
 
-    void operator()() const {}
+    void operator()() const noexcept { /* Nothing to do */ }
   };
 
  public:
 
-  ThreadGridSynchronizer(Int32 nb_thread)
+  explicit ThreadGridSynchronizer(Int32 nb_thread)
   : m_barrier(nb_thread)
   {}
 
