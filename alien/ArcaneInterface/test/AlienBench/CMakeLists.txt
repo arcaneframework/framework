@@ -111,6 +111,10 @@ if (TARGET  alien_core_solvers)
     linkLibraries(alien_bench.exe alien_core_solvers)
 endif ()
 
+if (TARGET  alien_core_sycl_solvers)
+    linkLibraries(alien_bench.exe alien_core_sycl_solvers)
+endif ()
+
 if (TARGET  alien_external_packages)
     linkLibraries(alien_bench.exe alien_external_packages)
 endif ()

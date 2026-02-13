@@ -76,6 +76,9 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
   void addUMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
 
+  void multDiag(const Matrix& A, Vector const& y, Vector& z) const;
+  void multDiag(const Vector& diag, Vector const& y, Vector& z) const;
+
   void multInvDiag(const Matrix& A, Vector& y) const;
   void computeInvDiag(const Matrix& a, Vector& inv_diag) const;
 

@@ -168,6 +168,29 @@ void SYCLInternalLinearAlgebra::addUMult(Real alpha,
 }
 
 void SYCLInternalLinearAlgebra::
+multDiag(const SYCLBEllPackMatrix<Real>& ma,
+         const SYCLVector<Real>& vy,
+         SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-MULTDIAG");
+#endif
+  Internal::SYCLBEllPackMatrixMultT<Real>(ma).multDiag(vy,vr);
+}
+
+void SYCLInternalLinearAlgebra::
+multDiag(const SYCLVector<Real>& diag,
+         const SYCLVector<Real>& vy,
+         SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-MULTDIAG");
+#endif
+  diag.pointWiseMult(vy,vr);
+}
+
+
+void SYCLInternalLinearAlgebra::
 multInvDiag(const SYCLBEllPackMatrix<Real>& ma,
             SYCLVector<Real>& vr) const
 {

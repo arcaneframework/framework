@@ -6,13 +6,5 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-#include <alien/AlienCoreSolversPrecomp.h>
-#include <alien/kernels/simple_csr/linear_solver/AlienCoreLinearSolver.h>
-#include <alien/kernels/common/linear_solver/arcane/AlienLinearSolver.h>
-
-#ifdef ALIEN_USE_SYCL
-#include <alien/AlienCoreSYCLSolversPrecomp.h>
-#include <alien/kernels/sycl/linear_solver/AlienCoreSYCLLinearSolver.h>
-#include <alien/kernels/common/linear_solver/arcane/AlienSYCLLinearSolver.h>
-#endif
-
+#include "alien/AlienCoreSyclSolversExport.h"
+#include <alien/AlienLegacyConfig.h>

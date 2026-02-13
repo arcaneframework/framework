@@ -33,7 +33,7 @@ namespace Alien {
 
 class SolverStat;
 
-class ALIEN_CORE_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
+class ALIEN_CORE_SYCL_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
 : public AlienCoreSolverBaseT<Alien::SYCLInternalLinearAlgebra>
 {
  private:
