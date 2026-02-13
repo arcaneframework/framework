@@ -141,7 +141,9 @@ class ARCANE_CORE_EXPORT IVariable
      * Cela signifie qu'il est normal que les valeurs de la variable soient
      * différentes sur les mêmes sous-domaines des autres réplicas.
      */
-    PNoReplicaSync = (1 << 11)
+    PNoReplicaSync = (1 << 11),
+
+    PInShMem = (1 << 12)
   };
 
  public:
