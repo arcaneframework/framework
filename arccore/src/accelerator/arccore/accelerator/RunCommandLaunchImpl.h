@@ -24,6 +24,8 @@
 #include "arccore/accelerator/CooperativeWorkGroupLoopRange.h"
 #include "arccore/accelerator/KernelLauncher.h"
 
+#include <barrier>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,6 +65,14 @@ class HostLaunchLoopRangeBase
   {
     return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
   }
+  void setThreadGridSynchronizer(ThreadGridSynchronizer* v)
+  {
+    m_thread_grid_synchronizer = v;
+  }
+  ThreadGridSynchronizer* threadGridSynchronizer() const
+  {
+    return m_thread_grid_synchronizer;
+  }
 
  private:
 
@@ -70,6 +80,8 @@ class HostLaunchLoopRangeBase
   Int32 m_nb_block = 0;
   Int32 m_block_size = 0;
   Int32 m_last_block_size = 0;
+  //! Cette instance est gérée par arcaneParallelFor(HostLaunchLoopRange<>...)
+  ThreadGridSynchronizer* m_thread_grid_synchronizer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -176,7 +188,8 @@ class WorkGroupSequentialForHelper
       // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
       // un multiple de \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
-      func(LoopIndexType(loop_index, i, group_size, nb_active, bounds.nbElement(), bounds.nbBlock()), remaining_args...);
+      LoopIndexType li(loop_index, i, group_size, nb_active, bounds.nbElement(), bounds.nbBlock(), bounds.threadGridSynchronizer());
+      func(li, remaining_args...);
       loop_index += group_size;
     }
 
@@ -382,9 +395,12 @@ arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& fu
  * \brief Applique le fonctor \a func sur une boucle parallèle.
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(Impl::HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,
+arccoreParallelFor(HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,
                    const Lambda& func, const RemainingArgs&... remaining_args)
 {
+  Int32 nb_thread = run_info.options().value().maxThread();
+  ThreadGridSynchronizer grid_sync(nb_thread);
+  bounds.setThreadGridSynchronizer(&grid_sync);
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
     Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
   };
