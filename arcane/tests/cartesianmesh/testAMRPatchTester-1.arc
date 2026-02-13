@@ -3,6 +3,9 @@
   <arcane>
     <title>AMRPatchTester (Variant 1)</title>
     <timeloop>AMRPatchTesterLoop</timeloop>
+    <modules>
+      <module name="ArcaneCheckpoint" active="true"/>
+    </modules>
   </arcane>
 
   <arcane-post-processing>

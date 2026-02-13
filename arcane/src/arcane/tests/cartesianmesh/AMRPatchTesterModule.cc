@@ -26,6 +26,9 @@
 #include "arcane/cartesianmesh/FaceDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 #include "arcane/cartesianmesh/SimpleHTMLMeshAMRPatchExporter.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/tests/cartesianmesh/AMRPatchTester_axl.h"
 
@@ -161,6 +164,15 @@ _reset()
 void AMRPatchTesterModule::
 _test1()
 {
+  IParallelMng* pm = parallelMng();
+  //DynamicMachineMemoryWindowMemoryAllocator memory_allocator(pm);
+  //MemoryAllocationOptions allocator_opt(&memory_allocator);
+
+  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
+
+  //var.variable()->_internalApi()->changeAllocator(allocator_opt);
+  //var.variable()->_internalApi()->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+
   m_cartesian_mesh->computeDirections();
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   for (Integer i = 0; i < 1; ++i) {
@@ -169,6 +181,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(2, 0);
@@ -180,6 +200,15 @@ _test1()
 
       _test1_1();
       _test1_2();
+
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -191,6 +220,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -204,6 +241,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 1);
@@ -215,6 +260,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(4, 1);
@@ -224,8 +277,17 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = DynamicMachineMemoryWindowMemoryAllocator::machineRanks(AllocatedMemoryInfo{ var._internalSpan().data() });
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << asSpan<Int32>(DynamicMachineMemoryWindowMemoryAllocator::segmentView(AllocatedMemoryInfo{ var._internalSpan().data() }, rank)).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
   }
+  debug() << "Fin";
 }
 
 /*---------------------------------------------------------------------------*/

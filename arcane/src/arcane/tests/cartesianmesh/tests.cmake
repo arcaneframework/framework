@@ -309,7 +309,9 @@ endif ()
 #################################
 # AMRPatchTesterModule :
 #################################
-arcane_add_test(amr-patch-tester-1 testAMRPatchTester-1.arc "-m 10")
+arcane_add_test(amr-patch-tester-1 testAMRPatchTester-1.arc "-m 1")
+arcane_add_test_checkpoint_sequential(amr-patch-tester-1-c testAMRPatchTester-1.arc 1 1)
+
 
 arcane_add_test_sequential(amr-patch-tester-2 testAMRPatchTester-2.arc "-m 10")
 arcane_add_test_parallel(amr-patch-tester-2 testAMRPatchTester-2.arc 8 "-m 10")
