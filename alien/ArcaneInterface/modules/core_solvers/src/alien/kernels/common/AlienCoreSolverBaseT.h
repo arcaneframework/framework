@@ -498,17 +498,6 @@ class AlienCoreSolverBaseT
                 run(relax_solver) ;
               }
               break;
-              case AlienCoreSolverOptionTypes::ILU0:
-              {
-                using RelaxSolverType = Alien::ILU0Preconditioner<AlgebraType> ;
-                if(this->traceMng()) this->traceMng()->info()<<"ILU0 RELAX SOLVER";
-                if constexpr (MatrixType::on_host_only)
-                {
-                  auto relax_solver     = RelaxSolverType{alg,matrixA} ;
-                  run(relax_solver) ;
-                }
-              }
-              break;
               case AlienCoreSolverOptionTypes::FILU0:
               {
                 using RelaxSolverType = Alien::FILU0Preconditioner<AlgebraType> ;
@@ -520,13 +509,23 @@ class AlienCoreSolverBaseT
                 run(relax_solver) ;
               }
               break;
+              case AlienCoreSolverOptionTypes::ILU0:
               default:
+              {
+                using RelaxSolverType = Alien::ILU0Preconditioner<AlgebraType> ;
+                if(this->traceMng()) this->traceMng()->info()<<"ILU0 RELAX SOLVER";
+                if constexpr (MatrixType::on_host_only)
+                {
+                  auto relax_solver     = RelaxSolverType{alg,matrixA} ;
+                  run(relax_solver) ;
+                }
+              }
+              break;
             }
 #endif
           }
         }
         break ;
-
       case AlienCoreSolverOptionTypes::Diag:
       default:
         {
