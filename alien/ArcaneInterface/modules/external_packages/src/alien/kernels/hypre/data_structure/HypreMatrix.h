@@ -37,13 +37,13 @@ namespace Internal {
 class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 {
  public:
-  typedef Internal::MatrixInternal MatrixInternal;
-  typedef Arccore::Real ValueType ;
-  typedef int           IndexType ;
+  using MatrixInternal = Internal::MatrixInternal ;
+  using ValueType      = Arccore::Real;
+  using IndexType      = int;
+  using HCSRView       = HCSRViewT<HypreMatrix>;
 
  public:
 
-  typedef HCSRViewT<HypreMatrix> HCSRView ;
 
   HypreMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~HypreMatrix();

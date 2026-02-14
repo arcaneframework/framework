@@ -11,7 +11,6 @@
 
 #include "alien/kernels/simple_csr/AlienSolverPrecomp.h"
 
-
 #include <alien/data/Space.h>
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
@@ -39,6 +38,7 @@
 
 #include <arcane/ArcaneVersion.h>
 #include <arcane/Timer.h>
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {

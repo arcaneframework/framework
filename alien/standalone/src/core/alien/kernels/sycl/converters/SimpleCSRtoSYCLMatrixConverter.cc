@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -72,6 +72,8 @@ const SimpleCSRMatrix<Real>& sourceImpl, SYCLBEllPackMatrix<Real>& targetImpl) c
   const Integer localOffset = dist.rowOffset();
   auto const& matrixInternal = *sourceImpl.internal();
 
+  auto block_size = sourceImpl.blockSize() ;
+
   {
     auto const& matrix_profile = sourceImpl.internal()->getCSRProfile();
     int nrows = matrix_profile.getNRow();
@@ -84,7 +86,8 @@ const SimpleCSRMatrix<Real>& sourceImpl, SYCLBEllPackMatrix<Real>& targetImpl) c
                                   nrows,
                                   kcol,
                                   cols,
-                                  sourceImpl.getDistStructInfo())) {
+                                  sourceImpl.getDistStructInfo(),
+                                  block_size)) {
       throw FatalErrorException(A_FUNCINFO, "SYCL Initialisation failed");
     }
 

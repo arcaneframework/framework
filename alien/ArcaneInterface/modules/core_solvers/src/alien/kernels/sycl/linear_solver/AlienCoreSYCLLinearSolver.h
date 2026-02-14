@@ -33,7 +33,7 @@ namespace Alien {
 
 class SolverStat;
 
-class ALIEN_CORE_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
+class ALIEN_CORE_SYCL_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
 : public AlienCoreSolverBaseT<Alien::SYCLInternalLinearAlgebra>
 {
  private:
@@ -61,6 +61,9 @@ class ALIEN_CORE_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
   void init(int argv, char const** argc) ;
 
   void init() ;
+
+  void setDiagScaling(IMatrix const& A) ;
+  void setDiagScaling(MatrixType const& A) ;
 
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const MatrixType& A, const VectorType& b, VectorType& x);

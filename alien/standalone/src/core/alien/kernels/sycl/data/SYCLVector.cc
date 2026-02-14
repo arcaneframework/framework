@@ -30,12 +30,18 @@ namespace Alien
   : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::sycl>::name())
   {}
 
+
+  template <typename ValueT>
+  SYCLVector<ValueT>::~SYCLVector()
+  {}
+
   template <typename ValueT>
   void SYCLVector<ValueT>::allocate()
   {
     //delete m_internal;
-    m_h_values.resize(m_local_size);
-    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size));
+    auto block_size = blockSize() ;
+    m_h_values.resize(m_local_size*block_size);
+    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size*block_size));
   }
 
   template <typename ValueT>
@@ -59,17 +65,32 @@ namespace Alien
   void SYCLVector<ValueT>::setValuesFromHost()
   {
     //delete m_internal;
-    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size));
+    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size*blockSize()));
   }
 
   template <typename ValueT>
   void SYCLVector<ValueT>::setValues(std::size_t size, ValueType const* ptr)
   {
     //delete m_internal;
-    m_h_values.resize(m_local_size);
+    m_h_values.resize(m_local_size*blockSize());
     std::copy(ptr, ptr + size, m_h_values.begin());
-    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size));
+    m_internal.reset(new VectorInternal(m_h_values.data(), m_local_size*blockSize()));
   }
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::setValuesFromDevice(std::size_t size, ValueType const* ptr)
+  {
+    assert(m_internal.get());
+    m_internal->setValuesFromDevice(size,ptr);
+  }
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::setValuesFromHost(std::size_t size, ValueType const* ptr)
+  {
+    assert(m_internal.get());
+    m_internal->setValuesFromHost(size,ptr);
+  }
+
 
   template <typename ValueT>
   void SYCLVector<ValueT>::copyValuesTo(std::size_t size, ValueType* ptr) const
@@ -98,13 +119,14 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
-    auto values_ptr = malloc_device<ValueT>(m_local_size, queue);
-    auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
+    auto alloc_size = m_local_size*blockSize() ;
+    auto values_ptr = malloc_device<ValueT>(alloc_size, queue);
+    auto rows_ptr   = malloc_device<IndexType>(alloc_size, queue);
 
     queue.submit( [&](sycl::handler& cgh)
                   {
                     auto access_x = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh);
-                    std::size_t y_length = m_local_size ;
+                    std::size_t y_length = alloc_size ;
                     cgh.parallel_for<class init_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
                                                       {
                                                           auto id = itemId.get_id(0);
@@ -130,7 +152,15 @@ namespace Alien
   }
 
   template <typename ValueT>
-  void SYCLVector<ValueT>::allocateDevicePointers(std::size_t local_size,
+  void SYCLVector<ValueT>::freeDevicePointers(ValueType* values)
+  {
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    sycl::free(values,queue) ;
+  }
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::allocateDevicePointers(std::size_t alloc_size,
                                                   int** rows,
                                                   ValueType** values)
   {
@@ -139,11 +169,11 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
-    auto values_ptr = malloc_device<ValueT>(local_size, queue);
-    auto rows_ptr   = malloc_device<IndexType>(local_size, queue);
+    auto values_ptr = malloc_device<ValueT>(alloc_size, queue);
+    auto rows_ptr   = malloc_device<IndexType>(alloc_size, queue);
     queue.submit( [&](sycl::handler& cgh)
                   {
-                    std::size_t y_length = local_size ;
+                    std::size_t y_length = alloc_size ;
                     cgh.parallel_for<class init2_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
                                                       {
                                                           auto id = itemId.get_id(0);
@@ -160,8 +190,37 @@ namespace Alien
     *rows   = rows_ptr;
   }
 
+
   template <typename ValueT>
-  void SYCLVector<ValueT>::initDevicePointers(std::size_t local_size,
+  void SYCLVector<ValueT>::allocateDevicePointers(std::size_t alloc_size,
+                                                  ValueType** values)
+  {
+
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    auto values_ptr = malloc_device<ValueT>(alloc_size, queue);
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    std::size_t y_length = alloc_size ;
+                    cgh.parallel_for<class init2_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                          {
+                                                            values_ptr[i] = 0.;
+                                                          }
+                                                      });
+                  });
+
+    queue.wait() ;
+    *values = values_ptr;
+  }
+
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::initDevicePointers(std::size_t alloc_size,
                                               ValueType const* host_values,
                                               int** rows,
                                               ValueType** values)
@@ -171,13 +230,13 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
-    auto values_ptr = malloc_device<ValueT>(local_size, queue);
-    auto rows_ptr   = malloc_device<IndexType>(local_size, queue);
-    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(local_size)) ;
+    auto values_ptr = malloc_device<ValueT>(alloc_size, queue);
+    auto rows_ptr   = malloc_device<IndexType>(alloc_size, queue);
+    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(alloc_size)) ;
     queue.submit( [&](sycl::handler& cgh)
                   {
                     auto access_x = values_buf.template get_access<sycl::access::mode::read>(cgh);
-                    std::size_t y_length = local_size ;
+                    std::size_t y_length = alloc_size ;
                     cgh.parallel_for<class init3_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
                                                       {
                                                           auto id = itemId.get_id(0);
@@ -196,7 +255,7 @@ namespace Alien
 
 
   template <typename ValueT>
-  void SYCLVector<ValueT>::copyDeviceToHost(std::size_t local_size,
+  void SYCLVector<ValueT>::copyDeviceToHost(std::size_t alloc_size,
                                             ValueType const* device_values,
                                             ValueType* host_values)
   {
@@ -205,12 +264,12 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
-    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(local_size)) ;
+    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(alloc_size)) ;
     queue.submit( [&](sycl::handler& cgh)
                   {
                     auto access_x = sycl::accessor { values_buf, cgh, sycl::write_only, sycl::property::no_init{}};
                     //auto access_x = values_buf.template get_access<sycl::access::mode::write>(cgh);
-                    std::size_t y_length = local_size ;
+                    std::size_t y_length = alloc_size ;
                     cgh.parallel_for<class copy_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
                                                       {
                                                           auto id = itemId.get_id(0);
@@ -224,6 +283,25 @@ namespace Alien
     queue.wait() ;
   }
 
+  template <typename ValueT>
+  void SYCLVector<ValueT>::pointWiseMult(SYCLVector const& y, SYCLVector& z) const
+  {
+    auto block_size = blockSize() ;
+    auto block_size_y = y.blockSize() ;
+    auto block_size_z = z.blockSize() ;
+    assert(block_size_y==block_size_z) ;
+    if(block_size==1)
+      m_internal->pointWiseMult(y.m_internal->m_values,
+                                z.m_internal->m_values) ;
+    else
+    {
+      assert(block_size==block_size_z*block_size_z) ;
+      m_internal->blockMult(m_local_size,
+                            block_size_z,
+                            y.m_internal->m_values,
+                            z.m_internal->m_values) ;
+    }
+  }
   /*---------------------------------------------------------------------------*/
 
   template class ALIEN_EXPORT SYCLVector<Real>;

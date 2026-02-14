@@ -129,7 +129,7 @@ int main(int argc, char** argv)
                                          [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0);
-                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                            for (std::size_t index = id; id < std::size_t(local_size); id += item.get_range()[0])
                                                xv[index] = 1.*index;
                                          });
 
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
-                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                            for (std::size_t index = id; id < std::size_t(local_size); id += item.get_range()[0])
                                               yv[index] = 2*xcv[index] ;
                                          });
                   }) ;
@@ -184,7 +184,7 @@ int main(int argc, char** argv)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
-                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                            for (std::size_t index = id; id < std::size_t(local_size); id += item.get_range()[0])
                                             {
                                               Integer row = offset + index;
                                               matrix_acc[matrix_acc.entryIndex(row,row)] = 2.;

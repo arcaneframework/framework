@@ -98,6 +98,7 @@ class KernelAMGSolverT
   using MatrixType       = typename AlgebraType::MatrixType ;
   using VectorType       = typename AlgebraType::VectorType ;
   using ValueType        = typename AlgebraType::ValueType ;
+  using DefMatrixTagType = Alien::BackEnd::tag::simplecsr ;
 
   using SolverMatrixType  = typename AlgebraTraits<AMGSolverTagT>::matrix_type;
   using SolverVectorType  = typename AlgebraTraits<AMGSolverTagT>::vector_type;
@@ -105,6 +106,7 @@ class KernelAMGSolverT
   using AMGSolverType     = KernelSolverT<AMGSolverTagT>;
 
   using MatrixConvType     = MatrixConverterT<TagT,AMGSolverTagT> ;
+  using DefMatrixConvType  = MatrixConverterT<DefMatrixTagType,AMGSolverTagT>;
   using VectorConvFromType = VectorConverterT<TagT,AMGSolverTagT> ;
   using VectorConvToType   = VectorConverterT<AMGSolverTagT,TagT> ;
 
@@ -118,6 +120,12 @@ class KernelAMGSolverT
     const BackEndId solver_backend_id = AlgebraTraits<AMGSolverTagT>::BackEndId() ;
     m_matrix_converter =
         MatrixConverterRegisterer::getConverter(backend_id,solver_backend_id);
+    if(m_matrix_converter==nullptr)
+    {
+      const BackEndId def_backend_id = AlgebraTraits<DefMatrixTagType>::name() ;
+      m_def_matrix_converter =
+          dynamic_cast<DefMatrixConvType*>(MatrixConverterRegisterer::getConverter(def_backend_id,solver_backend_id));
+    }
     m_vector_converter_from =
         VectorConverterRegisterer::getConverter(backend_id,solver_backend_id);
     m_vector_converter_to =
@@ -140,6 +148,13 @@ class KernelAMGSolverT
       const BackEndId solver_backend_id = AlgebraTraits<AMGSolverTagT>::name() ;
       m_matrix_converter =
           dynamic_cast<MatrixConvType*>(MatrixConverterRegisterer::getConverter(backend_id,solver_backend_id));
+      if(m_matrix_converter==nullptr)
+      {
+        const BackEndId def_backend_id = AlgebraTraits<DefMatrixTagType>::name() ;
+        m_def_matrix_converter =
+            dynamic_cast<DefMatrixConvType*>(MatrixConverterRegisterer::getConverter(def_backend_id,solver_backend_id));
+      }
+
       m_vector_converter_from =
           dynamic_cast<VectorConvFromType*>(VectorConverterRegisterer::getConverter(backend_id,solver_backend_id));
       m_vector_converter_to =
@@ -169,7 +184,13 @@ class KernelAMGSolverT
       auto ptr = new SolverMatrixType(m_matrix->impls()) ;
       m_solver_matrix.reset(ptr) ;
     }
-    m_matrix_converter->convert(A, *m_solver_matrix);
+    if(m_matrix_converter)
+      m_matrix_converter->convert(A, *m_solver_matrix);
+    else
+    {
+      auto const& defA = m_matrix->impls()->template get<DefMatrixTagType>() ;
+      m_def_matrix_converter->convert(defA, *m_solver_matrix);
+    }
     m_amg_solver->init(*m_solver_matrix) ;
   }
 
@@ -197,8 +218,7 @@ class KernelAMGSolverT
       ptr->init(AlgebraType::resource(*m_matrix),true) ;
       m_solver_x.reset(ptr) ;
     }
-    else
-      m_solver_x->setValue(0.) ;
+    m_solver_x->setValuesToZeros() ;
 
     m_amg_solver->solve(*m_solver_b,*m_solver_x) ;
     m_vector_converter_to->convert(*m_solver_x,x);
@@ -212,6 +232,7 @@ class KernelAMGSolverT
   std::unique_ptr<SolverVectorType> m_solver_b;
   std::unique_ptr<SolverVectorType> m_solver_x;
   MatrixConvType*                   m_matrix_converter = nullptr ;
+  DefMatrixConvType*                m_def_matrix_converter = nullptr ;
   VectorConvFromType*               m_vector_converter_from = nullptr ;
   VectorConvToType*                 m_vector_converter_to = nullptr ;
 };

@@ -11,7 +11,7 @@
 #endif
 
 #include <alien/utils/Precomp.h>
-#include <alien/AlienCoreSolversPrecomp.h>
+#include <alien/AlienCoreSYCLSolversPrecomp.h>
 #include <alien/core/backend/LinearSolver.h>
 #include <alien/kernels/sycl/linear_solver/AlienCoreSYCLLinearSolver.h>
 #include <alien/kernels/common/AlienCoreSolverOptionTypes.h>
@@ -20,7 +20,7 @@
 
 namespace Alien {
 
-class ALIEN_CORE_SOLVERS_EXPORT AlienSYCLLinearSolver
+class ALIEN_CORE_SYCL_SOLVERS_EXPORT AlienSYCLLinearSolver
 : public ArcaneAlienCoreSolverObject
 , public AlienCoreSYCLLinearSolver
 {

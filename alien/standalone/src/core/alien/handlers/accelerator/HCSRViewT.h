@@ -84,5 +84,74 @@ namespace Alien
     IndexType* m_cols               = nullptr ;
     ValueType* m_values             = nullptr ;
   };
+
+  template<typename VectorT>
+  class HVectorViewT
+  {
+  public:
+    using IndexType = typename VectorT::IndexType ;
+    using ValueType = typename VectorT::ValueType ;
+    HVectorViewT(VectorT const* parent,
+                 BackEnd::Memory::eType memory,
+                 std::size_t nrows)
+    : m_parent(parent)
+    , m_memory(memory)
+    , m_nrows(nrows)
+    {
+      switch(m_memory)
+      {
+        case BackEnd::Memory::Device :
+        {
+           if constexpr (requires{m_parent->allocateDevicePointers(nrows,&m_values);})
+           {
+             m_parent->allocateDevicePointers(nrows,&m_values);
+           }
+           else
+             throw Arccore::FatalErrorException(A_FUNCINFO, "Vector Type doest not support allocateDevicePointers");
+        }
+        break ;
+        case BackEnd::Memory::Host :
+        default:
+        {
+          if constexpr (requires{m_parent->allocateHostPointers(nrows,&m_values);})
+          {
+            m_parent->allocateHostPointers(nrows,&m_values);
+          }
+          else
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Vector Type doest not support allocateHostPointers");
+        }
+        break ;
+      }
+    }
+
+    virtual ~HVectorViewT()
+    {
+      switch(m_memory)
+      {
+        case BackEnd::Memory::Device :
+        {
+           if constexpr (requires{m_parent->freeDevicePointers(m_values);})
+           {
+             m_parent->freeDevicePointers(m_values);
+           }
+        }
+        break ;
+        case BackEnd::Memory::Host :
+        default:
+        {
+          if constexpr (requires{m_parent->freeHostPointers(m_values);})
+          {
+            m_parent->freeHostPointers(m_nrows,m_values);
+          }
+        }
+        break ;
+      }
+    }
+
+    VectorT const* m_parent         = nullptr ;
+    BackEnd::Memory::eType m_memory = BackEnd::Memory::Host ;
+    std::size_t m_nrows             = 0 ;
+    ValueType* m_values             = nullptr ;
+  };
 }
 
