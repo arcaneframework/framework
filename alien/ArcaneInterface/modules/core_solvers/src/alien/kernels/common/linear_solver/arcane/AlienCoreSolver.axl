@@ -62,6 +62,26 @@
             </enumvalue>
         </enumeration>
 
+        <enumeration name="relax-solver" type="AlienCoreSolverOptionTypes::ePreconditioner" default="Diag">
+            <description>type def preconditionnement</description>
+            <enumvalue name="Diag" genvalue="AlienCoreSolverOptionTypes::Diag">
+                <description>Id preconditioner</description>
+            </enumvalue>
+            <enumvalue name="NeumannPoly" genvalue="AlienCoreSolverOptionTypes::NeumannPoly">
+                <description>Neunmann Polynomial preconditioner</description>
+            </enumvalue>
+            <enumvalue name="ChebyshevPoly" genvalue="AlienCoreSolverOptionTypes::ChebyshevPoly">
+                <description>Chebyshev Polynomial preconditioner</description>
+            </enumvalue>
+            <enumvalue name="ILU0" genvalue="AlienCoreSolverOptionTypes::ILU0">
+                <description>0th order ILU preconditioner</description>
+            </enumvalue>
+            <enumvalue name="FILU0" genvalue="AlienCoreSolverOptionTypes::FILU0">
+                <description>0th order ILU preconditioner FixedPoint</description>
+            </enumvalue>
+        </enumeration>
+
+
          <simple name="max-iter" type="integer" default="1000">
            <description>nb ML iter</description>
          </simple>

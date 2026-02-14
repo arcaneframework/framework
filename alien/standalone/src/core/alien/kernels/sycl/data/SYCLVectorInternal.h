@@ -112,13 +112,14 @@ class VectorInternal
                                                       });
                   });
     queue.wait() ;
+    /*
     {
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> vec_acc(m_values);
       for(int irow=0;irow<size;++irow)
       {
          std::cout<<"VEC["<<irow<<"]"<<vec_acc[irow]<<std::endl;
       }
-    }
+    }*/
   }
 
   void setValuesFromHost(std::size_t size, ValueT const* ptr) const
@@ -142,13 +143,14 @@ class VectorInternal
                                                       });
                   });
     queue.wait() ;
+    /*
     {
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> vec_acc(m_values);
       for(int irow=0;irow<size;++irow)
       {
          std::cout<<"VEC["<<irow<<"]"<<vec_acc[irow]<<std::endl;
       }
-    }
+    }*/
   }
 
   void copy(ValueBufferType& src)
