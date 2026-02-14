@@ -31,5 +31,6 @@ struct AlienCoreSolverOptionTypes
     AMG,
     CxrAMG
   };
+
 };
 

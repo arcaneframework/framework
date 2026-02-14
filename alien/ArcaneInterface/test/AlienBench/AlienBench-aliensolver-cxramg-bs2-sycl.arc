@@ -41,12 +41,14 @@
       <epsilon>0.01</epsilon>
       <zero-rhs>false</zero-rhs>
       <nb-resolutions>1</nb-resolutions>
-      <linear-solver name="AlienCoreSolver">
-        <backend>SimpleCSR</backend>
+      <linear-solver name="AlienCoreSYCLSolver">
+        <backend>SYCL</backend>
         <solver>BCGS</solver>
         <preconditioner>CxrAMG</preconditioner>
         <relax-solver>FILU0</relax-solver>
         <amg-solver name="HypreSolver">
+           <exec-space>Device</exec-space>
+           <memory-type>Host</memory-type>
            <solver>AMG</solver>
            <preconditioner>None</preconditioner>
            <num-iterations-max>1</num-iterations-max>
@@ -55,7 +57,7 @@
            <output-level>2</output-level>
         </amg-solver>
         <max-iter>1000</max-iter>
-        <tol>1.e-12</tol>
+        <tol>1.e-8</tol>
         <output-level>1</output-level>
       </linear-solver>
   </alien-bench>

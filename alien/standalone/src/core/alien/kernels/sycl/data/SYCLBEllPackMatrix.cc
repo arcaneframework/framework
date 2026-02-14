@@ -1033,16 +1033,22 @@ namespace SYCLInternal
     auto max_work_group_size = env->internal()->maxWorkGroupSize();
     auto total_threads = num_groups * ellpack_size;
 
-    auto nrows = m_profile->getNRows();
-    auto nnz = m_profile->getNnz();
+    int pack_size  = ellpack_size;
+    int N1         = block_size ;
+    int N1xN1      = N1*N1 ;
+    int N2         = rhs_block_size ;
+    int N2xN2      = N2*N2 ;
+    auto nrows     = m_profile->getNRows();
+    auto nnz       = m_profile->getNnz();
     auto block_nnz = m_profile->getBlockNnz();
 
-    auto internal_profile = m_profile->internal();
-    auto& kcol = internal_profile->getKCol();
+    auto internal_profile  = m_profile->internal();
+    auto& kcol             = internal_profile->getKCol();
     auto& block_row_offset = internal_profile->getBlockRowOffset();
 
-    auto local_row_size = m_profile->localRowSize();
-    if (local_row_size == nullptr) {
+    auto local_row_size    = m_profile->localRowSize();
+    if (local_row_size == nullptr)
+    {
       //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
       // COMPUTE COLS
       // clang-format off
@@ -1065,23 +1071,17 @@ namespace SYCLInternal
 
                              for (auto i = id; i < nrows; i += item_id.get_range()[0])
                              {
-                                auto block_id = i/ellpack_size ;
-                                auto local_id = i%ellpack_size ;
+                                auto block_id = i/pack_size ;
+                                auto local_id = i%pack_size ;
 
-                                auto begin              = access_kcol_buffer[i] ;
-                                auto end                = access_kcol_buffer[i+1] ;
-                                auto row_size           = end - begin ;
-
-                                int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                                auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                                auto begin              = access_block_row_offset[block_id] ;
+                                auto end                = access_block_row_offset[block_id+1] ;
 
                                 for(int k=begin;k<end;++k)
                                 {
-                                  access_block_values[block_row_offset+(k-begin)*ellpack_size+local_id] = access_values_buffer[k] ;
-                                }
-                                for(int k=row_size;k<block_row_size;++k)
-                                {
-                                  access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                  for(int i=0;i<N1;++i)
+                                    for(int j=0;j<N1;++j)
+                                      access_block_values[(k*N1xN1 +i*N1+j)*pack_size+local_id] = access_values_buffer[(k*N2xN2+i*N2+j)*pack_size+local_id] ;
                                 }
                              }
                           });
@@ -1117,23 +1117,27 @@ namespace SYCLInternal
 
                            for (auto i = id; i < nrows; i += item_id.get_range()[0])
                            {
-                              auto block_id = i/ellpack_size ;
-                              auto local_id = i%ellpack_size ;
+                              auto block_id = i/pack_size ;
+                              auto local_id = i%pack_size ;
 
-                              auto begin              = access_kcol_buffer[i] ;
+
+                              int block_row_offset   = access_block_row_offset[block_id] ;
+
+                              auto begin              = access_block_row_offset[block_id] ;
+                              auto end                = access_block_row_offset[block_id+1] ;
                               auto lrow_size          = access_lrowsize_buffer[i] ;
-                              auto end                = begin + lrow_size ;
 
-                              int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                              auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-
-                              for(int k=begin;k<end;++k)
+                              for(int k=begin;k<begin+lrow_size;++k)
                               {
-                                access_block_values[block_row_offset+(k-begin)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                for(int i=0;i<N1;++i)
+                                  for(int j=0;j<N1;++j)
+                                    access_block_values[(k*N1xN1 +i*N1+j)*pack_size+local_id] = access_values_buffer[(k*N2xN2+i*N2+j)*pack_size+local_id] ;
                               }
-                              for(int k=lrow_size;k<block_row_size;++k)
+                              for(int k=begin+lrow_size;k<end;++k)
                               {
-                                access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                for(int i=0;i<N1;++i)
+                                  for(int j=0;j<N1;++j)
+                                    access_block_values[(k*N1xN1 +i*N1+j)*pack_size+local_id] = 0 ;
                               }
                            }
                         });
