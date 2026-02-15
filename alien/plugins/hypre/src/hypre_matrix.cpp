@@ -141,8 +141,9 @@ void Matrix::assemble()
 void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::ConstArrayView<double> values)
 {
   int one = 1;
+  int row_size = cols.size() ;
   auto rows = ArrayView<int>(1, &row);
-  auto ncols = ArrayView<int>(1, &one);
+  auto ncols = ArrayView<int>(1, &row_size);
 
   return setRowsValues(rows, ncols, cols, values);
 }

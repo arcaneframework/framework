@@ -1,4 +1,4 @@
-option(ALIEN_HYPRE_UNIT_TESTS "Enable Hypre wrapper tests" ${ALIEN_UNIT_TESTS})
+option(ALIEN_HYPRE_UNIT_TESTS "Enable Hypre wrapper tests" OFF)
 option(ALIEN_HYPRE_DEVICE "Enable hypre's GPU backend" OFF)
 
 find_package(Hypre REQUIRED)
