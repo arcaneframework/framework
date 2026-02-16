@@ -638,24 +638,23 @@ setUsed(bool is_used)
   eItemKind ik = itemKind();
 
   if (m_p->m_is_used) {
+    if (m_p->m_property & IVariable::PInShMem) {
+      IParallelMng* pm{};
+      if (m_p->m_mesh_handle.hasMesh()) {
+        pm = m_p->m_mesh_handle.mesh()->parallelMng();
+      }
+      else {
+        pm = subDomain()->parallelMng();
+      }
+      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+    }
+
     if (m_p->m_item_group.null() && ik != IK_Unknown) {
       _checkSetItemFamily();
       _checkSetItemGroup();
       // Attention à ne pas reinitialiser les valeurs lorsque ces dernières
       // sont valides, ce qui est le cas par exemple après une protection.
       if (!m_p->m_has_valid_data) {
-
-        if (m_p->m_property & IVariable::PInShMem) {
-          IParallelMng* pm{};
-          if (m_p->m_mesh_handle.hasMesh()) {
-            pm = m_p->m_mesh_handle.mesh()->parallelMng();
-          }
-          else {
-            pm = subDomain()->parallelMng();
-          }
-          m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
-        }
-
         resizeFromGroup();
         // Historiquement on remplissait dans tous les cas la variable avec le
         // constructeur par défaut
