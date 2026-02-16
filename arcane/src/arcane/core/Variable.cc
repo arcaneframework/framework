@@ -558,6 +558,7 @@ property() const
   bool want_notemporary = false;
   bool want_exchange = false;
   bool want_persistant = false;
+  bool want_shmem = false;
 
   int property = 0;
   for (VarRefEnumerator i(this); i.hasNext(); ++i) {
@@ -583,6 +584,8 @@ property() const
       want_exchange = true;
     if (!(p & IVariable::PTemporary))
       want_notemporary = true;
+    if (!(p & IVariable::PInShMem))
+      want_shmem = true;
   }
 
   if (!want_dump)
@@ -605,6 +608,8 @@ property() const
     property |= IVariable::PNoExchange;
   if (!want_notemporary)
     property |= IVariable::PTemporary;
+  if (!want_shmem)
+    property |= IVariable::PInShMem;
 
   m_p->m_property = property;
   return m_p->m_property;
