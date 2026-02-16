@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowVariableBase.h                 (C) 2000-2026 */
+/* DynamicMachineMemoryWindowVariableBase.h                    (C) 2000-2026 */
 /*                                                                           */
 /* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
 /*---------------------------------------------------------------------------*/
