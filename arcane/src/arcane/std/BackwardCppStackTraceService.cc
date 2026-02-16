@@ -21,7 +21,8 @@
 #include "arcane/core/AbstractService.h"
 
 #include "arcane_packages.h"
-
+#include "arccore/base/internal/DependencyInjection.h"
+#include "arccore/common/internal/Process.h"
 //TODO : Ajouter les autres packages.
 #define BACKWARD_HAS_DW 1
 
@@ -41,17 +42,25 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class BackwardCppStackTraceService
-: public AbstractService
+: public TraceAccessor
 , public IStackTraceService
 {
 
  public:
 
   explicit BackwardCppStackTraceService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
+  : TraceAccessor(sbi.application()->traceMng())
   , m_verbose_level(2)
   , m_human_readable(true)
   {}
+
+  explicit BackwardCppStackTraceService(ITraceMng* tm)
+  : TraceAccessor(tm)
+  , m_verbose_level(2)
+  , m_human_readable(true)
+  {
+    BackwardCppStackTraceService::build();
+  }
 
  public:
 
@@ -185,6 +194,11 @@ stackTraceFunction(int function_index)
 ARCANE_REGISTER_SERVICE(BackwardCppStackTraceService,
                         ServiceProperty("BackwardCppStackTraceService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IStackTraceService));
+
+ARCANE_DI_REGISTER_PROVIDER(BackwardCppStackTraceService,
+                            DependencyInjection::ProviderProperty("BackwardCppStackTraceService"),
+                            ARCANE_DI_INTERFACES(IStackTraceService),
+                            ARCANE_DI_CONSTRUCTOR(ITraceMng*));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
