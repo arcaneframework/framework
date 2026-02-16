@@ -17,6 +17,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/DynamicMachineMemoryWindowVariable.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -161,6 +162,10 @@ _reset()
 void AMRPatchTesterModule::
 _test1()
 {
+  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
+
+  DynamicMachineMemoryWindowVariable var_sh(var);
+
   m_cartesian_mesh->computeDirections();
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   for (Integer i = 0; i < 1; ++i) {
@@ -169,6 +174,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(2, 0);
@@ -180,6 +193,15 @@ _test1()
 
       _test1_1();
       _test1_2();
+
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -191,6 +213,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -204,6 +234,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(3, 1);
@@ -215,6 +253,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
     {
       amr_mng.beginAdaptMesh(4, 1);
@@ -224,6 +270,14 @@ _test1()
 
       _test1_1();
       _test1_2();
+      auto ranks = var_sh.machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh.segmentView(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
   }
 }
