@@ -58,10 +58,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowMemoryAllocator
 
  public:
 
-  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr);
-  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr, Int32 rank);
   static ConstArrayView<Int32> machineRanks(AllocatedMemoryInfo ptr);
   static void barrier(AllocatedMemoryInfo ptr);
+  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr);
+  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr, Int32 rank);
 
  private:
 

@@ -45,7 +45,7 @@ namespace Arcane
  * \tparam Type Le type des éléments de la fenêtre.
  */
 template <class Type>
-class DynamicMachineMemoryWindow
+class ARCANE_CORE_EXPORT DynamicMachineMemoryWindow
 {
 
  public:

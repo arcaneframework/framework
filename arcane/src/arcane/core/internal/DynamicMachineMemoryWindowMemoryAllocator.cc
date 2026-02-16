@@ -113,6 +113,24 @@ deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ConstArrayView<Int32> DynamicMachineMemoryWindowMemoryAllocator::
+machineRanks(AllocatedMemoryInfo ptr)
+{
+  return _windowBase(ptr)->machineRanks();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowMemoryAllocator::
+barrier(AllocatedMemoryInfo ptr)
+{
+  _windowBase(ptr)->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Span<std::byte> DynamicMachineMemoryWindowMemoryAllocator::
 segmentView(AllocatedMemoryInfo ptr)
 {
@@ -130,24 +148,6 @@ segmentView(AllocatedMemoryInfo ptr, Int32 rank)
   const Span<std::byte> view = _windowBase(ptr)->segmentView(rank);
   constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
   return view.subSpan(offset, view.size() - offset);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstArrayView<Int32> DynamicMachineMemoryWindowMemoryAllocator::
-machineRanks(AllocatedMemoryInfo ptr)
-{
-  return _windowBase(ptr)->machineRanks();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMachineMemoryWindowMemoryAllocator::
-barrier(AllocatedMemoryInfo ptr)
-{
-  _windowBase(ptr)->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
