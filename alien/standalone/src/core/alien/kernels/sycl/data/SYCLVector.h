@@ -196,7 +196,8 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   template <typename LambdaT>
   void apply(LambdaT const& lambda)
   {
-    for (std::size_t i = 0; i < m_local_size; ++i) {
+    auto block_size = blockSize() ;
+    for (std::size_t i = 0; i < m_local_size*block_size; ++i) {
       m_h_values[i] = lambda(i);
     }
     setValuesFromHost();
