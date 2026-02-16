@@ -40,7 +40,7 @@ namespace Arcane
  * \tparam DataType Type de la donnée de la variable.
  */
 template <class DataType>
-class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowVariable
+class DynamicMachineMemoryWindowVariable
 {
 
  public:
