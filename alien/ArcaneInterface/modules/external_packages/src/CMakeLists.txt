@@ -75,6 +75,10 @@ if (TARGET Alien::alien_semantic_ref)
     linkLibraries(alien_external_packages Alien::alien_semantic_ref)
 endif()
 
+if (TARGET cuda)
+    linkLibraries(alien_external_packages cuda)
+endif()
+
 linkLibraries(alien_external_packages
               Boost::program_options
               BLAS::BLAS)

@@ -84,15 +84,15 @@ void SYCLInternalLinearAlgebra::setDotAlgo(int dot_algo)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-SYCLInternalLinearAlgebra::ResourceType const&
+SYCLInternalLinearAlgebra::ResourceType
 SYCLInternalLinearAlgebra::resource(Matrix const& A)
 {
-  return A.distribution().rowDistribution();
+  return std::make_tuple(&A.distribution().rowDistribution(),A.blockSize());
 }
 
-void SYCLInternalLinearAlgebra::allocate(ResourceType const& resource, Vector& v)
+void SYCLInternalLinearAlgebra::allocate(ResourceType resource, Vector& v)
 {
-  v.init(resource, true);
+  v.init(*std::get<0>(resource),std::get<1>(resource), true);
 }
 
 void SYCLInternalLinearAlgebra::free(Vector& v)
@@ -166,6 +166,29 @@ void SYCLInternalLinearAlgebra::addUMult(Real alpha,
 #endif
   Internal::SYCLBEllPackMatrixMultT<Real>(ma).addUMult(alpha, vx, vr);
 }
+
+void SYCLInternalLinearAlgebra::
+multDiag(const SYCLBEllPackMatrix<Real>& ma,
+         const SYCLVector<Real>& vy,
+         SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-MULTDIAG");
+#endif
+  Internal::SYCLBEllPackMatrixMultT<Real>(ma).multDiag(vy,vr);
+}
+
+void SYCLInternalLinearAlgebra::
+multDiag(const SYCLVector<Real>& diag,
+         const SYCLVector<Real>& vy,
+         SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-MULTDIAG");
+#endif
+  diag.pointWiseMult(vy,vr);
+}
+
 
 void SYCLInternalLinearAlgebra::
 multInvDiag(const SYCLBEllPackMatrix<Real>& ma,
@@ -303,6 +326,15 @@ void SYCLInternalLinearAlgebra::scal(Real alpha, SYCLVector<Real>& vx) const
   return m_internal->scal(alpha, vx.internal()->values());
 }
 
+
+void SYCLInternalLinearAlgebra::scal(SYCLVector<Real> const& vx, SYCLBEllPackMatrix<Real>& ma) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-SCAL");
+#endif
+  return ma.scal(vx);
+}
+
 void SYCLInternalLinearAlgebra::pointwiseMult(const SYCLVector<Real>& vx,
                                               const SYCLVector<Real>& vy,
                                               SYCLVector<Real>& vz) const
@@ -333,6 +365,27 @@ void SYCLInternalLinearAlgebra::reciprocal(SYCLVector<Real>& x ALIEN_UNUSED_PARA
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::aypx not implemented");
 }
+
+
+Integer SYCLInternalLinearAlgebra::computeCxr(const Matrix& a, Matrix& cxr_a) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  cxr_a.copy(a) ;
+  return block_size ;
+}
+
+Integer SYCLInternalLinearAlgebra::computeCxr(const Matrix& a, const Vector& diag, Matrix& cxr_a) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  cxr_a.copy(a) ;
+  cxr_a.scal(diag);
+  return block_size ;
+}
+
+
+
 
 SYCLInternalLinearAlgebraExpr::SYCLInternalLinearAlgebraExpr()
 : IInternalLinearAlgebraExpr<SYCLBEllPackMatrix<Real>, SYCLVector<Real>>()

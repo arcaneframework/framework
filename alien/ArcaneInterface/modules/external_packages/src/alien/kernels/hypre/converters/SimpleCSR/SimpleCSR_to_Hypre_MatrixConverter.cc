@@ -102,6 +102,10 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
   int jlower = ilower;
   int jupper = iupper;
 
+  auto source_block_size =  sourceImpl.blockSize() ;
+  auto target_block_size =  1 ; //targetImpl.blockSize() ;
+  std::cout<<"BLOCK_SIZE : "<<source_block_size<<std::endl ;
+
   alien_debug([&] {
     cout() << "Matrix range : "
            << "[" << ilower << ":" << iupper << "]"
@@ -119,6 +123,40 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
       alien_info([&] {
           cout() << "Copy values From Host to Host";
         });
+
+      auto values = matrixInternal.getValues();
+      auto cols = profile.getCols();
+      std::cout<<"VALUES SIZE = "<<values.size()<<" "<<data_count<<std::endl ;
+      int block2_size = values.size()/data_count ;
+      if(block2_size==1)
+      {
+        const bool success = targetImpl.setMatrixValues(localSize,
+                                                        row_uids.data(),
+                                                        sizes.data(),
+                                                        cols.data(),
+                                                        values.data()) ;
+        if (not success) {
+          throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot set Hypre Matrix Values from Host to Host");
+        }
+      }
+      else
+      {
+        Arccore::UniqueArray<Arccore::Real> val(data_count);
+        for(int k=0;k<data_count;++k)
+        {
+          val[k] = values[k*block2_size] ;
+        }
+        const bool success = targetImpl.setMatrixValues(localSize,
+                                                        row_uids.data(),
+                                                        sizes.data(),
+                                                        cols.data(),
+                                                        val.data()) ;
+        if (not success) {
+          throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot set Hypre Matrix Values from Host to Host");
+        }
+      }
+
+      /*
       // Buffer de construction
       Arccore::UniqueArray<double> values(std::max(localSize, max_line_size));
       Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
@@ -141,11 +179,13 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
         const bool success =
             targetImpl.setMatrixValues(1, &row, &ncols, indices.data(), values.data());
 
+
+
         if (not success) {
           throw Arccore::FatalErrorException(A_FUNCINFO,
               Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
         }
-      }
+      }*/
     }
     else
     {

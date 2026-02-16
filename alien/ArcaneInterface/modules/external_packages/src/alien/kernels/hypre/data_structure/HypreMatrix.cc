@@ -4,8 +4,11 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+
+#include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/kernels/hypre/linear_solver/HypreInternalLinearSolver.h>
-#include "HypreMatrix.h"
+
+#include <alien/kernels/hypre/data_structure/HypreMatrix.h>
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 #include <alien/kernels/hypre/HypreBackEnd.h>
 #include <alien/kernels/hypre/data_structure/HypreInternal.h>
@@ -102,12 +105,13 @@ HypreMatrix::setMatrixValuesFrom(const int nrow,
     return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
   else
   {
-#if NEED_COPY_DATA
-    HCSRView view = csrView(BackEnd::Memory::Device,nrows,nnz) ;
-    m_internal->copyValuesHostToDevice(nrow, nnz,
-                                       rows, ncols, cols, values,
-                                       view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
-    return m_internal->setMatrixValues(nrow, view.m_rows, view.m_ncols, view.m_cols, view.m_values, memory);
+#define NEED_COPY_DATA
+#ifdef NEED_COPY_DATA
+    auto view = HCSRView{this,BackEnd::Memory::Device,std::size_t(nrow),std::size_t(nnz)} ;
+    m_internal->copyHostToDevicePointers(nrow, nnz,
+                                         rows, ncols, cols, values,
+                                         view.m_rows, view.m_ncols, view.m_cols, view.m_values) ;
+    return m_internal->setMatrixValues(nrow, view.m_rows, view.m_ncols, view.m_cols, view.m_values);
 #else
     return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
 #endif

@@ -1,26 +1,10 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+
 
 #pragma once
 
@@ -35,7 +19,7 @@ namespace Alien
 {
 namespace SYCLInternal
 {
-  template <int BlockSize, typename IndexT>
+  template <int EllPackSize, typename IndexT>
   struct StructInfoInternal;
 
 }
@@ -66,27 +50,27 @@ class BaseBEllPackStructInfo
 };
 /*---------------------------------------------------------------------------*/
 
-template <int BlockSize, typename IndexT = int>
+template <int EllPackSize, typename IndexT = int>
 class ALIEN_EXPORT BEllPackStructInfo
 : public BaseBEllPackStructInfo
 {
  public:
   // clang-format off
-  typedef IndexT                                             index_type ;
-  static const int                                           block_size = BlockSize ;
+  using index_type              = IndexT;
+  using IndexType               = IndexT;
+  using InternalType            = SYCLInternal::StructInfoInternal<EllPackSize,IndexT>;
+  static const int ellpack_size = EllPackSize ;
 
-  typedef SYCLInternal::StructInfoInternal<BlockSize,IndexT> InternalType ;
-  typedef IndexT                                             IndexType ;
   // clang-format on
 
   static std::size_t nbBlocks(std::size_t nrows)
   {
-    return (nrows + block_size - 1) / block_size;
+    return (nrows + ellpack_size - 1) / ellpack_size;
   }
 
   static std::size_t roundUp(std::size_t nrows)
   {
-    return nbBlocks(nrows) * block_size;
+    return nbBlocks(nrows) * ellpack_size;
   }
 
   static void computeBlockRowOffset(std::vector<int>& block_row_offset,

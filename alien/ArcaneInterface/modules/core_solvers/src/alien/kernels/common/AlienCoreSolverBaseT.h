@@ -419,47 +419,113 @@ class AlienCoreSolverBaseT
           if(amg_backend_name=="hypre")
           {
 #ifdef ALIEN_USE_HYPRE
-            using AMGBackendType   = Alien::BackEnd::tag::hypre ;
-            using CxrOpType        = Alien::CxrOperator<MatrixType,VectorType> ;
-            using CxrSolverType    = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
-            //using RelaxSolverType  = Alien::DiagPreconditioner<AlgebraType> ;
-            using RelaxSolverType  = Alien::ILU0Preconditioner<AlgebraType> ;
-            using CxrPrecondType   = Alien::CxrPreconditioner<AlgebraType,
-                                                              MatrixType,
-                                                              VectorType,
-                                                              CxrSolverType,
-                                                              CxrOpType,
-                                                              RelaxSolverType> ;
+            using AMGBackendType      = Alien::BackEnd::tag::hypre ;
+            using CxrOpType           = Alien::CxrOperator<MatrixType,VectorType> ;
+            using CxrSolverType       = Alien::KernelAMGSolverT<BackEndType,AlgebraType,AMGBackendType> ;
 
-            auto cxr_op = CxrOpType(matrixA) ;
-            auto cxr_solver = CxrSolverType{alg,amg_solver} ;
-            auto relax_solver = RelaxSolverType{alg,matrixA} ;
+            auto run = [&](auto& relax_solver)
+                       {
+                         using RelaxSolverType    = typename std::remove_reference<decltype(relax_solver)>::type ;
+                         using CxrPrecondType     = Alien::CxrPreconditioner<AlgebraType,
+                                                                             MatrixType,
+                                                                             VectorType,
+                                                                             CxrSolverType,
+                                                                             CxrOpType,
+                                                                             RelaxSolverType> ;
+                          auto cxr_op     = CxrOpType(matrixA) ;
+                          auto cxr_solver = CxrSolverType{alg,amg_solver} ;
+                          auto precond    = CxrPrecondType{alg,
+                                                           matrixA,
+                                                           &cxr_op,
+                                                           &cxr_solver,
+                                                           &relax_solver,
+                                                           traceMng()} ;
+                          {
+                            Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
+                            if(m_use_diag_scaling)
+                              precond.init(m_diag_scaling) ;
+                            else
+                              precond.init() ;
+                          }
+                          {
+                            Alien::StdTimer::Sentry ts(m_timer,"Solve");
+                            if(asynch==0)
+                              solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+                            else
+                              solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+                          }
+                       } ;
 
-            auto precond = CxrPrecondType{alg,
-                                          matrixA,
-                                          &cxr_op,
-                                          &cxr_solver,
-                                          &relax_solver,
-                                          traceMng()} ;
+            switch(m_options->relaxSolver())
             {
-              Alien::StdTimer::Sentry ts(m_timer,"PrecSetUp");
-              if(m_use_diag_scaling)
-                precond.init(m_diag_scaling) ;
-              else
-                precond.init() ;
-            }
-            {
-              Alien::StdTimer::Sentry ts(m_timer,"Solve");
-              if(asynch==0)
-                solver.solve(precond,stop_criteria,matrixA,vectorB,vectorX) ;
-              else
-                solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
+              case AlienCoreSolverOptionTypes::Diag:
+              {
+                using RelaxSolver = Alien::DiagPreconditioner<AlgebraType> ;
+                if(this->traceMng()) this->traceMng()->info()<<"DIAG RELAX SOLVER";
+                auto relax_solver = RelaxSolver{alg,matrixA} ;
+                run(relax_solver) ;
+              }
+              break;
+              case AlienCoreSolverOptionTypes::ChebyshevPoly:
+              {
+                using RelaxSolver    = Alien::ChebyshevPreconditioner<AlgebraType,true> ;
+                if(this->traceMng()) this->traceMng()->info()<<"CHEB POLY RELAX SOLVER";
+                double polynom_factor          = m_options->polyFactor() ;
+                int    polynom_order           = m_options->polyOrder() ;
+                int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
+                auto relax_solver = RelaxSolver{alg,
+                                                matrixA,
+                                                polynom_factor,
+                                                polynom_order,
+                                                polynom_factor_max_iter,
+                                                traceMng()} ;
+                run(relax_solver) ;
+              }
+              break;
+              case AlienCoreSolverOptionTypes::NeumannPoly:
+              {
+                using RelaxSolver = Alien::NeumannPolyPreconditioner<AlgebraType>;
+                if(this->traceMng()) this->traceMng()->info()<<"NEUMANN POLY RELAX SOLVER";
+                double polynom_factor          = m_options->polyFactor() ;
+                int    polynom_order           = m_options->polyOrder() ;
+                int    polynom_factor_max_iter = m_options->polyFactorMaxIter() ;
+                auto relax_solver = RelaxSolver{alg,
+                                                matrixA,
+                                                polynom_factor,
+                                                polynom_order,
+                                                polynom_factor_max_iter,
+                                                traceMng()} ;
+                run(relax_solver) ;
+              }
+              break;
+              case AlienCoreSolverOptionTypes::FILU0:
+              {
+                using RelaxSolverType = Alien::FILU0Preconditioner<AlgebraType> ;
+                if(this->traceMng()) this->traceMng()->info()<<"FILU0 RELAX SOLVER";
+                auto relax_solver     = RelaxSolverType{alg,matrixA} ;
+                relax_solver.setParameter("nb-factor-iter",m_options->filuFactorNiter()) ;
+                relax_solver.setParameter("nb-solver-iter",m_options->filuSolverNiter()) ;
+                relax_solver.setParameter("tol",           m_options->filuTol()) ;
+                run(relax_solver) ;
+              }
+              break;
+              case AlienCoreSolverOptionTypes::ILU0:
+              default:
+              {
+                using RelaxSolverType = Alien::ILU0Preconditioner<AlgebraType> ;
+                if(this->traceMng()) this->traceMng()->info()<<"ILU0 RELAX SOLVER";
+                if constexpr (MatrixType::on_host_only)
+                {
+                  auto relax_solver     = RelaxSolverType{alg,matrixA} ;
+                  run(relax_solver) ;
+                }
+              }
+              break;
             }
 #endif
           }
         }
         break ;
-
       case AlienCoreSolverOptionTypes::Diag:
       default:
         {
