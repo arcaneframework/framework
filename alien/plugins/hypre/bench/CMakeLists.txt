@@ -47,7 +47,7 @@ if (ALIEN_UNIT_TESTS)
     alien_test(
             BENCH hypre
             NAME hypre.benchmark
-            PROCS 2
+            PROCS 1
             COMMAND bench_hypre
     )
 endif ()
