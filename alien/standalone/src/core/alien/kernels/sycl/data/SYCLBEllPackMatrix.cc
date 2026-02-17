@@ -1989,6 +1989,8 @@ namespace SYCLInternal
     auto nrows = m_profile->getNRows() ;
     auto nnz   = m_profile->getNnz() ;
 
+    assert(y.size()>=NxN*nrows) ;
+
     auto internal_profile  = m_profile->internal() ;
     auto& kcol             = internal_profile->getKCol() ;
     auto& block_row_offset = internal_profile->getBlockRowOffset() ;
@@ -2346,7 +2348,9 @@ template <typename ValueT>
 SYCLBEllPackMatrix<ValueT>*
 SYCLBEllPackMatrix<ValueT>::cloneTo(const MultiMatrixImpl* multi) const
 {
+  auto block_size = blockSize() ;
   SYCLBEllPackMatrix<ValueT>* matrix = new SYCLBEllPackMatrix<ValueT>(multi);
+  matrix->setBlockSize(block_size);
   matrix->initMatrix(m_parallel_mng,
                      m_local_offset,
                      m_global_size,
@@ -2354,7 +2358,7 @@ SYCLBEllPackMatrix<ValueT>::cloneTo(const MultiMatrixImpl* multi) const
                      m_profile1024->kcol(),
                      m_profile1024->cols(),
                      m_matrix_dist_info,
-                     blockSize());
+                     block_size);
   matrix->setMatrixValues(getAddressData(), true);
   return matrix;
 }
@@ -2446,10 +2450,13 @@ void SYCLBEllPackMatrix<ValueT>::multInvDiag(SYCLVector<ValueType>& y) const
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 {
-  if(y.blockSize()==1)
+  auto block_size = blockSize() ;
+  if((y.blockSize()==1)||(y.blockSize()==block_size))
     return m_matrix1024->computeInvDiag(y.internal()->values());
-  else
+  else if(y.blockSize()==block_size*block_size)
     return m_matrix1024->computeInvBlockDiag(y.internal()->values());
+  else
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Matrix and Vector Block Size are not compatibility");
 }
 
 template <typename ValueT>
