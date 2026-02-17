@@ -15,7 +15,7 @@ env:
 
 jobs:
   check-headers:
-    name: Check
+    name: Check pull request
     runs-on: ubuntu-latest
     steps:
 
@@ -70,13 +70,20 @@ jobs:
           git log --merges --oneline --ancestry-path "${{ env.COMMON_COMMIT }}..${{ env.MY_COMMIT }}" > merge.log
           if [ -s merge.log ]; then
             echo "::error::Merge main into your branch detected. Use rebase instead (see commands to fix it in this section)."
-            echo "::group::Commit :"
+            echo "You can select 'Update with rebase' on GitHub PR page to update your branch with rebase ( https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/keeping-your-pull-request-in-sync-with-the-base-branch )."
+            echo "You can also remove the merge(s) with the same button, if available."
+            echo "If this button is not available, you can execute the commands below to fix your local branch and force push to remove the merge(s)."
+          
+            echo "::group::Merge commit(s) :"
             cat merge.log
             echo "::endgroup::"
           
-            echo "::group::Commands to fix it (local changes) :"
-            echo "# Save your current working tree."
-            echo "git stash"          
+            echo "::group::Commands to fix it :"
+            echo "# Save your current working tree (if needed)."
+            echo "git stash"
+            echo " "
+            echo "# Checkout your branch (if needed)."
+            echo "git checkout YOUR_BRANCH"
             echo " "
             echo "# Fetch from origin and update your branch."
             echo "git pull"
@@ -84,10 +91,12 @@ jobs:
             echo "# Rebase branch to main."
             echo "git rebase --no-rebase-merges origin/main"
             echo " "
-            echo "# Get your working tree back."
-            echo "git stash pop"   
+            echo "# Check your branch before force push !!! (with 'gitk' for example)"
+            echo "git push -f"
             echo " "
-            echo "# Check your local new branch before git push -f !"
+            echo "# Get your working tree back (if needed)."
+            echo "git stash pop"
+            echo " "
             echo "::endgroup::"
           
             exit 1
