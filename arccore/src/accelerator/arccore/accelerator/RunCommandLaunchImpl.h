@@ -24,8 +24,6 @@
 #include "arccore/accelerator/CooperativeWorkGroupLoopRange.h"
 #include "arccore/accelerator/KernelLauncher.h"
 
-#include <barrier>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,40 +46,41 @@ class HostLaunchLoopRangeBase
  public:
 
   ARCCORE_ACCELERATOR_EXPORT
-  HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, Int32 block_size);
+  HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, IndexType block_size);
 
  public:
 
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_total_size; }
   //! Taille d'un bloc
-  constexpr Int32 blockSize() const { return m_block_size; }
-  //! Nombre de groupes
+  constexpr IndexType blockSize() const { return m_block_size; }
+  //! Nombre de blocs
   constexpr Int32 nbBlock() const { return m_nb_block; }
-  //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastBlockSize() const { return m_last_block_size; }
-  //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr Int32 nbActiveItem(Int32 i) const
+  //! Nombre d'éléments du dernier bloc
+  constexpr IndexType lastBlockSize() const { return m_last_block_size; }
+  //! Nombre d'éléments actifs pour le i-ème bloc
+  constexpr IndexType nbActiveItem(Int32 i) const
   {
     return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
+  }
+  //! Synchronizer de la grille (non nul uniquement en multi-thread coopératif)
+  ThreadGridSynchronizer* threadGridSynchronizer() const
+  {
+    return m_thread_grid_synchronizer;
   }
   void setThreadGridSynchronizer(ThreadGridSynchronizer* v)
   {
     m_thread_grid_synchronizer = v;
   }
-  ThreadGridSynchronizer* threadGridSynchronizer() const
-  {
-    return m_thread_grid_synchronizer;
-  }
 
  private:
 
-  IndexType m_total_size = 0;
-  Int32 m_nb_block = 0;
-  Int32 m_block_size = 0;
-  Int32 m_last_block_size = 0;
   //! Cette instance est gérée par arcaneParallelFor(HostLaunchLoopRange<>...)
   ThreadGridSynchronizer* m_thread_grid_synchronizer = nullptr;
+  IndexType m_total_size = 0;
+  IndexType m_block_size = 0;
+  IndexType m_last_block_size = 0;
+  Int32 m_nb_block = 0;
 };
 
 /*---------------------------------------------------------------------------*/
