@@ -78,12 +78,6 @@ jobs:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
-      - name: Update submodules
-        shell: bash
-        run: |
-          cd ${{ env.SOURCE_DIR }}
-          git submodule update --init --recursive
-
       - name: Modules information
         id: modules_information
         if: |
