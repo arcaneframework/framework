@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.h                                       (C) 2000-2026 */
+/* DynamicMachineMemoryWindowMemoryAllocator.h                 (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
+
+#ifndef ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
+#define ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
 
-#include "arcane/accelerator/core/Runner.h"
+#include "arccore/common/IMemoryAllocator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,47 +29,53 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher;
+class DynamicMachineMemoryWindowBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \internal
- * \brief Partie interne de IParallelMng.
- */
-class ARCANE_CORE_EXPORT ParallelMngInternal
-: public IParallelMngInternal
+class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowMemoryAllocator
+: public IMemoryAllocator
 {
- public:
-
-  explicit ParallelMngInternal(ParallelMngDispatcher* pm);
-
-  ~ParallelMngInternal() override = default;
 
  public:
 
-  Runner runner() const override;
-  RunQueue queue() const override;
-  bool isAcceleratorAware() const override;
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
-  void setDefaultRunner(const Runner& runner) override;
-  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override;
+  explicit DynamicMachineMemoryWindowMemoryAllocator(IParallelMng* pm);
+
+ public:
+
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs, Int64 new_size) override;
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size) override;
+  void deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr) override;
+  Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64) const override
+  {
+    return wanted_capacity;
+  }
+  size_t guaranteedAlignment(MemoryAllocationArgs) const override
+  {
+    return 0;
+  }
+
+ public:
+
+  static ConstArrayView<Int32> machineRanks(AllocatedMemoryInfo ptr);
+  static void barrier(AllocatedMemoryInfo ptr);
+  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr);
+  static Span<std::byte> segmentView(AllocatedMemoryInfo ptr, Int32 rank);
 
  private:
 
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
+  static DynamicMachineMemoryWindowBase* _windowBase(AllocatedMemoryInfo ptr);
+
+ private:
+
+  IParallelMng* m_pm;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

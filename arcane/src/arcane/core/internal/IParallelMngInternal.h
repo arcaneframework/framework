@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMngInternal.h                                      (C) 2000-2025 */
+/* IParallelMngInternal.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Partie interne à Arcane de IParallelMng.                                  */
 /*---------------------------------------------------------------------------*/
@@ -85,6 +85,8 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \return Une référence vers la nouvelle fenêtre.
    */
   virtual Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+
+  virtual IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

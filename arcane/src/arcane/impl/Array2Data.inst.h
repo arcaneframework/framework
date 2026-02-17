@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.inst.h                                           (C) 2000-2024 */
+/* Array2Data.inst.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
 #include "arcane/core/datatype/IDataOperation.h"
@@ -524,8 +525,20 @@ setAllocationInfo(const DataAllocationInfo& v)
 template<typename DataType> void Array2DataT<DataType>::
 changeAllocator(const MemoryAllocationOptions& alloc_info)
 {
-  ARCANE_UNUSED(alloc_info);
-  ARCANE_THROW(NotImplementedException,"changeAllocator for 2D Array");
+  // Il faut utiliser par resizeNoInit() car si la mémoire demandée
+  // est le device on ne peut pas utiliser les constructeurs si le type
+  // n'est pas un type basique car l'opération est faite côté CPU.
+  UniqueArray2<DataType> new_value(alloc_info.allocator());
+  new_value.resizeNoInit(m_value.dim1Size(), m_value.dim2Size());
+
+  // Copie \a m_value dans \a new_value
+  // Tant qu'il n'y a pas l'API dans Arccore, il faut faire la copie à la
+  // main pour ne pas avoir de plantage si l'allocateur est uniquement sur
+  // un accélérateur
+  MemoryUtils::copy(new_value.to1DSpan(), Span<const DataType>(m_value.to1DSpan()));
+
+  std::swap(m_value, new_value);
+  m_allocation_info.setMemoryLocationHint(alloc_info.memoryLocationHint());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.cc                                      (C) 2000-2025 */
+/* ParallelMngInternal.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation de la partie interne à Arcane de IParallelMng.             */
 /*---------------------------------------------------------------------------*/
@@ -118,6 +118,14 @@ createMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
 Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> ParallelMngInternal::
 createDynamicMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
                                      [[maybe_unused]] Int32 sizeof_type)
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* ParallelMngInternal::dynamicMachineMemoryWindowMemoryAllocator()
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }

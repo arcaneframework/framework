@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngTest.cc                                          (C) 2000-2025 */
+/* ParallelMngTest.cc                                          (C) 2000-2026 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,8 @@
 #include "arcane/core/MachineMemoryWindow.h"
 #include "arcane/core/DynamicMachineMemoryWindow.h"
 #include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -1312,6 +1314,31 @@ _testMachineMemoryWindow()
     info() << "Segment final : " << window.segmentConstView();
     window.shrink();
     //![snippet_arcanedoc_parallel_shmem_usage_13]
+  }
+
+  {
+    IParallelMng* pm = m_parallel_mng;
+    IMemoryAllocator* memory_allocator = pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator();
+
+    {
+      UniqueArray<Integer> array(memory_allocator, 10);
+
+      for (Integer& a : array) {
+        a = pm->commRank();
+      }
+
+      info() << "array : " << array;
+    }
+
+    {
+      AllocatedMemoryInfo ptr_info = memory_allocator->allocate({}, sizeof(Integer));
+      auto* ptr = static_cast<Integer*>(ptr_info.baseAddress());
+      ptr[0] = pm->commRank();
+
+      info() << "ptr[0] : " << ptr[0];
+
+      memory_allocator->deallocate({}, ptr_info);
+    }
   }
 }
 

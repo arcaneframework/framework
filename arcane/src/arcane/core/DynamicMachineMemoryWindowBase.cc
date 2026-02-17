@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowBase.cc                           (C) 2000-2025 */
+/* DynamicMachineMemoryWindowBase.cc                           (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
@@ -14,11 +14,10 @@
 
 #include "arcane/core/DynamicMachineMemoryWindowBase.h"
 
+#include "arcane/utils/NumericTypes.h"
+
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
-
-#include "arcane/utils/NumericTypes.h"
-#include "arcane/utils/FatalErrorException.h"
 
 #include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 
@@ -37,6 +36,24 @@ DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 si
 , m_node_window_base(m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem))
 , m_sizeof_elem(sizeof_elem)
 {}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> DynamicMachineMemoryWindowBase::
+machineRanks() const
+{
+  return m_node_window_base->machineRanks();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+barrier() const
+{
+  m_node_window_base->barrier();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,24 +125,6 @@ void DynamicMachineMemoryWindowBase::
 addToAnotherSegment()
 {
   m_node_window_base->addToAnotherSegment();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstArrayView<Int32> DynamicMachineMemoryWindowBase::
-machineRanks() const
-{
-  return m_node_window_base->machineRanks();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMachineMemoryWindowBase::
-barrier() const
-{
-  m_node_window_base->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
