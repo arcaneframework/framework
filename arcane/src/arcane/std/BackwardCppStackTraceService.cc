@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BackwardCppStackTraceService.cc                             (C) 2000-2025 */
+/* BackwardCppStackTraceService.cc                             (C) 2000-2026 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'backward-cpp'.        */
 /*---------------------------------------------------------------------------*/
@@ -13,7 +13,6 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IStackTraceService.h"
-#include "arcane/utils/StackTrace.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Convert.h"
 
@@ -22,7 +21,7 @@
 
 #include "arcane_packages.h"
 #include "arccore/base/internal/DependencyInjection.h"
-#include "arccore/common/internal/Process.h"
+
 //TODO : Ajouter les autres packages.
 #define BACKWARD_HAS_DW 1
 
