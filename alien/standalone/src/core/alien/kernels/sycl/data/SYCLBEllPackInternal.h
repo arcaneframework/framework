@@ -325,15 +325,22 @@ class MatrixInternal
   void multDiag(ValueBufferType& x, ValueBufferType& y) const;
   void multDiag(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
+  void multDiag(ValueBufferType& y) const;
+  void multDiag(ValueBufferType& y, QueueType& queue) const;
+
+  void computeDiag(ValueBufferType& y) const;
+  void computeDiag(ValueBufferType& y, QueueType& queue) const;
+
+  void computeBlockDiag(ValueBufferType& y) const;
+  void computeBlockDiag(ValueBufferType& y, QueueType& queue) const;
+
   void multInvDiag(ValueBufferType& y) const;
   void multInvDiag(ValueBufferType& y, QueueType& queue) const;
 
   void computeInvDiag(ValueBufferType& y) const;
-
   void computeInvDiag(ValueBufferType& y, QueueType& queue) const;
 
   void computeInvBlockDiag(ValueBufferType& y) const;
-
   void computeInvBlockDiag(ValueBufferType& y, QueueType& queue) const;
 
   void scal(ValueBufferType& y);

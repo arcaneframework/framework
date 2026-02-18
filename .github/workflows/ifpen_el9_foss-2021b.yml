@@ -73,17 +73,10 @@ jobs:
         id: checkout
         if: |
           (success() || failure())
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ env.SOURCE_DIR }}
-          submodules: recursive
-          fetch-depth: 0
-
-     - name: Update submodules
-        shell: bash
-        run: |
-          cd ${{ env.SOURCE_DIR }}
-          git submodule update --init --recursive
+          submodules: true
 
       - name: Modules information
         id: modules_information
