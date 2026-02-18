@@ -47,7 +47,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative);
-  ~RunCommandLaunchInfo();
+  ~RunCommandLaunchInfo() noexcept(false);
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
 

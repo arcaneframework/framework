@@ -72,7 +72,7 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_coopera
 /*---------------------------------------------------------------------------*/
 
 RunCommandLaunchInfo::
-~RunCommandLaunchInfo()
+~RunCommandLaunchInfo() noexcept(false)
 {
   // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
   // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
