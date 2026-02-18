@@ -82,6 +82,8 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 
 # ----------------------------------------------------------------------------
 
+option(ARCCORE_ENABLE_DEPRECATED_WARNINGS "Are deprecated warnings enabled?" OFF)
+
 # Avant novembre 2025, on utilisait l'option 'ARCCORE_USE_MPI'.
 # Pour être compatible avec l'existant on la prend en compte si elle est spécifiée
 if (DEFINED ARCCORE_USE_MPI AND NOT DEFINED ARCCORE_ENABLE_MPI)
@@ -158,6 +160,11 @@ add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_fla
 # N'exporte pas par défaut les symboles
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
   target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+  if (ARCCORE_ENABLE_DEPRECATED_WARNINGS)
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wdeprecated})
+  else()
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
