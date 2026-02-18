@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractArray.h                                             (C) 2000-2025 */
+/* AbstractArray.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Classe de base des tableaux.                                              */
 /*---------------------------------------------------------------------------*/
@@ -549,6 +549,20 @@ class AbstractArray
   void _directReAllocate(Int64 new_capacity, RunQueue* queue)
   {
     _setMPCast(m_md->_reallocate(_currentMemoryInfo(), new_capacity, typeSize(), queue));
+  }
+
+ public:
+
+  void changeAllocator(const MemoryAllocationOptions& options, RunQueue* queue)
+  {
+    _setMPCast(m_md->_changeAllocator(options, _currentMemoryInfo(), typeSize(), queue));
+    _updateReferences();
+  }
+
+  void changeAllocator(const MemoryAllocationOptions& options)
+  {
+    _setMPCast(m_md->_changeAllocator(options, _currentMemoryInfo(), typeSize(), _nullRunQueue()));
+    _updateReferences();
   }
 
  public:
