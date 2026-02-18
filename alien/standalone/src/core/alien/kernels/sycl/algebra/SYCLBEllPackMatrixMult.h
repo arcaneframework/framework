@@ -45,6 +45,9 @@ class SYCLBEllPackMatrixMultT
 
   void multDiag(VectorType const& y,VectorType& z) const;
 
+  void computeDiag(VectorType& y) const;
+  void multDiag(VectorType& y) const;
+
   void computeInvDiag(VectorType& y) const;
   void multInvDiag(VectorType& y) const;
 

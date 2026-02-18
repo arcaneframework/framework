@@ -177,6 +177,9 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   void multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
+  void multDiag(SYCLVector<ValueType>& y) const ;
+  void computeDiag(SYCLVector<ValueType>& y) const;
+
   void multInvDiag(SYCLVector<ValueType>& y) const;
   void computeInvDiag(SYCLVector<ValueType>& y) const;
 

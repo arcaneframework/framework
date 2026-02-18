@@ -1832,8 +1832,232 @@ namespace SYCLInternal
   }
 
   template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::multDiag(ValueBufferType& y, sycl::queue& queue) const
+  {
+    throw NotImplementedException(
+      A_FUNCINFO, "MatrixInternal<ValueT, EllPackSize>::multDiag not implemented");
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::multDiag(ValueBufferType& y) const
+  {
+    this->multDiag(y, SYCLEnv::instance()->internal()->queue());
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::computeDiag(ValueBufferType& y, sycl::queue& queue) const
+  {
+
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+    auto total_threads = num_groups * ellpack_size;
+
+    // clang-format off
+    int N      = this->m_N;
+    int NxN    = this->m_NxN;
+    int pack_size = ellpack_size ;
+    auto nrows = m_profile->getNRows() ;
+    auto nnz   = m_profile->getNnz() ;
+
+    auto internal_profile  = m_profile->internal() ;
+    auto& kcol             = internal_profile->getKCol() ;
+    auto& block_row_offset = internal_profile->getBlockRowOffset() ;
+    auto& block_cols       = internal_profile->getBlockCols() ;
+
+      // COMPUTE VALUES
+    queue.submit([&](sycl::handler& cgh)
+                 {
+                   auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+                   if(N==1)
+                   {
+                     cgh.parallel_for<class compute_diag>(
+                        sycl::range<1>{total_threads},
+                        [=] (sycl::item<1> item_id)
+                        {
+                          auto id = item_id.get_id(0);
+                          //auto local_id  = item_id.get_local_id(0);
+                          //auto block_id  = item_id.get_group(0) ;
+                          //auto global_id = item_id.get_global_id(0);
+
+                          for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                          {
+                             auto block_id = i/ellpack_size ;
+                             auto local_id = i%ellpack_size ;
+
+                             int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
+                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                             for(int j=0;j<block_row_size;++j)
+                             {
+                               auto k = block_row_offset+j*ellpack_size+local_id ;
+                               if((access_cols[k])==int(i))
+                                 access_y[i] = access_values[k] ;
+                             }
+                          }
+                        });
+                   }
+                   else
+                   {
+                     cgh.parallel_for<class compute_diagN>(
+                        sycl::range<1>{total_threads},
+                        [=] (sycl::item<1> item_id)
+                        {
+                          auto id = item_id.get_id(0);
+                          //auto local_id  = item_id.get_local_id(0);
+                          //auto block_id  = item_id.get_group(0) ;
+                          //auto global_id = item_id.get_global_id(0);
+
+                          for (std::size_t i = id; i < nrows; i += item_id.get_range()[0])
+                          {
+                             auto block_id = i/pack_size ;
+                             auto local_id = i%pack_size ;
+
+                             int block_row_offset   = access_block_row_offset[block_id] ;
+                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                             for(int k=0;k<block_row_size;++k)
+                             {
+                               auto kcol = (block_row_offset+k)*ellpack_size+local_id ;
+                               std::size_t col = access_cols[kcol] ;
+                               if(col==i)
+                               {
+                                 for(int ieq=0;ieq<N;++ieq)
+                                 {
+                                   auto kval = (block_row_offset+k)*NxN + ieq*N + ieq ;
+                                   access_y[i*N+ieq] = access_values[kval*ellpack_size+local_id] ;
+                                 }
+                               }
+                             }
+                          }
+                        });
+                   }
+                 });
+    /*
+    sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_acc(y);
+    sycl::host_accessor<ValueT, 1, sycl::access::mode::read> mat_acc(m_values);
+    sycl::host_accessor<int, 1, sycl::access::mode::read> kcol_acc(block_row_offset);
+    sycl::host_accessor<int, 1, sycl::access::mode::read> cols_acc(block_cols);
+    for(int irow=0;irow<nrows;++irow)
+    {
+      auto ib=irow/ellpack_size ;
+      auto il=irow%ellpack_size ;
+      std::cout<<"MAT["<<irow<<","<<ib<<"]:";
+      for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
+      {
+          std::cout<<"("<<cols_acc[k*ellpack_size+il]<<",";
+          for(int i=0;i<N;++i)
+            for(int j=0;j<N;++j)
+              std::cout<<mat_acc[(k*NxN+i*N+j)*ellpack_size+il]<<",";
+          std::cout<<")"<<std::endl;
+      }
+    }
+    for(int irow=0;irow<nrows;++irow)
+    {
+      auto ib=irow/ellpack_size ;
+      auto il=irow%ellpack_size ;
+      std::cout<<"DIAG["<<irow<<","<<il<<"]:";
+      for(int i=0;i<N;++i)
+          std::cout<<h_acc[il*N+i]<<",";
+      std::cout<<std::endl;
+    }*/
+    // clang-format on
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::computeBlockDiag(ValueBufferType& y, sycl::queue& queue) const
+  {
+
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+    auto total_threads = num_groups * ellpack_size;
+
+    // clang-format off
+    int N      = this->m_N;
+    int NxN    = this->m_NxN;
+    int pack_size = ellpack_size ;
+    auto nrows = m_profile->getNRows() ;
+    auto nnz   = m_profile->getNnz() ;
+
+    assert(y.size()>=NxN*nrows) ;
+
+    auto internal_profile  = m_profile->internal() ;
+    auto& kcol             = internal_profile->getKCol() ;
+    auto& block_row_offset = internal_profile->getBlockRowOffset() ;
+    auto& block_cols       = internal_profile->getBlockCols() ;
+    {
+      ValueBufferType buffer (sycl::range<1>(nrows*NxN)) ;
+      // COMPUTE VALUES
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto matrix                  = m_values.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+                     auto A                       = buffer.template get_access<sycl::access::mode::read_write>(cgh);
+
+                     auto tile = Tile(N) ;
+                     cgh.parallel_for<class compute_block_diag>(
+                        sycl::range<1>{total_threads},
+                        [=] (sycl::item<1> item_id)
+                        {
+                          auto id = item_id.get_id(0);
+                          //auto local_id  = item_id.get_local_id(0);
+                          //auto block_id  = item_id.get_group(0) ;
+                          //auto global_id = item_id.get_global_id(0);
+
+                          for (std::size_t global_id = id; global_id < nrows; global_id += item_id.get_range()[0])
+                          {
+                             auto block_id = global_id/pack_size ;
+                             auto local_id = global_id%pack_size ;
+
+                             int block_row_offset   = access_block_row_offset[block_id] ;
+                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                             for(int k=0;k<block_row_size;++k)
+                             {
+                               auto kcol = (block_row_offset+k)*ellpack_size+local_id ;
+                               std::size_t col = access_cols[kcol] ;
+                               if(col==global_id)
+                               {
+                                 // Copy Diag Matrix in A
+                                 for(int i=0;i<N;++i)
+                                   for(int j=0;j<N;++j)
+                                     A[tile._ij(local_id,i,j)] = matrix[tile._ijk(k,i,j)+local_id] ;
+                               }
+                             }
+                          }
+                        });
+        });
+    }
+    // clang-format on
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::computeDiag(ValueBufferType& y) const
+  {
+    this->computeDiag(y, SYCLEnv::instance()->internal()->queue());
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::computeBlockDiag(ValueBufferType& y) const
+  {
+    this->computeBlockDiag(y, SYCLEnv::instance()->internal()->queue());
+  }
+
+
+  template <typename ValueT, int EllPackSize>
   void MatrixInternal<ValueT, EllPackSize>::multInvDiag(ValueBufferType& y, sycl::queue& queue) const
   {
+    throw NotImplementedException(
+      A_FUNCINFO, "MatrixInternal<ValueT, EllPackSize>::multInvDiag not implemented");
   }
 
   template <typename ValueT, int EllPackSize>
@@ -2439,6 +2663,24 @@ template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const
 {
   return m_matrix1024->multDiag(x.internal()->values(), y.internal()->values());
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrix<ValueT>::multDiag(SYCLVector<ValueType>& y) const
+{
+  return m_matrix1024->multDiag(y.internal()->values());
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrix<ValueT>::computeDiag(SYCLVector<ValueType>& y) const
+{
+  auto block_size = blockSize() ;
+  if((y.blockSize()==1)||(y.blockSize()==block_size))
+    return m_matrix1024->computeDiag(y.internal()->values());
+  else if(y.blockSize()==block_size*block_size)
+    return m_matrix1024->computeBlockDiag(y.internal()->values());
+  else
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Matrix and Vector Block Size are not compatibility");
 }
 
 template <typename ValueT>
