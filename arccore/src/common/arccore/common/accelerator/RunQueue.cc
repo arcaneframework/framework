@@ -97,7 +97,7 @@ RunQueue(const RunQueue& x)
 
 RunQueue::
 RunQueue(RunQueue&& x) noexcept
-: m_p(x.m_p)
+: m_p(std::move(x.m_p))
 {
 }
 
@@ -127,7 +127,7 @@ operator=(const RunQueue& x)
 RunQueue& RunQueue::
 operator=(RunQueue&& x) noexcept
 {
-  m_p = x.m_p;
+  m_p = std::move(x.m_p);
   return (*this);
 }
 
