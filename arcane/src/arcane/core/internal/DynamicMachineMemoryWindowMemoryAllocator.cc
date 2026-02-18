@@ -52,12 +52,14 @@ allocate(MemoryAllocationArgs, Int64 new_size)
 
   std::memcpy(addr_base, &win_ptr, offset);
 
+#ifdef ARCANE_DEBUG_ALLOCATOR
   m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::allocate"
                             << " -- ptr.size() : " << new_size
                             << " -- offset : " << offset
                             << " -- win_size (offset+ptr.size()) : " << new_size_with_offset
                             << " -- addr_base : " << addr_base
                             << " -- addr_after_offset : " << addr_after_offset;
+#endif
 
   return { addr_after_offset, new_size };
 }
@@ -82,6 +84,7 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
   std::byte* addr_base = win->segmentView().data();
   std::byte* addr_after_offset = addr_base + offset;
 
+#ifdef ARCANE_DEBUG_ALLOCATOR
   m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::reallocate"
                             << " -- old_size : " << d_old_size
                             << " -- old_addr_base : " << d_old_addr_base
@@ -90,6 +93,7 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
                             << " -- win_size (offset+ptr.size()) : " << new_size_with_offset
                             << " -- addr_base : " << addr_base
                             << " -- addr_after_offset : " << addr_after_offset;
+#endif
 
   return { addr_after_offset, new_size };
 }
@@ -102,10 +106,12 @@ deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
   DynamicMachineMemoryWindowBase* win_ptr = _windowBase(ptr);
 
+#ifdef ARCANE_DEBUG_ALLOCATOR
   m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::deallocate"
                             << " -- ptr.size() : " << ptr.size()
                             << " -- win_size (offset+ptr.size()) : " << win_ptr->segmentView().size()
                             << " -- addr_base : " << win_ptr->segmentView().data();
+#endif
 
   delete win_ptr;
 }
@@ -163,11 +169,13 @@ _windowBase(AllocatedMemoryInfo ptr)
 
   DynamicMachineMemoryWindowBase* win_ptr = *reinterpret_cast<DynamicMachineMemoryWindowBase**>(addr_base);
 
-  // std::cout << "DynamicMachineMemoryWindowMemoryAllocator::_windowBase"
-  //           << " -- ptr.size() : " << ptr.size()
-  //           << " -- offset : " << offset
-  //           << " -- addr_base : " << addr_base
-  //           << " -- addr_after_offset : " << addr_after_offset << std::endl;
+#ifdef ARCANE_DEBUG_ALLOCATOR
+  std::cout << "DynamicMachineMemoryWindowMemoryAllocator::_windowBase"
+            << " -- ptr.size() : " << ptr.size()
+            << " -- offset : " << offset
+            << " -- addr_base : " << addr_base
+            << " -- addr_after_offset : " << addr_after_offset << std::endl;
+#endif
 
 #if 0 //def ARCANE_CHECK
   {
