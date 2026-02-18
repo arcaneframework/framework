@@ -494,19 +494,7 @@ setAllocationInfo(const DataAllocationInfo& v)
 template <typename DataType> void ArrayDataT<DataType>::
 changeAllocator(const MemoryAllocationOptions& alloc_info)
 {
-  // Il faut utiliser par resizeNoInit() car si la mémoire demandée
-  // est le device on ne peut pas utiliser les constructeurs si le type
-  // n'est pas un type basique car l'opération est faite côté CPU.
-  UniqueArray<DataType> new_value(alloc_info);
-  new_value.resizeNoInit(m_value.size());
-
-  // Copie \a m_value dans \a new_value
-  // Tant qu'il n'y a pas l'API dans Arccore, il faut faire la copie à la
-  // main pour ne pas avoir de plantage si l'allocateur est uniquement sur
-  // un accélérateur
-  MemoryUtils::copy(new_value.span(), m_value.constSpan());
-
-  std::swap(m_value, new_value);
+  m_value.changeAllocator(alloc_info);
   m_allocation_info.setMemoryLocationHint(alloc_info.memoryLocationHint());
 }
 
