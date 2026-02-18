@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2025 */
+/* RunQueue.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ RunQueue(const RunQueue& x)
 
 RunQueue::
 RunQueue(RunQueue&& x) noexcept
-: m_p(x.m_p)
+: m_p(std::move(x.m_p))
 {
 }
 
@@ -127,7 +127,7 @@ operator=(const RunQueue& x)
 RunQueue& RunQueue::
 operator=(RunQueue&& x) noexcept
 {
-  m_p = x.m_p;
+  m_p = std::move(x.m_p);
   return (*this);
 }
 
