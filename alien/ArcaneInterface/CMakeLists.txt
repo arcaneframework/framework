@@ -65,12 +65,13 @@ set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 # Path to configuration files for Alien
 set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Path to local build-system
-set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
+#set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
+set(ALIEN_BUILDSYSTEM_PATH "${INFRA_BUILDSYSTEM_PATH}/alien")
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
 
-include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
+include(${ALIEN_BUILDSYSTEM_PATH}/Functions.cmake)
 
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
