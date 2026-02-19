@@ -106,10 +106,12 @@ include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
 #include(LoadDefaultLanguages)
 
 # Alien Options
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
+#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienOptions.cmake)
 
 # Alien's external dependencies
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
+#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienPackages.cmake)
 
 # Include Arcane cmake functions
 include(${ARCANE_CMAKE_COMMANDS})
@@ -152,7 +154,8 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienLegacyConfigFile.cmake)
+#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienLegacyConfigFile.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienLegacyConfigFile.cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
