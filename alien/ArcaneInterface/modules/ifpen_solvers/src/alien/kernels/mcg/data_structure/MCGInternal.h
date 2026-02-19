@@ -10,6 +10,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
+#define USE_CUDA
 #include <Common/index.h>
 #include <MCGSolver/LinearSystem/LinearSystem.h>
 #include <MCGSolver/GPULinearSystem/GPULinearSystem.h>
@@ -55,8 +56,8 @@ template<typename NumT,eMemoryDomain Domain>
 class MatrixInternal
 {
  public:
-  using MatrixType = typename MatVecTypeGen<NumT,Domain>::MatrixType;
-  using VectorEqType = typename MatVecTypeGen<NumT,Domain>::VectorEqType;
+  using MatrixType = MatVecTypeGen<NumT,Domain>::MatrixType;
+  using VectorEqType = MatVecTypeGen<NumT,Domain>::VectorEqType;
   template<typename T>
   using ArrayType = std::conditional_t<Domain==eMemoryDomain::Host,
     MCGSolver::Array<T>,

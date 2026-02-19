@@ -244,7 +244,6 @@ MCGInternalLinearSolver::init()
         cout() << "Alien MCGSolver: set num_thread to " << m_num_thread << " from env";
       });
     }
-    m_solver->setOpt(MCGSolver::eOptType::UseOmpThread, m_use_thread);
     m_solver->setOpt(MCGSolver::eOptType::NumThread, m_num_thread);
     m_solver->setOpt(MCGSolver::eOptType::SharedMemPart, MCGSolver::Graph::Partitioner::METIS_KWAY);
   }
