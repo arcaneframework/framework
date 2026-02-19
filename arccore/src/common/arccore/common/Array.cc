@@ -200,6 +200,11 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
     throw BadAllocException("Null new_allocator");
   }
 
+  if (this->capacity == 0) {
+    this->allocation_options = new_allocator_opt;
+    return nullptr;
+  }
+
   const MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
 
   IMemoryAllocator* old_allocator = _allocator();
