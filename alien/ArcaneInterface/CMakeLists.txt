@@ -78,26 +78,27 @@ include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
-  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
-  #include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultOptions.cmake)
+  #include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
+  include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultOptions.cmake)
 endif()
 
 # root file for packages (if defined)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
-#include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackageFile.cmake)
+#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackageFile.cmake)
 
 # default metas (win32/linux)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
+#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultMetas.cmake)
 
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
   # default compilation options
-  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
-  #include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultCompilationFlags.cmake)
+  #include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
+  include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultCompilationFlags.cmake)
 endif()
 
 # default packages (mono et glib)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
-#include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
+#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
 
 # default languages  (axl)
 # NB: after packages
@@ -209,7 +210,8 @@ GenerateCMakeConfig()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-include(${ALIEN_BUILDSYSTEM_PATH}/FinishBuildSystem.cmake)
+#include(${ALIEN_BUILDSYSTEM_PATH}/FinishBuildSystem.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/FinishBuildSystem.cmake)
 
 message_separator()
 
