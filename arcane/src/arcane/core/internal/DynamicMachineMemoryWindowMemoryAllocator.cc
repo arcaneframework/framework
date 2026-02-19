@@ -42,6 +42,10 @@ DynamicMachineMemoryWindowMemoryAllocator(IParallelMng* pm)
 AllocatedMemoryInfo DynamicMachineMemoryWindowMemoryAllocator::
 allocate(MemoryAllocationArgs, Int64 new_size)
 {
+  if (new_size <= 0) {
+    return { nullptr, 0 };
+  }
+
   constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
   const Int64 new_size_with_offset = offset + new_size;
 
@@ -70,6 +74,10 @@ allocate(MemoryAllocationArgs, Int64 new_size)
 AllocatedMemoryInfo DynamicMachineMemoryWindowMemoryAllocator::
 reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
+  if (current_ptr.baseAddress() == nullptr) {
+    return allocate({}, new_size);
+  }
+
   DynamicMachineMemoryWindowBase* win = _windowBase(current_ptr);
 
   constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
@@ -104,6 +112,10 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
 void DynamicMachineMemoryWindowMemoryAllocator::
 deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
+  if (ptr.baseAddress() == nullptr) {
+    return;
+  }
+
   DynamicMachineMemoryWindowBase* win_ptr = _windowBase(ptr);
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
