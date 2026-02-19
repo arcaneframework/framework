@@ -1,5 +1,6 @@
 ﻿set(SOURCE_FILES
   TestCommon.h
+  TestAllocation1.cc
   TestCooperativeLaunch1.cc
   TestInit.cc
   TestReduce1.cc
