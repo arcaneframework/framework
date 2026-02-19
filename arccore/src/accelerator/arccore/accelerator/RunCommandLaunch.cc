@@ -39,8 +39,8 @@ namespace Accelerator::Impl
 template <typename IndexType_> ARCCORE_ACCELERATOR_EXPORT HostLaunchLoopRangeBase<IndexType_>::
 HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_block, IndexType block_size)
 : m_total_size(total_size)
-, m_nb_block(nb_block)
 , m_block_size(block_size)
+, m_nb_block(nb_block)
 {
   m_last_block_size = (total_size - (block_size * (nb_block - 1)));
   if (m_last_block_size <= 0)
