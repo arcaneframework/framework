@@ -66,6 +66,7 @@ class RunCommandImpl
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
   IRunQueueStream* internalStream() const;
   RunnerImpl* runner() const;
+  bool hasActiveReduction() const { return !m_active_reduce_memory_list.empty(); }
 
  public:
 
