@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2025 */
+/* Array.cc                                                    (C) 2000-2026 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arccore/common/Array.h"
 #include "arccore/common/DefaultMemoryAllocator.h"
+#include "arccore/common/MemoryUtils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -185,6 +186,64 @@ _reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 s
     throw BadAllocException(ostr.str());
   }
   this->capacity = new_capacity;
+  return p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ArrayMetaData::MemoryPointer ArrayMetaData::
+_changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const AllocatedMemoryInfo& current_info, Int64 sizeof_true_type, RunQueue* queue)
+{
+  _checkAllocator();
+  if (!new_allocator_opt.allocator()) {
+    throw BadAllocException("Null new_allocator");
+  }
+
+  if (this->capacity == 0) {
+    this->allocation_options = new_allocator_opt;
+    return nullptr;
+  }
+
+  const MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
+
+  IMemoryAllocator* old_allocator = _allocator();
+  IMemoryAllocator* new_allocator = new_allocator_opt.allocator();
+  const Int64 new_capacity = new_allocator->adjustedCapacity(alloc_args, this->capacity, sizeof_true_type);
+
+  Int64 old_elem_size = this->capacity * sizeof_true_type;
+  Int64 new_elem_size = new_capacity * sizeof_true_type;
+
+  MemoryPointer current = current_info.baseAddress();
+  MemoryPointer p = nullptr;
+
+  {
+    AllocatedMemoryInfo new_alloc_info = new_allocator->allocate(alloc_args, new_elem_size);
+    p = new_alloc_info.baseAddress();
+    if (p) {
+      Span<std::byte> old_allocated_memory_view(static_cast<std::byte*>(current), old_elem_size);
+      Span<std::byte> new_allocated_memory_view(static_cast<std::byte*>(p), new_elem_size);
+      MemoryUtils::copy(MutableMemoryView{ new_allocated_memory_view }, ConstMemoryView{ old_allocated_memory_view }, queue);
+      old_allocator->deallocate(alloc_args, current_info);
+    }
+  }
+#ifdef ARCCORE_DEBUG_ARRAY
+  std::cout << " ArrayImplBase::_changeAllocator: new_elem_size=" << new_elem_size
+            << " new_capacity=" << new_capacity
+            << " sizeof_true_type=" << sizeof_true_type
+            << " datasize=" << sizeof_true_impl
+            << " old_ptr=" << current << " new_p=" << p << '\n';
+#endif
+  if (!p) {
+    std::ostringstream ostr;
+    ostr << " Bad ArrayImplBase::_changeAllocator() new_elem_size=" << new_elem_size
+         << " new_capacity=" << new_capacity
+         << " sizeof_true_type=" << sizeof_true_type
+         << " old_ptr=" << current << '\n';
+    throw BadAllocException(ostr.str());
+  }
+  this->capacity = new_capacity;
+  this->allocation_options = new_allocator_opt;
   return p;
 }
 

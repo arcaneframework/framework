@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayMetaData.h                                             (C) 2000-2025 */
+/* ArrayMetaData.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -106,6 +106,7 @@ class ARCCORE_COMMON_EXPORT ArrayMetaData
       _allocator()->deallocate(alloc_args, mem_info);
     }
   }
+  MemoryPointer _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const AllocatedMemoryInfo& current_info, Int64 sizeof_true_type, RunQueue* queue);
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
   void _setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);

@@ -1340,6 +1340,46 @@ _testMachineMemoryWindow()
       memory_allocator->deallocate({}, ptr_info);
     }
   }
+  {
+    UniqueArray<Integer> array(10);
+
+    for (Integer i = 0; i < 10; ++i) {
+      array[i] = i;
+    }
+    info() << "array : " << array;
+
+    IParallelMng* pm = m_parallel_mng;
+
+    MemoryAllocationOptions opt(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator());
+
+    array.changeAllocator(opt);
+
+    info() << "array : " << array;
+  }
+  {
+    SharedArray<Integer> array(10);
+    SharedArray<Integer> array2(array);
+
+    for (Integer i = 0; i < 10; ++i) {
+      array[i] = i;
+    }
+    info() << "array : " << array;
+    info() << "array2 : " << array2;
+
+    IParallelMng* pm = m_parallel_mng;
+
+    MemoryAllocationOptions opt(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator());
+
+    array.changeAllocator(opt);
+
+    info() << "array : " << array;
+    info() << "array2 : " << array2;
+
+    array2.add(10);
+
+    info() << "array : " << array;
+    info() << "array2 : " << array2;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
