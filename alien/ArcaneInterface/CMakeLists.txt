@@ -38,7 +38,7 @@ set(USE_AXLSTAR TRUE)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 set(BUILDSYSTEM_INSTALL_TARGETS TRUE)
-set(BUILDSYSTEM_INSTALL_EXPORT TRUE)
+set(BUILDSYSTEM_INSTALL_EXPORT FALSE)
 
 set(USE_ARCCON TRUE)
 set(USE_PROJECT_CONFIG_HEADER TRUE)
@@ -77,8 +77,8 @@ include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not in
 
 include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
 
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
-#include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
+#include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
