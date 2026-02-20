@@ -38,6 +38,8 @@ env:
   # For intel MPI to fix errors appearing in 2025
   I_MPI_WAIT_MODE: 1
   I_MPI_PIN: 0
+  I_MPI_ASYNC_PROGRESS: 1
+  I_MPI_THREAD_YIELD: 2
   # To remove test output directory to reduce disk usage
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
