@@ -83,6 +83,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * \brief Méthode permettant de récupérer le CartesianPatchGroup.
    */
   virtual CartesianPatchGroup& cartesianPatchGroup() = 0;
+
+  /*!
+   * \brief Méthode permettant de lancer la sauvegarde pour reprise.
+   */
+  virtual void saveInfosInProperties() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

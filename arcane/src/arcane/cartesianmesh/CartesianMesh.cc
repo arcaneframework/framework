@@ -122,6 +122,8 @@ class CartesianMeshImpl
       return m_numbering_mng;
     }
     CartesianPatchGroup& cartesianPatchGroup() override { return m_cartesian_mesh->_cartesianPatchGroup(); }
+    // TODO : Moche.
+    void saveInfosInProperties() override { m_cartesian_mesh->_saveInfosInProperties(); }
 
    private:
 
