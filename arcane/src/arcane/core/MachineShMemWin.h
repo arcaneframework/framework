@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowBase.h                            (C) 2000-2026 */
+/* MachineShMemWin.h                                (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
 /* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWBASE_H
-#define ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWBASE_H
+#ifndef ARCANE_CORE_MACHINESHMEMWIN_H
+#define ARCANE_CORE_MACHINESHMEMWIN_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/MachineShMemWinBase.h"
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/Ref.h"
 
@@ -32,16 +33,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IParallelMng;
-class IParallelMngInternal;
-namespace MessagePassing
-{
-  class IDynamicMachineMemoryWindowBaseInternal;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
  * sous-domaines d'un même noeud.
@@ -50,8 +41,11 @@ namespace MessagePassing
  * être redimensionnés.
  *
  * La méthode \a add() permet d'ajouter des éléments de manière itérative.
+ *
+ * \tparam Type Le type des éléments de la fenêtre.
  */
-class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
+template <class Type>
+class MachineShMemWin
 {
 
  public:
@@ -59,11 +53,19 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   /*!
    * \brief Constructeur.
    * \param pm Le parallelMng à utiliser.
-   * \param sizeof_segment La taille total de notre segment (en octet / doit
-   * être divisible par \a sizeof_elem).
-   * \param sizeof_elem La taille d'un élément de notre segment (en octet).
+   * \param nb_elem_segment Le nombre d'éléments initial.
    */
-  DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
+  MachineShMemWin(IParallelMng* pm, Int64 nb_elem_segment)
+  : m_impl(pm, nb_elem_segment, static_cast<Int32>(sizeof(Type)))
+  {}
+
+  /*!
+   * \brief Constructeur.
+   * \param pm Le parallelMng à utiliser.
+   */
+  explicit MachineShMemWin(IParallelMng* pm)
+  : m_impl(pm, 0, static_cast<Int32>(sizeof(Type)))
+  {}
 
  public:
 
@@ -75,14 +77,19 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const;
+  ConstArrayView<Int32> machineRanks() const
+  {
+    return m_impl.machineRanks();
+  }
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const;
-
+  void barrier() const
+  {
+    m_impl.barrier();
+  }
   /*!
    * \brief Méthode permettant d'obtenir une vue sur notre segment.
    *
@@ -90,7 +97,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * \return Une vue.
    */
-  Span<std::byte> segmentView();
+  Span<Type> segmentView()
+  {
+    return asSpan<Type>(m_impl.segmentView());
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment d'un
@@ -101,7 +111,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<std::byte> segmentView(Int32 rank);
+  Span<Type> segmentView(Int32 rank)
+  {
+    return asSpan<Type>(m_impl.segmentView(rank));
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur notre segment.
@@ -110,7 +123,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * \return Une vue.
    */
-  Span<const std::byte> segmentConstView() const;
+  Span<const Type> segmentConstView() const
+  {
+    return asSpan<const Type>(m_impl.segmentConstView());
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment d'un
@@ -121,7 +137,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<const std::byte> segmentConstView(Int32 rank) const;
+  Span<const Type> segmentConstView(Int32 rank) const
+  {
+    return asSpan<const Type>(m_impl.segmentConstView(rank));
+  }
 
   /*!
    * \brief Méthode permettant d'ajouter des élements dans notre segment.
@@ -137,7 +156,12 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * \param elem Les éléments à ajouter.
    */
-  void add(Span<const std::byte> elem);
+  void add(Span<const Type> elem)
+  {
+    const Span<const std::byte> span_bytes(reinterpret_cast<const std::byte*>(elem.data()), elem.sizeBytes());
+    m_impl.add(span_bytes);
+  }
+
   /*!
    * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas ajouter
    * d'éléments dans son segment.
@@ -148,7 +172,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * Voir la documentation de \a add(Span<const std::byte> elem).
    */
-  void add();
+  void add()
+  {
+    m_impl.add();
+  }
 
   /*!
    * \brief Méthode permettant d'ajouter des éléments dans le segment d'un
@@ -169,7 +196,11 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    * \param rank Le rang du sous-domaine avec le segment à modifier.
    * \param elem Les éléments à ajouter.
    */
-  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem);
+  void addToAnotherSegment(Int32 rank, Span<const Type> elem)
+  {
+    const Span<const std::byte> span_bytes(reinterpret_cast<const std::byte*>(elem.data()), elem.sizeBytes());
+    m_impl.addToAnotherSegment(rank, span_bytes);
+  }
 
   /*!
    * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas ajouter
@@ -181,7 +212,10 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * Voir la documentation de \a addToAnotherSegment(Int32 rank, Span<const Type> elem).
    */
-  void addToAnotherSegment();
+  void addToAnotherSegment()
+  {
+    m_impl.addToAnotherSegment();
+  }
 
   /*!
    * \brief Méthode permettant de réserver de l'espace mémoire dans notre segment.
@@ -204,9 +238,12 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    * Pour redimensionner le segment, la méthode \a resize(Int64 new_size) est
    * disponible.
    *
-   * \param new_nb_elem_segment_capacity La nouvelle capacité demandée (en nombre d'éléments, pas en octet).
+   * \param new_capacity La nouvelle capacité demandée.
    */
-  void reserve(Int64 new_nb_elem_segment_capacity);
+  void reserve(Int64 new_capacity)
+  {
+    m_impl.reserve(new_capacity);
+  }
 
   /*!
    * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas réserver
@@ -214,9 +251,12 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * Appel collectif.
    *
-   * Voir la documentation de \a reserve(Int64 new_nb_elem_segment_capacity).
+   * Voir la documentation de \a reserve(Int64 new_capacity).
    */
-  void reserve();
+  void reserve()
+  {
+    m_impl.reserve();
+  }
 
   /*!
    * \brief Méthode permettant de redimensionner notre segment.
@@ -230,9 +270,12 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    * possible de mettre l'argument \a new_size à -1 ou d'appeler la méthode
    * \a resize() (sans arguments).
    *
-   * \param new_nb_elem_segment La nouvelle taille (en nombre d'éléments, pas en octet).
+   * \param new_nb_elem La nouvelle taille.
    */
-  void resize(Int64 new_nb_elem_segment);
+  void resize(Int64 new_nb_elem)
+  {
+    m_impl.resize(new_nb_elem);
+  }
 
   /*!
    * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas
@@ -240,9 +283,12 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * Appel collectif.
    *
-   * Voir la documentation de \a resize(Int64 new_nb_elem_segment).
+   * Voir la documentation de \a resize(Int64 new_nb_elem).
    */
-  void resize();
+  void resize()
+  {
+    m_impl.resize();
+  }
 
   /*!
    * \brief Méthode permettant de réduire l'espace mémoire réservé pour les
@@ -250,13 +296,14 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
    *
    * Appel collectif.
    */
-  void shrink();
+  void shrink()
+  {
+    m_impl.shrink();
+  }
 
  private:
 
-  IParallelMngInternal* m_pm_internal;
-  Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> m_node_window_base;
-  Int32 m_sizeof_elem;
+  MachineShMemWinBase m_impl;
 };
 
 /*---------------------------------------------------------------------------*/

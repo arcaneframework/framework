@@ -663,7 +663,7 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
       else {
         pm = sd->parallelMng();
       }
-      variable_ref->variable()->_internalApi()->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+      variable_ref->variable()->_internalApi()->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->machineShMemWinMemoryAllocator()));
     }
   }
 }

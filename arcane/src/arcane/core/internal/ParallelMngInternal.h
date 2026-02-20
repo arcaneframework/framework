@@ -54,8 +54,8 @@ class ARCANE_CORE_EXPORT ParallelMngInternal
   Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
   void setDefaultRunner(const Runner& runner) override;
   Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override;
+  Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
+  IMemoryAllocator* machineShMemWinMemoryAllocator() override;
 
  private:
 

@@ -24,7 +24,7 @@
 #include "arccore/message_passing/IProfiler.h"
 #include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
 #include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
-#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IMachineShMemWinBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

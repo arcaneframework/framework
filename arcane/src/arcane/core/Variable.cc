@@ -646,7 +646,7 @@ setUsed(bool is_used)
       else {
         pm = subDomain()->parallelMng();
       }
-      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->machineShMemWinMemoryAllocator()));
     }
 
     if (m_p->m_item_group.null() && ik != IK_Unknown) {

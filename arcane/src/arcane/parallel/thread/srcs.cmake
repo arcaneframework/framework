@@ -21,8 +21,8 @@ set(ARCANE_SOURCES
   internal/SharedMemoryThreadMng.h
   internal/SharedMemoryMachineMemoryWindowBaseInternal.cc
   internal/SharedMemoryMachineMemoryWindowBaseInternal.h
-  internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.cc
-  internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h
+  internal/SharedMemoryMachineShMemWinBaseInternal.cc
+  internal/SharedMemoryMachineShMemWinBaseInternal.h
   internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.cc
   internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h
 

@@ -5,42 +5,45 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryDynamicMachineMemoryWindowBaseInternal.h        (C) 2000-2025 */
+/* HybridMachineShMemWinBaseInternal.h              (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
-/* sous-domaines en mémoire partagée.                                        */
+/* sous-domaines en mémoire partagée des processus du même noeud.            */
 /* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
 /* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNAL_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
-
-#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/Ref.h"
+
+#include "arccore/message_passing/internal/IMachineShMemWinBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing
 {
+namespace Mpi
+{
+  class MpiMultiMachineShMemWinBaseInternal;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
-: public IDynamicMachineMemoryWindowBaseInternal
+class HybridMachineShMemWinBaseInternal
+: public IMachineShMemWinBaseInternal
 {
  public:
 
-  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<UniqueArray<std::byte>>> windows, Ref<UniqueArray<Int32>> target_segments, IThreadBarrier* barrier);
+  HybridMachineShMemWinBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiMultiMachineShMemWinBaseInternal> mpi_windows, IThreadBarrier* barrier);
 
-  ~SharedMemoryDynamicMachineMemoryWindowBaseInternal() override = default;
+  ~HybridMachineShMemWinBaseInternal() override = default;
 
  public:
 
@@ -70,17 +73,16 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank = 0;
+  Int32 m_my_rank_local_proc = 0;
+  Int32 m_nb_rank_local_proc = 0;
+  Int32 m_my_rank_mpi = 0;
+
+  ConstArrayView<Int32> m_machine_ranks;
+
   Int32 m_sizeof_type = 0;
-  ConstArrayView<Int32> m_ranks;
+  Ref<Mpi::MpiMultiMachineShMemWinBaseInternal> m_mpi_windows;
 
-  Ref<UniqueArray<UniqueArray<std::byte>>> m_windows;
-  SmallSpan<UniqueArray<std::byte>> m_windows_span;
-
-  Ref<UniqueArray<Int32>> m_target_segments;
-  SmallSpan<Int32> m_target_segments_span;
-
-  IThreadBarrier* m_barrier = nullptr;
+  IThreadBarrier* m_thread_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

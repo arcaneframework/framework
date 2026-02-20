@@ -28,7 +28,7 @@
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
-#include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
@@ -36,7 +36,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -68,24 +68,31 @@ class SharedMemoryParallelMng::RequestList
 : public Arccore::MessagePassing::internal::RequestListBase
 {
   using Base = Arccore::MessagePassing::internal::RequestListBase;
+
  public:
 
   explicit RequestList(SharedMemoryParallelMng* pm)
-  : m_parallel_mng(pm), m_message_queue(pm->m_message_queue),
-    m_local_rank(m_parallel_mng->commRank()){}
+  : m_parallel_mng(pm)
+  , m_message_queue(pm->m_message_queue)
+  , m_local_rank(m_parallel_mng->commRank())
+  {}
+
  public:
+
   void _wait(Parallel::eWaitType wait_type) override
   {
-    switch(wait_type){
+    switch (wait_type) {
     case Parallel::WaitAll:
       return m_message_queue->waitAll(_requests());
     case Parallel::WaitSome:
-      return m_message_queue->waitSome(m_local_rank,_requests(),_requestsDone(),false);
+      return m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), false);
     case Parallel::WaitSomeNonBlocking:
-      return m_message_queue->waitSome(m_local_rank,_requests(),_requestsDone(),true);
+      return m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), true);
     }
   }
+
  private:
+
   SharedMemoryParallelMng* m_parallel_mng;
   ISharedMemoryMessageQueue* m_message_queue;
   Int32 m_local_rank;
@@ -103,7 +110,7 @@ class SharedMemoryParallelMng::Impl
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
-  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
+  , m_alloc(makeRef(new MachineShMemWinMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -115,12 +122,12 @@ class SharedMemoryParallelMng::Impl
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
-  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  IMemoryAllocator* machineShMemWinMemoryAllocator() override
   {
     return m_alloc.get();
   }
@@ -129,7 +136,7 @@ class SharedMemoryParallelMng::Impl
 
   SharedMemoryParallelMng* m_parallel_mng;
   SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator;
-  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
+  Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -137,7 +144,7 @@ class SharedMemoryParallelMng::Impl
 
 SharedMemoryParallelMng::
 SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
-: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(build_info.rank,build_info.nb_rank))
+: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(build_info.rank, build_info.nb_rank))
 , m_trace(build_info.trace_mng)
 , m_thread_mng(build_info.thread_mng)
 , m_sequential_parallel_mng(build_info.sequential_parallel_mng)
@@ -146,7 +153,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_world_parallel_mng(build_info.world_parallel_mng)
 , m_io_mng(nullptr)
 , m_message_queue(build_info.message_queue)
-, m_is_parallel(build_info.nb_rank!=1)
+, m_is_parallel(build_info.nb_rank != 1)
 , m_rank(build_info.rank)
 , m_nb_rank(build_info.nb_rank)
 , m_is_initialized(false)
@@ -182,31 +189,37 @@ SharedMemoryParallelMng::
 
 namespace
 {
-// Classe pour créer les différents dispatchers
-class DispatchCreator
-{
- public:
-  DispatchCreator(ITraceMng* tm,SharedMemoryParallelMng* mpm,
-                  ISharedMemoryMessageQueue* message_queue,
-                  SharedMemoryAllDispatcher* all_dispatchers)
-  : m_tm(tm), m_mpm(mpm), m_message_queue(message_queue),
-    m_all_dispatchers(all_dispatchers){}
- public:
-  template<typename DataType> SharedMemoryParallelDispatch<DataType>*
-  create()
+  // Classe pour créer les différents dispatchers
+  class DispatchCreator
   {
-    ISharedMemoryMessageQueue* tmq = m_message_queue;
-    SharedMemoryAllDispatcher* ad = m_all_dispatchers;
-    auto& field = ad->instance((DataType*)nullptr);
-    return new SharedMemoryParallelDispatch<DataType>(m_tm,m_mpm,tmq,field);
-  }
+   public:
 
-  ITraceMng* m_tm;
-  SharedMemoryParallelMng* m_mpm;
-  ISharedMemoryMessageQueue* m_message_queue;
-  SharedMemoryAllDispatcher* m_all_dispatchers;
-};
-}
+    DispatchCreator(ITraceMng* tm, SharedMemoryParallelMng* mpm,
+                    ISharedMemoryMessageQueue* message_queue,
+                    SharedMemoryAllDispatcher* all_dispatchers)
+    : m_tm(tm)
+    , m_mpm(mpm)
+    , m_message_queue(message_queue)
+    , m_all_dispatchers(all_dispatchers)
+    {}
+
+   public:
+
+    template <typename DataType> SharedMemoryParallelDispatch<DataType>*
+    create()
+    {
+      ISharedMemoryMessageQueue* tmq = m_message_queue;
+      SharedMemoryAllDispatcher* ad = m_all_dispatchers;
+      auto& field = ad->instance((DataType*)nullptr);
+      return new SharedMemoryParallelDispatch<DataType>(m_tm, m_mpm, tmq, field);
+    }
+
+    ITraceMng* m_tm;
+    SharedMemoryParallelMng* m_mpm;
+    ISharedMemoryMessageQueue* m_message_queue;
+    SharedMemoryAllDispatcher* m_all_dispatchers;
+  };
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,10 +227,10 @@ class DispatchCreator
 void SharedMemoryParallelMng::
 build()
 {
-  m_message_queue->setTraceMng(m_rank,traceMng());
+  m_message_queue->setTraceMng(m_rank, traceMng());
   m_timer_mng = new TimerMng(traceMng());
 
-  DispatchCreator creator(m_trace.get(),this,m_message_queue,m_all_dispatchers);
+  DispatchCreator creator(m_trace.get(), this, m_message_queue, m_all_dispatchers);
   this->createDispatchers(creator);
 
   m_io_mng = arcaneCreateIOMng(this);
@@ -229,12 +242,12 @@ build()
 void SharedMemoryParallelMng::
 initialize()
 {
-  Trace::Setter mci(m_trace.get(),"Thread");
-  if (m_is_initialized){
+  Trace::Setter mci(m_trace.get(), "Thread");
+  if (m_is_initialized) {
     m_trace->warning() << "SharedMemoryParallelMng already initialized";
     return;
   }
-	
+
   m_is_initialized = true;
 }
 
@@ -266,21 +279,21 @@ createExchanger()
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelMng::
-sendSerializer(ISerializer* values,Int32 dest_rank)
+sendSerializer(ISerializer* values, Int32 dest_rank)
 {
-  auto p2p_message = buildMessage(dest_rank,Parallel::Blocking);
-  Request r = m_message_queue->addSend(p2p_message,SendBufferInfo(values));
-  m_message_queue->waitAll(ArrayView<Request>(1,&r));
+  auto p2p_message = buildMessage(dest_rank, Parallel::Blocking);
+  Request r = m_message_queue->addSend(p2p_message, SendBufferInfo(values));
+  m_message_queue->waitAll(ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Parallel::Request SharedMemoryParallelMng::
-sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes)
+sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes)
 {
   ARCANE_UNUSED(bytes);
-  return m_message_queue->addSend(buildMessage(rank,Parallel::Blocking),SendBufferInfo(values));
+  return m_message_queue->addSend(buildMessage(rank, Parallel::Blocking), SendBufferInfo(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -296,21 +309,21 @@ createSendSerializer(Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelMng::
-broadcastSerializer(ISerializer* values,Int32 rank)
+broadcastSerializer(ISerializer* values, Int32 rank)
 {
   // Implementation basique pour l'instant.
   // Le rank qui broadcast envoie le message à tout le monde.
-  if (m_rank==rank){
+  if (m_rank == rank) {
     UniqueArray<Parallel::Request> requests;
-    for( Int32 i=0; i<m_nb_rank; ++i ){
-      if (i!=m_rank){
-        requests.add(m_message_queue->addSend(buildMessage(i,Parallel::NonBlocking),SendBufferInfo(values)));
+    for (Int32 i = 0; i < m_nb_rank; ++i) {
+      if (i != m_rank) {
+        requests.add(m_message_queue->addSend(buildMessage(i, Parallel::NonBlocking), SendBufferInfo(values)));
       }
     }
     m_message_queue->waitAll(requests);
   }
-  else{
-    recvSerializer(values,rank);
+  else {
+    recvSerializer(values, rank);
   }
 }
 
@@ -318,11 +331,11 @@ broadcastSerializer(ISerializer* values,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelMng::
-recvSerializer(ISerializer* values,Int32 rank)
+recvSerializer(ISerializer* values, Int32 rank)
 {
-  auto p2p_message = buildMessage(rank,Parallel::Blocking);
-  Request r = m_message_queue->addReceive(p2p_message,ReceiveBufferInfo(values));
-  m_message_queue->waitAll(ArrayView<Request>(1,&r));
+  auto p2p_message = buildMessage(rank, Parallel::Blocking);
+  Request r = m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(values));
+  m_message_queue->waitAll(ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -372,7 +385,7 @@ waitAllRequests(ArrayView<Request> requests)
   Real begin_time = platform::getRealTime();
   m_message_queue->waitAll(requests);
   Real end_time = platform::getRealTime();
-  m_stat->add("WaitAll",(end_time-begin_time),0);
+  m_stat->add("WaitAll", (end_time - begin_time), 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -410,20 +423,20 @@ legacyProbe(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 
 auto SharedMemoryParallelMng::
-sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) -> Request
+sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) -> Request
 {
   auto p2p_message = buildMessage(message);
-  return m_message_queue->addSend(p2p_message,SendBufferInfo(values));
+  return m_message_queue->addSend(p2p_message, SendBufferInfo(values));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 auto SharedMemoryParallelMng::
-receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) -> Request
+receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) -> Request
 {
   auto p2p_message = buildMessage(message);
-  return m_message_queue->addReceive(p2p_message,ReceiveBufferInfo(values));
+  return m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,7 +445,7 @@ receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) ->
 IVariableSynchronizer* SharedMemoryParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  return m_utils_factory->createSynchronizer(this,family)._release();
+  return m_utils_factory->createSynchronizer(this, family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -441,7 +454,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* SharedMemoryParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  return m_utils_factory->createSynchronizer(this,group)._release();
+  return m_utils_factory->createSynchronizer(this, group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -482,7 +495,7 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
   // On ne peut pas implémenter cette méthode car on passe par
   // IParallelMngContainer::_createParallelMng() qui créé obligatoirement
   // un 'Ref<IParallelMng>'.
-  ARCANE_THROW(NotSupportedException,"Use createSubParallelMngRef() instead");
+  ARCANE_THROW(NotSupportedException, "Use createSubParallelMngRef() instead");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -501,15 +514,15 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   // Regarde si je suis dans les listes des rangs conservés et si oui
   // détermine mon rang dans le IParallelMng créé
   Int32 my_new_rank = (-1);
-  for( Integer i=0; i<nb_rank; ++i )
-    if (kept_ranks[i]==m_rank){
+  for (Integer i = 0; i < nb_rank; ++i)
+    if (kept_ranks[i] == m_rank) {
       my_new_rank = i;
       break;
     }
 
   barrier();
   // Le rang 0 créé le builder
-  if (m_rank==0){
+  if (m_rank == 0) {
     builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank, m_mpi_communicator, m_mpi_communicator);
     // Positionne le builder pour tout le monde
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
@@ -520,8 +533,8 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   ARCANE_CHECK_POINTER(builder.get());
 
   Ref<IParallelMng> new_parallel_mng;
-  if (my_new_rank>=0){
-    new_parallel_mng = builder->_createParallelMng(my_new_rank,traceMng());
+  if (my_new_rank >= 0) {
+    new_parallel_mng = builder->_createParallelMng(my_new_rank, traceMng());
     //auto* new_sm = dynamic_cast<SharedMemoryParallelMng*>(new_parallel_mng.get());
     //if (new_sm)
     //new_sm->m_mpi_communicator = m_mpi_communicator;
@@ -531,7 +544,7 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   // supprimer la référence au builder.
   // TODO: il faudra ajouter un compteur de référence sur le builder
   // sinon il ne sera jamais détruit.
-  if (m_rank==0){
+  if (m_rank == 0) {
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder.reset();
   }
   barrier();
@@ -570,7 +583,7 @@ sequentialParallelMng()
 PointToPointMessageInfo SharedMemoryParallelMng::
 buildMessage(const PointToPointMessageInfo& orig_message)
 {
-  PointToPointMessageInfo p2p_message{orig_message};
+  PointToPointMessageInfo p2p_message{ orig_message };
   p2p_message.setEmiterRank(MessageRank(m_rank));
   return p2p_message;
 }
@@ -579,9 +592,9 @@ buildMessage(const PointToPointMessageInfo& orig_message)
 /*---------------------------------------------------------------------------*/
 
 PointToPointMessageInfo SharedMemoryParallelMng::
-buildMessage(Int32 dest,Parallel::eBlockingType blocking_mode)
+buildMessage(Int32 dest, Parallel::eBlockingType blocking_mode)
 {
-  return buildMessage({MessageRank(dest),blocking_mode});
+  return buildMessage({ MessageRank(dest), blocking_mode });
 }
 
 /*---------------------------------------------------------------------------*/

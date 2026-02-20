@@ -15,7 +15,7 @@
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
-#include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 
 /*---------------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryDynamicMachineMemoryWindowBaseInternal* SharedMemoryMachineMemoryWindowBaseInternalCreator::
+SharedMemoryMachineShMemWinBaseInternal* SharedMemoryMachineMemoryWindowBaseInternalCreator::
 createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 {
   if (my_rank == 0) {
@@ -92,10 +92,10 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   (*m_windows.get())[my_rank].resize(sizeof_segment);
   (*m_target_segments.get())[my_rank] = -1;
 
-  auto* window_obj = new SharedMemoryDynamicMachineMemoryWindowBaseInternal(my_rank, m_ranks, sizeof_type, m_windows, m_target_segments, m_barrier);
+  auto* window_obj = new SharedMemoryMachineShMemWinBaseInternal(my_rank, m_ranks, sizeof_type, m_windows, m_target_segments, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par SharedMemoryDynamicMachineMemoryWindowBaseInternal.
+  // Ces tableaux doivent être delete par SharedMemoryMachineShMemWinBaseInternal.
   if (my_rank == 0) {
     m_windows.reset();
     m_target_segments.reset();

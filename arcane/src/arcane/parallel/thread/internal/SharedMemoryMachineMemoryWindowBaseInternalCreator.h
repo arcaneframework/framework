@@ -32,7 +32,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 class SharedMemoryMachineMemoryWindowBaseInternal;
-class SharedMemoryDynamicMachineMemoryWindowBaseInternal;
+class SharedMemoryMachineShMemWinBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ class SharedMemoryMachineMemoryWindowBaseInternalCreator
  public:
 
   SharedMemoryMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
-  SharedMemoryDynamicMachineMemoryWindowBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  SharedMemoryMachineShMemWinBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 

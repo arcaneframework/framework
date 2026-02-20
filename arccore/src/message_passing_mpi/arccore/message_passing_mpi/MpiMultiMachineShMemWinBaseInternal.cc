@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDynamicMultiMachineMemoryWindowBaseInternal.h            (C) 2000-2025 */
+/* MpiMultiMachineShMemWinBaseInternal.h            (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
 /* être redimensionnées. Un processus peut posséder plusieurs segments.      */
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"
 
 #include "arccore/base/FatalErrorException.h"
 
@@ -26,8 +26,8 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 
 //! Le sizeof_segments ne doit pas être conservé !
-MpiDynamicMultiMachineMemoryWindowBaseInternal::
-MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
+MpiMultiMachineShMemWinBaseInternal::
+MpiMultiMachineShMemWinBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win_need_resize()
 , m_win_actual_sizeof()
 , m_win_target_segments()
@@ -88,7 +88,6 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
         }
       }
     }
-
 
     for (Integer i = 0; i < m_nb_segments_per_proc; ++i) {
       MPI_Aint size_seg;
@@ -206,8 +205,8 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiDynamicMultiMachineMemoryWindowBaseInternal::
-~MpiDynamicMultiMachineMemoryWindowBaseInternal()
+MpiMultiMachineShMemWinBaseInternal::
+~MpiMultiMachineShMemWinBaseInternal()
 {
   for (Integer i = 0; i < m_comm_machine_size * m_nb_segments_per_proc; ++i) {
     MPI_Win_free(&m_all_mpi_win[i]);
@@ -220,7 +219,7 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Int32 MpiMultiMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -229,7 +228,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> MpiDynamicMultiMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> MpiMultiMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -238,7 +237,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 barrier() const
 {
   MPI_Barrier(m_comm_machine);
@@ -247,7 +246,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiMultiMachineShMemWinBaseInternal::
 segmentView(Int32 num_seg)
 {
   const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
@@ -257,7 +256,7 @@ segmentView(Int32 num_seg)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiMultiMachineShMemWinBaseInternal::
 segmentView(Int32 rank, Int32 num_seg)
 {
   const Int32 segment_infos_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
@@ -277,7 +276,7 @@ segmentView(Int32 rank, Int32 num_seg)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiMultiMachineShMemWinBaseInternal::
 segmentConstView(Int32 num_seg) const
 {
   const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
@@ -287,7 +286,7 @@ segmentConstView(Int32 num_seg) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiMultiMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank, Int32 num_seg) const
 {
   const Int32 segment_infos_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
@@ -307,7 +306,7 @@ segmentConstView(Int32 rank, Int32 num_seg) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 requestAdd(Int32 num_seg, Span<const std::byte> elem)
 {
   if (elem.size() % m_sizeof_type) {
@@ -337,7 +336,7 @@ requestAdd(Int32 num_seg, Span<const std::byte> elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 executeAdd()
 {
   _executeRealloc();
@@ -373,7 +372,7 @@ executeAdd()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 requestAddToAnotherSegment(Int32 thread, Int32 rank, Int32 num_seg, Span<const std::byte> elem)
 {
   if (elem.size() % m_sizeof_type) {
@@ -422,7 +421,7 @@ requestAddToAnotherSegment(Int32 thread, Int32 rank, Int32 num_seg, Span<const s
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 executeAddToAnotherSegment()
 {
   MPI_Barrier(m_comm_machine);
@@ -526,7 +525,7 @@ executeAddToAnotherSegment()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 requestReserve(Int32 num_seg, Int64 new_capacity)
 {
   if (new_capacity % m_sizeof_type) {
@@ -545,7 +544,7 @@ requestReserve(Int32 num_seg, Int64 new_capacity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 executeReserve()
 {
   _executeRealloc();
@@ -554,7 +553,7 @@ executeReserve()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 requestResize(Int32 num_seg, Int64 new_size)
 {
   if (new_size == -1) {
@@ -580,7 +579,7 @@ requestResize(Int32 num_seg, Int64 new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 executeResize()
 {
   _executeRealloc();
@@ -609,7 +608,7 @@ executeResize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 executeShrink()
 {
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
@@ -628,7 +627,7 @@ executeShrink()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 _requestRealloc(Int32 owner_pos_segment, Int64 new_capacity) const
 {
   m_need_resize[owner_pos_segment] = new_capacity;
@@ -637,7 +636,7 @@ _requestRealloc(Int32 owner_pos_segment, Int64 new_capacity) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 _requestRealloc(Int32 owner_pos_segment) const
 {
   m_need_resize[owner_pos_segment] = -1;
@@ -646,7 +645,7 @@ _requestRealloc(Int32 owner_pos_segment) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 _executeRealloc()
 {
   // Barrière importante car tout le monde doit savoir que l'on doit
@@ -673,7 +672,7 @@ _executeRealloc()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
+void MpiMultiMachineShMemWinBaseInternal::
 _realloc()
 {
   MPI_Info win_info;
@@ -776,7 +775,7 @@ _realloc()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Int32 MpiMultiMachineShMemWinBaseInternal::
 _worldToMachine(Int32 world) const
 {
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
@@ -790,7 +789,7 @@ _worldToMachine(Int32 world) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
+Int32 MpiMultiMachineShMemWinBaseInternal::
 _machineToWorld(Int32 machine) const
 {
   return m_machine_ranks[machine];

@@ -17,7 +17,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/DynamicMachineMemoryWindowVariable.h"
+#include "arcane/core/MachineShMemWinVariable.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -164,9 +164,19 @@ _reset()
 void AMRPatchTesterModule::
 _test1()
 {
-  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
+  Int32 properties = 0;
+  if (parallelMng()->commRank() == 0) {
+    properties = (IVariable::PInShMem | IVariable::PPersistant);
+    //properties = (IVariable::PPersistant);
+  }
+  else {
+    properties = (IVariable::PInShMem | IVariable::PPersistant | IVariable::PNoDump);
+    //properties = (IVariable::PPersistant | IVariable::PNoDump);
+  }
 
-  DynamicMachineMemoryWindowVariable var_sh(var);
+  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", properties));
+
+  MachineShMemWinVariable var_sh(var);
 
   auto var_compute = [&]() -> void {
     debug() << "asArray().size() : " << var.asArray().size();

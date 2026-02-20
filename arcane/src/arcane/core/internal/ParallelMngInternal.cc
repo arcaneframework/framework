@@ -115,9 +115,9 @@ createMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> ParallelMngInternal::
-createDynamicMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
-                                     [[maybe_unused]] Int32 sizeof_type)
+Ref<MessagePassing::IMachineShMemWinBaseInternal> ParallelMngInternal::
+createMachineShMemWinBase([[maybe_unused]] Int64 sizeof_segment,
+                          [[maybe_unused]] Int32 sizeof_type)
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }
@@ -125,7 +125,7 @@ createDynamicMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* ParallelMngInternal::dynamicMachineMemoryWindowMemoryAllocator()
+IMemoryAllocator* ParallelMngInternal::machineShMemWinMemoryAllocator()
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }

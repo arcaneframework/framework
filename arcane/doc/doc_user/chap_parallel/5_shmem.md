@@ -87,7 +87,7 @@ Néanmoins, cette opération est collective, ce qui contamine la plupart des mé
 
 ### Utilisation {#arcanedoc_parallel_shmem_var_usage}
 
-Cette partie est gérée par la classe Arcane::DynamicMachineMemoryWindow.
+Cette partie est gérée par la classe Arcane::MachineShMemWin.
 
 Comme pour la précédente implémentation, celle-ci est compatible avec tous les modes de parallélisme de %Arcane.
 
@@ -100,7 +100,7 @@ Comme un UniqueArray, il est possible de spécifier une taille initiale (ici `5`
 Et il est possible de ne pas spécifier de taille initiale.
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_8
 
-La méthode Arcane::DynamicMachineMemoryWindow::machineRanks() est disponible et renvoie le même tableau que
+La méthode Arcane::MachineShMemWin::machineRanks() est disponible et renvoie le même tableau que
 l'implémentation Arcane::MachineMemoryWindow.
 
 Pour explorer notre segment ou le segment d'un autre sous-domaine, il est possible d'utiliser les mêmes méthodes que
@@ -112,33 +112,33 @@ En revanche, comme les segments ne sont pas contigüs, les méthodes `windowView
 
 Les segments ont une taille qui peut être augmentée ou diminuée au cours du temps.
 
-Il est possible d'ajouter des éléments avec la méthode Arcane::DynamicMachineMemoryWindow::add(Arcane::Span<const Type>
+Il est possible d'ajouter des éléments avec la méthode Arcane::MachineShMemWin::add(Arcane::Span<const Type>
 elem) :
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_10
 
 Cette méthode est collective, tous les sous-domaines d'un noeud doivent l'appeler. Si un sous-domaine ne souhaite pas
 ajouter d'éléments dans son segment, il peut appeler la méthode `add()` avec un tableau vide ou sans argument
-(Arcane::DynamicMachineMemoryWindow::add()).
+(Arcane::MachineShMemWin::add()).
 
 Cette opération peut être couteuse à cause de la réallocation mémoire. Il est donc conseillé d'ajouter une grande
 quantité d'éléments en une fois plutôt qu'élément par élément.
 
 Si l'ajout élément par élément est indispensable, la méthode
-Arcane::DynamicMachineMemoryWindow::reserve(Arcane::Int64 new_capacity) est disponible afin d'éviter de réallouer
+Arcane::MachineShMemWin::reserve(Arcane::Int64 new_capacity) est disponible afin d'éviter de réallouer
 plusieurs fois un segment :
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_11
 
 Dans ce bout de code, on va réserver un espace de `20` `Integer` pour tous les sous-domaines. Cette valeur peut être
 différente pour chaque sous-domaine (si un sous-domaine ne veut pas réserver plus d'espace, il peut appeler
-Arcane::DynamicMachineMemoryWindow::reserve()).
+Arcane::MachineShMemWin::reserve()).
 
 \note Avec cette méthode, on ne peut pas réserver moins d'espace que déjà réservé (appeler `reserve(0)` n'a aucun
-effet). Pour réduire l'espace réservé, la méthode Arcane::DynamicMachineMemoryWindow::shrink() est disponible.
+effet). Pour réduire l'espace réservé, la méthode Arcane::MachineShMemWin::shrink() est disponible.
 
-\warning Comme pour les UniqueArray, la méthode Arcane::DynamicMachineMemoryWindow::reserve(Arcane::Int64
-new_capacity) n'a pas la même fonction que la méthode Arcane::DynamicMachineMemoryWindow::resize(Arcane::Int64
+\warning Comme pour les UniqueArray, la méthode Arcane::MachineShMemWin::reserve(Arcane::Int64
+new_capacity) n'a pas la même fonction que la méthode Arcane::MachineShMemWin::resize(Arcane::Int64
 new_nb_elem). La première réserve uniquement l'espace mémoire mais cet espace reste inaccessible sans `add()` ou sans
 `resize()`. La seconde change le nombre d'éléments du segment et appelle `reserve()` si nécessaire.
 
@@ -151,7 +151,7 @@ Ce sous-domaine va passer de 15 éléments à 12.
 Comme pour la méthode `reserve()`, chaque sous-domaine peut mettre la valeur qu'il veut.
 
 Il est aussi possible d'ajouter des éléments dans le segment d'un autre sous-domaine avec la méthode collective
-Arcane::DynamicMachineMemoryWindow::addToAnotherSegment(Arcane::Int32 rank, Arcane::Span<const Type> elem).
+Arcane::MachineShMemWin::addToAnotherSegment(Arcane::Int32 rank, Arcane::Span<const Type> elem).
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_13
 
