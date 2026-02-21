@@ -125,6 +125,18 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
         cxr_val[k] = values[k*block2_size] ;
       }
       values_ptr = cxr_val.data() ;
+      {
+        auto kcol = profile.kcol() ;
+        for(int irow=0;irow<localSize;++irow)
+        {
+          std::cout<<"MAT["<<irow<<"]:";
+          for(int k=kcol[irow];k<kcol[irow+1];++k)
+          {
+            std::cout<<values_ptr[k]<<" ";
+          }
+          std::cout<<std::endl ;
+        }
+      }
     }
 
     if(targetImpl.getMemoryType() == BackEnd::Memory::Host )
@@ -148,7 +160,6 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
       cout() << "Copy values From Host to Device";
       });
 
-      auto values = matrixInternal.getValues();
       auto cols = profile.getCols();
       const bool success = targetImpl.setMatrixValuesFrom(localSize,
                                                           nnz,

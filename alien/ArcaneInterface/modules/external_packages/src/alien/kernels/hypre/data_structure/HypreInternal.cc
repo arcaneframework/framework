@@ -7,6 +7,7 @@
 
 #include <alien/AlienExternalPackagesPrecomp.h>
 #include "HypreInternal.h"
+#include <numeric>
 
 #ifdef ALIEN_USE_CUDA
 #include <cuda_runtime.h>
@@ -73,6 +74,43 @@ bool
 MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncols,
     const int* cols, const Arccore::Real* values)
 {
+#ifdef PRINT_DEBUG_INFO
+  if(m_memory_type==BackEnd::Memory::Host)
+  {
+    int offset = 0 ;
+    for(int i=0;i<nrow;++i)
+    {
+      int row_size = ncols[i];
+      std::cout<<"MAT["<<i<<"]:";
+      for(int k=0;k<row_size;++k)
+      {
+        std::cout<<values[offset+k]<<" ";
+      }
+      std::cout<<std::endl ;
+      offset += row_size;
+    }
+  }
+  else
+  {
+    std::vector<int> row_size(nrow) ;
+    cudaMemcpy(row_size.data(), ncols, nrow * sizeof(int), cudaMemcpyDeviceToHost);
+    int nnz = std::accumulate(row_size.begin(),row_size.end(),0);
+    std::vector<ValueType> val(nnz) ;
+    cudaMemcpy(val.data(), values, nnz * sizeof(ValueType), cudaMemcpyDeviceToHost);
+
+    int offset = 0 ;
+    for(int i=0;i<nrow;++i)
+    {
+      std::cout<<"MAT["<<i<<","<<row_size[i]<<"]:";
+      for(int k=0;k<row_size[i];++k)
+      {
+        std::cout<<val[offset+k]<<" ";
+      }
+      std::cout<<std::endl ;
+      offset += row_size[i];
+    }
+  }
+#endif
   int ierr = HYPRE_IJMatrixSetValues(
       m_internal, nrow, const_cast<int*>(ncols), rows, cols, values);
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
@@ -161,6 +199,26 @@ MatrixInternal::freeDevicePointers(IndexType* rows,
 #endif
 }
 
+void
+MatrixInternal::copyDeviceToHostPointers(std::size_t nrows,
+                                         std::size_t nnz,
+                                         const IndexType* rows_d,
+                                         const IndexType* ncols_d,
+                                         const IndexType* cols_d,
+                                         const ValueType* values_d,
+                                         IndexType* rows_h,
+                                         IndexType* ncols_h,
+                                         IndexType* cols_h,
+                                         ValueType* values_h)
+{
+#ifdef ALIEN_USE_CUDA
+ // Copier Device -> Host
+ cudaMemcpy(rows_h, rows_d    , nrows * sizeof(HYPRE_BigInt),  cudaMemcpyDeviceToHost);
+ cudaMemcpy(ncols_h, ncols_d  , nrows * sizeof(HYPRE_Int),     cudaMemcpyDeviceToHost);
+ cudaMemcpy(cols_h, cols_d    , nnz   * sizeof(HYPRE_BigInt),  cudaMemcpyDeviceToHost);
+ cudaMemcpy(values_h, values_d, nnz   * sizeof(HYPRE_Complex), cudaMemcpyDeviceToHost);
+#endif
+}
 /*---------------------------------------------------------------------------*/
 VectorInternal::~VectorInternal()
 {
@@ -203,7 +261,7 @@ VectorInternal::addValues(const int nrow, const int* rows, const Arccore::Real* 
 bool
 VectorInternal::setValues(const int nrow, const int* rows, const Arccore::Real* values)
 {
-  /*
+#ifdef PRINT_DEBUG_INFO
   if(m_memory_type==BackEnd::Memory::Host)
   {
     for(int i=0;i<nrow;++i)
@@ -215,8 +273,8 @@ VectorInternal::setValues(const int nrow, const int* rows, const Arccore::Real* 
        cudaMemcpy(val.data(), values, nrow * sizeof(ValueType), cudaMemcpyDeviceToHost);
        for(int i=0;i<nrow;++i)
          std::cout<<"HYPRE B["<<i<<"]="<<val[i]<<std::endl ;
-  }*/
-
+  }
+#endif
   int ierr = HYPRE_IJVectorSetValues(m_internal,
       nrow, // nb de valeurs
       rows, values);
@@ -303,12 +361,14 @@ bool
 VectorInternal::getValues(const int nrow, const int* rows, Arccore::Real* values)
 {
   int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, rows, values);
-  /*
+
+#ifdef PRINT_DEBUG_INFO
   if(m_memory_type==BackEnd::Memory::Host)
   {
     for(int i=0;i<nrow;++i)
       std::cout<<"HYPRE X["<<i<<"]="<<values[i]<<std::endl ;
-  }*/
+  }
+#endif
   return (ierr == 0);
 }
 
@@ -331,13 +391,15 @@ VectorInternal::getValuesToDevice(const int nrow, const int* rows, Arccore::Real
   else
   {
     int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, m_rows, values_d);
-    /*
+
+#ifdef PRINT_DEBUG_INFO
     {
       std::vector<ValueType> val(nrow) ;
       cudaMemcpy(val.data(), values_d, nrow * sizeof(ValueType), cudaMemcpyDeviceToHost);
       for(int i=0;i<nrow;++i)
         std::cout<<"HYPRE X["<<i<<"]="<<val[i]<<std::endl ;
-    }*/
+    }
+#endif
     return (ierr == 0);
   }
 }

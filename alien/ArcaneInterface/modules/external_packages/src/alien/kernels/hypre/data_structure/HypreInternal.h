@@ -93,7 +93,7 @@ class MatrixInternal
                               IndexType** rows,
                               IndexType** ncols,
                               IndexType** cols,
-                              ValueType** values) ;
+                              ValueType** values);
 
   void copyHostToDevicePointers(std::size_t nrows,
                                 std::size_t nnz,
@@ -104,7 +104,18 @@ class MatrixInternal
                                 IndexType* rows_d,
                                 IndexType* ncols_d,
                                 IndexType* cols_d,
-                                ValueType* values_d) ;
+                                ValueType* values_d);
+
+  void copyDeviceToHostPointers(std::size_t nrows,
+                                std::size_t nnz,
+                                const IndexType* rows_d,
+                                const IndexType* ncols_d,
+                                const IndexType* cols_d,
+                                const ValueType* values_d,
+                                IndexType* rows_h,
+                                IndexType* ncols_h,
+                                IndexType* cols_h,
+                                ValueType* values_h);
 
   void freeDevicePointers(IndexType* rows,
                           IndexType* ncols,

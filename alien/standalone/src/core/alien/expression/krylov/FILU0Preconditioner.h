@@ -300,27 +300,34 @@ class FLUFactorisationAlgo
       }
       else
       {
-        /*
+#ifdef PRINT_DEBUG_INFO
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           std::cout<<"XK["<<irow<<"]=\n";
           for(int i=0;i<N;++i)
             std::cout<<xk_ptr[irow*N+i]<<std::endl;
-        }*/
+        }
+#endif
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           //ValueType val = y_ptr[irow];
           val = Block1DView(const_cast<ValueType*>(y_ptr+irow*N),N) ;
-          //std::cout<<"LSOLVE MAT["<<irow<<"]:"<<std::endl;
+#ifdef PRINT_DEBUG_INFO
+          std::cout<<"LSOLVE MAT["<<irow<<"]:"<<std::endl;
+#endif
           for (int k = kcol[irow]; k < dcol[irow]; ++k)
           {
             //val -= values[k] * xk_ptr[cols[k]];
             val -= Block2DView(const_cast<ValueType*>(values+k*NxN),N,N) * Block1DView(xk_ptr+cols[k]*N,N) ;
-            //std::cout<<Block2DView(const_cast<ValueType*>(values+k*NxN),N,N)<<std::endl;
+#ifdef PRINT_DEBUG_INFO
+            std::cout<<Block2DView(const_cast<ValueType*>(values+k*NxN),N,N)<<std::endl;
+#endif
           }
           //x_ptr[irow] = val;
           Block1DView(x_ptr+irow*N,N) = val ;
-          //std::cout<<"Y =\n"<<val<<std::endl ;
+#ifdef PRINT_DEBUG_INFO
+          std::cout<<"Y =\n"<<val<<std::endl ;
+#endif
         }
       }
 #endif
@@ -477,30 +484,39 @@ class FLUFactorisationAlgo
       }
       else
       {
-        /*
+
+#ifdef PRINT_DEBUG_INFO
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           std::cout<<"XK["<<irow<<"]=\n";
           for(int i=0;i<N;++i)
             std::cout<<xk_ptr[irow*N+i]<<std::endl;
-        }*/
+        }
+#endif
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
-          //std::cout<<"U SOLVE MAT["<<irow<<"]:"<<std::endl ;
+#ifdef PRINT_DEBUG_INFO
+          std::cout<<"U SOLVE MAT["<<irow<<"]:"<<std::endl ;
+#endif
           int dk = dcol[irow];
           //ValueType val = y_ptr[irow];
           val = Block1DView(const_cast<ValueType*>(y_ptr+irow*N),N) ;
           for (int k = dk + 1; k < kcol[irow + 1]; ++k) {
             //val -= values[k] * xk_ptr[cols[k]];
             val -= Block2DView(const_cast<ValueType*>(values+k*NxN),N,N) * Block1DView(xk_ptr+cols[k]*N,N) ;
-            //std::cout<<Block2DView(const_cast<ValueType*>(values+k*NxN),N,N)<<std::endl;
+#ifdef PRINT_DEBUG_INFO
+            std::cout<<Block2DView(const_cast<ValueType*>(values+k*NxN),N,N)<<std::endl;
+#endif
           }
           //val = val / values[dk];
           //x_ptr[irow] = val;
           Block1DView(x_ptr+irow*N,N) = BaseType::inv(Block2DView(const_cast<ValueType*>(values+dk*NxN),N,N)) * val;
-          //std::cout<<"Y["<<irow<<"]=\n"<<val<<std::endl;
+#ifdef PRINT_DEBUG_INFO
+          std::cout<<"Y["<<irow<<"]=\n"<<val<<std::endl;
+#endif
         }
-        /*
+
+#ifdef PRINT_DEBUG_INFO
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           int dk = dcol[irow];
@@ -508,7 +524,8 @@ class FLUFactorisationAlgo
           std::cout<<"Y["<<irow<<"]=\n";
           for(int i=0;i<N;++i)
             std::cout<<x_ptr[irow*N+i]<<std::endl;
-        }*/
+        }
+#endif
       }
 #endif
     }
