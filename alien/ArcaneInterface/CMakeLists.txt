@@ -37,7 +37,7 @@ set(USE_AXLSTAR TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-set(BUILDSYSTEM_INSTALL_TARGETS TRUE)
+set(BUILDSYSTEM_INSTALL_TARGETS FALSE)
 set(BUILDSYSTEM_INSTALL_EXPORT TRUE)
 
 set(USE_ARCCON TRUE)
