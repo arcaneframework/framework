@@ -33,6 +33,8 @@ class BaseBEllPackStructInfo
   , m_nnz(nnz)
   {}
 
+  virtual ~BaseBEllPackStructInfo() {}
+
   std::size_t getNRows() const { return m_nrows; }
 
   std::size_t getNnz() const { return m_nnz; }
@@ -82,6 +84,8 @@ class ALIEN_EXPORT BEllPackStructInfo
                      int const* cols,
                      int const* h_block_row_offset,
                      int const* h_local_row_size);
+
+  virtual ~BEllPackStructInfo() ;
 
   const BaseBEllPackStructInfo& base() const
   {

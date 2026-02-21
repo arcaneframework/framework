@@ -43,13 +43,15 @@ linkLibraries(alien_interface_c
 
 commit(alien_interface_c)
 
+add_library(Alien::interface_c ALIAS alien_interface_c)
+
 target_include_directories(alien_interface_c PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
-install(DIRECTORY alien 
+install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
   )

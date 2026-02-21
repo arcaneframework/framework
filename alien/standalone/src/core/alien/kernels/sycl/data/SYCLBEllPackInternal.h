@@ -205,19 +205,15 @@ class MatrixInternal
            typename LUAccT>
   struct LU
   {
-    static const int ellpack_size = EllPackSize ;
-    int        m_N = 0 ;
-    int        m_NxN = 0 ;
-    MatrixAccT m_matrix;
-    VectorAccT m_y;
-    LUAccT     m_LU;
+    static const int    ellpack_size = EllPackSize ;
+    int                 m_N          = 0 ;
+    int                 m_NxN        = 0 ;
+    MatrixAccT          m_matrix;
 
-    LU(int N, MatrixAccT matrix, VectorAccT y, LUAccT lu)
+    LU(int N, MatrixAccT& matrix)
     : m_N(N)
     , m_NxN(N*N)
     , m_matrix(matrix)
-    , m_y(y)
-    , m_LU(lu)
     {}
 
      inline std::size_t _ijk(std::size_t k, int i, int j) const
@@ -233,12 +229,13 @@ class MatrixInternal
      void factorize(std::size_t global_id,
                     std::size_t local_id,
                     std::size_t block_id,
-                    std::size_t k) const
+                    std::size_t kcol,
+                    LUAccT      m_LU) const
     {
       // Copy Diag Matrix in A
       for(int i=0;i<m_N;++i)
         for(int j=0;j<m_N;++j)
-          m_LU[_ijk(block_id,i,j)+local_id] = m_matrix[_ijk(k,i,j)+local_id] ;
+          m_LU[_ijk(block_id,i,j)+local_id] = m_matrix[_ijk(kcol,i,j)+local_id] ;
 
       //Factorize A = LU
       for (int k = 0; k < m_N; ++k)
@@ -258,7 +255,9 @@ class MatrixInternal
 
     void inverse(std::size_t global_id,
                  std::size_t local_id,
-                 std::size_t block_id) const
+                 std::size_t block_id,
+                 LUAccT      m_LU,
+                 VectorAccT  m_y) const
     {
       // SET Y to Id
       for(int i=0;i<m_N;++i)
@@ -346,6 +345,14 @@ class MatrixInternal
   void scal(ValueBufferType& y);
 
   void scal(ValueBufferType& y, QueueType& queue);
+
+  void copyDevicePointers(int local_offset,
+                          std::size_t nrows,
+                          std::size_t nnz,
+                          int* rows,
+                          int* ncols,
+                          int* cols,
+                          ValueT* values) const ;
 
   ValueBufferType& getValues() { return m_values; }
 

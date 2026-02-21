@@ -62,6 +62,8 @@ target_include_directories(alien_trilinos PUBLIC
 
 commit(alien_trilinos)
 
+add_library(Alien::trilinos ALIAS alien_trilinos)
+
 install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"

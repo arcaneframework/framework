@@ -37,6 +37,8 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#include <alien/handlers/accelerator/HCSRViewT.h>
+
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 #include <alien/kernels/sycl/data/SYCLDistStructInfo.h>
 
@@ -86,6 +88,9 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   typedef Alien::StdTimer                                   TimerType ;
   typedef TimerType::Sentry                                 SentryType ;
+
+
+  using HCSRView = HCSRViewT<SYCLBEllPackMatrix<ValueType>>;
   // clang-format on
 
  public:
@@ -104,6 +109,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   {
     return *m_profile1024;
   }
+
+  HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
 
   ValueType* getAddressData();
   ValueType* data();
@@ -200,6 +207,26 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   MatrixInternal1024* internal() { return m_matrix1024.get(); }
 
   MatrixInternal1024 const* internal() const { return m_matrix1024.get(); }
+
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) const ;
+
+  void freeDevicePointers(IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  void copyDevicePointers(std::size_t nrows,
+                          std::size_t nnz,
+                          IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
 
  private:
   class IsLocal
