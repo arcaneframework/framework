@@ -70,6 +70,8 @@ target_include_directories(alien_ifpen_solvers PUBLIC
 
 commit(alien_ifpen_solvers)
 
+add_library(Alien::ifpen_solvers ALIAS alien_ifpen_solvers)
+
 install(DIRECTORY alien
 	DESTINATION include
 	FILES_MATCHING PATTERN "*.h"
