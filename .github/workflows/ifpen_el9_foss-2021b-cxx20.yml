@@ -122,64 +122,10 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.BUILD_DIR }}
-          echo '-- DRY RUN /scripts/copyextlib_github.sh : '${arcane_install_dir}
-          arcane_install_dir=${INSTALL_DIR:-${PWD}/arcane_install}
-          ext_lib_dir=$PWD/extlib
-          osdir="el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-`uname -m`"
-          echo "OSDIR ${osdir}"
-          # Load environment
-          echo "source /env.sh"
-          # Create directory
-          echo "mkdir -p ${ext_lib_dir}"
-          # Copy libraries
-          export LD_LIBRARY_PATH="${arcane_install_dir}/lib:${LD_LIBRARY_PATH}"
-          while read line; do echo "\cp -avn ${line} ${ext_lib_dir}/."; if [ -L ${line} ]; then echo "\cp -avn "`readlink -f ${line}` "${ext_lib_dir}/."; fi; done < <(ldd ${arcane_install_dir}/bin/alien* ${arcane_install_dir}/bin/gtest* ${arcane_install_dir}/lib/*.so ${arcane_install_dir}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^/usr/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^${EBROOTFLEXIBLAS}" -e "^${EBROOTOPENBLAS}" -e "^${EBROOTUCX}" -e "^${EBROOTLIBFABRIC}" -e "^${EBROOTPMIX}" -e "^${arcane_install_dir}" -e "^/__w/")
-          # Copy googletest required libs
-          echo "\rm -vf ${ext_lib_dir}/libgtest.so"
-          echo "\cp -avf ${EBROOTGOOGLETEST}/lib/*.so* ${ext_lib_dir}/."
-
-          # Copy binutils required libs
-          echo "\cp -avf ${EBROOTBINUTILS}/lib/libbfd-*.so ${ext_lib_dir}/."
-
-          # Copy GCC required libs
-          echo "\cp -avf ${EBROOTGCCCORE}/lib64/libatomic.so.* ${ext_lib_dir}/."
-
-          # Copy UDUNITS share files
-          echo "test -d ${ext_lib_dir}/../share || mkdir ${ext_lib_dir}/../share"
-          echo '--'
-          echo "\cp -avf ${EBROOTUDUNITS}/share/udunits ${ext_lib_dir}/../share/."
           echo '-- CAT /scripts/copyextlib_github.sh'
           cat /scripts/copyextlib_github.sh
           echo '-- RUN SCRIPT /scripts/copyextlib_github.sh'
-          #bash /scripts/copyextlib_github.sh
-          arcane_install_dir=${INSTALL_DIR:-${PWD}/arcane_install}
-          ext_lib_dir=$PWD/extlib
-          osdir="el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-`uname -m`"
-          # Load environment
-          source /env.sh
-          # Create directory
-          echo "mkdir -p ${ext_lib_dir}"
-          mkdir -p ${ext_lib_dir}
-          export LD_LIBRARY_PATH="${arcane_install_dir}/lib:${LD_LIBRARY_PATH}"
-          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-          echo "arcane_install_dir=${arcane_install_dir}"
-          echo "osdir=${osdir}"
-          while read line; do \cp -avn ${line} ${ext_lib_dir}/.; if [ -L ${line} ]; then \cp -avn "`readlink -f ${line}` "${ext_lib_dir}/.; fi; done < <(ldd ${arcane_install_dir}/bin/alien* ${arcane_install_dir}/bin/gtest* ${arcane_install_dir}/lib/*.so ${arcane_install_dir}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^/usr/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^${EBROOTFLEXIBLAS}" -e "^${EBROOTOPENBLAS}" -e "^${EBROOTUCX}" -e "^${EBROOTLIBFABRIC}" -e "^${EBROOTPMIX}" -e "^${arcane_install_dir}" -e "^/__w/")
-          # Copy googletest required libs
-          echo \rm -vf ${ext_lib_dir}/libgtest.so
-          echo \cp -avf ${EBROOTGOOGLETEST}/lib/*.so* ${ext_lib_dir}/.
-
-          # Copy binutils required libs
-          echo \cp -avf ${EBROOTBINUTILS}/lib/libbfd-*.so ${ext_lib_dir}/.
-
-          # Copy GCC required libs
-          echo \cp -avf ${EBROOTGCCCORE}/lib64/libatomic.so.* ${ext_lib_dir}/.
-
-          # Copy UDUNITS share files
-          echo test -d ${ext_lib_dir}/../share || mkdir ${ext_lib_dir}/../share
-          echo '--'
-          echo \cp -avf ${EBROOTUDUNITS}/share/udunits ${ext_lib_dir}/../share/.
-
+          bash /scripts/copyextlib_github.sh
 
       - name: Tar build artifact
         shell: bash
