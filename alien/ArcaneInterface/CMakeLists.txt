@@ -67,8 +67,6 @@ set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 
 # Path to configuration files for Alien
 set(ALIEN_CMAKE_CONFIG_PATH "${INFRA_BUILDSYSTEM_PATH}/alien")
-# Path to local build-system
-set(ALIEN_BUILDSYSTEM_PATH "${INFRA_BUILDSYSTEM_PATH}/tools")
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
@@ -76,11 +74,15 @@ include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not in
 include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
 =======
 #include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/build-system/LoadBuildSystem.cmake)
 >>>>>>> 7e8a6506c (remove duplicated alien buildsystem)
+=======
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
+>>>>>>> 72370142b (remove duplicated alien buildsystem)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
