@@ -38,6 +38,7 @@ check_cxx_compiler_flag(${CMAKE_CXX_FLAGS_RELEASE} compiler_supports_Release_fla
 # ----------------------------------------------------------------------------
 
 if(NOT WIN32)
+  logStatus(" ** Base CXX flags : ${CMAKE_CXX_FLAGS}")
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     logStatus(" ** Debug mode enabled : ${CMAKE_CXX_FLAGS_DEBUG}")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Release")

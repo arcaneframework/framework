@@ -247,6 +247,9 @@ if (NOT CMAKE_BUILD_TYPE)
   endif()
 endif()
 
+# on ne veut que la configuration courante
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING INTERNAL FORCE)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
  

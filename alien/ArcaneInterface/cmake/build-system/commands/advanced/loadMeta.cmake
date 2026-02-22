@@ -21,7 +21,7 @@ macro(loadMeta)
   string(TOLOWER ${ARGS_NAME} target)
   string(TOUPPER ${ARGS_NAME} TARGET)
 
-  if(NOT ${target}_IS_DISABLED)
+  if(NOT ${target}_IS_DISABLED AND NOT TARGET ${target})
 
     add_library(${target} INTERFACE)
     set(${target}_IS_META ON)
