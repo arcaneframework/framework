@@ -37,12 +37,13 @@ set(USE_AXLSTAR TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-set(BUILDSYSTEM_INSTALL_TARGETS TRUE)
-set(BUILDSYSTEM_INSTALL_EXPORT FALSE)
 
 set(USE_ARCCON TRUE)
 set(USE_PROJECT_CONFIG_HEADER TRUE)
 set(REQUIRE_INSTALL_PROJECTTARGETS TRUE)
+set(BUILDSYSTEM_INSTALL_TARGETS TRUE)
+set(BUILDSYSTEM_INSTALL_EXPORT TRUE)
+
 set(Arccon_USE_CMAKE_CONFIG TRUE)
 set(Arccore_USE_CMAKE_CONFIG TRUE)
 set(Axlstar_USE_CMAKE_CONFIG TRUE)
@@ -66,7 +67,7 @@ set(HDF5_USE_CMAKE_CONFIG TRUE)
 set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 
 # Path to configuration files for Alien
-set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(ALIEN_CMAKE_CONFIG_PATH "${INFRA_BUILDSYSTEM_PATH}/alien")
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
@@ -146,7 +147,6 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienLegacyConfigFile.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienLegacyConfigFile.cmake)
 
 # ----------------------------------------------------------------------------
