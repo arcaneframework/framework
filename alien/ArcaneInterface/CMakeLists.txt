@@ -73,16 +73,7 @@ include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not in
 
 include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
-=======
-#include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/build-system/LoadBuildSystem.cmake)
->>>>>>> 7e8a6506c (remove duplicated alien buildsystem)
-=======
-include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
->>>>>>> 72370142b (remove duplicated alien buildsystem)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
