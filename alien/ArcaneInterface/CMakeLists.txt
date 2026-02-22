@@ -67,41 +67,31 @@ set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 
 # Path to configuration files for Alien
 set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-# Path to local build-system
-set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
-#set(ALIEN_BUILDSYSTEM_PATH "${INFRA_BUILDSYSTEM_PATH}/tools")
-
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
 
 include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
 
-#include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
-  #include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
   include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultOptions.cmake)
 endif()
 
 # root file for packages (if defined)
-#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackageFile.cmake)
 
 # default metas (win32/linux)
-#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultMetas.cmake)
 
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
   # default compilation options
-  #include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
   include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultCompilationFlags.cmake)
 endif()
 
 # default packages (mono et glib)
-#include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
 
 # default languages  (axl)
@@ -110,11 +100,9 @@ include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
 #include(LoadDefaultLanguages)
 
 # Alien Options
-#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienOptions.cmake)
 
 # Alien's external dependencies
-#include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienPackages.cmake)
 
 # Include Arcane cmake functions
@@ -217,7 +205,6 @@ GenerateCMakeConfig()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-#include(${ALIEN_BUILDSYSTEM_PATH}/FinishBuildSystem.cmake)
 include(${INFRA_BUILDSYSTEM_PATH}/tools/FinishBuildSystem.cmake)
 
 message_separator()
