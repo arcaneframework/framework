@@ -222,7 +222,7 @@ class VectorInternal
                             }
                         });
                   });
-    /*
+#ifdef PRINT_DEBUG_INFO
     {
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> diag_acc(m_values);
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> z_acc(z);
@@ -240,7 +240,8 @@ class VectorInternal
         for(int i=0;i<N;++i)
           std::cout<<z_acc[irow*N+i]<<std::endl;
       }
-    }*/
+    }
+#endif
   }
 
 

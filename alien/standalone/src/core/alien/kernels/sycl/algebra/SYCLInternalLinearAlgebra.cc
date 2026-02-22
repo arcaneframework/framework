@@ -354,16 +354,18 @@ void SYCLInternalLinearAlgebra::assign(SYCLVector<Real>& vx, Real alpha) const
 }
 
 void SYCLInternalLinearAlgebra::diagonal(
-const SYCLBEllPackMatrix<Real>& a ALIEN_UNUSED_PARAM, SYCLVector<Real>& x ALIEN_UNUSED_PARAM) const
+const SYCLBEllPackMatrix<Real>& ma, SYCLVector<Real>& vx) const
 {
-  throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::aypx not implemented");
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-DIAG");
+#endif
+  Internal::SYCLBEllPackMatrixMultT<Real>(ma).computeDiag(vx);
 }
 
 void SYCLInternalLinearAlgebra::reciprocal(SYCLVector<Real>& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SYCLLinearAlgebra::reciprocal not implemented");
 }
 
 

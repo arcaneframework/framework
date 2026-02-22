@@ -37,7 +37,6 @@ set(USE_AXLSTAR TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-
 set(USE_ARCCON TRUE)
 set(USE_PROJECT_CONFIG_HEADER TRUE)
 set(REQUIRE_INSTALL_PROJECTTARGETS TRUE)
@@ -199,6 +198,40 @@ add_subdirectory(modules/plugins)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+
+createLibrary(alien_plugins EXPORT alien/AlienPluginsExport.h)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
+addSources(alien_plugins ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
+if(TARGET Alien::arcane_tools)
+  linkLibraries(alien_plugins Alien::arcane_tools)
+endif()
+if(TARGET Alien::external_packages)
+linkLibraries(alien_plugins Alien::external_packages)
+endif()
+if(TARGET Alien::ifpen_solvers)
+linkLibraries(alien_plugins Alien::ifpen_solvers)
+endif()
+if(TARGET Alien::trilinos)
+linkLibraries(alien_plugins Alien::trilinos)
+endif()
+if(TARGET Alien::hpddm)
+linkLibraries(alien_plugins Alien::hpddm)
+endif()
+if(TARGET Alien::composyx)
+linkLibraries(alien_plugins Alien::composyx)
+endif()
+if(TARGET Alien::alien_core_solvers)
+linkLibraries(alien_plugins Alien::alien_core_solvers)
+endif()
+if(TARGET Alien::Alien_core_sycl_solver)
+linkLibraries(alien_plugins Alien::Alien_core_sycl_solver)
+endif()
+if(TARGET Alien::interface_c)
+linkLibraries(alien_plugins Alien::interface_c)
+endif()
+
+commit(alien_plugins)
+
 
 GenerateCMakeConfig()
 

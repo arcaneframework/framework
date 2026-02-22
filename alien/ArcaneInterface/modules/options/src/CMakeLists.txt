@@ -15,6 +15,6 @@ install(TARGETS alien_strong_options
         )
 
 install(EXPORT ${PROJECT_NAME}Targets
-        DESTINATION lib/cmake
+        DESTINATION lib/cmake/${PROJECT_NAME}
         EXPORT_LINK_INTERFACE_LIBRARIES
         )

@@ -29,10 +29,11 @@ ENDIF()
 #createLibrary(alien_external_hypre_sycl
 #        EXPORT alien/AlienExternalPackagesExport.h
 #        )
-        
+
 add_library(alien_external_hypre_sycl SHARED OBJECT
         HCSR_to_Hypre_VectorConverter.cc
         HCSR_to_Hypre_MatrixConverter.cc
+        SYCL_to_Hypre_MatrixConverter.cc
         )
 
 set_target_properties(alien_external_hypre_sycl
@@ -52,9 +53,10 @@ IF(ALIEN_USE_HIPSYCL)
   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
   target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL)
   #target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
-  add_sycl_to_target(TARGET alien_external_hypre_sycl 
+  add_sycl_to_target(TARGET alien_external_hypre_sycl
                      SOURCES HCSR_to_Hypre_VectorConverter.cc
-                             HCSR_to_Hypre_MatrixConverter.cc)
+                             HCSR_to_Hypre_MatrixConverter.cc
+                             SYCL_to_Hypre_MatrixConverter.cc)
 ENDIF()
 
 IF(ALIEN_USE_INTELSYCL)
@@ -68,10 +70,11 @@ IF(ALIEN_USE_INTELSYCL)
      #set(DPCPP_FLAGS -fsycl --amdgpu-target=gfx90a --offload-arch=gfx90a -Wno-linker-warnings)
      target_compile_options(alien_external_hypre_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
      target_link_options(alien_external_hypre_sycl PRIVATE ${DPCPP_FLAGS})
-   ENDIF()  
-   add_sycl_to_target(TARGET  alien_external_hypre_sycl 
+   ENDIF()
+   add_sycl_to_target(TARGET  alien_external_hypre_sycl
                       SOURCES HCSR_to_Hypre_VectorConverter.cc
-                              HCSR_to_Hypre_MatrixConverter.cc)
+                              HCSR_to_Hypre_MatrixConverter.cc
+                              SYCL_to_Hypre_MatrixConverter.cc)
 ENDIF()
 
 
@@ -84,7 +87,7 @@ target_include_directories(alien_external_hypre_sycl PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
-        
+
 
 #commit(alien_external_hypre_sycl)
 

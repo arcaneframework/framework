@@ -148,7 +148,7 @@ class KernelAMGSolverT
       const BackEndId solver_backend_id = AlgebraTraits<AMGSolverTagT>::name() ;
       m_matrix_converter =
           dynamic_cast<MatrixConvType*>(MatrixConverterRegisterer::getConverter(backend_id,solver_backend_id));
-      if(m_matrix_converter==nullptr)
+      //if(m_matrix_converter==nullptr)
       {
         const BackEndId def_backend_id = AlgebraTraits<DefMatrixTagType>::name() ;
         m_def_matrix_converter =
