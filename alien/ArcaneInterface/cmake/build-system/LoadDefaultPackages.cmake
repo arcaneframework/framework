@@ -10,6 +10,12 @@ if(USE_ARCCON)
     if (NOT Axlstar_FOUND)
       loadPackage(NAME Axlstar ESSENTIAL)
     endif ()
+
+    if(NOT WIN32)
+      loadPackage(NAME Mono ESSENTIAL)
+    endif()
+
+    loadPackage(NAME DotNet ESSENTIAL)
   endif()
   
   loadPackage(NAME Glib ESSENTIAL)
