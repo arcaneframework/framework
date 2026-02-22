@@ -6,7 +6,7 @@ function(__find_all_targets target targets_list)
     if (NOT TARGET ${target})
         return()
     endif()
-    
+
     #MESSAGE(STATUS "Targets_list = ${targets_list}")
     get_target_property(LIBRARIES ${target} INTERFACE_LINK_LIBRARIES)
     #MESSAGE(STATUS ">> ${target} depends on ${LIBRARIES}")
@@ -42,7 +42,7 @@ endfunction()
 
 function(__generate_transitive_dependency target commands)
     set(my_command "if(NOT TARGET ${target})${ENDL}")
-	get_target_property(TARGET_TYPE ${target} TYPE)	
+	get_target_property(TARGET_TYPE ${target} TYPE)
 	if(${TARGET_TYPE} STREQUAL "INTERFACE_LIBRARY")
 	    string(APPEND my_command "add_library(${target} INTERFACE IMPORTED)" ${ENDL})
 	else()
@@ -58,13 +58,13 @@ function(__generate_transitive_dependency target commands)
                              IMPORTED
                              IMPORTED_SONAME)
        foreach(config Release Debug RelWithDebInfo)
-           string(TOUPPER ${config} CONFIG_) 
+           string(TOUPPER ${config} CONFIG_)
            list(APPEND imported_properties IMPORTED_LOCATION_${CONFIG_})
            list(APPEND imported_properties IMPORTED_SONAME_${CONFIG_})
        endforeach()
        foreach(property ${imported_properties})
             __append_property(${target} ${property} my_command)
-        endforeach()	    
+        endforeach()
 	endif()
 	foreach(property INTERFACE_AUTOUIC_OPTIONS
                      INTERFACE_COMPILE_DEFINITIONS
@@ -74,7 +74,7 @@ function(__generate_transitive_dependency target commands)
                      INTERFACE_LINK_LIBRARIES
                      INTERFACE_POSITION_INDEPENDENT_CODE
                      INTERFACE_SOURCES
-                     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)                     
+                     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
         __append_property(${target} ${property} my_command)
     endforeach()
 	string(APPEND my_command "endif(NOT TARGET ${target})" ${ENDL})
@@ -88,34 +88,34 @@ macro(GenerateCMakeConfig)
     list(REMOVE_DUPLICATES EXT_LIBRARIES)
 
     SET(LIBS ${EXT_LIBRARIES})
-    
-    foreach(target ${EXT_LIBRARIES})   
+
+    foreach(target ${EXT_LIBRARIES})
         __find_all_targets(${target} LIBS)
     endforeach()
-    
+
     #MESSAGE(STATUS "Recursively found ${LIBS}")
-    
+
     SET(PROJECT_EXTERNAL_LIBRARIES_TARGET "")
     foreach(target ${LIBS})
         __generate_transitive_dependency(${target} PROJECT_EXTERNAL_LIBRARIES_TARGET)
     endforeach()
     #MESSAGE(STATUS "PROJECT_EXTERNAL_LIBRARIES_TARGET = ${PROJECT_EXTERNAL_LIBRARIES_TARGET}")
-    
+
     set(PROJECT_CONFIG_PATH lib/cmake/${PROJECT_NAME})
     set(PROJECT_DEPENDENCIES_FNAME ${PROJECT_CONFIG_PATH}/${PROJECT_NAME}Dependencies.cmake)
     configure_file(${BUILD_SYSTEM_PATH}/templates/ProjectDependencies.cmake.in
                    ${PROJECT_DEPENDENCIES_FNAME})
-    
+
     set(PROJECT_TARGET_FNAME ${PROJECT_CONFIG_PATH}/${PROJECT_NAME}Targets.cmake)
     set(PROJECT_CONFIG_FNAME ${PROJECT_CONFIG_PATH}/${PROJECT_NAME}Config.cmake)
-    
+
     configure_package_config_file(${BUILD_SYSTEM_PATH}/templates/ProjectConfig.cmake.in
       ${PROJECT_CONFIG_FNAME}
       INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
-      #PATH_VARS 
+      #PATH_VARS
      NO_CHECK_REQUIRED_COMPONENTS_MACRO )
 
-    
+
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_CONFIG_FNAME}
                   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_DEPENDENCIES_FNAME}
             DESTINATION lib/cmake/${PROJECT_NAME})
