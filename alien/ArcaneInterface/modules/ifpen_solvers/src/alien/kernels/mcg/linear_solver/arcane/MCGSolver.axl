@@ -188,9 +188,6 @@
         </complex>
 
         <complex name="amgx" type="amgxOptType" minOccurs="0" maxOccurs="1">
-            <simple name="enable" type="bool" default="false">
-                <description></description>
-            </simple>
             <simple name="parameter-file" type="string" default="AMG_CLASSICAL_PMIS.json">
                 <description></description>
             </simple>
@@ -201,6 +198,30 @@
                 </enumvalue>
                 <enumvalue name="AGGREGATION" genvalue="MCGSolver::AMG::AGGREGATION">
                     <description>AGGREGATION AMG algorithm</description>
+                </enumvalue>
+            </enumeration>
+            <enumeration name="update" type="MCGSolver::AMG::eUpdate" default="always">
+                <description>Select when AMGX matrix will be fully updated</description>
+                <enumvalue name="once" genvalue="MCGSolver::AMG::eUpdate::Once">
+                    <description>
+                        AMGX matrix is fully updated with "matrix_upload_all" once on the first solver call.
+                        Otherwise, matrix is updated with "matrix_replace_coefficients".
+                        This option overrides startNonLinear() call if used.
+                    </description>
+                </enumvalue>
+                <enumvalue name="always" genvalue="MCGSolver::AMG::eUpdate::Always">
+                    <description>
+                        AMGX matrix is updated with matrix_upload_all every solver calls.
+                        "matrix_replace_coefficients" is never called.
+                        This option makes startNonLinear() call ignored.
+                    </description>
+                </enumvalue>
+                <enumvalue name="on_deep_update" genvalue="MCGSolver::AMG::eUpdate::OnDeepUpdate">
+                    <description>
+                        AMGX matrix is fully updated with "matrix_upload_all" in solve the first time
+                        and when startNonLinear() is called before.
+                        Otherwise, matrix is updated with "matrix_replace_coefficients".
+                    </description>
                 </enumvalue>
             </enumeration>
         </complex>
