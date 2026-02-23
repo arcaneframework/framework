@@ -140,6 +140,9 @@ class RunCommandImpl
   //! Nombre de pas de décomposition de la boucle
   Int32 m_nb_stride = 1;
 
+  //! Nombre de pas de décomposition par défaut
+  Int32 m_default_nb_stride = 1;
+
  private:
 
   void _freePools();
