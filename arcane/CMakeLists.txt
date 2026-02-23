@@ -167,6 +167,7 @@ endif()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+option(ARCANE_ENABLE_DEPRECATED_WARNINGS "Are deprecated warnings enabled?" OFF)
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
 option(ARCANE_ENABLE_ALEPH "Enable the compilation of Aleph component" ON)
@@ -827,8 +828,10 @@ endif()
 # ----------------------------------------------------------------------------
 
 if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
-  target_compile_options(arcane_build_compile_flags INTERFACE -Wall -Wdeprecated ${_CONVERSION_WARNING})
-  if (ARCANE_DISABLE_DEPRECATED_WARNINGS)
+  target_compile_options(arcane_build_compile_flags INTERFACE -Wall ${_CONVERSION_WARNING})
+  if (ARCANE_ENABLE_DEPRECATED_WARNINGS)
+    target_compile_options(arcane_build_compile_flags INTERFACE -Wdeprecated})
+  else()
     target_compile_options(arcane_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
   endif()
   if(ARCANE_WANT_AVX)

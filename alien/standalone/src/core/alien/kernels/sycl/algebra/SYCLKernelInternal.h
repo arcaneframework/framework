@@ -242,6 +242,17 @@ class KernelInternal
                                          });
       // clang-format on
     }
+#ifdef PRINT_DEBUG_INFO
+    {
+      sycl::host_accessor<T, 1, sycl::access::mode::read> x_acc(x);
+      sycl::host_accessor<T, 1, sycl::access::mode::read> y_acc(y);
+      sycl::host_accessor<T, 1, sycl::access::mode::read> z_acc(z);
+      for(int il=0;il<x.size();++il)
+      {
+        std::cout<<"X Y Z ["<<il<<"] :  "<<x_acc[il]<<"*"<<y_acc[il]<<"="<<z_acc[il]<<std::endl ;
+      }
+    }
+#endif
   }
 
   template <typename T>

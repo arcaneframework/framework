@@ -37,6 +37,8 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#include <alien/handlers/accelerator/HCSRViewT.h>
+
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 #include <alien/kernels/sycl/data/SYCLDistStructInfo.h>
 
@@ -86,22 +88,17 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   typedef Alien::StdTimer                                   TimerType ;
   typedef TimerType::Sentry                                 SentryType ;
+
+
+  using HCSRView = HCSRViewT<SYCLBEllPackMatrix<ValueType>>;
   // clang-format on
 
  public:
   /** Constructeur de la classe */
-  SYCLBEllPackMatrix()
-  : IMatrixImpl(nullptr, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  {}
+  SYCLBEllPackMatrix() ;
 
   /** Constructeur de la classe */
-  SYCLBEllPackMatrix(const MultiMatrixImpl* multi_impl)
-  : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  {}
+  SYCLBEllPackMatrix(const MultiMatrixImpl* multi_impl) ;
 
   /** Destructeur de la classe */
   virtual ~SYCLBEllPackMatrix();
@@ -112,6 +109,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   {
     return *m_profile1024;
   }
+
+  HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
 
   ValueType* getAddressData();
   ValueType* data();
@@ -131,7 +130,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
                   std::size_t nrows,
                   int const* kcol,
                   int const* cols,
-                  SimpleCSRInternal::DistStructInfo const& matrix_dist_info);
+                  SimpleCSRInternal::DistStructInfo const& matrix_dist_info,
+                  int block_size=1);
 
   SYCLBEllPackMatrix* cloneTo(const MultiMatrixImpl* multi) const;
 
@@ -147,7 +147,31 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   Integer getAllocSize() const { return m_local_size + m_ghost_size; }
 
+  Integer blockSize() const
+  {
+    if (block())
+    {
+       return block()->size();
+    }
+    else if (vblock()) {
+      return 1 ;
+    }
+    else {
+      return m_own_block_size ;
+    }
+  }
+
+  void setBlockSize(Integer block_size)
+  {
+    if(this->m_multi_impl)
+      const_cast<MultiMatrixImpl*>(this->m_multi_impl)->setBlockInfos(block_size) ;
+    else
+      m_own_block_size = block_size;
+  }
+
   bool setMatrixValues(Arccore::Real const* values, bool only_host);
+
+  void copy(SYCLBEllPackMatrix const& matrix) ;
 
   void notifyChanges();
   void endUpdate();
@@ -158,8 +182,15 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   void addLMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
   void addUMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
+  void multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+
+  void multDiag(SYCLVector<ValueType>& y) const ;
+  void computeDiag(SYCLVector<ValueType>& y) const;
+
   void multInvDiag(SYCLVector<ValueType>& y) const;
   void computeInvDiag(SYCLVector<ValueType>& y) const;
+
+  void scal(SYCLVector<ValueType> const& diag) ;
 
   const DistStructInfo& getDistStructInfo() const { return m_matrix_dist_info; }
 
@@ -173,9 +204,29 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
     return m_recv_policy;
   }
 
-  MatrixInternal1024* internal() { return m_matrix1024; }
+  MatrixInternal1024* internal() { return m_matrix1024.get(); }
 
-  MatrixInternal1024 const* internal() const { return m_matrix1024; }
+  MatrixInternal1024 const* internal() const { return m_matrix1024.get(); }
+
+  void allocateDevicePointers(std::size_t nrows,
+                              std::size_t nnz,
+                              IndexType** rows,
+                              IndexType** ncols,
+                              IndexType** cols,
+                              ValueType** values) const ;
+
+  void freeDevicePointers(IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
+  void copyDevicePointers(std::size_t nrows,
+                          std::size_t nnz,
+                          IndexType* rows,
+                          IndexType* ncols,
+                          IndexType* cols,
+                          ValueType* values) const ;
+
 
  private:
   class IsLocal
@@ -196,14 +247,16 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   };
 
   // clang-format off
-  ProfileInternal1024*                    m_profile1024     = nullptr ;
-  MatrixInternal1024*                     m_matrix1024      = nullptr;
+  std::unique_ptr<ProfileInternal1024>    m_profile1024;
+  std::unique_ptr<MatrixInternal1024>     m_matrix1024;
 
-  ProfileInternal1024*                    m_ext_profile1024 = nullptr ;
+  std::unique_ptr<ProfileInternal1024>    m_ext_profile1024;
 
-  int                                     m_block_size      = 1024 ;
+  int                                     m_ellpack_size = 1024 ;
   std::vector<int>                        m_block_row_offset ;
   std::vector<int>                        m_ext_block_row_offset ;
+
+  Integer                                 m_own_block_size = 1 ;
 
   bool                                    m_is_parallel  = false;
   IMessagePassingMng*                     m_parallel_mng = nullptr;
@@ -214,6 +267,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   Integer                                 m_local_offset = 0;
   Integer                                 m_global_size  = 0;
   Integer                                 m_ghost_size   = 0;
+
 
   //SimpleCSRInternal::DistStructInfo            m_matrix_dist_info;
   DistStructInfo                               m_matrix_dist_info;

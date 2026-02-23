@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorReduceUnitTest.cc                                (C) 2000-2025 */
+/* AcceleratorReduceUnitTest.cc                                (C) 2000-2026 */
 /*                                                                           */
 /* Service de test des réductions sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -154,7 +154,6 @@ initializeTest()
 void AcceleratorReduceUnitTest::
 executeTest()
 {
-
   info() << "ExecuteReduceTest policy=" << m_queue.executionPolicy();
   info() << "UseReducePolicy = Grid";
   m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
@@ -219,10 +218,19 @@ _executeTestDataType(Int32 nb_iteration)
 
   // Les tests suivants avec les réductions historiques ne sont pas supportés en SYCL
   if (m_queue.executionPolicy() != eExecutionPolicy::SYCL) {
+    info() << "Check reduction V1 (sync)";
     _executeTestReduceSum(nb_iteration, t1, sum);
     _executeTestReduceMin(nb_iteration, t1, min_value);
     _executeTestReduceMax(nb_iteration, t1, max_value);
-  }
+
+    // Test aussi en mode asynchrone
+    m_queue.setAsync(true);
+    info() << "Check reduction V1 (async)";
+    _executeTestReduceSum(nb_iteration, t1, sum);
+    _executeTestReduceMin(nb_iteration, t1, min_value);
+    _executeTestReduceMax(nb_iteration, t1, max_value);
+    m_queue.setAsync(false);
+}
 
   // Utilisation des kernels spécifiques
   _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);

@@ -122,9 +122,9 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.BUILD_DIR }}
-          echo '--'
+          echo '-- CAT /scripts/copyextlib_github.sh'
           cat /scripts/copyextlib_github.sh
-          echo '--'
+          echo '-- RUN SCRIPT /scripts/copyextlib_github.sh'
           bash /scripts/copyextlib_github.sh
 
       - name: Tar build artifact

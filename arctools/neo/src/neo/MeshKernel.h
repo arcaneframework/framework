@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKernel                                     (C) 2000-2025             */
+/* MeshKernel                                     (C) 2000-2026             */
 /*                                                                           */
 /* Brief code description                                                    */
 /*---------------------------------------------------------------------------*/
@@ -466,18 +466,18 @@ namespace MeshKernel
     }
 
     EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
-      Neo::print(m_rank) << "-- apply added algorithms with execution order ";
+      Neo::printer(m_rank) << "-- apply added algorithms with execution order ";
       switch (execution_order) {
       case AlgorithmExecutionOrder::FIFO:
-        Neo::print(m_rank) << "FIFO --" << std::endl;
+        Neo::printer(m_rank) << "FIFO --" << Neo::endline;
         std::for_each(m_algos.begin(), m_algos.end(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::LIFO:
-        Neo::print(m_rank) << "LIFO --" << std::endl;
+        Neo::printer(m_rank) << "LIFO --" << Neo::endline;
         std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::DAG:
-        Neo::print(m_rank) << "DAG --" << std::endl;
+        Neo::printer(m_rank) << "DAG --" << Neo::endline;
         _build_graph();
         try {
           auto sorted_graph = m_dag.topologicalSort();

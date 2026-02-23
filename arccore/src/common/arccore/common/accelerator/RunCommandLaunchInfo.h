@@ -47,7 +47,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative);
-  ~RunCommandLaunchInfo();
+  ~RunCommandLaunchInfo() noexcept(false);
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
 
@@ -91,6 +91,7 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
   bool m_is_need_barrier = false;
+  bool m_is_forced_need_barrier = false;
   bool m_is_cooperative_launch = false;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   KernelLaunchArgs m_kernel_launch_args;

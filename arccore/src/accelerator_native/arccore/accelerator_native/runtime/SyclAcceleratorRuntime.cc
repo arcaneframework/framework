@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SyclAcceleratorRuntime.cc                                   (C) 2000-2025 */
+/* SyclAcceleratorRuntime.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Runtime pour 'SYCL'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,7 @@
 
 namespace Arcane::Accelerator::Sycl
 {
+using Arcane::Accelerator::Impl::KernelLaunchArgs;
 
 #define ARCCORE_SYCL_FUNC_NOT_HANDLED \
   std::cout << "WARNING: SYCL: function not handled " << A_FUNCINFO << "\n"
@@ -339,7 +340,7 @@ class SyclRunQueueEvent
     // la bonne valeur de 'sycl::event'.
     sycl::event event = (static_cast<SyclRunQueueEvent*>(start_event))->m_sycl_event;
     // Si pas d'évènement associé, on ne fait rien pour éviter une exception
-    if (event==sycl::event())
+    if (event == sycl::event())
       return 0;
 
     bool is_submitted = event.get_info<sycl::info::event::command_execution_status>() == sycl::info::event_command_status::complete;
@@ -352,7 +353,7 @@ class SyclRunQueueEvent
 
   bool hasPendingWork() final
   {
-    ARCCORE_THROW(NotImplementedException,"hasPendingWork()");
+    ARCCORE_THROW(NotImplementedException, "hasPendingWork()");
   }
 
  private:
@@ -449,6 +450,30 @@ class SyclRunnerRuntime
     return {};
   }
 
+  KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                           const void* kernel_ptr,
+                                           Int64 total_loop_size) override
+  {
+    Int32 shared_memory = orig_args.sharedMemorySize();
+    if (orig_args.isCooperative()) {
+      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
+      // que le maximum qui peut résider sur le GPU.
+      // Int32 nb_thread = orig_args.nbThreadPerBlock();
+      Int32 nb_block = orig_args.nbBlockPerGrid();
+      // Avec Sycl, il n'y a pas de moyen de récupérer le nombre maximal
+      // de blocs actifs pour une fonction donnée et du nombre de threads.
+      // On suppose qu'on peut prendre au maximum 4 blocks par SM.
+      int nb_block_per_sm = 4;
+      int max_block = nb_block_per_sm * m_multi_processor_count;
+      if (nb_block > max_block) {
+        KernelLaunchArgs modified_args(orig_args);
+        modified_args.setNbBlockPerGrid(max_block);
+        return modified_args;
+      }
+    }
+    return orig_args;
+  }
+
   void fillDevicesAndSetDefaultQueue(bool is_verbose);
   sycl::queue& defaultQueue() const { return *m_default_queue; }
   sycl::device& defaultDevice() const { return *m_default_device; }
@@ -465,6 +490,7 @@ class SyclRunnerRuntime
   std::unique_ptr<sycl::device> m_default_device;
   std::unique_ptr<sycl::context> m_default_context;
   std::unique_ptr<sycl::queue> m_default_queue;
+  int m_multi_processor_count = 0;
 
  private:
 
@@ -508,7 +534,7 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 void SyclRunnerRuntime::
 fillDevicesAndSetDefaultQueue(bool is_verbose)
 {
-  if (is_verbose){
+  if (is_verbose) {
     for (auto platform : sycl::platform::get_platforms()) {
       std::cout << "Platform: "
                 << platform.get_info<sycl::info::platform::name>()
@@ -520,7 +546,14 @@ fillDevicesAndSetDefaultQueue(bool is_verbose)
   if (is_verbose)
     std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
               << "\nVersion=" << device.get_info<sycl::info::device::version>()
-              << std::endl;
+              << "\nDriverVersion=" << device.get_info<sycl::info::device::driver_version>()
+              << "\nMaxComputeUnits=" << device.get_info<sycl::info::device::max_compute_units>()
+              << "\nMaxWorkGroupSize=" << device.get_info<sycl::info::device::max_work_group_size>()
+              << "\nLocalMemSize=" << device.get_info<sycl::info::device::local_mem_size>()
+              << "\nGlobalMemSize=" << device.get_info<sycl::info::device::global_mem_size>()
+              << "\nMaxMemAllocSize=" << device.get_info<sycl::info::device::max_mem_alloc_size>()
+              << "\n";
+  m_multi_processor_count = device.get_info<sycl::info::device::max_compute_units>();
   // Pour l'instant, on prend comme file par défaut la première trouvée
   // et on ne considère qu'un seul device accessible.
   _init(device);

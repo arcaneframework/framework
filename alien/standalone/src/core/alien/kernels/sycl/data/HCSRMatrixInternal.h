@@ -50,6 +50,7 @@ namespace Alien
     typedef sycl::buffer<ValueType, 1>       ValueBufferType;
     typedef sycl::buffer<IndexType, 1>       IndexBufferType;
 
+
     class HypreProfile
     {
     public:

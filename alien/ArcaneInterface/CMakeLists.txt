@@ -40,6 +40,9 @@ set(USE_AXLSTAR TRUE)
 set(USE_ARCCON TRUE)
 set(USE_PROJECT_CONFIG_HEADER TRUE)
 set(REQUIRE_INSTALL_PROJECTTARGETS TRUE)
+set(BUILDSYSTEM_INSTALL_TARGETS TRUE)
+set(BUILDSYSTEM_INSTALL_EXPORT TRUE)
+
 set(Arccon_USE_CMAKE_CONFIG TRUE)
 set(Arccore_USE_CMAKE_CONFIG TRUE)
 set(Axlstar_USE_CMAKE_CONFIG TRUE)
@@ -63,35 +66,33 @@ set(HDF5_USE_CMAKE_CONFIG TRUE)
 set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 
 # Path to configuration files for Alien
-set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-# Path to local build-system
-set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
+set(ALIEN_CMAKE_CONFIG_PATH "${INFRA_BUILDSYSTEM_PATH}/alien")
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
 
-include(${ALIEN_CMAKE_CONFIG_PATH}/Functions.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/Functions.cmake)
 
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
-  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
+  include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultOptions.cmake)
 endif()
 
 # root file for packages (if defined)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackageFile.cmake)
 
 # default metas (win32/linux)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultMetas.cmake)
 
 if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
   # default compilation options
-  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
+  include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultCompilationFlags.cmake)
 endif()
 
 # default packages (mono et glib)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/LoadDefaultPackages.cmake)
 
 # default languages  (axl)
 # NB: after packages
@@ -99,10 +100,10 @@ include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
 #include(LoadDefaultLanguages)
 
 # Alien Options
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienOptions.cmake)
 
 # Alien's external dependencies
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienPackages.cmake)
 
 # Include Arcane cmake functions
 include(${ARCANE_CMAKE_COMMANDS})
@@ -145,7 +146,7 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienLegacyConfigFile.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/alien/LoadAlienLegacyConfigFile.cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -198,12 +199,46 @@ add_subdirectory(modules/plugins)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+createLibrary(alien_plugins EXPORT alien/AlienPluginsExport.h)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
+addSources(alien_plugins ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
+if(TARGET Alien::arcane_tools)
+  linkLibraries(alien_plugins Alien::arcane_tools)
+endif()
+if(TARGET Alien::external_packages)
+linkLibraries(alien_plugins Alien::external_packages)
+endif()
+if(TARGET Alien::ifpen_solvers)
+linkLibraries(alien_plugins Alien::ifpen_solvers)
+endif()
+if(TARGET Alien::trilinos)
+linkLibraries(alien_plugins Alien::trilinos)
+endif()
+if(TARGET Alien::hpddm)
+linkLibraries(alien_plugins Alien::hpddm)
+endif()
+if(TARGET Alien::composyx)
+linkLibraries(alien_plugins Alien::composyx)
+endif()
+if(TARGET Alien::alien_core_solvers)
+linkLibraries(alien_plugins Alien::alien_core_solvers)
+endif()
+if(TARGET Alien::Alien_core_sycl_solver)
+linkLibraries(alien_plugins Alien::Alien_core_sycl_solver)
+endif()
+if(TARGET Alien::interface_c)
+linkLibraries(alien_plugins Alien::interface_c)
+endif()
+
+commit(alien_plugins)
+
+
 GenerateCMakeConfig()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-include(${ALIEN_BUILDSYSTEM_PATH}/FinishBuildSystem.cmake)
+include(${INFRA_BUILDSYSTEM_PATH}/tools/FinishBuildSystem.cmake)
 
 message_separator()
 

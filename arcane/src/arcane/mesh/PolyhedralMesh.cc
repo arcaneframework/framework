@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                           (C) 2000-2025 */
+/* PolyhedralMesh.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
@@ -62,6 +62,7 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "neo/Mesh.h"
+#include "neo/Utils.h"
 #include "ItemConnectivityMng.h"
 
 #include "arcane/core/ItemPrinter.h"
@@ -796,6 +797,8 @@ namespace mesh
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this]
                                     (Neo::Mesh::ConnectivityPropertyType const& neo_connectivity,
                                      Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+                                auto rank = arcane_source_item_family->mesh()->parallelMng()->commRank();
+                                Neo::printer(rank) << "==Algorithm update Arcane connectivity: "<< neo_connectivity.name() << Neo::endline;
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
                                 auto connectivity = m_mesh.getConnectivity(source_family, target_family, neo_connectivity.name());
@@ -816,23 +819,26 @@ namespace mesh
                                 auto connectivity_index_size = connectivity_proxy.arrayPropertyIndexSize();
                                 item_internal_connectivity_list->_setConnectivityIndex(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
-                              });
+                              },Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
       // If FaceToCellConnectivity Add face flags II_Boundary, II_SubdomainBoundary, II_HasFrontCell, II_HasBackCell
       if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
         std::string flag_definition_output_property_name{ "EndOfFlagDefinition" };
         source_family.addScalarProperty<Neo::utils::Int32>(flag_definition_output_property_name);
+        // update Face flags after connectivity add
         mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_add_output_property_name }, Neo::MeshKernel::OutProperty{ source_family, flag_definition_output_property_name },
-                                [arcane_source_item_family, this, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
+                                [arcane_source_item_family, arcane_target_item_family, target_item_uids_local=std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
                                   auto current_face_index = 0;
                                   auto arcane_faces = arcane_source_item_family->itemInfoListView();
+                                  Int32UniqueArray target_item_lids(target_item_uids_local.size());
+                                  arcane_target_item_family->itemsUniqueIdToLocalId(target_item_lids,target_item_uids_local,false);
                                   for (auto face_lid : source_items.m_future_items.new_items) {
                                     Face current_face = arcane_faces[face_lid].toFace();
-                                    if (target_item_uids_local[2 * current_face_index + 1] == NULL_ITEM_LOCAL_ID) {
+                                    if (target_item_lids[2 * current_face_index + 1] == NULL_ITEM_LOCAL_ID) {
                                       // Only back cell or none
-                                      Int32 mod_flags = (target_item_uids_local[2 * current_face_index] != NULL_ITEM_LOCAL_ID) ? (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst) : 0;
+                                      Int32 mod_flags = (target_item_lids[2 * current_face_index] != NULL_ITEM_LOCAL_ID) ? (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst) : 0;
                                       _setFaceInfos(mod_flags, current_face);
                                     }
-                                    else if (target_item_uids_local[2 * current_face_index] == NULL_ITEM_LOCAL_ID) {
+                                    else if (target_item_lids[2 * current_face_index] == NULL_ITEM_LOCAL_ID) {
                                       // Only front cell or none
                                       _setFaceInfos(ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst, current_face);
                                     }

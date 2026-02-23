@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.cc                                  (C) 2000-2025 */
+/* SharedMemoryParallelMng.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -102,6 +103,7 @@ class SharedMemoryParallelMng::Impl
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
+  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -118,10 +120,16 @@ class SharedMemoryParallelMng::Impl
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
+  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  {
+    return m_alloc.get();
+  }
+
  private:
 
   SharedMemoryParallelMng* m_parallel_mng;
   SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator;
+  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/

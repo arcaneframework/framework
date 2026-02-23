@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.inst.h                                           (C) 2000-2024 */
+/* Array2Data.inst.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
 #include "arcane/core/datatype/IDataOperation.h"
@@ -524,8 +525,8 @@ setAllocationInfo(const DataAllocationInfo& v)
 template<typename DataType> void Array2DataT<DataType>::
 changeAllocator(const MemoryAllocationOptions& alloc_info)
 {
-  ARCANE_UNUSED(alloc_info);
-  ARCANE_THROW(NotImplementedException,"changeAllocator for 2D Array");
+  m_value.changeAllocator(alloc_info);
+  m_allocation_info.setMemoryLocationHint(alloc_info.memoryLocationHint());
 }
 
 /*---------------------------------------------------------------------------*/

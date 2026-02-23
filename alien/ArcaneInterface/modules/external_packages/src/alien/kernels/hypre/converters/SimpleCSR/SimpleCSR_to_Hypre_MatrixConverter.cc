@@ -84,13 +84,13 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
       *sourceImpl.internal();
 
-  Arccore::Integer data_count = 0;
+  Arccore::Integer nnz = 0;
   Arccore::Integer pos = 0;
   Arccore::Integer max_line_size = 0;
   Arccore::UniqueArray<int> sizes(localSize);
   Arccore::UniqueArray<int> row_uids(localSize);
   for (Arccore::Integer row = 0; row < localSize; ++row) {
-    data_count += profile.getRowSize(row);
+    nnz += profile.getRowSize(row);
     sizes[pos] = profile.getRowSize(row);
     row_uids[pos] = localOffset + row;
     max_line_size = std::max(max_line_size, profile.getRowSize(row));
@@ -109,9 +109,34 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
            << "[" << jlower << ":" << jupper << "]";
   });
   {
-
     if (not targetImpl.initMatrix(ilower, iupper, jlower, jupper, sizes)) {
       throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre Initialisation failed");
+    }
+    auto values = matrixInternal.getValues();
+    Arccore::Real const* values_ptr = values.data() ;
+    auto cols = profile.getCols();
+    int block2_size = values.size()/nnz ;
+    Arccore::UniqueArray<Arccore::Real> cxr_val;
+    if(block2_size>1)
+    {
+      cxr_val.resize(nnz);
+      for(int k=0;k<nnz;++k)
+      {
+        cxr_val[k] = values[k*block2_size] ;
+      }
+      values_ptr = cxr_val.data() ;
+      {
+        auto kcol = profile.kcol() ;
+        for(int irow=0;irow<localSize;++irow)
+        {
+          std::cout<<"MAT["<<irow<<"]:";
+          for(int k=kcol[irow];k<kcol[irow+1];++k)
+          {
+            std::cout<<values_ptr[k]<<" ";
+          }
+          std::cout<<std::endl ;
+        }
+      }
     }
 
     if(targetImpl.getMemoryType() == BackEnd::Memory::Host )
@@ -119,32 +144,14 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
       alien_info([&] {
           cout() << "Copy values From Host to Host";
         });
-      // Buffer de construction
-      Arccore::UniqueArray<double> values(std::max(localSize, max_line_size));
-      Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
-      indices.resize(std::max(localSize, max_line_size));
 
-      Arccore::ConstArrayView<Arccore::Real> m_values = matrixInternal.getValues();
-      Arccore::ConstArrayView<Arccore::Integer> cols = profile.getCols();
-      Arccore::Integer icount = 0;
-      for (Arccore::Integer irow = 0; irow < localSize; ++irow) {
-        int row = localOffset + irow;
-        int ncols = profile.getRowSize(irow);
-        Arccore::Integer jpos = 0;
-        for (Arccore::Integer k = 0; k < ncols; ++k) {
-          indices[jpos] = cols[icount];
-          values[jpos] = m_values[icount];
-          ++jpos;
-          ++icount;
-        }
-
-        const bool success =
-            targetImpl.setMatrixValues(1, &row, &ncols, indices.data(), values.data());
-
-        if (not success) {
-          throw Arccore::FatalErrorException(A_FUNCINFO,
-              Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
-        }
+      const bool success = targetImpl.setMatrixValues(localSize,
+                                                      row_uids.data(),
+                                                      sizes.data(),
+                                                      cols.data(),
+                                                      values_ptr) ;
+      if (not success) {
+        throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot set Hypre Matrix Values from Host to Host");
       }
     }
     else
@@ -153,19 +160,17 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
       cout() << "Copy values From Host to Device";
       });
 
-      auto values = matrixInternal.getValues();
       auto cols = profile.getCols();
       const bool success = targetImpl.setMatrixValuesFrom(localSize,
-                                                          data_count,
+                                                          nnz,
                                                           row_uids.data(),
                                                           sizes.data(),
                                                           cols.data(),
-                                                          values.data(),
+                                                          values_ptr,
                                                           BackEnd::Memory::Host) ;
       if (not success) {
         throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot set Hypre Matrix Values from Host to Device");
       }
-
     }
   }
   if (not targetImpl.assemble()) {
@@ -188,13 +193,13 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
       *sourceImpl.internal();
 
   Arccore::Integer max_line_size = 0;
-  Arccore::Integer data_count = 0;
+  Arccore::Integer nnz = 0;
   Arccore::Integer pos = 0;
   Arccore::UniqueArray<int> sizes(localSize * block_size);
   for (Arccore::Integer row = 0; row < localSize; ++row) {
     Arccore::Integer row_size = profile.getRowSize(row) * block_size;
     for (Arccore::Integer ieq = 0; ieq < block_size; ++ieq) {
-      data_count += row_size;
+      nnz += row_size;
       sizes[pos] = row_size;
       ++pos;
     }

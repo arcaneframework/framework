@@ -32,11 +32,11 @@ using namespace Arcane::Accelerator;
 
 extern "C++" Int64
 _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
-                       Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
+                       Int32 nb_value, Int32 nb_part, Int32 nb_loop);
 
-void _doTestCooperativeLaunch(bool use_accelerator)
+void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
 {
-  Accelerator::Initializer x(use_accelerator, 0);
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
   Runner runner(x.executionPolicy());
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())
@@ -48,7 +48,7 @@ void _doTestCooperativeLaunch(bool use_accelerator)
   nb_value = 10000000;
   expected_value = 100000040000000;
   nb_loop = 100;
-  nb_loop = 1;
+  nb_loop = 25;
 
   Int32 nb_thread = 256;
   Int32 nb_part = 1;
@@ -62,8 +62,7 @@ void _doTestCooperativeLaunch(bool use_accelerator)
   }
   //nb_loop = 1;
 
-  std::cout << "Using accelerator policy name=" << queue.executionPolicy() << "\n";
-  std::cout << "Sizeof (ReducerSum2<Int64>) = " << sizeof(ReducerSum2<Int64>) << " nb_loop=" << nb_loop << "\n";
+  std::cout << "Using accelerator policy name=" << queue.executionPolicy() << " nb_loop=" << nb_loop << "\n";
 
   eMemoryResource mem = queue.memoryResource();
   NumArray<Int64, MDDim1> host_c(eMemoryResource::Host);
@@ -76,19 +75,13 @@ void _doTestCooperativeLaunch(bool use_accelerator)
 
   NumArray<Int64, MDDim1> c(mem);
   c.copy(host_c);
-  //queue.prefetchMemory(MemoryPrefetchArgs(c.bytes()));
 
   nb_part = 1;
   for (Int32 k = 1; k < 5; ++k) {
     {
-      Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop, false);
+      Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop);
       Int64 v2 = v / nb_loop;
-      //ASSERT_EQ(v2, expected_value);
-    }
-    {
-      Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop, true);
-      Int64 v2 = v / nb_loop;
-      //ASSERT_EQ(v2, expected_value);
+      ASSERT_EQ(v2, expected_value);
     }
     nb_part *= 2;
   }

@@ -38,16 +38,27 @@ class CooperativeHostWorkItemGrid
  private:
 
   //! Constructeur pour l'hôte
-  explicit CooperativeHostWorkItemGrid()
+  explicit CooperativeHostWorkItemGrid(Int32 nb_block, Impl::ThreadGridSynchronizer* syncer)
+  : m_nb_block(nb_block)
+  , m_syncer(syncer)
   {}
 
  public:
 
+  //! Nombre de blocs dans la grille
+  Int32 nbBlock() const { return m_nb_block; }
+
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   void barrier()
   {
-    // TODO: A implementer pour le multi-threading via std::barrier()
+    if (m_syncer)
+      m_syncer->sync();
   }
+
+ private:
+
+  Int32 m_nb_block = 0;
+  Impl::ThreadGridSynchronizer* m_syncer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,6 +89,9 @@ class CooperativeDeviceWorkItemGrid
   {}
 
  public:
+
+  //! Nombre de blocs dans la grille
+  __device__ Int32 nbBlock() const { return m_grid_group.group_dim().x; }
 
   //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
   __device__ void barrier() { m_grid_group.sync(); }
@@ -120,8 +134,11 @@ class CooperativeWorkGroupLoopContext
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   constexpr CooperativeWorkGroupLoopContext(IndexType loop_index, Int32 group_index,
-                                            Int32 group_size, Int32 nb_active_item, IndexType total_size)
+                                            Int32 group_size, Int32 nb_active_item,
+                                            IndexType total_size, Int32 nb_block, Impl::ThreadGridSynchronizer* syncer)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
+  , m_nb_block(nb_block)
+  , m_syncer(syncer)
   {
   }
 
@@ -138,8 +155,13 @@ class CooperativeWorkGroupLoopContext
   __device__ CooperativeDeviceWorkItemGrid grid() const { return CooperativeDeviceWorkItemGrid{}; }
 #else
   //! Groupe courant
-  CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid{}; }
+  CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid(m_nb_block, m_syncer); }
 #endif
+
+ private:
+
+  Int32 m_nb_block = 0;
+  Impl::ThreadGridSynchronizer* m_syncer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -165,6 +187,9 @@ class SyclCooperativeDeviceWorkItemGrid
 
  public:
 
+  //! Nombre de blocs dans la grille
+  Int32 nbBlock() const { return static_cast<Int32>(m_nd_item.get_group_range(0)); }
+
   //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
   void barrier() { /* Not Yet Implemented */ }
 
@@ -188,10 +213,14 @@ class SyclCooperativeWorkGroupLoopContext
   friend CooperativeWorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupLoopContextBuilder;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
   }
@@ -220,21 +249,18 @@ class SyclCooperativeWorkGroupLoopContext
  */
 template <typename IndexType_>
 class CooperativeWorkGroupLoopRange
-: public WorkGroupLoopRangeBase<IndexType_>
+: public WorkGroupLoopRangeBase<true, IndexType_>
 {
  public:
 
   using LoopIndexType = CooperativeWorkGroupLoopContext<IndexType_>;
   using IndexType = IndexType_;
 
-  // Pour indiquer au KernelLauncher qu'on souhaite un lancement coopératif.
-  static constexpr bool isCooperativeLaunch() { return true; }
-
  public:
 
   CooperativeWorkGroupLoopRange() = default;
   explicit CooperativeWorkGroupLoopRange(IndexType total_nb_element)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
+  : WorkGroupLoopRangeBase<true, IndexType_>(total_nb_element)
   {}
 
  public:

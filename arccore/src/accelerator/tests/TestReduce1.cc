@@ -36,9 +36,9 @@ extern "C++" Int64
 _testReduceGridStride(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
                       Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
 
-void _doTestReduceDirect(bool use_accelerator)
+void _doTestReduceDirect(bool use_accelerator, Int32 max_allowed_thread)
 {
-  Accelerator::Initializer x(use_accelerator, 0);
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
   Runner runner(x.executionPolicy());
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())

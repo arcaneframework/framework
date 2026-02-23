@@ -112,6 +112,7 @@ void CartesianMeshAMRMng::
 endAdaptMesh()
 {
   m_cmesh->_internalApi()->cartesianPatchGroup().endAdaptMesh();
+  m_cmesh->_internalApi()->saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,6 +135,7 @@ setOverlapLayerSizeTopLevel(Int32 new_size) const
     return;
   }
   m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(new_size);
+  m_cmesh->_internalApi()->saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -147,6 +149,7 @@ disableOverlapLayer()
     return;
   }
   m_cmesh->_internalApi()->cartesianPatchGroup().setOverlapLayerSizeTopLevel(-1);
+  m_cmesh->_internalApi()->saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,6 +173,7 @@ mergePatches() const
   }
 
   m_cmesh->_internalApi()->cartesianPatchGroup().mergePatches();
+  m_cmesh->_internalApi()->saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,7 +188,7 @@ createSubLevel() const
     coarser->createCoarseCells();
   }
   else if(amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_cmesh->_internalApi()->cartesianMeshAMRPatchMng()->createSubLevel();
+    m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
   }
   else if(amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
@@ -192,6 +196,7 @@ createSubLevel() const
   else{
     ARCANE_FATAL("AMR is not enabled");
   }
+  m_cmesh->_internalApi()->saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/

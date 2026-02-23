@@ -7,13 +7,13 @@ generateAxl(alien_core_solvers
     INSTALL_GENERATED_FILES
     USER_INSTALL_PREFIX ALIEN
     )
-    
+
 addSources(alien_core_solvers
     linear_solver/arcane/AlienLinearSolver.cc
     )
-    
+
 if(ALIEN_USE_SYCL)
-addSources(alien_core_solvers
+addSources(alien_core_sycl_solvers
     linear_solver/arcane/AlienSYCLLinearSolver.cc
     )
 endif()

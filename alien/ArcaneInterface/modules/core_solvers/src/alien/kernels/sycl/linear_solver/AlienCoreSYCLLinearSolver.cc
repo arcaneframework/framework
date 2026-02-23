@@ -91,7 +91,20 @@ AlienCoreSYCLLinearSolver::init()
 }
 
 /*---------------------------------------------------------------------------*/
+void
+AlienCoreSYCLLinearSolver::setDiagScaling(IMatrix const& matrix)
+{
+  MatrixType const& matrixA = matrix.impl()->get<BackEnd::tag::sycl>();
+  BaseType::setDiagScaling(matrixA) ;
+}
 
+void
+AlienCoreSYCLLinearSolver::setDiagScaling(MatrixType const& matrix)
+{
+  using namespace Alien;
+  SolverStatSentry<AlienCoreSYCLLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  BaseType::setDiagScaling(matrix) ;
+}
 
 bool
 AlienCoreSYCLLinearSolver::solve(MatrixType const& matrixA,

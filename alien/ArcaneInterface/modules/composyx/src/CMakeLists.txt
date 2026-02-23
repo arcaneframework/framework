@@ -39,6 +39,8 @@ target_include_directories(alien_composyx PUBLIC
 
 commit(alien_composyx)
 
+add_library(Alien::composyx ALIAS alien_composyx)
+
 install(DIRECTORY alien
 	DESTINATION include
 	FILES_MATCHING PATTERN "*.h"

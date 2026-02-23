@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2025 */
+/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Pos-traitement au format VTK HDF.                                         */
 /*---------------------------------------------------------------------------*/
@@ -558,7 +558,8 @@ beginWrite(const VariableCollection& vars)
     _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, asConstSpan(&current_time));
 
     // Offset de la partie.
-    Int64 part_offset = (time_index - 1) * pm->commSize();
+    Int64 comm_size = pm->commSize();
+    Int64 part_offset = (time_index - 1) * comm_size;
     _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, asConstSpan(&part_offset));
 
     // Nombre de temps

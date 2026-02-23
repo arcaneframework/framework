@@ -37,13 +37,13 @@ namespace Internal {
 class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 {
  public:
-  typedef Internal::MatrixInternal MatrixInternal;
-  typedef Arccore::Real ValueType ;
-  typedef int           IndexType ;
+  using MatrixInternal = Internal::MatrixInternal ;
+  using ValueType      = Arccore::Real;
+  using IndexType      = int;
+  using HCSRView       = HCSRViewT<HypreMatrix>;
 
  public:
 
-  typedef HCSRViewT<HypreMatrix> HCSRView ;
 
   HypreMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~HypreMatrix();
@@ -88,6 +88,18 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
                           IndexType* cols,
                           ValueType* values) const ;
 
+  void allocateHostPointers(std::size_t nrows,
+                            std::size_t nnz,
+                            IndexType** ncols,
+                            IndexType** rows,
+                            IndexType** cols,
+                            ValueType** values) const ;
+
+  void freeHostPointers(IndexType* ncols,
+                        IndexType* rows,
+                        IndexType* cols,
+                        ValueType* values) const ;
+
   void copyHostToDevicePointers(std::size_t nrows,
                                 std::size_t nnz,
                                 const IndexType* rows_h,
@@ -99,6 +111,16 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
                                 IndexType* cols_d,
                                 ValueType* values_d) const ;
 
+  void copyDeviceToHostPointers(std::size_t nrows,
+                                std::size_t nnz,
+                                const IndexType* rows_h,
+                                const IndexType* ncols_h,
+                                const IndexType* cols_h,
+                                const ValueType* values_h,
+                                IndexType* rows_d,
+                                IndexType* ncols_d,
+                                IndexType* cols_d,
+                                ValueType* values_d) const ;
   HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) ;
 
  public:

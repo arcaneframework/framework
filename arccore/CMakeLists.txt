@@ -82,6 +82,8 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 
 # ----------------------------------------------------------------------------
 
+option(ARCCORE_ENABLE_DEPRECATED_WARNINGS "Are deprecated warnings enabled?" OFF)
+
 # Avant novembre 2025, on utilisait l'option 'ARCCORE_USE_MPI'.
 # Pour être compatible avec l'existant on la prend en compte si elle est spécifiée
 if (DEFINED ARCCORE_USE_MPI AND NOT DEFINED ARCCORE_ENABLE_MPI)
@@ -96,7 +98,7 @@ option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code cov
 option(ARCCORE_ENABLE_TBB "Is Arccore has support for OneTBB" ON)
 
 # Pour l'instant c'est obligatoire d'avoir la GLIB.
-set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
+set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccore ?" FORCE)
 
 # ----------------------------------------------------------------------------
 # Il ne faut surtout pas inclure le répertoire courante automatiquement
@@ -158,6 +160,11 @@ add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_fla
 # N'exporte pas par défaut les symboles
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
   target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+  if (ARCCORE_ENABLE_DEPRECATED_WARNINGS)
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wdeprecated})
+  else()
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -218,16 +225,48 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckArccoreTypeSize.cmake)
 # Ajoute support des tests. Il faut le faire avant d'ajouter les composants
 # car ces derniers en ont besoin.
 
-# Par défaut on exécute les tests sauf si cela est explicitement pas demandé.
-if (NOT DEFINED ARCCORE_WANT_TEST)
-  set(ARCCORE_WANT_TEST TRUE)
+# Avant 02/2026, les tests sont activés via la variable ARCCORE_WANT_TEST qui est
+# vrai par défaut. Dans ce cas, les tests ne sont réellement actifs que si google-test
+# est installé. Si ce n'est pas le cas on les désactive silencieusement.
+# Maintenant, on utilise ARCCORE_ENABLE_TESTS et s'il est
+# explicitement positionné alors il faut que google-test soit installé.
+# Par compatibilité avec l'existant, on supporte encore ARCCORE_WANT_TEST si
+# ARCCORE_ENABLE_TESTS n'est pas défini.
+if (DEFINED ARCCORE_ENABLE_TESTS)
+  message(STATUS "ARCCORE_ENABLE_TESTS = '${ARCCORE_ENABLE_TESTS}'")
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST TRUE)
+  endif ()
+else()
+  if (NOT DEFINED ARCCORE_WANT_TEST)
+    set(ARCCORE_WANT_TEST TRUE)
+  endif()
+  message(STATUS "Setting ARCCORE_ENABLE_TESTS from ARCCORE_WANT_TEST = ${ARCCORE_WANT_TEST}")
+  set(ARCCORE_ENABLE_TESTS "${ARCCORE_WANT_TEST}")
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST FALSE)
+  endif ()
 endif()
 
-if (ARCCORE_WANT_TEST)
+set(ARCCORE_ENABLE_TESTS ${ARCCORE_ENABLE_TESTS} CACHE BOOL "Are Arccore test enabled ?" FORCE)
+set(ARCCORE_NEED_INSTALLED_GTEST ${ARCCORE_NEED_INSTALLED_GTEST} CACHE BOOL "Are GTest force needed?" FORCE)
+
+if (ARCCORE_ENABLE_TESTS)
   enable_testing()
   find_package(GTest)
   if (GTEST_FOUND)
     include(GoogleTest)
+  else()
+    if (ARCCORE_NEED_INSTALLED_GTEST)
+      message(FATAL_ERROR
+        "Tests for Arccore are enabled but google-test is not found. "
+        "Install google-test or disable tests using -DARCCORE_ENABLE_TESTS=FALSE when running cmake command"
+      )
+    else ()
+      message(STATUS
+        "Tests for Arccore are enabled but google-test is not found."
+      )
+    endif()
   endif()
 endif()
 

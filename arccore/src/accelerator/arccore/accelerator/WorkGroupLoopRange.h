@@ -24,16 +24,60 @@
 #include <hip/hip_cooperative_groups.h>
 #endif
 
+#include <barrier>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Impl
+{
+
+class WorkGroupLoopContextBuilder;
+class WorkGroupSequentialForHelper;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Classe pour gérer la synchronisation de grille en multi-thread;
+class ThreadGridSynchronizer
+{
+ private:
+
+  class NullFunc
+  {
+   public:
+
+    void operator()() const noexcept { /* Nothing to do */ }
+  };
+
+ public:
+
+  explicit ThreadGridSynchronizer(Int32 nb_thread)
+  : m_barrier(nb_thread)
+  {}
+
+ public:
+
+  void sync() { m_barrier.arrive_and_wait(); }
+
+ private:
+
+  std::barrier<NullFunc> m_barrier;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::Impl
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
-namespace Impl
-{
-  class WorkGroupLoopContextBuilder;
-  class WorkGroupSequentialForHelper;
-} // namespace Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <typename IndexType_ = Int32>
 class HostWorkItem;
@@ -508,7 +552,9 @@ class WorkGroupLoopContext
 
   //! Ce constructeur est utilisé dans l'implémentation hôte.
   explicit constexpr WorkGroupLoopContext(IndexType loop_index, Int32 group_index, Int32 group_size,
-                                          Int32 nb_active_item, IndexType total_size)
+                                          Int32 nb_active_item, IndexType total_size,
+                                          [[maybe_unused]] Int32 nb_block,
+                                          [[maybe_unused]] Impl::ThreadGridSynchronizer* syncer)
   : BaseClass(loop_index, group_index, group_size, nb_active_item, total_size)
   {
   }
@@ -643,7 +689,7 @@ class SyclWorkGroupLoopContextBase
  protected:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, Int64 total_size)
+  explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, IndexType total_size)
   : m_nd_item(n)
   , m_total_size(total_size)
   {
@@ -663,7 +709,7 @@ class SyclWorkGroupLoopContextBase
  protected:
 
   sycl::nd_item<1> m_nd_item;
-  Int64 m_total_size = 0;
+  IndexType m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -681,10 +727,14 @@ class SyclWorkGroupLoopContext
   friend WorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupLoopContextBuilder;
 
+ public:
+
+  using IndexType = IndexType_;
+
  private:
 
   // Ce constructeur n'est utilisé que sur le device
-  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, Int64 total_size)
+  explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
   }
@@ -714,7 +764,7 @@ class SyclWorkGroupLoopContext
  * et être un multiple de 32.
  *
  */
-template <typename IndexType_>
+template <bool IsCooperativeLaunch, typename IndexType_>
 class WorkGroupLoopRangeBase
 {
  public:
@@ -731,10 +781,12 @@ class WorkGroupLoopRangeBase
 
  public:
 
+  static constexpr bool isCooperativeLaunch() { return IsCooperativeLaunch; }
+
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_nb_element; }
   //! Taille d'un block
-  constexpr Int32 blockSize() const { return m_block_size; }
+  constexpr IndexType blockSize() const { return m_block_size; }
   /*!
    * \brief Nombre de blocs.
    *
@@ -747,16 +799,16 @@ class WorkGroupLoopRangeBase
    *
    * \a nb_block doit être un multiple de 32.
    */
-  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(Int32 nb_block);
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(IndexType nb_block);
 
   //! Positionne la taille d'un bloc en fonction de la commande \a command
-  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(const RunCommand& command);
+  ARCCORE_ACCELERATOR_EXPORT void setBlockSize(RunCommand& command);
 
  private:
 
   IndexType m_nb_element = 0;
+  IndexType m_block_size = 0;
   Int32 m_nb_block = 0;
-  Int32 m_block_size = 0;
 
  private:
 
@@ -772,7 +824,7 @@ class WorkGroupLoopRangeBase
  */
 template <typename IndexType_>
 class WorkGroupLoopRange
-: public WorkGroupLoopRangeBase<IndexType_>
+: public WorkGroupLoopRangeBase<false, IndexType_>
 {
  public:
 
@@ -783,12 +835,8 @@ class WorkGroupLoopRange
 
   WorkGroupLoopRange() = default;
   explicit WorkGroupLoopRange(IndexType total_nb_element)
-  : WorkGroupLoopRangeBase<IndexType_>(total_nb_element)
+  : WorkGroupLoopRangeBase<false, IndexType_>(total_nb_element)
   {}
-
- public:
-
-  static constexpr bool isCooperativeLaunch() { return false; }
 };
 
 /*---------------------------------------------------------------------------*/

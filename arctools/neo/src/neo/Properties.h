@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Property                                        (C) 2000-2025             */
+/* Property                                        (C) 2000-2026             */
 /*                                                                           */
 /* Classes and tools for Property                                            */
 /*---------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ struct PropertyViewIterator
   using reference = DataType&;
   using PropertyViewIteratorType = PropertyViewIterator<DataType>;
   std::vector<int> const& m_indexes;
-  typename std::vector<int>::const_iterator m_indexes_interator;
+  std::vector<int>::const_iterator m_indexes_interator;
   DataType* m_data_iterator;
 
   DataType& operator*() const noexcept { return *m_data_iterator; }
@@ -142,7 +142,7 @@ class MeshScalarPropertyViewBase
   : m_item_lids(std::move(item_lids))
   , m_data_view(data_view) {}
 
-  int size() const noexcept { return m_item_lids.size(); }
+  [[nodiscard]] int size() const noexcept { return m_item_lids.size(); }
 
   PropertyViewIterator<DataType> begin() { return { m_item_lids, m_item_lids.begin()++, m_data_view.begin() + m_item_lids[0] }; }
   PropertyViewIterator<DataType> end() { return { m_item_lids, m_item_lids.end(), m_data_view.end() }; }
@@ -161,8 +161,8 @@ class MeshScalarPropertyView : public MeshScalarPropertyViewBase<DataType>
   : MeshScalarPropertyViewBase<DataType>(item_lids, data_view) {}
 
   DataType& operator[](int index) {
-    assert(("Error, exceeds property view size in MeshScalarPropertyView::operator[index]", index < Base::size()));
-    assert(("Error, index must be > 0 in MeshScalarPropertyView::operator[index] ", index >= 0));
+    NEO_ASSERT(index < Base::size(), "Error, exceeds property view size in MeshScalarPropertyView::operator[index]");
+    NEO_ASSERT(index >= 0, "Error, index must be > 0 in MeshScalarPropertyView::operator[index] ");
     return Base::m_data_view[Base::m_item_lids[index]];
   }
 };
@@ -180,8 +180,8 @@ class MeshScalarPropertyConstView : public MeshScalarPropertyViewBase<DataType>
   : MeshScalarPropertyViewBase<DataType>(item_lids, data_view) {}
 
   DataType const& operator[](int index) const {
-    assert(("Error, exceeds property view size in MeshScalarPropertyView::operator[index]", index < Base::size()));
-    assert(("Error, index must be > 0 in MeshScalarPropertyConstView::operator[index] ", index >= 0));
+    NEO_ASSERT(index < Base::size(), "Error, exceeds property view size in MeshScalarPropertyView::operator[index]");
+    NEO_ASSERT(index >= 0, "Error, index must be > 0 in MeshScalarPropertyConstView::operator[index] ");
     return Base::m_data_view[Base::m_item_lids[index]];
   }
 };
@@ -210,7 +210,7 @@ class MeshArrayPropertyViewBase
    *
    * @return the number of items in the view
    */
-  int size() const noexcept { return m_item_lids.size(); }
+  [[nodiscard]] int size() const noexcept { return m_item_lids.size(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -227,8 +227,8 @@ class MeshArrayPropertyView : public MeshArrayPropertyViewBase<DataType>
   : MeshArrayPropertyViewBase<DataType>(std::move(item_lids), data_view, offsets_view, indexes_view) {}
 
   Neo::utils::Span<DataType> operator[](int index) {
-    assert(("Error, exceeds property view size in MeshArrayPropertyView::operator[index] ", index < Base::size()));
-    assert(("Error, index must be > 0 in MeshArrayPropertyView::operator[index] ", index >= 0));
+    NEO_ASSERT(index < Base::size(), "Error, exceeds property view size in MeshArrayPropertyView::operator[index] ");
+    NEO_ASSERT(index >= 0, "Error, index must be > 0 in MeshArrayPropertyView::operator[index] ");
     return utils::Span<DataType>{ &Base::m_data_view[Base::m_indexes_view[Base::m_item_lids[index]]], Base::m_offsets_view[Base::m_item_lids[index]] };
   }
 };
@@ -247,8 +247,8 @@ class MeshArrayPropertyConstView : public MeshArrayPropertyViewBase<DataType>
   : MeshArrayPropertyViewBase<DataType>(std::move(item_lids), data_view, offsets_view, indexes_view) {}
 
   Neo::utils::ConstSpan<DataType> operator[](int index) const {
-    assert(("Error, exceeds property view size in MeshArrayPropertyConstView::operator[index] ", index < Base::size()));
-    assert(("Error, index must be > 0 in MeshArrayPropertyConstView::operator[index] ", index >= 0));
+    NEO_ASSERT(index < Base::size(), "Error, exceeds property view size in MeshArrayPropertyConstView::operator[index] ");
+    NEO_ASSERT(index >= 0, "Error, index must be > 0 in MeshArrayPropertyConstView::operator[index] ");
     return utils::ConstSpan<DataType>{ &Base::m_data_view[Base::m_indexes_view[Base::m_item_lids[index]]], Base::m_offsets_view[Base::m_item_lids[index]] };
   }
 };
@@ -265,7 +265,7 @@ class PropertyBase
   explicit PropertyBase(std::string name)
   : m_name(std::move(name)) {}
 
-  std::string name() const noexcept {
+  [[nodiscard]] std::string name() const noexcept {
     return m_name;
   }
 };
@@ -316,14 +316,14 @@ class ArrayPropertyT : public PropertyBase
   explicit ArrayPropertyT(std::string name)
   : PropertyBase(std::move(name)) {}
 
-  std::size_t size() const noexcept { return m_data.size(); };
+  [[nodiscard]] std::size_t size() const noexcept { return m_data.size(); };
 
   void resize(int new_size) { m_data.resize(new_size); }
 
   void reserve(int new_size) { m_data.reserve(new_size); }
 
   void init(std::vector<DataType> initial_values) {
-    assert((m_data.empty(), ("Cannot call ArrayPropertyT::init when the property already contains value")));
+    NEO_ASSERT(m_data.empty(), "Cannot call ArrayPropertyT::init when the property already contains value");
     m_data = std::move(initial_values);
   }
 
@@ -342,10 +342,9 @@ class ArrayPropertyT : public PropertyBase
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss  << "= Print array property " << m_name << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss  << "= Print array property " << m_name << Neo::endline;
     utils::printContainer(oss, m_data,"Data");
-    Neo::print(rank) << oss.str() << std::endl;
   }
 
   utils::Span<DataType> view() { return utils::Span<DataType>{ m_data.data(), m_data.size() }; }
@@ -386,7 +385,7 @@ class MeshScalarPropertyT : public PropertyBase
       append(item_range, std::vector<DataType>(item_range.size(), value));
   }
 
-  bool isInitializableFrom(const ItemRange& item_range) const { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
+  [[nodiscard]] bool isInitializableFrom(const ItemRange& item_range) const { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
 
   /*!
    * @brief Fill an \b empty property with an array of values indexed by a range. May copy or move the values.
@@ -396,7 +395,7 @@ class MeshScalarPropertyT : public PropertyBase
    */
   void init(const ItemRange& item_range, std::vector<DataType> values) {
     // data must be empty
-    assert(("Property must be empty and item range contiguous to call init", isInitializableFrom(item_range)));
+    NEO_ASSERT(isInitializableFrom(item_range), "Property must be empty and item range contiguous to call init");
     m_data = std::move(values);
   }
 
@@ -409,7 +408,7 @@ class MeshScalarPropertyT : public PropertyBase
   void append(const ItemRange& item_range, const std::vector<DataType>& values, DataType default_value = DataType{}) {
     if (item_range.size() == 0)
       return;
-    assert(("item_range and values sizes differ", item_range.size() == values.size()));
+    NEO_ASSERT(item_range.size() == values.size(), "item_range and values sizes differ");
     auto max_item = utils::maxItem(item_range);
     if (max_item >= m_data.size())
       m_data.resize(max_item + 1, default_value);
@@ -420,13 +419,13 @@ class MeshScalarPropertyT : public PropertyBase
   }
 
   DataType& operator[](utils::Int32 item) {
-    assert(("Item local id must be < max local id, In MeshScalarPropertyT[]", item < m_data.size()));
-    assert(("Item local id must be >0 in MeshScalarPropertyT::[item_lid]", item >= 0));
+    NEO_ASSERT(item < (int)m_data.size(), "Item local id must be < max local id, In MeshScalarPropertyT[]");
+    NEO_ASSERT(item >= 0, "Item local id must be >0 in MeshScalarPropertyT::[item_lid]");
     return m_data[item];
   }
   DataType const& operator[](utils::Int32 item) const {
-    assert(("Item local id must be < max local id, In MeshScalarPropertyT[]", item < m_data.size()));
-    assert(("Item local id must be >0 in MeshScalarPropertyT::[item_lid]", item >= 0));
+    NEO_ASSERT(item < (int)m_data.size(), "Item local id must be < max local id, In MeshScalarPropertyT[]");
+    NEO_ASSERT(item >= 0, "Item local id must be >0 in MeshScalarPropertyT::[item_lid]");
     return m_data[item];
   }
   std::vector<DataType> operator[](std::vector<utils::Int32> const& items) const {
@@ -441,8 +440,7 @@ class MeshScalarPropertyT : public PropertyBase
     if (items.size() == 0)
       return std::vector<DataType>{};
     // check bounds
-    assert(("Max input item lid > max local id, In MeshScalarPropertyT[]",
-            *(std::max_element(items.begin(), items.end())) < (int)m_data.size()));
+    NEO_ASSERT(*(std::max_element(items.begin(), items.end())) < (int)m_data.size(), "Max input item lid > max local id, In MeshScalarPropertyT[]");
 
     std::vector<DataType> values;
     values.reserve(items.size());
@@ -454,15 +452,14 @@ class MeshScalarPropertyT : public PropertyBase
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss << "= Print mesh scalar property " << m_name << " size = " << size() << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss << "= Print mesh scalar property " << m_name << " size = " << size() << Neo::endline;
     utils::printContainer(oss, m_data, "Data");
-    Neo::print(rank) << oss.str() << std::endl;
   }
 
   utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.data(), m_data.size() }; }
 
-  std::size_t size() const { return m_data.size(); }
+  [[nodiscard]] std::size_t size() const { return m_data.size(); }
 
   void clear() {
     m_data.clear();
@@ -503,7 +500,7 @@ class MeshScalarPropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class MeshArrayPropertyProxyT;
+struct MeshArrayPropertyProxyT;
 
 template <typename DataType>
 class MeshArrayPropertyT : public PropertyBase
@@ -512,14 +509,16 @@ class MeshArrayPropertyT : public PropertyBase
    public:
 
     using PropertyDataType = DataType;
-    using PropertyOffsetType = int;
-    using PropertyIndexType = int;
+    using PropertyOffsetType = utils::Int32;
+    using PropertyIndexType = utils::Int32;
 
  private:
   std::vector<DataType> m_data;
   std::vector<PropertyOffsetType> m_offsets;
   std::vector<PropertyIndexType> m_indexes;
-  int m_data_size;
+  std::vector<PropertyIndexType> m_sizes;
+  int m_data_size = 0;
+  int m_data_capacity = 0;
 
  public:
 
@@ -536,10 +535,14 @@ class MeshArrayPropertyT : public PropertyBase
   * @param allocate_data: decides if data is allocated (otherwise only sizes array are constructed). Do not allocate data if init is used after.
   */
   void resize(std::vector<int> sizes, bool allocate_data = false) { // only 2 moves if a rvalue is passed. One copy + one move if lvalue
-    m_offsets = std::move(sizes);
-    _updateIndexes();
-    if (allocate_data)
-      m_data.resize(_computeSizeFromOffsets(m_offsets));
+    m_sizes = std::move(sizes);
+    m_data_size = _computeCumulatedSize(m_sizes);
+    auto are_offsets_updated = _updateOffsets();
+    if (are_offsets_updated) {
+      _updateIndexes();
+      if (allocate_data)
+        m_data.resize(m_data_capacity);
+    }
   }
   bool isInitializableFrom(const ItemRange& item_range) { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
 
@@ -547,13 +550,23 @@ class MeshArrayPropertyT : public PropertyBase
    * @brief Initialize an \b empty array property. Must call resize first.
    * @param item_range must be a contiguous, 0-starting item range
    * @param values: to be efficient a rvalue should be passed (temporary or moved array).
-   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   * This method tries to avoid copy via move construct. Works only if a rvalue is passed for \a values argument. Property must be empty.
    */
   void init(const ItemRange& item_range, std::vector<DataType> values) {
     if (item_range.isEmpty() && values.empty()) return;
-    assert(("Property must be empty and item range contiguous to call init", isInitializableFrom(item_range)));
-    assert(("call resize before init", !item_range.isEmpty() && m_data_size != 0));
+    NEO_ASSERT(isInitializableFrom(item_range), "Property must be empty and item range contiguous to call init");
+    NEO_ASSERT(!item_range.isEmpty() && m_data_size != 0, "call resize before init");
     m_data = std::move(values);
+  }
+
+  void init(std::vector<int> sizes, std::vector<DataType> values) {
+    NEO_ASSERT(values.size() == (std::size_t)std::accumulate(sizes.begin(), sizes.end(), 0), "sizes and values are not compatible");
+    if (sizes.empty() || values.empty()) return;
+    m_offsets = std::move(sizes);
+    _updateIndexes();
+    m_data = std::move(values);
+    m_sizes = m_offsets;
+    m_data_size = _computeCumulatedSize(m_sizes);
   }
 
   /*!
@@ -566,42 +579,42 @@ class MeshArrayPropertyT : public PropertyBase
     if (item_range.size() == 0)
       return;
     // todo: see how to handle new element add or remove impact on property (size/values)
-    assert(item_range.size() == nb_values_per_item.size());
-    assert(("connected items array size and nb_values_per_item size are not compatible",
-            values.size() == std::accumulate(nb_values_per_item.begin(), nb_values_per_item.end(), 0)));
-    if (utils::minItem(item_range) >= m_offsets.size())
+    NEO_ASSERT(item_range.size() == (int)nb_values_per_item.size(), "item_range and nb_values_per_item sizes differ");
+    NEO_ASSERT(values.size() == (std::size_t)std::accumulate(nb_values_per_item.begin(), nb_values_per_item.end(), 0), "connected items array size and nb_values_per_item size are not compatible");
+    if (utils::minItem(item_range) >= (int)m_offsets.size())
       _appendByBackInsertion(item_range, values, nb_values_per_item); // only new items
     else
       _appendByReconstruction(item_range, values, nb_values_per_item); // includes existing items
   }
 
   utils::Span<DataType> operator[](const utils::Int32 item) {
-    assert(("Item local id must be < max local id, In MeshArrayPropertyT[item_lid]", item < m_offsets.size()));
-    assert(("Item local id must be >=0 in MeshArrayPropertyT::[item_lid]", item >= 0));
-    return utils::Span<DataType>{ &m_data[m_indexes[item]], m_offsets[item] };
+    NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
+    NEO_ASSERT(item >= 0, "Item local id must be >=0 in MeshArrayPropertyT::[item_lid]");
+    return utils::Span<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
   utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
-    assert(("Item local id must be < max local id, In MeshArrayPropertyT[item_lid]", item < m_offsets.size()));
-    assert(("Item local id must be >0 in MeshArrayPropertyT::[item_lid]", item >= 0));
-    return utils::ConstSpan<DataType>{ &m_data[m_indexes[item]], m_offsets[item] };
+    NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
+    NEO_ASSERT(item >= 0, "Item local id must be >0 in MeshArrayPropertyT::[item_lid]");
+    return utils::ConstSpan<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
   void debugPrint(int rank = 0) const {
     if constexpr (ndebug)
       return;
-    std::ostringstream oss;
-    oss << "= Print mesh array property " << m_name << std::endl;
+    Neo::NeoOutputStream oss{traceLevel(),rank};
+    oss << "= Print mesh array property " << m_name << Neo::endline;
     utils::printContainer(oss,m_data, "Data");
-    utils::printContainer(oss,m_offsets, "Offsets");
+    utils::printContainer(oss,m_sizes, "Sizes");
+    utils::printContainer(oss,m_offsets, "Offsets (capacity)");
     utils::printContainer(oss,m_indexes, "Indexes");
-    Neo::print(rank) << oss.str() << std::endl;
+    oss << Neo::endline;
   }
 
   /*!
    * @return number of items of property support
    */
-  int size() const noexcept {
+  [[nodiscard]] int size() const noexcept {
     return m_offsets.size();
   }
 
@@ -609,7 +622,15 @@ class MeshArrayPropertyT : public PropertyBase
    *
    * @return an array with the size of each item array
    */
-  utils::ConstSpan<int> sizes() const noexcept {
+  [[nodiscard]] utils::ConstSpan<PropertyOffsetType> sizes() const noexcept {
+    return { m_sizes.data(), m_sizes.size() };
+  }
+
+  /*!
+   *
+   * @return an array with the capacity of each item array
+   */
+  [[nodiscard]] utils::ConstSpan<PropertyOffsetType> capacity() const noexcept {
     return { m_offsets.data(), m_offsets.size() };
   }
 
@@ -617,7 +638,7 @@ class MeshArrayPropertyT : public PropertyBase
    *
    * @return sum of each item array size
    */
-  int cumulatedSize() const noexcept {
+  [[nodiscard]] int cumulatedSize() const noexcept {
     return m_data_size;
   }
 
@@ -656,23 +677,46 @@ class MeshArrayPropertyT : public PropertyBase
   auto end() noexcept { return m_data.end(); }
   auto end() const noexcept { return m_data.end(); }
 
+  auto removeValues(MeshArrayPropertyT<utils::Int32> const& removed_value_indexes) {
+    NEO_ASSERT(removed_value_indexes.size() == size(), "removed_value_indexes size must be equal to property size");
+    if (size() == 0) return;
+    ItemRange item_range{ ItemLocalIds{ {}, 0, (int)m_offsets.size() } };
+    for (auto item : item_range) {
+      NEO_ASSERT(removed_value_indexes[item].size() <= m_sizes[item],
+        "Cannot remove more element than contained in the item array, In MeshArrayPropertyT::removeValues");
+      if (removed_value_indexes[item].size() >= m_sizes[item]) {
+        m_sizes[item] = 0;
+        continue;
+      }
+      for (auto removed_value_index : removed_value_indexes[item]) {
+        NEO_ASSERT(removed_value_index < m_sizes[item], "removed_value_index must be < item array size, In MeshArrayPropertyT::removeValues");
+        Neo::printer() << "Remove value " << (*this)[item][removed_value_index] << " with index " << removed_value_index << " from item " << item << Neo::endline;
+        std::swap(m_data[m_indexes[item] + removed_value_index], m_data[m_indexes[item] + m_sizes[item] - 1]);
+        --m_sizes[item];
+      }
+    }
+    m_data_size = _computeCumulatedSize(m_sizes);
+  }
+
  private:
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
-    Neo::print() << "Append in MeshArrayPropertyT by reconstruction" << std::endl;
+    // SdC debug
+    Neo::printer() << "Append in MeshArrayPropertyT by reconstruction. Prop: " << m_name << Neo::endline;
     // Compute new offsets
     std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size())
       new_offsets.resize(utils::maxItem(item_range) + 1); // todo ajouter MeshArrayPropertyT::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
-      new_offsets[item] = nb_connected_item_per_item[index++];
+      new_offsets[item] = nb_connected_item_per_item[index];
+      ++index;
     }
     // Compute new indexes
     std::vector<int> new_indexes;
     _computeIndexesFromOffsets(new_indexes, new_offsets);
     // Compute new values
-    auto new_data_size = _computeSizeFromOffsets(new_offsets);
-    std::vector<DataType> new_data(new_data_size);
+    m_data_capacity = _computeCumulatedSize(new_offsets);
+    std::vector<DataType> new_data(m_data_capacity);
     // copy new_values
     auto global_index = 0;
     std::vector<bool> marked_items(new_offsets.size(), false);
@@ -694,12 +738,16 @@ class MeshArrayPropertyT : public PropertyBase
     m_offsets = std::move(new_offsets);
     m_indexes = std::move(new_indexes);
     m_data = std::move(new_data);
-    m_data_size = new_data_size;
+    m_sizes.resize(m_offsets.size());
+    for (auto item : item_range) {
+      m_sizes[item] =  m_offsets[item];
+    }
+    m_data_size = _computeCumulatedSize(m_sizes);
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
     if (item_range.isContiguous()) {
-      Neo::print() << "Append in MeshArrayPropertyT by back insertion, contiguous range" << std::endl;
+      Neo::printer() << "Append in MeshArrayPropertyT by back insertion, contiguous range" << Neo::endline;
       auto max_existing_lid = m_offsets.size() - 1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid + 1) {
@@ -710,15 +758,27 @@ class MeshArrayPropertyT : public PropertyBase
                 std::back_inserter(m_offsets));
       std::copy(values.begin(), values.end(), std::back_inserter(m_data));
       _updateIndexes();
+      // update sizes
+      m_sizes.resize(m_offsets.size());
+      for (auto item : item_range) {
+        m_sizes[item] =  m_offsets[item];
+        m_data_size += m_offsets[item];
+      }
     }
     else {
-      Neo::print() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << std::endl;
+      Neo::printer() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << Neo::endline;
       m_offsets.resize(utils::maxItem(item_range) + 1);
       auto index = 0;
       for (auto item : item_range)
         m_offsets[item] = nb_connected_item_per_item[index++];
       m_data.resize(m_data.size() + values.size(), DataType());
       _updateIndexes();
+      // update sizes
+      m_sizes.resize(m_offsets.size());
+      for (auto item : item_range) {
+        m_sizes[item] =  m_offsets[item];
+        m_data_size += m_offsets[item];
+      }
       index = 0;
       for (auto item : item_range) {
         auto connected_items = (*this)[item];
@@ -731,7 +791,7 @@ class MeshArrayPropertyT : public PropertyBase
 
   void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
-    m_data_size = _computeSizeFromOffsets(m_offsets);
+    m_data_capacity = _computeCumulatedSize(m_offsets);
   }
 
   void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets) {
@@ -739,14 +799,35 @@ class MeshArrayPropertyT : public PropertyBase
     auto i = 0, offset_sum = 0;
     for (auto& index : new_indexes) {
       index = offset_sum;
-      offset_sum += new_offsets[i++];
+      offset_sum += new_offsets[i];
+      if (new_offsets[i] == 0) index = std::max(0, index - 1); // current index has no value
+      ++i;
     }
     // todo use algo version instead with more recent compilers (gcc >=9, clang >=5)
     //std::exclusive_scan(new_offsets.begin(),new_offsets.end(),new_indexes.begin(),0);
   }
 
-  int _computeSizeFromOffsets(std::vector<int> const& new_offsets) {
-    return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
+  int _computeCumulatedSize(std::vector<int> const& sizes) {
+    return std::accumulate(sizes.begin(), sizes.end(), 0);
+  }
+
+  bool _updateOffsets() {
+    if (m_offsets.empty()) {
+      m_offsets = m_sizes;
+      return true;
+    }
+    auto index = 0;
+    auto are_offsets_updated = false;
+    for (auto size : m_sizes) {
+      NEO_ASSERT(size >= 0, "Negative size in MeshArrayPropertyT::resize");
+      auto& offset = m_offsets[index];
+      if (size > offset) {
+        offset = size;
+        are_offsets_updated = true;
+      }
+      ++index;
+    }
+    return are_offsets_updated;
   }
 };
 
@@ -756,8 +837,8 @@ template <typename DataType>
 struct MeshArrayPropertyProxyT {
   MeshArrayPropertyT<DataType> & m_mesh_array_property;
 
-  using OffsetType = typename MeshArrayPropertyT<DataType>::PropertyOffsetType;
-  using IndexType = typename MeshArrayPropertyT<DataType>::PropertyIndexType;
+  using OffsetType = MeshArrayPropertyT<DataType>::PropertyOffsetType;
+  using IndexType  = MeshArrayPropertyT<DataType>::PropertyIndexType;
 
   DataType* arrayPropertyData() noexcept { return m_mesh_array_property.m_data.data(); }
   DataType const* arrayPropertyData() const noexcept { return m_mesh_array_property.m_data.data(); }
@@ -783,12 +864,12 @@ class ItemLidsProperty : public PropertyBase
 
   /*! Remove item with uids \a uids.
    *
-   * @param uids :unique ids of item to remove. If a non existing uid is given,
+   * @param uids :unique ids of item to remove. If a non-existing uid is given,
    * the code won't throw. The return range will contain a NULL_ITEM_LID for this
    * unexisting uid.
    * @return Returns a range  containing the local ids of removed items. They can
    * be used to update properties. If a local id is NULL_ITEM_LID, it means the
-   * corresponding uids was not existing.
+   * corresponding uid was not existing.
    *
    */
   ItemRange remove(std::vector<utils::Int64> const& uids) noexcept;
@@ -803,14 +884,14 @@ class ItemLidsProperty : public PropertyBase
 
   void debugPrint(int rank = 0) const;
 
-  utils::Int32 _getLidFromUid(utils::Int64 const uid) const;
+  utils::Int32 _getLidFromUid(utils::Int64 uid) const;
 
   void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const;
 
   std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const;
 
  private:
-  std::vector<Neo::utils::Int32> m_empty_lids;
+  std::vector<Neo::utils::Int32> m_available_lids;
   std::unordered_map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid;
   int m_last_id = -1;
 };

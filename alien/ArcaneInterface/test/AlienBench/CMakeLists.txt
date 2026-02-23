@@ -111,6 +111,10 @@ if (TARGET  alien_core_solvers)
     linkLibraries(alien_bench.exe alien_core_solvers)
 endif ()
 
+if (TARGET  alien_core_sycl_solvers)
+    linkLibraries(alien_bench.exe alien_core_sycl_solvers)
+endif ()
+
 if (TARGET  alien_external_packages)
     linkLibraries(alien_bench.exe alien_external_packages)
 endif ()
@@ -458,7 +462,6 @@ alien_test(
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
-if(TARGET eigen3)
 alien_test(
             BENCH bench.aliensolver-cheb-bs2
             NAME seq
@@ -467,7 +470,6 @@ alien_test(
             OPTIONS AlienBench-aliensolver-cheb-bs2.arc
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
-endif()
 
 alien_test(
             BENCH bench.aliensolver-cheb

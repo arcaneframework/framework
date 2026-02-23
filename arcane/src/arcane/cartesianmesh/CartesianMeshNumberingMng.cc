@@ -263,6 +263,24 @@ faceOffsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+CartCoord3 CartesianMeshNumberingMng::
+cellUniqueIdToCoord(Int64 uid, Int32 level) const
+{
+  return m_internal_api->cellUniqueIdToCoord(uid, level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CartCoord3 CartesianMeshNumberingMng::
+cellUniqueIdToCoord(Cell cell) const
+{
+  return m_internal_api->cellUniqueIdToCoord(cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CartCoord CartesianMeshNumberingMng::
 cellUniqueIdToCoordX(Int64 uid, Int32 level) const
 {

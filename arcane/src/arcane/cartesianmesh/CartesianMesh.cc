@@ -122,6 +122,8 @@ class CartesianMeshImpl
       return m_numbering_mng;
     }
     CartesianPatchGroup& cartesianPatchGroup() override { return m_cartesian_mesh->_cartesianPatchGroup(); }
+    // TODO : Moche.
+    void saveInfosInProperties() override { m_cartesian_mesh->_saveInfosInProperties(); }
 
    private:
 
@@ -1150,7 +1152,6 @@ _applyCoarse(const AMRZonePosition& zone_position)
 
     debug() << "Coarse with modifier() (for all mesh types)";
     m_patch_group.removeCellsInAllPatches(cells_local_id);
-    m_patch_group.applyPatchEdit(true, false);
 
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
     m_mesh->modifier()->coarsenItemsV2(true);

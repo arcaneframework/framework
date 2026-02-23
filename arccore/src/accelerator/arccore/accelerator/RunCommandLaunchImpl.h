@@ -46,30 +46,41 @@ class HostLaunchLoopRangeBase
  public:
 
   ARCCORE_ACCELERATOR_EXPORT
-  HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, Int32 block_size);
+  HostLaunchLoopRangeBase(IndexType total_size, Int32 nb_group, IndexType block_size);
 
  public:
 
   //! Nombre d'éléments à traiter
   constexpr IndexType nbElement() const { return m_total_size; }
   //! Taille d'un bloc
-  constexpr Int32 blockSize() const { return m_block_size; }
-  //! Nombre de groupes
+  constexpr IndexType blockSize() const { return m_block_size; }
+  //! Nombre de blocs
   constexpr Int32 nbBlock() const { return m_nb_block; }
-  //! Nombre d'éléments du dernier groupe
-  constexpr Int32 lastBlockSize() const { return m_last_block_size; }
-  //! Nombre d'éléments actifs pour le i-ème groupe
-  constexpr Int32 nbActiveItem(Int32 i) const
+  //! Nombre d'éléments du dernier bloc
+  constexpr IndexType lastBlockSize() const { return m_last_block_size; }
+  //! Nombre d'éléments actifs pour le i-ème bloc
+  constexpr IndexType nbActiveItem(Int32 i) const
   {
     return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
+  }
+  //! Synchronizer de la grille (non nul uniquement en multi-thread coopératif)
+  ThreadGridSynchronizer* threadGridSynchronizer() const
+  {
+    return m_thread_grid_synchronizer;
+  }
+  void setThreadGridSynchronizer(ThreadGridSynchronizer* v)
+  {
+    m_thread_grid_synchronizer = v;
   }
 
  private:
 
+  //! Cette instance est gérée par arcaneParallelFor(HostLaunchLoopRange<>...)
+  ThreadGridSynchronizer* m_thread_grid_synchronizer = nullptr;
   IndexType m_total_size = 0;
+  IndexType m_block_size = 0;
+  IndexType m_last_block_size = 0;
   Int32 m_nb_block = 0;
-  Int32 m_block_size = 0;
-  Int32 m_last_block_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -176,7 +187,8 @@ class WorkGroupSequentialForHelper
       // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
       // un multiple de \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
-      func(LoopIndexType(loop_index, i, group_size, nb_active, bounds.nbElement()), remaining_args...);
+      LoopIndexType li(loop_index, i, group_size, nb_active, bounds.nbElement(), bounds.nbBlock(), bounds.threadGridSynchronizer());
+      func(li, remaining_args...);
       loop_index += group_size;
     }
 
@@ -193,15 +205,10 @@ class WorkGroupSequentialForHelper
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ static void
 doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
-  //auto privatizer = privatize(func);
-  //auto& body = privatizer.privateCopy();
-
-  //using LoopIndexType = LoopBoundType::LoopBoundType::LoopIndexType;
-
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
+  // TODO: regarder s'il faut faire ce test
   if (i < bounds.nbOriginalElement()) {
     func(WorkGroupLoopContextBuilder::build(bounds.originalLoop()), remaining_args...);
   }
@@ -223,6 +230,7 @@ class doHierarchicalLaunchSycl
   {
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
+    // TODO: regarder s'il faut faire ce test
     if (i < bounds.nbOriginalElement()) {
       func(WorkGroupLoopContextBuilder::build(bounds.originalLoop(), x), remaining_args...);
     }
@@ -255,7 +263,10 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
   if (nb_orig_element == 0)
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
-  if (bounds.blockSize() == 0)
+  // En mode coopératif, il faut toujours appeler setBlockSize()
+  // pour être certain que la taille de bloc est cohérente sur l'hôte
+  // (en séquentiel, il ne faut qu'un seul bloc dans ce cas).
+  if ((bounds.blockSize() == 0) || bounds.isCooperativeLaunch())
     bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
   TrueLoopBoundType bounds2(bounds);
@@ -263,6 +274,7 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
     command.addNbThreadPerBlock(bounds.blockSize());
     bounds2.setNbStride(command.nbStride());
   }
+
   using HostLoopBoundType = HostLaunchLoopRange<LoopBoundType>;
 
   Impl::RunCommandLaunchInfo launch_info(command, bounds2.strideValue(), bounds.isCooperativeLaunch());
@@ -382,9 +394,12 @@ arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& fu
  * \brief Applique le fonctor \a func sur une boucle parallèle.
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
-arccoreParallelFor(Impl::HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,
+arccoreParallelFor(HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,
                    const Lambda& func, const RemainingArgs&... remaining_args)
 {
+  Int32 nb_thread = run_info.options().value().maxThread();
+  ThreadGridSynchronizer grid_sync(nb_thread);
+  bounds.setThreadGridSynchronizer(&grid_sync);
   auto sub_func = [=](Int32 begin_index, Int32 nb_loop) {
     Impl::WorkGroupSequentialForHelper::apply(begin_index, nb_loop, bounds, func, remaining_args...);
   };

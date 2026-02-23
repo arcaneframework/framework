@@ -176,6 +176,8 @@ renumberingFacesLevel0FromOriginalArcaneNumbering()
   if (!m_converting_numbering_face)
     return;
 
+  info() << "Renumbering faces of level 0...";
+
   UniqueArray<Int64> face_uid(nbFaceByCell());
   ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(m_ori_level)) {
     cellFaceUniqueIds(icell->uniqueId(), m_ori_level, face_uid);

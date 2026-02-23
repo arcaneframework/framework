@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableUnitTest.cc                                         (C) 2000-2024 */
+/* VariableUnitTest.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -104,8 +104,8 @@ class VariableUnitTest
 
   void _testReferences(Integer nb_ref);
   void _testUsed();
-  void _testRefersTo();
-  void _testSimpleView();
+  void _testRefersTo(bool shmem);
+  void _testSimpleView(bool shmem);
   void _checkException(Integer i);
   void _testAlignment();
   void _testSwap();
@@ -150,8 +150,10 @@ VariableUnitTest::
 void VariableUnitTest::
 executeTest()
 {
-  _testRefersTo();
-  _testSimpleView();
+  _testRefersTo(false);
+  _testRefersTo(true);
+  _testSimpleView(false);
+  _testSimpleView(true);
   _testUsed();
   _testSwap();
   _testAlignment();
@@ -259,7 +261,7 @@ _testUsed()
  * \brief Teste la méthode VariableRef::refersTo().
  */
 void VariableUnitTest::
-_testRefersTo()
+_testRefersTo(bool shmem)
 {
   info() << "Test " << A_FUNCINFO;
 
@@ -268,10 +270,16 @@ _testRefersTo()
   VariableCellReal null_var1(NullVariableBuildInfo{});
   VariableCellArrayReal null_array_var1(NullVariableBuildInfo{});
 
+  Int32 properties = 0;
+
+  if (shmem) {
+    properties = IVariable::PInShMem;
+  }
+
   // Teste refersTo() pour les variables 0D sur les entités du maillage
   {
     VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
-    VariableCellReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
+    VariableCellReal var2(VariableBuildInfo(mesh(), "CellRealTest2", properties));
     var2.fill(3.0);
 
     var1.refersTo(var2);
@@ -292,7 +300,7 @@ _testRefersTo()
     VariableCellArrayReal var1_bis(VariableBuildInfo(mesh(),"CellRealTest1"));
     var1.resize(5);
     var1.fill(4.2);
-    VariableCellArrayReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
+    VariableCellArrayReal var2(VariableBuildInfo(mesh(), "CellRealTest2"));
     var2.resize(3);
     var1.fill(7.5);
 
@@ -336,8 +344,8 @@ _testRefersTo()
     VariableArray2Real var1_bis(VariableBuildInfo(mesh(),"Array2RealTest1"));
     var1.resize(2,5);
     var1.fill(fill_value);
-    VariableArray2Real var2(VariableBuildInfo(mesh(),"Array2RealTest2"));
-    var2.resize(12,3);
+    VariableArray2Real var2(VariableBuildInfo(mesh(), "Array2RealTest2", properties));
+    var2.resize(12, 3);
     var1.fill(fill_value2);
 
     for( Integer i=0, n1=var1.dim1Size(); i<n1; ++i )
@@ -361,11 +369,17 @@ _testRefersTo()
  * \brief Teste un accès simple aux vues.
  */
 void VariableUnitTest::
-_testSimpleView()
+_testSimpleView(bool shmem)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
+  Int32 properties = 0;
+
+  if (shmem) {
+    properties = IVariable::PInShMem;
+  }
+
+  VariableCellReal var1(VariableBuildInfo(mesh(), "CellRealTest1", properties));
   VariableCellReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
   {
     info() << A_FUNCINFO << " Test simple view In/Out";

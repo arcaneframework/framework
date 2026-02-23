@@ -386,7 +386,7 @@ void StreamMatrixBuilderT<ValueT>::computeProfile()
   m_matrix_impl->allocate();
   m_matrix_impl->internal()->getValues().fill(0.);
 
-  Integer icount = 0;
+  //Integer icount = 0;
   Integer offset = 0;
   if (m_order_row_cols_opt) {
     for (Integer row = 0; row < m_local_size; ++row) {
@@ -404,7 +404,7 @@ void StreamMatrixBuilderT<ValueT>::computeProfile()
           upper_diag_offset[row] = offset + ordered_idx;
         }
         ++ordered_idx;
-        ++icount;
+        //++icount;
       }
       offset += m_row_size[row];
     }
@@ -422,7 +422,7 @@ void StreamMatrixBuilderT<ValueT>::computeProfile()
         if (!isLocal(col_uid))
           VALUE_OF(iter) += ghost_offset;
         cols[offset + VALUE_OF(iter)] = col_uid;
-        ++icount;
+        //++icount;
       }
       offset += m_row_size[row];
     }

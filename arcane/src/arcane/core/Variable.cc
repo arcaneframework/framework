@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2025 */
+/* Variable.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,7 @@
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include <map>
 #include <set>
@@ -557,6 +558,7 @@ property() const
   bool want_notemporary = false;
   bool want_exchange = false;
   bool want_persistant = false;
+  bool want_shmem = false;
 
   int property = 0;
   for (VarRefEnumerator i(this); i.hasNext(); ++i) {
@@ -582,6 +584,8 @@ property() const
       want_exchange = true;
     if (!(p & IVariable::PTemporary))
       want_notemporary = true;
+    if (!(p & IVariable::PInShMem))
+      want_shmem = true;
   }
 
   if (!want_dump)
@@ -604,6 +608,8 @@ property() const
     property |= IVariable::PNoExchange;
   if (!want_notemporary)
     property |= IVariable::PTemporary;
+  if (!want_shmem)
+    property |= IVariable::PInShMem;
 
   m_p->m_property = property;
   return m_p->m_property;
@@ -632,6 +638,17 @@ setUsed(bool is_used)
   eItemKind ik = itemKind();
 
   if (m_p->m_is_used) {
+    if (m_p->m_property & IVariable::PInShMem) {
+      IParallelMng* pm{};
+      if (m_p->m_mesh_handle.hasMesh()) {
+        pm = m_p->m_mesh_handle.mesh()->parallelMng();
+      }
+      else {
+        pm = subDomain()->parallelMng();
+      }
+      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+    }
+
     if (m_p->m_item_group.null() && ik != IK_Unknown) {
       _checkSetItemFamily();
       _checkSetItemGroup();

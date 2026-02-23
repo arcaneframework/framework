@@ -17,6 +17,6 @@ include(LoadAlienTest)
 alien_test(
         BENCH hypre_gtest
         NAME use_solve
-        PROCS 2
+        PROCS 1
         COMMAND hypre_gtest
 )

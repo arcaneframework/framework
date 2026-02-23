@@ -41,7 +41,7 @@
 
      <linear-solver name="HypreSolver">
         <exec-space>Device</exec-space>
-        <memory-type>Device</memory-type>
+        <memory-type>Host</memory-type>
         <solver>BiCGStab</solver>
         <num-iterations-max>1000</num-iterations-max>
         <stop-criteria-value>1e-8</stop-criteria-value>

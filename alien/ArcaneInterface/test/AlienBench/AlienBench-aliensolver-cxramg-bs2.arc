@@ -45,6 +45,7 @@
         <backend>SimpleCSR</backend>
         <solver>BCGS</solver>
         <preconditioner>CxrAMG</preconditioner>
+        <relax-solver>FILU0</relax-solver>
         <amg-solver name="HypreSolver">
            <solver>AMG</solver>
            <preconditioner>None</preconditioner>
@@ -53,10 +54,9 @@
            <verbose>true</verbose>
            <output-level>2</output-level>
         </amg-solver>
-
         <max-iter>1000</max-iter>
-        <tol>1.e-8</tol>
-        <output-level>2</output-level>
+        <tol>1.e-12</tol>
+        <output-level>1</output-level>
       </linear-solver>
   </alien-bench>
 </case>

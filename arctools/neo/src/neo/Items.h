@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Items                                     (C) 2000-2025                   */
+/* Items                                     (C) 2000-2026                   */
 /*                                                                           */
 /* Tooling to manipulate Mesh Items                                          */
 /*---------------------------------------------------------------------------*/
@@ -132,23 +132,29 @@ struct ItemIterator
   using difference_type = int;
   using pointer = int*;
   using reference = int;
-  explicit ItemIterator(ItemLocalIds item_indexes, int index)
+  explicit ItemIterator(ItemLocalIds const* item_indexes, int index)
   : m_index(index)
-  , m_item_indexes(item_indexes) {}
+  , m_item_indexes(item_indexes) {
+    NEO_ASSERT(item_indexes,("A valid ItemLocalIds pointer must be given to ItemIterator"));
+  }
   ItemIterator& operator++() {
     ++m_index;
     return *this;
   } // todo (handle traversal order...)
+
+  ItemIterator(ItemIterator const&) = default;
+  ItemIterator& operator=(ItemIterator const&) = default;
+
   ItemIterator operator++(int) {
     auto retval = *this;
     ++(*this);
     return retval;
   } // todo (handle traversal order...)
-  int operator*() const { return m_item_indexes(m_index); }
-  bool operator==(const ItemIterator& item_iterator) { return m_index == item_iterator.m_index; }
-  bool operator!=(const ItemIterator& item_iterator) { return !(*this == item_iterator); }
-  int m_index;
-  ItemLocalIds m_item_indexes;
+  int operator*() const { return (*m_item_indexes)(m_index); }
+  bool operator==(const ItemIterator& item_iterator) const { return m_index == item_iterator.m_index; }
+  bool operator!=(const ItemIterator& item_iterator) const { return !(*this == item_iterator); }
+  int m_index = -1;
+  ItemLocalIds const* m_item_indexes = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -160,14 +166,14 @@ struct ItemRange
 
   std::vector<utils::Int32> localIds() const { return m_item_lids.itemArray(); }
   bool isContiguous() const { return m_item_lids.m_non_contiguous_lids.empty(); };
-  ItemIterator begin() const { return ItemIterator{ m_item_lids, 0 }; }
-  ItemIterator end() const { return ItemIterator{ m_item_lids, m_item_lids.size() }; } // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
+  ItemIterator begin() const { return ItemIterator{ &m_item_lids, 0 }; }
+  ItemIterator end() const { return ItemIterator{ &m_item_lids, m_item_lids.size() }; } // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
   size_type size() const { return (size_type)m_item_lids.size(); }
   bool isEmpty() const { return size() == 0; }
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId(); }
   void clear() noexcept { m_item_lids.clear(); }
 
-  friend inline std::ostream& operator<<(std::ostream& os, const Neo::ItemRange& item_range) {
+  friend inline NeoOutputStream& operator<<(NeoOutputStream& os, const Neo::ItemRange& item_range) {
     os << "Item Range : lids ";
     for (auto lid : item_range.m_item_lids.m_non_contiguous_lids) {
       os << lid;
@@ -178,7 +184,7 @@ struct ItemRange
       os << i;
       os << " ";
     }
-    os << std::endl;
+    os << Neo::endline;
     return os;
   }
 };

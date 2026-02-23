@@ -17,6 +17,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/DynamicMachineMemoryWindowVariable.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -122,8 +123,12 @@ staticInitialize(ISubDomain* sd)
 void AMRPatchTesterModule::
 init()
 {
-
   m_cartesian_mesh = ICartesianMesh::getReference(mesh());
+  if (subDomain()->isContinue())
+    m_cartesian_mesh->recreateFromDump();
+  else {
+    m_cartesian_mesh->computeDirections();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,7 +138,7 @@ void AMRPatchTesterModule::
 compute()
 {
   _test1();
-  _reset();
+  //_reset();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,8 +151,6 @@ compute()
 void AMRPatchTesterModule::
 _reset()
 {
-  m_cartesian_mesh->computeDirections();
-
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   amr_mng.beginAdaptMesh(1, 0);
   amr_mng.endAdaptMesh();
@@ -161,7 +164,23 @@ _reset()
 void AMRPatchTesterModule::
 _test1()
 {
-  m_cartesian_mesh->computeDirections();
+  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
+
+  DynamicMachineMemoryWindowVariable var_sh(var);
+
+  auto var_compute = [&]() -> void {
+    debug() << "asArray().size() : " << var.asArray().size();
+    auto ranks = var_sh.machineRanks();
+    for (Int32 rank : ranks) {
+      debug() << "Sizeof rank " << rank << " : "
+              << var_sh.segmentView(rank).size();
+    }
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var[icell] = icell.localId();
+    }
+  };
+
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   for (Integer i = 0; i < 1; ++i) {
     {
@@ -169,6 +188,7 @@ _test1()
 
       _test1_1();
       _test1_2();
+      var_compute();
     }
     {
       amr_mng.beginAdaptMesh(2, 0);
@@ -180,6 +200,8 @@ _test1()
 
       _test1_1();
       _test1_2();
+
+      var_compute();
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -191,6 +213,7 @@ _test1()
 
       _test1_1();
       _test1_2();
+      var_compute();
     }
     {
       amr_mng.beginAdaptMesh(3, 0);
@@ -204,6 +227,7 @@ _test1()
 
       _test1_1();
       _test1_2();
+      var_compute();
     }
     {
       amr_mng.beginAdaptMesh(3, 1);
@@ -215,6 +239,19 @@ _test1()
 
       _test1_1();
       _test1_2();
+      var_compute();
+    }
+    {
+      amr_mng.beginAdaptMesh(4, 1);
+      amr_mng.adaptLevel(1);
+      amr_mng.adaptLevel(2);
+      amr_mng.endAdaptMesh();
+
+      _svgOutput("4Levels1First");
+
+      _test1_1();
+      _test1_2();
+      var_compute();
     }
   }
 }
@@ -542,7 +579,7 @@ _svgOutput(const String& name)
   Int32 comm_size = pm->commSize();
 
   // Exporte le patch au format SVG
-  String amr_filename = String::format("MeshPatch{0}-{1}-{2}.html", name, comm_rank, comm_size);
+  String amr_filename = String::format("MeshPatch_{0}_I{1}_P{2}-{3}.html", name, globalIteration(), comm_rank, comm_size);
   String amr_full_filename = subDomain()->exportDirectory().file(amr_filename);
   std::ofstream amr_ofile(amr_full_filename.localstr());
   amr_exporter.write(amr_ofile);

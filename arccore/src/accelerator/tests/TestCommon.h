@@ -26,7 +26,7 @@
 #define ARCCORE_TEST_DO_TEST_CUDA(name1, name2, func) \
   TEST(name1, name2##_cuda) \
   { \
-    func(true); \
+    func(true, 0); \
   }
 #else
 #define ARCCORE_TEST_DO_TEST_CUDA(name1, name2, func)
@@ -36,7 +36,7 @@
 #define ARCCORE_TEST_DO_TEST_HIP(name1, name2, func) \
   TEST(name1, name2##_hip) \
   { \
-    func(true); \
+    func(true, 0); \
   }
 #else
 #define ARCCORE_TEST_DO_TEST_HIP(name1, name2, func)
@@ -46,16 +46,26 @@
 #define ARCCORE_TEST_DO_TEST_SYCL(name1, name2, func) \
   TEST(name1, name2##_sycl) \
   { \
-    func(true); \
+    func(true, 0); \
   }
 #else
 #define ARCCORE_TEST_DO_TEST_SYCL(name1, name2, func)
 #endif
 
+#if defined(ARCCORE_HAS_ACCELERATOR_THREAD)
+#define ARCCORE_TEST_DO_TEST_TASK(name1, name2, func) \
+  TEST(name1, name2##_task4) \
+  { \
+    func(false, 4); \
+  }
+#else
+#define ARCCORE_TEST_DO_TEST_TASK(name1, name2, func)
+#endif
+
 #define ARCCORE_TEST_DO_TEST_SEQUENTIAL(name1, name2, func) \
   TEST(name1, name2) \
   { \
-    func(false); \
+    func(false, 0); \
   }
 
 //! Macro pour définir les tests en fonction de l'accélérateur
@@ -63,6 +73,7 @@
   ARCCORE_TEST_DO_TEST_CUDA(name1, name2, func); \
   ARCCORE_TEST_DO_TEST_HIP(name1, name2, func); \
   ARCCORE_TEST_DO_TEST_SYCL(name1, name2, func); \
+  ARCCORE_TEST_DO_TEST_TASK(name1, name2, func); \
   ARCCORE_TEST_DO_TEST_SEQUENTIAL(name1, name2, func);
 
 /*---------------------------------------------------------------------------*/

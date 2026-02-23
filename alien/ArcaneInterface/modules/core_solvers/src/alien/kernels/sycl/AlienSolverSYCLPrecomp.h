@@ -7,7 +7,7 @@
 #pragma once
 
 #include <alien/utils/Precomp.h>
-#include "alien/AlienCoreSolversPrecomp.h"
+#include "alien/AlienCoreSYCLSolversPrecomp.h"
 
 #define BEGIN_ALIENCOREINTERNAL_NAMESPACE                                                      \
   namespace Alien {                                                                      \

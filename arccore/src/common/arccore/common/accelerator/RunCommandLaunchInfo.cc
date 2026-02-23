@@ -22,6 +22,7 @@
 #include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
 #include "arccore/common/accelerator/internal/IRunnerRuntime.h"
+#include "arccore/common/accelerator/internal/RunCommandImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,11 +38,12 @@ _init()
 {
   m_queue_impl = m_command._internalQueueImpl();
   m_exec_policy = m_queue_impl->executionPolicy();
-
   // Le calcul des informations de kernel n'est utile que sur accélérateur
   if (isAcceleratorPolicy(m_exec_policy)) {
     _computeInitialKernelLaunchArgs();
     m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
+    // Si des réductions sont présentes, on force la barrière à la fin du kernel
+    m_is_forced_need_barrier = m_command.m_p->hasActiveReduction();
   }
 }
 
@@ -62,8 +64,8 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 RunCommandLaunchInfo::
 RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_cooperative)
 : m_command(command)
-, m_total_loop_size(total_loop_size)
 , m_is_cooperative_launch(is_cooperative)
+, m_total_loop_size(total_loop_size)
 {
   _init();
 }
@@ -72,7 +74,7 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_coopera
 /*---------------------------------------------------------------------------*/
 
 RunCommandLaunchInfo::
-~RunCommandLaunchInfo()
+~RunCommandLaunchInfo() noexcept(false)
 {
   // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
   // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
@@ -121,7 +123,7 @@ _doEndKernelLaunch()
   m_command._internalNotifyEndLaunchKernel();
 
   Impl::RunQueueImpl* q = m_queue_impl;
-  if (!q->isAsync() || m_is_need_barrier)
+  if (!q->isAsync() || m_is_need_barrier || m_is_forced_need_barrier)
     q->_internalBarrier();
 }
 

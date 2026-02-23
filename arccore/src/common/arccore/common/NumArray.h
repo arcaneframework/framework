@@ -181,15 +181,14 @@ class NumArray
   requires(Extents::isDynamic1D())
   : NumArray(v.size())
   {
-    this->m_data.copy(v);
+    copy(v);
   }
 
   //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
   NumArray(Span<const DataType> v)
   requires(Extents::isDynamic1D())
-  : NumArray(arccoreCheckArraySize(v.size()))
   {
-    this->m_data.copy(v);
+    copy(v.smallView());
   }
 
   NumArray(const ThatClass& rhs)

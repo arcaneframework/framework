@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOMng.cc                                            (C) 2000-2024 */
+/* VariableIOMng.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -49,6 +49,9 @@
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IParallelMng.h"
+
+#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 // TODO: gérer le hash en version 64 bits.
 
@@ -648,7 +651,20 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
         vbi = VariableBuildInfo(sd, base_name, mesh_name, family_name, property);
     }
     info(5) << "Create variable TYPE=" << full_name;
-    m_variable_mng->_createVariableFromType(vmd.fullType(), vbi);
+    VariableRef* variable_ref = m_variable_mng->_createVariableFromType(vmd.fullType(), vbi);
+
+    if (vbi.property() & IVariable::PInShMem) {
+      IParallelMng* pm{};
+      // Si la variable utilise un maillage, il sera créé par _readMeshesMetaData().
+      if (!mesh_name.null()) {
+        MeshHandle* mesh_handle = sd->meshMng()->findMeshHandle(mesh_name, true);
+        pm = mesh_handle->mesh()->parallelMng();
+      }
+      else {
+        pm = sd->parallelMng();
+      }
+      variable_ref->variable()->_internalApi()->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator()));
+    }
   }
 }
 

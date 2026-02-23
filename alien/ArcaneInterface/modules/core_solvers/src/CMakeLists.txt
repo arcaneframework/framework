@@ -47,6 +47,21 @@ set_target_properties(alien_core_solvers
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
 addSources(alien_core_solvers ${CMAKE_CURRENT_BINARY_DIR}/empty.cc)
 
+if(ALIEN_USE_SYCL)
+
+  createLibrary(alien_core_sycl_solvers
+    EXPORT alien/AlienCoreSyclSolversExport.h
+    )
+
+  set_target_properties(alien_core_sycl_solvers
+          PROPERTIES LINKER_LANGUAGE "CXX")
+
+
+  #Needed if no external packages are found !
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/emptysycl.cc)
+  addSources(alien_core_sycl_solvers ${CMAKE_CURRENT_BINARY_DIR}/emptysycl.cc)
+endif()
+
 if (TARGET arcane_core)
     set(AXL_OPTION_GENERATION_TYPE "ALL")
     set(NAMESPACE_TYPE "Arccore")
@@ -68,10 +83,6 @@ addDirectory(alien/kernels/common)
 
 addDirectory(alien/kernels/simple_csr)
 
-if(ALIEN_USE_SYCL)
-  addDirectory(alien/kernels/sycl)
-endif()
-
 
 if (TARGET arcane_core)
     linkLibraries(alien_core_solvers arcane_core arcane_std)
@@ -82,20 +93,6 @@ endif()
 if (TARGET Alien::alien_core)
     linkLibraries(alien_core_solvers Alien::alien_core)
 endif()
-
-if (TARGET Alien::alien_sycl)
-    linkLibraries(alien_core_solvers Alien::alien_sycl)
-endif()
-
-if (TARGET alien_kernel_sycl)
-    linkLibraries(alien_core_solvers alien_kernel_sycl)
-endif()
-
-if (TARGET alien_handlers_sycl)
-    linkLibraries(alien_core_solvers alien_handlers_sycl)
-endif()
-
-
 if (TARGET Alien::alien_semantic_ref)
     linkLibraries(alien_core_solvers Alien::alien_semantic_ref)
 endif()
@@ -117,6 +114,47 @@ target_include_directories(alien_core_solvers PUBLIC
 commit(alien_core_solvers)
 
 add_library(Alien::core_solvers ALIAS alien_core_solvers)
+
+if(ALIEN_USE_SYCL)
+
+  addDirectory(alien/kernels/sycl)
+
+  if (TARGET Alien::alien_sycl)
+    linkLibraries(alien_core_sycl_solvers Alien::alien_sycl)
+  endif()
+
+  if (TARGET alien_kernel_sycl)
+    linkLibraries(alien_core_sycl_solvers alien_kernel_sycl)
+  endif()
+
+  if (TARGET alien_handlers_sycl)
+    linkLibraries(alien_core_sycl_solvers alien_handlers_sycl)
+  endif()
+
+  if (TARGET Alien::alien_semantic_ref)
+    linkLibraries(alien_core_sycl_solvers Alien::alien_semantic_ref)
+  endif()
+
+  if (TARGET Alien::external_packages)
+    linkLibraries(alien_core_sycl_solvers Alien::external_packages)
+  endif()
+
+  linkLibraries(alien_core_sycl_solvers
+              Boost::program_options
+              BLAS::BLAS)
+
+  target_include_directories(alien_core_sycl_solvers PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>)
+
+  commit(alien_core_sycl_solvers)
+
+  add_library(Alien::core_sycl_solvers ALIAS alien_core_sycl_solvers)
+endif()
+
+
 
 install(DIRECTORY alien
 	DESTINATION include

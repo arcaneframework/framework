@@ -77,6 +77,9 @@ class CBLASMPIKernel
     auto z_ptr = z.getDataPtr();
     for (std::size_t i = 0; i < local_size; ++i) {
       z_ptr[i] = x_ptr[i] * y_ptr[i];
+#ifdef PRINT_DEBUG_INFO
+      std::cout<<"X Y Z ["<<i<<"] :  "<<x_ptr[i]<<"*"<<y_ptr[i]<<"="<<z_ptr[i]<<std::endl ;
+#endif
     }
   }
 

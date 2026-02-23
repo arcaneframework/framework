@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.cc                                           (C) 2000-2025 */
+/* MpiParallelMng.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,7 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
+#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
@@ -367,6 +368,7 @@ class MpiParallelMng::Impl
   explicit Impl(MpiParallelMng* pm)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
+  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -383,9 +385,15 @@ class MpiParallelMng::Impl
     return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createDynamicWindow(sizeof_segment, sizeof_type));
   }
 
+  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  {
+    return m_alloc.get();
+  }
+
  private:
 
   MpiParallelMng* m_parallel_mng;
+  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2023             */
+/* NeoBaseTest.cpp                                 (C) 2000-2026             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property2[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   item_range = { Neo::ItemLocalIds{ {}, 0, 2 } };
   values = { 0, 1, 1 };
@@ -182,7 +182,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property3[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 0, 2 } } };
@@ -238,7 +238,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
     for (auto value : array_property4[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
+  Neo::printer() << values_check << Neo::endline;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 2, 3 }, 0, 2 } };
@@ -285,11 +285,10 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
   EXPECT_EQ(mesh_array_property.view().size(),mesh_array_property_proxy.arrayPropertyDataSize());
   EXPECT_EQ(mesh_array_property.sizes().size(),mesh_array_property_proxy.arrayPropertyOffsetsSize());
   EXPECT_EQ(mesh_array_property.size(),mesh_array_property_proxy.arrayPropertyIndexSize()); // todo must be ok !!
-  auto mesh_array_property_sizes = mesh_array_property.sizes();
-  EXPECT_TRUE(std::equal(mesh_array_property_sizes.begin(), mesh_array_property_sizes.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
+  auto mesh_array_property_offsets = mesh_array_property.capacity();
+  EXPECT_TRUE(std::equal(mesh_array_property_offsets.begin(), mesh_array_property_offsets.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
   auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
-  EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_sizes.m_ptr);
-  return;
+  EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_offsets.m_ptr);
   [[maybe_unused]] auto property_values = mesh_array_property.view();
   [[maybe_unused]] auto property_data = mesh_array_property_proxy.arrayPropertyData();
   auto property_indexes = mesh_array_property_proxy.arrayPropertyIndex();
@@ -302,6 +301,86 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
     value_index += mesh_array_property[item].size();
     item_index++;
   }
+}
+
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestArrayProperty, test_mesh_array_property_new_init) {
+  Neo::MeshArrayPropertyT<Neo::utils::Int32> mesh_array_property{"mesh_array_property_new_init"};
+  std::vector<Neo::utils::Int32> sizes{0,1,2,0,1,2};
+  std::vector<Neo::utils::Int32> values(6);
+  std::iota(values.begin(), values.end(), 0);
+  mesh_array_property.init(sizes,values);
+  auto sizes_check = mesh_array_property.sizes();
+  EXPECT_TRUE(std::equal(sizes_check.begin(),sizes_check.end(),sizes.begin()));
+  std::vector<Neo::utils::Int32> values_check;
+  Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,6}};
+  for (auto item : item_range) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_check.push_back(item_value);
+    }
+  }
+  Neo::printer() << values_check;
+  EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
+}
+
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestArrayProperty, test_remove_item_values) {
+  Neo::MeshArrayPropertyT<Neo::utils::Int32> mesh_array_property{"mesh_array_property_remove_item_values"};
+  std::vector<Neo::utils::Int32> sizes{0,1,2,2,0,1};
+  int nb_item = sizes.size();
+  std::vector<Neo::utils::Int32> values(nb_item);
+  std::iota(values.begin(), values.end(), 0);
+  mesh_array_property.init(sizes,values);
+  mesh_array_property.debugPrint();
+  std::vector<Neo::utils::Int32> original_sizes{mesh_array_property.sizes().begin(),mesh_array_property.sizes().end()};
+  Neo::MeshArrayPropertyT<Neo::utils::Int32> removed_value_indexes{ "removed_value_indexes" };
+  // fill removed indexes
+  sizes = {0,0,1,2,0,1};
+  removed_value_indexes.init(sizes, {1,0,1,0});
+  mesh_array_property.removeValues(removed_value_indexes);
+  // check sizes
+  auto sizes_check = mesh_array_property.sizes();
+  std::vector<Neo::utils::Int32> ref_sizes{0,1,1,0,0,0};
+  EXPECT_EQ(sizes_check.size(),ref_sizes.size());
+  EXPECT_TRUE(std::equal(sizes_check.begin(),sizes_check.end(),ref_sizes.begin()));
+  auto ref_size = std::accumulate(ref_sizes.begin(), ref_sizes.end(),0);
+  EXPECT_EQ(mesh_array_property.cumulatedSize(),ref_size);
+  // check capacity
+  Neo::printer() << "mesh array capacity " << mesh_array_property.capacity() << Neo::endline;
+  Neo::printer() << "original capacity " << original_sizes << Neo::endline;
+  EXPECT_EQ(mesh_array_property.capacity().size(),original_sizes.size());
+  EXPECT_TRUE(std::equal(original_sizes.begin(),original_sizes.end(),mesh_array_property.capacity().begin()));
+  std::vector<Neo::utils::Int32> values_ref{0,1};
+  std::vector<Neo::utils::Int32> values_after_remove;
+  for (auto item : Neo::ItemRange{Neo::ItemLocalIds{{},0,nb_item}}) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_after_remove.push_back(item_value);
+    }
+  }
+  Neo::printer() << "values after remove " << values_after_remove << Neo::endline;
+  EXPECT_EQ(values_ref.size(),values_after_remove.size());
+  EXPECT_TRUE(std::equal(values_ref.begin(),values_ref.end(),values_after_remove.begin()));
+  // Remove one of the remaining value (the 0)
+  sizes = {0,0,1,0,0,0};
+  removed_value_indexes.init(sizes, {0});
+  mesh_array_property.removeValues(removed_value_indexes);
+  values_ref = {0};
+  values_after_remove.clear();
+  for (auto item : Neo::ItemRange{Neo::ItemLocalIds{{},0,nb_item}}) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_after_remove.push_back(item_value);
+    }
+  }
+  EXPECT_EQ(mesh_array_property.cumulatedSize(),1);
+  EXPECT_TRUE(std::equal(values_ref.begin(),values_ref.end(),values_after_remove.begin()));
+  // Remove last item
+  sizes = {0,1,0,0,0,0};
+  removed_value_indexes.init(sizes, {0});
+  mesh_array_property.removeValues(removed_value_indexes);
+  EXPECT_EQ(mesh_array_property.cumulatedSize(),0);
+    EXPECT_EQ(values_ref.size(),values_after_remove.size());
 }
 
 /*-----------------------------------------------------------------------------*/

@@ -145,6 +145,23 @@ void SYCLBEllPackMatrixMultT<ValueT>::_seqMult([[maybe_unused]] const UniqueArra
 }
 
 /*---------------------------------------------------------------------------*/
+template <typename ValueT>
+void SYCLBEllPackMatrixMultT<ValueT>::multDiag(VectorType const& y, VectorType& z) const
+{
+  m_matrix_impl.multDiag(y,z);
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrixMultT<ValueT>::multDiag(VectorType& y) const
+{
+  m_matrix_impl.multDiag(y);
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrixMultT<ValueT>::computeDiag(VectorType& y) const
+{
+  m_matrix_impl.computeDiag(y);
+}
 
 template <typename ValueT>
 void SYCLBEllPackMatrixMultT<ValueT>::multInvDiag(VectorType& y) const

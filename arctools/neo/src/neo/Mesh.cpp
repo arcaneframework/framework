@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.cpp                                        (C) 2000-2025             */
+/* Mesh.cpp                                        (C) 2000-2026             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ std::string Neo::Mesh::_connectivityOrientationPropertyName(std::string const& s
 /*-----------------------------------------------------------------------------*/
 
 Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept {
-  Neo::print(m_rank) << "= Add Family " << family_name << " in mesh " << name() << std::endl;
+  Neo::printer(m_rank) << "= Add Family " << family_name << " in mesh " << name() << Neo::endline;
   auto& item_family = m_families.push_back(item_kind, family_name);
   item_family.addMeshScalarProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
   return item_family;
@@ -79,10 +79,10 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   // Add items
   m_mesh_graph->addAlgorithm(Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
                              [&family, uids, &added_items, rank = m_rank](Neo::ItemLidsProperty& lids_property) {
-                               Neo::print(rank) << "== Algorithm: create items in family " << family.name() << std::endl;
+                               Neo::printer(rank) << "== Algorithm: create items in family " << family.name() << Neo::endline;
                                added_items = lids_property.append(uids);
                                lids_property.debugPrint(rank);
-                               Neo::print(rank) << "Inserted item range : " << added_items;
+                               Neo::printer(rank) << "Inserted item range : " << added_items;
                              });
   // register their uids
   m_mesh_graph->addAlgorithm(
@@ -90,7 +90,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   Neo::MeshKernel::OutProperty{ family, uniqueIdPropertyName(family.name()) },
   [&family, uids{ std::move(uids) }, &added_items, rank = m_rank]([[maybe_unused]] Neo::ItemLidsProperty const& item_lids_property,
                                                    Neo::MeshScalarPropertyT<Neo::utils::Int64>& item_uids_property) {
-    Neo::print(rank) << "== Algorithm: register item uids for family " << family.name() << std::endl;
+    Neo::printer(rank) << "== Algorithm: register item uids for family " << family.name() << Neo::endline;
     if (item_uids_property.isInitializableFrom(added_items)) {
       item_uids_property.init(added_items, std::move(uids)); // init can steal the input values
     }
@@ -115,9 +115,9 @@ void Neo::Mesh::_addConnectivityOrientationCheck(Neo::Family& source_family, Neo
   Neo::MeshArrayPropertyT<int> const& item_orientation,
   Neo::MeshScalarPropertyT<Neo::utils::Int64> const& item_uids,
   Neo::MeshScalarPropertyT<int>& item_orientation_check) {
-    Neo::print(rank) << "== Algorithm: check orientation in connectivity between "
+    Neo::printer(rank) << "== Algorithm: check orientation in connectivity between "
                  << source_family.name() << "  and  " << target_family.name()
-                 << std::endl;
+                 << Neo::endline;
     item_orientation_check.init(source_family.all(), 1);
     std::ostringstream exception_info;
     exception_info << "Connectivity orientation false for items\n";
@@ -146,7 +146,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
   Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
   [item_coords{ std::move(item_coords) }, &added_items, rank=m_rank](Neo::ItemLidsProperty const& item_lids_property,
                                                         Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
-    Neo::print(rank) << "== Algorithm: register item coords" << std::endl;
+    Neo::printer(rank) << "== Algorithm: register item coords" << Neo::endline;
     if (item_coords_property.isInitializableFrom(added_items)) {
       item_coords_property.init(
       added_items,

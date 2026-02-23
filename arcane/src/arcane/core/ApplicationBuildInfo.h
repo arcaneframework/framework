@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arccore/common/ArccoreApplicationBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,58 +27,10 @@ class CaseDatasetSource;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour initialiser une application.
- */
-class ARCANE_CORE_EXPORT ApplicationCoreBuildInfo
-{
-  class CoreImpl;
-
- public:
-
-  ApplicationCoreBuildInfo();
-  ApplicationCoreBuildInfo(const ApplicationCoreBuildInfo& rhs);
-  ~ApplicationCoreBuildInfo();
-  ApplicationCoreBuildInfo& operator=(const ApplicationCoreBuildInfo& rhs);
-
- public:
-
-  void setTaskImplementationService(const String& name);
-  void setTaskImplementationServices(const StringList& names);
-  StringList taskImplementationServices() const;
-
-  void setThreadImplementationService(const String& name);
-  void setThreadImplementationServices(const StringList& names);
-  StringList threadImplementationServices() const;
-
-  Int32 nbTaskThread() const;
-  void setNbTaskThread(Integer v);
-
- public:
-
-  void addParameter(const String& name, const String& value);
-  /*!
-   * \brief Analyse les arguments de \a args.
-   *
-   * On ne récupère que les arguments du style *-A,x=b,y=c*.
-   * La méthode setDefaultValues() est appelée à la fin de cette
-   * méthode.
-   */
-  void parseArgumentsAndSetDefaultsValues(const CommandLineArguments& args);
-  virtual void setDefaultValues();
-  virtual void setDefaultServices();
-
- protected:
-
-  CoreImpl* m_core = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Informations pour construire une instance de IApplication.
  */
 class ARCANE_CORE_EXPORT ApplicationBuildInfo
-: public ApplicationCoreBuildInfo
+: public ArccoreApplicationBuildInfo
 {
   class Impl;
 
