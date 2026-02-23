@@ -188,8 +188,8 @@
         </complex>
 
         <complex name="amgx" type="amgxOptType" minOccurs="0" maxOccurs="1">
-            <simple name="parameter-file" type="string" default="AMG_CLASSICAL_PMIS.json">
-                <description></description>
+            <simple name="parameter-file" type="string" default="">
+                <description>AMGX parameter file</description>
             </simple>
             <enumeration name="amg-algo" type="MCGSolver::AMG::eAmgAlgo" default="PMIS">
                 <description>AMG algorithm option, AGGREGATION or PMIS</description>

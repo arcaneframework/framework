@@ -298,14 +298,20 @@ MCGInternalLinearSolver::init()
   }
 
   if (!m_options->amgx().empty()) {
-    m_solver->setOpt(MCGSolver::eOptType::AmgXConfigFile,
-        std::string(localstr(m_options->amgx()[0]->parameterFile())));
-    if (m_options->amgx()[0]->parameterFile().empty())
+    if (m_options->amgx()[0]->parameterFile().empty()) {
       m_solver->setOpt(MCGSolver::eOptType::AmgAlgo, m_options->amgx()[0]->amgAlgo());
+    }
     else
+    {
+      m_solver->setOpt(MCGSolver::eOptType::AmgXConfigFile,
+        std::string(localstr(m_options->amgx()[0]->parameterFile())));
+
       alien_info([&]{
-        cout() << "Only parameter-file option is considered";
+          cout() << "Only parameter-file option is considered";
       });
+    }
+
+    m_solver->setOpt(m_options->amgx()[0]->update());
   }
 
   m_kernel = AlienKOpt2MCGKOpt::getKernelOption(
