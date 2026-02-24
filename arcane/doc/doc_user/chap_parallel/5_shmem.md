@@ -10,12 +10,13 @@ fenêtres mémoires.
 Une fenêtre mémoire est un espace mémoire alloué dans une partie de la mémoire accessible par tous les processus.
 Cette fenêtre sera découpée en plusieurs segments, un par processus.
 
-Deux implémentations différentes sont disponibles : une avec une taille constante, définie lors de la construction de
-l'objet et une autre avec une taille pouvant évoluer.
+Deux implémentations différentes sont disponibles : une implémentation avec tous les segments contigus et avec une
+taille constante, définie lors de la construction de l'objet et une autre implémentation avec des segments non-contigus
+et avec une taille pouvant évoluer.
 
-## Implémentation avec taille constante {#arcanedoc_parallel_shmem_const}
+## Implémentation avec segments contigus {#arcanedoc_parallel_shmem_const}
 
-Cette implémentation va permettre de créer une fenêtre mémoire ayant tous ses segments contigüs.
+Cette implémentation va permettre de créer une fenêtre mémoire ayant tous ses segments contigus.
 Il est ainsi assez simple de redécouper les segments pendant l'utilisation (par exemple, pour équilibrer un calcul).
 
 ### Utilisation {#arcanedoc_parallel_shmem_const_usage}
@@ -76,11 +77,11 @@ La fenêtre étant contigüe, l'accès à toute la fenêtre est possible pour to
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_6
 
-## Implémentation avec taille variable {#arcanedoc_parallel_shmem_var}
+## Implémentation avec segments non-contigus {#arcanedoc_parallel_shmem_var}
 
 Cette implémentation est assez différente de la précédente.
-Ici, les segments des fenêtres mémoires ne sont plus contigüs. Cela nous permet de redimensionner les segments comme
-un tableau dynamique classique.
+Ici, les segments des fenêtres mémoires ne sont plus contigus. De plus, avec cette implémentation, il est possible de
+redimensionner les segments comme un tableau dynamique classique.
 
 Néanmoins, cette opération est collective, ce qui contamine la plupart des méthodes de l'implémentation.
 
@@ -107,7 +108,7 @@ précédemment :
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_9
 
-En revanche, comme les segments ne sont pas contigüs, les méthodes `windowView()` ne sont pas disponibles.
+En revanche, comme les segments ne sont pas contigus, les méthodes `windowView()` ne sont pas disponibles.
 
 Les segments ont une taille qui peut être augmentée ou diminuée au cours du temps.
 
