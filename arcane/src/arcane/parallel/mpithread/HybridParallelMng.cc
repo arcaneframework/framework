@@ -32,8 +32,8 @@
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternal.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
@@ -167,7 +167,7 @@ class HybridParallelMng::Impl
 {
  public:
 
-  explicit Impl(HybridParallelMng* pm, HybridMachineMemoryWindowBaseInternalCreator* window_creator)
+  explicit Impl(HybridParallelMng* pm, HybridContigMachineShMemWinBaseInternalCreator* window_creator)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
@@ -178,7 +178,7 @@ class HybridParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
@@ -196,7 +196,7 @@ class HybridParallelMng::Impl
  private:
 
   HybridParallelMng* m_parallel_mng;
-  HybridMachineMemoryWindowBaseInternalCreator* m_window_creator;
+  HybridContigMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 

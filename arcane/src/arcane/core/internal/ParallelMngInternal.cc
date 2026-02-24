@@ -105,9 +105,9 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<MessagePassing::IMachineMemoryWindowBaseInternal> ParallelMngInternal::
-createMachineMemoryWindowBase([[maybe_unused]] Int64 sizeof_segment,
-                              [[maybe_unused]] Int32 sizeof_type)
+Ref<MessagePassing::IContigMachineShMemWinBaseInternal> ParallelMngInternal::
+createContigMachineShMemWinBase([[maybe_unused]] Int64 sizeof_segment,
+                                [[maybe_unused]] Int32 sizeof_type)
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }

@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineMemoryWindowBase.h                                   (C) 2000-2025 */
+/* ContigMachineShMemWinBase.h                                 (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire partagée entre les         */
 /* processus d'un même noeud.                                                */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_MACHINEMEMORYWINDOWBASE_H
-#define ARCANE_CORE_MACHINEMEMORYWINDOWBASE_H
+#ifndef ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
+#define ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ class IParallelMng;
 class IParallelMngInternal;
 namespace MessagePassing
 {
-  class IMachineMemoryWindowBaseInternal;
+  class IContigMachineShMemWinBaseInternal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ namespace MessagePassing
  * sous-domaines d'un même noeud.
  * Les segments de cette fenêtre seront contigüs en mémoire.
  */
-class ARCANE_CORE_EXPORT MachineMemoryWindowBase
+class ARCANE_CORE_EXPORT ContigMachineShMemWinBase
 {
 
  public:
@@ -57,7 +57,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindowBase
    * \param sizeof_segment La taille du segment de ce sous-domaine (en octet).
    * \param sizeof_elem La taille d'un élément (en octet).
    */
-  MachineMemoryWindowBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
+  ContigMachineShMemWinBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
 
  public:
 
@@ -141,7 +141,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindowBase
  private:
 
   IParallelMngInternal* m_pm_internal;
-  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> m_node_window_base;
+  Ref<MessagePassing::IContigMachineShMemWinBaseInternal> m_node_window_base;
   Int32 m_sizeof_elem;
 };
 

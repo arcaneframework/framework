@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWinBase.h                            (C) 2000-2026 */
+/* MachineShMemWinBase.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */

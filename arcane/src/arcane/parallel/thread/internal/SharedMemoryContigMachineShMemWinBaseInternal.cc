@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMachineMemoryWindowBaseInternal.cc              (C) 2000-2025 */
+/* SharedMemoryContigMachineShMemWinBaseInternal.cc            (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
 /* sous-domaines en mémoire partagée.                                        */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternal.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
@@ -26,8 +26,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineMemoryWindowBaseInternal::
-SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<std::byte>> window, Ref<UniqueArray<Int64>> sizeof_segments, Ref<UniqueArray<Int64>> sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
+SharedMemoryContigMachineShMemWinBaseInternal::
+SharedMemoryContigMachineShMemWinBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<std::byte>> window, Ref<UniqueArray<Int64>> sizeof_segments, Ref<UniqueArray<Int64>> sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
 , m_sizeof_type(sizeof_type)
@@ -46,7 +46,7 @@ SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstA
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 SharedMemoryMachineMemoryWindowBaseInternal::
+Int32 SharedMemoryContigMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -55,7 +55,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 segmentView()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
@@ -67,7 +67,7 @@ segmentView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
@@ -79,7 +79,7 @@ segmentView(Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 windowView()
 {
   return m_window_span;
@@ -88,7 +88,7 @@ windowView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<const std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 segmentConstView() const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
@@ -100,7 +100,7 @@ segmentConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<const std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
@@ -112,7 +112,7 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+Span<const std::byte> SharedMemoryContigMachineShMemWinBaseInternal::
 windowConstView() const
 {
   return m_window_span;
@@ -121,7 +121,7 @@ windowConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SharedMemoryMachineMemoryWindowBaseInternal::
+void SharedMemoryContigMachineShMemWinBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_segments_span[m_my_rank] = new_sizeof_segment;
@@ -158,7 +158,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> SharedMemoryMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> SharedMemoryContigMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_ranks;
@@ -167,7 +167,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SharedMemoryMachineMemoryWindowBaseInternal::
+void SharedMemoryContigMachineShMemWinBaseInternal::
 barrier() const
 {
   m_barrier->wait();

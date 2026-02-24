@@ -26,8 +26,8 @@
 
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
 
 #include "arcane/core/Timer.h"
@@ -99,7 +99,7 @@ class SharedMemoryParallelMng::Impl
 {
  public:
 
-  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryMachineMemoryWindowBaseInternalCreator* window_creator)
+  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryContigMachineShMemWinBaseInternalCreator* window_creator)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
@@ -110,7 +110,7 @@ class SharedMemoryParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
@@ -128,7 +128,7 @@ class SharedMemoryParallelMng::Impl
  private:
 
   SharedMemoryParallelMng* m_parallel_mng;
-  SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator;
+  SharedMemoryContigMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 

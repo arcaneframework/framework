@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2025 */
+/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de messages utilisant uniquement la mémoire partagée.        */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/internal/SharedMemoryThreadMng.h"
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.h"
 
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/IApplication.h"
@@ -77,7 +77,7 @@ class SharedMemoryParallelMngContainer
   IThreadBarrier* m_thread_barrier = nullptr;
   SharedMemoryAllDispatcher* m_all_dispatchers = nullptr;
   IParallelMngContainerFactory* m_sub_factory_builder = nullptr;
-  SharedMemoryMachineMemoryWindowBaseInternalCreator* m_window_creator = nullptr;
+  SharedMemoryContigMachineShMemWinBaseInternalCreator* m_window_creator = nullptr;
 
  private:
 
@@ -130,7 +130,7 @@ build()
 
   m_internal_create_mutex = new Mutex();
 
-  m_window_creator = new SharedMemoryMachineMemoryWindowBaseInternalCreator(m_nb_local_rank, m_thread_barrier);
+  m_window_creator = new SharedMemoryContigMachineShMemWinBaseInternalCreator(m_nb_local_rank, m_thread_barrier);
 }
 
 /*---------------------------------------------------------------------------*/

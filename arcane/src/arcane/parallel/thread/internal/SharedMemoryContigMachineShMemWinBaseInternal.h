@@ -1,25 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBaseInternal.h                     (C) 2000-2025 */
+/* SharedMemoryContigMachineShMemWinBaseInternal.h             (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* sous-domaines en mémoire partagée.                                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNAL_H
+#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/message_passing/internal/IContigMachineShMemWinBaseInternal.h"
+
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/Ref.h"
-
-#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,14 +31,14 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HybridMachineMemoryWindowBaseInternal
-: public IMachineMemoryWindowBaseInternal
+class ARCANE_THREAD_EXPORT SharedMemoryContigMachineShMemWinBaseInternal
+: public IContigMachineShMemWinBaseInternal
 {
  public:
 
-  HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBaseInternal> nb_elem, Ref<IMachineMemoryWindowBaseInternal> sum_nb_elem, Ref<IMachineMemoryWindowBaseInternal> mpi_window, IThreadBarrier* barrier);
+  SharedMemoryContigMachineShMemWinBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<std::byte>> window, Ref<UniqueArray<Int64>> sizeof_segments, Ref<UniqueArray<Int64>> sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier);
 
-  ~HybridMachineMemoryWindowBaseInternal() override = default;
+  ~SharedMemoryContigMachineShMemWinBaseInternal() override = default;
 
  public:
 
@@ -59,17 +60,23 @@ class HybridMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank_local_proc = 0;
-  Int32 m_nb_rank_local_proc = 0;
-  Int32 m_my_rank_mpi = 0;
-  ConstArrayView<Int32> m_machine_ranks;
+  Int32 m_my_rank = 0;
+  Int32 m_nb_rank = 0;
   Int32 m_sizeof_type = 0;
-  Ref<IMachineMemoryWindowBaseInternal> m_mpi_window;
-  Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments_global;
-  Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments_global;
-  Span<Int64> m_sizeof_sub_segments_local_proc;
-  Span<Int64> m_sum_sizeof_sub_segments_local_proc;
-  IThreadBarrier* m_thread_barrier = nullptr;
+  Int64 m_actual_sizeof_win = 0;
+  Int64 m_max_sizeof_win = 0;
+  ConstArrayView<Int32> m_ranks;
+
+  Span<std::byte> m_window_span;
+  Ref<UniqueArray<std::byte>> m_window;
+
+  Ref<UniqueArray<Int64>> m_sizeof_segments;
+  SmallSpan<Int64> m_sizeof_segments_span;
+
+  Ref<UniqueArray<Int64>> m_sum_sizeof_segments;
+  SmallSpan<Int64> m_sum_sizeof_segments_span;
+
+  IThreadBarrier* m_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

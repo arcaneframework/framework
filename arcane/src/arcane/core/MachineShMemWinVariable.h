@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWinVariable.h                        (C) 2000-2026 */
+/* MachineShMemWinVariable.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant d'accéder à la partie en mémoire partagée d'une         */
 /* variable.                                                                 */

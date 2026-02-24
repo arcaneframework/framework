@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWin.h                                (C) 2000-2026 */
+/* MachineShMemWin.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
@@ -37,7 +37,7 @@ namespace Arcane
  * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
  * sous-domaines d'un même noeud.
  *
- * Les segments de cette fenêtre ne sont pas contigüs en mémoire et peuvent
+ * Les segments de cette fenêtre ne sont pas contigus en mémoire et peuvent
  * être redimensionnés.
  *
  * La méthode \a add() permet d'ajouter des éléments de manière itérative.

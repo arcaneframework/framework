@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBaseInternal.cc                    (C) 2000-2025 */
+/* HybridContigMachineShMemWinBaseInternal.cc                  (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
@@ -13,7 +13,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternal.h"
 
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
@@ -28,8 +28,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridMachineMemoryWindowBaseInternal::
-HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBaseInternal> nb_elem, Ref<IMachineMemoryWindowBaseInternal> sum_nb_elem, Ref<IMachineMemoryWindowBaseInternal> mpi_window, IThreadBarrier* barrier)
+HybridContigMachineShMemWinBaseInternal::
+HybridContigMachineShMemWinBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IContigMachineShMemWinBaseInternal> nb_elem, Ref<IContigMachineShMemWinBaseInternal> sum_nb_elem, Ref<IContigMachineShMemWinBaseInternal> mpi_window, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
@@ -47,7 +47,7 @@ HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_pro
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 HybridMachineMemoryWindowBaseInternal::
+Int32 HybridContigMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -56,7 +56,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<std::byte> HybridContigMachineShMemWinBaseInternal::
 segmentView()
 {
   const Span<std::byte> segment_proc = m_mpi_window->segmentView();
@@ -69,7 +69,7 @@ segmentView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<std::byte> HybridContigMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -96,7 +96,7 @@ segmentView(Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<std::byte> HybridContigMachineShMemWinBaseInternal::
 windowView()
 {
   return m_mpi_window->windowView();
@@ -105,7 +105,7 @@ windowView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<const std::byte> HybridContigMachineShMemWinBaseInternal::
 segmentConstView() const
 {
   const Span<const std::byte> segment_proc = m_mpi_window->segmentConstView();
@@ -118,7 +118,7 @@ segmentConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<const std::byte> HybridContigMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -145,7 +145,7 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+Span<const std::byte> HybridContigMachineShMemWinBaseInternal::
 windowConstView() const
 {
   return m_mpi_window->windowConstView();
@@ -154,7 +154,7 @@ windowConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridMachineMemoryWindowBaseInternal::
+void HybridContigMachineShMemWinBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_sub_segments_local_proc[m_my_rank_local_proc] = new_sizeof_segment;
@@ -175,7 +175,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> HybridMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> HybridContigMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -184,7 +184,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridMachineMemoryWindowBaseInternal::
+void HybridContigMachineShMemWinBaseInternal::
 barrier() const
 {
   m_thread_barrier->wait();

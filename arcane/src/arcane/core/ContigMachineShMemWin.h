@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineMemoryWindow.h                                       (C) 2000-2025 */
+/* ContigMachineShMemWin.h                                     (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire partagée entre les         */
 /* processus d'un même noeud.                                                */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_MACHINEMEMORYWINDOW_H
-#define ARCANE_CORE_MACHINEMEMORYWINDOW_H
+#ifndef ARCANE_CORE_CONTIGMACHINESHMEMWIN_H
+#define ARCANE_CORE_CONTIGMACHINESHMEMWIN_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/MachineMemoryWindowBase.h"
+#include "arcane/core/ContigMachineShMemWinBase.h"
 
 #include "arccore/base/Span.h"
 
@@ -39,7 +39,7 @@ namespace Arcane
  * \tparam Type Le type des éléments de la fenêtre.
  */
 template <class Type>
-class MachineMemoryWindow
+class ContigMachineShMemWin
 {
  public:
 
@@ -48,7 +48,7 @@ class MachineMemoryWindow
    * \param pm Le ParallelMng contenant les processus du noeud.
    * \param nb_elem_segment Le nombre d'éléments pour le segment de ce sous-domaine.
    */
-  MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment)
+  ContigMachineShMemWin(IParallelMng* pm, Int64 nb_elem_segment)
   : m_impl(pm, nb_elem_segment, static_cast<Int32>(sizeof(Type)))
   {}
 
@@ -160,7 +160,7 @@ class MachineMemoryWindow
 
  private:
 
-  MachineMemoryWindowBase m_impl;
+  ContigMachineShMemWinBase m_impl;
 };
 
 /*---------------------------------------------------------------------------*/

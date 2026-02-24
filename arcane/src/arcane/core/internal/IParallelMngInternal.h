@@ -27,7 +27,7 @@ namespace Arcane
 
 namespace MessagePassing
 {
-  class IMachineMemoryWindowBaseInternal;
+  class IContigMachineShMemWinBaseInternal;
   class IMachineShMemWinBaseInternal;
 }
 
@@ -73,7 +73,7 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \param sizeof_type La taille d'un élément du segment (en octet).
    * \return Une référence vers la nouvelle fenêtre.
    */
-  virtual Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+  virtual Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
   /*!
    * \brief Méthode permettant de créer une fenêtre mémoire dynamique sur le noeud.

@@ -49,8 +49,8 @@
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
@@ -375,7 +375,7 @@ class MpiParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createWindow(sizeof_segment, sizeof_type));
   }

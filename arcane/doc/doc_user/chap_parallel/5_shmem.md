@@ -20,9 +20,9 @@ Il est ainsi assez simple de redécouper les segments pendant l'utilisation (par
 
 ### Utilisation {#arcanedoc_parallel_shmem_const_usage}
 
-Cette partie est gérée par la classe Arcane::MachineMemoryWindow.
+Cette partie est gérée par la classe Arcane::ContigMachineShMemWin.
 
-Cette classe peut utiliser trois implémentations de IMachineMemoryWindowBase, une par type de 
+Cette classe peut utiliser trois implémentations de IContigMachineShMemWinBase, une par type de
 Arcane::IParallelMng.
 Il est donc possible d'utiliser cette classe de la même façon, que l'on ait un MpiParallelMng, un SequentialParallelMng,
 un SharedMemoryParallelMng ou un HybridParallelMng (\ref arcanedoc_execution_launcher_exchange).
@@ -43,8 +43,7 @@ Lors de la construction de cet objet, chaque sous-domaine va fournir une taille 
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_1
 
-
-Pour accéder à son segment, il est possible d'utiliser la méthode Arcane::MachineMemoryWindow::segmentView().
+Pour accéder à son segment, il est possible d'utiliser la méthode Arcane::ContigMachineShMemWin::segmentView().
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_3
 
@@ -58,7 +57,7 @@ Pour savoir quels sous-domaines se partagent une fenêtre sur le noeud, il est p
 La position des rangs dans ce tableau correspond à la position de leur segment dans la fenêtre.
 
 Pour la lecture des segments des autres sous-domaines du noeud, on peut utiliser la méthode
-Arcane::MachineMemoryWindow::segmentConstView().
+Arcane::ContigMachineShMemWin::segmentConstView().
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_4
 
@@ -101,7 +100,7 @@ Et il est possible de ne pas spécifier de taille initiale.
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_8
 
 La méthode Arcane::MachineShMemWin::machineRanks() est disponible et renvoie le même tableau que
-l'implémentation Arcane::MachineMemoryWindow.
+l'implémentation Arcane::ContigMachineShMemWin.
 
 Pour explorer notre segment ou le segment d'un autre sous-domaine, il est possible d'utiliser les mêmes méthodes que
 précédemment :
@@ -221,7 +220,7 @@ ma_struct.array_integer[0] = 123 * (my_rank+1);
 Si on utilise cette structure dans une fenêtre, ça donnerait :
 
 ```c
-MachineMemoryWindow<MaStruct> win_struct(pm, 1);
+ContigMachineShMemWin<MaStruct> win_struct(pm, 1);
 Span<MaStruct> my_span = win_struct.segmentView();
 new (my_span.data()) MaStruct();
 

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWinMemoryAllocator.h                 (C) 2000-2026 */
+/* MachineShMemWinMemoryAllocator.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.    */
+/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
