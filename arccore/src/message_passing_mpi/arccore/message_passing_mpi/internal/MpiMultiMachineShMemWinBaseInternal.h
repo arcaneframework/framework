@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDynamicMultiMachineMemoryWindowBaseInternal.h            (C) 2000-2025 */
+/* MpiMultiMachineShMemWinBaseInternal.h            (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
 /* être redimensionnées. Un processus peut posséder plusieurs segments.      */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMULTIMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMULTIMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMULTIMACHINESHMEMWINBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMULTIMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace Arcane::MessagePassing::Mpi
 {
 
 /*!
- * \brief Classe basée sur MpiDynamicMachineMemoryWindowBaseInternal mais
+ * \brief Classe basée sur MpiMachineShMemWinBaseInternal mais
  * pouvant gérer plusieurs segments par processus.
  *
  * Un segment est identifié par le rang de son propriétaire d'origine et par
@@ -41,14 +41,14 @@ namespace Arcane::MessagePassing::Mpi
  * notre rang machine et la position de ce segment localement.
  * infos_pos = pos_seg + rank * m_nb_segments_per_proc
  */
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInternal
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
 {
 
  public:
 
-  explicit MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiMultiMachineShMemWinBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
-  ~MpiDynamicMultiMachineMemoryWindowBaseInternal();
+  ~MpiMultiMachineShMemWinBaseInternal();
 
  public:
 

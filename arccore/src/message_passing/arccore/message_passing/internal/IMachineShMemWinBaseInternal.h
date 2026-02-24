@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDynamicMachineMemoryWindowBaseInternal.h                   (C) 2000-2025 */
+/* IMachineShMemWinBaseInternal.h                   (C) 2000-2025 */
 /*                                                                           */
 /* Interface de classe permettant de créer des fenêtres mémoires pour un     */
 /* noeud de calcul.                                                          */
@@ -13,8 +13,8 @@
 /* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSING_INTERNAL_IDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINESHMEMWINBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,11 +47,11 @@ namespace Arcane::MessagePassing
  * Pour ajouter des éléments dans le segment d'un autre sous-domaine,
  * les méthodes addToAnotherSegment() sont disponibles.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
+class ARCCORE_MESSAGEPASSING_EXPORT IMachineShMemWinBaseInternal
 {
  public:
 
-  virtual ~IDynamicMachineMemoryWindowBaseInternal() = default;
+  virtual ~IMachineShMemWinBaseInternal() = default;
 
  public:
 

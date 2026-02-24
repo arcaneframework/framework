@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDynamicMachineMemoryWindowBaseInternal.h                 (C) 2000-2025 */
+/* MpiMachineShMemWinBaseInternal.h                 (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
 /* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
 
 #include "arccore/base/FatalErrorException.h"
 
@@ -25,8 +25,8 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiDynamicMachineMemoryWindowBaseInternal::
-MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
+MpiMachineShMemWinBaseInternal::
+MpiMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win_need_resize()
 , m_win_actual_sizeof()
 , m_win_target_segments()
@@ -176,8 +176,8 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiDynamicMachineMemoryWindowBaseInternal::
-~MpiDynamicMachineMemoryWindowBaseInternal()
+MpiMachineShMemWinBaseInternal::
+~MpiMachineShMemWinBaseInternal()
 {
   for (Integer i = 0; i < m_comm_machine_size; ++i) {
     MPI_Win_free(&m_all_mpi_win[i]);
@@ -190,7 +190,7 @@ MpiDynamicMachineMemoryWindowBaseInternal::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMachineMemoryWindowBaseInternal::
+Int32 MpiMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -199,7 +199,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> MpiDynamicMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> MpiMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -208,7 +208,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 barrier() const
 {
   MPI_Barrier(m_comm_machine);
@@ -217,7 +217,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiMachineShMemWinBaseInternal::
 segmentView()
 {
   return m_reserved_part_span.subSpan(0, m_sizeof_used_part[m_comm_machine_rank]);
@@ -226,7 +226,7 @@ segmentView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
   const Int32 machine_rank = _worldToMachine(rank);
@@ -246,7 +246,7 @@ segmentView(Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiMachineShMemWinBaseInternal::
 segmentConstView() const
 {
   return m_reserved_part_span.subSpan(0, m_sizeof_used_part[m_comm_machine_rank]);
@@ -255,7 +255,7 @@ segmentConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
   const Int32 machine_rank = _worldToMachine(rank);
@@ -275,7 +275,7 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 add(Span<const std::byte> elem)
 {
   if (elem.size() % m_sizeof_type) {
@@ -310,7 +310,7 @@ add(Span<const std::byte> elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 add()
 {
   _reallocBarrier();
@@ -320,7 +320,7 @@ add()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
   if (elem.size() % m_sizeof_type) {
@@ -420,7 +420,7 @@ addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 addToAnotherSegment()
 {
   // Même si on n'ajoute rien, un autre processus pourrait ajouter des
@@ -454,7 +454,7 @@ addToAnotherSegment()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 reserve(Int64 new_capacity)
 {
   if (new_capacity <= m_reserved_part_span.size()) {
@@ -468,7 +468,7 @@ reserve(Int64 new_capacity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 reserve()
 {
   _reallocBarrier();
@@ -477,7 +477,7 @@ reserve()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 resize(Int64 new_size)
 {
   if (new_size == -1) {
@@ -512,7 +512,7 @@ resize(Int64 new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 resize()
 {
   _reallocBarrier();
@@ -522,7 +522,7 @@ resize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 shrink()
 {
   if (m_reserved_part_span.size() == m_sizeof_used_part[m_comm_machine_rank]) {
@@ -536,7 +536,7 @@ shrink()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 _reallocBarrier(Int64 new_sizeof)
 {
   m_need_resize[m_comm_machine_rank] = new_sizeof;
@@ -562,7 +562,7 @@ _reallocBarrier(Int64 new_sizeof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 _reallocBarrier(Int32 machine_rank, Int64 new_sizeof)
 {
   m_need_resize[machine_rank] = new_sizeof;
@@ -588,7 +588,7 @@ _reallocBarrier(Int32 machine_rank, Int64 new_sizeof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 _reallocBarrier()
 {
   MPI_Barrier(m_comm_machine);
@@ -599,7 +599,7 @@ _reallocBarrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiDynamicMachineMemoryWindowBaseInternal::
+void MpiMachineShMemWinBaseInternal::
 _reallocCollective()
 {
   MPI_Info win_info;
@@ -653,7 +653,7 @@ _reallocCollective()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMachineMemoryWindowBaseInternal::
+Int32 MpiMachineShMemWinBaseInternal::
 _worldToMachine(Int32 world) const
 {
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
@@ -667,7 +667,7 @@ _worldToMachine(Int32 world) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiDynamicMachineMemoryWindowBaseInternal::
+Int32 MpiMachineShMemWinBaseInternal::
 _machineToWorld(Int32 machine) const
 {
   return m_machine_ranks[machine];

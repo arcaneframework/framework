@@ -44,6 +44,6 @@ set(SOURCES
 
   internal/SerializeMessageList.h
   internal/IMachineMemoryWindowBaseInternal.h
-  internal/IDynamicMachineMemoryWindowBaseInternal.h
+  internal/IMachineShMemWinBaseInternal.h
   internal/SubRequestCompletionInfo.h
 )

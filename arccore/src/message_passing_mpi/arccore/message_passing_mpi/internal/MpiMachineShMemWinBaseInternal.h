@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDynamicMachineMemoryWindowBaseInternal.h                 (C) 2000-2025 */
+/* MpiMachineShMemWinBaseInternal.h                 (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
 /* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
 /* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IMachineShMemWinBaseInternal.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -29,14 +29,14 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
-: public IDynamicMachineMemoryWindowBaseInternal
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineShMemWinBaseInternal
+: public IMachineShMemWinBaseInternal
 {
  public:
 
-  explicit MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
-  ~MpiDynamicMachineMemoryWindowBaseInternal() override;
+  ~MpiMachineShMemWinBaseInternal() override;
 
  public:
 
