@@ -33,7 +33,7 @@
 #include "arcane/core/IParallelTopology.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
 #include "arcane/core/MachineMemoryWindow.h"
-#include "arcane/core/DynamicMachineMemoryWindow.h"
+#include "arcane/core/MachineShMemWin.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
@@ -1138,7 +1138,7 @@ _testMachineMemoryWindow()
     Integer my_rank = pm->commRank();
 
     ArrayView<Integer> my_rank_av(1, &my_rank);
-    DynamicMachineMemoryWindow<Integer> test(pm, 1);
+    MachineShMemWin<Integer> test(pm, 1);
     ConstArrayView machine_ranks(test.machineRanks());
 
     Int32 pos_in_machine_ranks = -1;
@@ -1234,12 +1234,12 @@ _testMachineMemoryWindow()
     //![snippet_arcanedoc_parallel_shmem_usage_7]
     IParallelMng* pm = m_parallel_mng;
     Integer my_rank = pm->commRank();
-    DynamicMachineMemoryWindow<Integer> window(pm, 5);
+    MachineShMemWin<Integer> window(pm, 5);
     ConstArrayView machine_ranks(window.machineRanks());
     //![snippet_arcanedoc_parallel_shmem_usage_7]
     {
       //![snippet_arcanedoc_parallel_shmem_usage_8]
-      DynamicMachineMemoryWindow<Integer> window2(pm);
+      MachineShMemWin<Integer> window2(pm);
       //![snippet_arcanedoc_parallel_shmem_usage_8]
     }
     //![snippet_arcanedoc_parallel_shmem_usage_9]
@@ -1318,7 +1318,7 @@ _testMachineMemoryWindow()
 
   {
     IParallelMng* pm = m_parallel_mng;
-    IMemoryAllocator* memory_allocator = pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator();
+    IMemoryAllocator* memory_allocator = pm->_internalApi()->machineShMemWinMemoryAllocator();
 
     {
       UniqueArray<Integer> array(memory_allocator, 10);
@@ -1350,7 +1350,7 @@ _testMachineMemoryWindow()
 
     IParallelMng* pm = m_parallel_mng;
 
-    MemoryAllocationOptions opt(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator());
+    MemoryAllocationOptions opt(pm->_internalApi()->machineShMemWinMemoryAllocator());
 
     array.changeAllocator(opt);
 
@@ -1368,7 +1368,7 @@ _testMachineMemoryWindow()
 
     IParallelMng* pm = m_parallel_mng;
 
-    MemoryAllocationOptions opt(pm->_internalApi()->dynamicMachineMemoryWindowMemoryAllocator());
+    MemoryAllocationOptions opt(pm->_internalApi()->machineShMemWinMemoryAllocator());
 
     array.changeAllocator(opt);
 

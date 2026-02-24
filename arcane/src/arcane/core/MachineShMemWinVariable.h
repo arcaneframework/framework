@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowVariable.h                        (C) 2000-2026 */
+/* MachineShMemWinVariable.h                        (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant d'accéder à la partie en mémoire partagée d'une         */
 /* variable.                                                                 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWVARIABLE_H
-#define ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWVARIABLE_H
+#ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
+#define ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
 
-#include "arcane/core/DynamicMachineMemoryWindowVariableBase.h"
+#include "arcane/core/MachineShMemWinVariableBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ namespace Arcane
  * \tparam DataType Type de la donnée de la variable.
  */
 template <class DataType>
-class DynamicMachineMemoryWindowVariable
+class MachineShMemWinVariable
 {
 
  public:
@@ -50,7 +50,7 @@ class DynamicMachineMemoryWindowVariable
    * \param var Variable ayant la propriété "IVariable::PShMem".
    */
   template <class ItemType>
-  explicit DynamicMachineMemoryWindowVariable(MeshVariableScalarRefT<ItemType, DataType> var)
+  explicit MachineShMemWinVariable(MeshVariableScalarRefT<ItemType, DataType> var)
   : m_base(var.variable())
   {}
 
@@ -59,7 +59,7 @@ class DynamicMachineMemoryWindowVariable
    * \param var Variable ayant la propriété "IVariable::PShMem".
    */
   template <class ItemType>
-  explicit DynamicMachineMemoryWindowVariable(MeshVariableArrayRefT<ItemType, DataType> var)
+  explicit MachineShMemWinVariable(MeshVariableArrayRefT<ItemType, DataType> var)
   : m_base(var.variable())
   {}
 
@@ -117,7 +117,7 @@ class DynamicMachineMemoryWindowVariable
 
  private:
 
-  DynamicMachineMemoryWindowVariableBase m_base;
+  MachineShMemWinVariableBase m_base;
 };
 
 /*---------------------------------------------------------------------------*/

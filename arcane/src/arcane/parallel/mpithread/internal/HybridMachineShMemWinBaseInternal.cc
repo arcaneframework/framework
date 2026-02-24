@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridDynamicMachineMemoryWindowBaseInternal.cc             (C) 2000-2025 */
+/* HybridMachineShMemWinBaseInternal.cc             (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
@@ -15,12 +15,12 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternal.h"
 
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
 #include "arccore/concurrency/IThreadBarrier.h"
-#include "arccore/message_passing_mpi/internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,8 +31,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridDynamicMachineMemoryWindowBaseInternal::
-HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> mpi_windows, IThreadBarrier* barrier)
+HybridMachineShMemWinBaseInternal::
+HybridMachineShMemWinBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiMultiMachineShMemWinBaseInternal> mpi_windows, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
@@ -45,7 +45,7 @@ HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_lo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 HybridDynamicMachineMemoryWindowBaseInternal::
+Int32 HybridMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -54,7 +54,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> HybridDynamicMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> HybridMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -63,7 +63,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 barrier() const
 {
   m_thread_barrier->wait();
@@ -75,7 +75,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+Span<std::byte> HybridMachineShMemWinBaseInternal::
 segmentView()
 {
   return m_mpi_windows->segmentView(m_my_rank_local_proc);
@@ -84,7 +84,7 @@ segmentView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+Span<std::byte> HybridMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -97,7 +97,7 @@ segmentView(Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+Span<const std::byte> HybridMachineShMemWinBaseInternal::
 segmentConstView() const
 {
   return m_mpi_windows->segmentConstView(m_my_rank_local_proc);
@@ -106,7 +106,7 @@ segmentConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+Span<const std::byte> HybridMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -119,7 +119,7 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 add(Span<const std::byte> elem)
 {
   m_mpi_windows->requestAdd(m_my_rank_local_proc, elem);
@@ -133,7 +133,7 @@ add(Span<const std::byte> elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 add()
 {
   m_thread_barrier->wait();
@@ -146,7 +146,7 @@ add()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
   FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -165,7 +165,7 @@ addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 addToAnotherSegment()
 {
   m_thread_barrier->wait();
@@ -179,7 +179,7 @@ addToAnotherSegment()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 reserve(Int64 new_capacity)
 {
   m_mpi_windows->requestReserve(m_my_rank_local_proc, new_capacity);
@@ -193,7 +193,7 @@ reserve(Int64 new_capacity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 reserve()
 {
   m_thread_barrier->wait();
@@ -206,7 +206,7 @@ reserve()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 resize(Int64 new_size)
 {
   m_mpi_windows->requestResize(m_my_rank_local_proc, new_size);
@@ -220,7 +220,7 @@ resize(Int64 new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 resize()
 {
   m_thread_barrier->wait();
@@ -233,7 +233,7 @@ resize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridDynamicMachineMemoryWindowBaseInternal::
+void HybridMachineShMemWinBaseInternal::
 shrink()
 {
   m_thread_barrier->wait();

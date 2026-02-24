@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowMemoryAllocator.h                 (C) 2000-2026 */
+/* MachineShMemWinMemoryAllocator.h                 (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
+/* Allocateur mémoire utilisant la classe MachineShMemWinBase.    */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
-#define ARCANE_CORE_INTERNAL_DYNAMICMACHINEMEMORYWINDOWMEMORYALLOCATOR_H
+#ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINMEMORYALLOCATOR_H
+#define ARCANE_CORE_INTERNAL_MACHINESHMEMWINMEMORYALLOCATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,18 +29,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DynamicMachineMemoryWindowBase;
+class MachineShMemWinBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowMemoryAllocator
+class ARCANE_CORE_EXPORT MachineShMemWinMemoryAllocator
 : public IMemoryAllocator
 {
 
  public:
 
-  explicit DynamicMachineMemoryWindowMemoryAllocator(IParallelMng* pm);
+  explicit MachineShMemWinMemoryAllocator(IParallelMng* pm);
 
  public:
 
@@ -65,7 +65,7 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowMemoryAllocator
 
  private:
 
-  static DynamicMachineMemoryWindowBase* _windowBase(AllocatedMemoryInfo ptr);
+  static MachineShMemWinBase* _windowBase(AllocatedMemoryInfo ptr);
 
  private:
 

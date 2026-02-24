@@ -18,14 +18,14 @@
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
-#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
-#include "arccore/message_passing_mpi/internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridDynamicMachineMemoryWindowBaseInternal* HybridMachineMemoryWindowBaseInternalCreator::
+HybridMachineShMemWinBaseInternal* HybridMachineMemoryWindowBaseInternalCreator::
 createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
@@ -137,10 +137,10 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   }
   m_barrier->wait();
 
-  auto* window_obj = new HybridDynamicMachineMemoryWindowBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_windows, m_barrier);
+  auto* window_obj = new HybridMachineShMemWinBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_windows, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridDynamicMachineMemoryWindowBaseInternal.
+  // Ces tableaux doivent être delete par HybridMachineShMemWinBaseInternal.
   if (my_rank_local_proc == 0) {
     m_windows.reset();
   }

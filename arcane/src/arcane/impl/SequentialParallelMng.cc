@@ -41,7 +41,7 @@
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -58,7 +58,7 @@
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/internal/SerializeMessageList.h"
 #include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
-#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IMachineShMemWinBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -431,16 +431,16 @@ class SequentialMachineMemoryWindowBaseInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SequentialDynamicMachineMemoryWindowBaseInternal
-: public IDynamicMachineMemoryWindowBaseInternal
+class SequentialMachineShMemWinBaseInternal
+: public IMachineShMemWinBaseInternal
 {
  public:
 
-  SequentialDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type)
+  SequentialMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type)
   : m_sizeof_type(sizeof_type)
   , m_segment(sizeof_segment)
   {}
-  ~SequentialDynamicMachineMemoryWindowBaseInternal() override = default;
+  ~SequentialMachineShMemWinBaseInternal() override = default;
 
  public:
 
@@ -754,7 +754,7 @@ class SequentialParallelMng
   IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  public:
-  
+
   static IParallelMng* create(const SequentialParallelMngBuildInfo& bi)
   {
     if (!bi.traceMng())
@@ -826,7 +826,7 @@ class SequentialParallelMng::Impl
 
   explicit Impl(SequentialParallelMng* pm)
   : ParallelMngInternal(pm)
-  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
+  , m_alloc(makeRef(new MachineShMemWinMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -838,19 +838,19 @@ class SequentialParallelMng::Impl
     return makeRef(new SequentialMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
   }
 
-  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(new SequentialDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
+    return makeRef(new SequentialMachineShMemWinBaseInternal(sizeof_segment, sizeof_type));
   }
 
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  IMemoryAllocator* machineShMemWinMemoryAllocator() override
   {
     return m_alloc.get();
   }
 
  private:
 
-  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
+  Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/

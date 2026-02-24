@@ -1,181 +1,229 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowBase.cc                           (C) 2000-2026 */
+/* SharedMemoryMachineShMemWinBaseInternal.cc       (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées.                                                     */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
+/* sous-domaines en mémoire partagée.                                        */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/DynamicMachineMemoryWindowBase.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
 
-#include "arcane/utils/NumericTypes.h"
+#include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/core/IParallelMng.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
-
-#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/concurrency/IThreadBarrier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DynamicMachineMemoryWindowBase::
-DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
-: m_pm_internal(pm->_internalApi())
-, m_node_window_base(m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem))
-, m_sizeof_elem(sizeof_elem)
+SharedMemoryMachineShMemWinBaseInternal::
+SharedMemoryMachineShMemWinBaseInternal(Int32 my_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<UniqueArray<std::byte>>> windows, Ref<UniqueArray<Int32>> target_segments, IThreadBarrier* barrier)
+: m_my_rank(my_rank)
+, m_sizeof_type(sizeof_type)
+, m_ranks(ranks)
+, m_windows(windows)
+, m_windows_span(windows->smallSpan())
+, m_target_segments(target_segments)
+, m_target_segments_span(target_segments->smallSpan())
+, m_barrier(barrier)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> DynamicMachineMemoryWindowBase::
+Int32 SharedMemoryMachineShMemWinBaseInternal::
+sizeofOneElem() const
+{
+  return m_sizeof_type;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> SharedMemoryMachineShMemWinBaseInternal::
 machineRanks() const
 {
-  return m_node_window_base->machineRanks();
+  return m_ranks;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 barrier() const
 {
-  m_node_window_base->barrier();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowBase::
+Span<std::byte> SharedMemoryMachineShMemWinBaseInternal::
 segmentView()
 {
-  return m_node_window_base->segmentView();
+  return m_windows_span[m_my_rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowBase::
+Span<std::byte> SharedMemoryMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
-  return m_node_window_base->segmentView(rank);
+  return m_windows_span[rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> DynamicMachineMemoryWindowBase::
+Span<const std::byte> SharedMemoryMachineShMemWinBaseInternal::
 segmentConstView() const
 {
-  return m_node_window_base->segmentConstView();
+  return m_windows_span[m_my_rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> DynamicMachineMemoryWindowBase::
+Span<const std::byte> SharedMemoryMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
-  return m_node_window_base->segmentConstView(rank);
+  return m_windows_span[rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 add(Span<const std::byte> elem)
 {
-  return m_node_window_base->add(elem);
+  m_barrier->wait();
+  if (elem.size() % m_sizeof_type != 0) {
+    ARCCORE_FATAL("Sizeof elem not valid");
+  }
+  m_windows_span[m_my_rank].addRange(elem);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 add()
 {
-  return m_node_window_base->add();
+  m_barrier->wait();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
-  m_node_window_base->addToAnotherSegment(rank, elem);
+  if (elem.size() % m_sizeof_type != 0) {
+    ARCCORE_FATAL("Sizeof elem not valid");
+  }
+
+  m_target_segments_span[m_my_rank] = rank;
+  m_barrier->wait();
+
+  bool is_found = false;
+  for (const Int32 rank_asked : m_target_segments_span) {
+    if (rank_asked == rank) {
+      if (!is_found) {
+        is_found = true;
+      }
+      else {
+        ARCANE_FATAL("Two subdomains ask same rank for addToAnotherSegment()");
+      }
+    }
+  }
+
+  m_windows_span[rank].addRange(elem);
+  m_barrier->wait();
+  m_target_segments_span[m_my_rank] = -1;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 addToAnotherSegment()
 {
-  m_node_window_base->addToAnotherSegment();
+  m_barrier->wait();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
-reserve(Int64 new_nb_elem_segment_capacity)
+void SharedMemoryMachineShMemWinBaseInternal::
+reserve(Int64 new_capacity)
 {
-  m_node_window_base->reserve(new_nb_elem_segment_capacity * static_cast<Int64>(m_sizeof_elem));
+  m_barrier->wait();
+  m_windows_span[m_my_rank].reserve(new_capacity);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 reserve()
 {
-  m_node_window_base->reserve();
+  m_barrier->wait();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
-resize(Int64 new_nb_elem_segment)
+void SharedMemoryMachineShMemWinBaseInternal::
+resize(Int64 new_size)
 {
-  m_node_window_base->resize(new_nb_elem_segment * static_cast<Int64>(m_sizeof_elem));
+  m_barrier->wait();
+  m_windows_span[m_my_rank].resize(new_size);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 resize()
 {
-  m_node_window_base->resize();
+  m_barrier->wait();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowBase::
+void SharedMemoryMachineShMemWinBaseInternal::
 shrink()
 {
-  m_node_window_base->shrink();
+  m_barrier->wait();
+  m_windows_span[m_my_rank].shrink();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

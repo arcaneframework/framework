@@ -5,22 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowVariableBase.h                    (C) 2000-2026 */
+/* MachineShMemWinVariableBase.h                    (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
+/* Allocateur mémoire utilisant la classe MachineShMemWinBase.    */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/DynamicMachineMemoryWindowVariableBase.h"
+#include "arcane/core/MachineShMemWinVariableBase.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IData.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/DynamicMachineMemoryWindowBase.h"
+#include "arcane/core/MachineShMemWinBase.h"
 #include "arcane/core/IVariable.h"
 
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arccore/common/AllocatedMemoryInfo.h"
@@ -35,8 +35,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DynamicMachineMemoryWindowVariableBase::
-DynamicMachineMemoryWindowVariableBase(IVariable* var)
+MachineShMemWinVariableBase::
+MachineShMemWinVariableBase(IVariable* var)
 : m_var(var)
 {
   if (!(m_var->property() & IVariable::PInShMem)) {
@@ -47,41 +47,41 @@ DynamicMachineMemoryWindowVariableBase(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowVariableBase::
+Span<std::byte> MachineShMemWinVariableBase::
 segmentView() const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  return DynamicMachineMemoryWindowMemoryAllocator::segmentView(data);
+  return MachineShMemWinMemoryAllocator::segmentView(data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowVariableBase::
+Span<std::byte> MachineShMemWinVariableBase::
 segmentView(Int32 rank) const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  return DynamicMachineMemoryWindowMemoryAllocator::segmentView(data, rank);
+  return MachineShMemWinMemoryAllocator::segmentView(data, rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> DynamicMachineMemoryWindowVariableBase::
+ConstArrayView<Int32> MachineShMemWinVariableBase::
 machineRanks() const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  return DynamicMachineMemoryWindowMemoryAllocator::machineRanks(data);
+  return MachineShMemWinMemoryAllocator::machineRanks(data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowVariableBase::
+void MachineShMemWinVariableBase::
 barrier() const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  DynamicMachineMemoryWindowMemoryAllocator::barrier(data);
+  MachineShMemWinMemoryAllocator::barrier(data);
 }
 
 /*---------------------------------------------------------------------------*/

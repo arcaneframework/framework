@@ -29,7 +29,7 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
@@ -51,7 +51,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
-#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/internal/SerializeMessageList.h"
@@ -368,7 +368,7 @@ class MpiParallelMng::Impl
   explicit Impl(MpiParallelMng* pm)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
-  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
+  , m_alloc(makeRef(new MachineShMemWinMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
@@ -380,12 +380,12 @@ class MpiParallelMng::Impl
     return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createWindow(sizeof_segment, sizeof_type));
   }
 
-  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createDynamicWindow(sizeof_segment, sizeof_type));
   }
 
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  IMemoryAllocator* machineShMemWinMemoryAllocator() override
   {
     return m_alloc.get();
   }
@@ -393,7 +393,7 @@ class MpiParallelMng::Impl
  private:
 
   MpiParallelMng* m_parallel_mng;
-  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
+  Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -569,7 +569,7 @@ initialize()
     m_trace->warning() << "MpiParallelMng already initialized";
     return;
   }
-	
+
   m_trace->info() << "Initialisation de MpiParallelMng";
   m_sequential_parallel_mng->initialize();
 

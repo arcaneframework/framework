@@ -5,18 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowMemoryAllocator.h                 (C) 2000-2026 */
+/* MachineShMemWinMemoryAllocator.h                 (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
+/* Allocateur mémoire utilisant la classe MachineShMemWinBase.    */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/DynamicMachineMemoryWindowBase.h"
+#include "arcane/core/MachineShMemWinBase.h"
 
 #include "arccore/common/AllocatedMemoryInfo.h"
 
@@ -31,25 +31,25 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DynamicMachineMemoryWindowMemoryAllocator::
-DynamicMachineMemoryWindowMemoryAllocator(IParallelMng* pm)
+MachineShMemWinMemoryAllocator::
+MachineShMemWinMemoryAllocator(IParallelMng* pm)
 : m_pm(pm)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllocatedMemoryInfo DynamicMachineMemoryWindowMemoryAllocator::
+AllocatedMemoryInfo MachineShMemWinMemoryAllocator::
 allocate(MemoryAllocationArgs, Int64 new_size)
 {
   if (new_size <= 0) {
     return { nullptr, 0 };
   }
 
-  constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
+  constexpr Int64 offset = sizeof(MachineShMemWinBase*);
   const Int64 new_size_with_offset = offset + new_size;
 
-  auto* win_ptr = new DynamicMachineMemoryWindowBase(m_pm, new_size_with_offset, 1);
+  auto* win_ptr = new MachineShMemWinBase(m_pm, new_size_with_offset, 1);
 
   std::byte* addr_base = win_ptr->segmentView().data();
   std::byte* addr_after_offset = addr_base + offset;
@@ -57,7 +57,7 @@ allocate(MemoryAllocationArgs, Int64 new_size)
   std::memcpy(addr_base, &win_ptr, offset);
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
-  m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::allocate"
+  m_pm->traceMng()->debug() << "MachineShMemWinMemoryAllocator::allocate"
                             << " -- ptr.size() : " << new_size
                             << " -- offset : " << offset
                             << " -- win_size (offset+ptr.size()) : " << new_size_with_offset
@@ -71,16 +71,16 @@ allocate(MemoryAllocationArgs, Int64 new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllocatedMemoryInfo DynamicMachineMemoryWindowMemoryAllocator::
+AllocatedMemoryInfo MachineShMemWinMemoryAllocator::
 reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
   if (current_ptr.baseAddress() == nullptr) {
     return allocate({}, new_size);
   }
 
-  DynamicMachineMemoryWindowBase* win = _windowBase(current_ptr);
+  MachineShMemWinBase* win = _windowBase(current_ptr);
 
-  constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
+  constexpr Int64 offset = sizeof(MachineShMemWinBase*);
 
   const Int64 new_size_with_offset = offset + new_size;
 
@@ -93,7 +93,7 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
   std::byte* addr_after_offset = addr_base + offset;
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
-  m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::reallocate"
+  m_pm->traceMng()->debug() << "MachineShMemWinMemoryAllocator::reallocate"
                             << " -- old_size : " << d_old_size
                             << " -- old_addr_base : " << d_old_addr_base
                             << " -- new ptr.size() : " << new_size
@@ -109,17 +109,17 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowMemoryAllocator::
+void MachineShMemWinMemoryAllocator::
 deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
   if (ptr.baseAddress() == nullptr) {
     return;
   }
 
-  DynamicMachineMemoryWindowBase* win_ptr = _windowBase(ptr);
+  MachineShMemWinBase* win_ptr = _windowBase(ptr);
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
-  m_pm->traceMng()->debug() << "DynamicMachineMemoryWindowMemoryAllocator::deallocate"
+  m_pm->traceMng()->debug() << "MachineShMemWinMemoryAllocator::deallocate"
                             << " -- ptr.size() : " << ptr.size()
                             << " -- win_size (offset+ptr.size()) : " << win_ptr->segmentView().size()
                             << " -- addr_base : " << win_ptr->segmentView().data();
@@ -131,7 +131,7 @@ deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> DynamicMachineMemoryWindowMemoryAllocator::
+ConstArrayView<Int32> MachineShMemWinMemoryAllocator::
 machineRanks(AllocatedMemoryInfo ptr)
 {
   return _windowBase(ptr)->machineRanks();
@@ -140,7 +140,7 @@ machineRanks(AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DynamicMachineMemoryWindowMemoryAllocator::
+void MachineShMemWinMemoryAllocator::
 barrier(AllocatedMemoryInfo ptr)
 {
   _windowBase(ptr)->barrier();
@@ -149,40 +149,40 @@ barrier(AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowMemoryAllocator::
+Span<std::byte> MachineShMemWinMemoryAllocator::
 segmentView(AllocatedMemoryInfo ptr)
 {
   const Span<std::byte> view = _windowBase(ptr)->segmentView();
-  constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
+  constexpr Int64 offset = sizeof(MachineShMemWinBase*);
   return view.subSpan(offset, view.size() - offset);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowMemoryAllocator::
+Span<std::byte> MachineShMemWinMemoryAllocator::
 segmentView(AllocatedMemoryInfo ptr, Int32 rank)
 {
   const Span<std::byte> view = _windowBase(ptr)->segmentView(rank);
-  constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
+  constexpr Int64 offset = sizeof(MachineShMemWinBase*);
   return view.subSpan(offset, view.size() - offset);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DynamicMachineMemoryWindowBase* DynamicMachineMemoryWindowMemoryAllocator::
+MachineShMemWinBase* MachineShMemWinMemoryAllocator::
 _windowBase(AllocatedMemoryInfo ptr)
 {
-  constexpr Int64 offset = sizeof(DynamicMachineMemoryWindowBase*);
+  constexpr Int64 offset = sizeof(MachineShMemWinBase*);
 
   std::byte* addr_after_offset = static_cast<std::byte*>(ptr.baseAddress());
   std::byte* addr_base = addr_after_offset - offset;
 
-  DynamicMachineMemoryWindowBase* win_ptr = *reinterpret_cast<DynamicMachineMemoryWindowBase**>(addr_base);
+  MachineShMemWinBase* win_ptr = *reinterpret_cast<MachineShMemWinBase**>(addr_base);
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
-  std::cout << "DynamicMachineMemoryWindowMemoryAllocator::_windowBase"
+  std::cout << "MachineShMemWinMemoryAllocator::_windowBase"
             << " -- ptr.size() : " << ptr.size()
             << " -- offset : " << offset
             << " -- addr_base : " << addr_base
@@ -193,7 +193,7 @@ _windowBase(AllocatedMemoryInfo ptr)
   {
     Int64 size_obj = win_ptr->segmentView().size();
     if (size_obj != offset + ptr.size()) {
-      // std::cout << "ERROR DynamicMachineMemoryWindowMemoryAllocator::_windowBase"
+      // std::cout << "ERROR MachineShMemWinMemoryAllocator::_windowBase"
       //                           << " -- win_size : " << size_obj << std::endl;
       ARCANE_FATAL("ptr error");
     }

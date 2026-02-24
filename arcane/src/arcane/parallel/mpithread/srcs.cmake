@@ -11,6 +11,6 @@ set(ARCANE_SOURCES
   internal/HybridMachineMemoryWindowBaseInternalCreator.h
   internal/HybridMachineMemoryWindowBaseInternal.cc
   internal/HybridMachineMemoryWindowBaseInternal.h
-  internal/HybridDynamicMachineMemoryWindowBaseInternal.cc
-  internal/HybridDynamicMachineMemoryWindowBaseInternal.h
+  internal/HybridMachineShMemWinBaseInternal.cc
+  internal/HybridMachineShMemWinBaseInternal.h
 )

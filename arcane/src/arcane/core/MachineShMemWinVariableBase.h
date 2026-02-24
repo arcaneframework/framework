@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMachineMemoryWindowVariableBase.h                    (C) 2000-2026 */
+/* MachineShMemWinVariableBase.h                    (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe DynamicMachineMemoryWindowBase.    */
+/* Allocateur mémoire utilisant la classe MachineShMemWinBase.    */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWVARIABLEBASE_H
-#define ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWVARIABLEBASE_H
+#ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLEBASE_H
+#define ARCANE_CORE_MACHINESHMEMWINVARIABLEBASE_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ namespace Arcane
  * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
  * la propriété "IVariable::PShMem".
  */
-class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowVariableBase
+class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 {
 
  public:
@@ -43,7 +43,7 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowVariableBase
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PShMem".
    */
-  explicit DynamicMachineMemoryWindowVariableBase(IVariable* var);
+  explicit MachineShMemWinVariableBase(IVariable* var);
 
  public:
 

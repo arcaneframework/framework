@@ -91,8 +91,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/ParallelMngInternal.h
   internal/ParallelMngInternal.cc
   internal/IItemFamilySerializerMngInternal.h
-  internal/DynamicMachineMemoryWindowMemoryAllocator.cc
-  internal/DynamicMachineMemoryWindowMemoryAllocator.h
+  internal/MachineShMemWinMemoryAllocator.cc
+  internal/MachineShMemWinMemoryAllocator.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -499,12 +499,12 @@ set(ARCANE_ORIGINAL_SOURCES
   DomLibXml2V2.cc
   DomUtils.cc
   DomUtils.h
-  DynamicMachineMemoryWindow.h
-  DynamicMachineMemoryWindowBase.cc
-  DynamicMachineMemoryWindowBase.h
-  DynamicMachineMemoryWindowVariable.h
-  DynamicMachineMemoryWindowVariableBase.cc
-  DynamicMachineMemoryWindowVariableBase.h
+  MachineShMemWin.h
+  MachineShMemWinBase.cc
+  MachineShMemWinBase.h
+  MachineShMemWinVariable.h
+  MachineShMemWinVariableBase.cc
+  MachineShMemWinVariableBase.h
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
