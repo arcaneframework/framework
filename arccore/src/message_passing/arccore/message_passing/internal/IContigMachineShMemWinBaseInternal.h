@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMachineMemoryWindowBaseInternal.h                          (C) 2000-2025 */
+/* IContigMachineShMemWinBaseInternal.h                        (C) 2000-2026 */
 /*                                                                           */
 /* Interface de classe permettant de créer une fenêtre mémoire pour un noeud */
 /* de calcul. Cette fenêtre sera contigüe en mémoire.                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_ICONTIGMACHINESHMEMWINBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSING_INTERNAL_ICONTIGMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,11 +36,11 @@ namespace Arcane::MessagePassing
  * Cette fenêtre sera contigüe en mémoire et sera accessible par
  * tous les processus du noeud.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
+class ARCCORE_MESSAGEPASSING_EXPORT IContigMachineShMemWinBaseInternal
 {
  public:
 
-  virtual ~IMachineMemoryWindowBaseInternal() = default;
+  virtual ~IContigMachineShMemWinBaseInternal() = default;
 
  public:
 

@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMachineMemoryWindowBaseInternal.h                        (C) 2000-2025 */
+/* MpiContigMachineShMemWinBaseInternal.h                      (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour un noeud              */
 /* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
 /* d'un même noeud.                                                          */
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
 
 #include "arccore/base/FatalErrorException.h"
 
@@ -25,8 +25,8 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineMemoryWindowBaseInternal::
-MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
+MpiContigMachineShMemWinBaseInternal::
+MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win()
 , m_win_sizeof_segments()
 , m_win_sum_sizeof_segments()
@@ -235,8 +235,8 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineMemoryWindowBaseInternal::
-~MpiMachineMemoryWindowBaseInternal()
+MpiContigMachineShMemWinBaseInternal::
+~MpiContigMachineShMemWinBaseInternal()
 {
   MPI_Win_free(&m_win);
   MPI_Win_free(&m_win_sizeof_segments);
@@ -246,7 +246,7 @@ MpiMachineMemoryWindowBaseInternal::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiMachineMemoryWindowBaseInternal::
+Int32 MpiContigMachineShMemWinBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -255,7 +255,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiContigMachineShMemWinBaseInternal::
 segmentView()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
@@ -267,7 +267,7 @@ segmentView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiContigMachineShMemWinBaseInternal::
 segmentView(Int32 rank)
 {
   Int32 pos = -1;
@@ -290,7 +290,7 @@ segmentView(Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<std::byte> MpiContigMachineShMemWinBaseInternal::
 windowView()
 {
   return m_window_span;
@@ -299,7 +299,7 @@ windowView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiContigMachineShMemWinBaseInternal::
 segmentConstView() const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
@@ -311,7 +311,7 @@ segmentConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiContigMachineShMemWinBaseInternal::
 segmentConstView(Int32 rank) const
 {
   Int32 pos = -1;
@@ -334,7 +334,7 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+Span<const std::byte> MpiContigMachineShMemWinBaseInternal::
 windowConstView() const
 {
   return m_window_span;
@@ -343,7 +343,7 @@ windowConstView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiMachineMemoryWindowBaseInternal::
+void MpiContigMachineShMemWinBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_segments_span[m_comm_machine_rank] = new_sizeof_segment;
@@ -380,7 +380,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> MpiMachineMemoryWindowBaseInternal::
+ConstArrayView<Int32> MpiContigMachineShMemWinBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -389,7 +389,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiMachineMemoryWindowBaseInternal::
+void MpiContigMachineShMemWinBaseInternal::
 barrier() const
 {
   MPI_Barrier(m_comm_machine);

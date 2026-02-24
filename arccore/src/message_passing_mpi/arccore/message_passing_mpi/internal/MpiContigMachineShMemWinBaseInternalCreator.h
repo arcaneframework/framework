@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMachineMemoryWindowBaseInternalCreator.h                 (C) 2000-2025 */
+/* MpiContigMachineShMemWinBaseInternalCreator.h               (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
-/* MpiMachineMemoryWindowBaseInternal.                                       */
+/* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IContigMachineShMemWinBaseInternal.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -31,24 +31,24 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MpiMachineMemoryWindowBaseInternal;
+class MpiContigMachineShMemWinBaseInternal;
 class MpiMachineShMemWinBaseInternal;
 class MpiMultiMachineShMemWinBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternalCreator
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiContigMachineShMemWinBaseInternalCreator
 {
  public:
 
-  explicit MpiMachineMemoryWindowBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size);
+  explicit MpiContigMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size);
 
-  ~MpiMachineMemoryWindowBaseInternalCreator() = default;
+  ~MpiContigMachineShMemWinBaseInternalCreator() = default;
 
  public:
 
-  MpiMachineMemoryWindowBaseInternal* createWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
+  MpiContigMachineShMemWinBaseInternal* createWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
   MpiMachineShMemWinBaseInternal* createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
   MpiMultiMachineShMemWinBaseInternal* createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type) const;
 

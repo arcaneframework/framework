@@ -1,25 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMachineMemoryWindowBaseInternal.h                        (C) 2000-2025 */
+/* MpiContigMachineShMemWinBaseInternal.h                      (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour un noeud              */
 /* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
 /* d'un même noeud.                                                          */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IContigMachineShMemWinBaseInternal.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -29,14 +29,14 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternal
-: public IMachineMemoryWindowBaseInternal
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiContigMachineShMemWinBaseInternal
+: public IContigMachineShMemWinBaseInternal
 {
  public:
 
-  explicit MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
-  ~MpiMachineMemoryWindowBaseInternal() override;
+  ~MpiContigMachineShMemWinBaseInternal() override;
 
  public:
 
