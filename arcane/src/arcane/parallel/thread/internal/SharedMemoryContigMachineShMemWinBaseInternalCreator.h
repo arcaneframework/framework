@@ -5,70 +5,69 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.h                                       (C) 2000-2026 */
+/* SharedMemoryContigMachineShMemWinBaseInternalCreator.h      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* Classe permettant de créer des objets de type                             */
+/* SharedMemoryContigMachineShMemWinBaseInternal. Une instance de cet objet  */
+/* doit être partagée par tous les threads.                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
+
+#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
-
-#include "arcane/accelerator/core/Runner.h"
+#include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher;
+class SharedMemoryContigMachineShMemWinBaseInternal;
+class SharedMemoryMachineShMemWinBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \internal
- * \brief Partie interne de IParallelMng.
- */
-class ARCANE_CORE_EXPORT ParallelMngInternal
-: public IParallelMngInternal
+class SharedMemoryContigMachineShMemWinBaseInternalCreator
 {
  public:
 
-  explicit ParallelMngInternal(ParallelMngDispatcher* pm);
-
-  ~ParallelMngInternal() override = default;
+  SharedMemoryContigMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier);
+  ~SharedMemoryContigMachineShMemWinBaseInternalCreator() = default;
 
  public:
 
-  Runner runner() const override;
-  RunQueue queue() const override;
-  bool isAcceleratorAware() const override;
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
-  void setDefaultRunner(const Runner& runner) override;
-  Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override;
+  SharedMemoryContigMachineShMemWinBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  SharedMemoryMachineShMemWinBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
+  Int32 m_nb_rank = 0;
+  Int64 m_sizeof_window = 0;
+  UniqueArray<Int32> m_ranks;
+  IThreadBarrier* m_barrier = nullptr;
+
+  Ref<UniqueArray<std::byte>> m_window;
+  Ref<UniqueArray<Int64>> m_sizeof_segments;
+  Ref<UniqueArray<Int64>> m_sum_sizeof_segments;
+  //-------
+  Ref<UniqueArray<UniqueArray<std::byte>>> m_windows;
+  Ref<UniqueArray<Int32>> m_target_segments;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

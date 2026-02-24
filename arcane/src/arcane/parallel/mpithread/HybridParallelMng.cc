@@ -27,14 +27,14 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
-#include "arcane/core/internal/DynamicMachineMemoryWindowMemoryAllocator.h"
+#include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 #include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
-#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternal.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 
@@ -167,28 +167,28 @@ class HybridParallelMng::Impl
 {
  public:
 
-  explicit Impl(HybridParallelMng* pm, HybridMachineMemoryWindowBaseInternalCreator* window_creator)
+  explicit Impl(HybridParallelMng* pm, HybridContigMachineShMemWinBaseInternalCreator* window_creator)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
-  , m_alloc(makeRef(new DynamicMachineMemoryWindowMemoryAllocator(pm)))
+  , m_alloc(makeRef(new MachineShMemWinMemoryAllocator(pm)))
   {}
 
   ~Impl() override = default;
 
  public:
 
-  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
-  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
-  IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() override
+  IMemoryAllocator* machineShMemWinMemoryAllocator() override
   {
     return m_alloc.get();
   }
@@ -196,8 +196,8 @@ class HybridParallelMng::Impl
  private:
 
   HybridParallelMng* m_parallel_mng;
-  HybridMachineMemoryWindowBaseInternalCreator* m_window_creator;
-  Ref<DynamicMachineMemoryWindowMemoryAllocator> m_alloc;
+  HybridContigMachineShMemWinBaseInternalCreator* m_window_creator;
+  Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -233,7 +233,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
   // le même nombre de rang locaux (m_local_nb_rank)
   m_local_rank = bi.local_rank;
   m_local_nb_rank = bi.local_nb_rank;
-  
+
   Int32 mpi_rank = m_mpi_parallel_mng->commRank();
   Int32 mpi_size = m_mpi_parallel_mng->commSize();
 
@@ -329,7 +329,7 @@ initialize()
     m_trace->warning() << "HybridParallelMng already initialized";
     return;
   }
-	
+
   m_is_initialized = true;
 }
 
@@ -738,7 +738,7 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   Int32 nb_kept_rank = kept_ranks.size();
 
   // Détermine le nouveau nombre de rangs locaux par rang MPI.
-  
+
   // Regarde si je suis dans les listes des rangs conservés et si oui
   // détermine mon rang dans le IParallelMng créé
   Int32 first_global_rank_in_this_mpi = m_global_rank - m_local_rank;

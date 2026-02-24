@@ -4,7 +4,6 @@ set(SOURCES
   MessagePassingMpiGlobal.cc
   MessagePassingMpiEnum.cc
   MpiAdapter.cc
-  MpiAllInOneMachineMemoryWindowBase.cc
   MpiDatatype.h
   MpiDatatype.cc
   MpiControlDispatcher.cc
@@ -13,10 +12,10 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
-  MpiMachineMemoryWindowBaseInternal.cc
-  MpiMachineMemoryWindowBaseInternalCreator.cc
-  MpiDynamicMachineMemoryWindowBaseInternal.cc
-  MpiDynamicMultiMachineMemoryWindowBaseInternal.cc
+  MpiContigMachineShMemWinBaseInternal.cc
+  MpiContigMachineShMemWinBaseInternalCreator.cc
+  MpiMachineShMemWinBaseInternal.cc
+  MpiMultiMachineShMemWinBaseInternal.cc
 
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
@@ -24,13 +23,12 @@ set(SOURCES
   internal/IMpiProfiling.h
   internal/MessagePassingMpiEnum.h
   internal/MpiAdapter.h
-  internal/MpiAllInOneMachineMemoryWindowBase.h
   internal/MpiControlDispatcher.h
   internal/MpiLock.h
-  internal/MpiMachineMemoryWindowBaseInternal.h
-  internal/MpiMachineMemoryWindowBaseInternalCreator.h
-  internal/MpiDynamicMachineMemoryWindowBaseInternal.h
-  internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h
+  internal/MpiContigMachineShMemWinBaseInternal.h
+  internal/MpiContigMachineShMemWinBaseInternalCreator.h
+  internal/MpiMachineShMemWinBaseInternal.h
+  internal/MpiMultiMachineShMemWinBaseInternal.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
   internal/MpiSerializeDispatcher.h

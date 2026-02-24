@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelMng.h                                         (C) 2000-2025 */
+/* HybridParallelMng.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des messages hybrides MPI/Mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ class MpiParallelMng;
 
 namespace Arcane::MessagePassing
 {
-class HybridMachineMemoryWindowBaseInternalCreator;
+class HybridContigMachineShMemWinBaseInternalCreator;
 class ISharedMemoryMessageQueue;
 class HybridMessageQueue;
 class HybridParallelMng;
@@ -58,7 +58,7 @@ struct HybridParallelMngBuildInfo
   MpiThreadAllDispatcher* all_dispatchers = nullptr;
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
-  HybridMachineMemoryWindowBaseInternalCreator* window_creator;
+  HybridContigMachineShMemWinBaseInternalCreator* window_creator;
 };
 
 /*---------------------------------------------------------------------------*/
