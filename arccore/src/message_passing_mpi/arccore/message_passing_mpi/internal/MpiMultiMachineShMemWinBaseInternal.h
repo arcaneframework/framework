@@ -32,6 +32,9 @@ namespace Arcane::MessagePassing::Mpi
  * \brief Classe basée sur MpiMachineShMemWinBaseInternal mais
  * pouvant gérer plusieurs segments par processus.
  *
+ * Rappels importants : chaque fenêtre principale possède qu'un seul segment
+ * (et non un segment par processus). Donc un MPI_Win = un segment.
+ *
  * Un segment est identifié par le rang de son propriétaire d'origine et par
  * un id (qui est simplement la position du segment dans la liste des segments
  * locaux).
@@ -40,6 +43,12 @@ namespace Arcane::MessagePassing::Mpi
  * on doit calculer la position de ces informations avec
  * notre rang machine et la position de ce segment localement.
  * infos_pos = pos_seg + rank * m_nb_segments_per_proc
+ *
+ * Pour l'instant, il est nécessaire d'avoir le même nombre de segments par
+ * processus.
+ *
+ * Toutes les tailles utilisées sont en octet. \a sizeof_type est utilisé
+ * uniquement par MPI et à des fins de vérification.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
 {
@@ -125,7 +134,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * \brief Méthode permettant de demander l'ajout d'éléments dans l'un de nos
    * segments.
    *
-   * Appel non collectif et pouvant être effectué par plusieurs threads en
+   * Appel non collectif
+   *
+   * et pouvant être effectué par plusieurs threads en
    * même temps (si le paramètre \a num_seg est différent pour chaque thread).
    * Un appel à cette méthode avec un même \a num_seg avant l'appel à
    * \a executeAdd() remplacera le premier appel.
@@ -143,6 +154,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * \brief Méthode permettant d'exécuter les requêtes d'ajout.
    *
    * Appel collectif.
+   *
+   * En mode hybride, ne doit être appelée que par un seul thread par
+   * processus.
    */
   void executeAdd();
 
@@ -150,7 +164,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * \brief Méthode permettant de demander l'ajout d'éléments dans un des
    * segments de la fenêtre.
    *
-   * Appel non collectif et pouvant être effectué par plusieurs threads en
+   * Appel non collectif
+   *
+   * et pouvant être effectué par plusieurs threads en
    * même temps (si le paramètre \a thread est différent pour chaque thread).
    * Un appel à cette méthode avec un même \a thread avant l'appel à
    * \a executeaddToAnotherSegment() remplacera le premier appel.
@@ -174,6 +190,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * segments d'autres processus.
    *
    * Appel collectif.
+   *
+   * En mode hybride, ne doit être appelée que par un seul thread par
+   * processus.
    */
   void executeAddToAnotherSegment();
 
@@ -193,7 +212,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * Pour redimensionner le segment, les méthodes \a resize() sont
    * disponibles.
    *
-   * Appel non collectif et pouvant être effectué par plusieurs threads en
+   * Appel non collectif
+   *
+   * et pouvant être effectué par plusieurs threads en
    * même temps (si le paramètre \a num_seg est différent pour chaque thread).
    * Un appel à cette méthode avec un même \a num_seg avant l'appel à
    * \a executeReserve() remplacera le premier appel.
@@ -211,6 +232,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * \brief Méthode permettant d'exécuter les requêtes de réservation.
    *
    * Appel collectif.
+   *
+   * En mode hybride, ne doit être appelée que par un seul thread par
+   * processus.
    */
   void executeReserve();
 
@@ -224,7 +248,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * Si la taille fournie est supérieur à l'espace mémoire réservé au segment,
    * un realloc sera effectué.
    *
-   * Appel non collectif et pouvant être effectué par plusieurs threads en
+   * Appel non collectif
+   *
+   * et pouvant être effectué par plusieurs threads en
    * même temps (si le paramètre \a num_seg est différent pour chaque thread).
    * Un appel à cette méthode avec un même \a num_seg avant l'appel à
    * \a executeResize() remplacera le premier appel.
@@ -242,6 +268,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * \brief Méthode permettant d'exécuter les requêtes de redimensionnement.
    *
    * Appel collectif.
+   *
+   * En mode hybride, ne doit être appelée que par un seul thread par
+   * processus.
    */
   void executeResize();
 
@@ -250,12 +279,25 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
    * segments au minimum nécessaire.
    *
    * Appel collectif.
+   *
+   * En mode hybride, ne doit être appelée que par un seul thread par
+   * processus.
    */
   void executeShrink();
 
  private:
 
+  /*!
+   * \brief Méthode permettant de demander une réallocation.
+   * \param owner_pos_segment Le segment à réallouer.
+   * \param new_capacity La nouvelle capacité.
+   */
   void _requestRealloc(Int32 owner_pos_segment, Int64 new_capacity) const;
+
+  /*!
+   * \brief Méthode permettant de supprimer une demande de réallocation.
+   * \param owner_pos_segment Le segment à ne pas réallouer.
+   */
   void _requestRealloc(Int32 owner_pos_segment) const;
   void _executeRealloc();
   void _realloc();
@@ -265,18 +307,49 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
 
  private:
 
+  //! Tableau contenant toutes les fenêtres principales.
+  //!
+  //! Rappel : un MPI_Win = un segment.
+  //!
+  //! Segment n°S du sous-domaine rang R :
+  //! mpi_win_seg = S + R * m_nb_segments_per_proc
   UniqueArray<MPI_Win> m_all_mpi_win;
-  // Tableau avec les vues sur les segments. La taille des vues correspond à tout
-  // l'espace mémoire réservé.
+  //! Tableau avec les vues sur les segments. La taille des vues correspond à tout
+  //! l'espace mémoire réservé.
   UniqueArray<Span<std::byte>> m_reserved_part_span;
 
+  //! Fenêtre contiguë avec taille de redimensionnement (ou -1 si
+  //! redimensionnement non demandé).
   MPI_Win m_win_need_resize;
+  //! Vue globale sur fenêtre contiguë avec taille de redimensionnement
+  //! (ou -1 si redimensionnement non demandé).
+  //!
+  //! Segment n°S du sous-domaine rang R :
+  //! need_resize_seg = S + R * m_nb_segments_per_proc
   Span<Int64> m_need_resize;
 
+  //! Fenêtre contiguë avec taille des fenêtres principales.
   MPI_Win m_win_actual_sizeof;
+  //! Vue globale sur fenêtre contiguë avec taille des fenêtres principales.
+  //!
+  //! Segment n°S du sous-domaine rang R :
+  //! sizeof_used_part_seg = S + R * m_nb_segments_per_proc
   Span<Int64> m_sizeof_used_part;
 
+  //! Fenêtre contiguë avec demande de modification de segment d'un autre
+  //! sous-domaine.
   MPI_Win m_win_target_segments;
+  //! Vue globale sur fenêtre contiguë avec demande de modification de segment
+  //! d'un autre sous-domaine.
+  //!
+  //! En considérant qu'un proprio de segment SD veuille modifier le
+  //! segment ST, il opèrera cette modification :
+  //!
+  //! m_target_segments[ST] = SD
+  //! (Voir méthode \a requestAddToAnotherSegment()).
+  //!
+  //! Segment n°S du sous-domaine rang R :
+  //! target_segments_seg = S + R * m_nb_segments_per_proc
   Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;
@@ -288,9 +361,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMultiMachineShMemWinBaseInternal
 
   ConstArrayView<Int32> m_machine_ranks;
 
+  //! Tableau contenant les requests d'ajouts.
+  //! Un emplacement par segment local
+  //! (m_add_requests.size() = m_nb_segments_per_proc).
   UniqueArray<Span<const std::byte>> m_add_requests;
   bool m_add_requested = false;
 
+  //! Tableau contenant les requests de redimensionnement.
+  //! Un emplacement par segment local
+  //! (m_resize_requests.size() = m_nb_segments_per_proc).
   UniqueArray<Int64> m_resize_requests;
   bool m_resize_requested = false;
 };

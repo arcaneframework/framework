@@ -426,6 +426,9 @@ executeAddToAnotherSegment()
 {
   MPI_Barrier(m_comm_machine);
 
+  // Pour chaque segment appartenant à mon processus, je regarde si quelqu'un
+  // veut le modifier.
+  // is_my_seg_edited sera utilisé à la fin de la méthode.
   auto is_my_seg_edited = std::make_unique<bool[]>(m_comm_machine_size);
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
     for (const Int32 rank_asked : m_target_segments) {
@@ -436,12 +439,17 @@ executeAddToAnotherSegment()
     }
   }
 
+  // Si je n'ai pas demandé de modification de segment, j'effectue uniquement
+  // les réallocations si besoin (d'autres processus peuvent me demander des
+  // réallocations).
   if (!m_add_requested) {
     _executeRealloc();
   }
 
   else {
     m_add_requested = false;
+
+    // Un segment ne peut être modifié que par un seul thread à la fois. On vérifie cela ici :
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
       const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
       const Int32 seg_needs_to_edit = m_target_segments[segment_infos_pos];
@@ -463,6 +471,7 @@ executeAddToAnotherSegment()
 
     _executeRealloc();
 
+    // On ajoute les éléments dans les segments.
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
       if (m_add_requests[num_seg].empty() || m_add_requests[num_seg].data() == nullptr) {
         continue;
@@ -477,6 +486,7 @@ executeAddToAnotherSegment()
       const Int64 actual_sizeof_win = m_sizeof_used_part[target_segment_infos_pos];
       const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests[num_seg].size();
 
+      // On récupère le segment à modifier.
       Span<std::byte> rank_reserved_part_span;
       {
         MPI_Aint size_seg;
@@ -494,6 +504,7 @@ executeAddToAnotherSegment()
         ARCCORE_FATAL("Bad realloc -- New size : {1} -- Needed size : {2}", rank_reserved_part_span.size(), future_sizeof_win);
       }
 
+      // On le modifie avec les éléments donnés dans la méthode requestAddToAnotherSegment().
       for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
         rank_reserved_part_span[pos_win] = m_add_requests[num_seg][pos_elem];
       }
@@ -505,6 +516,7 @@ executeAddToAnotherSegment()
   }
   MPI_Barrier(m_comm_machine);
 
+  // Vu que d'autres ont pu modifier nos segments, on recrée les vues.
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
     if (is_my_seg_edited[num_seg]) {
       const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
@@ -534,11 +546,12 @@ requestReserve(Int32 num_seg, Int64 new_capacity)
 
   const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
-  if (new_capacity <= m_reserved_part_span[num_seg].size()) {
-    _requestRealloc(segment_infos_pos);
-    return;
+  if (new_capacity > m_reserved_part_span[num_seg].size()) {
+    _requestRealloc(segment_infos_pos, new_capacity);
   }
-  _requestRealloc(segment_infos_pos, new_capacity);
+  else {
+    _requestRealloc(segment_infos_pos);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
