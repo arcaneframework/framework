@@ -146,8 +146,8 @@ class ARCANE_CORE_EXPORT IVariable
     /*!
      * \brief Indique que la variable doit être alloué en mémoire partagée.
      *
-     * L'allocateur DynamicMachineMemoryWindowMemoryAllocator sera utilisé.
-     * La classe DynamicMachineMemoryWindowVariable pourra être utilisé avec
+     * L'allocateur MachineShMemWinMemoryAllocator sera utilisé.
+     * La classe MachineShMemWinVariable pourra être utilisé avec
      * cette variable.
      */
     PInShMem = (1 << 12)

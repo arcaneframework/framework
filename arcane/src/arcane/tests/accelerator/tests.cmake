@@ -23,6 +23,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   ## accelerator/SimpleHydroAcceleratorService.cc
 
   arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+  arcane_add_accelerator_test_sequential(hydro_accelerator5_grid_stride4 testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_NB_GRID_STRIDE,4")
   arcane_add_accelerator_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
   arcane_add_accelerator_test_sequential(hydro_accelerator5_no_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,0")
   arcane_add_accelerator_test_sequential(hydro_accelerator5_full_memory_pool testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,7")

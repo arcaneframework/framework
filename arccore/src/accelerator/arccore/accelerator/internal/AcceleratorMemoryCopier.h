@@ -272,7 +272,7 @@ class AcceleratorSpecificMemoryCopy
     {
       auto [i] = iter();
       Int64 zindex = i * extent.size();
-      Int64 zci = indexes[i] * extent.v;
+      Int64 zci = indexes[i] * extent.size();
       for (Int32 z = 0; z < extent.v; ++z)
         destination[zci + z] = source[zindex + z];
     };
