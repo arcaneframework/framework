@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-#include <iostream>
-
 #include "alien/core/backend/IVectorConverter.h"
 #include "alien/core/backend/VectorConverterRegisterer.h"
 #include "alien/kernels/simple_csr/SimpleCSRVector.h"
@@ -23,7 +21,6 @@ class MCGGPU_to_SimpleCSR_VectorConverter : public IVectorConverter
   MCGGPU_to_SimpleCSR_VectorConverter() = default;
   ~MCGGPU_to_SimpleCSR_VectorConverter() override = default;
 
- public:
   BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();

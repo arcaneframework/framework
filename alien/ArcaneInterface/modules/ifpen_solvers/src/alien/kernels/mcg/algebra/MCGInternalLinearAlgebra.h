@@ -17,10 +17,10 @@ namespace Alien {
 class MCGInternalLinearAlgebra : public ILinearAlgebra
 {
  private:
-  typedef Alien::IMatrix MatrixType;
-  typedef Alien::IVector VectorType;
-  typedef MCGMatrix<Real,MCGInternal::eMemoryDomain::Host> MatrixImpl;
-  typedef MCGVector<Real,MCGInternal::eMemoryDomain::Host> VectorImpl;
+  using MatrixType = Alien::IMatrix;
+  using VectorType = Alien::IVector;
+  using MatrixImpl = MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>;
+  using VectorImpl = MCGVector<Real,MCGInternal::eMemoryDomain::Host>;
 
  public:
   MCGInternalLinearAlgebra();

@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-#include <iostream>
-
 #include "alien/core/backend/IMatrixConverter.h"
 #include "alien/core/backend/MatrixConverterRegisterer.h"
 #include "alien/kernels/simple_csr/SimpleCSRMatrix.h"

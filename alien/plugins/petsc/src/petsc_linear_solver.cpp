@@ -72,7 +72,9 @@ class InternalLinearSolver
 
   std::shared_ptr<ILinearAlgebra> algebra() const override;
 
-  void startNonLinear() final {}
+  void startNonLinear() override {
+    // use this method to inform solver that a new non-linear resolution starts
+  }
 
  private:
   Status m_status;

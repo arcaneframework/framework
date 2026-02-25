@@ -12,5 +12,5 @@
 #include "alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h"
 
 namespace Alien {
-typedef MCGInternalLinearAlgebra MCGLinearAlgebra;
+using MCGLinearAlgebra = MCGInternalLinearAlgebra;
 }

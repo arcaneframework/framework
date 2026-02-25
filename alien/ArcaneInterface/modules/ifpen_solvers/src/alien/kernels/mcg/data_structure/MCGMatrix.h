@@ -27,11 +27,9 @@ class MCGMatrix : public IMatrixImpl
  public:
   using MatrixInternal = MCGInternal::MatrixInternal<NumT,Domain>;
 
- public:
   MCGMatrix(const MultiMatrixImpl* multi_impl);
-  virtual ~MCGMatrix();
+  ~MCGMatrix() override;
 
- public:
   void init(
       const ISpace& row_space, const ISpace& col_space, const MatrixDistribution& dist)
   {
@@ -72,7 +70,6 @@ class MCGMatrix : public IMatrixImpl
   Space m_row_space1;
   Space m_col_space1;
 
- public:
   MatrixInternal* internal() { return m_internal; }
   const MatrixInternal* internal() const { return m_internal; }
 

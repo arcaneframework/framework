@@ -174,7 +174,9 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
     m_nearnull_space_opt = flag ;
   }
 
-  void startNonLinear() final {}
+  void startNonLinear() final {
+      // use this method to inform solver that a new non-linear resolution starts
+  }
 
  public:
   void checkError(const Arccore::String& msg, int ierr);

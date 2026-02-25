@@ -79,17 +79,17 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
     [[nodiscard]] double getElapse() const { return m_elapse.count(); }
   };
 
-  typedef SolverStatus Status;
+  using Status = SolverStatus;
 
-  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Host> MCGMatrixType;
-  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Host> MCGVectorType;
-  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Device> MCGDeviceMatrixType;
-  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Device> MCGDeviceVectorType;
+  using MCGMatrixType = MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Host>;
+  using MCGVectorType = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Host>;
+  using MCGDeviceMatrixType = MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Device>;
+  using MCGDeviceVectorType = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Device>;
 
 
-  typedef SimpleCSRMatrix<Real> CSRMatrixType;
-  typedef SimpleCSRVector<Real> CSRVectorType;
-  typedef SimpleCSRInternal::MatrixInternal<Real> CSRInternalMatrixType;
+  using CSRMatrixType = SimpleCSRMatrix<Real>;
+  using CSRVectorType = SimpleCSRVector<Real>;
+  using CSRInternalMatrixType = SimpleCSRInternal::MatrixInternal<Real>;
 
  public:
   MCGInternalLinearSolver() = delete;

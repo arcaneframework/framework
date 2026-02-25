@@ -30,7 +30,7 @@ class MCGVector : public IVectorImpl
  public:
   MCGVector(const MultiVectorImpl* multi_impl);
 
-  virtual ~MCGVector();
+  ~MCGVector() override;
 
  public:
   void init(const VectorDistribution& dist, const bool need_allocate);

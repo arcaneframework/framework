@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-#include <iostream>
-
 #include "alien/core/backend/IVectorConverter.h"
 #include "alien/core/backend/VectorConverterRegisterer.h"
 #include "alien/kernels/simple_csr/SimpleCSRVector.h"
