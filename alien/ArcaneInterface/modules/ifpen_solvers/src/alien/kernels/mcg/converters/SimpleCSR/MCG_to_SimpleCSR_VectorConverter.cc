@@ -20,25 +20,19 @@ using namespace Alien;
 class MCG_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
-  MCG_to_SimpleCSR_VectorConverter();
-  virtual ~MCG_to_SimpleCSR_VectorConverter() {}
+  MCG_to_SimpleCSR_VectorConverter() = default;
+  ~MCG_to_SimpleCSR_VectorConverter() override = default;
 
- public:
-  BackEndId sourceBackend() const
+  BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver>::name();
   }
-  BackEndId targetBackend() const
+  BackEndId targetBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
-  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
+  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const override;
 };
-
-MCG_to_SimpleCSR_VectorConverter::MCG_to_SimpleCSR_VectorConverter()
-{
-  ;
-}
 
 void
 MCG_to_SimpleCSR_VectorConverter::convert(

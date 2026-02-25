@@ -22,20 +22,17 @@ class SimpleCSR_to_MCG_BCSR_MatrixConverter : public IMatrixConverter
 {
  public:
   SimpleCSR_to_MCG_BCSR_MatrixConverter() = default;
-  virtual ~SimpleCSR_to_MCG_BCSR_MatrixConverter() = default;
+  ~SimpleCSR_to_MCG_BCSR_MatrixConverter() override = default;
 
- public:
-  BackEndId sourceBackend() const
+  BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
-  BackEndId targetBackend() const
+  BackEndId targetBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver>::name();
   }
-  void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
-  // void convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl, int i, int j)
-  // const;
+  void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const override;
 
   void _build(const SimpleCSRMatrix<Real>& sourceImpl,
     MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>& targetImpl) const;

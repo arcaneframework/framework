@@ -20,25 +20,20 @@ using namespace Alien;
 class SimpleCSR_to_MCGGPU_VectorConverter : public IVectorConverter
 {
  public:
-  SimpleCSR_to_MCGGPU_VectorConverter();
-  virtual ~SimpleCSR_to_MCGGPU_VectorConverter() {}
+  SimpleCSR_to_MCGGPU_VectorConverter() = default;
+  ~SimpleCSR_to_MCGGPU_VectorConverter() override = default;
 
  public:
-  BackEndId sourceBackend() const
+  BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
-  BackEndId targetBackend() const
+  BackEndId targetBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
-  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
-  // void convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl,int i) const;
+  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const override;
 };
-
-SimpleCSR_to_MCGGPU_VectorConverter::SimpleCSR_to_MCGGPU_VectorConverter()
-{
-}
 
 void
 SimpleCSR_to_MCGGPU_VectorConverter::convert(

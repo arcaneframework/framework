@@ -21,22 +21,19 @@ class SimpleCSR_to_MCGGPU_BCSR_MatrixConverter : public IMatrixConverter
 {
  public:
   SimpleCSR_to_MCGGPU_BCSR_MatrixConverter() = default;
-  virtual ~SimpleCSR_to_MCGGPU_BCSR_MatrixConverter() = default;
+  ~SimpleCSR_to_MCGGPU_BCSR_MatrixConverter() override = default;
 
- public:
-  BackEndId sourceBackend() const
+  BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
 
-  BackEndId targetBackend() const
+  BackEndId targetBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
 
-  void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
-  // void convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl, int i, int j)
-  // const;
+  void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const override;
 
   void _build(const SimpleCSRMatrix<Real>& sourceImpl,
     MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>& targetImpl) const;
@@ -86,7 +83,7 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::_build(
   }
 
   if (!targetImpl.isInit()) {
-    if (not targetImpl.initMatrix(MCGInternal::eMemoryDomain::Host,block_size, block_size2, local_size, global_size,
+    if (!targetImpl.initMatrix(MCGInternal::eMemoryDomain::Host,block_size, block_size2, local_size, global_size,
             row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
             partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
@@ -95,7 +92,7 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::_build(
 
   const bool success = targetImpl.initMatrixValues(MCGInternal::eMemoryDomain::Host,values.unguardedBasePointer());
 
-  if (not success) {
+  if (!success) {
     throw FatalErrorException(A_FUNCINFO, "Cannot set MCGSolver Matrix Values");
   }
 }
