@@ -102,6 +102,14 @@ _init()
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND", true))
     m_is_allow_reuse_command = (v.value() != 0);
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_NB_GRID_STRIDE", true)) {
+    Int32 n = v.value();
+    if (n <= 0)
+      n = 1;
+    m_default_nb_stride = n;
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,7 +236,7 @@ _reset()
   m_has_living_run_command = false;
   m_may_be_put_in_pool = false;
   m_shared_memory_size = 0;
-  m_nb_stride = 1;
+  m_nb_stride = m_default_nb_stride;
 }
 
 /*---------------------------------------------------------------------------*/

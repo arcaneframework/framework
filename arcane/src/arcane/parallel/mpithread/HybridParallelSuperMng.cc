@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelSuperMng.cc                                   (C) 2000-2025 */
+/* HybridParallelSuperMng.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI et mémoire partagée.           */
 /*---------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@
 
 #include "arcane/parallel/mpithread/HybridParallelMng.h"
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
 
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/AbstractService.h"
@@ -91,7 +91,7 @@ class HybridParallelMngContainer
   UniqueArray<HybridParallelMng*>* m_parallel_mng_list = nullptr;
   Mutex* m_internal_create_mutex = nullptr;
   IParallelMngContainerFactory* m_sub_builder_factory = nullptr;
-  HybridMachineMemoryWindowBaseInternalCreator* m_window_creator = nullptr;
+  HybridContigMachineShMemWinBaseInternalCreator* m_window_creator = nullptr;
 
  private:
 
@@ -162,7 +162,7 @@ build()
   m_thread_barrier = platform::getThreadImplementationService()->createBarrier();
   m_thread_barrier->init(m_local_nb_rank);
 
-  m_window_creator = new HybridMachineMemoryWindowBaseInternalCreator(m_local_nb_rank, m_thread_barrier);
+  m_window_creator = new HybridContigMachineShMemWinBaseInternalCreator(m_local_nb_rank, m_thread_barrier);
 }
 
 /*---------------------------------------------------------------------------*/

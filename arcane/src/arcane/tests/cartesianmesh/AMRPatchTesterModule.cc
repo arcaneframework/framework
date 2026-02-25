@@ -17,7 +17,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/DynamicMachineMemoryWindowVariable.h"
+#include "arcane/core/MachineShMemWinVariable.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -166,7 +166,7 @@ _test1()
 {
   VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
 
-  DynamicMachineMemoryWindowVariable var_sh(var);
+  MachineShMemWinVariable var_sh(var);
 
   auto var_compute = [&]() -> void {
     debug() << "asArray().size() : " << var.asArray().size();

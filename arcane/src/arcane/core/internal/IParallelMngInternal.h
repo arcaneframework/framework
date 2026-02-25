@@ -27,8 +27,8 @@ namespace Arcane
 
 namespace MessagePassing
 {
-  class IMachineMemoryWindowBaseInternal;
-  class IDynamicMachineMemoryWindowBaseInternal;
+  class IContigMachineShMemWinBaseInternal;
+  class IMachineShMemWinBaseInternal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \param sizeof_type La taille d'un élément du segment (en octet).
    * \return Une référence vers la nouvelle fenêtre.
    */
-  virtual Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+  virtual Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
   /*!
    * \brief Méthode permettant de créer une fenêtre mémoire dynamique sur le noeud.
@@ -84,9 +84,9 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \param sizeof_type La taille d'un élément du segment (en octet).
    * \return Une référence vers la nouvelle fenêtre.
    */
-  virtual Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+  virtual Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
-  virtual IMemoryAllocator* dynamicMachineMemoryWindowMemoryAllocator() = 0;
+  virtual IMemoryAllocator* machineShMemWinMemoryAllocator() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

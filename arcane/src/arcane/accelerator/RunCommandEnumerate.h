@@ -84,6 +84,7 @@ doIndirectGPULambda2(LoopBoundsType bounds, Lambda func, RemainingArgs... remain
     Int32 offset = blockDim.x * gridDim.x;
     Int64 nb_item = bounds.nbOriginalElement();
     SmallSpan<const Int32> ids = bounds.originalLoop().ids();
+#pragma unroll 4
     for (Int32 k = 0; k < nb_grid_stride; ++k) {
       Int32 true_i = i + (offset * k);
       if (true_i < nb_item) {
