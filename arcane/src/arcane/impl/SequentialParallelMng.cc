@@ -843,9 +843,11 @@ class SequentialParallelMng::Impl
     return makeRef(new SequentialMachineShMemWinBaseInternal(sizeof_segment, sizeof_type));
   }
 
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override
+  MemoryAllocationOptions machineShMemWinMemoryAllocator() override
   {
-    return m_alloc.get();
+    MemoryAllocationOptions aaa{ m_alloc.get() };
+    aaa.setIsCollectiveAllocator(true);
+    return aaa;
   }
 
  private:

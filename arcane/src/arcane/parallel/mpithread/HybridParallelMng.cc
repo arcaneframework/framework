@@ -188,9 +188,11 @@ class HybridParallelMng::Impl
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override
+  MemoryAllocationOptions machineShMemWinMemoryAllocator() override
   {
-    return m_alloc.get();
+    MemoryAllocationOptions aaa{ m_alloc.get() };
+    aaa.setIsCollectiveAllocator(true);
+    return aaa;
   }
 
  private:

@@ -42,12 +42,21 @@ MachineShMemWinMemoryAllocator(IParallelMng* pm)
 AllocatedMemoryInfo MachineShMemWinMemoryAllocator::
 allocate(MemoryAllocationArgs, Int64 new_size)
 {
-  if (new_size <= 0) {
-    return { nullptr, 0 };
-  }
+  // Si la taille est égal à zéro, comme on a une création collective, on doit
+  // vérifier si la taille est égal à zéro pour tous.
+  // if (m_pm->reduce(MessagePassing::ReduceMax, new_size) <= 0) {
+  //   return { nullptr, 0 };
+  // }
 
   constexpr Int64 offset = sizeof(MachineShMemWinBase*);
   const Int64 new_size_with_offset = offset + new_size;
+
+#ifdef ARCANE_DEBUG_ALLOCATOR
+  m_pm->traceMng()->debug() << "(1/2) MachineShMemWinMemoryAllocator::allocate"
+                            << " -- ptr.size() : " << new_size
+                            << " -- offset : " << offset
+                            << " -- win_size (offset+ptr.size()) : " << new_size_with_offset;
+#endif
 
   auto* win_ptr = new MachineShMemWinBase(m_pm, new_size_with_offset, 1);
 
@@ -57,10 +66,7 @@ allocate(MemoryAllocationArgs, Int64 new_size)
   std::memcpy(addr_base, &win_ptr, offset);
 
 #ifdef ARCANE_DEBUG_ALLOCATOR
-  m_pm->traceMng()->debug() << "MachineShMemWinMemoryAllocator::allocate"
-                            << " -- ptr.size() : " << new_size
-                            << " -- offset : " << offset
-                            << " -- win_size (offset+ptr.size()) : " << new_size_with_offset
+  m_pm->traceMng()->debug() << "(2/2) MachineShMemWinMemoryAllocator::allocate"
                             << " -- addr_base : " << addr_base
                             << " -- addr_after_offset : " << addr_after_offset;
 #endif
@@ -112,6 +118,8 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
 void MachineShMemWinMemoryAllocator::
 deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
+  // Grâce au allocate(), on est sûr que tout le monde a un nullptr (pas
+  // besoin de vérifier avec une réduction).
   if (ptr.baseAddress() == nullptr) {
     return;
   }
