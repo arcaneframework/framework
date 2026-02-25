@@ -106,6 +106,7 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
     // de la grille. Le nombre de pas est donné par bounds.nbStride().
     Int32 nb_grid_stride = bounds.nbStride();
     Int32 offset = blockDim.x * gridDim.x;
+#pragma unroll 4
     for (Int32 k = 0; k < nb_grid_stride; ++k) {
       Int32 true_i = i + (offset * k);
       if (true_i < bounds.nbOriginalElement()) {
