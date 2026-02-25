@@ -55,7 +55,7 @@ class ARCANE_CORE_EXPORT ParallelMngInternal
   void setDefaultRunner(const Runner& runner) override;
   Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
   Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override;
+  MemoryAllocationOptions machineShMemWinMemoryAllocator() override;
 
  private:
 
