@@ -86,7 +86,10 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    */
   virtual Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
-  virtual IMemoryAllocator* machineShMemWinMemoryAllocator() = 0;
+  /*!
+   * \brief Méthode permettant de récupérer un allocateur en mémoire partagée.
+   */
+  virtual MemoryAllocationOptions machineShMemWinMemoryAllocator() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

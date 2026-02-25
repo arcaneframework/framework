@@ -1318,7 +1318,7 @@ _testContigMachineShMemWin()
 
   {
     IParallelMng* pm = m_parallel_mng;
-    IMemoryAllocator* memory_allocator = pm->_internalApi()->machineShMemWinMemoryAllocator();
+    MemoryAllocationOptions memory_allocator = pm->_internalApi()->machineShMemWinMemoryAllocator();
 
     {
       UniqueArray<Integer> array(memory_allocator, 10);
@@ -1331,13 +1331,13 @@ _testContigMachineShMemWin()
     }
 
     {
-      AllocatedMemoryInfo ptr_info = memory_allocator->allocate({}, sizeof(Integer));
+      AllocatedMemoryInfo ptr_info = memory_allocator.allocator()->allocate({}, sizeof(Integer));
       auto* ptr = static_cast<Integer*>(ptr_info.baseAddress());
       ptr[0] = pm->commRank();
 
       info() << "ptr[0] : " << ptr[0];
 
-      memory_allocator->deallocate({}, ptr_info);
+      memory_allocator.allocator()->deallocate({}, ptr_info);
     }
   }
   {

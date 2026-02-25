@@ -21,6 +21,8 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
 
+#include "arccore/common/MemoryAllocationOptions.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -125,7 +127,8 @@ createMachineShMemWinBase([[maybe_unused]] Int64 sizeof_segment,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* ParallelMngInternal::machineShMemWinMemoryAllocator()
+MemoryAllocationOptions ParallelMngInternal::
+machineShMemWinMemoryAllocator()
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }
