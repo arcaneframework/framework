@@ -9,6 +9,191 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 4.1+ (mars 2026) {#arcanedoc_version410}
+
+### Nouveautés/Améliorations
+
+- Ajoute support de `backward-cpp` pour l'affichage de la pile en cas
+  d'erreur. Cela permet d'avoir les numéros de lignes et noms de
+  fichier en plus du nom de la fonction (\pr{2248}, \pr{2333}, \pr{2484})
+- Déplace l'API accélérateur depuis %Arcane vers %Arccore. Toutes les
+  classes impliquées dans l'API sont déplacées. Les fichiers de
+  `arcane/accelerator/core` sont déplacés dans
+  `arccore/common/accelerator` et ceux de `arcane/accelerator` sont
+  déplacés dans `arccore/accelerator`. Les fichiers d'en-tête dans
+  %Arcane sont conservés pour garantir la compatibilité avec
+  l'existant (\pr{2245}, \pr{2246},
+  \pr{2249}, \pr{2254}, \pr{2256}, \pr{2257}, \pr{2258}, \pr{2259},
+  \pr{2263}, \pr{2263},\pr{2265}, \pr{2266}, \pr{2269}, \pr{2270},
+  \pr{2271}, \pr{2272}, \pr{2273}, \pr{2274}, \pr{2275}, \pr{2276},
+  \pr{2277}, \pr{2319}, \pr{2321}, \pr{2322}, \pr{2323}, \pr{2324},
+  \pr{2325}, \pr{2326}, \pr{2328}, \pr{2329}, \pr{2330}, \pr{2332},
+  \pr{2334}, \pr{2335}, \pr{2337}, \pr{2342}, \pr{2343}, \pr{2344},
+  \pr{2347}, \pr{2356}, \pr{2358}, \pr{2359}, \pr{2360}, \pr{2361},
+  \pr{2368}, \pr{2371}, \pr{2372}, \pr{2374}, \pr{2378}, \pr{2381},
+  \pr{2382}, \pr{2383}, \pr{2384}, \pr{2385}, \pr{2386}, \pr{2392},
+  \pr{2396}, \pr{2401}, \pr{2402}, \pr{2425}, \pr{2427}, \pr{2430},
+  \pr{2472})
+- Ajoute support pour `__float128` pour les systèmes d'exploitation
+  Linux (\pr{2284}, \pr{2399})
+- Ajoute dans \arcane{IParallelMng} la possibilité de créer un
+  communicateur intra-noeud (\pr{2290}, \pr{2292})
+- Ajoute macros `ARCCORE_FATAL_IF()` et `ARCCORE_FATAL_IF()` pour lancer
+  une exception si une assertion n'est pas respectée (\pr{2303})
+- Créé toujours les groupes frontières (`XMIN`, `XMAX`, ...) lorsqu'on
+  utilise le générateur de maillage cartésien (\pr{2312})
+- Ajoute support pour les mailles de type `Triangle10` (\pr{2318})
+- Optimise et améliore la gestion des patchs AMR pour les maillages
+  cartésiens (\pr{2338}, \pr{2366}, \pr{2370}, \pr{2440}, \pr{2456},
+  \pr{2459}, \pr{2476}, \pr{2494})
+- Ajoute partitionneur géométrique expérimental pour le
+  partitionnement initial (\pr{2340}, \pr{2345}, \pr{2346}, \pr{2349},
+  \pr{2352}, \pr{2355})
+- Améliore la numérotation des nouvelles mailles dans le sub-diviseur
+  de maillage. La nouvelle numérotation respecte la localité
+  topologique du maillage initial (pr{2408})
+- Optimise les sorties Ensight pour les mailles polyédriques
+  (\pr{2415})
+- Ajoute fonctions \arcane{math::normalizeL2()} pour \arcane{Real2} et
+  \arcane {Real3} (\pr{2455})
+- Ajoute support pour utilisé les fenêtres MPI comme allocateur pour
+  les variables (\pr{2482})
+- Ajoute support expérimental pour changer l'allocateur d'un
+  \arcane{Array} (\pr{2493})
+
+### API Accélérateur
+
+- Ajoute support pour la mémoire locale par bloc (équivalent au mot
+  cle `__shared__`  de CUDA ou HIP) (\pr{2281})
+- Ajoute support pour le parallélisme hiérarchique
+  (\pr{2287},\pr{2291}, \pr{2293}, \pr{2295}, \pr{2296}, \pr{2297},
+  \pr{2298}, \pr{2299}, \pr{2313}, \pr{2316}, \pr{2317}, \pr{2438},
+  \pr{2442}, \pr{2444}, \pr{2447}, \pr{2451}, \pr{2486})
+- Ajoute support pour le lancement coopératif de noyau (via
+  `cudaLaunchCooperativeKernel` ou `hipLaunchCooperativeKernel`). Ce
+  support n'est pas disponible avec le back-end Sycl
+  (\pr{2282}, \pr{2439}, \pr{2441},\pr{2452}, \pr{2461}, \pr{2469},
+  \pr{2475}, \pr{2479}, \pr{2481})
+- Ajoute support pour utiliser un pas de grille pour RUNCOMMAND_LOOP()
+  et RUNCOMMAND_ENUMERATE() (\pr{2414}, \pr{2419})
+- Simplifie et re-concoit l'implémentation interne des mécanismes accélérateurs
+  (\pr{2285}, \pr{2286}, \pr{2288}, \pr{2302})
+- Ajoute support pour le pool mémoire avec HIP (\pr{2289},\pr{2307}, \pr{2310})
+- Ajoute support de \arcaneacc{GenericSorter} pour la back-end Sycl (\pr{2306})
+- Ajoute automatiquement une barrière après \arcaneacc{GenericScanner} et
+  \arcaneacc{GenericSorter} lorsqu'on utilise une \arcaneacc{RunQueue} asynchrone
+  (\pr{2308})
+- Active par défaut le pool mémoire (\pr{2320})
+- Ajoute interface public \arcane{IMemoryPool} pour gérer le pool
+  mémoire (\pr{2376})
+- Ajoute support pour le type `Int64` dans les boucles
+  \arcane{ForLoopRange} (\pr{2364})
+- Ajoute informations supplémentaires dans \arcaneacc{DeviceInfo}
+  (\pr{2367}, \pr{2375}, \pr{2377})
+- Ajoute support de NCCL pour les synchronisations sur les variables
+  (\pr{2373})
+- Optimise la gestion des réductions en supprimant l'utilisation de
+  copies meḿoire explicite. Ces copies sont remplacées par
+  l'utilisation de mémoire punaisée (\pr{2389}, \pr{2393}, \pr{2492})
+- Avec ROCM 7, utilise une taille de "warp" fixée à la compilation
+  (\pr{2445}, \pr{2446})
+- N'utilise plus `fastmod` pour le calcul des indices dans les boucles
+  à 2 et 3 dimensions. Cela permet de supprimer les tests et accélère
+  le calcul (\pr{2450})
+- Ajoute support pour construire des \arcane{NumArray<T,MDDim1>}
+  depuis un \arcane{Span} dont la mémoire peut être sur CPU ou GPU
+  (\pr{2491})
+
+### Changements
+
+- Supprime le paramètre template `MinValue` dans \arcane{SpanImpl}. Ce
+  paramètre n'était pas utilisé (\pr{2255})
+- Rend `constexpr` certaines méthodes de \arcane{Item} et des classes
+  dérivées (\pr{2261}, \pr{2264})
+- Utilise par défaut pour \arcane{IThreadImplementation}
+  l'implémentation STL des threads au lieu de l'implémentation TBB
+  \pr{2379}
+- Supprime support de la compilation sans activer les threads
+  (\pr{2380})
+- Utilise `HIP` au lieu de `ROCM` pour la variable CMake
+  `ARCCORE_ACCELERATOR_MODE`. L'ancien nom est toujours disponible
+  pour compatibilité (\pr{2457}).
+
+### Corrections
+
+- Réordonne correctement les noeuds des arêtes après avoir modifié les
+  `uniqueId()` des noeuds (\pr{2262})
+- Corrige dans le lecteur MSH la lecture du nombre de blocs aux noeuds
+  en parallèlel (\pr{2278})
+- Corrige compliation avec les versions CUDA 12.0 à 12.3 (\pr{2314})
+- Corrige plantage lorsqu'on synchronise des variables partielles avec
+  un MPI "GPU-Aware" (\pr{2315})
+- Interdit d'appeler \arcane{IPrimaryMesh::allocateCells()} si
+  \arcane{IMeshModifier::endUpdate()} a déjà été appelé (\pr{2354})
+
+### Interne
+
+- Supprime implémentation historique de \arcane{ItemInternalMap} (\pr{2247})
+- Déplace la gestion des sous-groupes par type dans une classe interne
+  (\pr{2353})
+- Ajoute tests accélérateurs dans %Arccore (\pr{2388}, \pr{2395},
+  \pr{2398}, \pr{2404}, \pr{2411}, \pr{2412}, \pr{2462}, \pr{2480})
+- Renomme le namespace `Arcane::Accelerator::impl` par
+  `Arcane::Accelerator::Impl` (\pr{2394}, \pr{2420})
+- Améliorations diverses dans l'implémentation de `Neo` (\pr{2464},
+  \pr{2465}, \pr{2466}, \pr{2467}, \pr{2468}, \pr{2474}, \pr{2477})
+
+### Compilation et Intégration Continue (CI)
+
+- Supprime support pour les vieilles versions de TBB (avant
+  OneTBB 2021) : \pr{2267}
+- Ajoute support pour des runners "self-hosted" (\pr{2279})
+- Supprime l'option CMake `ARCANE_ADD_RPATH_TO_LIBS` (\pr{2304})
+- Remplace l'option CMake `ARCCORE_USE_MPI` par `ARCCORE_ENABLE_MPI`
+  (\pr{2305})
+- Remplace l'option CMake `ARCCORE_WANT_TESTS` par `ARCCORE_ENABLE_TESTS`
+  (\pr{2471})
+- Ajoute propriétés CMake `INSTALL_RPATH_USE_LINK_PATH` et
+  `BUILD_RPATH_USE_ORIGIN` pour les bibliothèques de Arccore
+  (\pr{2331})
+- Mise à jour des workflows IFPEN (\pr{2422}, \pr{2432}, \pr{2433})
+- Mise à jour du workflow codecov (\pr{2431})
+- Interdit dans une Pull Request de fusionner sans avoir fait un
+  "rebase" (\pr{2436}, \pr{2437})
+- Ajoute workflow pour ROCM 7.2 (\pr{2448})
+- Nettoie le système de compilation de `alien/ArcaneInterface`
+  (\pr{2487}, \pr{2490})
+- Supprime par défaut l'affichage des méthodes obsolètes lors de la
+  compilation (\pr{2488})
+
+### Arccore
+
+- Ajoute nouveau composant `common` contenant les collections et les
+  classes nécessaires pour l'API accélérateur (\pr{2268})
+- Dans \arcane{ITraceMng}, utilise `std::mutex` à la place de
+  \arcane{Mutex} (\pr{2253})
+- Optimise la construction/destruction de la classe
+  \arcane{SmallArray} (\pr{2242})
+- Supprime conservation du nombre d'éléments d'un \arcane{SpanImpl}
+  lorsqu'on utilise une dimension statique (\pr{2241})
+- Déplace les classes gérant le JSON depuis `arcane_utils` vers
+  `arccore_common` (\pr{2391})
+
+### Alien
+
+- Mise à jour des valeurs par défaut avec GMRES pour PETSc (\pr{2251})
+- Mise à jour des valeurs par défaut pour BoomerAMG pour Hypre
+  (\pr{2365})
+- Ajoute support pour l'utilisation de CUDA dans le solveur GAMG de
+  Hypre et PETSc (\pr{2369}, \pr{2403})
+- Nettoyage de `PETScPrecomp.h` pour accélérer la compilation
+  (\pr{2405})
+- Améliore le support GPU de plusieurs back-end (\pr{2409}, \pr{2410},
+  \pr{2413}, \pr{2426}, \pr{2428}, \pr{2435}, \pr{2443}, \pr{2449},
+  \pr{2453}, \pr{2458}, \pr{2473}, \pr{2485})
+
+___
+
 ## Arcane Version 4.0.0 (15 octobre 2025) {#arcanedoc_version4000}
 
 La version 4.0.0 est identique à la version 3.16.12 et se contente de supprimer
@@ -1084,7 +1269,7 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   commandes sont actives lorsque la \arcanacc{RunQueue} est détruite une
   barrière implicite est effectuée (\pr{995})
 - Corrige mauvais type de retour de
-  \arcacc{MatItemVariableScalarOutViewT::operator[]()}
+  \arcaneacc{MatItemVariableScalarOutViewT::operator[]()}
   qui ne permettait pas de modifier la valeur(\pr{981}).
 - Corrige mauvaise prise en compte des propriétés lors de la création
   de variables matériaux dans certains cas (\pr{1012}).
