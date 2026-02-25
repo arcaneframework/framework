@@ -11,15 +11,15 @@
  */
 
 #define USE_CUDA
-#include <Common/index.h>
-#include <MCGSolver/LinearSystem/LinearSystem.h>
-#include <MCGSolver/GPULinearSystem/GPULinearSystem.h>
-#include <Common/Utils/Array.h>
-#include <Precond/PrecondEquation.h>
-#include <Solvers/SolverProperty.h>
+#include "Common/index.h"
+#include "MCGSolver/LinearSystem/LinearSystem.h"
+#include "MCGSolver/GPULinearSystem/GPULinearSystem.h"
+#include "Common/Utils/Array.h"
+#include "Precond/PrecondEquation.h"
+#include "Solvers/SolverProperty.h"
 
-#include <alien/kernels/mcg/MCGPrecomp.h>
-#include <alien/kernels/mcg/data_structure/MemoryDomain.h>
+#include "alien/kernels/mcg/MCGPrecomp.h"
+#include "alien/kernels/mcg/data_structure/MemoryDomain.h"
 
 #include "alien/kernels/mcg/MCGBackEnd.h"
 

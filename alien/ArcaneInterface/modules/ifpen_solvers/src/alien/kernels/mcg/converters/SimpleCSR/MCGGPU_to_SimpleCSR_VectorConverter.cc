@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-#include <alien/core/backend/IVectorConverter.h>
-#include <alien/core/backend/VectorConverterRegisterer.h>
-#include <alien/kernels/simple_csr/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include "alien/core/backend/IVectorConverter.h"
+#include "alien/core/backend/VectorConverterRegisterer.h"
+#include "alien/kernels/simple_csr/SimpleCSRVector.h"
+#include "alien/kernels/simple_csr/SimpleCSRBackEnd.h"
 
 #include "alien/kernels/mcg/data_structure/MCGVector.h"
 #include "alien/kernels/mcg/MCGBackEnd.h"

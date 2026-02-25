@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-#include <alien/core/backend/IMatrixConverter.h>
-#include <alien/core/backend/MatrixConverterRegisterer.h>
-#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
-#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include "alien/core/backend/IMatrixConverter.h"
+#include "alien/core/backend/MatrixConverterRegisterer.h"
+#include "alien/kernels/simple_csr/SimpleCSRMatrix.h"
+#include "alien/kernels/simple_csr/SimpleCSRBackEnd.h"
 
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"
 #include "alien/kernels/mcg/MCGBackEnd.h"

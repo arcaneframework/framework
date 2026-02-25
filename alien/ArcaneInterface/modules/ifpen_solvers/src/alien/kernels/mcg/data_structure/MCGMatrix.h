@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <alien/core/impl/IMatrixImpl.h>
-#include <alien/core/block/Block.h>
-#include <alien/data/Space.h>
+#include "alien/core/impl/IMatrixImpl.h"
+#include "alien/core/block/Block.h"
+#include "alien/data/Space.h"
 
 #include "alien/kernels/mcg/MCGPrecomp.h"
 #include "alien/kernels/mcg/MCGBackEnd.h"

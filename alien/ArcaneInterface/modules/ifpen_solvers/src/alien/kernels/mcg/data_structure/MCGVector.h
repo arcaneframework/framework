@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <alien/utils/Precomp.h>
-#include <alien/core/impl/IVectorImpl.h>
-#include <alien/data/ISpace.h>
+#include "alien/utils/Precomp.h"
+#include "alien/core/impl/IVectorImpl.h"
+#include "alien/data/ISpace.h"
 
 #include "alien/kernels/mcg/MCGPrecomp.h"
 #include "alien/kernels/mcg/data_structure/MemoryDomain.h"

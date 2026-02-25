@@ -4,7 +4,7 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <alien/core/impl/MultiMatrixImpl.h>
+#include "alien/core/impl/MultiMatrixImpl.h"
 
 #include "alien/kernels/mcg/data_structure/MCGInternal.h"
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"

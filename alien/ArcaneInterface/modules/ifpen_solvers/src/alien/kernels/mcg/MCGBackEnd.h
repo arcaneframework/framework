@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <alien/utils/Precomp.h>
-#include <alien/core/backend/BackEnd.h>
-#include <alien/kernels/mcg/data_structure/MemoryDomain.h>
+#include "alien/utils/Precomp.h"
+#include "alien/core/backend/BackEnd.h"
+#include "alien/kernels/mcg/data_structure/MemoryDomain.h"
 
 class IOptionsMCGSolver;
 
