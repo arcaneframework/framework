@@ -61,6 +61,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
   , m_device(rhs.m_device)
   , m_memory_location_hint(rhs.m_memory_location_hint)
   , m_host_device_memory_location(rhs.m_host_device_memory_location)
+  , m_collective_allocator(rhs.m_collective_allocator)
   {
     if (m_debug_info)
       _addDebugReference();
@@ -84,6 +85,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
     m_debug_info = rhs.m_debug_info;
     if (m_debug_info)
       _addDebugReference();
+    m_collective_allocator = rhs.m_collective_allocator;
     return (*this);
   }
 
@@ -108,6 +110,9 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
 
   //! Arguments pour 'IMemoryAllocator' associés à ces options et à la file \a queue
   MemoryAllocationArgs allocationArgs(RunQueue* queue = nullptr) const;
+
+  bool isCollectiveAllocator() const { return m_collective_allocator; }
+  void setIsCollectiveAllocator(bool is_collective_allocator) { m_collective_allocator = is_collective_allocator; }
 
  public:
 
@@ -135,6 +140,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
   eHostDeviceMemoryLocation m_host_device_memory_location = eHostDeviceMemoryLocation::Unknown;
   RunQueue* m_queue = nullptr;
+  bool m_collective_allocator = false;
 
  private:
 
