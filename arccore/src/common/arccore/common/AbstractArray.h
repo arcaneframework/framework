@@ -416,8 +416,14 @@ class AbstractArray
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
   {
-    if (new_capacity <= m_md->capacity && !m_meta_data.allocation_options.isCollectiveAllocator())
+    if (new_capacity <= m_md->capacity) {
+      // Dans le cas d'un allocateur collectif, on doit quand même faire un
+      // réalloc (à l'allocateur de gérer l'optimisation).
+      if (m_meta_data.allocation_options.isCollectiveAllocator()) {
+        _internalRealloc(m_md->capacity, false);
+      }
       return;
+    }
     _internalRealloc(new_capacity, false);
   }
   /*!
@@ -444,9 +450,14 @@ class AbstractArray
         acapacity = (acapacity == 0) ? 4 : (acapacity + 1 + acapacity / 2);
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
-    // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
-    if (acapacity <= m_md->capacity && !m_meta_data.allocation_options.isCollectiveAllocator())
+    // Si la nouvelle capacité est inférieure à la courante, ne fait rien
+    // (sauf pour un allocateur collectif).
+    if (acapacity <= m_md->capacity) {
+      if (m_meta_data.allocation_options.isCollectiveAllocator()) {
+        _internalReallocate(m_md->capacity, pod_type, queue);
+      }
       return;
+    }
     _internalReallocate(acapacity, pod_type, queue);
   }
 
