@@ -2,10 +2,13 @@ addSources(alien_ifpen_solvers
         algebra/MCGInternalLinearAlgebra.cc
         linear_solver/MCGInternalLinearSolver.cc
         converters/SimpleCSR/MCG_to_SimpleCSR_VectorConverter.cc
+        converters/SimpleCSR/MCGGPU_to_SimpleCSR_VectorConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_VectorConverter.cc
-        converters/SimpleCSR/SimpleCSR_to_MCG_MatrixConverter.cc
-        data_structure/MCGVector.cc
-        data_structure/MCGMatrix.cc
+        converters/SimpleCSR/SimpleCSR_to_MCGGPU_VectorConverter.cc
+        converters/SimpleCSR/SimpleCSR_to_MCG_BCSR_MatrixConverter.cc
+        converters/SimpleCSR/SimpleCSR_to_MCGGPU_BCSR_MatrixConverter.cc
+        data_structure/MCGVectorImpl.cc
+        data_structure/MCGMatrixImpl.cc
         )
 
 generateAxl(alien_ifpen_solvers
@@ -24,7 +27,7 @@ addSources(alien_ifpen_solvers
 
 add_definitions(-DUSE_HWLOC)
 
-linkLibraries(alien_ifpen_solvers mcgsolver nvamg arcconpkg_HWLoc metis cuda)
+linkLibraries(alien_ifpen_solvers mcgsolver arcconpkg_HWLoc metis)
 
 if(TARGET HDF5)
   linkLibraries(alien_ifpen_solvers HDF5)

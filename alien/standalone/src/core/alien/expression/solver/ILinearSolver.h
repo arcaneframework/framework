@@ -15,7 +15,6 @@
 #include <arccore/message_passing/MessagePassingGlobal.h>
 #include <alien/utils/Precomp.h>
 
-#include <cstdlib>
 #include <memory>
 
 /*---------------------------------------------------------------------------*/
@@ -155,6 +154,7 @@ class ILinearSolver
    */
   virtual ILinearSolver* create() const { return NULL; }
 #endif /* USE_MULTI_SOLVER_INSTANCE */
+
 };
 
 class ILinearSolverWithDiagScaling

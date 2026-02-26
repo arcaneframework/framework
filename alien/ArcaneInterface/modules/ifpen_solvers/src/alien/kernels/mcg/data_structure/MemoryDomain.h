@@ -5,16 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-struct MCGOptionTypes
-{
-  enum eKernelType
-  {
-    CPU_CBLAS_BCSR,
-    CPU_AVX_BCSR,
-    CPU_AVX2_BCSP,
-    CPU_AVX512_BCSP,
-    GPU_CUBLAS_BELL,
-    GPU_CUBLAS_BCSP,
-    GPU_CUBLAS_BCSR,
-  };
-};
+#include "alien/kernels/mcg/MCGPrecomp.h"
+
+BEGIN_MCGINTERNAL_NAMESPACE
+enum class eMemoryDomain { Host = 0, Device = 1 };
+END_MCGINTERNAL_NAMESPACE

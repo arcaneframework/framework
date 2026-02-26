@@ -11,36 +11,31 @@
 #include <iomanip>
 #include <regex>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 
-#include <alien/data/Space.h>
-#include <alien/expression/solver/ILinearSolver.h>
-#include <alien/expression/solver/ILinearAlgebra.h>
-#include <alien/expression/solver/SolverStat.h>
-#include <alien/expression/solver/SolverStater.h>
-#include <alien/core/impl/MultiMatrixImpl.h>
-#include <alien/core/impl/MultiVectorImpl.h>
-#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
-#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
-#include <alien/core/backend/LinearSolverT.h>
-#include <alien/core/block/ComputeBlockOffsets.h>
-#include <alien/kernels/mcg/linear_solver/MCGOptionTypes.h>
-#include <alien/kernels/mcg/linear_solver/MCGInternalLinearSolver.h>
-#include <alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h>
-
-#include <Precond/PrecondOptionsEnum.h>
-#include <Solvers/AMG/AMGProperty.h>
-#include <Solvers/SolverProperty.h>
-#include <Solvers/Krylov/BiCGStabDef.h>
-#include <MCGSolver/Status.h>
-#include <MCGSolver/SolverOptionsEnum.h>
-#include <MCGSolver/ILinearSolver.h>
-#include <Common/Utils/Machine/MachineInfo.h>
-#include <Common/Utils/ParallelEnv.h>
+#include "alien/data/Space.h"
+#include "alien/expression/solver/ILinearSolver.h"
+#include "alien/expression/solver/ILinearAlgebra.h"
+#include "alien/expression/solver/SolverStat.h"
+#include "alien/expression/solver/SolverStater.h"
+#include "alien/core/impl/MultiMatrixImpl.h"
+#include "alien/core/impl/MultiVectorImpl.h"
+#include "alien/kernels/simple_csr/SimpleCSRPrecomp.h"
+#include "alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h"
+#include "alien/core/backend/LinearSolverT.h"
+#include "alien/core/block/ComputeBlockOffsets.h"
+#include "alien/kernels/mcg/linear_solver/MCGOptionTypes.h"
+#include "alien/kernels/mcg/linear_solver/MCGInternalLinearSolver.h"
+#include "alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h"
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
 
 #include "ALIEN/axl/MCGSolver_IOptions.h"
 
-#include <Common/Utils/Machine/MachineInfo.h>
+#include "MCGSolver/MCGSolver.h"
+#include "Common/Utils/Machine/MachineInfo.h"
+#include "Common/Utils/MPI/MPIEnv.h"
+#include "Common/Utils/ParallelEnv.h"
+#include "Common/Utils/LogMng.h"
 
 namespace Alien {
 
@@ -50,50 +45,55 @@ std::unique_ptr<MCGInternalLinearSolver::AlienKOpt2MCGKOpt>
 MCGInternalLinearSolver::AlienKOpt2MCGKOpt::AlienKOpt2MCGKOpt()
 {
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, false, false }] =
-      MCGSolver::CPUCBLAS;
+      MCGSolver::eKernelType::CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, true, false }] =
-      MCGSolver::MPI_CPUCBLAS;
+      MCGSolver::eKernelType::MPI_CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, false, true }] =
-      MCGSolver::OMP_CPUCBLAS;
+      MCGSolver::eKernelType::OMP_CPU_CBLAS_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, true, true }] =
-      MCGSolver::MPI_OMP_CPUCBLAS;
+      MCGSolver::eKernelType::MPI_OMP_CPU_CBLAS_BCSR;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, false }] =
-      MCGSolver::CPUAVX;
+      MCGSolver::eKernelType::CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, true, false }] =
-      MCGSolver::MPI_CPUAVX;
+      MCGSolver::eKernelType::MPI_CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, true }] =
-      MCGSolver::OMP_CPUAVX;
+      MCGSolver::eKernelType::OMP_CPU_AVX_BCSR;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, true, true }] =
-      MCGSolver::MPI_OMP_CPUAVX;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX_BCSR;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, false, false }] =
-      MCGSolver::CPUAVX2;
+      MCGSolver::eKernelType::CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, true, false }] =
-      MCGSolver::MPI_CPUAVX2;
+      MCGSolver::eKernelType::MPI_CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, false, true }] =
-      MCGSolver::OMP_CPUAVX2;
+      MCGSolver::eKernelType::OMP_CPU_AVX2_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX2_BCSP, true, true }] =
-      MCGSolver::MPI_OMP_CPUAVX2;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX2_BCSP;
 
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, false, false }] =
-      MCGSolver::CPUAVX512;
+      MCGSolver::eKernelType::CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, true, false }] =
-      MCGSolver::MPI_CPUAVX512;
+      MCGSolver::eKernelType::MPI_CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, false, true }] =
-      MCGSolver::OMP_CPUAVX512;
+      MCGSolver::eKernelType::OMP_CPU_AVX512_BCSP;
   m_option_translate[{ MCGOptionTypes::CPU_AVX512_BCSP, true, true }] =
-      MCGSolver::MPI_OMP_CPUAVX512;
+      MCGSolver::eKernelType::MPI_OMP_CPU_AVX512_BCSP;
 
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BELL, false, false }] =
-      MCGSolver::GPUCUBLASBELLSpmv;
+      MCGSolver::eKernelType::GPU_CUBLAS_BELL;
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BELL, true, false }] =
-      MCGSolver::MPI_GPUCUBLASBELLSpmv;
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BELL;
 
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSP, false, false }] =
-      MCGSolver::GPUCUBLASBCSPSpmv;
+      MCGSolver::eKernelType::GPU_CUBLAS_BCSP;
   m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSP, true, false }] =
-      MCGSolver::MPI_GPUCUBLASBCSPSpmv;
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSP;
+
+  m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSR, false, false }] =
+    MCGSolver::eKernelType::GPU_CUBLAS_BCSR;
+  m_option_translate[{ MCGOptionTypes::GPU_CUBLAS_BCSR, true, false }] =
+      MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSR;
 }
 
 MCGSolver::eKernelType
@@ -132,11 +132,12 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
   // check version
   const std::string expected_version("v2.5");
   const std::regex expected_revision_regex("^" + expected_version + ".*");
-  m_version = MCGSolver::ILinearSolver<MCGSolver::LinearSolver>::getRevision();
+
+  m_version = MCGSolver::LinearSolver::getRevision();
 
   if(!std::regex_match(m_version,expected_revision_regex))
   {
-    alien_info([&]
+    alien_info([this,&expected_version]
         { cout()<<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
   }
 
@@ -148,11 +149,8 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
 
 MCGInternalLinearSolver::~MCGInternalLinearSolver()
 {
-  delete m_system;
-  delete m_solver;
   delete m_machine_info;
   delete m_mpi_info;
-  delete m_part_info;
 #if 0
   if(m_logger)
     m_logger->report();
@@ -192,7 +190,7 @@ MCGInternalLinearSolver::init()
 
   m_output_level = m_options->output();
   alien_info([&]{
-    cout() << "MCGSolver version " << MCGSolver::ILinearSolver<MCGSolver::LinearSolver>::getRevision();
+    cout() << "MCGSolver version " << MCGSolver::LinearSolver::getRevision();
   });
 
   m_use_mpi = m_parallel_mng->commSize() > 1;
@@ -201,12 +199,11 @@ MCGInternalLinearSolver::init()
       dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
 
   m_machine_info = new MCGSolver::MachineInfo;
-  m_machine_info->init(m_parallel_mng->commRank() == 0);
+  m_machine_info->init(m_parallel_mng->commRank() == 0 && m_output_level > 2);
 
   if (m_use_mpi) {
     MPI_Comm comm = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-    m_mpi_info = new mpi::MPIInfo;
-    m_mpi_info->init(comm, false);
+    m_mpi_info = new mpi::MPIInfo(comm);
   }
   m_use_thread = m_options->useThread();
 
@@ -216,16 +213,29 @@ MCGInternalLinearSolver::init()
 
   m_solver_opt = m_options->solver();
 
-  m_solver = MCGSolver::ILinearSolver<MCGSolver::LinearSolver>::create();
+  m_solver = std::make_unique<MCGSolver::LinearSolver>();
+
+  m_mcg_log = std::make_shared<MCGSolver::CoutLogMng>();
+
+  if(m_use_mpi)
+  {
+    m_mcg_mpi_log = std::make_shared<MCGSolver::MPILogMng>(m_mpi_info,m_mcg_log);
+    m_solver->setLog(m_mcg_mpi_log);
+  }
+  else {
+    m_solver->setLog(m_mcg_log);
+  }
 
   m_solver->setMachineInfo(m_machine_info);
   if (m_use_mpi)
     m_solver->initMPIInfo(m_mpi_info);
 
-  m_solver->setOpt(MCGSolver::Normalize, m_options->normalize());
-  m_solver->setOpt(MCGSolver::OutputLevel, m_output_level - 1);
-  m_solver->setOpt(MCGSolver::SolverMaxIter, m_max_iteration);
-  m_solver->setOpt(MCGSolver::SolverEps, m_precision);
+  m_solver->setOpt(MCGSolver::eOptType::Normalize, m_options->normalize());
+  m_solver->setOpt(MCGSolver::eOptType::RowSum, m_options->rowsum());
+  m_solver->setOpt(MCGSolver::eOptType::OutputLevel, m_output_level - 1);
+  m_solver->setOpt(MCGSolver::eOptType::SolverMaxIter, m_max_iteration);
+  m_solver->setOpt(MCGSolver::eOptType::SolverEps, m_precision);
+
   if (m_use_thread) {
     const char* env_num_thread = getenv("OMP_NUM_THREADS");
     if (env_num_thread != nullptr) {
@@ -234,23 +244,21 @@ MCGInternalLinearSolver::init()
         cout() << "Alien MCGSolver: set num_thread to " << m_num_thread << " from env";
       });
     }
-    m_solver->setOpt(MCGSolver::UseOmpThread, m_use_thread);
-    m_solver->setOpt(MCGSolver::NumThread, m_num_thread);
-    m_solver->setOpt(MCGSolver::SharedMemPart, MCGSolver::Graph::Partitioner::METIS_KWAY);
+    m_solver->setOpt(MCGSolver::eOptType::NumThread, m_num_thread);
+    m_solver->setOpt(MCGSolver::eOptType::SharedMemPart, MCGSolver::Graph::Partitioner::METIS_KWAY);
   }
 
   if (m_options->exportSystem())
-    m_solver->setOpt(MCGSolver::ExportSystemFileName,
+    m_solver->setOpt(MCGSolver::eOptType::ExportSystemFileName,
         std::string(localstr(m_options->exportSystemFileName())));
 
-  m_solver->setOpt(MCGSolver::SolverType, m_solver_opt);
+  m_solver->setOpt(MCGSolver::eOptType::SolverType, m_solver_opt);
 
   auto bj_local_solver = m_options->bjLocalPrecond();
   if (m_use_mpi) {
     switch (m_precond_opt) {
     case MCGSolver::PrecColorBlockILU0:
     case MCGSolver::PrecBlockILU0:
-    case MCGSolver::PrecParILU0:
     case MCGSolver::PrecILUk:
     case MCGSolver::PrecFixPointILU0:
       bj_local_solver = m_precond_opt;
@@ -262,47 +270,54 @@ MCGInternalLinearSolver::init()
     }
   }
 
-  m_solver->setOpt(MCGSolver::PrecondOpt, m_precond_opt);
+  m_solver->setOpt(MCGSolver::eOptType::PrecondOpt, m_precond_opt);
 
-  m_solver->setOpt(MCGSolver::BlockJacobiNumOfIter, m_options->bjNumIter());
-  m_solver->setOpt(MCGSolver::BlockJacobiLocalSolver, bj_local_solver);
+  m_solver->setOpt(MCGSolver::eOptType::BlockJacobiNumOfIter, m_options->bjNumIter());
+  m_solver->setOpt(MCGSolver::eOptType::BlockJacobiLocalSolver, bj_local_solver);
 
-  m_solver->setOpt(MCGSolver::FPILUSolverNumIter, m_options->fpilu0SolveNumIter());
-  m_solver->setOpt(MCGSolver::FPILUFactorNumIter, m_options->fpilu0FactoNumIter());
-
-  m_solver->setOpt(MCGSolver::SpPrec, m_options->spPrec());
+  if (!m_options->FPILU0().empty()) {
+      m_solver->setOpt(MCGSolver::eOptType::FPILUSolverNumIter, m_options->FPILU0()[0]->solveNumIter());
+      m_solver->setOpt(MCGSolver::eOptType::FPILUFactorNumIter, m_options->FPILU0()[0]->factoNumIter());
+  }
 
   if (!m_options->Poly().empty()) {
-    m_solver->setOpt(MCGSolver::PolyOrder, m_options->Poly()[0]->order());
-    m_solver->setOpt(MCGSolver::PolyFactor, m_options->Poly()[0]->factor());
-    m_solver->setOpt(MCGSolver::PolyFactorMaxIter, m_options->Poly()[0]->factorNumIter());
+    m_solver->setOpt(MCGSolver::eOptType::PolyOrder, m_options->Poly()[0]->order());
+    m_solver->setOpt(MCGSolver::eOptType::PolyFactor, m_options->Poly()[0]->factor());
+    m_solver->setOpt(MCGSolver::eOptType::PolyFactorMaxIter, m_options->Poly()[0]->factorNumIter());
   }
 
   if (!m_options->ILUk().empty()) {
-    m_solver->setOpt(MCGSolver::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
+    m_solver->setOpt(MCGSolver::eOptType::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
     // override spPrec
-    m_solver->setOpt(MCGSolver::SpPrec, m_options->ILUk()[0]->sp());
+    m_solver->setOpt(MCGSolver::eOptType::SpPrec, m_options->ILUk()[0]->sp());
   }
 
   if (!m_options->CprAmg().empty()) {
-    m_solver->setOpt(MCGSolver::CxrSolver, m_options->CprAmg()[0]->cxrSolver());
-    m_solver->setOpt(MCGSolver::RelaxSolver, m_options->CprAmg()[0]->relaxSolver());
+    m_solver->setOpt(MCGSolver::eOptType::CxrSolver, m_options->CprAmg()[0]->cxrSolver());
+    m_solver->setOpt(MCGSolver::eOptType::RelaxSolver, m_options->CprAmg()[0]->relaxSolver());
   }
 
   if (!m_options->amgx().empty()) {
-    m_solver->setOpt(MCGSolver::AmgXConfigFile,
-        std::string(localstr(m_options->amgx()[0]->parameterFile())));
-    if (m_options->amgx()[0]->parameterFile().empty())
-      m_solver->setOpt(MCGSolver::AmgAlgo, m_options->amgx()[0]->amgAlgo());
+    if (m_options->amgx()[0]->parameterFile().empty()) {
+      m_solver->setOpt(MCGSolver::eOptType::AmgAlgo, m_options->amgx()[0]->amgAlgo());
+    }
     else
+    {
+      m_solver->setOpt(MCGSolver::eOptType::AmgXConfigFile,
+        std::string(localstr(m_options->amgx()[0]->parameterFile())));
+
       alien_info([&]{
-        cout() << "Only parameter-file option is considered";
+          cout() << "Only parameter-file option is considered";
       });
+    }
+
+    m_solver->setOpt(m_options->amgx()[0]->update());
   }
 
-  m_solver->setOpt(MCGSolver::BiCGStabRhoInit, MCGSolver::RhoInit::RhsSquareNorm);
-  m_solver->init(AlienKOpt2MCGKOpt::getKernelOption(
-      { m_options->kernel(), m_use_mpi, m_use_thread }));
+  m_kernel = AlienKOpt2MCGKOpt::getKernelOption(
+      { m_options->kernel(), m_use_mpi, m_use_thread });
+
+  m_solver->init(m_kernel);
 
   m_init_timer.stop();
 
@@ -332,20 +347,19 @@ MCGInternalLinearSolver::end()
 
 Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
-    MCGVectorType& x, MCGSolver::PartitionInfo* part_info)
+    MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info)
 {
   alien_debug([&]{
-    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix[0][0].get()
-           << " b:" << &b << " x:" << &x;
+    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
+           << " b:" << b.m_vector.get() << " x:" << x.m_vector.get();
   });
 
   Integer error = -1;
 
   m_system_timer.start();
   if (_matrixChanged(A)) {
-    delete m_system;
     _registerKey(A, b, x);
-    m_system = _createSystem(A, b, x, part_info);
+    m_system = std::make_unique<MCGSolverLinearSystem>(A.m_matrix, b.m_vector, part_info,m_mpi_info);
 
     if (A.m_elliptic_split_tag) {
       m_system->setEquationType(A.m_equation_type);
@@ -353,7 +367,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   } else {
     if (_rhsChanged(b)) {
       m_b_key = b.m_key;
-      m_system->setRhs(&b.m_bvector);
+      m_system->setRhs(b.m_vector);
     }
   }
 
@@ -362,40 +376,80 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_system->getImpl(), &m_mcg_status);
+  error = m_solver->solve(m_system.get(), &m_mcg_status);
   m_solve_timer.stop();
+
+  x.m_vector = m_system->getSol();
 
   return error;
 }
 
-Integer
-MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
-    const MCGVectorType& x0, MCGVectorType& x, MCGSolver::PartitionInfo* part_info)
-{
-    alien_debug([&]{
-      cout() << "MCGInternalLinearSolver::_solve with x0"
-             << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
+Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
+  MCGDeviceVectorType &x, const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
+  alien_debug([&]{
+    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
+           << " b:" << b.m_vector.get() << " x:" << x.m_vector.get();
   });
 
   Integer error = -1;
 
   m_system_timer.start();
   if (_matrixChanged(A)) {
-    delete m_system;
-    _registerKey(A, b, x0, x);
-    m_system = _createSystem(A, b, x0, x, part_info);
+    _registerKey(A, b);
+    m_device_system = std::make_unique<MCGSolverDeviceLinearSystem>(A.m_matrix, b.m_vector,
+      part_info,m_mpi_info);
+
+    if (A.m_elliptic_split_tag) {
+      m_device_system->setEquationType(A.m_equation_type);
+    }
+  } else {
+    if (_rhsChanged(b)) {
+      m_b_key = b.m_key;
+      m_device_system->setRhs(b.m_vector);
+    }
+  }
+
+  m_solver->setMatrixUpdate(m_A_update);
+  m_solver->setRhsUpdate(m_b_update);
+  m_system_timer.stop();
+
+  m_solve_timer.start();
+  error = m_solver->solve(m_device_system.get(), &m_mcg_status);
+  m_solve_timer.stop();
+
+  x.m_vector = m_device_system->getSol();
+
+  return error;
+}
+
+Integer
+MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
+    const MCGVectorType& x0, MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info)
+{
+  alien_debug([&]{
+    cout() << "MCGInternalLinearSolver::_solve with x0"
+           << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
+  });
+
+  Integer error = -1;
+
+  m_system_timer.start();
+  if (_matrixChanged(A)) {
+    _registerKey(A, b, x0);
+    m_system = std::make_unique<MCGSolverLinearSystem>(A.m_matrix, b.m_vector, x0.m_vector, part_info,m_mpi_info);
+
     if (A.m_elliptic_split_tag) {
       m_system->setEquationType(A.m_equation_type);
     }
   } else {
     if (_rhsChanged(b)) {
       m_b_key = b.m_key;
-      m_system->setRhs(&b.m_bvector);
+      m_system->setRhs(b.m_vector);
     }
 
     if (_x0Changed(x0)) {
       m_x0_key = x0.m_key;
-      m_system->setInitSol(&x0.m_bvector);
+      m_system->setInitSol(x0.m_vector);
     }
   }
 
@@ -406,39 +460,68 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_system->getImpl(), &m_mcg_status);
+  error = m_solver->solve(m_system.get(), &m_mcg_status);
   m_solve_timer.stop();
+
+  x.m_vector = m_system->getSol();
 
   return error;
 }
 
-MCGInternalLinearSolver::MCGSolverLinearSystem*
-MCGInternalLinearSolver::_createSystem(const MCGMatrixType& A, const MCGVectorType& b,
-    MCGVectorType& x, MCGSolver::PartitionInfo* part_info)
-{
-  return MCGSolverLinearSystem::create(
-      A.m_matrix[0][0].get(), &b.m_bvector, &x.m_bvector, part_info, m_mpi_info);
-}
+Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
+    const MCGDeviceVectorType &x0, MCGDeviceVectorType &x,
+    const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
 
-MCGInternalLinearSolver::MCGSolverLinearSystem*
-MCGInternalLinearSolver::_createSystem(const MCGMatrixType& A, const MCGVectorType& b,
-    const MCGVectorType& x0, MCGVectorType& x, MCGSolver::PartitionInfo* part_info)
-{
-  return MCGSolverLinearSystem::create(A.m_matrix[0][0].get(), &b.m_bvector, &x.m_bvector,
-      &x0.m_bvector, part_info, m_mpi_info);
-}
+  alien_debug([&]{
+    cout() << "MCGInternalLinearSolver::_solve with x0"
+           << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
+  });
 
-/*---------------------------------------------------------------------------*/
+  Integer error = -1;
+
+  m_system_timer.start();
+  if (_matrixChanged(A)) {
+    _registerKey(A, b, x0);
+    m_device_system = std::make_unique<MCGSolverDeviceLinearSystem>(A.m_matrix, b.m_vector, x0.m_vector,
+      part_info,m_mpi_info);
+
+    if (A.m_elliptic_split_tag) {
+      m_device_system->setEquationType(A.m_equation_type);
+    }
+  } else {
+    if (_rhsChanged(b)) {
+      m_b_key = b.m_key;
+      m_device_system->setRhs(b.m_vector);
+    }
+
+    if (_x0Changed(x0)) {
+      m_x0_key = x0.m_key;
+      m_device_system->setInitSol(x0.m_vector);
+    }
+  }
+
+  m_solver->setMatrixUpdate(m_A_update);
+  m_solver->setRhsUpdate(m_b_update);
+  m_solver->setx0Update(m_x0_update);
+
+  m_system_timer.stop();
+
+  m_solve_timer.start();
+  error = m_solver->solve(m_system.get(), &m_mcg_status);
+  m_solve_timer.stop();
+
+  x.m_vector = m_device_system->getSol();
+
+  return error;
+}
 
 const Alien::SolverStatus&
-MCGInternalLinearSolver::getStatus() const
-{
+MCGInternalLinearSolver::getStatus() const {
   return m_status;
 }
 
 void
-MCGInternalLinearSolver::printInfo() const
-{
+MCGInternalLinearSolver::printInfo() const {
   double total_solve_time = m_solve_timer.getElapse() + m_system_timer.getElapse();
   alien_info([&] {
     cout() << "\n|----------------------------------------------------|\n"
@@ -467,9 +550,12 @@ MCGInternalLinearSolver::printInfo() const
   });
 }
 
+void MCGInternalLinearSolver::startNonLinear() {
+  m_solver->startNonLinear();
+}
+
 bool
-MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
-{
+MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
 #if 0
   if(m_logger)
     m_logger->start(eStep::solve);
@@ -487,23 +573,24 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   });
 
   using namespace Alien;
-  using namespace Alien::MCGInternal;
+  using namespace MCGInternal;
 
-  MCGSolver::PartitionInfo* part_info = nullptr;
+  std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> part_info;
 
   if (A.impl()->hasFeature("composite")) {
     throw Alien::FatalErrorException("composite no more supported with MCGSolver");
   }
-  else {
-    m_A_update = A.impl()->timestamp() > m_A_time_stamp;
-    m_A_update = b.impl()->timestamp() > m_b_time_stamp;
-    m_A_time_stamp = A.impl()->timestamp();
-    m_b_time_stamp = b.impl()->timestamp();
 
-    const MCGMatrix& matrix = A.impl()->get<BackEnd::tag::mcgsolver>();
+  m_A_update = A.impl()->timestamp() > m_A_time_stamp;
+  m_A_update = b.impl()->timestamp() > m_b_time_stamp;
+  m_A_time_stamp = A.impl()->timestamp();
+  m_b_time_stamp = b.impl()->timestamp();
 
-    const MCGVector& rhs = b.impl()->get<BackEnd::tag::mcgsolver>();
-    MCGVector& sol = x.impl()->get<BackEnd::tag::mcgsolver>(true);
+  if (_hostSolver(m_kernel)) {
+    const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver>();
+
+    const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver>();
+    auto& sol = x.impl()->get<BackEnd::tag::mcgsolver>(true);
 
     if (m_use_mpi) {
       ConstArrayView<int> offsets;
@@ -519,7 +606,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
         offsets = ConstArrayView<int>(blockOffsets);
 #endif
         block_size = blockSize;
-        m_part_info = new MCGSolver::PartitionInfo;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
         m_part_info->init((int*)offsets.data(), offsets.size(), block_size);
       }
       else {
@@ -538,19 +625,64 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
         offsets = ConstArrayView<int>(scalarOffsets);
 #endif
         block_size = 1;
-        m_part_info = new MCGSolver::PartitionInfo;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
         m_part_info->init(offsets.data(), offsets.size(), block_size);
       }
     }
 
     m_prepare_timer.stop();
-    try {
-      error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
-    } catch (...) {
-      // all MCGSolver exceptions are unrecoverable
-      exit(EXIT_FAILURE);
-    }
+
+    error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
   }
+  else { // use gpu
+    const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver_gpu>();
+
+    const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver_gpu>();
+    auto& sol = x.impl()->get<BackEnd::tag::mcgsolver_gpu>(true);
+
+    if (m_use_mpi) {
+      ConstArrayView<int> offsets;
+      UniqueArray<Integer> blockOffsets;
+      int block_size;
+
+      if (A.impl()->block()) {
+        computeBlockOffsets(matrix.distribution(), *A.impl()->block(), blockOffsets);
+        int blockSize = A.impl()->block()->size();
+#ifdef ALIEN_USE_ARCANE
+        offsets = blockOffsets.constView();
+#else
+        offsets = ConstArrayView<int>(blockOffsets);
+#endif
+        block_size = blockSize;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init(offsets.data(), offsets.size(), block_size);
+      }
+      else {
+        Integer loffset = matrix.distribution().rowOffset();
+        Integer nproc = m_parallel_mng->commSize();
+        UniqueArray<Integer> scalarOffsets;
+        scalarOffsets.resize(nproc + 1);
+
+        mpAllGather(m_parallel_mng, ConstArrayView<int>(1, &loffset),
+            ArrayView<int>(nproc, dataPtr(scalarOffsets)));
+
+        scalarOffsets[nproc] = matrix.distribution().globalRowSize();
+#ifdef ALIEN_USE_ARCANE
+        offsets = scalarOffsets.constView();
+#else
+        offsets = ConstArrayView<int>(scalarOffsets);
+#endif
+        block_size = 1;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init(offsets.data(), offsets.size(), block_size);
+      }
+    }
+
+    m_prepare_timer.stop();
+
+    error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
+  }
+
 
   m_status.residual = m_mcg_status.m_residual;
   m_status.iteration_count = m_mcg_status.m_num_iter;
@@ -562,110 +694,54 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   m_int_total_init_time += m_mcg_status.m_init_time;
   m_int_total_update_time += m_mcg_status.m_update_time;
 
-  if (error == 0) {
-    m_status.succeeded = true;
-    m_status.error = 0;
+  std::string status = "OK";
+  m_status.succeeded = true;
+  m_status.error = 0;
 
+  if (error !=0) {
+    status = "Error";
+    m_status.succeeded = false;
+    m_status.error = m_mcg_status.m_error;
+  }
+
+  if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
     printInfo();
     alien_info([&] {
-      cout() << "Resolution info      :";
-      cout() << "Resolution status    : OK";
+      cout() << "Resolution status    : " << status;
+      cout() << "Error code           : " << m_mcg_status.m_error;
       cout() << "Residual             : " << m_mcg_status.m_residual;
       cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
     });
-#if 0
-    if(m_logger)
-      m_logger->stop(eStep::solve, m_status);
-#endif
-    return true;
-  } else {
-    m_status.succeeded = false;
-    m_status.error = m_mcg_status.m_error;
-    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-      printInfo();
-
-      alien_info([&] {
-        cout() << "Resolution status      : Error";
-        cout() << "Error code             : " << m_mcg_status.m_error;
-      });
-    }
-#if 0    
-    if(m_logger)
-      m_logger->stop(eStep::solve, m_status);
-#endif
-    return false;
   }
-}
 
-void
-MCGInternalLinearSolver::setEdgeWeight(const IMatrix& E)
-{
-  const MCGMatrix& ew_matrix = E.impl()->get<BackEnd::tag::mcgsolver>();
+#if 0
+  if(m_logger)
+    m_logger->stop(eStep::solve, m_status);
+#endif
 
-  const auto* edge_weightp = ew_matrix.internal()->m_matrix[0][0]->getVal();
-  const auto n_edge = ew_matrix.internal()->m_matrix[0][0]->getProfile().getNElems();
-
-  m_edge_weight.resize(n_edge);
-  std::copy(edge_weightp, edge_weightp + n_edge, m_edge_weight.begin());
+  return m_status.succeeded;
 }
 
 bool
 MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrixType& A,
-    const MCGInternalLinearSolver::MCGVectorType& b,
-    const MCGInternalLinearSolver::MCGVectorType& x)
-{
+    const MCGInternalLinearSolver::MCGVectorType& b) const {
+
   if (m_system == nullptr) {
     return true;
   }
 
-  if (A.m_matrix[0][0].get() != m_system->getMatrix()) {
+  if (A.m_matrix != m_system->getMatrix()) {
     return true;
   }
+
   if (m_A_key != A.m_key) {
     return true;
   }
 
-  if (&b.m_bvector != m_system->getRhs()) {
-    return true;
-  }
-  if (m_b_key != b.m_key) {
+  if (b.m_vector != m_system->getRhs()) {
     return true;
   }
 
-  if (&x.m_bvector != m_system->getSol()) {
-    return true;
-  }
-
-  if (m_x_key != x.m_key) {
-    return true;
-  }
-
-  return false;
-}
-
-bool
-MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGMatrixType& A)
-{
-  if (m_system == nullptr) {
-    return true;
-  }
-
-  if (A.m_matrix[0][0].get() != m_system->getMatrix()) {
-    return true;
-  }
-  if (m_A_key != A.m_key) {
-    return true;
-  }
-
-  return false;
-}
-
-bool
-MCGInternalLinearSolver::_rhsChanged(const MCGVectorType& b)
-{
-  if (&b.m_bvector != m_system->getRhs()) {
-    return true;
-  }
   if (m_b_key != b.m_key) {
     return true;
   }
@@ -674,9 +750,106 @@ MCGInternalLinearSolver::_rhsChanged(const MCGVectorType& b)
 }
 
 bool
-MCGInternalLinearSolver::_x0Changed(const MCGVectorType& x0)
-{
-  if (&x0.m_bvector != m_system->getInitSol()) {
+MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& b) const {
+  if (m_device_system == nullptr) {
+    return true;
+  }
+
+  if (A.m_matrix != m_device_system->getMatrix()) {
+    return true;
+  }
+
+  if (m_A_key != A.m_key) {
+    return true;
+  }
+
+  if (b.m_vector != m_device_system->getRhs()) {
+    return true;
+  }
+
+  if (m_b_key != b.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGMatrixType& A) const {
+  if (m_system == nullptr) {
+    return true;
+  }
+
+  if (A.m_matrix != m_system->getMatrix()) {
+    return true;
+  }
+
+  if (m_A_key != A.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A) const {
+  if (m_device_system == nullptr) {
+    return true;
+  }
+
+  if (A.m_matrix != m_device_system->getMatrix()) {
+    return true;
+  }
+
+  if (m_A_key != A.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_rhsChanged(const MCGVectorType& b) const {
+  if (b.m_vector != m_system->getRhs()) {
+    return true;
+  }
+
+  if (m_b_key != b.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_rhsChanged(const MCGDeviceVectorType& b) const {
+  if (b.m_vector != m_device_system->getRhs()) {
+    return true;
+  }
+
+  if (m_b_key != b.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_x0Changed(const MCGVectorType& x0) const {
+  if (x0.m_vector != m_system->getInitSol()) {
+    return true;
+  }
+  if (m_x0_key != x0.m_key) {
+    return true;
+  }
+
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_x0Changed(const MCGDeviceVectorType& x0) const {
+  if (x0.m_vector != m_device_system->getInitSol()) {
     return true;
   }
   if (m_x0_key != x0.m_key) {
@@ -689,14 +862,29 @@ MCGInternalLinearSolver::_x0Changed(const MCGVectorType& x0)
 bool
 MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrixType& A,
     const MCGInternalLinearSolver::MCGVectorType& b,
-    const MCGInternalLinearSolver::MCGVectorType& x0,
-    const MCGInternalLinearSolver::MCGVectorType& x)
-{
-  if (_systemChanged(A, b, x)) {
+    const MCGInternalLinearSolver::MCGVectorType& x0) const {
+  if (_systemChanged(A, b)) {
     return true;
   }
 
-  if (&x0.m_bvector != m_system->getInitSol()) {
+  if (x0.m_vector != m_system->getInitSol()) {
+    return true;
+  }
+  if (m_x0_key != x0.m_key) {
+    return true;
+  }
+  return false;
+}
+
+bool
+MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& b,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& x0) const {
+  if (_systemChanged(A, b)) {
+    return true;
+  }
+
+  if (x0.m_vector != m_device_system->getInitSol()) {
     return true;
   }
   if (m_x0_key != x0.m_key) {
@@ -707,22 +895,50 @@ MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrix
 
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixType& A,
-    const MCGInternalLinearSolver::MCGVectorType& b,
-    const MCGInternalLinearSolver::MCGVectorType& x)
+    const MCGInternalLinearSolver::MCGVectorType& b)
 {
   m_A_key = A.m_key;
   m_b_key = b.m_key;
-  m_x_key = x.m_key;
+}
+
+void
+MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& b)
+{
+  m_A_key = A.m_key;
+  m_b_key = b.m_key;
 }
 
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixType& A,
     const MCGInternalLinearSolver::MCGVectorType& b,
-    const MCGInternalLinearSolver::MCGVectorType& x0,
-    const MCGInternalLinearSolver::MCGVectorType& x)
+    const MCGInternalLinearSolver::MCGVectorType& x0)
 {
-  _registerKey(A, b, x);
-  m_x0_key = m_x0_key;
+  _registerKey(A, b);
+  m_x0_key = x0.m_key;
+}
+
+void
+MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& b,
+    const MCGInternalLinearSolver::MCGDeviceVectorType& x0)
+{
+  _registerKey(A, b);
+  m_x0_key = x0.m_key;
+}
+
+bool MCGInternalLinearSolver::_hostSolver(MCGSolver::eKernelType kernel) {
+  switch (kernel) {
+    case MCGSolver::eKernelType::GPU_CUBLAS_BCSP:
+    case MCGSolver::eKernelType::GPU_CUBLAS_BELL:
+    case MCGSolver::eKernelType::GPU_CUBLAS_BCSR:
+    case MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSP:
+    case MCGSolver::eKernelType::MPI_GPU_CUBLAS_BELL:
+    case MCGSolver::eKernelType::MPI_GPU_CUBLAS_BCSR:
+      return false;
+    default:
+      return true;
+  }
 }
 
 ILinearSolver*

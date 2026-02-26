@@ -27,14 +27,14 @@ class SolverStat;
 class ALIEN_CORE_SOLVERS_EXPORT AlienCoreLinearSolver
 : public AlienCoreSolverBaseT<Alien::SimpleCSRInternalLinearAlgebra>
 {
- private:
+private:
   typedef SolverStatus Status;
 
   typedef SimpleCSRMatrix<Real> CSRMatrixType;
   typedef SimpleCSRVector<Real> CSRVectorType;
   typedef SimpleCSRInternal::MatrixInternal<Real> CSRInternalMatrixType;
 
- public:
+public:
   typedef AlienCoreSolverBaseT<Alien::SimpleCSRInternalLinearAlgebra> BaseType ;
 
   /** Constructeur de la classe */
@@ -45,7 +45,7 @@ class ALIEN_CORE_SOLVERS_EXPORT AlienCoreLinearSolver
   /** Destructeur de la classe */
   virtual ~AlienCoreLinearSolver() {}
 
- public:
+public:
   String getBackEndName() const { return "simple_csr"; }
   String getName() const { return "AlienCoreSolver"; }
 

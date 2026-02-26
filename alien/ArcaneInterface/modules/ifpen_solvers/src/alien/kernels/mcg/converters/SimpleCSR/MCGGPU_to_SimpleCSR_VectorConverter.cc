@@ -15,15 +15,15 @@
 
 using namespace Alien;
 
-class MCG_to_SimpleCSR_VectorConverter : public IVectorConverter
+class MCGGPU_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
-  MCG_to_SimpleCSR_VectorConverter() = default;
-  ~MCG_to_SimpleCSR_VectorConverter() override = default;
+  MCGGPU_to_SimpleCSR_VectorConverter() = default;
+  ~MCGGPU_to_SimpleCSR_VectorConverter() override = default;
 
   BackEndId sourceBackend() const override
   {
-    return AlgebraTraits<BackEnd::tag::mcgsolver>::name();
+    return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
   BackEndId targetBackend() const override
   {
@@ -33,19 +33,19 @@ class MCG_to_SimpleCSR_VectorConverter : public IVectorConverter
 };
 
 void
-MCG_to_SimpleCSR_VectorConverter::convert(
+MCGGPU_to_SimpleCSR_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
   const auto& v =
-    cast<MCGVector<Real,MCGInternal::eMemoryDomain::Host>>(sourceImpl, sourceBackend());
+    cast<MCGVector<Real,MCGInternal::eMemoryDomain::Device>>(sourceImpl, sourceBackend());
   auto& v2 =
       cast<SimpleCSRVector<double>>(targetImpl, targetBackend());
 
   alien_debug([this,&v,&v2] {
-    cout() << "Converting MCGVector: " << &v << " to SimpleCSRVector " << &v2;
+    cout() << "Converting MCGVector on Device: " << &v << " to SimpleCSRVector " << &v2;
   });
 
   v.getValues(v2.values().data());
 }
 
-REGISTER_VECTOR_CONVERTER(MCG_to_SimpleCSR_VectorConverter);
+REGISTER_VECTOR_CONVERTER(MCGGPU_to_SimpleCSR_VectorConverter);
