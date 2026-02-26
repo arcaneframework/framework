@@ -330,6 +330,15 @@ readVariablesData(IVariableMng* vm, VariableIOReaderMng::IDataReaderWrapper* rea
     VariableMetaData* vmd = ivar.m_meta_data;
     String exception_message;
     bool has_error = false;
+
+    // Si l'on a une variable maillage en mémoire partagée, il est possible que
+    // certains sous-domaines aient ajouté la propriété NoDump. Dans ce cas, on
+    // ne redimensionne pas la variable pour ces processus. Ce sera à
+    // IVariable::setUsed() de le faire.
+    if (var && (var->property() & (IVariable::PInShMem)) && (var->itemKind() != IK_Unknown)) {
+      // TODO : Faire un reduce sur la propriété NoDump ?
+      var->_internalApi()->setNoDumpRestored(true);
+    }
     try {
       reader->read(vmd, var, data);
       if (var)
@@ -583,6 +592,12 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
     if (!var)
       // Ne devrait pas arriver
       continue;
+    // Sur les variables en mémoire partagée, avec un NoDump non commun à tous
+    // les sous-domaines, le hash est invalide.
+    // TODO : Faire plus propre.
+    if (var->property() & (IVariable::PNoDump | IVariable::PTemporary)) {
+      continue;
+    }
     hash_values.clear();
     IData* data = var->data();
     String hash_str;
@@ -654,6 +669,9 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
     VariableRef* variable_ref = m_variable_mng->_createVariableFromType(vmd.fullType(), vbi);
 
     if (vbi.property() & IVariable::PInShMem) {
+      if (vbi.property() & IVariable::PSubDomainPrivate) {
+        ARCANE_FATAL("Variable with PInShMem property must be in all sub-domains (PSubDomainPrivate property cannot be set with PInShMem)");
+      }
       IParallelMng* pm{};
       // Si la variable utilise un maillage, il sera créé par _readMeshesMetaData().
       if (!mesh_name.null()) {
@@ -663,7 +681,7 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
       else {
         pm = sd->parallelMng();
       }
-      variable_ref->variable()->_internalApi()->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->machineShMemWinMemoryAllocator()));
+      variable_ref->variable()->_internalApi()->changeAllocator(pm->_internalApi()->machineShMemWinMemoryAllocator());
     }
   }
 }

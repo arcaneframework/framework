@@ -112,6 +112,22 @@ class ARCANE_CORE_EXPORT IVariableInternal
    * Retourne nullptr s'y a pas de réplication.
    */
   virtual IParallelMng* replicaParallelMng() const= 0;
+
+  /*!
+   * \brief Méthode permettant de savoir si la variable maillage sur mémoire
+   * partagée vient d'être restauré et nécessite un redimensionnement.
+   *
+   * \return true si le redimensionnement est nécessaire.
+   */
+  virtual bool noDumpRestored() = 0;
+
+  /*!
+   * \brief Méthode permettant de définir si la variable maillage sur mémoire
+   * partagée vient d'être restauré et nécessite un redimensionnement.
+   *
+   * \param restored true si le redimensionnement est nécessaire.
+   */
+  virtual void setNoDumpRestored(bool restored) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

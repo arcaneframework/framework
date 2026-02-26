@@ -347,7 +347,15 @@ _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_ha
     if (!var->isUsed())
       continue;
     try {
-      writer->write(var, var->data());
+      // Avec le paramètre PShMem, si on a des variables NoDump sur certains
+      // processus, mais pas d'autres, on doit quand même écrire un tableau
+      // vide pour les appels collectifs à la relecture.
+      if (var->property() & (IVariable::PNoDump | IVariable::PTemporary)) {
+        writer->write(var, var->data()->cloneEmptyRef().get());
+      }
+      else {
+        writer->write(var, var->data());
+      }
     }
     catch (const Exception& ex) {
       error() << "Exception Arcane while VariableMng::writeVariables()"

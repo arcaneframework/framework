@@ -592,9 +592,24 @@ isVariableToSave(IVariable& var)
 {
   if (!var.isUsed())
     return false;
-  bool no_dump = var.property() & (IVariable::PNoDump|IVariable::PTemporary);
-  if (no_dump)
-    return false;
+  if (var.property() & (IVariable::PInShMem)) {
+    bool is_all_no_dump = true;
+    // Si certains processus ont NoDump et pas d'autres, on dump.
+    if (var.itemKind() == IK_Unknown) {
+      is_all_no_dump = var.variableMng()->parallelMng()->reduce(MessagePassing::ReduceMin, (var.property() & (IVariable::PNoDump | IVariable::PTemporary)));
+    }
+    else {
+      is_all_no_dump = var.meshHandle().mesh()->parallelMng()->reduce(MessagePassing::ReduceMin, (var.property() & (IVariable::PNoDump | IVariable::PTemporary)));
+    }
+    if (is_all_no_dump) {
+      return false;
+    }
+  }
+  else {
+    bool no_dump = var.property() & (IVariable::PNoDump | IVariable::PTemporary);
+    if (no_dump)
+      return false;
+  }
   IMesh* mesh = var.meshHandle()._internalMeshOrNull();
   if (mesh && !mesh->properties()->getBool("dump"))
     return false;

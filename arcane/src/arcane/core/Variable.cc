@@ -120,6 +120,7 @@ class VariablePrivate
   bool m_has_recursive_depend = true; //!< Vrai si les dépendances sont récursives
   bool m_want_shrink = false;
   Variable* m_variable = nullptr; //!< Variable associée
+  bool m_nodump_restored; //!< Variable PInShMem & PNoDump qui vient d'être restaurée.
 
  public:
 
@@ -162,6 +163,8 @@ class VariablePrivate
   void resize(const VariableResizeArgs& resize_args) override;
   VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) override;
   IParallelMng* replicaParallelMng() const;
+  bool noDumpRestored() override;
+  void setNoDumpRestored(bool restored) override;
   //!@}
 
  private:
@@ -639,6 +642,11 @@ setUsed(bool is_used)
 
   if (m_p->m_is_used) {
     if (m_p->m_property & IVariable::PInShMem) {
+      if (m_p->m_property & IVariable::PSubDomainPrivate) {
+        ARCANE_FATAL("Variable with PInShMem property must be in all sub-domains (PSubDomainPrivate property cannot be set with PInShMem)");
+      }
+      // TODO : Même si changeAllocator() avec le même allocateur déjà en
+      //        place fait simplement un return, ça reste moche...
       IParallelMng* pm{};
       if (m_p->m_mesh_handle.hasMesh()) {
         pm = m_p->m_mesh_handle.mesh()->parallelMng();
@@ -646,7 +654,7 @@ setUsed(bool is_used)
       else {
         pm = subDomain()->parallelMng();
       }
-      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->machineShMemWinMemoryAllocator()));
+      m_p->changeAllocator(pm->_internalApi()->machineShMemWinMemoryAllocator());
     }
 
     if (m_p->m_item_group.null() && ik != IK_Unknown) {
@@ -666,6 +674,23 @@ setUsed(bool is_used)
         if (getGlobalDataInitialisationPolicy() == DIP_Legacy)
           m_p->m_data->fillDefault();
         m_p->m_has_valid_data = true;
+      }
+
+      // Dans le cas où une protection vient d'être restorée et que la
+      // variable est une variable au maillage en mémoire partagée avec
+      // certain processus ayant mis la propriété NoDump, on doit
+      // redimensionner la variable. Sinon, pour les processus NoDump, on
+      // aurait une variable de taille nulle.
+      // Appel collectif donc tout le monde doit redimensionner.
+      else if (_internalApi()->noDumpRestored()) {
+        _internalApi()->setNoDumpRestored(false);
+        resizeFromGroup();
+        if ((property() & IVariable::PNoDump) && (getGlobalDataInitialisationPolicy() == DIP_Legacy)) {
+          m_p->m_data->fillDefault();
+        }
+        // // Normalement inutile, les readers appelant la méthode
+        // // \a notifyEndRead() une fois les variables lues.
+        //m_p->m_has_valid_data = true;
       }
     }
   }
@@ -1512,6 +1537,24 @@ replicaParallelMng() const
   if (!pr->hasReplication())
     return nullptr;
   return pr->replicaParallelMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool VariablePrivate::
+noDumpRestored()
+{
+  return m_nodump_restored;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariablePrivate::
+setNoDumpRestored(bool restored)
+{
+  m_nodump_restored = restored;
 }
 
 /*---------------------------------------------------------------------------*/
