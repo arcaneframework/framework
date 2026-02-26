@@ -155,12 +155,6 @@ class ILinearSolver
   virtual ILinearSolver* create() const { return NULL; }
 #endif /* USE_MULTI_SOLVER_INSTANCE */
 
-  /*!
-   * \brief Inform linear solver that a new non-linear resolution starts.
-   * Linear solver can use this information to update some internal datas
-   * in the next call to solve.
-   */
-  virtual void startNonLinear() = 0;
 };
 
 class ILinearSolverWithDiagScaling

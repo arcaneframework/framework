@@ -94,7 +94,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
     };
   };
 
- public:
   class SolverFactory;
   friend class SolverFactory;
 
@@ -104,15 +103,11 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
   class FieldSplitFactory;
   friend class FieldSplitFactory;
 
- public:
   PETScInternalLinearSolver(
       Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
       IOptionsPETScLinearSolver* options = nullptr);
 
   virtual ~PETScInternalLinearSolver();
-
- public:
-
 
   static bool m_library_plugin_is_initialized ;
 
@@ -174,11 +169,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
     m_nearnull_space_opt = flag ;
   }
 
-  void startNonLinear() final {
-      // use this method to inform solver that a new non-linear resolution starts
-  }
-
- public:
   void checkError(const Arccore::String& msg, int ierr);
 
   Arccore::String convergedReasonString(const Arccore::Integer reason) const;

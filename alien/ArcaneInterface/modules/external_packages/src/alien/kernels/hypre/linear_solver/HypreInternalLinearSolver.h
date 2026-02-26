@@ -111,10 +111,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   const SolverStat& getSolverStat() const { return m_stat; }
   SolverStat& getSolverStat() { return m_stat; }
 
-  void startNonLinear() final {
-      // use this method to inform solver that a new non-linear resolution starts
-  }
-
  private:
   struct Impl ;
 

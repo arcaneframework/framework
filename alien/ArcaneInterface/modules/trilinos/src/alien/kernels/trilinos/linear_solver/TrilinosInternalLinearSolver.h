@@ -93,10 +93,6 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   void printInfo() { internalPrintInfo(); }
   void printCurrentTimeInfo() {}
 
-  void startNonLinear() final {
-   // use this method to inform solver that a new non-linear resolution starts
-  }
-
  private:
   void updateLinearSystem();
   inline void _startPerfCount();

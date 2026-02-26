@@ -98,10 +98,6 @@ class ALIEN_HPDDM_EXPORT HPDDMInternalSolver
 
   void internalPrintInfo() const;
 
-  void startNonLinear() final {
-    // use this method to inform solver that a new non-linear resolution starts
-  }
-
  private:
   void _computeHPDDMRhs(const CSRMatrixType& A, CSRVectorType const& b);
   void _computeHPDDMSol(const CSRMatrixType& A, CSRVectorType const& x);

@@ -62,10 +62,6 @@ public:
 
   bool solve();
 
-  void startNonLinear() override {
-    // use this method to inform solver that a new non-linear resolution starts
-  }
-
   //! Indicateur de support de résolution parallèle
   bool hasParallelSupport() const { return true; }
 
