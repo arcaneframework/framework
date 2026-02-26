@@ -74,7 +74,7 @@ class MCGMatrix : public IMatrixImpl
   const MatrixInternal* internal() const { return m_internal.get(); }
 
  private:
-  std::unique_ptr<MatrixInternal> m_internal;
+  std::unique_ptr<MatrixInternal> m_internal = std::make_unique<MatrixInternal>();
   Space const* m_space0 = nullptr;
   Space const* m_space1 = nullptr;
   bool m_is_init = false;

@@ -18,8 +18,7 @@ namespace Alien {
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGMatrix<NumT,Domain>::MCGMatrix(const MultiMatrixImpl* multi_impl)
 :
-IMatrixImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name()),
-m_internal(std::make_unique<MatrixInternal>())
+IMatrixImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name())
 {}
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
