@@ -44,9 +44,9 @@ allocate(MemoryAllocationArgs, Int64 new_size)
 {
   // Si la taille est égal à zéro, comme on a une création collective, on doit
   // vérifier si la taille est égal à zéro pour tous.
-  // if (m_pm->reduce(MessagePassing::ReduceMax, new_size) <= 0) {
-  //   return { nullptr, 0 };
-  // }
+  if (m_pm->reduce(MessagePassing::ReduceMax, new_size) <= 0) {
+    return { nullptr, 0 };
+  }
 
   constexpr Int64 offset = sizeof(MachineShMemWinBase*);
   const Int64 new_size_with_offset = offset + new_size;
