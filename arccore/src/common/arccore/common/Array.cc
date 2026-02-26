@@ -124,7 +124,7 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
-            << " size=" << new_capacity << " datasize=" << sizeof_true_impl
+            << " size=" << new_capacity
             << " p=" << p << '\n';
 #endif
   if (!p) {
@@ -174,7 +174,7 @@ _reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 s
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << " ArrayImplBase::REALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
-            << " size=" << new_capacity << " datasize=" << sizeof_true_impl
+            << " size=" << new_capacity
             << " ptr=" << current << " new_p=" << p << '\n';
 #endif
   if (!p) {
@@ -198,6 +198,9 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
   _checkAllocator();
   if (!new_allocator_opt.allocator()) {
     throw BadAllocException("Null new_allocator");
+  }
+  if (new_allocator_opt.allocator() == _allocator()) {
+    return current_info.baseAddress();
   }
 
   if (this->capacity == 0) {
@@ -231,7 +234,6 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
   std::cout << " ArrayImplBase::_changeAllocator: new_elem_size=" << new_elem_size
             << " new_capacity=" << new_capacity
             << " sizeof_true_type=" << sizeof_true_type
-            << " datasize=" << sizeof_true_impl
             << " old_ptr=" << current << " new_p=" << p << '\n';
 #endif
   if (!p) {
