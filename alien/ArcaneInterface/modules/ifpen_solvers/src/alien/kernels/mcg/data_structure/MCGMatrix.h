@@ -28,7 +28,7 @@ class MCGMatrix : public IMatrixImpl
   using MatrixInternal = MCGInternal::MatrixInternal<NumT,Domain>;
 
   MCGMatrix(const MultiMatrixImpl* multi_impl);
-  ~MCGMatrix() override;
+  ~MCGMatrix() override = default;
 
   void init(
       const ISpace& row_space, const ISpace& col_space, const MatrixDistribution& dist)
@@ -70,11 +70,11 @@ class MCGMatrix : public IMatrixImpl
   Space m_row_space1;
   Space m_col_space1;
 
-  MatrixInternal* internal() { return m_internal; }
-  const MatrixInternal* internal() const { return m_internal; }
+  MatrixInternal* internal() { return m_internal.get(); }
+  const MatrixInternal* internal() const { return m_internal.get(); }
 
  private:
-  MatrixInternal* m_internal = nullptr;
+  std::unique_ptr<MatrixInternal> m_internal;
   Space const* m_space0 = nullptr;
   Space const* m_space1 = nullptr;
   bool m_is_init = false;

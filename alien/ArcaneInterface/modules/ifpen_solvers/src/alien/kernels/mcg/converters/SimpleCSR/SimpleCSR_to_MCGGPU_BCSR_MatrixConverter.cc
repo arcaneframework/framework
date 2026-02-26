@@ -42,13 +42,14 @@ void
 SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
-  const SimpleCSRMatrix<Real>& v =
+  const auto& v =
     cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
   auto& v2 =
     cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>>(targetImpl, targetBackend());
 
-  alien_debug(
-      [&] { cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2; });
+  alien_debug( [this,&v,&v2]() -> void {
+    cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
+  });
 
   if (sourceImpl->vblock())
     throw FatalErrorException(
@@ -81,13 +82,13 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::_build(
     block_size2 = sourceImpl.block()->sizeY();
   }
 
-  if (!targetImpl.isInit()) {
-    if (!targetImpl.initMatrix(MCGInternal::eMemoryDomain::Host,block_size, block_size2, local_size, global_size,
-            row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
-            partition_offset)) {
+  if (!targetImpl.isInit() &&
+    !targetImpl.initMatrix(MCGInternal::eMemoryDomain::Host,block_size, block_size2,
+      local_size, global_size, row_offset.unguardedBasePointer(),
+      cols.unguardedBasePointer(), partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
     }
-  }
+
 
   const bool success = targetImpl.initMatrixValues(MCGInternal::eMemoryDomain::Host,values.unguardedBasePointer());
 

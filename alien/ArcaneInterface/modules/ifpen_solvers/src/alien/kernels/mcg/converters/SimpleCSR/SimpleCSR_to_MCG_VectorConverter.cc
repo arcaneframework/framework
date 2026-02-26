@@ -36,12 +36,12 @@ void
 SimpleCSR_to_MCG_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const SimpleCSRVector<double>& v =
+  const auto& v =
       cast<SimpleCSRVector<double>>(sourceImpl, sourceBackend());
   auto& v2 =
     cast<MCGVector<Real,MCGInternal::eMemoryDomain::Host>>(targetImpl, targetBackend());
 
-  alien_debug([&] {
+  alien_debug([this,&v,&v2] {
     cout() << "Converting SimpleCSRVector: " << &v << " to MCGVector " << &v2;
   });
 

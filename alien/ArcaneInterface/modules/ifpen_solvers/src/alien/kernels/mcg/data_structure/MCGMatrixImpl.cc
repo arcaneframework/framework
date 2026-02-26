@@ -6,6 +6,8 @@
 
 #include "MCGMatrixImpl.h"
 
+#include "MemoryDomain.h"
+
 namespace Alien {
 template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>;
 template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>;

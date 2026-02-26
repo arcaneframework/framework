@@ -101,39 +101,37 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
       IOptionsMCGSolver* options = nullptr);
 
   /** Destructeur de la classe */
-  ~MCGInternalLinearSolver() override;
+   ~MCGInternalLinearSolver() override;
 
  public:
   //! Initialisation
-  void init() override;
-  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm) override;
-  //void updateParameters();
+  void init() final;
+  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm) final;
 
-  // void setDiagScal(double* Diag, int size);
   //! Finalize
-  void end() override;
+  void end() final;
 
-  String getBackEndName() const override { return "mcgsolver"; }
+  String getBackEndName() const final { return "mcgsolver"; }
 
   //! Linear system solve
-  bool solve(IMatrix const& A, IVector const& b, IVector& x) override;
+  bool solve(IMatrix const& A, IVector const& b, IVector& x) final;
 
   //! Indicateur de support de r�solution parall�le
-  bool hasParallelSupport() const override { return true; }
+  bool hasParallelSupport() const final { return true; }
 
-  std::shared_ptr<ILinearAlgebra> algebra() const override;
+  std::shared_ptr<ILinearAlgebra> algebra() const final;
 
   //! Etat du solveur
-  const Alien::SolverStatus& getStatus() const override;
+  const Alien::SolverStatus& getStatus() const final;
 
-  const SolverStat& getSolverStat() const override { return m_stat; }
+  const SolverStat& getSolverStat() const final { return m_stat; }
 
   String getName() const { return "mcgsolver"; }
 
   //! Etat du solveur
-  void setNullSpaceConstantOption(bool flag) override
+  void setNullSpaceConstantOption(bool flag) final
   {
-    alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
+    alien_warning([this] { cout() << "Null Space Constant Option not yet implemented"; });
   }
 
   void printInfo() const;
@@ -175,8 +173,10 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   bool _hostSolver(MCGSolver::eKernelType kernel);
 
-  typedef MCGSolver::LinearSystem<double, MCGSolver::Int32SparseIndex> MCGSolverLinearSystem;
-  typedef MCGSolver::GPULinearSystem<double, MCGSolver::Int32SparseIndex> MCGSolverDeviceLinearSystem;
+  using MCGSolverLinearSystem =
+      MCGSolver::LinearSystem<double, MCGSolver::Int32SparseIndex>;
+  using MCGSolverDeviceLinearSystem =
+      MCGSolver::GPULinearSystem<double, MCGSolver::Int32SparseIndex>;
 
  protected:
   std::unique_ptr<MCGSolver::LinearSolver> m_solver;

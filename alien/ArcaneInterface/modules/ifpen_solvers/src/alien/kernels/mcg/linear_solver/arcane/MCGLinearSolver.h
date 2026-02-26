@@ -40,7 +40,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGLinearSolver : public ArcaneMCGSolverObject,
       std::shared_ptr<IOptionsMCGSolver> _options);
 
   /** Destructeur de la classe */
-  virtual ~MCGLinearSolver(){};
+  ~MCGLinearSolver() final = default;
 };
 
 }

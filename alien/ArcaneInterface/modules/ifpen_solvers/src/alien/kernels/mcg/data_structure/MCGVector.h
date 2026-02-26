@@ -27,30 +27,25 @@ class MCGVector : public IVectorImpl
  public:
   using VectorInternal = MCGInternal::VectorInternal<double,Domain>;
 
- public:
   MCGVector(const MultiVectorImpl* multi_impl);
-
   ~MCGVector() override;
 
- public:
   void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
   void free() {}
   void clear() {}
 
- public:
   void setValues(double const* values);
   void getValues(double* values) const;
 
- public:
-  VectorInternal* internal() { return m_internal; }
-  const VectorInternal* internal() const { return m_internal; }
+  VectorInternal* internal() { return m_internal.get(); }
+  const VectorInternal* internal() const { return m_internal.get(); }
 
   void update(const MCGVector& v);
 
  private:
-  VectorInternal* m_internal = nullptr;
+  std::unique_ptr<VectorInternal> m_internal;
 };
 
 }

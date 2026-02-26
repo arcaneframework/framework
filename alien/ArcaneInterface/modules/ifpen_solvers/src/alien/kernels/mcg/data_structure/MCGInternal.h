@@ -79,9 +79,9 @@ class VectorInternal
  public:
   using VectorType = typename MatVecTypeGen<NumT,Domain>::VectorType;
   VectorInternal(int nrow, int block_size)
-  {
-    m_vector = std::make_shared<VectorType>(nrow, block_size);
-  }
+    :
+  m_vector(std::make_shared<VectorType>(nrow, block_size))
+  {}
 
   MCGSolver::UniqueKey m_key;
   std::shared_ptr<VectorType> m_vector;

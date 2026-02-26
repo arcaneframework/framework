@@ -21,7 +21,6 @@ class SimpleCSR_to_MCGGPU_VectorConverter : public IVectorConverter
   SimpleCSR_to_MCGGPU_VectorConverter() = default;
   ~SimpleCSR_to_MCGGPU_VectorConverter() override = default;
 
- public:
   BackEndId sourceBackend() const override
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
@@ -37,12 +36,12 @@ void
 SimpleCSR_to_MCGGPU_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const SimpleCSRVector<double>& v =
+  const auto& v =
       cast<SimpleCSRVector<double>>(sourceImpl, sourceBackend());
   auto& v2 =
     cast<MCGVector<Real,MCGInternal::eMemoryDomain::Device>>(targetImpl, targetBackend());
 
-  alien_debug([&] {
+  alien_debug([this,&v,&v2] {
     cout() << "Converting SimpleCSRVector: " << &v << " to MCGVector on Device " << &v2;
   });
 

@@ -19,9 +19,7 @@ MCGVector<NumT,Domain>::MCGVector(const MultiVectorImpl* multi_impl)
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGVector<NumT,Domain>::~MCGVector()
-{
-  delete m_internal;
-}
+{}
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
@@ -35,8 +33,6 @@ template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void
 MCGVector<NumT,Domain>::allocate()
 {
-  delete m_internal;
-
   const VectorDistribution& dist = this->distribution();
   int block_size = 1;
 
@@ -45,7 +41,7 @@ MCGVector<NumT,Domain>::allocate()
   else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet");
 
-  m_internal = new VectorInternal(dist.localSize(), block_size);
+  m_internal = std::make_unique<VectorInternal>(dist.localSize(), block_size);
 }
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>

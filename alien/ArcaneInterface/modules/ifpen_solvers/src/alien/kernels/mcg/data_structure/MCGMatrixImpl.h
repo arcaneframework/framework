@@ -17,16 +17,10 @@ namespace Alien {
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGMatrix<NumT,Domain>::MCGMatrix(const MultiMatrixImpl* multi_impl)
-: IMatrixImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name())
-{
-  m_internal = new MatrixInternal();
-}
-
-template<typename NumT,MCGInternal::eMemoryDomain Domain>
-MCGMatrix<NumT,Domain>::~MCGMatrix()
-{
-  delete m_internal;
-}
+:
+IMatrixImpl(multi_impl, MCGInternal::AlgebraTraitsType<Domain>::name()),
+m_internal(std::make_unique<MatrixInternal>())
+{}
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 bool
@@ -147,7 +141,7 @@ MCGMatrix<NumT,Domain>::computeEllipticSplitTags(int equation_num) const
 
   for (Integer i = 0; i < space.nbField(); ++i) {
     const UniqueArray<Integer>& indices = space.field(i);
-    if (space.fieldLabel(i) == "Elliptic" and not indices.empty()) {
+    if (space.fieldLabel(i) == "Elliptic" && !indices.empty()) {
       elliptic_split_tag_found = true;
       for (Integer j = 0; j < indices.size(); ++j) {
         const Integer index = indices[j];
