@@ -47,7 +47,7 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::convert(
   auto& v2 =
     cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>>(targetImpl, targetBackend());
 
-  alien_debug( [this,&v,&v2]() -> void {
+  alien_debug( [this,&v,&v2]() {
     cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
   });
 

@@ -19,7 +19,7 @@ MCGVector<NumT,Domain>::MCGVector(const MultiVectorImpl* multi_impl)
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGVector<NumT,Domain>::~MCGVector()
-{}
+= default;
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 void

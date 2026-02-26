@@ -167,7 +167,7 @@ class LinearSolver : public ILinearSolver
    * Linear solver can use this information to update some internal datas
    * in the next call to solve.
  */
- virtual void startNonLinear() final {
+ void startNonLinear() final {
    m_solver->startNonLinear();
  }
 

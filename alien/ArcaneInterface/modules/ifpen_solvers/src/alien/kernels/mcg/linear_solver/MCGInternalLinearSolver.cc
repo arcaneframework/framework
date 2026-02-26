@@ -137,7 +137,7 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
 
   if(!std::regex_match(m_version,expected_revision_regex))
   {
-    alien_info([&]
+    alien_info([this,&expected_version]
         { cout()<<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
   }
 
@@ -580,120 +580,119 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
   if (A.impl()->hasFeature("composite")) {
     throw Alien::FatalErrorException("composite no more supported with MCGSolver");
   }
-  else {
-    m_A_update = A.impl()->timestamp() > m_A_time_stamp;
-    m_A_update = b.impl()->timestamp() > m_b_time_stamp;
-    m_A_time_stamp = A.impl()->timestamp();
-    m_b_time_stamp = b.impl()->timestamp();
 
-    if (_hostSolver(m_kernel)) {
-      const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver>();
+  m_A_update = A.impl()->timestamp() > m_A_time_stamp;
+  m_A_update = b.impl()->timestamp() > m_b_time_stamp;
+  m_A_time_stamp = A.impl()->timestamp();
+  m_b_time_stamp = b.impl()->timestamp();
 
-      const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver>();
-      auto& sol = x.impl()->get<BackEnd::tag::mcgsolver>(true);
+  if (_hostSolver(m_kernel)) {
+    const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver>();
 
-      if (m_use_mpi) {
-        ConstArrayView<int> offsets;
-        UniqueArray<Integer> blockOffsets;
-        int block_size;
+    const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver>();
+    auto& sol = x.impl()->get<BackEnd::tag::mcgsolver>(true);
 
-        if (A.impl()->block()) {
-          computeBlockOffsets(matrix.distribution(), *A.impl()->block(), blockOffsets);
-          int blockSize = A.impl()->block()->size();
+    if (m_use_mpi) {
+      ConstArrayView<int> offsets;
+      UniqueArray<Integer> blockOffsets;
+      int block_size;
+
+      if (A.impl()->block()) {
+        computeBlockOffsets(matrix.distribution(), *A.impl()->block(), blockOffsets);
+        int blockSize = A.impl()->block()->size();
 #ifdef ALIEN_USE_ARCANE
-          offsets = blockOffsets.constView();
+        offsets = blockOffsets.constView();
 #else
-          offsets = ConstArrayView<int>(blockOffsets);
+        offsets = ConstArrayView<int>(blockOffsets);
 #endif
-          block_size = blockSize;
-          m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
-          m_part_info->init((int*)offsets.data(), offsets.size(), block_size);
-        }
-        else {
-          Integer loffset = matrix.distribution().rowOffset();
-          Integer nproc = m_parallel_mng->commSize();
-          UniqueArray<Integer> scalarOffsets;
-          scalarOffsets.resize(nproc + 1);
-
-          mpAllGather(m_parallel_mng, ConstArrayView<int>(1, &loffset),
-              ArrayView<int>(nproc, dataPtr(scalarOffsets)));
-
-          scalarOffsets[nproc] = matrix.distribution().globalRowSize();
-#ifdef ALIEN_USE_ARCANE
-          offsets = scalarOffsets.constView();
-#else
-          offsets = ConstArrayView<int>(scalarOffsets);
-#endif
-          block_size = 1;
-          m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
-          m_part_info->init(offsets.data(), offsets.size(), block_size);
-        }
+        block_size = blockSize;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init((int*)offsets.data(), offsets.size(), block_size);
       }
+      else {
+        Integer loffset = matrix.distribution().rowOffset();
+        Integer nproc = m_parallel_mng->commSize();
+        UniqueArray<Integer> scalarOffsets;
+        scalarOffsets.resize(nproc + 1);
 
-      m_prepare_timer.stop();
+        mpAllGather(m_parallel_mng, ConstArrayView<int>(1, &loffset),
+            ArrayView<int>(nproc, dataPtr(scalarOffsets)));
 
-      try {
-        error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
-      } catch (...) {
-        // all MCGSolver exceptions are unrecoverable
-        exit(EXIT_FAILURE);
+        scalarOffsets[nproc] = matrix.distribution().globalRowSize();
+#ifdef ALIEN_USE_ARCANE
+        offsets = scalarOffsets.constView();
+#else
+        offsets = ConstArrayView<int>(scalarOffsets);
+#endif
+        block_size = 1;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init(offsets.data(), offsets.size(), block_size);
       }
     }
 
-    else { // use gpu
-      const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver_gpu>();
+    m_prepare_timer.stop();
 
-      const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver_gpu>();
-      auto& sol = x.impl()->get<BackEnd::tag::mcgsolver_gpu>(true);
-
-      if (m_use_mpi) {
-        ConstArrayView<int> offsets;
-        UniqueArray<Integer> blockOffsets;
-        int block_size;
-
-        if (A.impl()->block()) {
-          computeBlockOffsets(matrix.distribution(), *A.impl()->block(), blockOffsets);
-          int blockSize = A.impl()->block()->size();
-#ifdef ALIEN_USE_ARCANE
-          offsets = blockOffsets.constView();
-#else
-          offsets = ConstArrayView<int>(blockOffsets);
-#endif
-          block_size = blockSize;
-          m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
-          m_part_info->init((int*)offsets.data(), offsets.size(), block_size);
-        }
-        else {
-          Integer loffset = matrix.distribution().rowOffset();
-          Integer nproc = m_parallel_mng->commSize();
-          UniqueArray<Integer> scalarOffsets;
-          scalarOffsets.resize(nproc + 1);
-
-          mpAllGather(m_parallel_mng, ConstArrayView<int>(1, &loffset),
-              ArrayView<int>(nproc, dataPtr(scalarOffsets)));
-
-          scalarOffsets[nproc] = matrix.distribution().globalRowSize();
-#ifdef ALIEN_USE_ARCANE
-          offsets = scalarOffsets.constView();
-#else
-          offsets = ConstArrayView<int>(scalarOffsets);
-#endif
-          block_size = 1;
-          m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
-          m_part_info->init(offsets.data(), offsets.size(), block_size);
-        }
-      }
-
-      m_prepare_timer.stop();
-
-      try {
-        error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
-      } catch (...) {
-        // all MCGSolver exceptions are unrecoverable
-        exit(EXIT_FAILURE);
-      }
+    try {
+      error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
+    } catch (...) {
+      // all MCGSolver exceptions are unrecoverable
+      exit(EXIT_FAILURE);
     }
   }
+  else { // use gpu
+    const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver_gpu>();
+
+    const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver_gpu>();
+    auto& sol = x.impl()->get<BackEnd::tag::mcgsolver_gpu>(true);
+
+    if (m_use_mpi) {
+      ConstArrayView<int> offsets;
+      UniqueArray<Integer> blockOffsets;
+      int block_size;
+
+      if (A.impl()->block()) {
+        computeBlockOffsets(matrix.distribution(), *A.impl()->block(), blockOffsets);
+        int blockSize = A.impl()->block()->size();
+#ifdef ALIEN_USE_ARCANE
+        offsets = blockOffsets.constView();
+#else
+        offsets = ConstArrayView<int>(blockOffsets);
+#endif
+        block_size = blockSize;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init(offsets.data(), offsets.size(), block_size);
+      }
+      else {
+        Integer loffset = matrix.distribution().rowOffset();
+        Integer nproc = m_parallel_mng->commSize();
+        UniqueArray<Integer> scalarOffsets;
+        scalarOffsets.resize(nproc + 1);
+
+        mpAllGather(m_parallel_mng, ConstArrayView<int>(1, &loffset),
+            ArrayView<int>(nproc, dataPtr(scalarOffsets)));
+
+        scalarOffsets[nproc] = matrix.distribution().globalRowSize();
+#ifdef ALIEN_USE_ARCANE
+        offsets = scalarOffsets.constView();
+#else
+        offsets = ConstArrayView<int>(scalarOffsets);
+#endif
+        block_size = 1;
+        m_part_info = std::make_shared<MCGSolver::PartitionInfo<int32_t>>();
+        m_part_info->init(offsets.data(), offsets.size(), block_size);
+      }
+    }
+
+    m_prepare_timer.stop();
+
+    try {
+      error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
+    } catch (...) {
+      // all MCGSolver exceptions are unrecoverable
+      exit(EXIT_FAILURE);
+    }
+  }
+
 
   m_status.residual = m_mcg_status.m_residual;
   m_status.iteration_count = m_mcg_status.m_num_iter;
