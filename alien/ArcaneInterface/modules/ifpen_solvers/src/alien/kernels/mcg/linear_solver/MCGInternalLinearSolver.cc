@@ -632,12 +632,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
 
     m_prepare_timer.stop();
 
-    try {
-      error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
-    } catch (...) {
-      // all MCGSolver exceptions are unrecoverable
-      exit(EXIT_FAILURE);
-    }
+    error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
   }
   else { // use gpu
     const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver_gpu>();
@@ -685,12 +680,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
 
     m_prepare_timer.stop();
 
-    try {
-      error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
-    } catch (...) {
-      // all MCGSolver exceptions are unrecoverable
-      exit(EXIT_FAILURE);
-    }
+    error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
   }
 
 
@@ -704,41 +694,32 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
   m_int_total_init_time += m_mcg_status.m_init_time;
   m_int_total_update_time += m_mcg_status.m_update_time;
 
-  if (error == 0) {
-    m_status.succeeded = true;
-    m_status.error = 0;
+  std::string status = "OK";
+  m_status.succeeded = true;
+  m_status.error = 0;
 
-    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-      printInfo();
-      alien_info([&] {
-        cout() << "Resolution info      :";
-        cout() << "Resolution status    : OK";
-        cout() << "Residual             : " << m_mcg_status.m_residual;
-        cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
-      });
-    }
-#if 0
-    if(m_logger)
-      m_logger->stop(eStep::solve, m_status);
-#endif
-    return true;
-  } else {
+  if (error !=0) {
+    std::string status = "Error";
     m_status.succeeded = false;
     m_status.error = m_mcg_status.m_error;
-    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-      printInfo();
-
-      alien_info([&] {
-        cout() << "Resolution status      : Error";
-        cout() << "Error code             : " << m_mcg_status.m_error;
-      });
-    }
-#if 0    
-    if(m_logger)
-      m_logger->stop(eStep::solve, m_status);
-#endif
-    return false;
   }
+
+  if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
+    printInfo();
+    alien_info([&] {
+      cout() << "Resolution status    : " << status;
+      cout() << "Error code           : " << m_mcg_status.m_error;
+      cout() << "Residual             : " << m_mcg_status.m_residual;
+      cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
+    });
+  }
+
+#if 0
+  if(m_logger)
+    m_logger->stop(eStep::solve, m_status);
+#endif
+
+  return m_status.succeeded;
 }
 
 bool
