@@ -7,8 +7,8 @@
 #ifndef ALIEN_MCGIMPL_MCGLINEARSOLVER_H
 #define ALIEN_MCGIMPL_MCGLINEARSOLVER_H
 
-#include <alien/utils/Precomp.h>
-#include <alien/core/backend/LinearSolver.h>
+#include "alien/utils/Precomp.h"
+#include "alien/core/backend/LinearSolver.h"
 
 #include "alien/AlienIFPENSolversPrecomp.h"
 #include "alien/kernels/mcg/MCGPrecomp.h"

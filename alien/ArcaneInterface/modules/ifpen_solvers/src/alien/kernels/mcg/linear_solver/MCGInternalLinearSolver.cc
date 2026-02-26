@@ -11,31 +11,31 @@
 #include <iomanip>
 #include <regex>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 
-#include <alien/data/Space.h>
-#include <alien/expression/solver/ILinearSolver.h>
-#include <alien/expression/solver/ILinearAlgebra.h>
-#include <alien/expression/solver/SolverStat.h>
-#include <alien/expression/solver/SolverStater.h>
-#include <alien/core/impl/MultiMatrixImpl.h>
-#include <alien/core/impl/MultiVectorImpl.h>
-#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
-#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
-#include <alien/core/backend/LinearSolverT.h>
-#include <alien/core/block/ComputeBlockOffsets.h>
-#include <alien/kernels/mcg/linear_solver/MCGOptionTypes.h>
-#include <alien/kernels/mcg/linear_solver/MCGInternalLinearSolver.h>
-#include <alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h>
-#include <alien/kernels/mcg/data_structure/MCGInternal.h>
+#include "alien/data/Space.h"
+#include "alien/expression/solver/ILinearSolver.h"
+#include "alien/expression/solver/ILinearAlgebra.h"
+#include "alien/expression/solver/SolverStat.h"
+#include "alien/expression/solver/SolverStater.h"
+#include "alien/core/impl/MultiMatrixImpl.h"
+#include "alien/core/impl/MultiVectorImpl.h"
+#include "alien/kernels/simple_csr/SimpleCSRPrecomp.h"
+#include "alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h"
+#include "alien/core/backend/LinearSolverT.h"
+#include "alien/core/block/ComputeBlockOffsets.h"
+#include "alien/kernels/mcg/linear_solver/MCGOptionTypes.h"
+#include "alien/kernels/mcg/linear_solver/MCGInternalLinearSolver.h"
+#include "alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h"
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
 
 #include "ALIEN/axl/MCGSolver_IOptions.h"
 
-#include <MCGSolver/MCGSolver.h>
-#include <Common/Utils/Machine/MachineInfo.h>
-#include <Common/Utils/MPI/MPIEnv.h>
-#include <Common/Utils/ParallelEnv.h>
-#include <Common/Utils/LogMng.h>
+#include "MCGSolver/MCGSolver.h"
+#include "Common/Utils/Machine/MachineInfo.h"
+#include "Common/Utils/MPI/MPIEnv.h"
+#include "Common/Utils/ParallelEnv.h"
+#include "Common/Utils/LogMng.h"
 
 namespace Alien {
 

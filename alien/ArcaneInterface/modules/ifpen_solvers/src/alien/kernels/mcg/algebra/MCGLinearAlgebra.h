@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <alien/utils/Precomp.h>
-#include <alien/core/backend/LinearAlgebra.h>
+#include "alien/utils/Precomp.h"
+#include "alien/core/backend/LinearAlgebra.h"
 
 #include "alien/kernels/mcg/MCGBackEnd.h"
 #include "alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h"

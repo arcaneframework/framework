@@ -6,11 +6,11 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-#include <alien/utils/Precomp.h>
+#include "alien/utils/Precomp.h"
 
-#include <alien/kernels/mcg/MCGBackEnd.h>
-#include <alien/core/backend/IInternalLinearAlgebraT.h>
-#include <alien/expression/solver/ILinearAlgebra.h>
+#include "alien/kernels/mcg/MCGBackEnd.h"
+#include "alien/core/backend/IInternalLinearAlgebraT.h"
+#include "alien/expression/solver/ILinearAlgebra.h"
 
 namespace Alien {
 
