@@ -699,7 +699,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
   m_status.error = 0;
 
   if (error !=0) {
-    std::string status = "Error";
+    status = "Error";
     m_status.succeeded = false;
     m_status.error = m_mcg_status.m_error;
   }
