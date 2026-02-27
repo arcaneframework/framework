@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2025 */
+/* VtkMeshIOService.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
@@ -267,66 +267,66 @@ isEmptyNextLine()
   // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
   // de getNextLine, on envoie une erreur.
   if (m_is_eof) {
-    throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
+    ARCANE_THROW(IOException, "Unexpected EndOfFile");
   }
 
-  if (m_stream->good()) {
-    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf
-    // mais le remplace par '\0'.
-    m_stream->getline(m_buf, sizeof(m_buf) - 1);
+  if (!m_stream->good())
+    ARCANE_THROW(IOException, "Error when reading stream");
 
-    // Si on arrive au bout du fichier, on return true (pour dire oui, il y a une ligne vide,
-    // à l'appelant de gérer ça).
-    if (m_stream->eof()) {
-      m_is_eof = true;
-      return true;
+  // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf
+  // mais le remplace par '\0'.
+  m_stream->getline(m_buf, sizeof(m_buf) - 1);
+
+  // Si on arrive au bout du fichier, on return true (pour dire oui, il y a une ligne vide,
+  // à l'appelant de gérer ça).
+  if (m_stream->eof()) {
+    m_is_eof = true;
+    return true;
+  }
+
+  // Sous Windows, une ligne vide commence par \r.
+  // getline remplace \n par \0, que ce soit sous Windows ou Linux.
+  if (m_buf[0] == '\r' || m_buf[0] == '\0') {
+    getNextLine();
+
+    // On demande à ce que le prochain appel à getNextLine renvoie la ligne
+    // qui vient tout juste d'être bufferisée.
+    m_need_reread_current_line = true;
+    return true;
+  }
+  else {
+    bool is_comment = true;
+
+    // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
+    for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
+      if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment) {
+        is_comment = false;
+      }
+      if (m_buf[i] == '#') {
+        m_buf[i] = '\0';
+        break;
+      }
     }
 
-    // Sous Windows, une ligne vide commence par \r.
-    // getline remplace \n par \0, que ce soit sous Windows ou Linux.
-    if (m_buf[0] == '\r' || m_buf[0] == '\0') {
-      getNextLine();
-
-      // On demande à ce que le prochain appel à getNextLine renvoie la ligne
-      // qui vient tout juste d'être bufferisée.
-      m_need_reread_current_line = true;
-      return true;
-    }
-    else {
-      bool is_comment = true;
-
-      // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
+    // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
+    if (!is_comment) {
+      // Supprime le '\r' final
       for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
-        if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment) {
-          is_comment = false;
-        }
-        if (m_buf[i] == '#') {
+        if (m_buf[i] == '\r') {
           m_buf[i] = '\0';
           break;
         }
       }
-
-      // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
-      if (!is_comment) {
-        // Supprime le '\r' final
-        for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
-          if (m_buf[i] == '\r') {
-            m_buf[i] = '\0';
-            break;
-          }
-        }
-      }
-
-      // Si c'était un commentaire, on recherche la prochaine ligne "valide"
-      // en appelant getNextLine.
-      else {
-        getNextLine();
-      }
     }
-    m_need_reread_current_line = true;
-    return false;
+
+    // Si c'était un commentaire, on recherche la prochaine ligne "valide"
+    // en appelant getNextLine.
+    else {
+      getNextLine();
+    }
   }
-  throw IOException("VtkFile::isEmptyNextLine()", "Not Good");
+  m_need_reread_current_line = true;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,7 +351,7 @@ getNextLine()
   // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
   // de isEmptyNextLine, on envoie une erreur.
   if (m_is_eof) {
-    throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
+    ARCANE_THROW(IOException, "Unexpected EndOfFile");
   }
 
   while (m_stream->good()) {
@@ -396,7 +396,7 @@ getNextLine()
       return m_buf;
     }
   }
-  throw IOException("VtkFile::getNextLine()", "Not good");
+  ARCANE_THROW(IOException, "Error when reading stream");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -420,7 +420,7 @@ getFloat()
   if (m_stream->good())
     return v;
 
-  throw IOException("VtkFile::getFloat()", "Bad float");
+  ARCANE_THROW(IOException, "Can not read 'Float'");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -444,7 +444,7 @@ getDouble()
   if (m_stream->good())
     return v;
 
-  throw IOException("VtkFile::getDouble()", "Bad double");
+  ARCANE_THROW(IOException, "Can not read 'Double'");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,7 +468,7 @@ getInt()
   if (m_stream->good())
     return v;
 
-  throw IOException("VtkFile::getInt()", "Bad int");
+  ARCANE_THROW(IOException, "Can not read 'int'");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -521,14 +521,13 @@ checkString(const String& current_value, const String& expected_value)
   String expected_value_low = expected_value.lower();
 
   if (current_value_low != expected_value_low) {
-    String s = "Expecting chain '" + expected_value + "', found '" + current_value + "'";
-    throw IOException("VtkFile::checkString()", s);
+    ARCANE_THROW(IOException, "Bad string. Expecting '{0}', buf found '{1}'",
+                 expected_value, current_value);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Permet de vérifier si expected_value1 ou expected_value2 == current_value.
  *
@@ -547,14 +546,13 @@ checkString(const String& current_value, const String& expected_value1, const St
   String expected_value2_low = expected_value2.lower();
 
   if (current_value_low != expected_value1_low && current_value_low != expected_value2_low) {
-    String s = "Expecting chain '" + expected_value1 + "' or '" + expected_value2 + "', found '" + current_value + "'";
-    throw IOException("VtkFile::checkString()", s);
+    ARCANE_THROW(IOException, "Bad string. Expecting '{0}' or '{1}, buf found '{2}'",
+                 expected_value1, expected_value2, current_value);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Permet de vérifier si expected_value == current_value.
  *
@@ -877,7 +875,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
         }
       }
       else {
-        throw IOException("_readStructuredGrid", "Invalid type name");
+        ARCANE_THROW(IOException, "Invalid type name");
       }
 
       VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
@@ -906,7 +904,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
       bool is_ymax = true;
       bool is_zmin = true;
       bool is_zmax = true;
-      for (Node node : face.nodes() ) {
+      for (Node node : face.nodes()) {
         Int64 node_unique_id = node.uniqueId().asInt64();
         Int64 node_z = node_unique_id / nb_node_xy;
         Int64 node_y = (node_unique_id - node_z * nb_node_xy) / nb_node_x;
@@ -970,7 +968,6 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
 {
   ARCANE_UNUSED(mesh);
 
-  const char* func_name = "VtkMeshIOService::_readNodesUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
   std::istringstream iline(buf);
   std::string points_str;
@@ -980,12 +977,12 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
   iline >> ws >> points_str >> ws >> nb_node >> ws >> data_type_str;
 
   if (!iline)
-    throw IOException(func_name, "Syntax error while reading number of nodes");
+    ARCANE_THROW(IOException, "Syntax error while reading number of nodes");
 
   vtk_file.checkString(points_str, "POINTS");
 
   if (nb_node < 0)
-    throw IOException(A_FUNCINFO, String::format("Invalid number of nodes: n={0}", nb_node));
+    ARCANE_THROW(IOException, "Invalid number of nodes: n={0}", nb_node);
 
   info() << "VTK file : number of nodes = " << nb_node;
 
@@ -1017,7 +1014,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
       }
     }
     else {
-      throw IOException(func_name, "Invalid type name");
+      ARCANE_THROW(IOException, "Invalid type name");
     }
   }
   _readMetadata(mesh, vtk_file);
@@ -1045,7 +1042,6 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 {
   ARCANE_UNUSED(mesh);
 
-  const char* func_name = "VtkMeshIOService::_readCellsUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
 
   //String buftest = vtk_file.getCurrentLine(); // DEBUG
@@ -1059,16 +1055,15 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
   iline >> ws >> cells_str >> ws >> nb_cell >> ws >> nb_cell_node;
 
   if (!iline)
-    throw IOException(func_name, "Syntax error while reading cells");
+    ARCANE_THROW(IOException, "Syntax error while reading cells");
 
   vtk_file.checkString(cells_str, "CELLS");
 
   info() << "VTK file : number of cells = " << nb_cell;
 
   if (nb_cell < 0 || nb_cell_node < 0) {
-    throw IOException(A_FUNCINFO,
-                      String::format("Invalid dimensions: nb_cell={0} nb_cell_node={1}",
-                                     nb_cell, nb_cell_node));
+    ARCANE_THROW(IOException, "Invalid dimensions: nb_cell={0} nb_cell_node={1}",
+                 nb_cell, nb_cell_node);
   }
 
   cells_nb_node.resize(nb_cell);
@@ -1099,7 +1094,7 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
     iline >> ws >> cell_types_str >> ws >> nb_cell_type;
 
     if (!iline) {
-      throw IOException(func_name, "Syntax error while reading cell types");
+      ARCANE_THROW(IOException, "Syntax error while reading cell types");
     }
 
     vtk_file.checkString(cell_types_str, "CELL_TYPES");
@@ -1119,7 +1114,6 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Lecture des metadata.
  *
@@ -1289,8 +1283,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
         if (cell_dim >= 0 && cell_dim <= 3)
           ++nb_cell_by_dimension[cell_dim];
 
-        auto cell_nodes = cells_connectivity.subView(connectivity_index,current_cell_nb_node);
-        mesh_build_info.addCell(cells_type[i],cell_unique_id, cell_nodes);
+        auto cell_nodes = cells_connectivity.subView(connectivity_index, current_cell_nb_node);
+        mesh_build_info.addCell(cells_type[i], cell_unique_id, cell_nodes);
         connectivity_index += current_cell_nb_node;
       }
     }
@@ -1715,9 +1709,9 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Permet de créer un groupe de face de nom "name" et composé des faces ayant les ids inclus dans "faces_lid".
+ * \brief Permet de créer un groupe de face de nom "name" et composé des
+ * faces ayant les ids inclus dans "faces_lid".
  *
  * \param mesh Le maillage à remplir
  * \param name Le nom du groupe à créer
@@ -1734,7 +1728,6 @@ _createFaceGroup(IMesh* mesh, const String& name, Int32ConstArrayView faces_lid)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Permet de créer une variable aux mailles à partir des infos du fichier vtk.
  *
@@ -1761,7 +1754,6 @@ _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& var_name, Intege
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Permet de créer un groupe d'item.
  *
@@ -1794,7 +1786,6 @@ _readItemGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_it
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Permet de créer un groupe de node.
  *
@@ -1940,7 +1931,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
       ItemWithNodes item = *iitem;
       Integer item_nb_node = item.nbNode();
       ofile << item_nb_node;
-      for (NodeLocalId node_id : item.nodes() ) {
+      for (NodeLocalId node_id : item.nodes()) {
         ofile << ' ' << nodes_local_id_to_current[node_id];
       }
       ofile << '\n';
