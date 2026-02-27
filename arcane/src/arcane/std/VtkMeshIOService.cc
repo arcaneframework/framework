@@ -23,6 +23,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/BasicService.h"
 #include "arcane/core/FactoryService.h"
@@ -152,7 +153,7 @@ class VtkMeshIOService
                  Int32ConstArrayView local_id, Integer nb_node);
   void _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_coords);
   void _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
-                                  Array<Integer>& cells_nb_node,
+                                  Array<Int32>& cells_nb_node,
                                   Array<ItemTypeId>& cells_type,
                                   Array<Int64>& cells_connectivity);
   void _readFacesMesh(IMesh* mesh, const String& file_name,
@@ -1036,7 +1037,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
  */
 void VtkMeshIOService::
 _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
-                           Array<Integer>& cells_nb_node,
+                           Array<Int32>& cells_nb_node,
                            Array<ItemTypeId>& cells_type,
                            Array<Int64>& cells_connectivity)
 {
@@ -1044,27 +1045,27 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
   const char* buf = vtk_file.getNextLine();
 
-  //String buftest = vtk_file.getCurrentLine(); // DEBUG
-  //pinfo() << "Ligne lu : " << buftest.localstr();
-
   std::istringstream iline(buf);
   std::string cells_str;
-  Integer nb_cell = 0;
-  Integer nb_cell_node = 0;
+  Int32 i64_nb_cell = 0;
+  Int32 i64_nb_cell_node = 0;
 
-  iline >> ws >> cells_str >> ws >> nb_cell >> ws >> nb_cell_node;
+  iline >> ws >> cells_str >> ws >> i64_nb_cell >> ws >> i64_nb_cell_node;
 
   if (!iline)
     ARCANE_THROW(IOException, "Syntax error while reading cells");
 
   vtk_file.checkString(cells_str, "CELLS");
 
-  info() << "VTK file : number of cells = " << nb_cell;
+  info() << "VTK file : nb_cell = " << i64_nb_cell << " nb_cell_node=" << i64_nb_cell_node;
 
-  if (nb_cell < 0 || nb_cell_node < 0) {
+  if (i64_nb_cell < 0 || i64_nb_cell_node < 0) {
     ARCANE_THROW(IOException, "Invalid dimensions: nb_cell={0} nb_cell_node={1}",
-                 nb_cell, nb_cell_node);
+                 i64_nb_cell, i64_nb_cell_node);
   }
+
+  Int32 nb_cell = CheckedConvert::toInt32(i64_nb_cell);
+  Int32 nb_cell_node = CheckedConvert::toInt32(i64_nb_cell_node);
 
   cells_nb_node.resize(nb_cell);
   cells_type.resize(nb_cell);
@@ -1258,7 +1259,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
 
     // Lecture des infos des mailles
     // Lecture de la connectivité
-    UniqueArray<Integer> cells_nb_node;
+    UniqueArray<Int32> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
     UniqueArray<ItemTypeId> cells_type;
     _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
