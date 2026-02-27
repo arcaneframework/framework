@@ -1288,9 +1288,18 @@ if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
 
+#################################
+# VariableInShMemUnitTest :
+#################################
+
+arcane_add_test(variable-in-shmem-1 testVariableInShMem-1.arc "-m 10")
+arcane_add_test_checkpoint_sequential(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 1 1)
+arcane_add_test_checkpoint_parallel(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 4 1 1)
+
+# ----------------------------------------------------------------------------
+
 include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
-
 
 # ----------------------------------------------------------------------------
 # Local Variables:

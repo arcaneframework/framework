@@ -645,6 +645,9 @@ setUsed(bool is_used)
       if (m_p->m_property & IVariable::PSubDomainPrivate) {
         ARCANE_FATAL("Variable with PInShMem property must be in all sub-domains (PSubDomainPrivate property cannot be set with PInShMem)");
       }
+      if (m_p->m_data->_commonInternal()->numericData() == nullptr) {
+        ARCANE_FATAL("Variable without NumericData cannot change allocator");
+      }
       // TODO : Même si changeAllocator() avec le même allocateur déjà en
       //        place fait simplement un return, ça reste moche...
       IParallelMng* pm{};

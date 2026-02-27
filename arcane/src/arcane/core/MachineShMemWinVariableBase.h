@@ -18,6 +18,9 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
+#include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/FixedArray.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,7 +46,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PShMem".
    */
-  explicit MachineShMemWinVariableBase(IVariable* var);
+  explicit MachineShMemWinVariableBase(IVariable* var, Int64 sizeof_type);
 
  public:
 
@@ -83,9 +86,73 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
    */
   Span<std::byte> segmentView(Int32 rank) const;
 
+  void updateVariable(Int64 dim1);
+
+  IVariable* variable() const;
+
+ protected:
+
+  IVariable* m_var = nullptr;
+  Int64 m_sizeof_type = 0;
+  IParallelMng* m_pm = nullptr;
+  UniqueArray<Int64> m_size_var;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
+: public MachineShMemWinVariableBase
+{
+
+ public:
+
+  /*!
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PShMem".
+   */
+  explicit MachineShMemWinVariable2DBase(IVariable* var, Int64 sizeof_type);
+
+ public:
+
+  void updateVariable(Int64 dim1, Int64 dim2);
+
  private:
 
-  IVariable* m_var;
+  UniqueArray<Int64> m_dim1_var;
+  UniqueArray<Int64> m_dim2_var;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <Int32 Dim>
+class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
+: public MachineShMemWinVariableBase
+{
+
+ public:
+
+  /*!
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PShMem".
+   */
+  explicit MachineShMemWinVariableMDBase(IVariable* var, Int64 sizeof_type);
+
+ public:
+
+  void updateVariable(Int64 dim1, SmallSpan<Int64, Dim> mdim);
+
+ private:
+
+  UniqueArray<Int64> m_dim1_var;
+  FixedArray<Int64, Dim> m_mdim_var;
 };
 
 /*---------------------------------------------------------------------------*/

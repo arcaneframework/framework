@@ -164,9 +164,17 @@ _reset()
 void AMRPatchTesterModule::
 _test1()
 {
-  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
+  Int32 properties = 0;
+  if (parallelMng()->commRank() == 0) {
+    properties = (IVariable::PInShMem | IVariable::PPersistant);
+  }
+  else {
+    properties = (IVariable::PInShMem | IVariable::PPersistant | IVariable::PNoDump);
+  }
 
-  MachineShMemWinVariable var_sh(var);
+  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", properties));
+
+  MachineShMemWinVariableItemT var_sh(var);
 
   auto var_compute = [&]() -> void {
     debug() << "asArray().size() : " << var.asArray().size();
@@ -263,7 +271,7 @@ void AMRPatchTesterModule::
 _test1_1()
 {
   Integer dimension = mesh()->dimension();
-  VariableNodeInt16 var_test(VariableBuildInfo(mesh(), "VarTest"));
+  VariableNodeInt16 var_test(VariableBuildInfo(mesh(), "VarTest", IVariable::PInShMem));
   var_test.fill(-1);
 
   for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
@@ -388,7 +396,7 @@ _test1_2()
 {
   Integer dimension = mesh()->dimension();
 
-  VariableFaceInt16 var_test(VariableBuildInfo(mesh(), "VarTest"));
+  VariableFaceInt16 var_test(VariableBuildInfo(mesh(), "VarTest", IVariable::PInShMem));
 
   if (dimension == 2) {
     for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {

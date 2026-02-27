@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<module name="VariableInShMemUnitTest" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Module de test
+  </description>
+
+  <variables>
+
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+  </entry-points>
+
+  <options>
+
+  </options>
+</module>

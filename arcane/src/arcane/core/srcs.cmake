@@ -502,9 +502,10 @@ set(ARCANE_ORIGINAL_SOURCES
   MachineShMemWin.h
   MachineShMemWinBase.cc
   MachineShMemWinBase.h
-  MachineShMemWinVariable.h
   MachineShMemWinVariableBase.cc
   MachineShMemWinVariableBase.h
+  MachineShMemWinVariable.cc
+  MachineShMemWinVariable.h
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
