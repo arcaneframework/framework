@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PostProcessorWriterBase.h                                   (C) 2000-2025 */
+/* PostProcessorWriterBase.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Classe de base d'un écrivain pour les informations de post-traitement.    */
 /*---------------------------------------------------------------------------*/
@@ -50,18 +50,18 @@ class ARCANE_CORE_EXPORT PostProcessorWriterBase
  public:
 
   void setBaseDirectoryName(const String& dirname) override;
-  const String& baseDirectoryName() override;
+  String baseDirectoryName() override;
 
   void setBaseFileName(const String& filename) override;
-  const String& baseFileName() override;
+  String baseFileName() override;
 
-  void setTimes(RealConstArrayView times) override;
-  RealConstArrayView times() override;
+  void setTimes(ConstArrayView<Real> times) override;
+  ConstArrayView<Real> times() override;
 
-  void setVariables(VariableCollection variables) override;
+  void setVariables(const VariableCollection& variables) override;
   VariableCollection variables() override;
 
-  void setGroups(ItemGroupCollection groups) override;
+  void setGroups(const ItemGroupCollection& groups) override;
   ItemGroupCollection groups() override;
 
  private:

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPostProcessorWriter.h                                      (C) 2000-2025 */
+/* IPostProcessorWriter.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Interface d'un écrivain pour les informations de post-traitement.         */
 /*---------------------------------------------------------------------------*/
@@ -70,20 +70,24 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
 
   /*!
    * \brief Retourne l'écrivain associé à ce post-processeur.
+   *
+   * Le pointeur retourné n'est valide qu'entre appels
+   * à notifyBeginWrite() et notifyEndWrite().
    */
   virtual IDataWriter* dataWriter() = 0;
 
   /*!
    * \brief Positionne le nom du répertoire de sortie des fichiers.
+   *
    * Ce répertoire doit exister.
    */
   virtual void setBaseDirectoryName(const String& dirname) = 0;
 
   //! Nom du répertoire de sortie des fichiers.
-  virtual const String& baseDirectoryName() = 0;
+  virtual String baseDirectoryName() = 0;
 
   /*!
-   * \brief Positionne le nom du fichier contenant les sorties
+   * \brief Positionne le nom du fichier contenant les sorties.
    *
    * Tous les écrivains ne supportent pas de changer le nom
    * de fichier.
@@ -91,7 +95,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   virtual void setBaseFileName(const String& filename) = 0;
 
   //! Nom du fichier contenant les sorties.
-  virtual const String& baseFileName() = 0;
+  virtual String baseFileName() = 0;
 
   /*!
    * \brief Positionne le maillage.
@@ -107,13 +111,13 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   virtual void setMesh(IMesh* mesh);
 
   //! Positionne la liste des temps
-  virtual void setTimes(RealConstArrayView times) = 0;
+  virtual void setTimes(ConstArrayView<Real> times) = 0;
 
   //! Liste des temps sauvés
-  virtual RealConstArrayView times() = 0;
+  virtual ConstArrayView<Real> times() = 0;
 
   //! Positionne la liste des variables à sortir
-  virtual void setVariables(VariableCollection variables) = 0;
+  virtual void setVariables(const VariableCollection& variables) = 0;
 
   //! Liste des variables à sauver
   virtual VariableCollection variables() = 0;
@@ -123,7 +127,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
    *
    * La collection passée en argument est clonée.
    */
-  virtual void setGroups(ItemGroupCollection groups) = 0;
+  virtual void setGroups(const ItemGroupCollection& groups) = 0;
 
   //! Liste des groupes à sauver
   virtual ItemGroupCollection groups() = 0;

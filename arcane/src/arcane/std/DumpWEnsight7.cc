@@ -24,27 +24,27 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/CStringUtils.h"
 
-#include "arcane/IDataWriter.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IVariable.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/StdNum.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Directory.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/PostProcessorWriterBase.h"
-#include "arcane/Service.h"
-#include "arcane/SimpleProperty.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/SharedVariable.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/StdNum.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/PostProcessorWriterBase.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/SimpleProperty.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/SharedVariable.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/std/Ensight7PostProcessor_axl.h"
 #include "arcane/std/DumpW.h"
@@ -2391,51 +2391,28 @@ class Ensight7PostProcessorServiceV2
 
  public:
 
-  Ensight7PostProcessorServiceV2(const ServiceBuildInfo& sbi)
+  explicit Ensight7PostProcessorServiceV2(const ServiceBuildInfo& sbi)
   : ArcaneEnsight7PostProcessorObject(sbi)
   , m_mesh(sbi.mesh())
   , m_writer(nullptr)
   {
   }
 
-  void build() override
-  {
-    PostProcessorWriterBase::build();
-  }
   IDataWriter* dataWriter() override { return m_writer; }
   void notifyBeginWrite() override;
   void notifyEndWrite() override;
   void close() override {}
 
-  void setBaseDirectoryName(const String& dirname) override
-  {
-    PostProcessorWriterBase::setBaseDirectoryName(dirname);
-  }
-  const String& baseDirectoryName() override
-  {
-    return PostProcessorWriterBase::baseDirectoryName();
-  }
   void setMesh(IMesh* mesh) override
   {
+    // TODO: A supprimer car méthode obsolète et n'est pas utilisé.
     m_mesh = mesh;
-  }
-  void setTimes(RealConstArrayView times) override
-  {
-    PostProcessorWriterBase::setTimes(times);
-  }
-  void setVariables(VariableCollection variables) override
-  {
-    PostProcessorWriterBase::setVariables(variables);
-  }
-  void setGroups(ItemGroupCollection groups) override
-  {
-    PostProcessorWriterBase::setGroups(groups);
   }
 
  private:
 
-  IMesh* m_mesh;
-  DumpW* m_writer;
+  IMesh* m_mesh = nullptr;
+  DumpW* m_writer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
