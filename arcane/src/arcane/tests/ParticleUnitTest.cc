@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleUnitTest.cc                                         (C) 2000-2023 */
+/* ParticleUnitTest.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Service de test de la gestion des particules.                             */
 /*---------------------------------------------------------------------------*/
@@ -13,19 +13,19 @@
 
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/BasicUnitTest.h"
-
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemVector.h"
-#include "arcane/IParticleExchanger.h"
-#include "arcane/IAsyncParticleExchanger.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IExtraGhostParticlesBuilder.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/IParticleExchanger.h"
+#include "arcane/core/IAsyncParticleExchanger.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IExtraGhostParticlesBuilder.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/ParticleUnitTest_axl.h"
@@ -259,6 +259,21 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
         }
       }
     }
+    // Vérifie que la vue des connectités est correcte.
+    {
+      IndexedParticleCellConnectivityView particle_cell(pf);
+      ENUMERATE_(Particle, ipart, m_particle_family->allItems()){
+        Particle p = *ipart;
+        bool has_cell1 = p.hasCell();
+        bool has_cell2 = particle_cell.hasCell(ipart);
+        if (has_cell1 != has_cell2)
+          ARCANE_FATAL("Bad hasCell() for particle={0} has_cell1={1} has_cell2={2}", p, has_cell1, has_cell2);
+        CellLocalId cell1 = p.cellId();
+        CellLocalId cell2 = particle_cell.cellId(ipart);
+        if (cell1 != cell2)
+          ARCANE_FATAL("Bad cellId() for particle={0} cell1={1} cell2={2}", p, cell1, cell2);
+      }
+    }
   }
 
   Int32UniqueArray particles_local_id;
@@ -283,7 +298,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
       if (nb_remaining_particle>=0){
         Integer index = 0;
 
-        ENUMERATE_PARTICLE(ipart,particles_view){
+        ENUMERATE_(Particle, ipart, particles_view){
           ++index;
           Particle p = *ipart;
           if (nb_remaining_particle<10)
