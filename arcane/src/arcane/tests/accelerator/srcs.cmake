@@ -13,6 +13,7 @@ list(APPEND ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorScanUnitTest.cc
   accelerator/AcceleratorSorterUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
+  accelerator/AcceleratorParticlesUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MemoryCopyUnitTest.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc

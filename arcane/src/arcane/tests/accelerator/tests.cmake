@@ -65,6 +65,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
   arcane_add_accelerator_test_parallel(acceleratorviews1 testAcceleratorViews-1.arc 4)
 
+  # accelerator/AcceleratorParticlesUnitTest.cc
+  arcane_add_test_sequential_host_and_accelerator(accelerator_particles1 testAcceleratorParticles-1.arc)
+
   # accelerator/AcceleratorReduceUnitTest.cc
 
   arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
