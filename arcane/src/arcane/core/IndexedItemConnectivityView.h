@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "ArcaneTypes.h"
 #include "arcane/core/Item.h"
 #include "arcane/core/IItemFamily.h"
 
@@ -419,6 +420,46 @@ class IndexedItemConnectivityViewT<ItemType, DoF>
   constexpr ARCCORE_HOST_DEVICE ItemLocalId2 dofId(ItemLocalIdType lid, Int32 index) const
   {
     return BaseClass::itemId(lid, index);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur une connectivité Particle->Cell.
+ *
+ * Il n'y a qu'une seule maille associée à une particule.
+ */
+class ARCANE_CORE_EXPORT IndexedParticleCellConnectivityView
+: public IndexedItemConnectivityGenericViewT<Particle, Cell>
+{
+ public:
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<Particle, Cell>;
+  using ItemLocalIdType = Particle::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
+ public:
+
+  explicit(false) IndexedParticleCellConnectivityView(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
+  explicit IndexedParticleCellConnectivityView(IParticleFamily* pf);
+  explicit IndexedParticleCellConnectivityView(IItemFamily* pf);
+  IndexedParticleCellConnectivityView() = default;
+
+ public:
+
+  //! Indique si la particule \a lid est connectée à une maille
+  constexpr ARCCORE_HOST_DEVICE bool hasCell(ItemLocalIdType lid) const
+  {
+    return !cellId(lid).isNull();
+  }
+  //! Maille connectée à l'entité \a lid
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 cellId(ItemLocalIdType lid) const
+  {
+    return BaseClass::itemId(lid, 0);
   }
 };
 

@@ -1,19 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityView.cc                              (C) 2000-2022 */
+/* IndexedItemConnectivityView.cc                              (C) 2000-2026 */
 /*                                                                           */
 /* Vues sur les connectivités utilisant des index.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -157,6 +160,25 @@ _internalItemTestCompile()
   }
 
   std::cout << "TOTAL=" << total << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IndexedParticleCellConnectivityView::
+IndexedParticleCellConnectivityView(IParticleFamily* pf)
+: IndexedParticleCellConnectivityView(pf->itemFamily())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IndexedParticleCellConnectivityView::
+IndexedParticleCellConnectivityView(IItemFamily* family)
+{
+  ItemInternalConnectivityList* clist = family->_internalApi()->unstructuredItemInternalConnectivityList();
+  m_container_view = clist->containerView(IK_Cell);
 }
 
 /*---------------------------------------------------------------------------*/
