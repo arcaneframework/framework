@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityView.h                               (C) 2000-2025 */
+/* IndexedItemConnectivityView.h                               (C) 2000-2026 */
 /*                                                                           */
 /* Vues sur les connectivités utilisant des index.                           */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ namespace Arcane
 /*!
  * \brief Classe de base d'une vue sur une connectivité non structurée.
  *
- * Comme toute les vues, les instances de cette classe sont temporaires et
+ * Comme toutes les vues, les instances de cette classe sont temporaires et
  * ne doivent pas être conservées entre deux évolutions du maillage.
  */
 class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
@@ -38,8 +38,8 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
  public:
 
   IndexedItemConnectivityViewBase() = default;
-  IndexedItemConnectivityViewBase(ItemConnectivityContainerView container_view,
-                                  eItemKind source_kind, eItemKind target_kind)
+  constexpr IndexedItemConnectivityViewBase(ItemConnectivityContainerView container_view,
+                                            eItemKind source_kind, eItemKind target_kind)
   : m_container_view(container_view)
   , m_source_kind(source_kind)
   , m_target_kind(target_kind)
@@ -51,9 +51,9 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   //! Nombre d'entités source
   constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_container_view.nbItem(); }
   //! Nombre d'entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -91,7 +91,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 
  public:
 
-  inline void _checkValid(eItemKind k1, eItemKind k2) const
+  void _checkValid(eItemKind k1, eItemKind k2) const
   {
     if (k1 != m_source_kind || k2 != m_target_kind)
       _badConversion(k1, k2);
@@ -103,7 +103,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 /*!
  * \brief Classe de base d'une vue sur une connectivité non structurée.
  *
- * Comme toute les vues, les instances de cette classe sont temporaires et
+ * Comme toutes les vues, les instances de cette classe sont temporaires et
  * ne doivent pas être conservées entre deux évolutions du maillage.
  */
 class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
@@ -124,9 +124,9 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
   //! Nombre d'entités source
   constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_container_view.nbItem(); }
   //! Nombre d'entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -149,13 +149,13 @@ class IndexedItemConnectivityGenericViewT
 
   using ItemType1Type = ItemType1;
   using ItemType2Type = ItemType2;
-  using ItemLocalId1 = typename ItemType1::LocalIdType;
-  using ItemLocalId2 = typename ItemType2::LocalIdType;
+  using ItemLocalId1 = ItemType1::LocalIdType;
+  using ItemLocalId2 = ItemType2::LocalIdType;
   using ItemLocalIdViewType = ItemLocalIdListViewT<ItemType2>;
 
  public:
 
-  IndexedItemConnectivityGenericViewT(IndexedItemConnectivityViewBase view)
+  explicit(false) IndexedItemConnectivityGenericViewT(IndexedItemConnectivityViewBase view)
   : IndexedItemConnectivityViewBase2(view)
   {
 #ifdef ARCANE_CHECK
@@ -171,19 +171,19 @@ class IndexedItemConnectivityGenericViewT
   //! Liste des entités connectées à l'entité \a lid
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType items(ItemLocalId1 lid) const
   {
-    return m_container_view.template itemsIds<ItemType2>(lid);
+    return m_container_view.itemsIds<ItemType2>(lid);
   }
 
   //! Liste des entités connectées à l'entité \a lid
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType itemIds(ItemLocalId1 lid) const
   {
-    return m_container_view.template itemsIds<ItemType2>(lid);
+    return m_container_view.itemsIds<ItemType2>(lid);
   }
 
   //! i-ème entitée connectée à l'entité \a lid
   constexpr ARCCORE_HOST_DEVICE ItemLocalId2 itemId(ItemLocalId1 lid, Int32 index) const
   {
-    return m_container_view.template itemId<ItemLocalId2>(lid, index);
+    return m_container_view.itemId<ItemLocalId2>(lid, index);
   }
 };
 
@@ -197,22 +197,41 @@ class IndexedItemConnectivityViewT<ItemType,Node>
 : public IndexedItemConnectivityGenericViewT<ItemType,Node>
 {
  public:
-  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType,Node>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
-  using ItemLocalId2 = typename BaseClass::ItemLocalId2;
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType, Node>;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
  public:
-  IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view) : BaseClass(view){}
+
+  explicit(false) IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
   IndexedItemConnectivityViewT() = default;
+
  public:
+
   //! Nombre de noeuds connectés à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbNode(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbNode(ItemLocalIdType lid) const
+  {
+    return BaseClass::nbItem(lid);
+  }
   //! Liste des noeuds connectés à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType nodes(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType nodes(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! Liste des noeuds connectés à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType nodeIds(ItemLocalIdType lid) const { return BaseClass::itemIds(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType nodeIds(ItemLocalIdType lid) const
+  {
+    return BaseClass::itemIds(lid);
+  }
   //! i-ème noeud connecté à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalId2 nodeId(ItemLocalIdType lid,Int32 index) const { return BaseClass::itemId(lid,index); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 nodeId(ItemLocalIdType lid, Int32 index) const
+  {
+    return BaseClass::itemId(lid, index);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -221,26 +240,45 @@ class IndexedItemConnectivityViewT<ItemType,Node>
  * \brief Vue sur une connectivité ItemType->Edge.
  */
 template<typename ItemType>
-class IndexedItemConnectivityViewT<ItemType,Edge>
-: public IndexedItemConnectivityGenericViewT<ItemType,Edge>
+class IndexedItemConnectivityViewT<ItemType, Edge>
+: public IndexedItemConnectivityGenericViewT<ItemType, Edge>
 {
  public:
-  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType,Edge>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
-  using ItemLocalId2 = typename BaseClass::ItemLocalId2;
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType, Edge>;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
  public:
-  IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view) : BaseClass(view){}
+
+  explicit(false) IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
   IndexedItemConnectivityViewT() = default;
+
  public:
+
   //! Nombre d'arêtes connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbEdge(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbEdge(ItemLocalIdType lid) const
+  {
+    return BaseClass::nbItem(lid);
+  }
   //! Liste des arêtes connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType edges(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType edges(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! Liste des arêtes connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType edgeIds(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType edgeIds(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! i-ème arête connectée à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalId2 edgeId(ItemLocalIdType lid,Int32 index) const { return BaseClass::itemId(lid,index); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 edgeId(ItemLocalIdType lid, Int32 index) const
+  {
+    return BaseClass::itemId(lid, index);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -249,26 +287,45 @@ class IndexedItemConnectivityViewT<ItemType,Edge>
  * \brief Vue sur une connectivité ItemType->Face.
  */
 template<typename ItemType>
-class IndexedItemConnectivityViewT<ItemType,Face>
-: public IndexedItemConnectivityGenericViewT<ItemType,Face>
+class IndexedItemConnectivityViewT<ItemType, Face>
+: public IndexedItemConnectivityGenericViewT<ItemType, Face>
 {
  public:
-  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType,Face>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
-  using ItemLocalId2 = typename BaseClass::ItemLocalId2;
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType, Face>;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
  public:
-  IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view) : BaseClass(view){}
+
+  explicit(false) IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
   IndexedItemConnectivityViewT() = default;
+
  public:
+
   //! Nombre de faces connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbFace(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbFace(ItemLocalIdType lid) const
+  {
+    return BaseClass::nbItem(lid);
+  }
   //! Liste des faces connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType faces(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType faces(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! Liste des faces connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType faceIds(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType faceIds(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! i-ème face connectée à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalId2 faceId(ItemLocalIdType lid,Int32 index) const { return BaseClass::itemId(lid,index); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 faceId(ItemLocalIdType lid, Int32 index) const
+  {
+    return BaseClass::itemId(lid, index);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -276,27 +333,46 @@ class IndexedItemConnectivityViewT<ItemType,Face>
 /*!
  * \brief Vue sur une connectivité ItemType->Cell.
  */
-template<typename ItemType>
-class IndexedItemConnectivityViewT<ItemType,Cell>
-: public IndexedItemConnectivityGenericViewT<ItemType,Cell>
+template <typename ItemType>
+class IndexedItemConnectivityViewT<ItemType, Cell>
+: public IndexedItemConnectivityGenericViewT<ItemType, Cell>
 {
  public:
-  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType,Cell>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
-  using ItemLocalId2 = typename BaseClass::ItemLocalId2;
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType, Cell>;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
  public:
-  IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view) : BaseClass(view){}
+
+  explicit(false) IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
   IndexedItemConnectivityViewT() = default;
+
  public:
+
   //! Nombre de mailles connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbCell(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbCell(ItemLocalIdType lid) const
+  {
+    return BaseClass::nbItem(lid);
+  }
   //! Liste des mailles connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType cells(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType cells(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! Liste des mailles connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType cellIds(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType cellIds(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! i-ème maille connectée à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalId2 cellId(ItemLocalIdType lid,Int32 index) const { return BaseClass::itemId(lid,index); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 cellId(ItemLocalIdType lid, Int32 index) const
+  {
+    return BaseClass::itemId(lid, index);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -304,27 +380,46 @@ class IndexedItemConnectivityViewT<ItemType,Cell>
 /*!
  * \brief Vue sur une connectivité ItemType->Dof.
  */
-template<typename ItemType>
-class IndexedItemConnectivityViewT<ItemType,DoF>
-: public IndexedItemConnectivityGenericViewT<ItemType,DoF>
+template <typename ItemType>
+class IndexedItemConnectivityViewT<ItemType, DoF>
+: public IndexedItemConnectivityGenericViewT<ItemType, DoF>
 {
  public:
-  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType,DoF>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
-  using ItemLocalId2 = typename BaseClass::ItemLocalId2;
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<ItemType, DoF>;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
  public:
-  IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view) : BaseClass(view){}
+
+  explicit(false) IndexedItemConnectivityViewT(IndexedItemConnectivityViewBase view)
+  : BaseClass(view)
+  {}
   IndexedItemConnectivityViewT() = default;
+
  public:
+
   //! Nombre de DoFs connectés à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbDof(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbDof(ItemLocalIdType lid) const
+  {
+    return BaseClass::nbItem(lid);
+  }
   //! Liste des DoFs connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType dofs(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType dofs(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! Liste des DoFs connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType dofIds(ItemLocalIdType lid) const { return BaseClass::items(lid); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType dofIds(ItemLocalIdType lid) const
+  {
+    return BaseClass::items(lid);
+  }
   //! i-ème DoF connecté à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalId2 dofId(ItemLocalIdType lid,Int32 index) const { return BaseClass::itemId(lid,index); }
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId2 dofId(ItemLocalIdType lid, Int32 index) const
+  {
+    return BaseClass::itemId(lid, index);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
