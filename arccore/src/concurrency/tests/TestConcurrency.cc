@@ -10,11 +10,12 @@
 #include "arccore/base/Functor.h"
 #include "arccore/base/Ref.h"
 
+#include "arccore/concurrency/internal/ConcurrencyGlobalInternal.h"
 #include "arccore/concurrency/SpinLock.h"
 #include "arccore/concurrency/Mutex.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 
-using namespace Arccore;
+using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -227,6 +228,14 @@ TEST(Concurrency, GlibMutexLock)
 TEST(Concurrency, StdMutexLock)
 {
   Ref<IThreadImplementation> timpl(Concurrency::createStdThreadImplementation());
+  Concurrency::setThreadImplementation(timpl.get());
+  _doMutexLock();
+  Concurrency::setThreadImplementation(nullptr);
+}
+
+TEST(Concurrency, LegacyStdMutexLock)
+{
+  Ref<IThreadImplementation> timpl(Concurrency::createLegacyStdThreadImplementation());
   Concurrency::setThreadImplementation(timpl.get());
   _doMutexLock();
   Concurrency::setThreadImplementation(nullptr);
