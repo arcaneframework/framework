@@ -114,26 +114,21 @@ class StdThreadBarrier
     delete this;
   }
 
-  bool wait() override
+  void wait() override
   {
-    bool is_last = false;
-    {
-      std::unique_lock<std::mutex> lk(m_wait_mutex);
-      ++m_current_reached;
-      Int32 generation = m_generation;
-      //cout << "ADD BARRIER N=" << m_current_reached << '\n';
-      if (m_current_reached == m_nb_thread) {
-        ++m_generation;
-        m_current_reached = 0;
-        is_last = true;
-        //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
-        lk.unlock();
-        m_wait.notify_all();
-      }
-      while (generation == m_generation)
-        m_wait.wait(lk);
+    std::unique_lock<std::mutex> lk(m_wait_mutex);
+    ++m_current_reached;
+    Int32 generation = m_generation;
+    //cout << "ADD BARRIER N=" << m_current_reached << '\n';
+    if (m_current_reached == m_nb_thread) {
+      ++m_generation;
+      m_current_reached = 0;
+      //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
+      lk.unlock();
+      m_wait.notify_all();
     }
-    return is_last;
+    while (generation == m_generation)
+      m_wait.wait(lk);
   }
 
  private:
