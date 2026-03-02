@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.cc                                 (C) 2000-2025 */
+/* GlibThreadImplementation.cc                                 (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des threads utilisant la glib.                             */
 /*---------------------------------------------------------------------------*/
@@ -46,16 +46,11 @@ class GlibThreadBarrier
 {
  public:
 
-  GlibThreadBarrier()
-  : m_wait_mutex(nullptr)
-  , m_wait(nullptr)
-  , m_nb_thread(0)
-  , m_current_reached(0)
-  {}
+  GlibThreadBarrier() = default;
 
  public:
 
-  virtual void init(Integer nb_thread)
+  void init(Integer nb_thread) override
   {
     m_nb_thread = nb_thread;
     m_current_reached = 0;
@@ -63,7 +58,7 @@ class GlibThreadBarrier
     m_wait = new GlibCond();
   }
 
-  virtual void destroy()
+  void destroy() override
   {
     m_nb_thread = 0;
     m_current_reached = 0;
@@ -72,30 +67,27 @@ class GlibThreadBarrier
     delete this;
   }
 
-  virtual bool wait()
+  void wait() override
   {
-    bool is_last = false;
     m_wait_mutex->lock();
     ++m_current_reached;
     //cout << "ADD BARRIER N=" << m_current_reached << '\n';
     if (m_current_reached == m_nb_thread) {
       m_current_reached = 0;
-      is_last = true;
       //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
       m_wait->broadcast();
     }
     else
       m_wait->wait(m_wait_mutex);
     m_wait_mutex->unlock();
-    return is_last;
   }
 
  private:
 
-  GlibMutex* m_wait_mutex;
-  GlibCond* m_wait;
-  Integer m_nb_thread;
-  Integer m_current_reached;
+  GlibMutex* m_wait_mutex = nullptr;
+  GlibCond* m_wait = nullptr;
+  Int32 m_nb_thread = 0;
+  Int32 m_current_reached = 0;
 };
 
 /*---------------------------------------------------------------------------*/

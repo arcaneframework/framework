@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IThreadBarrier.h                                            (C) 2000-2025 */
+/* IThreadBarrier.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Interface d'une barrière avec les threads.                                */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ namespace Arcane
  * la barrière doit être initialisée
  * via init() pour \a n threads. Ensuite, chaque thread doit
  * appeler la méthode wait() pour attendre que tous les
- * autres thread arrivent à ce même point.
+ * autres threads arrivent à ce même point.
  * La barrière peut être utilisée plusieurs fois.
  * Pour détruire la barrière, il faut appeler destroy(). Cela libère aussi
  * l'instance qui ne doit ensuite plus être utilisée.
@@ -40,7 +40,7 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 {
  protected:
 
-  virtual ~IThreadBarrier(){}
+  virtual ~IThreadBarrier() = default;
 
  public:
 
@@ -50,13 +50,8 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
   //! Détruit la barrière.
   virtual void destroy() =0;
 
-  /*!
-   * \brief Bloque et attend que tous les threads appellent cette méthode.
-   *
-   * \retval true si on est le dernier thread qui appelle cette méthode.
-   * \retval false sinon.
-   */
-  virtual bool wait() =0;
+  //! Bloque et attend que tous les threads appellent cette méthode.
+  virtual void wait() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

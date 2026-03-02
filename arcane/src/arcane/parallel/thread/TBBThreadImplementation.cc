@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBThreadImplementation.cc                                  (C) 2000-2025 */
+/* TBBThreadImplementation.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
 /*---------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ class TBBBarrier
     m_timestamp = 0;
   };
 
-  bool wait() override
+  void wait() override
   {
     Int32 ts = m_timestamp;
     int remaining_thread = m_nb_thread - m_nb_thread_finished.fetch_add(1) - 1;
@@ -108,13 +108,11 @@ class TBBBarrier
         // d'itérations.
         }
       }
-
-      return false;
     }
     m_nb_thread_finished = 0;
     ++m_timestamp;
-    return true;
   }
+
  private:
 
   Int32 m_nb_thread = 0;
