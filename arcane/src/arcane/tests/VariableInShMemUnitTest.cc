@@ -248,7 +248,7 @@ _test2()
 
   ConstArrayView<Int32> machine_ranks = var_sh.machineRanks();
   for (Int32 rank : machine_ranks) {
-    Span<Int32> view = var_sh.segmentView(rank);
+    Span<Int32> view = var_sh.view(rank);
     for (const Int32 elem : view) {
       ARCANE_FATAL_IF(elem != rank,
                       "Error _test2() 1 : Invalid rank -- Expected : {0} -- Found : {1}", rank, elem);
@@ -275,7 +275,7 @@ _test3()
     auto machine_ranks = var_sh.machineRanks();
 
     for (Int32 rank : machine_ranks) {
-      info() << "Rank " << rank << " -- Value : " << var_sh.segmentView(rank);
+      info() << "Rank " << rank << " -- Value : " << var_sh.view(rank);
     }
   }
   {
@@ -291,7 +291,7 @@ _test3()
     auto machine_ranks = var_sh.machineRanks();
 
     for (Int32 rank : machine_ranks) {
-      info() << "Rank " << rank << " -- Value : " << var_sh.segmentView(rank);
+      info() << "Rank " << rank << " -- Value : " << var_sh.view(rank);
     }
   }
   {
@@ -312,8 +312,8 @@ _test3()
     auto machine_ranks = var_sh.machineRanks();
 
     for (Int32 rank : machine_ranks) {
-      info() << "Rank " << rank << " -- Value0 : " << var_sh.segmentView(rank)[0];
-      info() << "Rank " << rank << " -- Value1 : " << var_sh.segmentView(rank)[1];
+      info() << "Rank " << rank << " -- Value0 : " << var_sh.view(rank)[0];
+      info() << "Rank " << rank << " -- Value1 : " << var_sh.view(rank)[1];
     }
 
   }
@@ -330,12 +330,12 @@ _test3()
 
     var_sh.updateVariable();
 
-    auto machine_ranks = var_sh.machineRanks();
-
-    for (Int32 rank : machine_ranks) {
-      info() << "Rank " << rank << " -- Value0 : " << var_sh.segmentView1D(rank);
-      info() << "Rank " << rank << " -- Value1 : " << var_sh.segmentView1D(rank);
-    }
+    // auto machine_ranks = var_sh.machineRanks();
+    //
+    // for (Int32 rank : machine_ranks) {
+    //   info() << "Rank " << rank << " -- Value0 : " << var_sh.segmentView1D(rank);
+    //   info() << "Rank " << rank << " -- Value1 : " << var_sh.segmentView1D(rank);
+    // }
   }
 }
 

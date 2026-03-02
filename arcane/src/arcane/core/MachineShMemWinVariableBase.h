@@ -35,7 +35,7 @@ namespace Arcane
  * sous-domaines d'un même noeud d'une variable.
  *
  * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PShMem".
+ * la propriété "IVariable::PInShMem".
  */
 class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 {
@@ -44,7 +44,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 
   /*!
    * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PShMem".
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableBase(IVariable* var, Int64 sizeof_type);
 
@@ -112,7 +112,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 
   /*!
    * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PShMem".
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariable2DBase(IVariable* var, Int64 sizeof_type);
 
@@ -141,7 +141,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
 
   /*!
    * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PShMem".
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableMDBase(IVariable* var, Int64 sizeof_type);
 

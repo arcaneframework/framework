@@ -81,17 +81,7 @@ MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var)
 
 template <class DataType>
 Span<DataType> MachineShMemWinVariableArrayT<DataType>::
-segmentView() const
-{
-  return asSpan<DataType>(m_base.segmentView());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class DataType>
-Span<DataType> MachineShMemWinVariableArrayT<DataType>::
-segmentView(Int32 rank) const
+view(Int32 rank) const
 {
   return asSpan<DataType>(m_base.segmentView(rank));
 }
@@ -125,17 +115,7 @@ MachineShMemWinVariableItemT(MeshVariableScalarRefT<ItemType, DataType> var)
 
 template <class ItemType, class DataType>
 Span<DataType> MachineShMemWinVariableItemT<ItemType, DataType>::
-segmentView() const
-{
-  return asSpan<DataType>(m_base.segmentView());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemT<ItemType, DataType>::
-segmentView(Int32 rank) const
+view(Int32 rank) const
 {
   return asSpan<DataType>(m_base.segmentView(rank));
 }
@@ -145,19 +125,9 @@ segmentView(Int32 rank) const
 
 template <class ItemType, class DataType>
 DataType MachineShMemWinVariableItemT<ItemType, DataType>::
-operator()(Int32 local_id)
+operator()(Int32 rank, Int32 notlocal_id)
 {
-  return this->segmentView()[local_id];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-DataType MachineShMemWinVariableItemT<ItemType, DataType>::
-operator()(Int32 rank, Int32 local_id)
-{
-  return this->segmentView(rank)[local_id];
+  return this->view(rank)[notlocal_id];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -219,18 +189,7 @@ barrier() const
 
 template <class DataType>
 Span2<DataType> MachineShMemWinVariableArray2T<DataType>::
-segmentView() const
-{
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView());
-  return { span1.data(), m_size_dim1, m_size_dim2 };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class DataType>
-Span2<DataType> MachineShMemWinVariableArray2T<DataType>::
-segmentView(Int32 rank) const
+view(Int32 rank) const
 {
   Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
   return { span1.data(), m_size_dim1, m_size_dim2 };
@@ -298,18 +257,7 @@ barrier() const
 
 template <class ItemType, class DataType>
 Span2<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-segmentView() const
-{
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView());
-  return { span1.data(), m_size_dim1, m_size_dim2 };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-Span2<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-segmentView(Int32 rank) const
+view(Int32 rank) const
 {
   Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
   return { span1.data(), m_size_dim1, m_size_dim2 };
@@ -320,45 +268,12 @@ segmentView(Int32 rank) const
 
 template <class ItemType, class DataType>
 Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-segmentView1D() const
-{
-  return asSpan<DataType>(m_base.segmentView());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-segmentView1D(Int32 rank) const
-{
-  return asSpan<DataType>(m_base.segmentView(rank));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-operator()(Int32 local_id)
-{
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView());
-  Span2<DataType> span2(span1.data(), m_size_dim1, m_size_dim2);
-
-  return span2[local_id];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-operator()(Int32 rank, Int32 local_id)
+operator()(Int32 rank, Int32 notlocal_id)
 {
   Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
   Span2<DataType> span2(span1.data(), m_size_dim1, m_size_dim2);
 
-  return span2[local_id];
+  return span2[notlocal_id];
 }
 
 /*---------------------------------------------------------------------------*/

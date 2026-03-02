@@ -173,7 +173,7 @@ _test1()
     auto ranks = var_sh.machineRanks();
     for (Int32 rank : ranks) {
       debug() << "Sizeof rank " << rank << " : "
-              << var_sh.segmentView(rank).size();
+              << var_sh.view(rank).size();
     }
 
     ENUMERATE_ (Cell, icell, allCells()) {
