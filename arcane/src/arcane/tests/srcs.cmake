@@ -84,6 +84,7 @@ set(ARCANE_SOURCES
   ParameterOptionTest.cc
   StackTraceUnitTest.cc
   MDVariableUnitTest.cc
+  VariableInShMemUnitTest.cc
 )
 set(ARCANE_ACCELERATOR_SOURCES
   ArcaneTestStandaloneSubDomain.cc
@@ -136,4 +137,5 @@ set(AXL_FILES
   TimeHistoryAdderTest
   MeshCriteriaLoadBalanceMngTest
   ParameterOptionTest
+  VariableInShMemUnitTest
 )
