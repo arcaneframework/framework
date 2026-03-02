@@ -78,7 +78,7 @@ IF(ALIEN_USE_INTELSYCL)
 ENDIF()
 
 
-target_link_libraries(alien_external_hypre_sycl alien_core)
+target_link_libraries(alien_external_hypre_sycl Alien::alien_core)
 
 include_directories(${PROJECT_SOURCE_DIR}/modules/external_packages/src ${PROJECT_BINARY_DIR}/modules/external_packages/src)
 message(status "INCLUDE PATH :${PROJECT_BINARY_DIR} ")

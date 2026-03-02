@@ -29,7 +29,7 @@ ENDIF()
 #createLibrary(alien_external_petsc_sycl
 #        EXPORT alien/AlienExternalPackagesExport.h
 #        )
-        
+
 add_library(alien_external_petsc_sycl SHARED OBJECT
         HCSR_to_PETSc_VectorConverter.cc
         HCSR_to_PETSc_MatrixConverter.cc
@@ -52,7 +52,7 @@ IF(ALIEN_USE_HIPSYCL)
   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
   target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL)
   #target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
-  add_sycl_to_target(TARGET alien_external_petsc_sycl 
+  add_sycl_to_target(TARGET alien_external_petsc_sycl
                      SOURCES HCSR_to_PETSc_VectorConverter.cc
                              HCSR_to_PETSc_MatrixConverter.cc)
 ENDIF()
@@ -68,14 +68,14 @@ IF(ALIEN_USE_INTELSYCL)
      #set(DPCPP_FLAGS -fsycl --amdgpu-target=gfx90a --offload-arch=gfx90a -Wno-linker-warnings)
      target_compile_options(alien_external_petsc_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
      target_link_options(alien_external_petsc_sycl PRIVATE ${DPCPP_FLAGS})
-   ENDIF()  
-   add_sycl_to_target(TARGET  alien_external_petsc_sycl 
+   ENDIF()
+   add_sycl_to_target(TARGET  alien_external_petsc_sycl
                       SOURCES HCSR_to_PETSc_VectorConverter.cc
                               HCSR_to_PETSc_MatrixConverter.cc)
 ENDIF()
 
 
-target_link_libraries(alien_external_petsc_sycl alien_core)
+target_link_libraries(alien_external_petsc_sycl Alien::alien_core)
 
 include_directories(${PROJECT_SOURCE_DIR}/modules/external_packages/src ${PROJECT_BINARY_DIR}/modules/external_packages/src)
 message(status "INCLUDE PATH :${PROJECT_BINARY_DIR} ")
@@ -84,7 +84,7 @@ target_include_directories(alien_external_petsc_sycl PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
-        
+
 
 #commit(alien_external_petsc_sycl)
 
