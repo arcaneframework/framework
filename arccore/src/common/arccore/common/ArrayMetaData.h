@@ -76,6 +76,8 @@ class ARCCORE_COMMON_EXPORT ArrayMetaData
   bool is_allocated_by_new = false;
   //! Indique si cette instance n'est pas l'instance nulle (partagée par tous les SharedArray)
   bool is_not_null = false;
+  //! Indique si les appels à l'allocateur doivent être effectués collectivement.
+  bool is_collective_allocator = false;
 
  protected:
 
