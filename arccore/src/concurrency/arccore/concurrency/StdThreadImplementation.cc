@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdThreadImplementation.cc                                  (C) 2000-2025 */
+/* StdThreadImplementation.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des threads utilisant la bibliothèque standard C++.        */
 /*---------------------------------------------------------------------------*/
@@ -20,10 +20,10 @@
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/concurrency/Mutex.h"
 
-#include <new>
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <barrier>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,16 +87,21 @@ namespace
 {
   void* _StdStartFunc(void* f)
   {
-    IFunctor* ff = reinterpret_cast<IFunctor*>(f);
+    IFunctor* ff = static_cast<IFunctor*>(f);
     ff->executeFunctor();
-    return 0;
+    return nullptr;
   }
 } // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class StdThreadBarrier
+/*!
+ * \brief Implémentation d'une barrière.
+ *
+ * Cette implémentation etait utilisée avant le support du C++20 lorsque la
+ * classe std::barrier n'existait pas.
+ */
+class LegacyStdThreadBarrier
 : public IThreadBarrier
 {
  public:
@@ -138,6 +143,48 @@ class StdThreadBarrier
   Integer m_nb_thread = 0;
   Integer m_current_reached = 0;
   Int32 m_generation = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation d'une barrière via std::barrier.
+ */
+class StdThreadBarrier
+: public IThreadBarrier
+{
+  class NullFunc
+  {
+   public:
+
+    void operator()() const noexcept { /* Nothing to do */ }
+  };
+
+ public:
+
+  ~StdThreadBarrier() override { delete m_barrier; }
+
+ public:
+
+  void init(Integer nb_thread) override
+  {
+    m_barrier = new std::barrier<NullFunc>(nb_thread);
+  }
+
+  void destroy() override
+  {
+    delete this;
+  }
+
+  void wait() override
+  {
+    ARCCORE_CHECK_POINTER(m_barrier);
+    m_barrier->arrive_and_wait();
+  }
+
+ private:
+
+  std::barrier<NullFunc>* m_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
