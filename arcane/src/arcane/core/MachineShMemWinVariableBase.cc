@@ -163,6 +163,9 @@ MachineShMemWinVariableMDBase(IVariable* var, Int64 sizeof_type)
 , m_dim1_var(m_pm->commSize(), 0)
 {}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <Int32 Dim> void
 MachineShMemWinVariableMDBase<Dim>::
 updateVariable(Int64 dim1, SmallSpan<Int64, Dim> mdim)
