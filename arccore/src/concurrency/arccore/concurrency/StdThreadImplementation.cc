@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdThreadImplementation.cc                                  (C) 2000-2025 */
+/* StdThreadImplementation.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des threads utilisant la bibliothèque standard C++.        */
 /*---------------------------------------------------------------------------*/
@@ -17,13 +17,14 @@
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/Ref.h"
 
+#include "arccore/concurrency/internal/ConcurrencyGlobalInternal.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/concurrency/Mutex.h"
 
-#include <new>
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <barrier>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,7 @@ class ARCCORE_CONCURRENCY_EXPORT StdThreadImplementation
 
  public:
 
-  StdThreadImplementation();
+  explicit StdThreadImplementation(bool use_legacy_barrier);
   ~StdThreadImplementation() override;
 
  public:
@@ -78,6 +79,7 @@ class ARCCORE_CONCURRENCY_EXPORT StdThreadImplementation
  private:
 
   MutexImpl* m_global_mutex_impl = nullptr;
+  bool m_use_legacy_barrier = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -87,16 +89,21 @@ namespace
 {
   void* _StdStartFunc(void* f)
   {
-    IFunctor* ff = reinterpret_cast<IFunctor*>(f);
+    IFunctor* ff = static_cast<IFunctor*>(f);
     ff->executeFunctor();
-    return 0;
+    return nullptr;
   }
 } // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class StdThreadBarrier
+/*!
+ * \brief Implémentation d'une barrière.
+ *
+ * Cette implémentation etait utilisée avant le support du C++20 lorsque la
+ * classe std::barrier n'existait pas.
+ */
+class LegacyStdThreadBarrier
 : public IThreadBarrier
 {
  public:
@@ -142,10 +149,52 @@ class StdThreadBarrier
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation d'une barrière via std::barrier.
+ */
+class StdThreadBarrier
+: public IThreadBarrier
+{
+  class NullFunc
+  {
+   public:
+
+    void operator()() const noexcept { /* Nothing to do */ }
+  };
+
+ public:
+
+  ~StdThreadBarrier() override { delete m_barrier; }
+
+ public:
+
+  void init(Integer nb_thread) override
+  {
+    m_barrier = new std::barrier<NullFunc>(nb_thread);
+  }
+
+  void destroy() override
+  {
+    delete this;
+  }
+
+  void wait() override
+  {
+    ARCCORE_CHECK_POINTER(m_barrier);
+    m_barrier->arrive_and_wait();
+  }
+
+ private:
+
+  std::barrier<NullFunc>* m_barrier = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 StdThreadImplementation::
-StdThreadImplementation()
-: m_global_mutex_impl(nullptr)
+StdThreadImplementation(bool use_legacy_barrier)
+: m_use_legacy_barrier(use_legacy_barrier)
 {
 }
 
@@ -240,6 +289,8 @@ currentThread()
 IThreadBarrier* StdThreadImplementation::
 createBarrier()
 {
+  if (m_use_legacy_barrier)
+    return new LegacyStdThreadBarrier();
   return new StdThreadBarrier();
 }
 
@@ -249,7 +300,13 @@ createBarrier()
 Ref<IThreadImplementation>
 createStdThreadImplementation()
 {
-  return makeRef<IThreadImplementation>(new Concurrency::StdThreadImplementation());
+  return makeRef<IThreadImplementation>(new StdThreadImplementation(false));
+}
+
+Ref<IThreadImplementation>
+createLegacyStdThreadImplementation()
+{
+  return makeRef<IThreadImplementation>(new StdThreadImplementation(true));
 }
 
 /*---------------------------------------------------------------------------*/
