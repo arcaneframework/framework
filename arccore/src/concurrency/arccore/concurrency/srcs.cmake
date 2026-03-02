@@ -18,6 +18,7 @@ set(SOURCES
   Task.h
   TaskFactory.h
 
+  internal/ConcurrencyGlobalInternal.h
   internal/ConcurrencyApplication.h
   internal/TaskFactoryInternal.h
 )

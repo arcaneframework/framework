@@ -17,6 +17,7 @@
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/Ref.h"
 
+#include "arccore/concurrency/internal/ConcurrencyGlobalInternal.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/concurrency/Mutex.h"
 
@@ -44,7 +45,7 @@ class ARCCORE_CONCURRENCY_EXPORT StdThreadImplementation
 
  public:
 
-  StdThreadImplementation();
+  explicit StdThreadImplementation(bool use_legacy_barrier);
   ~StdThreadImplementation() override;
 
  public:
@@ -78,6 +79,7 @@ class ARCCORE_CONCURRENCY_EXPORT StdThreadImplementation
  private:
 
   MutexImpl* m_global_mutex_impl = nullptr;
+  bool m_use_legacy_barrier = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -191,8 +193,8 @@ class StdThreadBarrier
 /*---------------------------------------------------------------------------*/
 
 StdThreadImplementation::
-StdThreadImplementation()
-: m_global_mutex_impl(nullptr)
+StdThreadImplementation(bool use_legacy_barrier)
+: m_use_legacy_barrier(use_legacy_barrier)
 {
 }
 
@@ -287,6 +289,8 @@ currentThread()
 IThreadBarrier* StdThreadImplementation::
 createBarrier()
 {
+  if (m_use_legacy_barrier)
+    return new LegacyStdThreadBarrier();
   return new StdThreadBarrier();
 }
 
@@ -296,7 +300,13 @@ createBarrier()
 Ref<IThreadImplementation>
 createStdThreadImplementation()
 {
-  return makeRef<IThreadImplementation>(new Concurrency::StdThreadImplementation());
+  return makeRef<IThreadImplementation>(new StdThreadImplementation(false));
+}
+
+Ref<IThreadImplementation>
+createLegacyStdThreadImplementation()
+{
+  return makeRef<IThreadImplementation>(new StdThreadImplementation(true));
 }
 
 /*---------------------------------------------------------------------------*/
