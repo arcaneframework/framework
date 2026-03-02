@@ -190,9 +190,7 @@ class HybridParallelMng::Impl
 
   MemoryAllocationOptions machineShMemWinMemoryAllocator() override
   {
-    MemoryAllocationOptions aaa{ m_alloc.get() };
-    aaa.setIsCollectiveAllocator(true);
-    return aaa;
+    return MemoryAllocationOptions{ m_alloc.get() };
   }
 
  private:
