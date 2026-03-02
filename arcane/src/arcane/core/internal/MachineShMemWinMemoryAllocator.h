@@ -55,6 +55,10 @@ class ARCANE_CORE_EXPORT MachineShMemWinMemoryAllocator
   {
     return 0;
   }
+  bool isCollective() const override
+  {
+    return true;
+  }
 
  public:
 
