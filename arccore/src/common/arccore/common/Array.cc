@@ -210,6 +210,7 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
 
   if (this->capacity == 0) {
     this->allocation_options = new_allocator_opt;
+    this->is_collective_allocator = new_allocator_opt.allocator()->isCollective();
     return nullptr;
   }
 
@@ -252,8 +253,10 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
+
   this->capacity = new_capacity;
   this->allocation_options = new_allocator_opt;
+  this->is_collective_allocator = new_allocator_opt.allocator()->isCollective();
   return p;
 }
 

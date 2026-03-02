@@ -419,7 +419,7 @@ class AbstractArray
     if (new_capacity <= m_md->capacity) {
       // Dans le cas d'un allocateur collectif, on doit quand même faire un
       // réalloc (à l'allocateur de gérer l'optimisation).
-      if (m_meta_data.allocation_options.allocator()->isCollective()) {
+      if (m_meta_data.is_collective_allocator) {
         _internalRealloc(m_md->capacity, false);
       }
       return;
@@ -437,7 +437,7 @@ class AbstractArray
     // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
     // il l'est pour tous les processus.
     if (_isSharedNull()) {
-      if (new_capacity != 0 || m_meta_data.allocation_options.allocator()->isCollective())
+      if (new_capacity != 0 || m_meta_data.is_collective_allocator)
         _internalAllocate(new_capacity, queue);
       return;
     }
@@ -453,7 +453,7 @@ class AbstractArray
     // Si la nouvelle capacité est inférieure à la courante, ne fait rien
     // (sauf pour un allocateur collectif).
     if (acapacity <= m_md->capacity) {
-      if (m_meta_data.allocation_options.allocator()->isCollective()) {
+      if (m_meta_data.is_collective_allocator) {
         _internalReallocate(m_md->capacity, pod_type, queue);
       }
       return;
@@ -702,7 +702,7 @@ class AbstractArray
     }
     else {
       this->_destroyRange(s, m_md->size, pod_type);
-      if (m_meta_data.allocation_options.allocator()->isCollective()) {
+      if (m_meta_data.is_collective_allocator) {
         this->_internalRealloc(s, false, pod_type, queue);
       }
     }
@@ -733,7 +733,7 @@ class AbstractArray
     }
     else {
       this->_destroyRange(s, m_md->size, IsPODType());
-      if (m_meta_data.allocation_options.allocator()->isCollective()) {
+      if (m_meta_data.is_collective_allocator) {
         this->_internalRealloc(s, false);
       }
     }

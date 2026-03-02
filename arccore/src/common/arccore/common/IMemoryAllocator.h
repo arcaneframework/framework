@@ -147,6 +147,10 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
   //! Ressource mémoire fournie par l'allocateur
   virtual eMemoryResource memoryResource() const { return eMemoryResource::Unknown; }
 
+  /*!
+   * \brief Indique si les appels à l'allocateur doivent être effectués
+   * collectivement.
+   */
   virtual bool isCollective() const { return false; }
 };
 
