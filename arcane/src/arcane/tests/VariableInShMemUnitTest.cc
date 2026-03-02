@@ -60,7 +60,7 @@ class VariableInShMemUnitTest
   void _test1();
   void _test2();
   void _test3();
-  void _test10();
+  void _test4();
   void _test1_1();
   void _test1_2();
   void testMarkCellsToRefine(Integer level);
@@ -137,11 +137,13 @@ init()
 void VariableInShMemUnitTest::
 compute()
 {
-  // _test1();
-  // _reset();
-  // _test2();
-  // _reset();
+  _test1();
+  _reset();
+  _test2();
+  _reset();
   _test3();
+  _reset();
+  _test4();
   _reset();
 }
 
@@ -341,40 +343,32 @@ _test3()
 /*---------------------------------------------------------------------------*/
 
 void VariableInShMemUnitTest::
-_test10()
+_test4()
 {
   Int32 properties = 0;
   if (parallelMng()->commRank() == 0) {
     properties = (IVariable::PInShMem | IVariable::PPersistant);
-    //properties = (IVariable::PPersistant);
   }
   else {
-    properties = (IVariable::PInShMem | IVariable::PPersistant | IVariable::PNoDump);
-    //properties = (IVariable::PPersistant | IVariable::PNoDump);
+    properties = (IVariable::PInShMem | IVariable::PPersistant | IVariable::PDumpNull);
   }
 
-  VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", properties));
   VariableArrayInt32 var2(VariableBuildInfo(mesh(), "BBB", properties));
 
-  MachineShMemWinVariableItemT var_sh(var);
-
-  auto var_compute = [&]() -> void {
-    debug() << "asArray().size() : " << var.asArray().size();
-    auto ranks = var_sh.machineRanks();
-    for (Int32 rank : ranks) {
-      debug() << "Sizeof rank " << rank << " : "
-              << var_sh.segmentView(rank).size();
-    }
-    debug() << "Array : " << var.asArray();
-
-    ENUMERATE_ (Cell, icell, allCells()) {
-      var[icell] = icell.localId();
-    }
-  };
   if (globalIteration() == 1) {
     var2.resize(10);
     for (Int32& a : var2) {
       a = parallelMng()->commRank();
+    }
+  }
+  if (subDomain()->isContinue()) {
+    if (parallelMng()->commRank() == 0) {
+      ARCANE_FATAL_IF(var2.size() != 10,
+                      "Error _test4() 1 : Array size is invalid -- Expected : 10 -- Found : {0}", var2.size());
+    }
+    else {
+      ARCANE_FATAL_IF(!var2.empty(),
+                      "Error _test4() 1 : Array size is invalid -- Expected : 0 -- Found : {0}", var2.size());
     }
   }
   info() << "Array : " << var2;
