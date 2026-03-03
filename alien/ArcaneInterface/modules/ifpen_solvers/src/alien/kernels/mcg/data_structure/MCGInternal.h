@@ -10,7 +10,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
-#define USE_CUDA
+#include "Common/mcgs_config.h"
 #include "Common/index.h"
 #include "MCGSolver/LinearSystem/LinearSystem.h"
 #include "MCGSolver/GPULinearSystem/GPULinearSystem.h"
