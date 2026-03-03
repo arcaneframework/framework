@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
+#define USE_CUDA
 #define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
 #include <tuple>
@@ -130,7 +131,7 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
   m_dir_enum[std::string("-D")] = *((int*)"-D+D");
 
   // check version
-  const std::string expected_version("v2.5");
+  const std::string expected_version("3");
   const std::regex expected_revision_regex("^" + expected_version + ".*");
 
   m_version = MCGSolver::LinearSolver::getRevision();
@@ -349,7 +350,7 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
     MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info)
 {
-  alien_debug([&]{
+  alien_debug([this,&A,&b,&x]{
     cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
            << " b:" << b.m_vector.get() << " x:" << x.m_vector.get();
   });
@@ -376,7 +377,12 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_system.get(), &m_mcg_status);
+  try {
+    error = m_solver->solve(m_system.get(), &m_mcg_status);
+  }
+  catch (std::exception& e) {
+    alien_fatal( [this,&e] { cout() << e.what(); });
+  }
   m_solve_timer.stop();
 
   x.m_vector = m_system->getSol();
@@ -386,7 +392,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
 
 Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
   MCGDeviceVectorType &x, const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
-  alien_debug([&]{
+  alien_debug([this,&A,&b,&x]{
     cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
            << " b:" << b.m_vector.get() << " x:" << x.m_vector.get();
   });
@@ -414,7 +420,13 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_device_system.get(), &m_mcg_status);
+  try {
+    error = m_solver->solve(m_device_system.get(), &m_mcg_status);
+  }
+  catch (std::exception& e) {
+    alien_fatal( [this,&e] { cout() << e.what(); });
+  }
+
   m_solve_timer.stop();
 
   x.m_vector = m_device_system->getSol();
@@ -426,7 +438,7 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
     const MCGVectorType& x0, MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info)
 {
-  alien_debug([&]{
+  alien_debug([this,&A,&b,&x,&x0]{
     cout() << "MCGInternalLinearSolver::_solve with x0"
            << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
   });
@@ -460,7 +472,13 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_system.get(), &m_mcg_status);
+  try {
+    error = m_solver->solve(m_system.get(), &m_mcg_status);
+  }
+  catch (std::exception& e) {
+    alien_fatal( [this,&e] { cout() << e.what(); });
+  }
+
   m_solve_timer.stop();
 
   x.m_vector = m_system->getSol();
@@ -472,7 +490,7 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
     const MCGDeviceVectorType &x0, MCGDeviceVectorType &x,
     const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
 
-  alien_debug([&]{
+  alien_debug([this,&A,&b,&x,&x0]{
     cout() << "MCGInternalLinearSolver::_solve with x0"
            << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
   });
@@ -507,7 +525,12 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
   m_system_timer.stop();
 
   m_solve_timer.start();
-  error = m_solver->solve(m_system.get(), &m_mcg_status);
+  try {
+    error = m_solver->solve(m_system.get(), &m_mcg_status);
+  }
+  catch (std::exception& e) {
+    alien_fatal( [this,&e] { cout() << e.what(); });
+  }
   m_solve_timer.stop();
 
   x.m_vector = m_device_system->getSol();
