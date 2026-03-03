@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
+#define USE_CUDA
 #define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
 #include <tuple>
