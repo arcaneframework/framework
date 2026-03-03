@@ -18,8 +18,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
+
 #include "arcane/utils/Ref.h"
-#include "arcane/utils/ArrayView.h"
+#include "arcane/utils/NumArray.h"
+
+#include "arcane/core/MeshMDVariableRef.h"
+
+#include "arccore/base/FixedArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,9 +35,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MachineShMemWinVariable2DBase;
 class MachineShMemWinVariableBase;
-template <Int32 Dim>
+class MachineShMemWinVariable2DBase;
 class MachineShMemWinVariableMDBase;
 
 /*---------------------------------------------------------------------------*/
@@ -114,6 +118,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
    * \param var Variable ayant la propriété "PInShMem".
    */
   explicit MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var);
+  ~MachineShMemWinVariableArrayT() override;
 
  public:
 
@@ -137,6 +142,10 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
    * Appel collectif.
    */
   void updateVariable();
+
+ private:
+
+  VariableRefArrayT<DataType> m_vart;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -158,7 +167,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
  * nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinVariableItemT
+class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
 : public MachineShMemWinVariableCommon
 {
 
@@ -168,7 +177,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableItemT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableItemT(MeshVariableScalarRefT<ItemType, DataType> var);
+  explicit MachineShMemWinMeshVariableScalarT(MeshVariableScalarRefT<ItemType, DataType> var);
+
+  ~MachineShMemWinMeshVariableScalarT() override;
 
  public:
 
@@ -215,6 +226,10 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableItemT
    * Appel collectif.
    */
   void updateVariable();
+
+ private:
+
+  MeshVariableScalarRefT<ItemType, DataType> m_vart;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -246,7 +261,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
    */
   explicit MachineShMemWinVariableArray2T(VariableRefArray2T<DataType> var);
 
-  virtual ~MachineShMemWinVariableArray2T();
+  ~MachineShMemWinVariableArray2T();
 
  public:
 
@@ -314,7 +329,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
  * nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinVariableItemArrayT
+class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
 {
 
  public:
@@ -323,9 +338,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableItemArrayT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableItemArrayT(MeshVariableArrayRefT<ItemType, DataType> var);
+  explicit MachineShMemWinMeshVariableArrayT(MeshVariableArrayRefT<ItemType, DataType> var);
 
-  virtual ~MachineShMemWinVariableItemArrayT();
+  ~MachineShMemWinMeshVariableArrayT();
 
  public:
 
@@ -395,10 +410,142 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableItemArrayT
 
  private:
 
-  Ref<MachineShMemWinVariableMDBase<1>> m_base;
+  Ref<MachineShMemWinVariableMDBase> m_base;
   MeshVariableArrayRefT<ItemType, DataType> m_vart;
   ConstArrayView<Int64> m_nb_elem_dim1;
-  Int64 m_nb_elem_dim2{};
+  Int32 m_nb_elem_dim2{};
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
+{
+
+ public:
+
+  /*!
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   */
+  explicit MachineShMemWinMDVariableT(IVariable* var);
+
+  virtual ~MachineShMemWinMDVariableT();
+
+ public:
+
+  /*!
+   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
+   * dans la fenêtre.
+   *
+   * Appel non collectif.
+   *
+   * \return Une vue contenant les ids des rangs.
+   */
+  ConstArrayView<Int32> machineRanks() const;
+
+  /*!
+   * \brief Méthode permettant d'attendre que tous les processus/threads
+   * du noeud appellent cette méthode pour continuer l'exécution.
+   */
+  void barrier() const;
+
+ public:
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur la variable d'un
+   * autre sous-domaine du noeud.
+   *
+   * Le premier indice correspond au local_id, les autres indices sont la
+   * position de l'élément dans le tableau de l'item.
+   *
+   * \warning Attention : pour accéder aux éléments de la vue, il est
+   *          nécessaire d'utiliser les local_ids de l'autre sous-domaine !
+   *          Ne pas utiliser les local_ids de notre sous-domaine !
+   *
+   * Appel non collectif.
+   *
+   * \param rank Le rang du sous-domaine.
+   * \return Une vue.
+   */
+  // template <class X = MDDimType<Extents::rank() + 1>::DimType>
+  // MDSpan<DataType, X> view(Int32 rank) const;
+
+  MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> view(Int32 rank) const;
+
+  /*!
+   * \brief Méthode permettant d'obtenir le tableau multi-dimensionnel d'un
+   * item d'un autre sous-domaine.
+   *
+   * \warning Attention : le local_id correspond au local_id du sous-domaine
+   *          \a rank ! Ne surtout pas utiliser un local_id de notre
+   *          sous-domaine pour accéder aux éléments de la vue !
+   *
+   * \note Si plusieurs itérations sont nécessaires pour un même rang, il est
+   *       préférable de récupérer une vue via \a view(Int32 rank).
+   *
+   * Appel non collectif.
+   *
+   * \param rank Le rang du sous-domaine de la variable ciblée.
+   * \param notlocal_id Le local_id du sous-domaine \a rank.
+   * \return Le tableau MD de l'item.
+   */
+  virtual MDSpan<DataType, Extents> operator()(Int32 rank, Int32 notlocal_id);
+
+  /*!
+   * \brief Méthode permettant de mettre à jour cet objet après un changement
+   * dans le maillage.
+   *
+   * Appel collectif.
+   */
+  void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, SmallSpan<const Int32> shape_dim2);
+
+ private:
+
+  Ref<MachineShMemWinVariableMDBase> m_base;
+  ConstArrayView<Int64> m_nb_elem_dim1;
+  Int32 m_nb_elem_dim2{};
+  std::array<Int32, Extents::rank()> m_shape_dim2{};
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+class ARCANE_CORE_EXPORT MachineShMemWinMeshMDVariableT
+: public MachineShMemWinMDVariableT<ItemType, DataType, Extents>
+{
+
+ public:
+
+  /*!
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   */
+  explicit MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var);
+
+  ~MachineShMemWinMeshMDVariableT() override;
+
+ public:
+
+  /*!
+   * \brief Méthode permettant de mettre à jour cet objet après un changement
+   * dans le maillage.
+   *
+   * Appel collectif.
+   */
+  void updateVariable();
+
+ private:
+
+  MeshMDVariableRefT<ItemType, DataType, Extents> m_vart;
 };
 
 /*---------------------------------------------------------------------------*/

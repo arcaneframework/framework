@@ -17,12 +17,13 @@
 #include "arcane/core/MeshVariable.h"
 #include "arcane/core/IVariable.h"
 #include "arcane/core/MeshVariableScalarRef.h"
-#include "arcane/core/internal/MachineShMemWinVariableBase.h"
+#include "internal/MachineShMemWinVariableBase.h"
 
 #include "arcane/utils/NumericTypes.h"
+#include "arcane/utils/MDSpan.h"
 
 #include "arccore/base/Span2.h"
-
+#include "arccore/base/MDIndex.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,9 +74,17 @@ template <class DataType>
 MachineShMemWinVariableArrayT<DataType>::
 MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var)
 : MachineShMemWinVariableCommon(var.variable())
+, m_vart(var)
 {
   updateVariable();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class DataType>
+MachineShMemWinVariableArrayT<DataType>::
+~MachineShMemWinVariableArrayT() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,7 +103,7 @@ template <class DataType>
 void MachineShMemWinVariableArrayT<DataType>::
 updateVariable()
 {
-  m_base->updateVariable(m_base->variable()->nbElement(), sizeof(DataType));
+  m_base->updateVariable(m_vart.asArray().size(), sizeof(DataType));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,9 +113,10 @@ updateVariable()
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-MachineShMemWinVariableItemT<ItemType, DataType>::
-MachineShMemWinVariableItemT(MeshVariableScalarRefT<ItemType, DataType> var)
+MachineShMemWinMeshVariableScalarT<ItemType, DataType>::
+MachineShMemWinMeshVariableScalarT(MeshVariableScalarRefT<ItemType, DataType> var)
 : MachineShMemWinVariableCommon(var.variable())
+, m_vart(var)
 {
   updateVariable();
 }
@@ -115,7 +125,14 @@ MachineShMemWinVariableItemT(MeshVariableScalarRefT<ItemType, DataType> var)
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemT<ItemType, DataType>::
+MachineShMemWinMeshVariableScalarT<ItemType, DataType>::
+~MachineShMemWinMeshVariableScalarT() = default;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType>
+Span<DataType> MachineShMemWinMeshVariableScalarT<ItemType, DataType>::
 view(Int32 rank) const
 {
   return asSpan<DataType>(m_base->segmentView(rank));
@@ -125,7 +142,7 @@ view(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-DataType MachineShMemWinVariableItemT<ItemType, DataType>::
+DataType MachineShMemWinMeshVariableScalarT<ItemType, DataType>::
 operator()(Int32 rank, Int32 notlocal_id)
 {
   return this->view(rank)[notlocal_id];
@@ -135,10 +152,10 @@ operator()(Int32 rank, Int32 notlocal_id)
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-void MachineShMemWinVariableItemT<ItemType, DataType>::
+void MachineShMemWinMeshVariableScalarT<ItemType, DataType>::
 updateVariable()
 {
-  m_base->updateVariable(m_base->variable()->nbElement(), sizeof(DataType));
+  m_base->updateVariable(m_vart.asArray().size(), sizeof(DataType));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,9 +234,9 @@ updateVariable()
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-MachineShMemWinVariableItemArrayT(MeshVariableArrayRefT<ItemType, DataType> var)
-: m_base(makeRef(new MachineShMemWinVariableMDBase<1>(var.variable())))
+MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
+MachineShMemWinMeshVariableArrayT(MeshVariableArrayRefT<ItemType, DataType> var)
+: m_base(makeRef(new MachineShMemWinVariableMDBase(var.variable())))
 , m_vart(var)
 {
   updateVariable();
@@ -229,14 +246,14 @@ MachineShMemWinVariableItemArrayT(MeshVariableArrayRefT<ItemType, DataType> var)
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-MachineShMemWinVariableItemArrayT<ItemType, DataType>::
-~MachineShMemWinVariableItemArrayT() = default;
+MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
+~MachineShMemWinMeshVariableArrayT() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-ConstArrayView<Int32> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
+ConstArrayView<Int32> MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 machineRanks() const
 {
   return m_base->machineRanks();
@@ -246,7 +263,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-void MachineShMemWinVariableItemArrayT<ItemType, DataType>::
+void MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 barrier() const
 {
   m_base->barrier();
@@ -256,7 +273,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-Span2<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
+Span2<DataType> MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 view(Int32 rank) const
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
@@ -267,7 +284,7 @@ view(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
+Span<DataType> MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 operator()(Int32 rank, Int32 notlocal_id)
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
@@ -280,17 +297,145 @@ operator()(Int32 rank, Int32 notlocal_id)
 /*---------------------------------------------------------------------------*/
 
 template <class ItemType, class DataType>
-void MachineShMemWinVariableItemArrayT<ItemType, DataType>::
+void MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 updateVariable()
 {
-  Int64 size_dim1 = m_vart.asArray().dim1Size() * sizeof(DataType);
-  m_nb_elem_dim2 = m_vart.asArray().dim2Size() * sizeof(DataType);
+  Int64 size_dim1 = m_vart.asArray().dim1Size();
+  m_nb_elem_dim2 = m_vart.asArray().dim2Size();
 
-  SmallSpan<Int64, 1> size_dim2(&m_nb_elem_dim2);
-
-  m_base->updateVariable(size_dim1, size_dim2, sizeof(DataType));
+  m_base->updateVariable(size_dim1, m_nb_elem_dim2, sizeof(DataType));
 
   m_nb_elem_dim1 = m_base->nbElemDim1();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+MachineShMemWinMDVariableT(IVariable* var)
+: m_base(makeRef(new MachineShMemWinVariableMDBase(var)))
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+~MachineShMemWinMDVariableT() = default;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+ConstArrayView<Int32> MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+machineRanks() const
+{
+  return m_base->machineRanks();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+void MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+barrier() const
+{
+  m_base->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+view(Int32 rank) const
+{
+  Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
+
+  if constexpr (Extents::rank() == 1) {
+    std::array<Int32, 2> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0] };
+    MDSpan<DataType, MDDim2> mdspan(span1.data(), MDIndex<2>(nb_elem_mdim));
+    return mdspan;
+  }
+  else if constexpr (Extents::rank() == 2) {
+    std::array<Int32, 3> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0], m_shape_dim2[1] };
+    MDSpan<DataType, MDDim3> mdspan(span1.data(), MDIndex<3>(nb_elem_mdim));
+    return mdspan;
+  }
+  else if constexpr (Extents::rank() == 3) {
+    std::array<Int32, 4> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0], m_shape_dim2[1], m_shape_dim2[2] };
+    MDSpan<DataType, MDDim4> mdspan(span1.data(), MDIndex<4>(nb_elem_mdim));
+    return mdspan;
+  }
+  ARCANE_FATAL("Unexpected dimension");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MDSpan<DataType, Extents> MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+operator()(Int32 rank, Int32 notlocal_id)
+{
+  Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
+  Span2<DataType> span2(span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2);
+  MDSpan<DataType, Extents> mdspan(span2[notlocal_id].data(), MDIndex<Extents::rank()>(m_shape_dim2));
+
+  return mdspan;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+void MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
+updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, SmallSpan<const Int32> shape_dim2)
+{
+  SmallSpan<Int32> shape_dim2_view(m_shape_dim2.data(), Extents::rank());
+  shape_dim2_view.copy(shape_dim2);
+
+  m_base->updateVariable(nb_elem_dim1, nb_elem_dim2, sizeof(DataType));
+
+  m_nb_elem_dim1 = m_base->nbElemDim1();
+  m_nb_elem_dim2 = nb_elem_dim2;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
+MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var)
+: MachineShMemWinMDVariableT<ItemType, DataType, Extents>(var.variable())
+, m_vart(var)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
+~MachineShMemWinMeshMDVariableT() = default;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class ItemType, class DataType, class Extents>
+void MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
+updateVariable()
+{
+  SmallSpan<const Int32> shape = m_vart.fullShape().dimensions();
+  Int64 nb_elem_dim1 = m_vart.underlyingVariable().asArray().dim1Size();
+  Int32 nb_elem_dim2 = m_vart.underlyingVariable().asArray().dim2Size();
+
+  MachineShMemWinMDVariableT<ItemType, DataType, Extents>::updateVariable(nb_elem_dim1, nb_elem_dim2, shape);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,8 +478,16 @@ template class ARCANE_TEMPLATE_EXPORT MachineShMemWinVariableArray2T<Int32>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinVariableArray2T<Int64>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinVariableArray2T<Byte>;
 
-ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE_WITH_ITEM(MachineShMemWinVariableItemT);
-ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE_WITH_ITEM(MachineShMemWinVariableItemArrayT);
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE_WITH_ITEM(MachineShMemWinMeshVariableScalarT);
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE_WITH_ITEM(MachineShMemWinMeshVariableArrayT);
+
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim1>;
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim2>;
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim3>;
+
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim1>;
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim2>;
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

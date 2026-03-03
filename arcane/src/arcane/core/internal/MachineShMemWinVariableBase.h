@@ -83,8 +83,6 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
    */
   void updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem);
 
-  IVariable* variable() const;
-
  protected:
 
   IVariable* m_var = nullptr;
@@ -137,7 +135,6 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <Int32 Dim>
 class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
 : public MachineShMemWinVariableBase
 {
@@ -155,9 +152,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
   /*!
    * \brief
    * \param nb_elem_dim1 En nb elements
-   * \param nb_elem_mdim En nb elements
+   * \param nb_elem_dim2 En nb elements
    */
-  void updateVariable(Int64 nb_elem_dim1, SmallSpan<Int64, Dim> nb_elem_mdim, Int64 sizeof_elem);
+  void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem);
 
   ArrayView<Int64> nbElemDim1();
 

@@ -18,6 +18,7 @@
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MachineShMemWinVariable.h"
+#include "arcane/core/MeshMDVariableRef.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -26,6 +27,8 @@
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 
 #include "arcane/tests/VariableInShMemUnitTest_axl.h"
+#include "arcane/utils/NumVector.h"
+#include "arccore/base/MDDim.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -237,7 +240,7 @@ _test2()
   IParallelMng* pm = parallelMng();
   VariableCellInt32 var(VariableBuildInfo(mesh(), "Test2", IVariable::PInShMem));
 
-  MachineShMemWinVariableItemT var_sh(var);
+  MachineShMemWinMeshVariableScalarT var_sh(var);
 
   ENUMERATE_ (Cell, icell, allCells()) {
     var[icell] = pm->commRank();
@@ -280,7 +283,7 @@ _test3()
   }
   {
     VariableCellInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
-    MachineShMemWinVariableItemT var_sh(var);
+    MachineShMemWinMeshVariableScalarT var_sh(var);
 
     ENUMERATE_ (Cell, icell, allCells()) {
       var[icell] = parallelMng()->commRank();
@@ -319,7 +322,7 @@ _test3()
   }
   {
     VariableCellArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
-    MachineShMemWinVariableItemArrayT var_sh(var);
+    MachineShMemWinMeshVariableArrayT var_sh(var);
 
     var.resize(2);
 
@@ -336,6 +339,51 @@ _test3()
     //   info() << "Rank " << rank << " -- Value0 : " << var_sh.segmentView1D(rank);
     //   info() << "Rank " << rank << " -- Value1 : " << var_sh.segmentView1D(rank);
     // }
+  }
+  {
+    MeshMDVariableRefT<Cell, Real, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+
+    MachineShMemWinMeshMDVariableT var_sh(var);
+
+    var.reshape({ 2, 3 });
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var(icell, 0, 0) = parallelMng()->commRank();
+      var(icell, 0, 1) = parallelMng()->commRank() * 10;
+      var(icell, 0, 2) = parallelMng()->commRank() * 20;
+      var(icell, 1, 0) = parallelMng()->commRank() * 30;
+      var(icell, 1, 1) = parallelMng()->commRank() * 40;
+      var(icell, 1, 2) = parallelMng()->commRank() * 50;
+    }
+    var_sh.updateVariable();
+
+    auto machine_ranks = var_sh.machineRanks();
+    for (Int32 rank : machine_ranks) {
+      MDSpan<Real, MDDim3> aaa = var_sh.view(rank);
+      info() << "Rank " << rank << " -- aaa.extents().extent0() : " << aaa.extent0();
+      info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
+      info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
+      info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
+    }
+
+    // MDSpan<Real, MDDim2> bbb = var_sh(0, 0);
+  }
+  {
+    MeshVectorMDVariableRefT<Cell, Real, 3, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+
+    var.reshape({ 2, 3 });
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var(icell, 0, 0) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank()), 0, 0 };
+      var(icell, 0, 1) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 10), 0, 0 };
+      var(icell, 0, 2) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 20), 0, 0 };
+      var(icell, 1, 0) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 30), 0, 0 };
+      var(icell, 1, 1) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 40), 0, 0 };
+      var(icell, 1, 2) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 50), 0, 0 };
+    }
+    // var_sh.updateVariable();
+    //
+    // MDSpan<Real, MDDim4> aaa = var_sh.view(0);
   }
 }
 
