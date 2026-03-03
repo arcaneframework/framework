@@ -17,6 +17,7 @@
 #include "arcane/core/MeshVariable.h"
 #include "arcane/core/IVariable.h"
 #include "arcane/core/MeshVariableScalarRef.h"
+#include "arcane/core/internal/MachineShMemWinVariableBase.h"
 
 #include "arcane/utils/NumericTypes.h"
 
@@ -33,8 +34,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 MachineShMemWinVariableCommon::
-MachineShMemWinVariableCommon(IVariable* var, Int64 sizeof_type)
-: m_base(var, sizeof_type)
+MachineShMemWinVariableCommon(IVariable* var)
+: m_base(makeRef(new MachineShMemWinVariableBase(var)))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ MachineShMemWinVariableCommon::
 ConstArrayView<Int32> MachineShMemWinVariableCommon::
 machineRanks() const
 {
-  return m_base.machineRanks();
+  return m_base->machineRanks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -59,7 +60,7 @@ machineRanks() const
 void MachineShMemWinVariableCommon::
 barrier() const
 {
-  m_base.barrier();
+  m_base->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -71,7 +72,7 @@ barrier() const
 template <class DataType>
 MachineShMemWinVariableArrayT<DataType>::
 MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var)
-: MachineShMemWinVariableCommon(var.variable(), sizeof(DataType))
+: MachineShMemWinVariableCommon(var.variable())
 {
   updateVariable();
 }
@@ -83,7 +84,7 @@ template <class DataType>
 Span<DataType> MachineShMemWinVariableArrayT<DataType>::
 view(Int32 rank) const
 {
-  return asSpan<DataType>(m_base.segmentView(rank));
+  return asSpan<DataType>(m_base->segmentView(rank));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,7 +94,7 @@ template <class DataType>
 void MachineShMemWinVariableArrayT<DataType>::
 updateVariable()
 {
-  m_base.updateVariable(m_base.variable()->nbElement());
+  m_base->updateVariable(m_base->variable()->nbElement(), sizeof(DataType));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,7 +106,7 @@ updateVariable()
 template <class ItemType, class DataType>
 MachineShMemWinVariableItemT<ItemType, DataType>::
 MachineShMemWinVariableItemT(MeshVariableScalarRefT<ItemType, DataType> var)
-: MachineShMemWinVariableCommon(var.variable(), sizeof(DataType))
+: MachineShMemWinVariableCommon(var.variable())
 {
   updateVariable();
 }
@@ -117,7 +118,7 @@ template <class ItemType, class DataType>
 Span<DataType> MachineShMemWinVariableItemT<ItemType, DataType>::
 view(Int32 rank) const
 {
-  return asSpan<DataType>(m_base.segmentView(rank));
+  return asSpan<DataType>(m_base->segmentView(rank));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -137,7 +138,7 @@ template <class ItemType, class DataType>
 void MachineShMemWinVariableItemT<ItemType, DataType>::
 updateVariable()
 {
-  m_base.updateVariable(m_base.variable()->nbElement());
+  m_base->updateVariable(m_base->variable()->nbElement(), sizeof(DataType));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,9 +150,7 @@ updateVariable()
 template <class DataType>
 MachineShMemWinVariableArray2T<DataType>::
 MachineShMemWinVariableArray2T(VariableRefArray2T<DataType> var)
-: m_base(var.variable(), sizeof(DataType))
-, m_size_dim1(var.dim1Size())
-, m_size_dim2(var.dim2Size())
+: m_base(makeRef(new MachineShMemWinVariable2DBase(var.variable())))
 , m_vart(var)
 {
   updateVariable();
@@ -171,7 +170,7 @@ template <class DataType>
 ConstArrayView<Int32> MachineShMemWinVariableArray2T<DataType>::
 machineRanks() const
 {
-  return m_base.machineRanks();
+  return m_base->machineRanks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -181,7 +180,7 @@ template <class DataType>
 void MachineShMemWinVariableArray2T<DataType>::
 barrier() const
 {
-  m_base.barrier();
+  m_base->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,8 +190,8 @@ template <class DataType>
 Span2<DataType> MachineShMemWinVariableArray2T<DataType>::
 view(Int32 rank) const
 {
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
-  return { span1.data(), m_size_dim1, m_size_dim2 };
+  Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
+  return { span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2[rank] };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -202,10 +201,13 @@ template <class DataType>
 void MachineShMemWinVariableArray2T<DataType>::
 updateVariable()
 {
-  m_size_dim1 = m_vart.dim1Size();
-  m_size_dim2 = m_vart.dim2Size();
+  Int64 size_dim1 = m_vart.dim1Size();
+  Int64 size_dim2 = m_vart.dim2Size();
 
-  m_base.updateVariable(m_size_dim1, m_size_dim2);
+  m_base->updateVariable(size_dim1, size_dim2, sizeof(DataType));
+
+  m_nb_elem_dim1 = m_base->nbElemDim1();
+  m_nb_elem_dim2 = m_base->nbElemDim2();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,9 +219,7 @@ updateVariable()
 template <class ItemType, class DataType>
 MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 MachineShMemWinVariableItemArrayT(MeshVariableArrayRefT<ItemType, DataType> var)
-: m_base(var.variable(), sizeof(DataType))
-, m_size_dim1(var.asArray().dim1Size())
-, m_size_dim2(var.asArray().dim2Size())
+: m_base(makeRef(new MachineShMemWinVariableMDBase<1>(var.variable())))
 , m_vart(var)
 {
   updateVariable();
@@ -239,7 +239,7 @@ template <class ItemType, class DataType>
 ConstArrayView<Int32> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 machineRanks() const
 {
-  return m_base.machineRanks();
+  return m_base->machineRanks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,7 +249,7 @@ template <class ItemType, class DataType>
 void MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 barrier() const
 {
-  m_base.barrier();
+  m_base->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,8 +259,8 @@ template <class ItemType, class DataType>
 Span2<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 view(Int32 rank) const
 {
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
-  return { span1.data(), m_size_dim1, m_size_dim2 };
+  Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
+  return { span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2 };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -270,8 +270,8 @@ template <class ItemType, class DataType>
 Span<DataType> MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 operator()(Int32 rank, Int32 notlocal_id)
 {
-  Span<DataType> span1 = asSpan<DataType>(m_base.segmentView(rank));
-  Span2<DataType> span2(span1.data(), m_size_dim1, m_size_dim2);
+  Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
+  Span2<DataType> span2(span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2);
 
   return span2[notlocal_id];
 }
@@ -283,12 +283,14 @@ template <class ItemType, class DataType>
 void MachineShMemWinVariableItemArrayT<ItemType, DataType>::
 updateVariable()
 {
-  m_size_dim1 = m_vart.asArray().dim1Size();
-  m_size_dim2 = m_vart.asArray().dim2Size();
+  Int64 size_dim1 = m_vart.asArray().dim1Size() * sizeof(DataType);
+  m_nb_elem_dim2 = m_vart.asArray().dim2Size() * sizeof(DataType);
 
-  SmallSpan<Int64, 1> aaa(&m_size_dim2);
+  SmallSpan<Int64, 1> size_dim2(&m_nb_elem_dim2);
 
-  m_base.updateVariable(m_size_dim1, aaa);
+  m_base->updateVariable(size_dim1, size_dim2, sizeof(DataType));
+
+  m_nb_elem_dim1 = m_base->nbElemDim1();
 }
 
 /*---------------------------------------------------------------------------*/

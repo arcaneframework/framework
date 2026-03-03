@@ -244,7 +244,7 @@ _test2()
   }
 
   info() << "var.asArray().size(); : " << var.asArray().size();
-  info() << "var_sh.segmentView().size(); : " << var_sh.segmentView().size();
+  info() << "var_sh.segmentView().size(); : " << var_sh.view(pm->commRank()).size();
 
   ConstArrayView<Int32> machine_ranks = var_sh.machineRanks();
   for (Int32 rank : machine_ranks) {

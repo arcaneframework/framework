@@ -93,6 +93,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IItemFamilySerializerMngInternal.h
   internal/MachineShMemWinMemoryAllocator.cc
   internal/MachineShMemWinMemoryAllocator.h
+  internal/MachineShMemWinVariableBase.cc
+  internal/MachineShMemWinVariableBase.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -502,8 +504,6 @@ set(ARCANE_ORIGINAL_SOURCES
   MachineShMemWin.h
   MachineShMemWinBase.cc
   MachineShMemWinBase.h
-  MachineShMemWinVariableBase.cc
-  MachineShMemWinVariableBase.h
   MachineShMemWinVariable.cc
   MachineShMemWinVariable.h
   EntryPoint.cc

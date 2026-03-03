@@ -10,8 +10,8 @@
 /* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLEBASE_H
-#define ARCANE_CORE_MACHINESHMEMWINVARIABLEBASE_H
+#ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
+#define ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableBase(IVariable* var, Int64 sizeof_type);
+  explicit MachineShMemWinVariableBase(IVariable* var);
 
  public:
 
@@ -67,15 +67,6 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
   void barrier() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment.
-   *
-   * Appel non collectif.
-   *
-   * \return Une vue.
-   */
-  Span<std::byte> segmentView() const;
-
-  /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment d'un
    * autre sous-domaine du noeud.
    *
@@ -86,16 +77,21 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
    */
   Span<std::byte> segmentView(Int32 rank) const;
 
-  void updateVariable(Int64 dim1);
+  /*!
+   * \brief
+   * \param nb_elem_dim1 En nb éléments
+   */
+  void updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem);
 
   IVariable* variable() const;
 
  protected:
 
   IVariable* m_var = nullptr;
-  Int64 m_sizeof_type = 0;
   IParallelMng* m_pm = nullptr;
-  UniqueArray<Int64> m_size_var;
+
+  // En octet.
+  UniqueArray<Int64> m_sizeof_var;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -114,16 +110,25 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariable2DBase(IVariable* var, Int64 sizeof_type);
+  explicit MachineShMemWinVariable2DBase(IVariable* var);
 
  public:
 
-  void updateVariable(Int64 dim1, Int64 dim2);
+  /*!
+   * \brief
+   * \param nb_elem_dim1 En nb elements
+   * \param nb_elem_dim2 En nb elements
+   */
+  void updateVariable(Int64 nb_elem_dim1, Int64 nb_elem_dim2, Int64 sizeof_elem);
+
+  ArrayView<Int64> nbElemDim1();
+  ArrayView<Int64> nbElemDim2();
 
  private:
 
-  UniqueArray<Int64> m_dim1_var;
-  UniqueArray<Int64> m_dim2_var;
+  // En nb éléments.
+  UniqueArray<Int64> m_nb_elem_dim1;
+  UniqueArray<Int64> m_nb_elem_dim2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -143,16 +148,23 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableMDBase(IVariable* var, Int64 sizeof_type);
+  explicit MachineShMemWinVariableMDBase(IVariable* var);
 
  public:
 
-  void updateVariable(Int64 dim1, SmallSpan<Int64, Dim> mdim);
+  /*!
+   * \brief
+   * \param nb_elem_dim1 En nb elements
+   * \param nb_elem_mdim En nb elements
+   */
+  void updateVariable(Int64 nb_elem_dim1, SmallSpan<Int64, Dim> nb_elem_mdim, Int64 sizeof_elem);
+
+  ArrayView<Int64> nbElemDim1();
 
  private:
 
-  UniqueArray<Int64> m_dim1_var;
-  FixedArray<Int64, Dim> m_mdim_var;
+  // En nb éléments.
+  UniqueArray<Int64> m_nb_elem_dim1;
 };
 
 /*---------------------------------------------------------------------------*/

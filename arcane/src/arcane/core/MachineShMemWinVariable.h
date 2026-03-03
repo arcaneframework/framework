@@ -17,14 +17,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MachineShMemWinVariableBase.h"
 #include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/ArrayView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MachineShMemWinVariable2DBase;
+class MachineShMemWinVariableBase;
+template <Int32 Dim>
+class MachineShMemWinVariableMDBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +57,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableCommon(IVariable* var, Int64 sizeof_type);
+  explicit MachineShMemWinVariableCommon(IVariable* var);
 
   virtual ~MachineShMemWinVariableCommon();
 
@@ -72,7 +81,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
 
  protected:
 
-  MachineShMemWinVariableBase m_base;
+  Ref<MachineShMemWinVariableBase> m_base;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,10 +289,10 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
 
  private:
 
-  MachineShMemWinVariable2DBase m_base;
-  Int64 m_size_dim1{};
-  Int64 m_size_dim2{};
+  Ref<MachineShMemWinVariable2DBase> m_base;
   VariableRefArray2T<DataType> m_vart;
+  ConstArrayView<Int64> m_nb_elem_dim1;
+  ConstArrayView<Int64> m_nb_elem_dim2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -376,14 +385,20 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableItemArrayT
    */
   Span<DataType> operator()(Int32 rank, Int32 notlocal_id);
 
+  /*!
+   * \brief Méthode permettant de mettre à jour cet objet après un changement
+   * dans le maillage.
+   *
+   * Appel collectif.
+   */
   void updateVariable();
 
  private:
 
-  MachineShMemWinVariableMDBase<1> m_base;
-  Int64 m_size_dim1{};
-  Int64 m_size_dim2{};
+  Ref<MachineShMemWinVariableMDBase<1>> m_base;
   MeshVariableArrayRefT<ItemType, DataType> m_vart;
+  ConstArrayView<Int64> m_nb_elem_dim1;
+  Int64 m_nb_elem_dim2{};
 };
 
 /*---------------------------------------------------------------------------*/
