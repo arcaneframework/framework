@@ -166,7 +166,7 @@ _test1()
 {
   VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
 
-  MachineShMemWinVariableItemT var_sh(var);
+  MachineShMemWinMeshVariableScalarT var_sh(var);
 
   auto var_compute = [&]() -> void {
     debug() << "asArray().size() : " << var.asArray().size();

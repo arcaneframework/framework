@@ -100,15 +100,6 @@ updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IVariable* MachineShMemWinVariableBase::
-variable() const
-{
-  return m_var;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -165,8 +156,7 @@ nbElemDim2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <Int32 Dim>
-MachineShMemWinVariableMDBase<Dim>::
+MachineShMemWinVariableMDBase::
 MachineShMemWinVariableMDBase(IVariable* var)
 : MachineShMemWinVariableBase(var)
 , m_nb_elem_dim1(m_pm->commSize(), 0)
@@ -175,9 +165,8 @@ MachineShMemWinVariableMDBase(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <Int32 Dim> void
-MachineShMemWinVariableMDBase<Dim>::
-updateVariable(Int64 nb_elem_dim1, SmallSpan<Int64, Dim> nb_elem_mdim, Int64 sizeof_elem)
+void MachineShMemWinVariableMDBase::
+updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem)
 {
   ContigMachineShMemWin<Int64> all_size(m_pm, 1);
 
@@ -187,10 +176,7 @@ updateVariable(Int64 nb_elem_dim1, SmallSpan<Int64, Dim> nb_elem_mdim, Int64 siz
 
   m_nb_elem_dim1 = all_size.windowConstView();
 
-  Int64 mult = sizeof_elem;
-  for (Integer i = 0; i < Dim; ++i) {
-    mult *= nb_elem_mdim[i] * sizeof_elem;
-  }
+  Int64 mult = nb_elem_dim2 * sizeof_elem * sizeof_elem;
 
   for (Integer i = 0; i < m_pm->commSize(); ++i) {
     m_sizeof_var[i] = m_nb_elem_dim1[i] * mult;
@@ -200,17 +186,11 @@ updateVariable(Int64 nb_elem_dim1, SmallSpan<Int64, Dim> nb_elem_mdim, Int64 siz
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <Int32 Dim>
-ArrayView<Int64> MachineShMemWinVariableMDBase<Dim>::
+ArrayView<Int64> MachineShMemWinVariableMDBase::
 nbElemDim1()
 {
   return m_nb_elem_dim1;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class MachineShMemWinVariableMDBase<1>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

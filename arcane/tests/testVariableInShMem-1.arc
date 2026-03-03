@@ -16,7 +16,7 @@
       <cartesian>
         <nsd>2 2</nsd>
         <origine>0.0 0.0</origine>
-        <lx nx='16'>64.0</lx>
+        <lx nx='15'>64.0</lx>
         <ly ny='16'>64.0</ly>
       </cartesian>
     </meshgenerator>
