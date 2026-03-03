@@ -8,6 +8,7 @@
 #include <memory>
 #include <chrono>
 
+#include "Common/mcgs_config.h"
 #include "Common/index.h"
 #include "MCGSolver/MCGSolver.h"
 #include "Graph/OrderingType.h"
