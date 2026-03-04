@@ -79,6 +79,8 @@ if(USE_AXLSTAR)
     include(${AXLSTAR_CMAKE_COMMANDS})
 endif()
 
+addDirectory(alien/local_direct_solvers)
+
 addDirectory(alien/kernels/common)
 
 addDirectory(alien/kernels/simple_csr)
