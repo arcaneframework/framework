@@ -35,6 +35,7 @@ if(ALIEN_USE_SYCL)
     ENDIF()
 ENDIF()
 
+find_package(Boost COMPONENTS ublas)
 
 createLibrary(alien_core_solvers
   EXPORT alien/AlienCoreSolversExport.h
@@ -77,6 +78,10 @@ endif ()
 
 if(USE_AXLSTAR)
     include(${AXLSTAR_CMAKE_COMMANDS})
+endif()
+
+if(TARGET Boost::ublas)
+addDirectory(alien/local_direct_solvers)
 endif()
 
 addDirectory(alien/kernels/common)
