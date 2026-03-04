@@ -456,14 +456,15 @@ template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDD
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim2>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim3>;
 
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim1>;
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim2>;
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim3>;
+// Instantie explicitement pour vérifier la compilation
+template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim1>;
+template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim2>;
+template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim3>;
 
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshVectorMDVariableT<Cell, Real, 3, MDDim1>;
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshVectorMDVariableT<Cell, Real, 3, MDDim2>;
+template class MachineShMemWinMeshVectorMDVariableT<Cell, Real, MDDim1>;
+template class MachineShMemWinMeshVectorMDVariableT<Cell, Real, MDDim2>;
 
-template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMatrixMDVariableT<Cell, Real, 4, 5, MDDim1>;
+template class MachineShMemWinMeshMatrixMDVariableT<Cell, Real, MDDim1>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
