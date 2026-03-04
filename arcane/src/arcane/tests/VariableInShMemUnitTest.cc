@@ -27,6 +27,7 @@
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 
 #include "arcane/tests/VariableInShMemUnitTest_axl.h"
+#include "arcane/utils/NumMatrix.h"
 #include "arcane/utils/NumVector.h"
 #include "arccore/base/MDDim.h"
 
@@ -363,13 +364,14 @@ _test3()
       info() << "Rank " << rank << " -- aaa.extents().extent0() : " << aaa.extent0();
       info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
       info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
-      info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
+      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
     }
 
     // MDSpan<Real, MDDim2> bbb = var_sh(0, 0);
   }
   {
     MeshVectorMDVariableRefT<Cell, Real, 3, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    MachineShMemWinMeshVectorMDVariableT var_sh(var);
 
     var.reshape({ 2, 3 });
 
@@ -381,9 +383,40 @@ _test3()
       var(icell, 1, 1) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 40), 0, 0 };
       var(icell, 1, 2) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 50), 0, 0 };
     }
-    // var_sh.updateVariable();
-    //
-    // MDSpan<Real, MDDim4> aaa = var_sh.view(0);
+    var_sh.updateVariable();
+
+    auto machine_ranks = var_sh.machineRanks();
+    for (Int32 rank : machine_ranks) {
+      MDSpan<Real, MDDim4> aaa = var_sh.view(rank);
+      info() << "Rank " << rank << " -- aaa.extents().extent0() : " << aaa.extent0();
+      info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
+      info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
+      info() << "Rank " << rank << " -- aaa.extents().extent3() : " << aaa.extent3();
+      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
+    }
+  }
+  {
+    MeshMatrixMDVariableRefT<Cell, Real, 2, 4, MDDim1> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    MachineShMemWinMeshMatrixMDVariableT var_sh(var);
+
+    var.reshape({ 3 });
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var(icell, 0) = Arcane::NumMatrix<Real, 2, 4>{ { static_cast<Real>(parallelMng()->commRank()), 0, 0, 0 }, { static_cast<Real>(parallelMng()->commRank()), 0, 0, 0 } };
+      var(icell, 1) = Arcane::NumMatrix<Real, 2, 4>{ { static_cast<Real>(parallelMng()->commRank() * 10), 0, 0, 0 }, { static_cast<Real>(parallelMng()->commRank() * 10), 0, 0, 0 } };
+      var(icell, 2) = Arcane::NumMatrix<Real, 2, 4>{ { static_cast<Real>(parallelMng()->commRank() * 20), 0, 0, 0 }, { static_cast<Real>(parallelMng()->commRank() * 20), 0, 0, 0 } };
+    }
+    var_sh.updateVariable();
+
+    auto machine_ranks = var_sh.machineRanks();
+    for (Int32 rank : machine_ranks) {
+      MDSpan<Real, MDDim4> aaa = var_sh.view(rank);
+      info() << "Rank " << rank << " -- aaa.extents().extent0() : " << aaa.extent0();
+      info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
+      info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
+      info() << "Rank " << rank << " -- aaa.extents().extent3() : " << aaa.extent3();
+      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
+    }
   }
 }
 

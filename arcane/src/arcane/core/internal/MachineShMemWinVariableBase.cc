@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWinVariableBase.h                               (C) 2000-2026 */
+/* MachineShMemWinVariableBase.cc                              (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
+/* Classes de bases permettant d'exploiter l'objet MachineShMemWinVariable   */
+/* pointé de la zone mémoire des variables en mémoire partagée.              */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinVariableBase.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/core/ContigMachineShMemWin.h"
 #include "arcane/core/IMesh.h"
@@ -125,9 +127,10 @@ updateVariable(Int64 nb_elem_dim1, Int64 nb_elem_dim2, Int64 sizeof_elem)
 
   Int64 sizeof_elem2 = sizeof_elem * sizeof_elem;
 
-  for (Integer i = 0; i < m_pm->commSize(); ++i) {
-    m_nb_elem_dim1[i] = all_size.windowConstView()[i * 2];
-    m_nb_elem_dim2[i] = all_size.windowConstView()[i * 2 + 1];
+  for (Int32 i = 0; i < m_pm->commSize(); ++i) {
+    const Int32 i2 = i * 2;
+    m_nb_elem_dim1[i] = all_size.windowConstView()[i2];
+    m_nb_elem_dim2[i] = all_size.windowConstView()[i2 + 1];
     m_sizeof_var[i] = m_nb_elem_dim1[i] * m_nb_elem_dim2[i] * sizeof_elem2;
   }
 }
@@ -190,6 +193,15 @@ ArrayView<Int64> MachineShMemWinVariableMDBase::
 nbElemDim1()
 {
   return m_nb_elem_dim1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ArrayShape MachineShMemWinVariableMDBase::
+arrayShape()
+{
+  return m_var->data()->shape();
 }
 
 /*---------------------------------------------------------------------------*/
