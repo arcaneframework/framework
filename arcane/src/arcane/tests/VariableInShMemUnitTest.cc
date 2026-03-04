@@ -249,6 +249,7 @@ _test2()
 
   info() << "var.asArray().size(); : " << var.asArray().size();
   info() << "var_sh.segmentView().size(); : " << var_sh.view(pm->commRank()).size();
+  info() << "var_sh(); : " << var_sh(pm->commRank(), 0);
 
   ConstArrayView<Int32> machine_ranks = var_sh.machineRanks();
   for (Int32 rank : machine_ranks) {
@@ -298,6 +299,7 @@ _test3()
 
     for (Int32 rank : machine_ranks) {
       info() << "Rank " << rank << " -- Value : " << var_sh.view(rank);
+      info() << "Rank " << rank << " -- Value : " << var_sh(rank, 0);
     }
   }
   {
@@ -336,12 +338,12 @@ _test3()
 
     var_sh.updateVariable();
 
-    // auto machine_ranks = var_sh.machineRanks();
-    //
-    // for (Int32 rank : machine_ranks) {
-    //   info() << "Rank " << rank << " -- Value0 : " << var_sh.segmentView1D(rank);
-    //   info() << "Rank " << rank << " -- Value1 : " << var_sh.segmentView1D(rank);
-    // }
+    auto machine_ranks = var_sh.machineRanks();
+
+    for (Int32 rank : machine_ranks) {
+      info() << "Rank " << rank << " -- ValuesCell0 : " << var_sh.view(rank)(0);
+      info() << "Rank " << rank << " -- ValuesCell1 : " << var_sh.view(rank)(1);
+    }
   }
   {
     MeshMDVariableRefT<Cell, Real, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));

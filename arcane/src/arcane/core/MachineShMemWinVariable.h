@@ -109,7 +109,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
  * il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
+class MachineShMemWinVariableArrayT
 : public MachineShMemWinVariableCommon
 {
 
@@ -119,8 +119,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "PInShMem".
    */
-  explicit MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var);
-  ~MachineShMemWinVariableArrayT() override;
+  ARCANE_CORE_EXPORT explicit MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var);
+  ARCANE_CORE_EXPORT ~MachineShMemWinVariableArrayT() override;
 
  public:
 
@@ -135,7 +135,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<DataType> view(Int32 rank) const;
+  ARCANE_CORE_EXPORT Span<DataType> view(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un
@@ -143,7 +143,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
    *
    * Appel collectif.
    */
-  void updateVariable();
+  ARCANE_CORE_EXPORT void updateVariable();
 
  private:
 
@@ -169,7 +169,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
  * nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
+class MachineShMemWinMeshVariableScalarT
 : public MachineShMemWinVariableCommon
 {
 
@@ -179,9 +179,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinMeshVariableScalarT(MeshVariableScalarRefT<ItemType, DataType> var);
+  ARCANE_CORE_EXPORT explicit MachineShMemWinMeshVariableScalarT(MeshVariableScalarRefT<ItemType, DataType> var);
 
-  ~MachineShMemWinMeshVariableScalarT() override;
+  ARCANE_CORE_EXPORT ~MachineShMemWinMeshVariableScalarT() override;
 
  public:
 
@@ -200,7 +200,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<DataType> view(Int32 rank) const;
+  ARCANE_CORE_EXPORT Span<DataType> view(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir un élément de la variable d'un autre
@@ -219,7 +219,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
    * \param notlocal_id Le local_id du sous-domaine \a rank.
    * \return L'élément de l'item.
    */
-  DataType operator()(Int32 rank, Int32 notlocal_id);
+  ARCANE_CORE_EXPORT DataType operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un changement
@@ -227,7 +227,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
    *
    * Appel collectif.
    */
-  void updateVariable();
+  ARCANE_CORE_EXPORT void updateVariable();
 
  private:
 
@@ -253,7 +253,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
  * il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
+class MachineShMemWinVariableArray2T
 {
  public:
 
@@ -261,9 +261,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinVariableArray2T(VariableRefArray2T<DataType> var);
+  ARCANE_CORE_EXPORT explicit MachineShMemWinVariableArray2T(VariableRefArray2T<DataType> var);
 
-  ~MachineShMemWinVariableArray2T();
+  ARCANE_CORE_EXPORT ~MachineShMemWinVariableArray2T();
 
  public:
 
@@ -275,13 +275,13 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const;
+  ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const;
+  ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
@@ -294,7 +294,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
    * \param rank Le rang du sous-domaine.
    * \return Une vue 2D.
    */
-  Span2<DataType> view(Int32 rank) const;
+  ARCANE_CORE_EXPORT Span2<DataType> view(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un
@@ -302,7 +302,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
    *
    * Appel collectif.
    */
-  void updateVariable();
+  ARCANE_CORE_EXPORT void updateVariable();
 
  private:
 
@@ -331,7 +331,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
  * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType>
-class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
+class MachineShMemWinMeshVariableArrayT
 {
 
  public:
@@ -340,9 +340,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinMeshVariableArrayT(MeshVariableArrayRefT<ItemType, DataType> var);
+  ARCANE_CORE_EXPORT explicit MachineShMemWinMeshVariableArrayT(MeshVariableArrayRefT<ItemType, DataType> var);
 
-  ~MachineShMemWinMeshVariableArrayT();
+  ARCANE_CORE_EXPORT ~MachineShMemWinMeshVariableArrayT();
 
  public:
 
@@ -354,13 +354,13 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const;
+  ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const;
+  ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
@@ -381,7 +381,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
    * \param rank Le rang du sous-domaine.
    * \return Une vue 2D.
    */
-  Span2<DataType> view(Int32 rank) const;
+  ARCANE_CORE_EXPORT Span2<DataType> view(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir le tableau d'un item d'un autre
@@ -400,7 +400,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
    * \param notlocal_id Le local_id du sous-domaine \a rank.
    * \return Le tableau de l'item.
    */
-  Span<DataType> operator()(Int32 rank, Int32 notlocal_id);
+  ARCANE_CORE_EXPORT Span<DataType> operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un changement
@@ -408,7 +408,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
    *
    * Appel collectif.
    */
-  void updateVariable();
+  ARCANE_CORE_EXPORT void updateVariable();
 
  private:
 
@@ -438,7 +438,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
  *   type matrice et de dimension max de 1.
  */
 template <class ItemType, class DataType, class Extents>
-class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
+class MachineShMemWinMDVariableT
 {
 
  protected:
@@ -447,11 +447,11 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var);
+  ARCANE_CORE_EXPORT explicit MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var);
 
  public:
 
-  virtual ~MachineShMemWinMDVariableT();
+  ARCANE_CORE_EXPORT virtual ~MachineShMemWinMDVariableT();
 
  public:
 
@@ -463,13 +463,13 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const;
+  ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const;
+  ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
@@ -492,7 +492,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
   // template <class X = MDDimType<Extents::rank() + 1>::DimType>
   // MDSpan<DataType, X> view(Int32 rank) const;
 
-  MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> view(Int32 rank) const;
+  ARCANE_CORE_EXPORT MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> view(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir le tableau multi-dimensionnel d'un
@@ -511,7 +511,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
    * \param notlocal_id Le local_id du sous-domaine \a rank.
    * \return Le tableau MD de l'item.
    */
-  virtual MDSpan<DataType, Extents> operator()(Int32 rank, Int32 notlocal_id);
+  ARCANE_CORE_EXPORT MDSpan<DataType, Extents> operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un changement
@@ -519,7 +519,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
    *
    * Appel collectif.
    */
-  void updateVariable();
+  ARCANE_CORE_EXPORT void updateVariable();
 
  private:
 
@@ -550,7 +550,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
  * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType, class Extents>
-class ARCANE_CORE_EXPORT MachineShMemWinMeshMDVariableT
+class MachineShMemWinMeshMDVariableT
 : public MachineShMemWinMDVariableT<ItemType, DataType, Extents>
 {
 
@@ -586,8 +586,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshMDVariableT
  * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
  * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
  */
-template <class ItemType, class DataType, Int32 Size, class Extents>
-class ARCANE_CORE_EXPORT MachineShMemWinMeshVectorMDVariableT
+template <class ItemType, class DataType, class Extents>
+class MachineShMemWinMeshVectorMDVariableT
 : public MachineShMemWinMDVariableT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
   using AddedFirstExtentsType = Extents::template AddedFirstExtentsType<DynExtent>;
@@ -598,9 +598,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVectorMDVariableT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
+  template <Int32 Size>
   explicit MachineShMemWinMeshVectorMDVariableT(MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents> var)
   : MachineShMemWinMDVariableT<ItemType, DataType, AddedFirstExtentsType>(var.underlyingVariable())
-
   {}
 
   ~MachineShMemWinMeshVectorMDVariableT() override = default;
@@ -625,8 +625,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVectorMDVariableT
  * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
  * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
  */
-template <class ItemType, class DataType, Int32 Row, Int32 Column, class Extents>
-class ARCANE_CORE_EXPORT MachineShMemWinMeshMatrixMDVariableT
+template <class ItemType, class DataType, class Extents>
+class MachineShMemWinMeshMatrixMDVariableT
 : public MachineShMemWinMDVariableT<ItemType, DataType, typename Extents::template AddedFirstLastExtentsType<DynExtent, DynExtent>>
 {
   using AddedFirstLastExtentsType = Extents::template AddedFirstLastExtentsType<DynExtent, DynExtent>;
@@ -637,6 +637,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshMatrixMDVariableT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
+  template <Int32 Row, Int32 Column>
   explicit MachineShMemWinMeshMatrixMDVariableT(MeshMatrixMDVariableRefT<ItemType, DataType, Row, Column, Extents> var)
   : MachineShMemWinMDVariableT<ItemType, DataType, AddedFirstLastExtentsType>(var.underlyingVariable())
   {}
