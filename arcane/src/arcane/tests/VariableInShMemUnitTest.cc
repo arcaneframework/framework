@@ -65,8 +65,6 @@ class VariableInShMemUnitTest
   void _test2();
   void _test3();
   void _test4();
-  void _test1_1();
-  void _test1_2();
   void testMarkCellsToRefine(Integer level);
 
  private:
@@ -247,6 +245,8 @@ _test2()
     var[icell] = pm->commRank();
   }
 
+  var_sh.barrier();
+
   info() << "var.asArray().size(); : " << var.asArray().size();
   info() << "var_sh.segmentView().size(); : " << var_sh.view(pm->commRank()).size();
 
@@ -271,10 +271,12 @@ _test3()
     MachineShMemWinVariableArrayT var_sh(var);
 
     var.resize(2);
+    var_sh.updateVariable();
+
     var[0] = parallelMng()->commRank();
     var[1] = parallelMng()->commRank();
 
-    var_sh.updateVariable();
+    var_sh.barrier();
 
     auto machine_ranks = var_sh.machineRanks();
 
@@ -442,7 +444,7 @@ _test4()
       a = parallelMng()->commRank();
     }
   }
-  if (subDomain()->isContinue()) {
+  else if (subDomain()->isContinue()) {
     if (parallelMng()->commRank() == 0) {
       ARCANE_FATAL_IF(var2.size() != 10,
                       "Error _test4() 1 : Array size is invalid -- Expected : 10 -- Found : {0}", var2.size());
@@ -453,22 +455,6 @@ _test4()
     }
   }
   info() << "Array : " << var2;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableInShMemUnitTest::
-_test1_1()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableInShMemUnitTest::
-_test1_2()
-{
 }
 
 /*---------------------------------------------------------------------------*/
