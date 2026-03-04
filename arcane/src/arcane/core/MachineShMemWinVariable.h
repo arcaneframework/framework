@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariable.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant d'accéder à la partie en mémoire partagée d'une         */
-/* variable.                                                                 */
+/* Classes permettant d'exploiter l'objet MachineShMemWinVariable pointé de  */
+/* la zone mémoire des variables en mémoire partagée.                        */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
@@ -46,7 +46,7 @@ class MachineShMemWinVariableMDBase;
  * \brief Classe permettant d'accéder aux éléments partagés de la variable
  * en mémoire partagée.
  *
- * Pour avoir accès à toutes les propriétés, il est conseillé d'utiliser une
+ * Pour avoir accès à toutes les propriétés, il est nécessaire d'utiliser une
  * des classes enfants :
  * - \a MachineShMemWinVariableArrayT pour les variables tableaux sans
  *   support,
@@ -55,13 +55,15 @@ class MachineShMemWinVariableMDBase;
 class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
 {
 
- public:
+ protected:
 
   /*!
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableCommon(IVariable* var);
+
+ public:
 
   virtual ~MachineShMemWinVariableCommon();
 
@@ -103,8 +105,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
  *
  * Cette classe fonctionne pour les variables tableaux sans support.
  *
- * Si le maillage change lorsqu'un objet de ce type est utilisé, il est
- * nécessaire d'appeler la méthode \a updateVariable().
+ * Si la taille de la variable change lorsqu'un objet de ce type est utilisé,
+ * il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class DataType>
 class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
@@ -136,8 +138,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArrayT
   Span<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
+   * \brief Méthode permettant de mettre à jour cet objet après un
+   * redimensionnement de la variable.
    *
    * Appel collectif.
    */
@@ -247,8 +249,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableScalarT
  *
  * Cette classe fonctionne pour les variables tableaux 2D sans support.
  *
- * Si le maillage change lorsqu'un objet de ce type est utilisé, il est
- * nécessaire d'appeler la méthode \a updateVariable().
+ * Si la taille de la variable change lorsqu'un objet de ce type est utilisé,
+ * il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class DataType>
 class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
@@ -295,8 +297,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
   Span2<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
+   * \brief Méthode permettant de mettre à jour cet objet après un
+   * redimensionnement de la variable.
    *
    * Appel collectif.
    */
@@ -325,8 +327,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableArray2T
  *
  * Cette classe fonctionne pour les variables tableaux au maillage.
  *
- * Si le maillage change lorsqu'un objet de ce type est utilisé, il est
- * nécessaire d'appeler la méthode \a updateVariable().
+ * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
+ * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
  */
 template <class ItemType, class DataType>
 class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
@@ -402,7 +404,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
+   * dans le maillage et/ou après un redimensionnement de la variable.
    *
    * Appel collectif.
    */
@@ -422,17 +424,32 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshVariableArrayT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant d'accéder aux éléments partagés de la variable
+ * en mémoire partagée.
+ *
+ * Cette classe ne peut pas être utilisée directement. Il est nécessaire
+ * d'utiliser une des classes suivante :
+ * - \a MachineShMemWinMeshMDVariableT pour les variables au maillage de type
+ *   scalaire et de dimension max de 3,
+ * - \a MachineShMemWinMeshVectorMDVariableT pour les variables au maillage de
+ *   type vecteur et de dimension max de 2,
+ * - \a MachineShMemWinMeshMatrixMDVariableT pour les variables au maillage de
+ *   type matrice et de dimension max de 1.
+ */
 template <class ItemType, class DataType, class Extents>
 class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
 {
 
- public:
+ protected:
 
   /*!
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinMDVariableT(IVariable* var);
+  explicit MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var);
+
+ public:
 
   virtual ~MachineShMemWinMDVariableT();
 
@@ -498,15 +515,16 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
 
   /*!
    * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
+   * dans le maillage et/ou après un redimensionnement de la variable.
    *
    * Appel collectif.
    */
-  void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, SmallSpan<const Int32> shape_dim2);
+  void updateVariable();
 
  private:
 
   Ref<MachineShMemWinVariableMDBase> m_base;
+  MeshVariableArrayRefT<ItemType, DataType> m_vart;
   ConstArrayView<Int64> m_nb_elem_dim1;
   Int32 m_nb_elem_dim2{};
   std::array<Int32, Extents::rank()> m_shape_dim2{};
@@ -518,6 +536,19 @@ class ARCANE_CORE_EXPORT MachineShMemWinMDVariableT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant d'accéder aux éléments partagés de la variable
+ * en mémoire partagée.
+ *
+ * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
+ * la propriété "IVariable::PInShMem".
+ *
+ * Cette classe fonctionne pour les variables au maillage de type scalaire et
+ * de dimension max de 3.
+ *
+ * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
+ * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ */
 template <class ItemType, class DataType, class Extents>
 class ARCANE_CORE_EXPORT MachineShMemWinMeshMDVariableT
 : public MachineShMemWinMDVariableT<ItemType, DataType, Extents>
@@ -529,23 +560,88 @@ class ARCANE_CORE_EXPORT MachineShMemWinMeshMDVariableT
    * \brief Constructeur.
    * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  explicit MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var);
+  explicit MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var)
+  : MachineShMemWinMDVariableT<ItemType, DataType, Extents>(var.underlyingVariable())
+  {}
 
-  ~MachineShMemWinMeshMDVariableT() override;
+  ~MachineShMemWinMeshMDVariableT() override = default;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Classe permettant d'accéder aux éléments partagés de la variable
+ * en mémoire partagée.
+ *
+ * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
+ * la propriété "IVariable::PInShMem".
+ *
+ * Cette classe fonctionne pour les variables au maillage de type vecteur et
+ * de dimension max de 2.
+ *
+ * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
+ * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ */
+template <class ItemType, class DataType, Int32 Size, class Extents>
+class ARCANE_CORE_EXPORT MachineShMemWinMeshVectorMDVariableT
+: public MachineShMemWinMDVariableT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
+{
+  using AddedFirstExtentsType = Extents::template AddedFirstExtentsType<DynExtent>;
 
  public:
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
-   *
-   * Appel collectif.
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
    */
-  void updateVariable();
+  explicit MachineShMemWinMeshVectorMDVariableT(MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents> var)
+  : MachineShMemWinMDVariableT<ItemType, DataType, AddedFirstExtentsType>(var.underlyingVariable())
 
- private:
+  {}
 
-  MeshMDVariableRefT<ItemType, DataType, Extents> m_vart;
+  ~MachineShMemWinMeshVectorMDVariableT() override = default;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Classe permettant d'accéder aux éléments partagés de la variable
+ * en mémoire partagée.
+ *
+ * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
+ * la propriété "IVariable::PInShMem".
+ *
+ * Cette classe fonctionne pour les variables au maillage de type matrice et
+ * de dimension max de 1.
+ *
+ * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
+ * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ */
+template <class ItemType, class DataType, Int32 Row, Int32 Column, class Extents>
+class ARCANE_CORE_EXPORT MachineShMemWinMeshMatrixMDVariableT
+: public MachineShMemWinMDVariableT<ItemType, DataType, typename Extents::template AddedFirstLastExtentsType<DynExtent, DynExtent>>
+{
+  using AddedFirstLastExtentsType = Extents::template AddedFirstLastExtentsType<DynExtent, DynExtent>;
+
+ public:
+
+  /*!
+   * \brief Constructeur.
+   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   */
+  explicit MachineShMemWinMeshMatrixMDVariableT(MeshMatrixMDVariableRefT<ItemType, DataType, Row, Column, Extents> var)
+  : MachineShMemWinMDVariableT<ItemType, DataType, AddedFirstLastExtentsType>(var.underlyingVariable())
+  {}
+
+  ~MachineShMemWinMeshMatrixMDVariableT() override = default;
 };
 
 /*---------------------------------------------------------------------------*/

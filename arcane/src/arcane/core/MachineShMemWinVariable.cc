@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineShMemWinVariableBase.h                               (C) 2000-2026 */
+/* MachineShMemWinVariable.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
+/* Classes permettant d'exploiter l'objet MachineShMemWinVariable pointé de  */
+/* la zone mémoire des variables en mémoire partagée.                        */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/MachineShMemWinVariable.h"
@@ -316,8 +317,9 @@ updateVariable()
 
 template <class ItemType, class DataType, class Extents>
 MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
-MachineShMemWinMDVariableT(IVariable* var)
-: m_base(makeRef(new MachineShMemWinVariableMDBase(var)))
+MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var)
+: m_base(makeRef(new MachineShMemWinVariableMDBase(var.variable())))
+, m_vart(var)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -393,49 +395,18 @@ operator()(Int32 rank, Int32 notlocal_id)
 
 template <class ItemType, class DataType, class Extents>
 void MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
-updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, SmallSpan<const Int32> shape_dim2)
+updateVariable()
 {
-  SmallSpan<Int32> shape_dim2_view(m_shape_dim2.data(), Extents::rank());
-  shape_dim2_view.copy(shape_dim2);
+  Int64 nb_elem_dim1 = m_vart.asArray().dim1Size();
+  Int32 nb_elem_dim2 = m_vart.asArray().dim2Size();
 
   m_base->updateVariable(nb_elem_dim1, nb_elem_dim2, sizeof(DataType));
 
+  SmallSpan<Int32> shape_dim2_view(m_shape_dim2.data(), Extents::rank());
+  shape_dim2_view.copy(m_base->arrayShape().dimensions());
+
   m_nb_elem_dim1 = m_base->nbElemDim1();
   m_nb_elem_dim2 = nb_elem_dim2;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType, class Extents>
-MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
-MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var)
-: MachineShMemWinMDVariableT<ItemType, DataType, Extents>(var.variable())
-, m_vart(var)
-{}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType, class Extents>
-MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
-~MachineShMemWinMeshMDVariableT() = default;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class ItemType, class DataType, class Extents>
-void MachineShMemWinMeshMDVariableT<ItemType, DataType, Extents>::
-updateVariable()
-{
-  SmallSpan<const Int32> shape = m_vart.fullShape().dimensions();
-  Int64 nb_elem_dim1 = m_vart.underlyingVariable().asArray().dim1Size();
-  Int32 nb_elem_dim2 = m_vart.underlyingVariable().asArray().dim2Size();
-
-  MachineShMemWinMDVariableT<ItemType, DataType, Extents>::updateVariable(nb_elem_dim1, nb_elem_dim2, shape);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -488,6 +459,11 @@ template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDD
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim1>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim2>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMDVariableT<Cell, Real, MDDim3>;
+
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshVectorMDVariableT<Cell, Real, 3, MDDim1>;
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshVectorMDVariableT<Cell, Real, 3, MDDim2>;
+
+template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMeshMatrixMDVariableT<Cell, Real, 4, 5, MDDim1>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

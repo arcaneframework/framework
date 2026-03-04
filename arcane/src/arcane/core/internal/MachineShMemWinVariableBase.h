@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariableBase.h                               (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
+/* Classes de bases permettant d'exploiter l'objet MachineShMemWinVariable   */
+/* pointé de la zone mémoire des variables en mémoire partagée.              */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
@@ -98,6 +99,16 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant d'accéder à la partie en mémoire partagée entre
+ * sous-domaines d'un même noeud d'une variable tableau 2D.
+ *
+ * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
+ * la propriété "IVariable::PInShMem".
+ *
+ * Dans cette classe, les deux dimensions peuvent être différentes pour chaque
+ * sous-domaine.
+ */
 class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 : public MachineShMemWinVariableBase
 {
@@ -135,6 +146,17 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant d'accéder à la partie en mémoire partagée entre
+ * sous-domaines d'un même noeud d'une variable tableau 2D.
+ *
+ * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
+ * la propriété "IVariable::PInShMem".
+ *
+ * Dans cette classe, seule la première dimension peut être différente pour
+ * chaque sous-domaine. La seconde dimension doit être la même pour tous les
+ * sous-domaines.
+ */
 class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
 : public MachineShMemWinVariableBase
 {
@@ -157,6 +179,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
   void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem);
 
   ArrayView<Int64> nbElemDim1();
+  ArrayShape arrayShape();
 
  private:
 
