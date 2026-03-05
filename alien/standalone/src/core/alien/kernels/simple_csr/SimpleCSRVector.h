@@ -62,15 +62,14 @@ class SimpleCSRVector : public IVectorImpl
 
   void allocate()
   {
-    auto block_size = blockSize() ;
-    m_values.resize(m_local_size*block_size);
+    m_values.resize(scalarizedLocalSize());
     if (this->vblock())
       m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
   }
 
   void resize(Integer alloc_size) const
   {
-    if (alloc_size > m_local_size*blockSize())
+    if (alloc_size > scalarizedLocalSize())
       m_values.resize(alloc_size);
     if (this->vblock()) {
       m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
@@ -86,10 +85,14 @@ class SimpleCSRVector : public IVectorImpl
   }
 
   // values on local part
-  Arccore::ArrayView<ValueType> values() { return m_values.subView(0, m_local_size*blockSize()); }
+  Arccore::ArrayView<ValueType> values()
+  {
+    return m_values.subView(0, scalarizedLocalSize());
+  }
+
   Arccore::ConstArrayView<ValueType> values() const
   {
-    return m_values.subConstView(0, m_local_size*blockSize());
+    return m_values.subConstView(0, scalarizedLocalSize());
   }
 
   // Algebra adds ghost values
@@ -131,7 +134,7 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size*blockSize());
+      m_values.resize(scalarizedLocalSize());
       m_values.fill(ValueT());
     }
   }
@@ -154,7 +157,7 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size*blockSize());
+      m_values.resize(scalarizedLocalSize());
       m_values.fill(ValueT());
     }
   }
