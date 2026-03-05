@@ -17,10 +17,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien
-{
-
-/*---------------------------------------------------------------------------*/
+namespace Alien {
 
 template <typename ValueT>
 class SimpleCSRVector : public IVectorImpl
