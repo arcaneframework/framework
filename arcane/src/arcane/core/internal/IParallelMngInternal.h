@@ -65,6 +65,13 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
   /*!
+   * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
+   *
+   * Appel collectif.
+   */
+  virtual bool isMachineShMemWinAvailable() = 0;
+
+  /*!
    * \brief Méthode permettant de créer une fenêtre mémoire sur le noeud.
    *
    * Appel collectif.
