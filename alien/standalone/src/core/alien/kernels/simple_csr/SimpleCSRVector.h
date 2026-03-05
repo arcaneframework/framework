@@ -70,7 +70,7 @@ class SimpleCSRVector : public IVectorImpl
 
   void resize(Integer alloc_size) const
   {
-    if (alloc_size > m_local_size)
+    if (alloc_size > m_local_size*blockSize())
       m_values.resize(alloc_size);
     if (this->vblock()) {
       m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
@@ -123,7 +123,7 @@ class SimpleCSRVector : public IVectorImpl
       if (this->vblock()) {
         m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));
       }
-      m_local_size = this->scalarizedLocalSize();
+      m_local_size = this->distribution().localSize();
     }
     else {
       // Not associated vector
@@ -131,7 +131,7 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size*m_own_block_size);
+      m_values.resize(m_local_size*blockSize());
       m_values.fill(ValueT());
     }
   }
@@ -154,7 +154,7 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size*m_own_block_size);
+      m_values.resize(m_local_size*blockSize());
       m_values.fill(ValueT());
     }
   }
