@@ -210,6 +210,7 @@ TEST(TestDoKVector, ConvertToCSR)
 
   typedef Alien::SimpleCSRVector<Real> SimpleCSRVect;
   SimpleCSRVect csr_vect(&multi);
+  csr_vect.init(*vd,true);
   Alien::DoKToSimpleCSRVectorConverter converter;
   converter.convert(&v, &csr_vect);
 
