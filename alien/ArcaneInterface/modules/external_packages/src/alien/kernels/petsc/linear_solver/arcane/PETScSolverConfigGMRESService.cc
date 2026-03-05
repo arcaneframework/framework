@@ -53,7 +53,7 @@ PETScSolverConfigGMRESService::configure(
 #ifdef PETSC_HAVE_KSPGMRESSETBREAKDOWNTOLERANCE
   if(options()->breakdownTol()>0.)
   {
-	  std::cout<<"CHANGE DEFAULT BREAKDOWNTOLERANCE : "<<options()->breakdownTol()<<std::endl ;
+	  alien_debug([&] {cout() <<"CHANGE DEFAULT BREAKDOWNTOLERANCE : "<< options()->breakdownTol() ;});
     checkError("Solver set breakdown tol",KSPGMRESSetBreakdownTolerance(ksp,options()->breakdownTol())) ;
   }
 #endif
