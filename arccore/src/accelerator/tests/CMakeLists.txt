@@ -13,6 +13,7 @@ set(ACCELERATOR_FILES
   TestReduceGridStride_Accelerator.cc
   TestLoop_Accelerator.cc
   TestCooperativeLaunch_Accelerator.cc
+  TestCooperativeLaunch_Accelerator2.cc
 )
 
 arccore_add_component_test_executable(accelerator
