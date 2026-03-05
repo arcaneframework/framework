@@ -19,6 +19,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MachineShMemWinVariable.h"
 #include "arcane/core/MeshMDVariableRef.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -139,6 +140,12 @@ init()
 void VariableInShMemUnitTest::
 compute()
 {
+  if (!ParallelMngUtils::isMachineShMemWinAvailable(parallelMng())) {
+    // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+    // On ne plante pas les tests dans ce cas.
+    warning() << "Shared memory not supported";
+    return;
+  }
   _test1();
   _reset();
   _test2();
