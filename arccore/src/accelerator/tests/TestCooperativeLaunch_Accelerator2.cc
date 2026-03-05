@@ -50,7 +50,8 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
       auto command = makeCommand(queue);
       CooperativeWorkGroupLoopRange loop_range(nb_value);
       loop_range.setBlockSize(command);
-      LocalMemory<Int64> block_partial_sum(command, loop_range.blockSize());
+      Int32 local_memory_size = (queue.isAcceleratorPolicy()) ? loop_range.blockSize() : 1;
+      LocalMemory<Int64> block_partial_sum(command, local_memory_size);
       auto partial_sum_span = viewInOut(command, by_block_partial_sum);
       auto out_reduce_result = viewOut(command, reduce_result);
       command << RUNCOMMAND_LAUNCH(iter, loop_range, block_partial_sum)
@@ -84,7 +85,6 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
           Int64 final_sum = 0;
           Int32 nb_block = grid.nbBlock();
           for (Int32 i = 0; i < nb_block; ++i) {
-            Int64 v = partial_sum_span[i];
             final_sum += partial_sum_span[i];
           }
           out_reduce_result[0] = final_sum;
