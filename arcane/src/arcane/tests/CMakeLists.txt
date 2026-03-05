@@ -1293,6 +1293,9 @@ endif()
 #################################
 
 arcane_add_test(variable-in-shmem-1 testVariableInShMem-1.arc "-m 10")
+arcane_add_test_parallel_thread(variable-in-shmem-1 testVariableInShMem-1.arc 4 "-m 10")
+arcane_add_test_parallel_mpithread(variable-in-shmem-1 testVariableInShMem-1.arc 2 2 "-m 10")
+
 arcane_add_test_checkpoint_sequential(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 1 1)
 arcane_add_test_checkpoint_parallel(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 4 1 1)
 
