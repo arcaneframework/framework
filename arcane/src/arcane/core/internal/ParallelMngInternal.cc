@@ -107,6 +107,15 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool ParallelMngInternal::
+isMachineShMemWinAvailable()
+{
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<MessagePassing::IContigMachineShMemWinBaseInternal> ParallelMngInternal::
 createContigMachineShMemWinBase([[maybe_unused]] Int64 sizeof_segment,
                                 [[maybe_unused]] Int32 sizeof_type)

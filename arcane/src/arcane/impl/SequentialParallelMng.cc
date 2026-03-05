@@ -833,6 +833,11 @@ class SequentialParallelMng::Impl
 
  public:
 
+  bool isMachineShMemWinAvailable() override
+  {
+    return true;
+  }
+
   Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(new SequentialContigMachineShMemWinBaseInternal(sizeof_segment, sizeof_type));
