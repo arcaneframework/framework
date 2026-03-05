@@ -31,8 +31,11 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Int64
-_testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
-                       Int32 nb_value, Int32 nb_part, Int32 nb_loop);
+_testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c,
+                       Int32 nb_value, Int32 nb_loop);
+extern "C++" Int64
+_testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
+                        Int32 nb_value, Int32 nb_loop);
 
 void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
 {
@@ -50,8 +53,6 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
   nb_loop = 100;
   nb_loop = 25;
 
-  Int32 nb_thread = 256;
-  Int32 nb_part = 1;
   if (!queue.isAcceleratorPolicy()) {
     if (arccoreIsDebug())
       nb_loop /= 20;
@@ -76,14 +77,20 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
   NumArray<Int64, MDDim1> c(mem);
   c.copy(host_c);
 
-  nb_part = 1;
   for (Int32 k = 1; k < 5; ++k) {
     {
-      Int64 v = _testCooperativeLaunch(queue, c, nb_thread, nb_value, nb_part, nb_loop);
+      Int64 v = _testCooperativeLaunch(queue, c, nb_value, nb_loop);
       Int64 v2 = v / nb_loop;
       ASSERT_EQ(v2, expected_value);
     }
-    nb_part *= 2;
+  }
+
+  for (Int32 k = 1; k < 5; ++k) {
+    {
+      Int64 v = _testCooperativeLaunch2(queue, c, nb_value,nb_loop);
+      Int64 v2 = v / nb_loop;
+      ASSERT_EQ(v2, expected_value);
+    }
   }
 }
 
