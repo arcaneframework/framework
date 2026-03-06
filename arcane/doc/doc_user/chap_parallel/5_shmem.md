@@ -44,6 +44,10 @@ Lors de la construction de cet objet, chaque sous-domaine va fournir une taille 
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_1
 
+\remark Il est possible que MPI ne supporte pas la mémoire partagée (si utilisation de MPICH en mode ch3:sock par
+exemple). Pour vérifier cela, il est possible d'utiliser la fonction
+ParallelMngUtils::isMachineShMemWinAvailable(IParallelMng* pm).
+
 Pour accéder à son segment, il est possible d'utiliser la méthode Arcane::ContigMachineShMemWin::segmentView().
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_3

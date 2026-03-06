@@ -1025,6 +1025,13 @@ _testContigMachineShMemWin()
     IParallelMng* pm = m_parallel_mng;
     Integer my_rank = pm->commRank();
 
+    if (!ParallelMngUtils::isMachineShMemWinAvailable(pm)) {
+      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      // On ne plante pas les tests dans ce cas.
+      warning() << "Shared memory not supported";
+      return;
+    }
+
     ContigMachineShMemWin<Integer> window(pm, nb_elem);
     //![snippet_arcanedoc_parallel_shmem_usage_1]
 
@@ -1033,17 +1040,17 @@ _testContigMachineShMemWin()
     Integer machine_nb_proc = machine_ranks.size();
     //![snippet_arcanedoc_parallel_shmem_usage_2]
 
-    {
-      Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
-      if (topo->machineRanks().size() != machine_ranks.size()) {
-        // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-        // On ne plante pas les tests dans ce cas.
-        warning() << "Shared memory not supported"
-                  << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
-                  << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
-        return;
-      }
-    }
+    // {
+    //   Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
+    //   if (topo->machineRanks().size() != machine_ranks.size()) {
+    //     // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+    //     // On ne plante pas les tests dans ce cas.
+    //     warning() << "Shared memory not supported"
+    //               << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
+    //               << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
+    //     return;
+    //   }
+    // }
     if (window.windowConstView().size() != machine_nb_proc * nb_elem) {
       ARCANE_FATAL("Bad sizeWindow()");
     }
@@ -1233,6 +1240,14 @@ _testContigMachineShMemWin()
   {
     //![snippet_arcanedoc_parallel_shmem_usage_7]
     IParallelMng* pm = m_parallel_mng;
+
+    if (!ParallelMngUtils::isMachineShMemWinAvailable(pm)) {
+      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      // On ne plante pas les tests dans ce cas.
+      warning() << "Shared memory not supported";
+      return;
+    }
+
     Integer my_rank = pm->commRank();
     MachineShMemWin<Integer> window(pm, 5);
     ConstArrayView machine_ranks(window.machineRanks());
@@ -1318,7 +1333,7 @@ _testContigMachineShMemWin()
 
   {
     IParallelMng* pm = m_parallel_mng;
-    IMemoryAllocator* memory_allocator = pm->_internalApi()->machineShMemWinMemoryAllocator();
+    MemoryAllocationOptions memory_allocator = pm->_internalApi()->machineShMemWinMemoryAllocator();
 
     {
       UniqueArray<Integer> array(memory_allocator, 10);
@@ -1331,13 +1346,13 @@ _testContigMachineShMemWin()
     }
 
     {
-      AllocatedMemoryInfo ptr_info = memory_allocator->allocate({}, sizeof(Integer));
+      AllocatedMemoryInfo ptr_info = memory_allocator.allocator()->allocate({}, sizeof(Integer));
       auto* ptr = static_cast<Integer*>(ptr_info.baseAddress());
       ptr[0] = pm->commRank();
 
       info() << "ptr[0] : " << ptr[0];
 
-      memory_allocator->deallocate({}, ptr_info);
+      memory_allocator.allocator()->deallocate({}, ptr_info);
     }
   }
   {

@@ -416,8 +416,14 @@ class AbstractArray
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
   {
-    if (new_capacity <= m_md->capacity)
+    if (new_capacity <= m_md->capacity) {
+      // Dans le cas d'un allocateur collectif, on doit quand même faire un
+      // réalloc (à l'allocateur de gérer l'optimisation).
+      if (m_meta_data.is_collective_allocator) {
+        _internalRealloc(m_md->capacity, false);
+      }
       return;
+    }
     _internalRealloc(new_capacity, false);
   }
   /*!
@@ -428,8 +434,10 @@ class AbstractArray
   template <typename PodType>
   void _internalRealloc(Int64 new_capacity, bool compute_capacity, PodType pod_type, RunQueue* queue = nullptr)
   {
+    // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
+    // il l'est pour tous les processus.
     if (_isSharedNull()) {
-      if (new_capacity != 0)
+      if (new_capacity != 0 || m_meta_data.is_collective_allocator)
         _internalAllocate(new_capacity, queue);
       return;
     }
@@ -442,9 +450,14 @@ class AbstractArray
         acapacity = (acapacity == 0) ? 4 : (acapacity + 1 + acapacity / 2);
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
-    // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
-    if (acapacity <= m_md->capacity)
+    // Si la nouvelle capacité est inférieure à la courante, ne fait rien
+    // (sauf pour un allocateur collectif).
+    if (acapacity <= m_md->capacity) {
+      if (m_meta_data.is_collective_allocator) {
+        _internalReallocate(m_md->capacity, pod_type, queue);
+      }
       return;
+    }
     _internalReallocate(acapacity, pod_type, queue);
   }
 
@@ -486,6 +499,8 @@ class AbstractArray
   // Libère la mémoire
   void _internalDeallocate(RunQueue* queue = nullptr)
   {
+    // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
+    // il l'est pour tous les processus.
     if (!_isSharedNull())
       m_md->_deallocate(_currentMemoryInfo(), queue);
     if (m_md->is_not_null)
@@ -687,6 +702,9 @@ class AbstractArray
     }
     else {
       this->_destroyRange(s, m_md->size, pod_type);
+      if (m_meta_data.is_collective_allocator) {
+        this->_internalRealloc(s, false, pod_type, queue);
+      }
     }
     m_md->size = s;
   }
@@ -715,6 +733,9 @@ class AbstractArray
     }
     else {
       this->_destroyRange(s, m_md->size, IsPODType());
+      if (m_meta_data.is_collective_allocator) {
+        this->_internalRealloc(s, false);
+      }
     }
     m_md->size = s;
   }

@@ -65,6 +65,13 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
   /*!
+   * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
+   *
+   * Appel collectif.
+   */
+  virtual bool isMachineShMemWinAvailable() = 0;
+
+  /*!
    * \brief Méthode permettant de créer une fenêtre mémoire sur le noeud.
    *
    * Appel collectif.
@@ -86,7 +93,10 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    */
   virtual Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
-  virtual IMemoryAllocator* machineShMemWinMemoryAllocator() = 0;
+  /*!
+   * \brief Méthode permettant de récupérer un allocateur en mémoire partagée.
+   */
+  virtual MemoryAllocationOptions machineShMemWinMemoryAllocator() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

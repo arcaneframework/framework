@@ -46,6 +46,9 @@ namespace Arcane::MessagePassing
  * uniquement sur notre segment.
  * Pour ajouter des éléments dans le segment d'un autre sous-domaine,
  * les méthodes addToAnotherSegment() sont disponibles.
+ *
+ * Toutes les tailles utilisées sont en octet. \a sizeof_type est utilisé
+ * seulement par MPI (si utilisé) et à des fins de vérification.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IMachineShMemWinBaseInternal
 {
@@ -224,6 +227,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineShMemWinBaseInternal
   /*!
    * \brief Méthode permettant de réduire l'espace mémoire réservé pour les
    * segments au minimum nécessaire.
+   *
+   * Appel collectif.
    */
   virtual void shrink() = 0;
 };
