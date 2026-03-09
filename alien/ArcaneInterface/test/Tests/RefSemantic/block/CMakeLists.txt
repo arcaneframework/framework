@@ -221,23 +221,24 @@ foreach (REFMVTESTS
                 --output-level=1
         )
 
-        alien_test(
-                BENCH refmvhandlers.block
-                NAME ${REFMVTESTS}.mcgsolver_gpu
-                PROCS 4
-                COMMAND refmvhandlers.Block${REFMVTESTS}
-                OPTIONS
-                --size=100
-                --solver-package=mcgsolver
-                --solver=bicgstab
-                --precond=none
-                --tol=1.e-10
-                --max-iter=100
-                --kernel=gpu_cublas_bcsp
-                --block-size=5
-                --output-level=2
-        )
-
+        if (TARGET mcgsolver::cuda)
+            alien_test(
+                    BENCH refmvhandlers.block
+                    NAME ${REFMVTESTS}.mcgsolver_gpu
+                    PROCS 4
+                    COMMAND refmvhandlers.Block${REFMVTESTS}
+                    OPTIONS
+                    --size=100
+                    --solver-package=mcgsolver
+                    --solver=bicgstab
+                    --precond=none
+                    --tol=1.e-10
+                    --max-iter=100
+                    --kernel=gpu_cublas_bcsp
+                    --block-size=5
+                    --output-level=2
+            )
+        endif()
     endif ()
 
     if (TARGET mtl)

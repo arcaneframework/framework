@@ -146,22 +146,24 @@ if (TARGET mcgsolver)
             --output-level=2
     )
 
-    alien_test(
-            BENCH test
-            NAME mcgsolver_gpu
-            PROCS 4
-            COMMAND alien_test.exe
-            OPTIONS
-            --nx=10
-            --ny=10
-            --solver-package=mcgsolver
-            --solver=bicgstab
-            --precond=none
-            --tol=1.e-10
-            --max-iter=1000
-            --kernel=gpu_cublas_bcsp
-            --output-level=2
-    )
+    if (TARGET mcgsolver::cuda)
+        alien_test(
+                BENCH test
+                NAME mcgsolver_gpu
+                PROCS 4
+                COMMAND alien_test.exe
+                OPTIONS
+                --nx=10
+                --ny=10
+                --solver-package=mcgsolver
+                --solver=bicgstab
+                --precond=none
+                --tol=1.e-10
+                --max-iter=1000
+                --kernel=gpu_cublas_bcsp
+                --output-level=2
+        )
+    endif()
 endif ()
 
 if (TARGET htssolver)
