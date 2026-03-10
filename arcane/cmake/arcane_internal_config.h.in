@@ -29,6 +29,8 @@
 #define ARCANE_DEFAULT_PARTITIONER @ARCANE_UPPER_DEFAULT_PARTITIONER@_DEFAULT_PARTITIONER
 #endif
 
+#cmakedefine HDF5_IS_THREADSAFE
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
