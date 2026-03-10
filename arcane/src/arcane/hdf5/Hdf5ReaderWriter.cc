@@ -47,6 +47,9 @@
 
 #include "arcane/hdf5/Hdf5ReaderWriter_axl.h"
 
+// Pour HDF5_IS_THREADSAFE
+#include "arcane_internal_config.h"
+
 #include <array>
 //#define ARCANE_TEST_HDF5MPI
 
@@ -69,7 +72,36 @@ static herr_t _Hdf5ReaderWriterIterateMe(hid_t,const char*,void*);
 namespace
 {
 constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
-}
+
+#ifndef HDF5_IS_THREADSAFE
+std::mutex global_hdf5_mutex;
+class GlobalHdf5Mutex
+{
+ public:
+
+  explicit GlobalHdf5Mutex(bool is_active)
+  : m_is_active(is_active)
+  {
+    if (m_is_active)
+      global_hdf5_mutex.lock();
+  }
+  ~GlobalHdf5Mutex()
+  {
+    if (m_is_active)
+      global_hdf5_mutex.unlock();
+  }
+
+ private:
+
+  bool m_is_active = false;
+};
+
+#define HDF5_MUTEX GlobalHdf5Mutex truc(true);
+
+#else
+#define HDF5_MUTEX
+#endif
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,8 +125,13 @@ Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
 , m_fileset_size(fileset_size)
 , m_index_write(currentIndex)
 , m_index_modulo(index_modulo)
+, m_types(false)
 {
-  
+  {
+    HDF5_MUTEX
+    m_types.initialize();
+  }
+
   if (m_fileset_size!=1 && m_parallel_mng->isParallel()){
     m_is_parallel = true;
     Integer nb_rank = m_parallel_mng->commSize();
@@ -126,6 +163,7 @@ initialize()
     return;
   m_is_initialized = true;
   HInit();
+  HDF5_MUTEX
   info() << "INIT HDF5 READER/WRITER";
   {
     unsigned vmajor = 0;
@@ -564,6 +602,7 @@ _readDim2(IVariable* var)
 void Hdf5ReaderWriter::
 write(IVariable* v,IData* data)
 {
+  HDF5_MUTEX
   _directWriteVal(v,data);
 }
 
@@ -605,6 +644,7 @@ _readVal(IVariable* v,IData* data)
 void Hdf5ReaderWriter::
 read(IVariable* var,IData* data)
 {
+  HDF5_MUTEX
   _directReadVal(var,data);
 }
 
@@ -629,9 +669,12 @@ setMetaData(const String& meta_data)
       sb.put(meta_data);
       m_parallel_mng->sendSerializer(&sb,m_send_rank);
     }
-    else{
-      _setMetaData(meta_data,m_sub_group_name);
-      for( Integer i=m_send_rank+1; i<=m_last_recv_rank; ++i ){
+    else {
+      {
+        HDF5_MUTEX
+        _setMetaData(meta_data, m_sub_group_name);
+      }
+      for (Integer i = m_send_rank + 1; i <= m_last_recv_rank; ++i) {
         SerializeBuffer sb;
         pm->recvSerializer(&sb,i);
         sb.setMode(ISerializer::ModeGet);
@@ -639,12 +682,15 @@ setMetaData(const String& meta_data)
         String remote_meta_data;
         sb.get(remote_group_name);
         sb.get(remote_meta_data);
+        HDF5_MUTEX
         _setMetaData(remote_meta_data,remote_group_name);
       }
     }
   }
-  else
-    _setMetaData(meta_data,m_sub_group_name);
+  else {
+    HDF5_MUTEX
+    _setMetaData(meta_data, m_sub_group_name);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -689,6 +735,7 @@ _setMetaData(const String& meta_data,const String& sub_group_name)
 String Hdf5ReaderWriter::
 metaData()
 {
+  HDF5_MUTEX
   HDataset dataset_id;
   dataset_id.open(m_sub_group_id,"MetaData");
   if (dataset_id.isBad()){
@@ -794,13 +841,21 @@ class ArcaneHdf5CheckpointService2
 {
  public:
   ArcaneHdf5CheckpointService2(const ServiceBuildInfo& sbi)
-  : ArcaneHdf5ReaderWriterObject(sbi),
-    m_write_index(0),
-    m_writer(nullptr),
-    m_reader(nullptr),
-    m_fileset_size(1),
-    m_index_modulo(0){}
-  
+  : ArcaneHdf5ReaderWriterObject(sbi)
+  , m_write_index(0)
+  , m_writer(nullptr)
+  , m_reader(nullptr)
+  , m_fileset_size(1)
+  , m_index_modulo(0)
+  {
+#ifndef HDF5_IS_THREADSAFE
+    if (sbi.subDomain()->parallelMng()->isThreadImplementation()) {
+      // ARCANE_FATAL("HDF5 not threadsafe");
+      warning() << "HDF5 not threadsafe.";
+    }
+#endif
+  }
+
   virtual IDataWriter* dataWriter() { return m_writer; }
   virtual IDataReader* dataReader() { return m_reader; }
 
@@ -927,6 +982,7 @@ notifyBeginRead()
 void ArcaneHdf5CheckpointService2::
 notifyEndRead()
 {
+  HDF5_MUTEX
   delete m_reader;
   m_reader = 0;
 }
@@ -989,6 +1045,7 @@ notifyEndWrite()
   ostr() << "</infos>\n";
   setReaderMetaData(ostr.str());
   ++m_write_index;
+  HDF5_MUTEX
   delete m_writer;
   m_writer = 0;
 }
