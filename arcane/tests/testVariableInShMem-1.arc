@@ -8,8 +8,10 @@
     </modules>
   </arcane>
 
-  <arcane-post-processing>
-  </arcane-post-processing>
+  <arcane-checkpoint>
+    <checkpoint-service name="ArcaneBasicCheckpointWriter"/>
+    <do-dump-at-end>true</do-dump-at-end>
+  </arcane-checkpoint>
 
   <mesh amr-type="3">
     <meshgenerator>
