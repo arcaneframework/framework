@@ -12,6 +12,7 @@ set(ACCELERATOR_FILES
   TestReduce_Accelerator.cc
   TestReduceGridStride_Accelerator.cc
   TestLoop_Accelerator.cc
+  TestCooperativeLaunch_GridSync.cc
   TestCooperativeLaunch_Accelerator.cc
   TestCooperativeLaunch_Accelerator2.cc
 )

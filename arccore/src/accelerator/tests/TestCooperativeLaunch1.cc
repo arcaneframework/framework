@@ -30,6 +30,10 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" void
+_testCooperativeLaunch_GridSync(RunQueue queue, Int32 nb_value,
+                                Int32 nb_loop1, Int32 nb_loop2);
+
 extern "C++" Int64
 _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c,
                        Int32 nb_value, Int32 nb_loop);
@@ -50,8 +54,11 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
 
   nb_value = 10000000;
   expected_value = 100000040000000;
-  nb_loop = 100;
   nb_loop = 25;
+
+  //nb_value = 50000000;
+  //expected_value = 2500000200000000;
+  //nb_loop = 20;
 
   if (!queue.isAcceleratorPolicy()) {
     if (arccoreIsDebug())
@@ -78,6 +85,27 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
   c.copy(host_c);
 
   for (Int32 k = 1; k < 5; ++k) {
+    Int32 nb_loop1 = 10000;
+    Int32 nb_loop2 = 0; //
+    _testCooperativeLaunch_GridSync(queue, nb_value, nb_loop1, nb_loop2);
+  }
+  for (Int32 k = 1; k < 5; ++k) {
+    Int32 nb_loop1 = 1000;
+    Int32 nb_loop2 = 9;
+    _testCooperativeLaunch_GridSync(queue, nb_value, nb_loop1, nb_loop2);
+  }
+  for (Int32 k = 1; k < 5; ++k) {
+    Int32 nb_loop1 = 100;
+    Int32 nb_loop2 = 99;
+    _testCooperativeLaunch_GridSync(queue, nb_value, nb_loop1, nb_loop2);
+  }
+  for (Int32 k = 1; k < 5; ++k) {
+    Int32 nb_loop1 = 10;
+    Int32 nb_loop2 = 999;
+    _testCooperativeLaunch_GridSync(queue, nb_value, nb_loop1, nb_loop2);
+  }
+
+  for (Int32 k = 1; k < 5; ++k) {
     {
       Int64 v = _testCooperativeLaunch(queue, c, nb_value, nb_loop);
       Int64 v2 = v / nb_loop;
@@ -87,7 +115,7 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
 
   for (Int32 k = 1; k < 5; ++k) {
     {
-      Int64 v = _testCooperativeLaunch2(queue, c, nb_value,nb_loop);
+      Int64 v = _testCooperativeLaunch2(queue, c, nb_value, nb_loop);
       Int64 v2 = v / nb_loop;
       ASSERT_EQ(v2, expected_value);
     }
