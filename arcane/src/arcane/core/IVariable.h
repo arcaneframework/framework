@@ -53,7 +53,12 @@ class ARCANE_CORE_EXPORT IVariable
    */
   enum
   {
-    //! Indique que la variable ne doit pas être sauvegardée.
+    /*!
+     * \brief Indique que la variable ne doit pas être sauvegardée.
+     *
+     * Cette propriété est collective : elle doit être positionnée sur tous
+     * les sous-domaines (ou sur aucun).
+     */
     PNoDump = (1 << 0),
 
     /*!
@@ -150,7 +155,18 @@ class ARCANE_CORE_EXPORT IVariable
      * La classe MachineShMemWinVariable pourra être utilisé avec
      * cette variable.
      */
-    PInShMem = (1 << 12)
+    PInShMem = (1 << 12),
+
+    /*!
+     * \brief Indique que la sauvegarde sera nulle pour cette variable et pour
+     * ce sous-domaine.
+     *
+     * Une sauvegarde sera effectuée, mais avec une valeur par défaut
+     * (valeur = 0 pour un scalaire, tableau vide pour un tableau).
+     *
+     * Ne fonctionne que pour les variables sans support.
+     */
+    PDumpNull = (1 << 13)
   };
 
  public:

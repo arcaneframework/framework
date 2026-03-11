@@ -18,6 +18,7 @@
 #include "arcane/core/Directory.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MachineShMemWinVariable.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianMeshAMRMng.h"
@@ -166,18 +167,23 @@ _test1()
 {
   VariableCellInt32 var(VariableBuildInfo(mesh(), "AAA", IVariable::PInShMem | IVariable::PPersistant));
 
-  MachineShMemWinVariable var_sh(var);
+  Ref<MachineShMemWinMeshVariableScalarT<Cell, Int32>> var_sh;
+
+  if (ParallelMngUtils::isMachineShMemWinAvailable(parallelMng())) {
+    var_sh = makeRef(new MachineShMemWinMeshVariableScalarT(var));
+  }
 
   auto var_compute = [&]() -> void {
-    debug() << "asArray().size() : " << var.asArray().size();
-    auto ranks = var_sh.machineRanks();
-    for (Int32 rank : ranks) {
-      debug() << "Sizeof rank " << rank << " : "
-              << var_sh.segmentView(rank).size();
-    }
-
-    ENUMERATE_ (Cell, icell, allCells()) {
-      var[icell] = icell.localId();
+    if (!var_sh.isNull()) {
+      debug() << "asArray().size() : " << var.asArray().size();
+      auto ranks = var_sh->machineRanks();
+      for (Int32 rank : ranks) {
+        debug() << "Sizeof rank " << rank << " : "
+                << var_sh->view(rank).size();
+      }
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = icell.localId();
+      }
     }
   };
 
@@ -262,8 +268,13 @@ _test1()
 void AMRPatchTesterModule::
 _test1_1()
 {
+  Int32 property = 0;
+  if (ParallelMngUtils::isMachineShMemWinAvailable(parallelMng())) {
+    property += IVariable::PInShMem;
+  }
+
   Integer dimension = mesh()->dimension();
-  VariableNodeInt16 var_test(VariableBuildInfo(mesh(), "VarTest"));
+  VariableNodeInt16 var_test(VariableBuildInfo(mesh(), "VarTest", property));
   var_test.fill(-1);
 
   for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
@@ -386,9 +397,14 @@ _test1_1()
 void AMRPatchTesterModule::
 _test1_2()
 {
+  Int32 property = 0;
+  if (ParallelMngUtils::isMachineShMemWinAvailable(parallelMng())) {
+    property += IVariable::PInShMem;
+  }
+
   Integer dimension = mesh()->dimension();
 
-  VariableFaceInt16 var_test(VariableBuildInfo(mesh(), "VarTest"));
+  VariableFaceInt16 var_test(VariableBuildInfo(mesh(), "VarTest", property));
 
   if (dimension == 2) {
     for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {

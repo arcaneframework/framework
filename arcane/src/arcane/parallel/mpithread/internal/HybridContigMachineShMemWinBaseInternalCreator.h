@@ -63,6 +63,8 @@ class HybridContigMachineShMemWinBaseInternalCreator
   HybridContigMachineShMemWinBaseInternal* createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
   HybridMachineShMemWinBaseInternal* createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
 
+  ConstArrayView<Int32> machineRanks(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng);
+
  private:
 
   void _buildMachineRanksArray(const Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator);

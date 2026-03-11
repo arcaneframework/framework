@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtils.h                                          (C) 2000-2025 */
+/* ParallelMngUtils.h                                          (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires associées aux 'IParallelMng'.                       */
 /*---------------------------------------------------------------------------*/
@@ -95,6 +95,22 @@ createSendSerializeMessageRef(IParallelMng* pm, Int32 rank);
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<ISerializeMessage>
 createReceiveSerializeMessageRef(IParallelMng* pm, Int32 rank);
+
+/*!
+ * \brief Fonction permettant de savoir si le mode fenêtre en mémoire partagée
+ * est supporté et si son utilisation est possible.
+ *
+ * Appel collectif.
+ *
+ * Cette fonction peut être utile pour l'utilisation des classes :
+ * - MachineShMemWin(Base)
+ * - ContigMachineShMemWin(Base)
+ * - MachineShMemWinVariable...
+ *
+ * \return true si les classes ci-dessus peut être utilisées.
+ */
+extern "C++" ARCANE_CORE_EXPORT bool
+isMachineShMemWinAvailable(IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

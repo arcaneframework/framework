@@ -121,13 +121,16 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
   new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
   Int64 elem_size = new_capacity * sizeof_true_type;
   MemoryPointer p = a->allocate(alloc_args, elem_size).baseAddress();
+
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
-            << " size=" << new_capacity << " datasize=" << sizeof_true_impl
+            << " size=" << new_capacity
             << " p=" << p << '\n';
 #endif
-  if (!p) {
+
+  // Si la taille est de zéro, l'allocateur peut renvoyer un nullptr.
+  if (!p && elem_size != 0) {
     std::ostringstream ostr;
     ostr << " Bad ArrayImplBase::allocate() size=" << elem_size << " capacity=" << new_capacity
          << " sizeof_true_type=" << sizeof_true_type << '\n';
@@ -164,20 +167,22 @@ _reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 s
     else {
       AllocatedMemoryInfo new_alloc_info = a->allocate(alloc_args, elem_size);
       p = new_alloc_info.baseAddress();
-      //GG: TODO: regarder si 'current' peut être nul (a priori je ne pense pas...)
       if (p && current) {
         a->copyMemory(alloc_args, new_alloc_info, current_info);
-        a->deallocate(alloc_args, current_info);
       }
+      a->deallocate(alloc_args, current_info);
     }
   }
+
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << " ArrayImplBase::REALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
-            << " size=" << new_capacity << " datasize=" << sizeof_true_impl
+            << " size=" << new_capacity
             << " ptr=" << current << " new_p=" << p << '\n';
 #endif
-  if (!p) {
+
+  // Si la taille est de zéro, l'allocateur peut renvoyer un nullptr.
+  if (!p && elem_size != 0) {
     std::ostringstream ostr;
     ostr << " Bad ArrayImplBase::reallocate() size=" << elem_size
          << " capacity=" << new_capacity
@@ -199,9 +204,13 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
   if (!new_allocator_opt.allocator()) {
     throw BadAllocException("Null new_allocator");
   }
+  if (new_allocator_opt.allocator() == _allocator()) {
+    return current_info.baseAddress();
+  }
 
   if (this->capacity == 0) {
     this->allocation_options = new_allocator_opt;
+    this->is_collective_allocator = new_allocator_opt.allocator()->isCollective();
     return nullptr;
   }
 
@@ -220,21 +229,23 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
   {
     AllocatedMemoryInfo new_alloc_info = new_allocator->allocate(alloc_args, new_elem_size);
     p = new_alloc_info.baseAddress();
-    if (p) {
+    if (p && current) {
       Span<std::byte> old_allocated_memory_view(static_cast<std::byte*>(current), old_elem_size);
       Span<std::byte> new_allocated_memory_view(static_cast<std::byte*>(p), new_elem_size);
       MemoryUtils::copy(MutableMemoryView{ new_allocated_memory_view }, ConstMemoryView{ old_allocated_memory_view }, queue);
-      old_allocator->deallocate(alloc_args, current_info);
     }
+    old_allocator->deallocate(alloc_args, current_info);
   }
+
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << " ArrayImplBase::_changeAllocator: new_elem_size=" << new_elem_size
             << " new_capacity=" << new_capacity
             << " sizeof_true_type=" << sizeof_true_type
-            << " datasize=" << sizeof_true_impl
             << " old_ptr=" << current << " new_p=" << p << '\n';
 #endif
-  if (!p) {
+
+  // Si la taille est de zéro, l'allocateur peut renvoyer un nullptr.
+  if (!p && new_elem_size != 0) {
     std::ostringstream ostr;
     ostr << " Bad ArrayImplBase::_changeAllocator() new_elem_size=" << new_elem_size
          << " new_capacity=" << new_capacity
@@ -242,8 +253,10 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
+
   this->capacity = new_capacity;
   this->allocation_options = new_allocator_opt;
+  this->is_collective_allocator = new_allocator_opt.allocator()->isCollective();
   return p;
 }
 

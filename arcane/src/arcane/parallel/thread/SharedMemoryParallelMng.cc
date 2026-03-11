@@ -110,6 +110,11 @@ class SharedMemoryParallelMng::Impl
 
  public:
 
+  bool isMachineShMemWinAvailable() override
+  {
+    return true;
+  }
+
   Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
@@ -120,9 +125,9 @@ class SharedMemoryParallelMng::Impl
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override
+  MemoryAllocationOptions machineShMemWinMemoryAllocator() override
   {
-    return m_alloc.get();
+    return MemoryAllocationOptions{ m_alloc.get() };
   }
 
  private:

@@ -151,6 +151,27 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ConstArrayView<Int32> HybridContigMachineShMemWinBaseInternalCreator::
+machineRanks(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng)
+{
+  if (m_machine_ranks.empty()) {
+    m_barrier->wait();
+
+    FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
+    Int32 my_rank_local_proc = my_fri.localRankValue();
+
+    if (my_rank_local_proc == 0) {
+      Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
+      _buildMachineRanksArray(mpi_window_creator);
+    }
+    m_barrier->wait();
+  }
+  return m_machine_ranks;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void HybridContigMachineShMemWinBaseInternalCreator::
 _buildMachineRanksArray(const Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator)
 {

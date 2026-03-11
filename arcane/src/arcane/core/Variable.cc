@@ -559,6 +559,7 @@ property() const
   bool want_exchange = false;
   bool want_persistant = false;
   bool want_shmem = false;
+  bool want_dumpnull = false;
 
   int property = 0;
   for (VarRefEnumerator i(this); i.hasNext(); ++i) {
@@ -584,8 +585,10 @@ property() const
       want_exchange = true;
     if (!(p & IVariable::PTemporary))
       want_notemporary = true;
-    if (!(p & IVariable::PInShMem))
+    if ((p & IVariable::PInShMem))
       want_shmem = true;
+    if ((p & IVariable::PDumpNull))
+      want_dumpnull = true;
   }
 
   if (!want_dump)
@@ -608,8 +611,10 @@ property() const
     property |= IVariable::PNoExchange;
   if (!want_notemporary)
     property |= IVariable::PTemporary;
-  if (!want_shmem)
+  if (want_shmem)
     property |= IVariable::PInShMem;
+  if (want_dumpnull)
+    property |= IVariable::PDumpNull;
 
   m_p->m_property = property;
   return m_p->m_property;
@@ -639,6 +644,14 @@ setUsed(bool is_used)
 
   if (m_p->m_is_used) {
     if (m_p->m_property & IVariable::PInShMem) {
+      if (m_p->m_property & IVariable::PSubDomainPrivate) {
+        ARCANE_FATAL("Variable with PInShMem property must be in all sub-domains (PSubDomainPrivate property cannot be set with PInShMem)");
+      }
+      if (m_p->m_data->_commonInternal()->numericData() == nullptr) {
+        ARCANE_FATAL("Variable without NumericData cannot change allocator");
+      }
+      // TODO : Même si changeAllocator() avec le même allocateur déjà en
+      //        place fait simplement un return, ça reste moche...
       IParallelMng* pm{};
       if (m_p->m_mesh_handle.hasMesh()) {
         pm = m_p->m_mesh_handle.mesh()->parallelMng();
@@ -646,7 +659,7 @@ setUsed(bool is_used)
       else {
         pm = subDomain()->parallelMng();
       }
-      m_p->changeAllocator(MemoryAllocationOptions(pm->_internalApi()->machineShMemWinMemoryAllocator()));
+      m_p->changeAllocator(pm->_internalApi()->machineShMemWinMemoryAllocator());
     }
 
     if (m_p->m_item_group.null() && ik != IK_Unknown) {

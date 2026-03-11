@@ -25,6 +25,7 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelTopology.h"
 #include "arcane/core/internal/ParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
@@ -178,6 +179,26 @@ class HybridParallelMng::Impl
 
  public:
 
+  bool isMachineShMemWinAvailable() override
+  {
+    if (m_shmem_available == 1) {
+      return true;
+    }
+
+    if (m_shmem_available == 0) {
+      Ref<IParallelTopology> topo = m_parallel_mng->_internalUtilsFactory()->createTopology(m_parallel_mng);
+      if (topo->machineRanks().size() == m_window_creator->machineRanks(m_parallel_mng->commRank(), m_parallel_mng->mpiParallelMng()).size()) {
+        m_shmem_available = 1;
+        return true;
+      }
+      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      m_shmem_available = 2;
+      return false;
+    }
+
+    return false;
+  }
+
   Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
@@ -188,9 +209,9 @@ class HybridParallelMng::Impl
     return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
-  IMemoryAllocator* machineShMemWinMemoryAllocator() override
+  MemoryAllocationOptions machineShMemWinMemoryAllocator() override
   {
-    return m_alloc.get();
+    return MemoryAllocationOptions{ m_alloc.get() };
   }
 
  private:
@@ -198,6 +219,11 @@ class HybridParallelMng::Impl
   HybridParallelMng* m_parallel_mng;
   HybridContigMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
+
+  // 0 = Variable non initialisé
+  // 1 = Mémoire partagée dispo
+  // 2 = Mémoire partagée non dispo
+  Int8 m_shmem_available = 0;
 };
 
 /*---------------------------------------------------------------------------*/

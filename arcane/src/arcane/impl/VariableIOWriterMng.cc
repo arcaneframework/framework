@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOWriterMng.cc                                      (C) 2000-2024 */
+/* VariableIOWriterMng.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -214,13 +214,19 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
     _writeAttribute(json_writer, var_node, "property", var->property());
     if (hash_algo) {
       hash_values.clear();
-      var->data()->computeHash(hash_algo, hash_values);
+      if (var->property() & IVariable::PDumpNull)
+        var->data()->cloneEmptyRef()->computeHash(hash_algo, hash_values);
+      else
+        var->data()->computeHash(hash_algo, hash_values);
       String hash_str = Convert::toHexaString(hash_values);
       _writeAttribute(json_writer, var_node, "hash", hash_str);
       if (hash_context.get()) {
         hash_context->reset();
         DataHashInfo hash_info(hash_context.get());
-        var->data()->_commonInternal()->computeHash(hash_info);
+        if (var->property() & IVariable::PDumpNull)
+          var->data()->cloneEmptyRef()->_commonInternal()->computeHash(hash_info);
+        else
+          var->data()->_commonInternal()->computeHash(hash_info);
         HashAlgorithmValue hash_value;
         hash_context->computeHashValue(hash_value);
         String hash2_str = Convert::toHexaString(asBytes(hash_value.bytes()));
@@ -347,7 +353,10 @@ _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_ha
     if (!var->isUsed())
       continue;
     try {
-      writer->write(var, var->data());
+      if (var->property() & (IVariable::PDumpNull))
+        writer->write(var, var->data()->cloneEmptyRef().get());
+      else
+        writer->write(var, var->data());
     }
     catch (const Exception& ex) {
       error() << "Exception Arcane while VariableMng::writeVariables()"

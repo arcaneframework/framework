@@ -3,10 +3,15 @@
   <arcane>
     <title>AMRPatchTester (Variant 2 (3D))</title>
     <timeloop>AMRPatchTesterLoop</timeloop>
+    <modules>
+      <module name="ArcaneCheckpoint" active="true"/>
+    </modules>
   </arcane>
 
-  <arcane-post-processing>
-  </arcane-post-processing>
+  <arcane-checkpoint>
+    <checkpoint-service name="ArcaneBasicCheckpointWriter"/>
+    <do-dump-at-end>true</do-dump-at-end>
+  </arcane-checkpoint>
 
   <mesh amr-type="3">
     <meshgenerator>

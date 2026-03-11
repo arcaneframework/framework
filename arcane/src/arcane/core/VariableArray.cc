@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.cc                                            (C) 2000-2025 */
+/* VariableArray.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -650,9 +650,12 @@ _internalResize(const VariableResizeArgs& resize_args)
 
   auto* value_internal = m_value->_internal();
 
+  //const bool is_collective_allocator = value_internal->memoryAllocator().isCollectiveAllocator();
+  const bool is_collective_allocator = value_internal->_internalDeprecatedValue().allocator()->isCollective();
+
   if (nb_additional_element!=0){
     Integer capacity = value_internal->capacity();
-    if (new_size>capacity)
+    if (new_size > capacity || is_collective_allocator)
       value_internal->reserve(new_size+nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();

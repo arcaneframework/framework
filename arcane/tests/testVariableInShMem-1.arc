@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>AMRPatchTester (Variant 1)</title>
-    <timeloop>AMRPatchTesterLoop</timeloop>
+    <title>VariableInShMemUnitTest (Variant 1)</title>
+    <timeloop>VariableInShMemUnitTestLoop</timeloop>
     <modules>
       <module name="ArcaneCheckpoint" active="true"/>
     </modules>
@@ -18,7 +18,7 @@
       <cartesian>
         <nsd>2 2</nsd>
         <origine>0.0 0.0</origine>
-        <lx nx='16'>64.0</lx>
+        <lx nx='15'>64.0</lx>
         <ly ny='16'>64.0</ly>
       </cartesian>
     </meshgenerator>

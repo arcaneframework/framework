@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtils.cc                                         (C) 2000-2025 */
+/* ParallelMngUtils.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires associées aux 'IParallelMng'.                       */
 /*---------------------------------------------------------------------------*/
@@ -160,6 +160,13 @@ Ref<IParallelMng>
 createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key)
 {
   return ParallelMngUtilsAccessor::createSubParallelMngRef(pm, color, key);
+}
+
+bool
+isMachineShMemWinAvailable(IParallelMng* pm)
+{
+  ARCANE_CHECK_POINTER(pm);
+  return pm->_internalApi()->isMachineShMemWinAvailable();
 }
 
 /*---------------------------------------------------------------------------*/
