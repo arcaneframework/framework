@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivityContainerView.h                             (C) 2000-2025 */
+/* ItemConnectivityContainerView.h                             (C) 2000-2026 */
 /*                                                                           */
 /* Vues sur les conteneurs contenant les connectivités.                      */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,6 @@
 
 #include "arccore/base/Span.h"
 
-#include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/ItemLocalId.h"
 
@@ -54,7 +53,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  private:
 
   ItemConnectivityContainerView() = default;
-  ItemConnectivityContainerView(SmallSpan<const Int32> _list,
+  ItemConnectivityContainerView(SmallSpan<Int32> _list,
                                 SmallSpan<const Int32> _indexes,
                                 SmallSpan<const Int32> _nb_connected_item)
   : m_list_data(_list.data())
@@ -64,7 +63,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   , m_nb_item(_nb_connected_item.size())
   {
 #ifdef ARCANE_CHECK
-    _checkSize( _indexes.size(), _nb_connected_item.size());
+    _checkSize(_indexes.size(), _nb_connected_item.size());
 #endif
   }
 
@@ -109,14 +108,14 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
   //! Tableau du nombre d'entités connectées à une autre entité.
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
-  nbConnectedItems() const { return { m_nb_connected_items,m_nb_item }; }
+  nbConnectedItems() const { return { m_nb_connected_items, m_nb_item }; }
 
   //! Nombre d'entités
   constexpr ARCCORE_HOST_DEVICE Int32 nbItem() const { return m_nb_item; }
 
  private:
 
-  const Int32* m_list_data = nullptr;
+  Int32* m_list_data = nullptr;
   const Int32* m_indexes = nullptr;
   const Int32* m_nb_connected_items = nullptr;
   Int32 m_list_data_size = 0;
@@ -125,6 +124,16 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  private:
 
   void _checkSize(Int32 indexes_size, Int32 nb_connected_item_size);
+
+ private:
+
+  friend class MutableIndexedParticleCellConnectivityView;
+  // Uniquement pour positionner la maille à laquelle appartient une particule
+  ARCCORE_HOST_DEVICE void _setParticleCellId(ItemLocalId particle_lid, CellLocalId cell_lid) const
+  {
+    ARCANE_CHECK_AT(particle_lid.localId(), m_nb_item);
+    m_list_data[m_indexes[particle_lid]] = cell_lid;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -184,6 +184,25 @@ IndexedParticleCellConnectivityView(IItemFamily* family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MutableIndexedParticleCellConnectivityView::
+MutableIndexedParticleCellConnectivityView(IParticleFamily* pf)
+: MutableIndexedParticleCellConnectivityView(pf->itemFamily())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MutableIndexedParticleCellConnectivityView::
+MutableIndexedParticleCellConnectivityView(IItemFamily* family)
+{
+  ItemInternalConnectivityList* clist = family->_internalApi()->unstructuredItemInternalConnectivityList();
+  m_container_view = clist->containerView(IK_Cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

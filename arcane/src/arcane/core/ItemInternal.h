@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.h                                              (C) 2000-2025 */
+/* ItemInternal.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
+#include "arcane/utils/ArrayView.h"
 
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/ItemIndexedListView.h"
@@ -221,7 +221,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     m_container[item_kind].m_indexes = v;
   }
   //! Positionne le tableau contenant la liste des connectivités
-  void _setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityList(Int32 item_kind, ArrayView<Int32> v)
   {
     m_container[item_kind].m_list = v;
     m_container[item_kind].m_offset = ConstArrayView<Int32>{};
@@ -386,7 +386,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
     ConstArrayView<Int32> m_indexes;
     Int32View m_nb_item;
-    ConstArrayView<Int32> m_list;
+    ArrayView<Int32> m_list;
     ConstArrayView<Int32> m_offset;
   };
 
