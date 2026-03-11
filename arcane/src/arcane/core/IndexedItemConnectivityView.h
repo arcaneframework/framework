@@ -66,7 +66,8 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   void init(SmallSpan<const Int32> nb_item, SmallSpan<const Int32> indexes,
             SmallSpan<const Int32> list_data, eItemKind source_kind, eItemKind target_kind)
   {
-    m_container_view = ItemConnectivityContainerView(list_data, indexes, nb_item);
+    SmallSpan<Int32> mutable_list_data(const_cast<Int32*>(list_data.data()),list_data.size());
+    m_container_view = ItemConnectivityContainerView(mutable_list_data, indexes, nb_item);
     m_source_kind = source_kind;
     m_target_kind = target_kind;
   }
@@ -461,6 +462,41 @@ class ARCANE_CORE_EXPORT IndexedParticleCellConnectivityView
   {
     return BaseClass::itemId(lid, 0);
   }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue modifiable sur une connectivité Particle->Cell.
+ *
+ * Cette vue permet de modifier la maille à laquelle appartient une particule.
+ */
+class ARCANE_CORE_EXPORT MutableIndexedParticleCellConnectivityView
+: public IndexedParticleCellConnectivityView
+{
+ public:
+
+  using BaseClass = IndexedItemConnectivityGenericViewT<Particle, Cell>;
+  using ItemLocalIdType = Particle::LocalIdType;
+  using ItemLocalIdViewType = BaseClass::ItemLocalIdViewType;
+  using ItemLocalId2 = BaseClass::ItemLocalId2;
+
+ public:
+
+  explicit MutableIndexedParticleCellConnectivityView(IParticleFamily* pf);
+  explicit MutableIndexedParticleCellConnectivityView(IItemFamily* pf);
+
+ public:
+
+  //! Maille connectée à l'entité \a lid
+  ARCCORE_HOST_DEVICE void setCellId(ParticleLocalId particle_lid, CellLocalId cell_lid) const
+  {
+    m_container_view._setParticleCellId(particle_lid, cell_lid);
+  }
+
+ private:
+
+  IItemFamily* m_family = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
