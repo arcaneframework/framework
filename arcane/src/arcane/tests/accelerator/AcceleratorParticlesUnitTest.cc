@@ -68,6 +68,7 @@ class AcceleratorParticlesUnitTest
  public:
 
   void _executeTest1();
+  void _executeTest2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -159,6 +160,7 @@ void AcceleratorParticlesUnitTest::
 executeTest()
 {
   _executeTest1();
+  _executeTest2();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,6 +185,46 @@ _executeTest1()
     {
       out_particle_cell_lids[particle_lid] = particle_cell_connectivity.cellId(particle_lid);
       out_var_particle_cell_lids[particle_lid] = particle_cell_connectivity.cellId(particle_lid);
+    };
+  }
+
+  ENUMERATE_ (Particle, ipart, m_particle_family->allItems()) {
+    Particle p = *ipart;
+    Int32 cell1_lid = p.cellId();
+    Int32 cell2_lid = particle_cell_lids[p.localId()];
+    Int32 cell3_lid = var_particle_cell_lids[p];
+    if (cell1_lid != cell2_lid)
+      ARCANE_FATAL("Incoherent cell for particle p={0} cell1_lid={1} cell2_lid={2}", p.localId(), cell1_lid, cell2_lid);
+    if (cell1_lid != cell3_lid)
+      ARCANE_FATAL("Incoherent cell for particle p={0} cell1_lid={1} cell3_lid={2}", p.localId(), cell1_lid, cell3_lid);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorParticlesUnitTest::
+_executeTest2()
+{
+  info() << "Test2 : check SetParticleCellId";
+  Int32 max_id = m_particle_family->maxLocalId();
+  Int32 max_cell_lid = m_mesh->cellFamily()->maxLocalId();
+  NumArray<Int32, MDDim1> particle_cell_lids(max_id);
+  VariableParticleInt32 var_particle_cell_lids(VariableBuildInfo(m_particle_family, "ParticleLocalId"));
+
+  // Vérifie que l'accès via la connectivité donne la même valeur que
+  // l'accès via l'entité
+  {
+    auto command = makeCommand(m_queue);
+    auto out_particle_cell_lids = viewOut(command, particle_cell_lids);
+    auto out_var_particle_cell_lids = viewOut(command, var_particle_cell_lids);
+    MutableIndexedParticleCellConnectivityView particle_cell_connectivity(m_particle_family);
+    command << RUNCOMMAND_ENUMERATE (ParticleLocalId, particle_lid, m_particle_family->allItems())
+    {
+      Int32 new_cell_lid = (particle_cell_connectivity.cellId(particle_lid) + 1) % max_cell_lid;
+      particle_cell_connectivity.setCellId(particle_lid,CellLocalId(new_cell_lid));
+      out_particle_cell_lids[particle_lid] = new_cell_lid;
+      out_var_particle_cell_lids[particle_lid] = new_cell_lid;
     };
   }
 
