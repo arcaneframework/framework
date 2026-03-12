@@ -50,18 +50,18 @@ class ARCANE_CORE_EXPORT PostProcessorWriterBase
  public:
 
   void setBaseDirectoryName(const String& dirname) override;
-  String baseDirectoryName() override;
+  const String& baseDirectoryName() override;
 
   void setBaseFileName(const String& filename) override;
-  String baseFileName() override;
+  const String& baseFileName() override;
 
   void setTimes(ConstArrayView<Real> times) override;
   ConstArrayView<Real> times() override;
 
-  void setVariables(const VariableCollection& variables) override;
+  void setVariables(VariableCollection variables) override;
   VariableCollection variables() override;
 
-  void setGroups(const ItemGroupCollection& groups) override;
+  void setGroups(ItemGroupCollection groups) override;
   ItemGroupCollection groups() override;
 
  private:
