@@ -83,8 +83,12 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
    */
   virtual void setBaseDirectoryName(const String& dirname) = 0;
 
+  // TODO: Rendre obsolète en 2027: utiliser getBaseDirectoryName() à la place
   //! Nom du répertoire de sortie des fichiers.
   virtual const String& baseDirectoryName() = 0;
+
+  //! Nom du répertoire de sortie des fichiers.
+  virtual String getBaseDirectoryName();
 
   /*!
    * \brief Positionne le nom du fichier contenant les sorties.
@@ -94,8 +98,12 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
    */
   virtual void setBaseFileName(const String& filename) = 0;
 
+  // TODO: Rendre obsolète en 2027: utiliser getBaseFileName() à la place
   //! Nom du fichier contenant les sorties.
   virtual const String& baseFileName() = 0;
+
+  //! Nom du fichier contenant les sorties.
+  virtual String getBaseFileName();
 
   /*!
    * \brief Positionne le maillage.
