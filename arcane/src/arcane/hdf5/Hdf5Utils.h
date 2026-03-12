@@ -65,6 +65,12 @@ extern "C"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_HDF5_EXPORT std::mutex&
+_ArcaneHdf5UtilsMutex();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe servant d'initialiseur pour HDF.
  *
@@ -156,13 +162,7 @@ class ARCANE_HDF5_EXPORT HProperty
 
  public:
 
-  void close()
-  {
-    if (id() > 0) {
-      H5Pclose(id());
-      _setNullId();
-    }
-  }
+  void close();
 
   void create(hid_t cls_id);
   void setId(hid_t new_id)
@@ -342,11 +342,7 @@ class ARCANE_HDF5_EXPORT HSpace
   {
     rhs._setNullId();
   }
-  ~HSpace()
-  {
-    if (id() > 0)
-      H5Sclose(id());
-  }
+  ~HSpace();
   HSpace& operator=(HSpace&& rhs)
   {
     _setId(rhs.id());
@@ -404,12 +400,7 @@ class ARCANE_HDF5_EXPORT HDataset
 
  public:
 
-  void close()
-  {
-    if (id() > 0)
-      H5Dclose(id());
-    _setNullId();
-  }
+  void close();
   void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
   void create(const Hid& loc_id,const String& var,hid_t save_type,
               const HSpace& space_id,const HProperty& link_plist,
@@ -422,10 +413,7 @@ class ARCANE_HDF5_EXPORT HDataset
                const HSpace& filespace_id, hid_t plist);
   herr_t write(hid_t native_type, const void* array, const HSpace& memspace_id,
                const HSpace& filespace_id, const HProperty& plist);
-  herr_t read(hid_t native_type, void* array)
-  {
-    return H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
-  }
+  herr_t read(hid_t native_type, void* array);
   void readWithException(hid_t native_type, void* array);
   HSpace getSpace();
   herr_t setExtent(const hsize_t new_dims[]);
@@ -446,11 +434,7 @@ class ARCANE_HDF5_EXPORT HAttribute
  public:
 
   HAttribute() {}
-  ~HAttribute()
-  {
-    if (id() > 0)
-      H5Aclose(id());
-  }
+  ~HAttribute();
   HAttribute(HAttribute&& rhs)
   : Hid(rhs.id())
   {
@@ -473,30 +457,12 @@ class ARCANE_HDF5_EXPORT HAttribute
 
  public:
 
-  void remove(const Hid& loc_id, const String& var)
-  {
-    _setId(H5Adelete(loc_id.id(), var.localstr()));
-  }
-  void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id)
-  {
-    _setId(H5Acreate2(loc_id.id(), var.localstr(), save_type, space_id.id(), H5P_DEFAULT, H5P_DEFAULT));
-  }
-  void open(const Hid& loc_id, const String& var)
-  {
-    _setId(H5Aopen_name(loc_id.id(), var.localstr()));
-  }
-  herr_t write(hid_t native_type, void* array)
-  {
-    return H5Awrite(id(), native_type, array);
-  }
-  herr_t read(hid_t native_type, void* array)
-  {
-    return H5Aread(id(), native_type, array);
-  }
-  HSpace getSpace()
-  {
-    return HSpace(H5Aget_space(id()));
-  }
+  void remove(const Hid& loc_id, const String& var);
+  void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id);
+  void open(const Hid& loc_id, const String& var);
+  herr_t write(hid_t native_type, void* array);
+  herr_t read(hid_t native_type, void* array);
+  HSpace getSpace();
 };
 
 
@@ -511,11 +477,7 @@ class ARCANE_HDF5_EXPORT HType
  public:
 
   HType() {}
-  ~HType()
-  {
-    if (id() > 0)
-      H5Tclose(id());
-  }
+  ~HType();
   HType(HType&& rhs)
   : Hid(rhs.id())
   {

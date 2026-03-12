@@ -74,7 +74,6 @@ namespace
 constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
 
 #ifndef HDF5_IS_THREADSAFE
-std::mutex global_hdf5_mutex;
 class GlobalHdf5Mutex
 {
  public:
@@ -83,23 +82,33 @@ class GlobalHdf5Mutex
   : m_is_active(is_active)
   {
     if (m_is_active)
-      global_hdf5_mutex.lock();
+      m_mutex.lock();
+  }
+  void unlock()
+  {
+    if (m_is_active) {
+      m_mutex.unlock();
+      m_is_active = false;
+    }
   }
   ~GlobalHdf5Mutex()
   {
     if (m_is_active)
-      global_hdf5_mutex.unlock();
+      m_mutex.unlock();
   }
 
  private:
 
   bool m_is_active = false;
+  std::mutex& m_mutex = _ArcaneHdf5UtilsMutex();
 };
 
-#define HDF5_MUTEX GlobalHdf5Mutex truc(true);
+#define HDF5_MUTEX GlobalHdf5Mutex global_hdf5_mutex(true);
+#define HDF5_MUTEX_UNLOCK global_hdf5_mutex.unlock();
 
 #else
 #define HDF5_MUTEX
+#define HDF5_MUTEX_UNLOCK
 #endif
 } // namespace
 
@@ -125,12 +134,7 @@ Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
 , m_fileset_size(fileset_size)
 , m_index_write(currentIndex)
 , m_index_modulo(index_modulo)
-, m_types(false)
 {
-  {
-    HDF5_MUTEX
-    m_types.initialize();
-  }
 
   if (m_fileset_size!=1 && m_parallel_mng->isParallel()){
     m_is_parallel = true;
@@ -163,12 +167,12 @@ initialize()
     return;
   m_is_initialized = true;
   HInit();
-  HDF5_MUTEX
   info() << "INIT HDF5 READER/WRITER";
   {
     unsigned vmajor = 0;
     unsigned vminor = 0;
     unsigned vrel = 0;
+    HDF5_MUTEX
     ::H5get_libversion(&vmajor,&vminor,&vrel);
     info() << "HDF5 version = " << vmajor << '.' << vminor << '.' << vrel;
   }
@@ -181,7 +185,8 @@ initialize()
     // Si ce n'est pas moi qui écrit, n'ouvre pas le fichier
     if (m_send_rank!=m_my_rank)
       return;
-    if (m_open_mode==OpenModeTruncate){
+    if (m_open_mode == OpenModeTruncate) {
+      HDF5_MUTEX
       hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
 #ifdef ARCANE_TEST_HDF5MPI
       void* arcane_comm = subDomain()->parallelMng()->getMPICommunicator();
@@ -216,6 +221,7 @@ initialize()
       small_block_size <<= 10;
       r = H5Pset_small_data_block_size(plist_id,small_block_size);
       info() << " SET SMALL BLOCK SIZE s=" << small_block_size << " r=" << r;
+      HDF5_MUTEX_UNLOCK
 
       m_file_id.openTruncate(m_filename,plist_id);
     }
@@ -237,6 +243,7 @@ initialize()
 
   if (m_open_mode==OpenModeRead){
     int index = 0;
+    HDF5_MUTEX
     //H5Giterate(m_sub_group_id.id(),"Variables",&index,_Hdf5ReaderWriterIterateMe,this);
     H5Giterate(m_file_id.id(),m_sub_group_name.localstr(),&index,_Hdf5ReaderWriterIterateMe,this);
   }
@@ -459,6 +466,7 @@ _writeVal(const String& var_group_name,
 
 #if 0
     if (nb_element>=10000){
+      HDF5_MUTEX
       plist_id = H5Pcreate(H5P_DATASET_CREATE);
       hsize_t chunk_dim[1];
       chunk_dim[0] = (4096 << 1);
@@ -528,7 +536,9 @@ _readDim2(IVariable* var)
     // l'attribut (hdf_dims[0]) doit être égal à 1 ou 2.
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
+    HDF5_MUTEX
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
+    HDF5_MUTEX_UNLOCK
 
     if (hdf_dims[0]!=VARIABLE_INFO_SIZE)
       ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected={2})",
@@ -574,7 +584,9 @@ _readDim2(IVariable* var)
 
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
+    HDF5_MUTEX
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
+    HDF5_MUTEX_UNLOCK
     // Vérifie que le nombre d'éléments du dataset est bien égal à celui
     // attendu.
     if ((Int64)hdf_dims[0]!=dimension_array_size){
@@ -602,7 +614,6 @@ _readDim2(IVariable* var)
 void Hdf5ReaderWriter::
 write(IVariable* v,IData* data)
 {
-  HDF5_MUTEX
   _directWriteVal(v,data);
 }
 
@@ -644,7 +655,6 @@ _readVal(IVariable* v,IData* data)
 void Hdf5ReaderWriter::
 read(IVariable* var,IData* data)
 {
-  HDF5_MUTEX
   _directReadVal(var,data);
 }
 
@@ -669,12 +679,9 @@ setMetaData(const String& meta_data)
       sb.put(meta_data);
       m_parallel_mng->sendSerializer(&sb,m_send_rank);
     }
-    else {
-      {
-        HDF5_MUTEX
-        _setMetaData(meta_data, m_sub_group_name);
-      }
-      for (Integer i = m_send_rank + 1; i <= m_last_recv_rank; ++i) {
+    else{
+      _setMetaData(meta_data,m_sub_group_name);
+      for( Integer i=m_send_rank+1; i<=m_last_recv_rank; ++i ){
         SerializeBuffer sb;
         pm->recvSerializer(&sb,i);
         sb.setMode(ISerializer::ModeGet);
@@ -682,15 +689,12 @@ setMetaData(const String& meta_data)
         String remote_meta_data;
         sb.get(remote_group_name);
         sb.get(remote_meta_data);
-        HDF5_MUTEX
         _setMetaData(remote_meta_data,remote_group_name);
       }
     }
   }
-  else {
-    HDF5_MUTEX
-    _setMetaData(meta_data, m_sub_group_name);
-  }
+  else
+    _setMetaData(meta_data,m_sub_group_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -735,7 +739,6 @@ _setMetaData(const String& meta_data,const String& sub_group_name)
 String Hdf5ReaderWriter::
 metaData()
 {
-  HDF5_MUTEX
   HDataset dataset_id;
   dataset_id.open(m_sub_group_id,"MetaData");
   if (dataset_id.isBad()){
@@ -748,7 +751,9 @@ metaData()
   const int max_dim = 256;
   hsize_t hdf_dims[max_dim];
   hsize_t max_dims[max_dim];
+  HDF5_MUTEX
   H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
+  HDF5_MUTEX_UNLOCK
   if (hdf_dims[0]<=0)
     throw ReaderWriterException(A_FUNCINFO,"Wrong number of elements for meta-data ('MetaData')");
   Integer nb_byte = static_cast<Integer>(hdf_dims[0]);
@@ -982,7 +987,6 @@ notifyBeginRead()
 void ArcaneHdf5CheckpointService2::
 notifyEndRead()
 {
-  HDF5_MUTEX
   delete m_reader;
   m_reader = 0;
 }
@@ -1045,7 +1049,6 @@ notifyEndWrite()
   ostr() << "</infos>\n";
   setReaderMetaData(ostr.str());
   ++m_write_index;
-  HDF5_MUTEX
   delete m_writer;
   m_writer = 0;
 }

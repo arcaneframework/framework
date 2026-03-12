@@ -25,6 +25,9 @@
 
 #include "arcane/hdf5/Hdf5Utils.h"
 
+// Pour HDF5_IS_THREADSAFE
+#include "arcane_internal_config.h"
+
 #include <algorithm>
 
 #include <mutex>
@@ -41,7 +44,54 @@ namespace Arcane::Hdf5Utils
 namespace
 {
 std::once_flag h5open_once_flag;
+
+#ifndef HDF5_IS_THREADSAFE
+std::mutex global_hdf5_mutex;
+class GlobalHdf5Mutex
+{
+ public:
+
+  explicit GlobalHdf5Mutex(bool is_active)
+  : m_is_active(is_active)
+  {
+    if (m_is_active) {
+      global_hdf5_mutex.lock();
+    }
+  }
+  void unlock()
+  {
+    if (m_is_active) {
+      global_hdf5_mutex.unlock();
+      m_is_active = false;
+    }
+  }
+  ~GlobalHdf5Mutex()
+  {
+    if (m_is_active) {
+      global_hdf5_mutex.unlock();
+    }
+  }
+
+ private:
+
+  bool m_is_active = false;
+};
+
+#define HDF5_MUTEX GlobalHdf5Mutex global_hdf5_mutex(true);
+#define HDF5_MUTEX_UNLOCK global_hdf5_mutex.unlock();
+
+#else
+#define HDF5_MUTEX
+#define HDF5_MUTEX_UNLOCK
+#endif
+} // namespace
+
+#ifndef HDF5_IS_THREADSAFE
+std::mutex& _ArcaneHdf5UtilsMutex()
+{
+  return global_hdf5_mutex;
 }
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -121,7 +171,10 @@ void HFile::
 openTruncate(const String& var)
 {
   close();
-  _setId(H5Fcreate(var.localstr(),H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT));
+  {
+    HDF5_MUTEX
+    _setId(H5Fcreate(var.localstr(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -130,7 +183,10 @@ void HFile::
 openAppend(const String& var)
 {
   close();
-  _setId(H5Fopen(var.localstr(),H5F_ACC_RDWR,H5P_DEFAULT));
+  {
+    HDF5_MUTEX
+    _setId(H5Fopen(var.localstr(), H5F_ACC_RDWR, H5P_DEFAULT));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -139,7 +195,10 @@ void HFile::
 openRead(const String& var)
 {
   close();
-  _setId(H5Fopen(var.localstr(),H5F_ACC_RDONLY,H5P_DEFAULT));
+  {
+    HDF5_MUTEX
+    _setId(H5Fopen(var.localstr(), H5F_ACC_RDONLY, H5P_DEFAULT));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -148,7 +207,10 @@ void HFile::
 openTruncate(const String& var,hid_t plist_id)
 {
   close();
-  _setId(H5Fcreate(var.localstr(),H5F_ACC_TRUNC,H5P_DEFAULT,plist_id));
+  {
+    HDF5_MUTEX
+    _setId(H5Fcreate(var.localstr(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -157,7 +219,10 @@ void HFile::
 openAppend(const String& var,hid_t plist_id)
 {
   close();
-  _setId(H5Fopen(var.localstr(),H5F_ACC_RDWR,plist_id));
+  {
+    HDF5_MUTEX
+    _setId(H5Fopen(var.localstr(), H5F_ACC_RDWR, plist_id));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -166,7 +231,10 @@ void HFile::
 openRead(const String& var,hid_t plist_id)
 {
   close();
-  _setId(H5Fopen(var.localstr(),H5F_ACC_RDONLY,plist_id));
+  {
+    HDF5_MUTEX
+    _setId(H5Fopen(var.localstr(), H5F_ACC_RDONLY, plist_id));
+  }
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
@@ -178,7 +246,8 @@ herr_t HFile::
 _close()
 {
   herr_t e = 0;
-  if (id()>0){
+  if (id() > 0) {
+    HDF5_MUTEX
     e = H5Fclose(id());
     _setNullId();
   }
@@ -214,13 +283,15 @@ recursiveCreate(const Hid& loc_id,const Array<String>& bufs)
   hid_t last_hid = loc_id.id();
   Integer nb_create = bufs.size();
   UniqueArray<hid_t> ref_ids(nb_create);
-  for( Integer i=0; i<nb_create; ++i ){
+  for (Integer i = 0; i < nb_create; ++i) {
     last_hid = _checkOrCreate(last_hid,bufs[i]);
     ref_ids[i] = last_hid;
   }
   // Libere tous les groupes intermediaires crees
-  for( Integer i=0; i<nb_create-1; ++i )
+  for (Integer i = 0; i < nb_create - 1; ++i) {
+    HDF5_MUTEX
     H5Gclose(ref_ids[i]);
+  }
   _setId(last_hid);
 }
 
@@ -245,6 +316,7 @@ checkDelete(const Hid& loc_id,const String& var)
   // Groupe trouvé, on le détruit.
   if (last_hid>0 && parent_hid>0 && i==size){
     //cerr << "** DELETE <" << bufs[size-1] << "\n";
+    HDF5_MUTEX
     H5Gunlink(parent_hid,bufs[size-1].localstr());
   }
 }
@@ -261,13 +333,16 @@ recursiveOpen(const Hid& loc_id,const String& var)
   hid_t last_hid = loc_id.id();
   Integer nb_open = bufs.size();
   UniqueArray<hid_t> ref_ids(nb_open);
-  for( Integer i=0; i<nb_open; ++i ){
+  for (Integer i = 0; i < nb_open; ++i) {
+    HDF5_MUTEX
     last_hid = _H5Gopen(last_hid,bufs[i].localstr());
     ref_ids[i] = last_hid;
   }
   // Libere tous les groupes intermediaires ouverts
-  for( Integer i=0; i<nb_open-1; ++i )
+  for (Integer i = 0; i < nb_open - 1; ++i) {
+    HDF5_MUTEX
     H5Gclose(ref_ids[i]);
+  }
   _setId(last_hid);
 }
 
@@ -283,8 +358,9 @@ openIfExists(const Hid& loc_id,const Array<String>& paths)
   Integer nb_open = paths.size();
   UniqueArray<hid_t> ref_ids;
   ref_ids.reserve(nb_open);
-  for( Integer i=0; i<nb_open; ++i ){
-    if (HGroup::hasChildren(last_hid,paths[i].localstr())){
+  for (Integer i = 0; i < nb_open; ++i) {
+    if (HGroup::hasChildren(last_hid, paths[i].localstr())) {
+      HDF5_MUTEX
       last_hid = _H5Gopen(last_hid,paths[i].localstr());
       ref_ids.add(last_hid);
     }
@@ -296,9 +372,11 @@ openIfExists(const Hid& loc_id,const Array<String>& paths)
   if (is_valid)
     _setId(last_hid);
   // Ferme tous les groupes intermediaires
-  for( Integer i=0; i<ref_ids.size(); ++i ){
-    if (ref_ids[i]!=last_hid)
+  for (Integer i = 0; i < ref_ids.size(); ++i) {
+    if (ref_ids[i] != last_hid) {
+      HDF5_MUTEX
       H5Gclose(ref_ids[i]);
+    }
   }
 }
 
@@ -318,6 +396,7 @@ bool HGroup::
 hasChildren(hid_t loc_id,const String& var)
 {
   HGroupSearch gs(var);
+  HDF5_MUTEX
   herr_t v = H5Giterate(loc_id,".",0,_ArcaneHdf5UtilsGroupIterateMe,&gs);
   bool has_children = v>0;
   //cout << "** HAS CHILDREN " << var << " v=" << has_children << '\n';
@@ -336,6 +415,7 @@ _checkOrCreate(hid_t loc_id,const String& group_name)
   // si le groupe souhaité existe
   HGroupSearch gs(group_name);
   //cerr << "** CHECK CREATE <" << group_name.str()  << ">\n";
+  HDF5_MUTEX
   herr_t v = H5Giterate(loc_id,".",0,_ArcaneHdf5UtilsGroupIterateMe,&gs);
 
   // Regarde si le groupe existe déjà
@@ -356,6 +436,7 @@ _checkOrCreate(hid_t loc_id,const String& group_name)
 void HGroup::
 create(const Hid& loc_id, const String& group_name)
 {
+  HDF5_MUTEX
   _setId(H5Gcreate2(loc_id.id(), group_name.localstr(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
 }
 
@@ -375,9 +456,11 @@ openOrCreate(const Hid& loc_id, const String& group_name)
 /*---------------------------------------------------------------------------*/
 
 void HGroup::
-open(const Hid& loc_id,const String& var)
+open(const Hid& loc_id, const String& var)
 {
+  HDF5_MUTEX
   hid_t id = _H5Gopen(loc_id.id(),var.localstr());
+  HDF5_MUTEX_UNLOCK
   if (id<0)
     ARCANE_THROW(ReaderWriterException,"Can not find group named '{0}'",var);
   _setId(id);
@@ -389,7 +472,8 @@ open(const Hid& loc_id,const String& var)
 void HGroup::
 close()
 {
-  if (id()>0){
+  if (id() > 0) {
+    HDF5_MUTEX
     H5Gclose(id());
     _setNullId();
   }
@@ -407,6 +491,7 @@ _checkExist(hid_t loc_id,const String& group_name)
   // si le groupe souhaité existe
   HGroupSearch gs(group_name);
   //cerr << "** CHECK CREATE <" << group_name.str()  << ">\n";
+  HDF5_MUTEX
   herr_t v = H5Giterate(loc_id,".",0,_ArcaneHdf5UtilsGroupIterateMe,&gs);
 
   // Regarde si le groupe existe déjà
@@ -427,9 +512,22 @@ _checkExist(hid_t loc_id,const String& group_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+HSpace::
+~HSpace()
+{
+  if (id() > 0) {
+    HDF5_MUTEX
+    H5Sclose(id());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void HSpace::
 createSimple(int nb, hsize_t dims[])
 {
+  HDF5_MUTEX
   _setId(H5Screate_simple(nb, dims, nullptr));
 }
 
@@ -439,6 +537,7 @@ createSimple(int nb, hsize_t dims[])
 void HSpace::
 createSimple(int nb, hsize_t dims[], hsize_t max_dims[])
 {
+  HDF5_MUTEX
   _setId(H5Screate_simple(nb, dims, max_dims));
 }
 
@@ -448,7 +547,8 @@ createSimple(int nb, hsize_t dims[], hsize_t max_dims[])
 int HSpace::
 nbDimension()
 {
- return H5Sget_simple_extent_ndims(id());
+  HDF5_MUTEX
+  return H5Sget_simple_extent_ndims(id());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -457,6 +557,7 @@ nbDimension()
 herr_t HSpace::
 getDimensions(hsize_t dims[], hsize_t max_dims[])
 {
+  HDF5_MUTEX
   return H5Sget_simple_extent_dims(id(), dims, max_dims);
 }
 
@@ -467,11 +568,25 @@ getDimensions(hsize_t dims[], hsize_t max_dims[])
 /*---------------------------------------------------------------------------*/
 
 void HDataset::
-create(const Hid& loc_id,const String& var,hid_t save_type,
-       const HSpace& space_id,hid_t plist)
+close()
 {
-	hid_t hid = H5Dcreate2(loc_id.id(),var.localstr(),save_type,space_id.id(),
-                        plist,H5P_DEFAULT,H5P_DEFAULT);
+  if (id() > 0) {
+    HDF5_MUTEX
+    H5Dclose(id());
+  }
+  _setNullId();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HDataset::
+create(const Hid& loc_id,const String& var,hid_t save_type,
+       const HSpace& space_id, hid_t plist)
+{
+  HDF5_MUTEX
+  hid_t hid = H5Dcreate2(loc_id.id(), var.localstr(), save_type, space_id.id(),
+                         plist, H5P_DEFAULT, H5P_DEFAULT);
   //cerr << "** CREATE ID=" << hid << '\n';
   _setId(hid);
 }
@@ -484,7 +599,8 @@ create(const Hid& loc_id,const String& var,hid_t save_type,
        const HSpace& space_id,const HProperty& link_plist,
        const HProperty& creation_plist,const HProperty& access_plist)
 {
-	hid_t hid = H5Dcreate2(loc_id.id(),var.localstr(),save_type,space_id.id(),
+  HDF5_MUTEX
+  hid_t hid = H5Dcreate2(loc_id.id(), var.localstr(), save_type, space_id.id(),
                          link_plist.id(),creation_plist.id(),access_plist.id());
   //cerr << "** CREATE ID=" << hid << '\n';
   _setId(hid);
@@ -497,7 +613,8 @@ herr_t HDataset::
 write(hid_t native_type,const void* array)
 {
   //cerr << "** WRITE ID=" << id() << '\n';
-	return H5Dwrite(id(),native_type,H5S_ALL,H5S_ALL,H5P_DEFAULT,array);
+  HDF5_MUTEX
+  return H5Dwrite(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -508,6 +625,7 @@ write(hid_t native_type,const void* array,const HSpace& memspace_id,
       const HSpace& filespace_id,hid_t plist)
 {
   //cerr << "** WRITE ID=" << id() << '\n';
+  HDF5_MUTEX
   return H5Dwrite(id(),native_type,memspace_id.id(),filespace_id.id(),plist,array);
 }
 
@@ -519,16 +637,29 @@ write(hid_t native_type,const void* array,const HSpace& memspace_id,
       const HSpace& filespace_id,const HProperty& plist)
 {
   //cerr << "** WRITE ID=" << id() << '\n';
+  HDF5_MUTEX
   return H5Dwrite(id(),native_type,memspace_id.id(),filespace_id.id(),plist.id(),array);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HDataset::
-readWithException(hid_t native_type,void* array)
+herr_t HDataset::
+read(hid_t native_type, void* array)
 {
-	herr_t err = H5Dread(id(),native_type,H5S_ALL,H5S_ALL,H5P_DEFAULT,array);
+  HDF5_MUTEX
+  return H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HDataset::
+readWithException(hid_t native_type, void* array)
+{
+  HDF5_MUTEX
+  herr_t err = H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
+  HDF5_MUTEX_UNLOCK
   if (err!=0)
     ARCANE_THROW(IOException,"Can not read dataset");
 }
@@ -539,6 +670,7 @@ readWithException(hid_t native_type,void* array)
 HSpace HDataset::
 getSpace()
 {
+  HDF5_MUTEX
   return HSpace(H5Dget_space(id()));
 }
 
@@ -548,6 +680,7 @@ getSpace()
 herr_t HDataset::
 setExtent(const hsize_t new_dims[])
 {
+  HDF5_MUTEX
   return H5Dset_extent(id(),new_dims);
 }
 
@@ -586,17 +719,110 @@ recursiveCreate(const Hid& loc_id,const String& var,hid_t save_type,
 void HDataset::
 _remove(hid_t hid,const String& var)
 {
+  HDF5_MUTEX
   H5Gunlink(hid,var.localstr());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HDataset::
-open(const Hid& loc_id,const String& var)
+HAttribute::
+~HAttribute()
 {
-	_setId(H5Dopen2(loc_id.id(),var.localstr(),H5P_DEFAULT));
-  if(isBad())
+  if (id() > 0) {
+    HDF5_MUTEX
+    H5Aclose(id());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HAttribute::
+remove(const Hid& loc_id, const String& var)
+{
+  HDF5_MUTEX
+  _setId(H5Adelete(loc_id.id(), var.localstr()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HAttribute::
+create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id)
+{
+  HDF5_MUTEX
+  _setId(H5Acreate2(loc_id.id(), var.localstr(), save_type, space_id.id(), H5P_DEFAULT, H5P_DEFAULT));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HAttribute::
+open(const Hid& loc_id, const String& var)
+{
+  HDF5_MUTEX
+  _setId(H5Aopen_name(loc_id.id(), var.localstr()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+herr_t HAttribute::
+write(hid_t native_type, void* array)
+{
+  HDF5_MUTEX
+  return H5Awrite(id(), native_type, array);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+herr_t HAttribute::
+read(hid_t native_type, void* array)
+{
+  HDF5_MUTEX
+  return H5Aread(id(), native_type, array);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HSpace HAttribute::
+getSpace()
+{
+  HDF5_MUTEX
+  return HSpace(H5Aget_space(id()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HType::
+~HType()
+{
+  if (id() > 0) {
+    HDF5_MUTEX
+    H5Tclose(id());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HDataset::
+open(const Hid& loc_id, const String& var)
+{
+  HDF5_MUTEX
+  _setId(H5Dopen2(loc_id.id(), var.localstr(), H5P_DEFAULT));
+  HDF5_MUTEX_UNLOCK
+  if (isBad())
     ARCANE_THROW(IOException,"Can not open dataset '{0}'",var);
 }
 
@@ -632,9 +858,23 @@ openIfExists(const Hid& loc_id,const String& var)
 /*---------------------------------------------------------------------------*/
 
 void HProperty::
+close()
+{
+  if (id() > 0) {
+    HDF5_MUTEX
+    H5Pclose(id());
+    _setNullId();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HProperty::
 create(hid_t cls_id)
 {
   close();
+  HDF5_MUTEX
   _setId(H5Pcreate(cls_id));
 }
 
@@ -701,6 +941,7 @@ StandardTypes(bool do_init)
 void StandardTypes::
 initialize()
 {
+  HDF5_MUTEX
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_CHAR);
     m_char_id.setId(type_id);
@@ -828,6 +1069,7 @@ StandardTypes::
 void StandardTypes::
 _H5Tinsert(hid_t type,const char* name,Integer offset,hid_t field_id)
 {
+  // Mutex géré par initialize.
   herr_t herr = H5Tinsert(type,name,offset,field_id);
   if (herr<0){
     ARCANE_FATAL("Can not insert type");
@@ -922,9 +1164,11 @@ readDim()
     const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
+    HDF5_MUTEX
     int nb_dim = H5Sget_simple_extent_ndims(hspace.id());
     H5Sget_simple_extent_dims(hspace.id(),hdf_dims,max_dims);
-    for( Integer i=0; i<nb_dim; ++i ){
+    HDF5_MUTEX_UNLOCK
+    for (Integer i = 0; i < nb_dim; ++i) {
       //cerr << "** DIM i=" << i << " hdim=" << hdf_dims[i]
       //   << " max=" << max_dims[i] << '\n';
       m_dimensions.add((Int64)hdf_dims[i]);
@@ -1232,13 +1476,15 @@ read(Hdf5Utils::StandardTypes & st)
     const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
+    HDF5_MUTEX
     int nb_dim = H5Sget_simple_extent_ndims(hspace.id());
-    H5Sget_simple_extent_dims(hspace.id(),hdf_dims,max_dims);
-    
-    if (nb_dim!=1 || hdf_dims[0]!=1)
-      ARCANE_THROW(IOException,"Cannot read non scalar");
+    H5Sget_simple_extent_dims(hspace.id(), hdf_dims, max_dims);
+    HDF5_MUTEX_UNLOCK
+
+    if (nb_dim != 1 || hdf_dims[0] != 1)
+      ARCANE_THROW(IOException, "Cannot read non scalar");
   }
-  
+
   DataType dummy;
   m_hdataset.read(st.nativeType(DataType()),&dummy);
   return dummy;
@@ -1260,9 +1506,11 @@ read(Hdf5Utils::StandardTypes & st)
     const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
+    HDF5_MUTEX
     int nb_dim = H5Sget_simple_extent_ndims(hspace.id());
     H5Sget_simple_extent_dims(hspace.id(),hdf_dims,max_dims);
-    
+    HDF5_MUTEX_UNLOCK
+
     if (nb_dim != 1)
       ARCANE_THROW(IOException,"Cannot read multidim string");
     utf8_bytes.resize(hdf_dims[0]);
