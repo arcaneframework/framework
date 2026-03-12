@@ -31,21 +31,15 @@ class PostProcessorWriterBasePrivate;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup StandardService
  * \brief Classe de base d'un écrivain pour les informations de post-traitement.
  */
-class ARCANE_CORE_EXPORT PostProcessorWriterBase
-: public BasicService
-, public IPostProcessorWriter
+class ARCANE_CORE_EXPORT PostProcessorWriterCommonBase
+: public IPostProcessorWriter
 {
  public:
 
-  explicit PostProcessorWriterBase(const ServiceBuildInfo& sbi);
-  ~PostProcessorWriterBase() override;
-
- public:
-
-  void build() override {}
+  PostProcessorWriterCommonBase();
+  ~PostProcessorWriterCommonBase() override;
 
  public:
 
@@ -67,6 +61,25 @@ class ARCANE_CORE_EXPORT PostProcessorWriterBase
  private:
 
   PostProcessorWriterBasePrivate* m_p = nullptr; //! Implémentation
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup StandardService
+ * \brief Classe de base d'un service écrivain pour les informations de post-traitement.
+ */
+class ARCANE_CORE_EXPORT PostProcessorWriterBase
+: public BasicService
+, public PostProcessorWriterCommonBase
+{
+ public:
+
+  explicit PostProcessorWriterBase(const ServiceBuildInfo& sbi);
+
+ public:
+
+  void build() override {}
 };
 
 /*---------------------------------------------------------------------------*/

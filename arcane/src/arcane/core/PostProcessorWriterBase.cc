@@ -61,18 +61,17 @@ PostProcessorWriterBasePrivate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-PostProcessorWriterBase::
-PostProcessorWriterBase(const ServiceBuildInfo& sbi)
-: BasicService(sbi)
-, m_p(new PostProcessorWriterBasePrivate())
+PostProcessorWriterCommonBase::
+PostProcessorWriterCommonBase()
+: m_p(new PostProcessorWriterBasePrivate())
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-PostProcessorWriterBase::
-~PostProcessorWriterBase()
+PostProcessorWriterCommonBase::
+~PostProcessorWriterCommonBase()
 {
   delete m_p;
 }
@@ -80,7 +79,20 @@ PostProcessorWriterBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PostProcessorWriterBase::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+PostProcessorWriterBase::
+PostProcessorWriterBase(const ServiceBuildInfo& sbi)
+: BasicService(sbi)
+{
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void PostProcessorWriterCommonBase::
 setBaseDirectoryName(const String& dirname)
 {
   m_p->m_base_dirname = dirname;
@@ -89,7 +101,7 @@ setBaseDirectoryName(const String& dirname)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& PostProcessorWriterBase::
+const String& PostProcessorWriterCommonBase::
 baseDirectoryName()
 {
   return m_p->m_base_dirname;
@@ -98,7 +110,7 @@ baseDirectoryName()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PostProcessorWriterBase::
+void PostProcessorWriterCommonBase::
 setBaseFileName(const String& filename)
 {
   m_p->m_base_filename = filename;
@@ -107,7 +119,7 @@ setBaseFileName(const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& PostProcessorWriterBase::
+const String& PostProcessorWriterCommonBase::
 baseFileName()
 {
   return m_p->m_base_filename;
@@ -116,7 +128,7 @@ baseFileName()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PostProcessorWriterBase::
+void PostProcessorWriterCommonBase::
 setTimes(RealConstArrayView times)
 {
   m_p->m_times = times;
@@ -125,7 +137,7 @@ setTimes(RealConstArrayView times)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PostProcessorWriterBase::
+void PostProcessorWriterCommonBase::
 setVariables(VariableCollection variables)
 {
   m_p->m_variables = variables;
@@ -134,7 +146,7 @@ setVariables(VariableCollection variables)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PostProcessorWriterBase::
+void PostProcessorWriterCommonBase::
 setGroups(ItemGroupCollection groups)
 {
   m_p->m_groups.clone(groups);
@@ -143,7 +155,7 @@ setGroups(ItemGroupCollection groups)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Real> PostProcessorWriterBase::
+ConstArrayView<Real> PostProcessorWriterCommonBase::
 times()
 {
   return m_p->m_times;
@@ -152,7 +164,7 @@ times()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableCollection PostProcessorWriterBase::
+VariableCollection PostProcessorWriterCommonBase::
 variables()
 {
   return m_p->m_variables;
@@ -161,10 +173,32 @@ variables()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupCollection PostProcessorWriterBase::
+ItemGroupCollection PostProcessorWriterCommonBase::
 groups()
 {
   return m_p->m_groups;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String IPostProcessorWriter::
+getBaseDirectoryName()
+{
+  return baseDirectoryName();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String IPostProcessorWriter::
+getBaseFileName()
+{
+  return baseFileName();
 }
 
 /*---------------------------------------------------------------------------*/
