@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   virtual void setBaseDirectoryName(const String& dirname) = 0;
 
   //! Nom du répertoire de sortie des fichiers.
-  virtual String baseDirectoryName() = 0;
+  virtual const String& baseDirectoryName() = 0;
 
   /*!
    * \brief Positionne le nom du fichier contenant les sorties.
@@ -95,7 +95,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   virtual void setBaseFileName(const String& filename) = 0;
 
   //! Nom du fichier contenant les sorties.
-  virtual String baseFileName() = 0;
+  virtual const String& baseFileName() = 0;
 
   /*!
    * \brief Positionne le maillage.
@@ -117,7 +117,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
   virtual ConstArrayView<Real> times() = 0;
 
   //! Positionne la liste des variables à sortir
-  virtual void setVariables(const VariableCollection& variables) = 0;
+  virtual void setVariables(VariableCollection variables) = 0;
 
   //! Liste des variables à sauver
   virtual VariableCollection variables() = 0;
@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT IPostProcessorWriter
    *
    * La collection passée en argument est clonée.
    */
-  virtual void setGroups(const ItemGroupCollection& groups) = 0;
+  virtual void setGroups(ItemGroupCollection groups) = 0;
 
   //! Liste des groupes à sauver
   virtual ItemGroupCollection groups() = 0;

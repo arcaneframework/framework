@@ -89,7 +89,7 @@ setBaseDirectoryName(const String& dirname)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String PostProcessorWriterBase::
+const String& PostProcessorWriterBase::
 baseDirectoryName()
 {
   return m_p->m_base_dirname;
@@ -107,7 +107,7 @@ setBaseFileName(const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String PostProcessorWriterBase::
+const String& PostProcessorWriterBase::
 baseFileName()
 {
   return m_p->m_base_filename;
@@ -126,7 +126,7 @@ setTimes(RealConstArrayView times)
 /*---------------------------------------------------------------------------*/
 
 void PostProcessorWriterBase::
-setVariables(const VariableCollection& variables)
+setVariables(VariableCollection variables)
 {
   m_p->m_variables = variables;
 }
@@ -135,7 +135,7 @@ setVariables(const VariableCollection& variables)
 /*---------------------------------------------------------------------------*/
 
 void PostProcessorWriterBase::
-setGroups(const ItemGroupCollection& groups)
+setGroups(ItemGroupCollection groups)
 {
   m_p->m_groups.clone(groups);
 }
