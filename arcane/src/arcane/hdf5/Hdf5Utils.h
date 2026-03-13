@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5Utils.h                                                 (C) 2000-2024 */
+/* Hdf5Utils.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions utilitaires pour hdf5.                                          */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,8 @@
 // indéfinis avec H5T_NATIVE*
 #define _HDF5USEDLL_
 #include <hdf5.h>
+
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,7 +68,39 @@ extern "C"
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_HDF5_EXPORT std::mutex&
+class ARCANE_HDF5_EXPORT Hdf5Mutex
+{
+
+ public:
+
+  Hdf5Mutex(std::mutex& mutex, bool& is_active)
+  : m_mutex(mutex)
+  , m_is_active(is_active)
+  {}
+
+ public:
+
+  void lock() const
+  {
+    if (m_is_active)
+      m_mutex.lock();
+  }
+  void unlock() const
+  {
+    if (m_is_active)
+      m_mutex.unlock();
+  }
+
+ private:
+
+  std::mutex& m_mutex;
+  bool& m_is_active;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_HDF5_EXPORT Hdf5Mutex&
 _ArcaneHdf5UtilsMutex();
 
 /*---------------------------------------------------------------------------*/
@@ -86,6 +120,20 @@ class ARCANE_HDF5_EXPORT HInit
 
   //! Vrai HDF5 est compilé avec le support de MPI
   static bool hasParallelHdf5();
+
+  /*!
+   * \brief Fonction permettant d'activer ou de désactiver les verrous à
+   * chaque appel à HDF5.
+   * \warning La variable d'environnement ARCANE_HDF5_DISABLE_MUTEX est
+   * prioritaire par rapport au paramètre de cette fonction.
+   * \warning En hydride, si utilisation en parallèle d'un parallelMng hybride
+   * et utilisation d'un parallelMng full MPI, et changement régulier du
+   * useMutex(), faire attention à ne pas mélanger les appels HDF5 avec les
+   * deux parallelMngs.
+   *
+   * \param is_active true si activation des mutex.
+   */
+  static void useMutex(bool is_active, IParallelMng* pm);
 };
 
 /*---------------------------------------------------------------------------*/

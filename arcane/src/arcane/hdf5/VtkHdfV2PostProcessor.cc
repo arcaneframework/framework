@@ -393,6 +393,7 @@ beginWrite(const VariableCollection& vars)
   info(4) << "VtkHdfV2DataWriter::beginWrite() file=" << m_full_filename;
 
   HInit();
+  HInit::useMutex(pm->isThreadImplementation(), pm);
 
   // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants :
   // * Hdf5 a été compilé avec MPI,
