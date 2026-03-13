@@ -846,14 +846,7 @@ class ArcaneHdf5CheckpointService2
   , m_reader(nullptr)
   , m_fileset_size(1)
   , m_index_modulo(0)
-  {
-#ifndef HDF5_IS_THREADSAFE
-    if (sbi.subDomain()->parallelMng()->isThreadImplementation()) {
-      // ARCANE_FATAL("HDF5 not threadsafe");
-      warning() << "HDF5 not threadsafe.";
-    }
-#endif
-  }
+  {}
 
   virtual IDataWriter* dataWriter() { return m_writer; }
   virtual IDataReader* dataReader() { return m_reader; }

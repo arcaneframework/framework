@@ -127,8 +127,10 @@ useMutex([[maybe_unused]] bool is_active, [[maybe_unused]] IParallelMng* pm)
   global_hdf5_mutex_is_active = env_is_enable && is_active;
   global_hdf5_mutex.unlock();
   pm->barrier();
+  pm->traceMng()->info() << "HDF5 -- Is HDF5 threadsafe: 0 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
+#else
+  pm->traceMng()->info() << "HDF5 -- Is HDF5 threadsafe: 1 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
 #endif
-  pm->traceMng()->info() << "HDF5 : Is Mutex enabled: " << global_hdf5_mutex_is_active;
 }
 
 /*---------------------------------------------------------------------------*/
