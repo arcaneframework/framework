@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkHdfPostProcessor.cc                                      (C) 2000-2024 */
+/* VtkHdfPostProcessor.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Pos-traitement au format VTK HDF.                                         */
 /*---------------------------------------------------------------------------*/
@@ -192,6 +192,7 @@ beginWrite(const VariableCollection& vars)
   info(4) << "VtkHdfDataWriter::beginWrite() file=" << m_full_filename;
 
   HInit();
+  HInit::useMutex(pm->isThreadImplementation(), pm);
 
   HGroup top_group;
 
