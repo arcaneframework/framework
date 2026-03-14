@@ -664,6 +664,8 @@ fillDevices(bool is_verbose)
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
     o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
+    o << " maxBlocksPerMultiProcessor = " << dp.maxBlocksPerMultiProcessor << "\n";
+    o << " maxThreadsPerMultiProcessor = " << dp.maxThreadsPerMultiProcessor << "\n";
     o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " clockRate = " << dp.clockRate << "\n";
     //o << " deviceOverlap = " << dp.deviceOverlap<< "\n";
@@ -683,6 +685,22 @@ fillDevices(bool is_verbose)
     o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
     o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
+    o << " memoryBusWitdh = " << dp.memoryBusWidth << " bits\n";
+
+    int clock_rate = 0;
+    ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&clock_rate, hipDeviceAttributeClockRate, i));
+    o << " clockRate = " << (clock_rate / 1000) << " MHz\n";
+
+    int memory_clock_rate = 0;
+    ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&memory_clock_rate, hipDeviceAttributeMemoryClockRate, i));
+    o << " memoryClockRate = " << (memory_clock_rate / 1000) << " MHz\n";
+
+    // Sur AMD, la fréquence donnée pour la mémoire doit être multipliée par 8
+    // pour avoir la bande passante d'un bit du bus (comme il faut aussi diviser par 8
+    // pour avoir la valeur en octet, on supprime simplement cette division)
+    Real memory_bandwith = (dp.memoryBusWidth * memory_clock_rate * 2.0) / 1.0e6;
+    o << " MemoryBandwith = " << memory_bandwith << " GB/s\n";
+
 #if HIP_VERSION_MAJOR >= 6
     o << " sharedMemPerMultiprocessor = " << dp.sharedMemPerMultiprocessor << "\n";
     o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
