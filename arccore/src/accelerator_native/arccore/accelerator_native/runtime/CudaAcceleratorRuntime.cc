@@ -949,6 +949,7 @@ fillDevices(bool is_verbose)
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
     o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
+    o << " maxBlocksPerMultiProcessor = " << dp.maxBlocksPerMultiProcessor << "\n";
     o << " maxThreadsPerMultiProcessor = " << dp.maxThreadsPerMultiProcessor << "\n";
     o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " cooperativeLaunch = " << dp.cooperativeLaunch << "\n";
@@ -966,8 +967,20 @@ fillDevices(bool is_verbose)
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
     o << " pciInfo = " << dp.pciDomainID << " " << dp.pciBusID << " " << dp.pciDeviceID << "\n";
+    o << " memoryBusWitdh = " << dp.memoryBusWidth << " bits\n";
+
+    int clock_rate = 0;
+    cudaDeviceGetAttribute(&clock_rate, cudaDevAttrClockRate, i);
+    o << " clockRate = " << (clock_rate / 1000) << " MHz\n";
+
+    int memory_clock_rate = 0;
+    cudaDeviceGetAttribute(&memory_clock_rate, cudaDevAttrMemoryClockRate, i);
+    o << " memoryClockRate = " << (memory_clock_rate / 1000) << " MHz\n";
+
+    Real memory_bandwith = ((dp.memoryBusWidth * memory_clock_rate * 2.0) / 8.0) / 1.0e6;
+    o << " MemoryBandwith = " << memory_bandwith << " GB/s\n";
+
 #if !defined(ARCCORE_USING_CUDA13_OR_GREATER)
-    o << " clockRate = " << dp.clockRate << "\n";
     o << " deviceOverlap = " << dp.deviceOverlap << "\n";
     o << " computeMode = " << dp.computeMode << "\n";
     o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
