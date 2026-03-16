@@ -487,7 +487,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   return error;
 }
 
-#if USE_CUDA
+#ifdef USE_CUDA
 Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
     const MCGDeviceVectorType &x0, MCGDeviceVectorType &x,
     const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
