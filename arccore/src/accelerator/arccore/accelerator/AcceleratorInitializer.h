@@ -5,59 +5,74 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Initializer.h                                               (C) 2000-2026 */
+/* AcceleratorInitializer.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Classe pour initialiser le runtime accélérateur.                          */
+/* Initialiseur pour un runtime-accélérator.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_ACCELERATOR_INTERNAL_INITIALIZER_H
-#define ARCCORE_ACCELERATOR_INTERNAL_INITIALIZER_H
+#ifndef ARCCORE_ACCELERATOR_ACCELERATORINITIALIZER_H
+#define ARCCORE_ACCELERATOR_ACCELERATORINITIALIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
-#include "arccore/trace/ITraceMng.h"
-
-#include "arccore/common/ArccoreApplicationBuildInfo.h"
-#include "arccore/concurrency/internal/ConcurrencyApplication.h"
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
+class Initializer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Classe interne pour initialiser le runtime accélérateur.
+ * \brief Classe pour initialiser un runtime pour l'API accélérateur.
+ *
+ * \warning API expérimentatle en cours de définition.
+ *
+ * Une seule instance de cette classe peut exister à un moment donné.
  */
-class ARCCORE_ACCELERATOR_EXPORT Initializer
+class ARCCORE_ACCELERATOR_EXPORT AcceleratorInitializer
 {
  public:
 
-  Initializer(bool use_accelerator, Int32 max_allowed_thread);
-  ~Initializer() noexcept(false);
+  //! Initialise un runtime séquentiel
+  AcceleratorInitializer();
+
+  /*!
+   * \brief Initialise un runtime.
+   *
+   * Si \a use_accelerator est vrai, on initialise le runtime accélérateur
+   * utilisé pour compiler Arcane. Dans ce cas executionPolicy() retournera
+   * ce runtime.
+   *
+   * Si \a nb_thread est supérieur à 1, alors on initialise aussi le
+   * runtime multi-thread.
+   */
+  explicit AcceleratorInitializer(bool use_accelerator, Int32 nb_thread = 1);
+
+  ~AcceleratorInitializer();
 
  public:
 
-  Initializer(const Initializer&) = delete;
-  Initializer(Initializer&&) = delete;
-  Initializer& operator=(const Initializer&) = delete;
-  Initializer& operator=(Initializer&&) = delete;
+  AcceleratorInitializer(const AcceleratorInitializer&) = delete;
+  AcceleratorInitializer(AcceleratorInitializer&&) = delete;
+  AcceleratorInitializer& operator=(const AcceleratorInitializer&) = delete;
+  AcceleratorInitializer& operator=(AcceleratorInitializer&&) = delete;
 
  public:
 
-  eExecutionPolicy executionPolicy() const { return m_policy; }
-  ITraceMng* traceMng() const { return m_trace_mng.get(); }
+  //! Politique d'exécution initialisée par défaut
+  eExecutionPolicy executionPolicy() const;
+
+  //! Gestionnaire de trace associé
+  ITraceMng* traceMng() const;
 
  private:
 
-  eExecutionPolicy m_policy = eExecutionPolicy::Sequential;
-  ReferenceCounter<ITraceMng> m_trace_mng;
-  ArccoreApplicationBuildInfo m_application_build_info;
-  ConcurrencyApplication m_concurrency_application;
+  std::unique_ptr<Initializer> m_initializer;
 };
 
 /*---------------------------------------------------------------------------*/
