@@ -320,7 +320,9 @@ MachineShMemWinMDVariableT<ItemType, DataType, Extents>::
 MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var)
 : m_base(makeRef(new MachineShMemWinVariableMDBase(var.variable())))
 , m_vart(var)
-{}
+{
+  updateVariable();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

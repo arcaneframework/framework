@@ -63,6 +63,11 @@ ConstArrayView<Int32> MachineShMemWinVariableBase::
 machineRanks() const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
+#ifdef ARCANE_CHECK
+  if (data.baseAddress() == nullptr) {
+    ARCANE_FATAL("Variable not initialised yet. Call var.resize() method before.");
+  }
+#endif
   return MachineShMemWinMemoryAllocator::machineRanks(data);
 }
 
@@ -73,6 +78,11 @@ void MachineShMemWinVariableBase::
 barrier() const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
+#ifdef ARCANE_CHECK
+  if (data.baseAddress() == nullptr) {
+    ARCANE_FATAL("Variable not initialised yet. Call var.resize() method before.");
+  }
+#endif
   MachineShMemWinMemoryAllocator::barrier(data);
 }
 
@@ -83,6 +93,11 @@ Span<std::byte> MachineShMemWinVariableBase::
 segmentView(Int32 rank) const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
+#ifdef ARCANE_CHECK
+  if (data.baseAddress() == nullptr) {
+    ARCANE_FATAL("Variable not initialised yet. Call var.resize() method before.");
+  }
+#endif
   return MachineShMemWinMemoryAllocator::segmentView(data, rank).subSpan(0, m_sizeof_var[rank]);
 }
 

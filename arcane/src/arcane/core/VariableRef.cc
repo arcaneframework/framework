@@ -406,6 +406,7 @@ _checkValidPropertyChanged(int property)
   case IVariable::PNoExchange:
   case IVariable::PPersistant:
   case IVariable::PNoReplicaSync:
+  case IVariable::PDumpNull:
     return true;
   case IVariable::PHasTrace:
   case IVariable::PPrivate:
