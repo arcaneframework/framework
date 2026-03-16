@@ -7,6 +7,8 @@ set(SOURCES
   AcceleratorGlobal.h
   AcceleratorGlobal.cc
   AcceleratorUtils.h
+  AcceleratorInitializer.cc
+  AcceleratorInitializer.h
   Atomic.h
   CommonCudaHipReduceImpl.h
   CommonCudaHipAtomicImpl.h
