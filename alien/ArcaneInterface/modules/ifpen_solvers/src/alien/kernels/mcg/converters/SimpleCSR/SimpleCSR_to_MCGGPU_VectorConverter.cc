@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
+#include "Common/mcgs_config.h"
 #include "alien/core/backend/IVectorConverter.h"
 #include "alien/core/backend/VectorConverterRegisterer.h"
 #include "alien/kernels/simple_csr/SimpleCSRVector.h"
@@ -15,6 +16,7 @@
 
 using namespace Alien;
 
+#ifdef USE_CUDA
 class SimpleCSR_to_MCGGPU_VectorConverter : public IVectorConverter
 {
  public:
@@ -49,3 +51,4 @@ SimpleCSR_to_MCGGPU_VectorConverter::convert(
 }
 
 REGISTER_VECTOR_CONVERTER(SimpleCSR_to_MCGGPU_VectorConverter);
+#endif

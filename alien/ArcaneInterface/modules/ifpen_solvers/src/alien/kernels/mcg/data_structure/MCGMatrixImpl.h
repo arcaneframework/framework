@@ -4,16 +4,18 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "Common/mcgs_config.h"
 #include "alien/core/impl/MultiMatrixImpl.h"
 
 #include "alien/kernels/mcg/data_structure/MCGInternal.h"
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"
 
 #include "MCGSolver/LinearSystem/LinearSystem.h"
+#ifdef USE_CUDA
 #include "MCGSolver/GPULinearSystem/GPULinearSystem.h"
+#endif
 
 namespace Alien {
-
 
 template<typename NumT,MCGInternal::eMemoryDomain Domain>
 MCGMatrix<NumT,Domain>::MCGMatrix(const MultiMatrixImpl* multi_impl)
@@ -45,6 +47,7 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
     }
   }
   else {
+#ifdef USE_CUDA
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
       m_internal->m_matrix = MCGSolver::GPULinearSystem<NumT,MCGSolver::Int32SparseIndex>::createMatrixFromHost(
@@ -59,6 +62,9 @@ MCGMatrix<NumT,Domain>::initMatrix(const MCGInternal::eMemoryDomain src_domain,c
         MCGSolver::GPULinearSystem<Real,MCGSolver::Int32SparseIndex>::createMatrix(
           block_size,block_size2,nrow,ncol,nblocks,row_offset,cols,m_internal->m_elem_perm.data());
     }
+#else
+    alien_fatal( [] { std::cout << "MCGSolver Device memory domain not supported";});
+#endif
   }
 
   m_internal->m_elliptic_split_tag = computeEllipticSplitTags(block_size);
@@ -82,6 +88,7 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
     }
   }
   else {
+#ifdef USE_CUDA
     if (src_domain == MCGInternal::eMemoryDomain::Host) {
       // CPU -> GPU
       auto error = cudaMemcpyAsync(m_internal->m_val.data(), values, m_internal->m_val.size()*sizeof(NumT),
@@ -98,6 +105,9 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
       MCGSolver::GPULinearSystem<NumT,MCGSolver::Int32SparseIndex>::setMatrixValues(
           m_internal->m_matrix,values,m_internal->m_elem_perm.data());
     }
+#else
+    alien_fatal( [] { std::cout << "MCGSolver Device memory domain not supported";});
+#endif
   }
 
   return true;
@@ -123,7 +133,11 @@ MCGMatrix<NumT,Domain>::computeEllipticSplitTags(int equation_num) const
   m_internal->m_equation_type =
       std::make_shared<typename MatrixInternal::VectorEqType>(local_size * equation_num, 1);
 
+#ifdef USE_CUDA
   MCGSolver::ManagedArray<MCGSolver::Equation::eType> equation_type;
+#else
+  MCGSolver::HostArray<MCGSolver::Equation::eType> equation_type;
+#endif
 
   MCGSolver::Equation::eType *eq_type = nullptr;
 
@@ -149,13 +163,17 @@ MCGMatrix<NumT,Domain>::computeEllipticSplitTags(int equation_num) const
     }
   }
 
-  if (Domain == MCGInternal::eMemoryDomain::Device) {
+  if constexpr (Domain == MCGInternal::eMemoryDomain::Device) {
+#ifdef USE_CUDA
     auto err = cudaMemcpyAsync(m_internal->m_equation_type->data(),eq_type,
       equation_type.size() * sizeof(MCGSolver::Equation::eType), cudaMemcpyHostToDevice, nullptr);
 
     if (err != cudaSuccess) {
      throw Alien::FatalErrorException("cudaMemcpyAsync for elliptic_equation tag failed");
     }
+#else
+    alien_fatal( [] { std::cout << "MCGSolver Device memory domain not supported";});
+#endif
   }
 
 

@@ -84,9 +84,10 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   using MCGMatrixType = MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Host>;
   using MCGVectorType = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Host>;
+#ifdef USE_CUDA
   using MCGDeviceMatrixType = MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::Device>;
   using MCGDeviceVectorType = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::Device>;
-
+#endif
 
   using CSRMatrixType = SimpleCSRMatrix<Real>;
   using CSRVectorType = SimpleCSRVector<Real>;
@@ -143,41 +144,54 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
       const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
-  Integer _solve(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, MCGDeviceVectorType& x,
-      const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
       MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
+
+  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b) const;
+
+  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0) const;
+
+  bool _matrixChanged(const MCGMatrixType& A) const;
+
+  bool _rhsChanged(const MCGVectorType& b) const;
+
+  bool _x0Changed(const MCGVectorType& x0) const;
+
+  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b);
+
+  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0);
+
+#ifdef USE_CUDA
+  Integer _solve(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, MCGDeviceVectorType& x,
+    const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
+
   Integer _solve(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0,
     MCGDeviceVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
-  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b) const;
   bool _systemChanged(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b) const;
 
-  bool _systemChanged(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0) const;
   bool _systemChanged(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0) const;
 
-  bool _matrixChanged(const MCGMatrixType& A) const;
   bool _matrixChanged(const MCGDeviceMatrixType& A) const;
 
-  bool _rhsChanged(const MCGVectorType& b) const;
   bool _rhsChanged(const MCGDeviceVectorType& b) const;
 
-  bool _x0Changed(const MCGVectorType& x0) const;
+  void _registerKey(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0);
+
   bool _x0Changed(const MCGDeviceVectorType& x0) const;
 
-  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b);
   void _registerKey(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b);
-
-  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0);
-  void _registerKey(const MCGDeviceMatrixType& A, const MCGDeviceVectorType& b, const MCGDeviceVectorType& x0);
+#endif
 
   bool _hostSolver(MCGSolver::eKernelType kernel);
 
   using MCGSolverLinearSystem =
       MCGSolver::LinearSystem<double, MCGSolver::Int32SparseIndex>;
+#ifdef USE_CUDA
   using MCGSolverDeviceLinearSystem =
       MCGSolver::GPULinearSystem<double, MCGSolver::Int32SparseIndex>;
+#endif
 
  protected:
   std::unique_ptr<MCGSolver::LinearSolver> m_solver;
@@ -234,7 +248,9 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   std::map<std::string, int> m_dir_enum;
 
   std::unique_ptr<MCGSolverLinearSystem> m_system;
+#ifdef USE_CUDA
   std::unique_ptr<MCGSolverDeviceLinearSystem> m_device_system;
+#endif
 
   MCGSolver::UniqueKey m_A_key;
   int64_t m_A_time_stamp = 0;

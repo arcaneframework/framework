@@ -10,5 +10,7 @@
 
 namespace Alien {
 template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Host>;
+#ifdef USE_CUDA
 template class MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>;
+#endif
 }
