@@ -1,25 +1,19 @@
-﻿# Les fenêtres mémoires en mémoire partagée en multi-processus {#arcanedoc_parallel_shmem}
+﻿# Tableaux en mémoire partagée {#arcanedoc_parallel_shmem_winarray}
 
 [TOC]
 
-## Introduction {#arcanedoc_parallel_shmem_intro}
-
-Cette page va décrire comment utiliser la mémoire partagée entre les processus d'un même noeud de calcul à l'aide de
-fenêtres mémoires.
-
-Une fenêtre mémoire est un espace mémoire alloué dans une partie de la mémoire accessible par tous les processus.
-Cette fenêtre sera découpée en plusieurs segments, un par processus.
+## Introduction {#arcanedoc_parallel_shmem_winarray_intro}
 
 Deux implémentations différentes sont disponibles : une implémentation avec tous les segments contigus et avec une
 taille constante, définie lors de la construction de l'objet et une autre implémentation avec des segments non-contigus
 et avec une taille pouvant évoluer.
 
-## Implémentation avec segments contigus {#arcanedoc_parallel_shmem_const}
+## Implémentation avec segments contigus {#arcanedoc_parallel_shmem_winarray_const}
 
 Cette implémentation va permettre de créer une fenêtre mémoire ayant tous ses segments contigus.
 Il est ainsi assez simple de redécouper les segments pendant l'utilisation (par exemple, pour équilibrer un calcul).
 
-### Utilisation {#arcanedoc_parallel_shmem_const_usage}
+### Utilisation {#arcanedoc_parallel_shmem_winarray_const_usage}
 
 Cette partie est gérée par la classe Arcane::ContigMachineShMemWin.
 
@@ -81,7 +75,7 @@ La fenêtre étant contigüe, l'accès à toute la fenêtre est possible pour to
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_6
 
-## Implémentation avec segments non-contigus {#arcanedoc_parallel_shmem_var}
+## Implémentation avec segments non-contigus {#arcanedoc_parallel_shmem_winarray_var}
 
 Cette implémentation est assez différente de la précédente.
 Ici, les segments des fenêtres mémoires ne sont plus contigus. De plus, avec cette implémentation, il est possible de
@@ -89,7 +83,7 @@ redimensionner les segments comme un tableau dynamique classique.
 
 Néanmoins, cette opération est collective, ce qui contamine la plupart des méthodes de l'implémentation.
 
-### Utilisation {#arcanedoc_parallel_shmem_var_usage}
+### Utilisation {#arcanedoc_parallel_shmem_winarray_var_usage}
 
 Cette partie est gérée par la classe Arcane::MachineShMemWin.
 
@@ -197,7 +191,7 @@ else if (my_rank == 2){
 }
 ```
 
-## Mémoire partagée entre processus {#arcanedoc_parallel_shmem_shmem}
+## Mémoire partagée entre processus {#arcanedoc_parallel_shmem_winarray_shmem}
 
 La mémoire partagée entre processus ne doit pas être vu comme la mémoire partagée en multithread.
 Ce partage n'est fait que sur une partie de la mémoire, pas sur toute la mémoire.
@@ -266,9 +260,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_parallel_loadbalance
+\ref arcanedoc_parallel_shmem
 </span>
-<!-- <span class="next_section_button">
-\ref 
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_parallel_shmem_winvariable
+</span>
 </div>
