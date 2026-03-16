@@ -389,6 +389,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   return error;
 }
 
+#ifdef USE_CUDA
 Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
   MCGDeviceVectorType &x, const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
   alien_debug([this,&A,&b,&x]{
@@ -432,6 +433,7 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 
   return error;
 }
+#endif
 
 Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
@@ -485,6 +487,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   return error;
 }
 
+#if USE_CUDA
 Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGDeviceVectorType &b,
     const MCGDeviceVectorType &x0, MCGDeviceVectorType &x,
     const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>> &part_info) {
@@ -536,6 +539,7 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 
   return error;
 }
+#endif
 
 const Alien::SolverStatus&
 MCGInternalLinearSolver::getStatus() const {
@@ -657,6 +661,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
     error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
   }
   else { // use gpu
+#ifdef USE_CUDA
     const auto& matrix = A.impl()->get<BackEnd::tag::mcgsolver_gpu>();
 
     const auto& rhs = b.impl()->get<BackEnd::tag::mcgsolver_gpu>();
@@ -703,6 +708,10 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
     m_prepare_timer.stop();
 
     error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
+#else
+    alien_fatal([]{std::cout << "no GPU support in MGCSolver";});
+#endif
+
   }
 
 
@@ -771,6 +780,7 @@ MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrix
   return false;
 }
 
+#ifdef USE_CUDA
 bool
 MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
     const MCGInternalLinearSolver::MCGDeviceVectorType& b) const {
@@ -796,6 +806,7 @@ MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDevice
 
   return false;
 }
+#endif
 
 bool
 MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGMatrixType& A) const {
@@ -814,6 +825,7 @@ MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGMatrix
   return false;
 }
 
+#ifdef USE_CUDA
 bool
 MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A) const {
   if (m_device_system == nullptr) {
@@ -830,6 +842,7 @@ MCGInternalLinearSolver::_matrixChanged(const MCGInternalLinearSolver::MCGDevice
 
   return false;
 }
+#endif
 
 bool
 MCGInternalLinearSolver::_rhsChanged(const MCGVectorType& b) const {
@@ -844,6 +857,7 @@ MCGInternalLinearSolver::_rhsChanged(const MCGVectorType& b) const {
   return false;
 }
 
+#ifdef USE_CUDA
 bool
 MCGInternalLinearSolver::_rhsChanged(const MCGDeviceVectorType& b) const {
   if (b.m_vector != m_device_system->getRhs()) {
@@ -856,6 +870,7 @@ MCGInternalLinearSolver::_rhsChanged(const MCGDeviceVectorType& b) const {
 
   return false;
 }
+#endif
 
 bool
 MCGInternalLinearSolver::_x0Changed(const MCGVectorType& x0) const {
@@ -869,6 +884,7 @@ MCGInternalLinearSolver::_x0Changed(const MCGVectorType& x0) const {
   return false;
 }
 
+#ifdef USE_CUDA
 bool
 MCGInternalLinearSolver::_x0Changed(const MCGDeviceVectorType& x0) const {
   if (x0.m_vector != m_device_system->getInitSol()) {
@@ -880,6 +896,7 @@ MCGInternalLinearSolver::_x0Changed(const MCGDeviceVectorType& x0) const {
 
   return false;
 }
+#endif
 
 bool
 MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrixType& A,
@@ -898,6 +915,7 @@ MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGMatrix
   return false;
 }
 
+#ifdef USE_CUDA
 bool
 MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
     const MCGInternalLinearSolver::MCGDeviceVectorType& b,
@@ -914,6 +932,7 @@ MCGInternalLinearSolver::_systemChanged(const MCGInternalLinearSolver::MCGDevice
   }
   return false;
 }
+#endif
 
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixType& A,
@@ -923,6 +942,7 @@ MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixTy
   m_b_key = b.m_key;
 }
 
+#ifdef USE_CUDA
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
     const MCGInternalLinearSolver::MCGDeviceVectorType& b)
@@ -930,6 +950,7 @@ MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMa
   m_A_key = A.m_key;
   m_b_key = b.m_key;
 }
+#endif
 
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixType& A,
@@ -940,6 +961,7 @@ MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGMatrixTy
   m_x0_key = x0.m_key;
 }
 
+#ifdef USE_CUDA
 void
 MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMatrixType& A,
     const MCGInternalLinearSolver::MCGDeviceVectorType& b,
@@ -948,6 +970,7 @@ MCGInternalLinearSolver::_registerKey(const MCGInternalLinearSolver::MCGDeviceMa
   _registerKey(A, b);
   m_x0_key = x0.m_key;
 }
+#endif
 
 bool MCGInternalLinearSolver::_hostSolver(MCGSolver::eKernelType kernel) {
   switch (kernel) {

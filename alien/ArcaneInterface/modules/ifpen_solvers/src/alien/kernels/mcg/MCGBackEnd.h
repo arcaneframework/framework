@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
+#include "Common/mcgs_config.h"
 #include "alien/utils/Precomp.h"
 #include "alien/core/backend/BackEnd.h"
 #include "alien/kernels/mcg/data_structure/MemoryDomain.h"
@@ -62,6 +63,7 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
   static BackEndId name() { return "mcgsolver"; }
 };
 
+#ifdef USE_CUDA
 template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_gpu>
 {
   using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>;
@@ -81,4 +83,5 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_gpu>
 
   static BackEndId name() { return "mcgsolver_gpu"; }
 };
+#endif
 } // namespace Alien
