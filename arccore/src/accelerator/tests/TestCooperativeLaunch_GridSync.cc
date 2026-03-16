@@ -43,7 +43,7 @@ _testCooperativeLaunch_GridSync(RunQueue queue, Int32 nb_value, Int32 nb_loop, I
   }
   double y = Platform::getRealTime();
   Real diff = (y - x) * 1000.0;
-  std::cout << "** TotalCooperativeLaunch0 nb_value=" << nb_value
+  std::cout << "** TotalCooperativeLaunch_GridSync nb_value=" << nb_value
             << " nb_loop2=" << nb_loop2 << " time(ms)=" << diff << "\n";
 }
 

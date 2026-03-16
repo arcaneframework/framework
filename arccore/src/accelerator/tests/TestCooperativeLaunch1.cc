@@ -9,6 +9,8 @@
 
 #include "arccore/base/PlatformUtils.h"
 
+#include "arccore/trace/ITraceMng.h"
+
 #include "arccore/common/accelerator/Runner.h"
 #include "arccore/common/accelerator/RunQueue.h"
 #include "arccore/common/NumArray.h"
@@ -17,7 +19,7 @@
 #include "arccore/accelerator/NumArrayViews.h"
 #include "arccore/accelerator/RunCommandLoop.h"
 #include "arccore/accelerator/Reduce.h"
-#include "arccore/accelerator/internal/Initializer.h"
+#include "arccore/accelerator/AcceleratorInitializer.h"
 
 #include "./TestCommon.h"
 
@@ -43,7 +45,7 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
 
 void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
 {
-  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
+  Accelerator::AcceleratorInitializer x(use_accelerator, max_allowed_thread);
   Runner runner(x.executionPolicy());
   RunQueue queue(makeQueue(runner));
   if (queue.isAcceleratorPolicy())
@@ -70,7 +72,8 @@ void _doTestCooperativeLaunch(bool use_accelerator, Int32 max_allowed_thread)
   }
   //nb_loop = 1;
 
-  std::cout << "Using accelerator policy name=" << queue.executionPolicy() << " nb_loop=" << nb_loop << "\n";
+  ITraceMng* tm = x.traceMng();
+  tm->info() << "Using accelerator policy name=" << queue.executionPolicy() << " nb_loop=" << nb_loop;
 
   eMemoryResource mem = queue.memoryResource();
   NumArray<Int64, MDDim1> host_c(eMemoryResource::Host);
