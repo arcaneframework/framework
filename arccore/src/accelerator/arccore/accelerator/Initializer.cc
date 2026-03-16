@@ -56,7 +56,9 @@ Initializer::
 Initializer(bool use_accelerator, Int32 max_allowed_thread)
 : m_trace_mng(arccoreCreateDefaultTraceMng())
 {
-  std::cout << "INIT_ACCELERATOR use?=" << use_accelerator << "\n";
+  const bool is_verbose = false;
+  if (is_verbose)
+    std::cout << "INIT_ACCELERATOR use?=" << use_accelerator << "\n";
   if (use_accelerator) {
     AcceleratorRuntimeInitialisationInfo init_info;
     String default_runtime_name;
@@ -75,7 +77,8 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
     if (library_path.null())
       library_path = Platform::getCurrentDirectory();
 
-    std::cout << "INIT_ACCELERATOR default_runtime=" << default_runtime_name << " lib_path=" << library_path << "\n";
+    if (is_verbose)
+      std::cout << "INIT_ACCELERATOR default_runtime=" << default_runtime_name << " lib_path=" << library_path << "\n";
     bool has_accelerator = false;
     init_info.setIsUsingAcceleratorRuntime(true);
     int r = Impl::RuntimeLoader::loadRuntime(init_info, default_runtime_name, library_path, has_accelerator);
@@ -102,7 +105,8 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
       ConcurrencyApplicationBuildInfo c(task_names.constView(), thread_names.constView(), nb_task_thread);
       m_concurrency_application.setCoreServices(c);
     }
-    if (max_allowed_thread > 1)
+    // Si la politique d'exécution n'est pas positionnée, alors ce sera le multi-threading
+    if (max_allowed_thread > 1 && m_policy == eExecutionPolicy::Sequential)
       m_policy = eExecutionPolicy::Thread;
   }
 }
