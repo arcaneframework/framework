@@ -23,7 +23,7 @@
 
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
-#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"
 
@@ -46,6 +46,20 @@ HybridContigMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThread
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void HybridContigMachineShMemWinBaseInternalCreator::
+initializeMpiWindowCreator(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng)
+{
+  FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
+  Int32 my_rank_local_proc = my_fri.localRankValue();
+  if (my_rank_local_proc == 0) {
+    // mpi_parallel_mng->adapter()->initializeWindowCreator(mpi_parallel_mng->machineCommunicator()); // Géré par le MpiParallelMng
+    _buildMachineRanksArray(mpi_parallel_mng->adapter()->windowCreator()->machineRanks());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 HybridContigMachineShMemWinBaseInternal* HybridContigMachineShMemWinBaseInternalCreator::
 createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
@@ -61,10 +75,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
-    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
-    if (m_machine_ranks.empty()) {
-      _buildMachineRanksArray(mpi_window_creator);
-    }
+    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
 
     // Le nombre d'éléments de chaque segment. Cette fenêtre fera une taille de nb_thread * nb_proc_sur_le_même_noeud.
     m_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
@@ -121,10 +132,7 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
-    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
-    if (m_machine_ranks.empty()) {
-      _buildMachineRanksArray(mpi_window_creator);
-    }
+    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
   }
   m_barrier->wait();
 
@@ -152,20 +160,8 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
 /*---------------------------------------------------------------------------*/
 
 ConstArrayView<Int32> HybridContigMachineShMemWinBaseInternalCreator::
-machineRanks(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng)
+machineRanks()
 {
-  if (m_machine_ranks.empty()) {
-    m_barrier->wait();
-
-    FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
-    Int32 my_rank_local_proc = my_fri.localRankValue();
-
-    if (my_rank_local_proc == 0) {
-      Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator(mpi_parallel_mng->machineCommunicator());
-      _buildMachineRanksArray(mpi_window_creator);
-    }
-    m_barrier->wait();
-  }
   return m_machine_ranks;
 }
 
@@ -173,13 +169,26 @@ machineRanks(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng)
 /*---------------------------------------------------------------------------*/
 
 void HybridContigMachineShMemWinBaseInternalCreator::
-_buildMachineRanksArray(const Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator)
+machineBarrier(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng) const
 {
-  ConstArrayView<Int32> mpi_ranks(mpi_window_creator->machineRanks());
-  m_machine_ranks.resize(mpi_ranks.size() * m_nb_rank_local_proc);
+  FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
+  Int32 my_rank_local_proc = my_fri.localRankValue();
+  m_barrier->wait();
+  if (my_rank_local_proc == 0)
+    mpi_parallel_mng->barrier();
+  m_barrier->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HybridContigMachineShMemWinBaseInternalCreator::
+_buildMachineRanksArray(ConstArrayView<Int32> mpi_machine_ranks)
+{
+  m_machine_ranks.resize(mpi_machine_ranks.size() * m_nb_rank_local_proc);
 
   Int32 iter = 0;
-  for (Int32 mpi_rank : mpi_ranks) {
+  for (Int32 mpi_rank : mpi_machine_ranks) {
     for (Int32 thread_rank = 0; thread_rank < m_nb_rank_local_proc; ++thread_rank) {
       m_machine_ranks[iter++] = thread_rank + m_nb_rank_local_proc * mpi_rank;
     }

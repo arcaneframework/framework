@@ -33,7 +33,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/internal/MpiRequest.h"
-#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternalCreator.h"
 
 #include <cstdint>
 
@@ -1748,8 +1748,9 @@ profiler() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiContigMachineShMemWinBaseInternalCreator* MpiAdapter::
-windowCreator(MPI_Comm comm_machine)
+// Attention : Non thread-safe !
+void MpiAdapter::
+initializeWindowCreator(MPI_Comm comm_machine)
 {
   if (m_window_creator.isNull()) {
     Integer machine_comm_rank = 0;
@@ -1758,6 +1759,14 @@ windowCreator(MPI_Comm comm_machine)
     ::MPI_Comm_size(comm_machine, &machine_comm_size);
     m_window_creator = makeRef(new MpiContigMachineShMemWinBaseInternalCreator(comm_machine, machine_comm_rank, machine_comm_size, m_communicator, m_comm_size));
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiContigMachineShMemWinBaseInternalCreator* MpiAdapter::
+windowCreator() const
+{
   return m_window_creator.get();
 }
 

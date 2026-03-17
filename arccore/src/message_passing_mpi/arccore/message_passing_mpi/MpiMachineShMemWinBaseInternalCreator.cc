@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiContigMachineShMemWinBaseInternalCreator.cc              (C) 2000-2026 */
+/* MpiMachineShMemWinBaseInternalCreator.cc                    (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternalCreator.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
@@ -94,6 +94,15 @@ ConstArrayView<Int32> MpiContigMachineShMemWinBaseInternalCreator::
 machineRanks() const
 {
   return m_machine_ranks;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiContigMachineShMemWinBaseInternalCreator::
+machineBarrier() const
+{
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/

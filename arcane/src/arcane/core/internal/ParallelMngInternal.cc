@@ -107,6 +107,15 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ParallelMngInternal::
+initializeWindowCreator()
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool ParallelMngInternal::
 isMachineShMemWinAvailable()
 {
@@ -138,6 +147,24 @@ createMachineShMemWinBase([[maybe_unused]] Int64 sizeof_segment,
 
 MemoryAllocationOptions ParallelMngInternal::
 machineShMemWinMemoryAllocator()
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> ParallelMngInternal::
+machineRanks()
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngInternal::
+machineBarrier()
 {
   ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }

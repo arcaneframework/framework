@@ -275,6 +275,7 @@ void VariableInShMemUnitTest::
 _test3()
 {
   {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1]
     VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
     MachineShMemWinVariableArrayT var_sh(var);
 
@@ -291,6 +292,31 @@ _test3()
     for (Int32 rank : machine_ranks) {
       info() << "Rank " << rank << " -- Value : " << var_sh.view(rank);
     }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1]
+  }
+  {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_1]
+    VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    var.resize(2);
+    MachineShMemWinVariableArrayT var_sh(var);
+    //...
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_1]
+  }
+  {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2]
+    VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    {
+      MachineShMemWinVariableArrayT var_sh(var);
+      info() << var_sh.machineRanks();
+      //...
+    }
+    var.resize(2);
+    {
+      MachineShMemWinVariableArrayT var_sh(var);
+      info() << var_sh.machineRanks();
+      //...
+    }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2]
   }
   {
     VariableCellInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
@@ -310,6 +336,43 @@ _test3()
     }
   }
   {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2]
+    VariableCellInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    MachineShMemWinMeshVariableScalarT var_sh(var);
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var[icell] = parallelMng()->commRank();
+    }
+
+    var_sh.barrier();
+
+    auto machine_ranks = var_sh.machineRanks();
+
+    for (Int32 rank : machine_ranks) {
+      info() << "Rank " << rank << " -- Value : " << var_sh(rank, 0);
+    }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2]
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_1]
+    for (Int32 rank : machine_ranks) {
+      Span<Int32> var_rank_view = var_sh.view(rank);
+      for (Int32 local_id_rank = 0; local_id_rank < var_rank_view.size(); ++local_id_rank) {
+        info() << "Rank " << rank << " -- LocalId : " << local_id_rank << " -- Value : " << var_rank_view[local_id_rank];
+      }
+    }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_1]
+    {
+      //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_2]
+      VariableCellInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+
+      ENUMERATE_ (Cell, icell, allCells()) {
+        var[icell] = parallelMng()->commRank();
+      }
+
+      MachineShMemWinMeshVariableScalarT var_sh(var);
+      //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_2]
+    }
+  }
+  {
     VariableArray2Int32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
     MachineShMemWinVariableArray2T var_sh(var);
 
@@ -318,9 +381,9 @@ _test3()
     var(0, 0) = parallelMng()->commRank();
     var(0, 1) = parallelMng()->commRank();
     var(0, 2) = parallelMng()->commRank();
-    var(1, 0) = parallelMng()->commRank()*10;
-    var(1, 1) = parallelMng()->commRank()*10;
-    var(1, 2) = parallelMng()->commRank()*10;
+    var(1, 0) = parallelMng()->commRank() * 10;
+    var(1, 1) = parallelMng()->commRank() * 10;
+    var(1, 2) = parallelMng()->commRank() * 10;
 
     var_sh.updateVariable();
 
@@ -330,7 +393,29 @@ _test3()
       info() << "Rank " << rank << " -- Value0 : " << var_sh.view(rank)[0];
       info() << "Rank " << rank << " -- Value1 : " << var_sh.view(rank)[1];
     }
+  }
+  {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_3]
+    VariableArray2Int32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
 
+    var.resize(2, 3);
+
+    var(0, 0) = parallelMng()->commRank();
+    var(0, 1) = parallelMng()->commRank();
+    var(0, 2) = parallelMng()->commRank();
+    var(1, 0) = parallelMng()->commRank() * 10;
+    var(1, 1) = parallelMng()->commRank() * 10;
+    var(1, 2) = parallelMng()->commRank() * 10;
+
+    MachineShMemWinVariableArray2T var_sh(var);
+
+    auto machine_ranks = var_sh.machineRanks();
+
+    for (Int32 rank : machine_ranks) {
+      info() << "Rank " << rank << " -- Value0 : " << var_sh.view(rank)[0];
+      info() << "Rank " << rank << " -- Value1 : " << var_sh.view(rank)[1];
+    }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_3]
   }
   {
     VariableCellArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
@@ -353,10 +438,45 @@ _test3()
     }
   }
   {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_4]
+    VariableCellArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+
+    constexpr Int32 dim2_var = 2;
+
+    var.resize(dim2_var);
+
+    ENUMERATE_ (Cell, icell, allCells()) {
+      var(icell, 0) = parallelMng()->commRank();
+      var(icell, 1) = parallelMng()->commRank() * 10;
+    }
+
+    MachineShMemWinMeshVariableArrayT var_sh(var);
+    auto machine_ranks = var_sh.machineRanks();
+
+    for (Int32 rank : machine_ranks) {
+
+      Span2<Int32> view2D = var_sh.view(rank);
+      for (Int32 local_id_rank = 0; local_id_rank < view2D.dim1Size(); ++local_id_rank) {
+        Span<Int32> view1D = view2D[local_id_rank];
+        for (Int32 pos = 0; pos < dim2_var; ++pos) {
+          info() << "Rank " << rank << " -- LocalId : " << local_id_rank << " -- Position array : " << pos << " -- Value : " << view1D[pos];
+        }
+      }
+    }
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_4]
+  }
+  {
     MeshMDVariableRefT<Cell, Real, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
 
     MachineShMemWinMeshMDVariableT var_sh(var);
 
+    var.reshape({ 2, 3 });
+
+    var_sh.updateVariable();
+  }
+  {
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_5]
+    MeshMDVariableRefT<Cell, Real, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
     var.reshape({ 2, 3 });
 
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -367,24 +487,39 @@ _test3()
       var(icell, 1, 1) = parallelMng()->commRank() * 40;
       var(icell, 1, 2) = parallelMng()->commRank() * 50;
     }
-    var_sh.updateVariable();
 
+    MachineShMemWinMeshMDVariableT var_sh(var);
     auto machine_ranks = var_sh.machineRanks();
     for (Int32 rank : machine_ranks) {
       MDSpan<Real, MDDim3> aaa = var_sh.view(rank);
       info() << "Rank " << rank << " -- aaa.extents().extent0() : " << aaa.extent0();
       info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
       info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
-      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
     }
-
-    // MDSpan<Real, MDDim2> bbb = var_sh(0, 0);
+    //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_5]
   }
   {
     MeshVectorMDVariableRefT<Cell, Real, 3, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
     MachineShMemWinMeshVectorMDVariableT var_sh(var);
 
     var.reshape({ 2, 3 });
+
+    var_sh.updateVariable();
+  }
+  {
+    MeshMatrixMDVariableRefT<Cell, Real, 2, 4, MDDim1> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    MachineShMemWinMeshMatrixMDVariableT var_sh(var);
+
+    var.reshape({ 3 });
+
+    var_sh.updateVariable();
+  }
+  //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_6]
+  {
+    MeshVectorMDVariableRefT<Cell, Real, 3, MDDim2> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
+    var.reshape({ 2, 3 });
+
+    MachineShMemWinMeshVectorMDVariableT var_sh(var);
 
     ENUMERATE_ (Cell, icell, allCells()) {
       var(icell, 0, 0) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank()), 0, 0 };
@@ -394,7 +529,8 @@ _test3()
       var(icell, 1, 1) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 40), 0, 0 };
       var(icell, 1, 2) = NumVector<Real, 3>{ static_cast<Real>(parallelMng()->commRank() * 50), 0, 0 };
     }
-    var_sh.updateVariable();
+
+    var_sh.barrier();
 
     auto machine_ranks = var_sh.machineRanks();
     for (Int32 rank : machine_ranks) {
@@ -403,13 +539,10 @@ _test3()
       info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
       info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
       info() << "Rank " << rank << " -- aaa.extents().extent3() : " << aaa.extent3();
-      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
     }
   }
   {
     MeshMatrixMDVariableRefT<Cell, Real, 2, 4, MDDim1> var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
-    MachineShMemWinMeshMatrixMDVariableT var_sh(var);
-
     var.reshape({ 3 });
 
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -417,7 +550,8 @@ _test3()
       var(icell, 1) = Arcane::NumMatrix<Real, 2, 4>{ { static_cast<Real>(parallelMng()->commRank() * 10), 0, 0, 0 }, { static_cast<Real>(parallelMng()->commRank() * 10), 0, 0, 0 } };
       var(icell, 2) = Arcane::NumMatrix<Real, 2, 4>{ { static_cast<Real>(parallelMng()->commRank() * 20), 0, 0, 0 }, { static_cast<Real>(parallelMng()->commRank() * 20), 0, 0, 0 } };
     }
-    var_sh.updateVariable();
+
+    MachineShMemWinMeshMatrixMDVariableT var_sh(var);
 
     auto machine_ranks = var_sh.machineRanks();
     for (Int32 rank : machine_ranks) {
@@ -426,9 +560,9 @@ _test3()
       info() << "Rank " << rank << " -- aaa.extents().extent1() : " << aaa.extent1();
       info() << "Rank " << rank << " -- aaa.extents().extent2() : " << aaa.extent2();
       info() << "Rank " << rank << " -- aaa.extents().extent3() : " << aaa.extent3();
-      // info() << "Rank " << rank << " -- Value : " << aaa.to1DSpan();
     }
   }
+  //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_6]
 }
 
 /*---------------------------------------------------------------------------*/
@@ -437,33 +571,34 @@ _test3()
 void VariableInShMemUnitTest::
 _test4()
 {
-  Int32 properties = 0;
-  if (parallelMng()->commRank() == 0) {
-    properties = (IVariable::PInShMem | IVariable::PPersistant);
-  }
-  else {
-    properties = (IVariable::PInShMem | IVariable::PPersistant | IVariable::PDumpNull);
-  }
-
-  VariableArrayInt32 var2(VariableBuildInfo(mesh(), "BBB", properties));
+  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7]
+  VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test4", (IVariable::PInShMem | IVariable::PPersistant)));
+  MachineShMemWinVariableArrayT var_sh(var);
+  ConstArrayView<Int32> machine_ranks = var_sh.machineRanks();
 
   if (globalIteration() == 1) {
-    var2.resize(10);
-    for (Int32& a : var2) {
-      a = parallelMng()->commRank();
+    var.resize(10);
+    Int32 index = 0;
+    for (Int32& a : var) {
+      a = parallelMng()->commRank() + index++;
+    }
+    if (machine_ranks[0] != parallelMng()->commRank()) {
+      var.setProperty(IVariable::PDumpNull);
     }
   }
   else if (subDomain()->isContinue()) {
-    if (parallelMng()->commRank() == 0) {
-      ARCANE_FATAL_IF(var2.size() != 10,
-                      "Error _test4() 1 : Array size is invalid -- Expected : 10 -- Found : {0}", var2.size());
+    if (machine_ranks[0] == parallelMng()->commRank()) {
+      ARCANE_FATAL_IF(var.size() != 10,
+                      "Error _test4() 1 : Array size is invalid -- Expected : 10 -- Found : {0}", var.size());
     }
     else {
-      ARCANE_FATAL_IF(!var2.empty(),
-                      "Error _test4() 1 : Array size is invalid -- Expected : 0 -- Found : {0}", var2.size());
+      ARCANE_FATAL_IF(!var.empty(),
+                      "Error _test4() 1 : Array size is invalid -- Expected : 0 -- Found : {0}", var.size());
     }
+    var.resize(10);
   }
-  info() << "Array : " << var2;
+  info() << "Array : " << var;
+  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7]
 }
 
 /*---------------------------------------------------------------------------*/

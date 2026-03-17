@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiContigMachineShMemWinBaseInternalCreator.h               (C) 2000-2026 */
+/* MpiMachineShMemWinBaseInternalCreator.h                     (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* MpiContigMachineShMemWinBaseInternal.                                     */
@@ -53,6 +53,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiContigMachineShMemWinBaseInternalCreat
   MpiMultiMachineShMemWinBaseInternal* createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type) const;
 
   ConstArrayView<Int32> machineRanks() const;
+  void machineBarrier() const;
 
  private:
 

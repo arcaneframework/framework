@@ -27,6 +27,7 @@
 
 #include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include "arccore/common/AllocatedMemoryInfo.h"
 #include "arccore/base/MemoryView.h"
@@ -62,8 +63,7 @@ MachineShMemWinVariableBase(IVariable* var)
 ConstArrayView<Int32> MachineShMemWinVariableBase::
 machineRanks() const
 {
-  const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  return MachineShMemWinMemoryAllocator::machineRanks(data);
+  return m_pm->_internalApi()->machineRanks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -72,8 +72,7 @@ machineRanks() const
 void MachineShMemWinVariableBase::
 barrier() const
 {
-  const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
-  MachineShMemWinMemoryAllocator::barrier(data);
+  return m_pm->_internalApi()->machineBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -83,6 +82,11 @@ Span<std::byte> MachineShMemWinVariableBase::
 segmentView(Int32 rank) const
 {
   const AllocatedMemoryInfo data(m_var->data()->_commonInternal()->numericData()->memoryView().data());
+#ifdef ARCANE_CHECK
+  if (data.baseAddress() == nullptr) {
+    ARCANE_FATAL("Variable not initialised yet. Call var.resize() method before.");
+  }
+#endif
   return MachineShMemWinMemoryAllocator::segmentView(data, rank).subSpan(0, m_sizeof_var[rank]);
 }
 

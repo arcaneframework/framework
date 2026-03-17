@@ -50,7 +50,7 @@
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
-#include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
@@ -376,6 +376,12 @@ class MpiParallelMng::Impl
 
  public:
 
+  void initializeWindowCreator() override
+  {
+    m_parallel_mng->traceMng()->info() << "initializeWindowCreator() MPI";
+    m_parallel_mng->adapter()->initializeWindowCreator(m_parallel_mng->machineCommunicator());
+  }
+
   bool isMachineShMemWinAvailable() override
   {
     if (m_shmem_available == 1) {
@@ -384,7 +390,7 @@ class MpiParallelMng::Impl
 
     if (m_shmem_available == 0) {
       Ref<IParallelTopology> topo = m_parallel_mng->_internalUtilsFactory()->createTopology(m_parallel_mng);
-      if (topo->machineRanks().size() == m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->machineRanks().size()) {
+      if (topo->machineRanks().size() == m_parallel_mng->adapter()->windowCreator()->machineRanks().size()) {
         m_shmem_available = 1;
         return true;
       }
@@ -398,12 +404,12 @@ class MpiParallelMng::Impl
 
   Ref<IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createWindow(sizeof_segment, sizeof_type));
+    return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(sizeof_segment, sizeof_type));
   }
 
   Ref<IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(m_parallel_mng->adapter()->windowCreator(m_parallel_mng->machineCommunicator())->createDynamicWindow(sizeof_segment, sizeof_type));
+    return makeRef(m_parallel_mng->adapter()->windowCreator()->createDynamicWindow(sizeof_segment, sizeof_type));
   }
 
   MemoryAllocationOptions machineShMemWinMemoryAllocator() override
@@ -411,12 +417,22 @@ class MpiParallelMng::Impl
     return MemoryAllocationOptions{ m_alloc.get() };
   }
 
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return m_parallel_mng->adapter()->windowCreator()->machineRanks();
+  }
+
+  void machineBarrier() override
+  {
+    m_parallel_mng->adapter()->windowCreator()->machineBarrier();
+  }
+
  private:
 
   MpiParallelMng* m_parallel_mng;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 
-  // 0 = Variable non initialisé
+  // 0 = Attribut non initialisé
   // 1 = Mémoire partagée dispo
   // 2 = Mémoire partagée non dispo
   Int8 m_shmem_available = 0;
@@ -579,6 +595,8 @@ build()
   m_non_blocking_collective->build();
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
+
+  m_parallel_mng_internal->initializeWindowCreator();
 }
 
 /*---------------------------------------------------------------------------*/

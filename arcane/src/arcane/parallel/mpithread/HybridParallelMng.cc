@@ -179,6 +179,12 @@ class HybridParallelMng::Impl
 
  public:
 
+  void initializeWindowCreator() override
+  {
+    m_parallel_mng->traceMng()->debug() << "initializeWindowCreator() Hybrid";
+    m_window_creator->initializeMpiWindowCreator(m_parallel_mng->commRank(), m_parallel_mng->mpiParallelMng());
+  }
+
   bool isMachineShMemWinAvailable() override
   {
     if (m_shmem_available == 1) {
@@ -187,7 +193,7 @@ class HybridParallelMng::Impl
 
     if (m_shmem_available == 0) {
       Ref<IParallelTopology> topo = m_parallel_mng->_internalUtilsFactory()->createTopology(m_parallel_mng);
-      if (topo->machineRanks().size() == m_window_creator->machineRanks(m_parallel_mng->commRank(), m_parallel_mng->mpiParallelMng()).size()) {
+      if (topo->machineRanks().size() == m_window_creator->machineRanks().size()) {
         m_shmem_available = 1;
         return true;
       }
@@ -214,13 +220,23 @@ class HybridParallelMng::Impl
     return MemoryAllocationOptions{ m_alloc.get() };
   }
 
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return m_window_creator->machineRanks();
+  }
+
+  void machineBarrier() override
+  {
+    m_window_creator->machineBarrier(m_parallel_mng->commRank(), m_parallel_mng->mpiParallelMng());
+  }
+
  private:
 
   HybridParallelMng* m_parallel_mng;
   HybridContigMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 
-  // 0 = Variable non initialisé
+  // 0 = Attribut non initialisé
   // 1 = Mémoire partagée dispo
   // 2 = Mémoire partagée non dispo
   Int8 m_shmem_available = 0;
@@ -339,6 +355,8 @@ build()
   DispatchCreator creator(m_trace,this,m_message_queue,m_all_dispatchers);
   this->createDispatchers(creator);
   m_io_mng = arcaneCreateIOMng(this);
+
+  m_parallel_mng_internal->initializeWindowCreator();
 }
 
 /*---------------------------------------------------------------------------*/

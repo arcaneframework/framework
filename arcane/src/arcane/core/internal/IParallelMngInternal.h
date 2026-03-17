@@ -65,6 +65,14 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
   /*!
+   * \brief Méthode permettant d'initialiser le windowCreator spécifique à
+   * l'implémentation.
+   *
+   * Appel collectif.
+   */
+  virtual void initializeWindowCreator() = 0;
+
+  /*!
    * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
    *
    * Appel collectif.
@@ -97,6 +105,20 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \brief Méthode permettant de récupérer un allocateur en mémoire partagée.
    */
   virtual MemoryAllocationOptions machineShMemWinMemoryAllocator() = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les rangs des sous-domaines du
+   * noeud de calcul.
+   *
+   * Appel non collectif.
+   */
+  virtual ConstArrayView<Int32> machineRanks() = 0;
+
+  /*!
+   * \brief Méthode permettant de faire une barrière pour les sous-domaines du
+   * noeud de calcul.
+   */
+  virtual void machineBarrier() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

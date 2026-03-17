@@ -13,7 +13,7 @@ set(SOURCES
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
   MpiContigMachineShMemWinBaseInternal.cc
-  MpiContigMachineShMemWinBaseInternalCreator.cc
+  MpiMachineShMemWinBaseInternalCreator.cc
   MpiMachineShMemWinBaseInternal.cc
   MpiMultiMachineShMemWinBaseInternal.cc
 
@@ -26,7 +26,7 @@ set(SOURCES
   internal/MpiControlDispatcher.h
   internal/MpiLock.h
   internal/MpiContigMachineShMemWinBaseInternal.h
-  internal/MpiContigMachineShMemWinBaseInternalCreator.h
+  internal/MpiMachineShMemWinBaseInternalCreator.h
   internal/MpiMachineShMemWinBaseInternal.h
   internal/MpiMultiMachineShMemWinBaseInternal.h
   internal/MpiRequest.h

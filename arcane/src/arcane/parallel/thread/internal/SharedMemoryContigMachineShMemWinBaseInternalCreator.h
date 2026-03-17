@@ -48,6 +48,8 @@ class SharedMemoryContigMachineShMemWinBaseInternalCreator
 
   SharedMemoryContigMachineShMemWinBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
   SharedMemoryMachineShMemWinBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  ConstArrayView<Int32> machineRanks() const;
+  void machineBarrier() const;
 
  private:
 

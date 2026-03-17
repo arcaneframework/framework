@@ -833,6 +833,8 @@ class SequentialParallelMng::Impl
 
  public:
 
+  void initializeWindowCreator() override {}
+
   bool isMachineShMemWinAvailable() override
   {
     return true;
@@ -852,10 +854,16 @@ class SequentialParallelMng::Impl
   {
     return MemoryAllocationOptions{ m_alloc.get() };
   }
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return { 1, &m_rank };
+  }
+  void machineBarrier() override {}
 
  private:
 
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
+  const Int32 m_rank = 0;
 };
 
 /*---------------------------------------------------------------------------*/
