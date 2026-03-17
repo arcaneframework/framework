@@ -13,6 +13,7 @@
 
 #include "arccore/accelerator_native/HipAccelerator.h"
 
+#include "arccore/base/CheckedConvert.h"
 #include "arccore/base/FatalErrorException.h"
 
 #include "arccore/common/internal/MemoryUtilsInternal.h"
@@ -33,6 +34,7 @@
 #include "arccore/common/accelerator/internal/AcceleratorMemoryAllocatorBase.h"
 
 #include <sstream>
+#include <algorithm>
 
 #ifdef ARCCORE_HAS_ROCTX
 #include <roctx.h>
@@ -318,7 +320,7 @@ class HipRunQueueStream
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
     auto src = args.source().bytes();
-    if (src.size()==0)
+    if (src.size() == 0)
       return;
     DeviceId d = args.deviceId();
     int device = hipCpuDeviceId;
@@ -526,7 +528,7 @@ class HipRunnerRuntime
     // Si \a ptr n'a pas été alloué dynamiquement (i.e: il est sur la pile),
     // hipPointerGetAttribute() retourne une erreur. Dans ce cas on considère
     // la mémoire comme non enregistrée.
-    if (ret_value==hipSuccess){
+    if (ret_value == hipSuccess) {
 #if HIP_VERSION_MAJOR >= 6
       auto rocm_memory_type = pa.type;
 #else
@@ -597,7 +599,8 @@ class HipRunnerRuntime
       int nb_block_per_sm = 0;
       ARCCORE_CHECK_HIP(hipOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
 
-      int max_block = nb_block_per_sm * m_multi_processor_count;
+      int max_block = static_cast<int>((nb_block_per_sm * m_multi_processor_count) * m_cooperative_ratio);
+      max_block = std::max(max_block, 1);
       if (nb_block > max_block) {
         KernelLaunchArgs modified_args(orig_args);
         modified_args.setNbBlockPerGrid(max_block);
@@ -611,11 +614,21 @@ class HipRunnerRuntime
 
   void fillDevices(bool is_verbose);
 
+  void build()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_COOPERATIVE_RATIO", true)) {
+      Int32 x = v.value();
+      x = std::clamp(x, 10, 100);
+      m_cooperative_ratio = x / 100.0;
+    }
+  }
+
  private:
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
   Int32 m_multi_processor_count = 0;
+  double m_cooperative_ratio = 1.0;
   Impl::DeviceInfoList m_device_info_list;
 };
 
@@ -801,6 +814,7 @@ extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane::Accelerator::Hip;
+  global_hip_runtime.build();
   Arcane::Accelerator::Impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::Impl::setHIPRunQueueRuntime(&global_hip_runtime);
   initializeHipMemoryAllocators();
