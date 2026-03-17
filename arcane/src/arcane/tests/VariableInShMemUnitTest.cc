@@ -305,18 +305,15 @@ _test3()
   {
     //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2]
     VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test3", IVariable::PInShMem));
-    var.resize(1);
     {
       MachineShMemWinVariableArrayT var_sh(var);
-      auto machine_ranks = var_sh.machineRanks();
-      var_sh.barrier();
+      info() << var_sh.machineRanks();
       //...
     }
     var.resize(2);
     {
       MachineShMemWinVariableArrayT var_sh(var);
-      auto machine_ranks = var_sh.machineRanks();
-      var_sh.barrier();
+      info() << var_sh.machineRanks();
       //...
     }
     //![snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2]
@@ -574,22 +571,23 @@ _test3()
 void VariableInShMemUnitTest::
 _test4()
 {
-  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_1]
+  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7]
   VariableArrayInt32 var(VariableBuildInfo(mesh(), "Test4", (IVariable::PInShMem | IVariable::PPersistant)));
+  MachineShMemWinVariableArrayT var_sh(var);
+  ConstArrayView<Int32> machine_ranks = var_sh.machineRanks();
 
   if (globalIteration() == 1) {
     var.resize(10);
+    Int32 index = 0;
     for (Int32& a : var) {
-      a = parallelMng()->commRank();
+      a = parallelMng()->commRank() + index++;
     }
-    MachineShMemWinVariableArrayT var_sh(var);
-    if (var_sh.machineRanks()[0] != parallelMng()->commRank()) {
+    if (machine_ranks[0] != parallelMng()->commRank()) {
       var.setProperty(IVariable::PDumpNull);
     }
   }
   else if (subDomain()->isContinue()) {
-    // TODO : À modifier quand machineRank() static.
-    if (parallelMng()->commRank() == 0) {
+    if (machine_ranks[0] == parallelMng()->commRank()) {
       ARCANE_FATAL_IF(var.size() != 10,
                       "Error _test4() 1 : Array size is invalid -- Expected : 10 -- Found : {0}", var.size());
     }
@@ -597,9 +595,10 @@ _test4()
       ARCANE_FATAL_IF(!var.empty(),
                       "Error _test4() 1 : Array size is invalid -- Expected : 0 -- Found : {0}", var.size());
     }
+    var.resize(10);
   }
   info() << "Array : " << var;
-  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_1]
+  //![snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7]
 }
 
 /*---------------------------------------------------------------------------*/

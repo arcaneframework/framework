@@ -90,10 +90,6 @@ Trois méthodes sont communes pour ces classes :
 Les deux premières ont déjà été brievement décrites dans la partie précedente
 (\ref arcanedoc_parallel_shmem_winarray_var_usage).
 
-\warning Pour utiliser ces méthodes, la mémoire de la variable doit avoir été initialisée. Pour les variables au
-maillage, %Arcane s'en occupe, mais pour les variables sans support, il est nécessaire d'appeler `resize()` (ou
-`reshare()`) avant d'utiliser ces méthodes (une erreur fatale s'affichera en mode check et en mode debug).
-
 `Arcane::MachineShMemWinVariableCommon::machineRanks()` permet de récupérer les rangs des sous-domaines du noeud de
 calcul.
 
@@ -152,7 +148,7 @@ Dans cet exemple, chaque sous-domaine possède un tableau de deux `Int32`.
 Chaque sous-domaine met son rang dans les deux cases du tableau puis chaque sous-domaine affiche la vue
 de chaque tableau (`var_sh.view(rank)` renvoie une vue de deux `Int32` du tableau de `rank`).
 
-L'appel à la méthode `updateVariable()` pourrait être facilement retiré en mettant `var.resize(2);` entre la création
+L'appel à la méthode `updateVariable()` pourrait facilement être retiré en mettant `var.resize(2);` entre la création
 de la variable et la création du `MachineShMemWinVariable` :
 
 <div style="text-align: center;">**Exemple 1.1**</div>
@@ -162,8 +158,6 @@ Une alternative à l'appel à `updateVariable()` est la destruction/recréation 
 
 <div style="text-align: center;">**Exemple 1.2**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2
-
-\remark Le `resize(1)` est indispensable pour initialiser la fenêtre mémoire de la variable.
 
 ----
 
@@ -209,7 +203,8 @@ tableau 2D d'un autre sous-domaine du noeud de calcul.
 <div style="text-align: center;">**Exemple 4**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_4
 
-Une variable tableau 1D au maillage est un tableau 2D mais avec la première dimension qui correspond au nombre d'`Item`.
+Une variable tableau 1D au maillage est un tableau 2D mais avec la première dimension qui correspond au nombre
+d'`Items`.
 
 \warning Par rapport à la variable tableau 2D sans support, la taille de la seconde dimension doit être identique pour
 chaque sous-domaine.
@@ -255,10 +250,19 @@ faire des opérations collectives.
 
 ### Exemples {#arcanedoc_parallel_shmem_winvariable_checkpoints_examples}
 
-<div style="text-align: center;">**Exemple 1**</div>
-\snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_1
+<div style="text-align: center;">**Exemple 7**</div>
+\snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7
 
+On va appeler un sous-domaine maitre du noeud de calcul, le sous-domaine ayant le plus petit rang du noeud (comme
+`machine_ranks` est trié par ordre croissant, il s'agit du premier rang du tableau).
 
+Dans cet exemple, à la première itération de la boucle en temps, on redimensionne la variable pour tous les
+sous-domaines.
+
+Ensuite, on attribue la propriété `IVariable::PDumpNull` à tous les sous-domaines non-maitres.
+
+Enfin, à la reprise, on vérifie que les tableaux des sous-domaines maitres ont bien été restaurés et que les autres
+tableaux sont vides.
 
 ____
 
