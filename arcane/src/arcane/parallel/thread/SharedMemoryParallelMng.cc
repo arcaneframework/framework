@@ -132,6 +132,16 @@ class SharedMemoryParallelMng::Impl
     return MemoryAllocationOptions{ m_alloc.get() };
   }
 
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return m_window_creator->machineRanks();
+  }
+
+  void machineBarrier() override
+  {
+    m_window_creator->machineBarrier();
+  }
+
  private:
 
   SharedMemoryParallelMng* m_parallel_mng;

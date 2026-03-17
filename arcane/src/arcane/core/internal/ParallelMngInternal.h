@@ -58,6 +58,8 @@ class ARCANE_CORE_EXPORT ParallelMngInternal
   Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
   Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
   MemoryAllocationOptions machineShMemWinMemoryAllocator() override;
+  ConstArrayView<Int32> machineRanks() override;
+  void machineBarrier() override;
 
  private:
 

@@ -169,6 +169,20 @@ machineRanks()
 /*---------------------------------------------------------------------------*/
 
 void HybridContigMachineShMemWinBaseInternalCreator::
+machineBarrier(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng) const
+{
+  FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
+  Int32 my_rank_local_proc = my_fri.localRankValue();
+  m_barrier->wait();
+  if (my_rank_local_proc == 0)
+    mpi_parallel_mng->barrier();
+  m_barrier->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HybridContigMachineShMemWinBaseInternalCreator::
 _buildMachineRanksArray(ConstArrayView<Int32> mpi_machine_ranks)
 {
   m_machine_ranks.resize(mpi_machine_ranks.size() * m_nb_rank_local_proc);

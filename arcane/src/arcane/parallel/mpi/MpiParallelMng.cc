@@ -417,6 +417,16 @@ class MpiParallelMng::Impl
     return MemoryAllocationOptions{ m_alloc.get() };
   }
 
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return m_parallel_mng->adapter()->windowCreator()->machineRanks();
+  }
+
+  void machineBarrier() override
+  {
+    m_parallel_mng->adapter()->windowCreator()->machineBarrier();
+  }
+
  private:
 
   MpiParallelMng* m_parallel_mng;

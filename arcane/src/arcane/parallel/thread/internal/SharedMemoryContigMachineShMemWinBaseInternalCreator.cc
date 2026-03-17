@@ -107,6 +107,24 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ConstArrayView<Int32> SharedMemoryContigMachineShMemWinBaseInternalCreator::
+machineRanks() const
+{
+  return m_ranks;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryContigMachineShMemWinBaseInternalCreator::
+machineBarrier() const
+{
+  m_barrier->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/

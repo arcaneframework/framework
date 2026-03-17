@@ -220,6 +220,16 @@ class HybridParallelMng::Impl
     return MemoryAllocationOptions{ m_alloc.get() };
   }
 
+  ConstArrayView<Int32> machineRanks() override
+  {
+    return m_window_creator->machineRanks();
+  }
+
+  void machineBarrier() override
+  {
+    m_window_creator->machineBarrier(m_parallel_mng->commRank(), m_parallel_mng->mpiParallelMng());
+  }
+
  private:
 
   HybridParallelMng* m_parallel_mng;
