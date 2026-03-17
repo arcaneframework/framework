@@ -110,6 +110,8 @@ class SharedMemoryParallelMng::Impl
 
  public:
 
+  void initializeWindowCreator() override {}
+
   bool isMachineShMemWinAvailable() override
   {
     return true;

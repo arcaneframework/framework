@@ -107,6 +107,15 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ParallelMngInternal::
+initializeWindowCreator()
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool ParallelMngInternal::
 isMachineShMemWinAvailable()
 {

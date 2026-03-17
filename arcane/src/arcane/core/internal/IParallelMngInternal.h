@@ -64,6 +64,8 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
+  virtual void initializeWindowCreator() = 0;
+
   /*!
    * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
    *
