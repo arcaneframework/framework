@@ -38,6 +38,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <mutex>
+#include <algorithm>
 
 #include <cuda.h>
 
@@ -57,7 +58,6 @@ namespace
   Int32 global_cupti_flush = 0;
   CuptiInfo global_cupti_info;
 } // namespace
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -409,16 +409,14 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-initializeCudaMemoryAllocators()
+void initializeCudaMemoryAllocators()
 {
   unified_memory_cuda_memory_allocator.initialize();
   device_cuda_memory_allocator.initialize();
   host_pinned_cuda_memory_allocator.initialize();
 }
 
-void
-finalizeCudaMemoryAllocators(ITraceMng* tm)
+void finalizeCudaMemoryAllocators(ITraceMng* tm)
 {
   unified_memory_cuda_memory_allocator.finalize(tm);
   device_cuda_memory_allocator.finalize(tm);
@@ -428,8 +426,7 @@ finalizeCudaMemoryAllocators(ITraceMng* tm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
+void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 {
   if (e == CUDA_SUCCESS)
     return;
@@ -868,7 +865,8 @@ class CudaRunnerRuntime
       int nb_block_per_sm = 0;
       ARCCORE_CHECK_CUDA(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&nb_block_per_sm, kernel_ptr, nb_thread, shared_memory));
 
-      int max_block = nb_block_per_sm * m_multi_processor_count;
+      int max_block = static_cast<int>((nb_block_per_sm * m_multi_processor_count) * m_cooperative_ratio);
+      max_block = std::max(max_block, 1);
       if (nb_block > max_block) {
         KernelLaunchArgs modified_args(orig_args);
         modified_args.setNbBlockPerGrid(max_block);
@@ -905,6 +903,11 @@ class CudaRunnerRuntime
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_COMPUTED_OCCUPANCY", true))
       m_use_computed_occupancy = v.value();
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_COOPERATIVE_RATIO", true)) {
+      Int32 x = v.value();
+      x = std::clamp(x, 10, 100);
+      m_cooperative_ratio = x / 100.0;
+    }
   }
 
  private:
@@ -913,6 +916,7 @@ class CudaRunnerRuntime
   bool m_is_verbose = false;
   bool m_use_computed_occupancy = false;
   Int32 m_multi_processor_count = 0;
+  double m_cooperative_ratio = 1.0;
   Impl::DeviceInfoList m_device_info_list;
   OccupancyMap m_occupancy_map;
 };
@@ -970,11 +974,11 @@ fillDevices(bool is_verbose)
     o << " memoryBusWitdh = " << dp.memoryBusWidth << " bits\n";
 
     int clock_rate = 0;
-    cudaDeviceGetAttribute(&clock_rate, cudaDevAttrClockRate, i);
+    ARCCORE_CHECK_CUDA(cudaDeviceGetAttribute(&clock_rate, cudaDevAttrClockRate, i));
     o << " clockRate = " << (clock_rate / 1000) << " MHz\n";
 
     int memory_clock_rate = 0;
-    cudaDeviceGetAttribute(&memory_clock_rate, cudaDevAttrMemoryClockRate, i);
+    ARCCORE_CHECK_CUDA(cudaDeviceGetAttribute(&memory_clock_rate, cudaDevAttrMemoryClockRate, i));
     o << " memoryClockRate = " << (memory_clock_rate / 1000) << " MHz\n";
 
     Real memory_bandwith = ((dp.memoryBusWidth * memory_clock_rate * 2.0) / 8.0) / 1.0e6;
