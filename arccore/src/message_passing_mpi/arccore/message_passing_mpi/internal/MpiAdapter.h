@@ -208,9 +208,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  MpiContigMachineShMemWinBaseInternalCreator* windowCreator(MPI_Comm comm_machine);
+  void initializeWindowCreator(MPI_Comm comm_machine);
+  MpiContigMachineShMemWinBaseInternalCreator* windowCreator() const;
 
-private:
+ private:
 
   IStat* m_stat = nullptr;
   MpiLock* m_mpi_lock = nullptr;
