@@ -4,9 +4,12 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "Common/mcgs_config.h"
 #include "MCGVectorImpl.h"
 
 namespace Alien {
 template class MCGVector<Real,MCGInternal::eMemoryDomain::Host>;
+#ifdef USE_CUDA
 template class MCGVector<Real,MCGInternal::eMemoryDomain::Device>;
+#endif
 }

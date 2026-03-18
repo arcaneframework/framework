@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
+#include "Common/mcgs_config.h"
 #include "alien/core/backend/IMatrixConverter.h"
 #include "alien/core/backend/MatrixConverterRegisterer.h"
 #include "alien/kernels/simple_csr/SimpleCSRMatrix.h"
@@ -13,6 +14,7 @@
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"
 #include "alien/kernels/mcg/MCGBackEnd.h"
 
+#ifdef USE_CUDA
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
 
@@ -48,7 +50,7 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::convert(
     cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::Device>>(targetImpl, targetBackend());
 
   alien_debug( [this,&v,&v2]() {
-    cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
+    cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix on Device " << &v2;
   });
 
   if (sourceImpl->vblock())
@@ -98,3 +100,4 @@ SimpleCSR_to_MCGGPU_BCSR_MatrixConverter::_build(
 }
 
 REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCGGPU_BCSR_MatrixConverter);
+#endif

@@ -67,12 +67,16 @@ MCGVector<NumT,Domain>::setValues(double const* values)
       data[i] = values[i];
   }
   else {
+#ifdef USE_CUDA
     auto err = cudaMemcpyAsync(data, values, dist.localSize() * block_size * sizeof(NumT),
       cudaMemcpyHostToDevice, nullptr);
 
     if (err != cudaSuccess) {
       throw FatalErrorException(A_FUNCINFO, "CUDA Error");
     }
+#else
+    alien_fatal( [] { std::cout << "MCGSolver Device memory domain not supported";});
+#endif
   }
 }
 
@@ -99,10 +103,14 @@ MCGVector<NumT,Domain>::getValues(double* values) const
       values[i] = data[i];
   }
   else {
+#ifdef USE_CUDA
     cudaStreamSynchronize(nullptr);
 
     cudaMemcpy(values, data, dist.localSize() * block_size * sizeof(NumT),
       cudaMemcpyDeviceToHost);
+#else
+    alien_fatal( [] { std::cout << "MCGSolver Device memory domain not supported";});
+#endif
   }
 }
 

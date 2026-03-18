@@ -10,10 +10,12 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
-#define USE_CUDA
+#include "Common/mcgs_config.h"
 #include "Common/index.h"
 #include "MCGSolver/LinearSystem/LinearSystem.h"
+#ifdef USE_CUDA
 #include "MCGSolver/GPULinearSystem/GPULinearSystem.h"
+#endif
 #include "Common/Utils/Array.h"
 #include "Precond/PrecondEquation.h"
 #include "Solvers/SolverProperty.h"
@@ -44,6 +46,7 @@ struct MatVecTypeGen<NumT,eMemoryDomain::Host>
   using VectorEqType = MCGSolver::BVector<MCGSolver::Equation::eType>;
 };
 
+#ifdef USE_CUDA
 template<typename NumT>
 struct MatVecTypeGen<NumT,eMemoryDomain::Device>
 {
@@ -51,6 +54,7 @@ struct MatVecTypeGen<NumT,eMemoryDomain::Device>
   using VectorType = MCGSolver::GPUBVector<NumT>;
   using VectorEqType = MCGSolver::GPUBVector<MCGSolver::Equation::eType>;
 };
+#endif
 
 template<typename NumT,eMemoryDomain Domain>
 class MatrixInternal
@@ -59,9 +63,13 @@ class MatrixInternal
   using MatrixType = MatVecTypeGen<NumT,Domain>::MatrixType;
   using VectorEqType = MatVecTypeGen<NumT,Domain>::VectorEqType;
   template<typename T>
+#ifdef USE_CUDA
   using ArrayType = std::conditional_t<Domain==eMemoryDomain::Host,
     MCGSolver::Array<T>,
     MCGSolver::ManagedArray<T>>;
+#else
+  using ArrayType = MCGSolver::Array<T>;
+#endif
 
   bool m_elliptic_split_tag = false;
   std::shared_ptr<VectorEqType> m_equation_type;
