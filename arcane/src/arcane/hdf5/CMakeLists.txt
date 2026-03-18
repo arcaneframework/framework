@@ -30,34 +30,6 @@ if (HDF5_FOUND)
   arcane_find_package(MEDFile QUIET)
 endif()
 
-# On regarde si le mode threadsafe est activé.
-# En HDF5 v2, l'option HDF5_ENABLE_THREADSAFE est dépréciée,
-# HDF5_ENABLE_THREADS est supprimée et HDF5_ENABLE_CONCURRENCY
-# a été ajoutée.
-# https://github.com/HDFGroup/hdf5/blob/develop/release_docs/HISTORY-2.X.md#added-configuration-option-for-api-concurrency-support
-
-set(HDF5_IS_THREADSAFE FALSE)
-# L'option HDF5_IS_PARALLEL n'est pas compatible avec l'option HDF5_IS_THREADSAFE.
-if (NOT HDF5_IS_PARALLEL)
-  foreach (dir IN LISTS HDF5_INCLUDE_DIRS)
-    if (EXISTS "${dir}/H5pubconf.h")
-      file(STRINGS "${dir}/H5pubconf.h"
-        HDF5_HAVE_THREADSAFE_DEFINE
-        REGEX "H5_HAVE_THREADSAFE 1|H5_HAVE_CONCURRENCY 1")
-      if (HDF5_HAVE_THREADSAFE_DEFINE)
-        set(HDF5_IS_THREADSAFE TRUE)
-      else ()
-        set(HDF5_IS_THREADSAFE FALSE)
-      endif ()
-      break()
-    endif ()
-  endforeach ()
-endif ()
-
-set(HDF5_IS_THREADSAFE ${HDF5_IS_THREADSAFE} CACHE BOOL "HDF5 library compiled with threadsafe support" FORCE)
-
-message(STATUS "[hdf5] HDF5_IS_THREADSAFE=${HDF5_IS_THREADSAFE}")
-
 include(srcs.cmake)
 
 if (MEDFILE_FOUND)

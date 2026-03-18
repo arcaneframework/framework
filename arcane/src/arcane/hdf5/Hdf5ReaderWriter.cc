@@ -47,9 +47,6 @@
 
 #include "arcane/hdf5/Hdf5ReaderWriter_axl.h"
 
-// Pour HDF5_IS_THREADSAFE
-#include "arcane_internal_config.h"
-
 #include <array>
 //#define ARCANE_TEST_HDF5MPI
 
@@ -73,7 +70,9 @@ namespace
 {
 constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
 
-#ifndef HDF5_IS_THREADSAFE
+#if (defined(H5_HAVE_THREADSAFE) || defined(H5_HAVE_CONCURRENCY))
+#define ARCANE_HDF5_MUTEX
+#else
 struct ScopedMutex
 {
   ScopedMutex()
@@ -82,24 +81,10 @@ struct ScopedMutex
   }
   ~ScopedMutex()
   {
-    if (m_is_lock)
-      _ArcaneHdf5UtilsMutex().unlock();
+    _ArcaneHdf5UtilsMutex().unlock();
   }
-  void unlock()
-  {
-    if (m_is_lock) {
-      m_is_lock = false;
-      _ArcaneHdf5UtilsMutex().unlock();
-    }
-  }
-  bool m_is_lock = true;
 };
-
-#define HDF5_MUTEX ScopedMutex scoped_mutex
-#define HDF5_MUTEX_UNLOCK scoped_mutex.unlock()
-#else
-#define HDF5_MUTEX
-#define HDF5_MUTEX_UNLOCK
+#define ARCANE_HDF5_MUTEX ScopedMutex scoped_mutex
 #endif
 } // namespace
 
@@ -166,7 +151,7 @@ initialize()
     unsigned vmajor = 0;
     unsigned vminor = 0;
     unsigned vrel = 0;
-    HDF5_MUTEX;
+    ARCANE_HDF5_MUTEX;
     ::H5get_libversion(&vmajor,&vminor,&vrel);
     info() << "HDF5 version = " << vmajor << '.' << vminor << '.' << vrel;
   }
@@ -180,42 +165,44 @@ initialize()
     if (m_send_rank!=m_my_rank)
       return;
     if (m_open_mode == OpenModeTruncate) {
-      HDF5_MUTEX;
-      hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
+      hid_t plist_id = -1;
+      {
+        ARCANE_HDF5_MUTEX;
+        plist_id = H5Pcreate(H5P_FILE_ACCESS);
 #ifdef ARCANE_TEST_HDF5MPI
-      void* arcane_comm = subDomain()->parallelMng()->getMPICommunicator();
-      if (!arcane_comm)
-        ARCANE_FATAL("No MPI environment available");
-      MPI_Comm mpi_comm = *((MPI_Comm*)arcane_comm);
-      MPI_Info mpi_info = MPI_INFO_NULL;
-      //H5Pset_fapl_mpiposix(plist_id, mpi_comm, MPI_INFO_NULL); //mpi_info);
-      H5Pset_fapl_mpio(plist_id, mpi_comm, MPI_INFO_NULL); //mpi_info);
-      H5Pset_fclose_degree(plist_id,H5F_CLOSE_STRONG);
+        void* arcane_comm = subDomain()->parallelMng()->getMPICommunicator();
+        if (!arcane_comm)
+          ARCANE_FATAL("No MPI environment available");
+        MPI_Comm mpi_comm = *((MPI_Comm*)arcane_comm);
+        MPI_Info mpi_info = MPI_INFO_NULL;
+        //H5Pset_fapl_mpiposix(plist_id, mpi_comm, MPI_INFO_NULL); //mpi_info);
+        H5Pset_fapl_mpio(plist_id, mpi_comm, MPI_INFO_NULL); //mpi_info);
+        H5Pset_fclose_degree(plist_id, H5F_CLOSE_STRONG);
 #endif
-      int mdc_nelmts;
-      size_t rdcc_nelmts;
-      size_t rdcc_nbytes;
-      double rdcc_w0;
-      herr_t r = H5Pget_cache(plist_id,&mdc_nelmts,&rdcc_nelmts,&rdcc_nbytes,&rdcc_w0);
-      info() << " CACHE SIZE r=" << r << " mdc=" << mdc_nelmts
-             << " rdcc=" << rdcc_nelmts << " rdcc_bytes=" << rdcc_nbytes << " w0=" << rdcc_w0;
-      mdc_nelmts *= 10;
-      rdcc_nelmts *= 10;
-      rdcc_nbytes = 10000000;
-      r = H5Pset_cache(plist_id,mdc_nelmts,rdcc_nelmts,rdcc_nbytes,rdcc_w0);
-      info() << " SET CACHE SIZE R1=" << r;
-      //r = H5Pset_fapl_stdio(plist_id);
-      //info() << " R2=" << r;
-      hsize_t sieve_buf = (1024 << 12);
-      r = H5Pset_sieve_buf_size(plist_id,sieve_buf);
-      info() << " SIEVE_BUF=" << sieve_buf << " r=" << r;
-      hsize_t small_block_size = 0;
-      r = H5Pget_small_data_block_size(plist_id,&small_block_size);
-      info() << " SMALL BLOCK SIZE=" << small_block_size;
-      small_block_size <<= 10;
-      r = H5Pset_small_data_block_size(plist_id,small_block_size);
-      info() << " SET SMALL BLOCK SIZE s=" << small_block_size << " r=" << r;
-      HDF5_MUTEX_UNLOCK;
+        int mdc_nelmts;
+        size_t rdcc_nelmts;
+        size_t rdcc_nbytes;
+        double rdcc_w0;
+        herr_t r = H5Pget_cache(plist_id, &mdc_nelmts, &rdcc_nelmts, &rdcc_nbytes, &rdcc_w0);
+        info() << " CACHE SIZE r=" << r << " mdc=" << mdc_nelmts
+               << " rdcc=" << rdcc_nelmts << " rdcc_bytes=" << rdcc_nbytes << " w0=" << rdcc_w0;
+        mdc_nelmts *= 10;
+        rdcc_nelmts *= 10;
+        rdcc_nbytes = 10000000;
+        r = H5Pset_cache(plist_id, mdc_nelmts, rdcc_nelmts, rdcc_nbytes, rdcc_w0);
+        info() << " SET CACHE SIZE R1=" << r;
+        //r = H5Pset_fapl_stdio(plist_id);
+        //info() << " R2=" << r;
+        hsize_t sieve_buf = (1024 << 12);
+        r = H5Pset_sieve_buf_size(plist_id, sieve_buf);
+        info() << " SIEVE_BUF=" << sieve_buf << " r=" << r;
+        hsize_t small_block_size = 0;
+        r = H5Pget_small_data_block_size(plist_id, &small_block_size);
+        info() << " SMALL BLOCK SIZE=" << small_block_size;
+        small_block_size <<= 10;
+        r = H5Pset_small_data_block_size(plist_id, small_block_size);
+        info() << " SET SMALL BLOCK SIZE s=" << small_block_size << " r=" << r;
+      }
 
       m_file_id.openTruncate(m_filename,plist_id);
     }
@@ -237,7 +224,7 @@ initialize()
 
   if (m_open_mode==OpenModeRead){
     int index = 0;
-    HDF5_MUTEX;
+    ARCANE_HDF5_MUTEX;
     //H5Giterate(m_sub_group_id.id(),"Variables",&index,_Hdf5ReaderWriterIterateMe,this);
     H5Giterate(m_file_id.id(),m_sub_group_name.localstr(),&index,_Hdf5ReaderWriterIterateMe,this);
   }
@@ -460,7 +447,7 @@ _writeVal(const String& var_group_name,
 
 #if 0
     if (nb_element>=10000){
-      HDF5_MUTEX
+      ARCANE_HDF5_MUTEX
       plist_id = H5Pcreate(H5P_DATASET_CREATE);
       hsize_t chunk_dim[1];
       chunk_dim[0] = (4096 << 1);
@@ -530,9 +517,10 @@ _readDim2(IVariable* var)
     // l'attribut (hdf_dims[0]) doit être égal à 1 ou 2.
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
-    HDF5_MUTEX;
-    H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
-    HDF5_MUTEX_UNLOCK;
+    {
+      ARCANE_HDF5_MUTEX;
+      H5Sget_simple_extent_dims(space_id.id(), hdf_dims, max_dims);
+    }
 
     if (hdf_dims[0]!=VARIABLE_INFO_SIZE)
       ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected={2})",
@@ -578,9 +566,10 @@ _readDim2(IVariable* var)
 
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
-    HDF5_MUTEX;
-    H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
-    HDF5_MUTEX_UNLOCK;
+    {
+      ARCANE_HDF5_MUTEX;
+      H5Sget_simple_extent_dims(space_id.id(), hdf_dims, max_dims);
+    }
     // Vérifie que le nombre d'éléments du dataset est bien égal à celui
     // attendu.
     if ((Int64)hdf_dims[0]!=dimension_array_size){
@@ -745,9 +734,10 @@ metaData()
   const int max_dim = 256;
   hsize_t hdf_dims[max_dim];
   hsize_t max_dims[max_dim];
-  HDF5_MUTEX;
-  H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
-  HDF5_MUTEX_UNLOCK;
+  {
+    ARCANE_HDF5_MUTEX;
+    H5Sget_simple_extent_dims(space_id.id(), hdf_dims, max_dims);
+  }
   if (hdf_dims[0]<=0)
     throw ReaderWriterException(A_FUNCINFO,"Wrong number of elements for meta-data ('MetaData')");
   Integer nb_byte = static_cast<Integer>(hdf_dims[0]);
