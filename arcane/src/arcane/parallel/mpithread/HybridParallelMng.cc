@@ -33,7 +33,7 @@
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
-#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternalCreator.h"
 #include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternal.h"
 
@@ -168,7 +168,7 @@ class HybridParallelMng::Impl
 {
  public:
 
-  explicit Impl(HybridParallelMng* pm, HybridContigMachineShMemWinBaseInternalCreator* window_creator)
+  explicit Impl(HybridParallelMng* pm, HybridMachineShMemWinBaseInternalCreator* window_creator)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
@@ -233,7 +233,7 @@ class HybridParallelMng::Impl
  private:
 
   HybridParallelMng* m_parallel_mng;
-  HybridContigMachineShMemWinBaseInternalCreator* m_window_creator;
+  HybridMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 
   // 0 = Attribut non initialisé

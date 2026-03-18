@@ -26,7 +26,7 @@
 
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
-#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternalCreator.h"
 #include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
 
@@ -99,7 +99,7 @@ class SharedMemoryParallelMng::Impl
 {
  public:
 
-  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryContigMachineShMemWinBaseInternalCreator* window_creator)
+  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryMachineShMemWinBaseInternalCreator* window_creator)
   : ParallelMngInternal(pm)
   , m_parallel_mng(pm)
   , m_window_creator(window_creator)
@@ -145,7 +145,7 @@ class SharedMemoryParallelMng::Impl
  private:
 
   SharedMemoryParallelMng* m_parallel_mng;
-  SharedMemoryContigMachineShMemWinBaseInternalCreator* m_window_creator;
+  SharedMemoryMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 };
 

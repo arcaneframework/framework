@@ -27,8 +27,8 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiContigMachineShMemWinBaseInternalCreator::
-MpiContigMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size)
+MpiMachineShMemWinBaseInternalCreator::
+MpiMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size)
 : m_comm_machine(comm_machine)
 , m_comm_machine_rank(comm_machine_rank)
 , m_comm_machine_size(comm_machine_size)
@@ -63,7 +63,7 @@ MpiContigMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiContigMachineShMemWinBaseInternal* MpiContigMachineShMemWinBaseInternalCreator::
+MpiContigMachineShMemWinBaseInternal* MpiMachineShMemWinBaseInternalCreator::
 createWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 {
   return new MpiContigMachineShMemWinBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
@@ -72,7 +72,7 @@ createWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineShMemWinBaseInternal* MpiContigMachineShMemWinBaseInternalCreator::
+MpiMachineShMemWinBaseInternal* MpiMachineShMemWinBaseInternalCreator::
 createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 {
   return new MpiMachineShMemWinBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
@@ -81,7 +81,7 @@ createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMultiMachineShMemWinBaseInternal* MpiContigMachineShMemWinBaseInternalCreator::
+MpiMultiMachineShMemWinBaseInternal* MpiMachineShMemWinBaseInternalCreator::
 createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type) const
 {
   return new MpiMultiMachineShMemWinBaseInternal(sizeof_segments, nb_segments_per_proc, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
@@ -90,7 +90,7 @@ createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> MpiContigMachineShMemWinBaseInternalCreator::
+ConstArrayView<Int32> MpiMachineShMemWinBaseInternalCreator::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -99,7 +99,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiContigMachineShMemWinBaseInternalCreator::
+void MpiMachineShMemWinBaseInternalCreator::
 machineBarrier() const
 {
   MPI_Barrier(m_comm_machine);

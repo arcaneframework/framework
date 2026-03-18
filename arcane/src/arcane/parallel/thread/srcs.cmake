@@ -23,8 +23,8 @@ set(ARCANE_SOURCES
   internal/SharedMemoryContigMachineShMemWinBaseInternal.h
   internal/SharedMemoryMachineShMemWinBaseInternal.cc
   internal/SharedMemoryMachineShMemWinBaseInternal.h
-  internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.cc
-  internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.h
+  internal/SharedMemoryMachineShMemWinBaseInternalCreator.cc
+  internal/SharedMemoryMachineShMemWinBaseInternalCreator.h
 
   # TODO: les fichiers suivants sont gardés pour des raisons
   # de compatibilité avec l'existant. Il faudra les supprimer

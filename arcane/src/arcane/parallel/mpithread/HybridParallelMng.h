@@ -31,7 +31,7 @@ class MpiParallelMng;
 
 namespace Arcane::MessagePassing
 {
-class HybridContigMachineShMemWinBaseInternalCreator;
+class HybridMachineShMemWinBaseInternalCreator;
 class ISharedMemoryMessageQueue;
 class HybridMessageQueue;
 class HybridParallelMng;
@@ -58,7 +58,7 @@ struct HybridParallelMngBuildInfo
   MpiThreadAllDispatcher* all_dispatchers = nullptr;
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
-  HybridContigMachineShMemWinBaseInternalCreator* window_creator;
+  HybridMachineShMemWinBaseInternalCreator* window_creator;
 };
 
 /*---------------------------------------------------------------------------*/

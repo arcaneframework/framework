@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryContigMachineShMemWinBaseInternalCreator.cc     (C) 2000-2026 */
+/* SharedMemoryMachineShMemWinBaseInternalCreator.cc           (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* SharedMemoryContigMachineShMemWinBaseInternal. Une instance de cet objet  */
 /* doit être partagée par tous les threads.                                  */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternalCreator.h"
 
 #include "arcane/parallel/thread/internal/SharedMemoryContigMachineShMemWinBaseInternal.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternal.h"
@@ -27,8 +27,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryContigMachineShMemWinBaseInternalCreator::
-SharedMemoryContigMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier)
+SharedMemoryMachineShMemWinBaseInternalCreator::
+SharedMemoryMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier)
 : m_nb_rank(nb_rank)
 , m_barrier(barrier)
 {
@@ -41,7 +41,7 @@ SharedMemoryContigMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarri
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryContigMachineShMemWinBaseInternal* SharedMemoryContigMachineShMemWinBaseInternalCreator::
+SharedMemoryContigMachineShMemWinBaseInternal* SharedMemoryMachineShMemWinBaseInternalCreator::
 createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 {
   if (my_rank == 0) {
@@ -80,7 +80,7 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineShMemWinBaseInternal* SharedMemoryContigMachineShMemWinBaseInternalCreator::
+SharedMemoryMachineShMemWinBaseInternal* SharedMemoryMachineShMemWinBaseInternalCreator::
 createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 {
   if (my_rank == 0) {
@@ -107,7 +107,7 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> SharedMemoryContigMachineShMemWinBaseInternalCreator::
+ConstArrayView<Int32> SharedMemoryMachineShMemWinBaseInternalCreator::
 machineRanks() const
 {
   return m_ranks;
@@ -116,7 +116,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SharedMemoryContigMachineShMemWinBaseInternalCreator::
+void SharedMemoryMachineShMemWinBaseInternalCreator::
 machineBarrier() const
 {
   m_barrier->wait();

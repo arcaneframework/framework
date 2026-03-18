@@ -11,8 +11,8 @@
 /* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNALCREATOR_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,13 +38,13 @@ class MpiMultiMachineShMemWinBaseInternal;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiContigMachineShMemWinBaseInternalCreator
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineShMemWinBaseInternalCreator
 {
  public:
 
-  explicit MpiContigMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size);
+  explicit MpiMachineShMemWinBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size);
 
-  ~MpiContigMachineShMemWinBaseInternalCreator() = default;
+  ~MpiMachineShMemWinBaseInternalCreator() = default;
 
  public:
 
