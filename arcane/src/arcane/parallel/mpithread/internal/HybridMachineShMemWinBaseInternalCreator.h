@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridContigMachineShMemWinBaseInternalCreator.h            (C) 2000-2026 */
+/* HybridMachineShMemWinBaseInternalCreator.h                  (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* HybridContigMachineShMemWinBaseInternal. Une instance de cet objet doit   */
 /* être partagée par tous les threads d'un processus.                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
-#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNALCREATOR_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ namespace MessagePassing
 
   namespace Mpi
   {
-    class MpiContigMachineShMemWinBaseInternalCreator;
+    class MpiMachineShMemWinBaseInternalCreator;
     class MpiMultiMachineShMemWinBaseInternal;
   } // namespace Mpi
 } // namespace MessagePassing
@@ -51,12 +51,12 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HybridContigMachineShMemWinBaseInternalCreator
+class HybridMachineShMemWinBaseInternalCreator
 {
  public:
 
-  HybridContigMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier);
-  ~HybridContigMachineShMemWinBaseInternalCreator() = default;
+  HybridMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier);
+  ~HybridMachineShMemWinBaseInternalCreator() = default;
 
  public:
 

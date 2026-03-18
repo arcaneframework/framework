@@ -37,7 +37,7 @@
 
 #include "arcane/parallel/mpithread/HybridParallelMng.h"
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
-#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternalCreator.h"
 
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/AbstractService.h"
@@ -91,7 +91,7 @@ class HybridParallelMngContainer
   UniqueArray<HybridParallelMng*>* m_parallel_mng_list = nullptr;
   Mutex* m_internal_create_mutex = nullptr;
   IParallelMngContainerFactory* m_sub_builder_factory = nullptr;
-  HybridContigMachineShMemWinBaseInternalCreator* m_window_creator = nullptr;
+  HybridMachineShMemWinBaseInternalCreator* m_window_creator = nullptr;
 
  private:
 
@@ -162,7 +162,7 @@ build()
   m_thread_barrier = platform::getThreadImplementationService()->createBarrier();
   m_thread_barrier->init(m_local_nb_rank);
 
-  m_window_creator = new HybridContigMachineShMemWinBaseInternalCreator(m_local_nb_rank, m_thread_barrier);
+  m_window_creator = new HybridMachineShMemWinBaseInternalCreator(m_local_nb_rank, m_thread_barrier);
 }
 
 /*---------------------------------------------------------------------------*/

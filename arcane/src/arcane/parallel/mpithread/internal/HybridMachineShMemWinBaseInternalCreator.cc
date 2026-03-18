@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridContigMachineShMemWinBaseInternalCreator.cc           (C) 2000-2026 */
+/* HybridMachineShMemWinBaseInternalCreator.cc                 (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* HybridContigMachineShMemWinBaseInternal. Une instance de cet objet doit   */
@@ -14,7 +14,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternalCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineShMemWinBaseInternalCreator.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpithread/internal/HybridContigMachineShMemWinBaseInternal.h"
@@ -36,8 +36,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridContigMachineShMemWinBaseInternalCreator::
-HybridContigMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
+HybridMachineShMemWinBaseInternalCreator::
+HybridMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
 : m_nb_rank_local_proc(nb_rank_local_proc)
 , m_barrier(barrier)
 , m_sizeof_resize_segments(nb_rank_local_proc)
@@ -46,7 +46,7 @@ HybridContigMachineShMemWinBaseInternalCreator(Int32 nb_rank_local_proc, IThread
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridContigMachineShMemWinBaseInternalCreator::
+void HybridMachineShMemWinBaseInternalCreator::
 initializeMpiWindowCreator(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng)
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
@@ -60,7 +60,7 @@ initializeMpiWindowCreator(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mn
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridContigMachineShMemWinBaseInternal* HybridContigMachineShMemWinBaseInternalCreator::
+HybridContigMachineShMemWinBaseInternal* HybridMachineShMemWinBaseInternalCreator::
 createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   // On est dans un contexte où chaque processus doit avoir plusieurs segments, un par thread.
@@ -72,7 +72,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   Int32 my_rank_local_proc = my_fri.localRankValue();
   Int32 my_rank_mpi = my_fri.mpiRankValue();
 
-  Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
+  Mpi::MpiMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
     mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
@@ -122,14 +122,14 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridMachineShMemWinBaseInternal* HybridContigMachineShMemWinBaseInternalCreator::
+HybridMachineShMemWinBaseInternal* HybridMachineShMemWinBaseInternalCreator::
 createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
   Int32 my_rank_local_proc = my_fri.localRankValue();
   Int32 my_rank_mpi = my_fri.mpiRankValue();
 
-  Mpi::MpiContigMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
+  Mpi::MpiMachineShMemWinBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
     mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
@@ -159,7 +159,7 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> HybridContigMachineShMemWinBaseInternalCreator::
+ConstArrayView<Int32> HybridMachineShMemWinBaseInternalCreator::
 machineRanks()
 {
   return m_machine_ranks;
@@ -168,7 +168,7 @@ machineRanks()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridContigMachineShMemWinBaseInternalCreator::
+void HybridMachineShMemWinBaseInternalCreator::
 machineBarrier(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng) const
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
@@ -182,7 +182,7 @@ machineBarrier(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mng) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridContigMachineShMemWinBaseInternalCreator::
+void HybridMachineShMemWinBaseInternalCreator::
 _buildMachineRanksArray(ConstArrayView<Int32> mpi_machine_ranks)
 {
   m_machine_ranks.resize(mpi_machine_ranks.size() * m_nb_rank_local_proc);

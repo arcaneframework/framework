@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryContigMachineShMemWinBaseInternalCreator.h      (C) 2000-2026 */
+/* SharedMemoryMachineShMemWinBaseInternalCreator.h            (C) 2000-2026 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
 /* SharedMemoryContigMachineShMemWinBaseInternal. Une instance de cet objet  */
 /* doit être partagée par tous les threads.                                  */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
-#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNALCREATOR_H
+#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINESHMEMWINBASEINTERNALCREATOR_H
+#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINESHMEMWINBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,12 +37,12 @@ class SharedMemoryMachineShMemWinBaseInternal;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SharedMemoryContigMachineShMemWinBaseInternalCreator
+class SharedMemoryMachineShMemWinBaseInternalCreator
 {
  public:
 
-  SharedMemoryContigMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier);
-  ~SharedMemoryContigMachineShMemWinBaseInternalCreator() = default;
+  SharedMemoryMachineShMemWinBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier);
+  ~SharedMemoryMachineShMemWinBaseInternalCreator() = default;
 
  public:
 
