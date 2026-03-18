@@ -1757,14 +1757,14 @@ initializeWindowCreator(MPI_Comm comm_machine)
     Integer machine_comm_size = 0;
     ::MPI_Comm_rank(comm_machine, &machine_comm_rank);
     ::MPI_Comm_size(comm_machine, &machine_comm_size);
-    m_window_creator = makeRef(new MpiContigMachineShMemWinBaseInternalCreator(comm_machine, machine_comm_rank, machine_comm_size, m_communicator, m_comm_size));
+    m_window_creator = makeRef(new MpiMachineShMemWinBaseInternalCreator(comm_machine, machine_comm_rank, machine_comm_size, m_communicator, m_comm_size));
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiContigMachineShMemWinBaseInternalCreator* MpiAdapter::
+MpiMachineShMemWinBaseInternalCreator* MpiAdapter::
 windowCreator() const
 {
   return m_window_creator.get();
