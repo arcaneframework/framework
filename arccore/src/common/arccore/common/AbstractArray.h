@@ -540,7 +540,7 @@ class AbstractArray
     m_md->allocation_options = options;
     if (new_capacity > 0) {
       if (!pre_allocated_buffer)
-        _allocateMP(new_capacity, options.runQueue());
+        _allocateMP(new_capacity, nullptr);
       else
         _setMPCast(pre_allocated_buffer);
     }
