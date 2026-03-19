@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumMatrix.h                                                 (C) 2000-2023 */
+/* NumMatrix.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Matrice carrée de taille fixe de types numériques.                        */
 /*---------------------------------------------------------------------------*/
@@ -61,16 +61,16 @@ class NumMatrix
   NumMatrix() = default;
 
   //! Construit la matrice avec les lignes (ax,ay)
-  template <int S = RowSize, typename = std::enable_if_t<S == 2, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
+  requires(RowSize == 2)
   {
     m_values[0] = ax;
     m_values[1] = ay;
   }
 
   //! Construit la matrice avec les lignes (ax,ay,az)
-  template <int S = RowSize, typename = std::enable_if_t<S == 3, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay, const VectorType& az)
+  requires(RowSize == 3)
   {
     m_values[0] = ax;
     m_values[1] = ay;
@@ -78,9 +78,9 @@ class NumMatrix
   }
 
   //! Construit la matrice avec les lignes (a1,a2,a3,a4)
-  template <int S = RowSize, typename = std::enable_if_t<S == 4, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& a1, const VectorType& a2,
                                           const VectorType& a3, const VectorType& a4)
+  requires(RowSize == 4)
   {
     m_values[0] = a1;
     m_values[1] = a2;
@@ -89,10 +89,10 @@ class NumMatrix
   }
 
   //! Construit la matrice avec les lignes (a1,a2,a3,a4,a5)
-  template <int S = RowSize, typename = std::enable_if_t<S == 4, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& a1, const VectorType& a2,
                                           const VectorType& a3, const VectorType& a4,
                                           const VectorType& a5)
+  requires(RowSize == 5)
   {
     m_values[0] = a1;
     m_values[1] = a2;
@@ -108,13 +108,11 @@ class NumMatrix
       m_values[i] = v;
   }
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare2(), void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real2x2 v)
+  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real2x2 v) requires(isSquare2())
   : NumMatrix(VectorType(v.x), VectorType(v.y))
   {}
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare3(), void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real3x3 v)
+  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real3x3 v) requires(isSquare3())
   : NumMatrix(VectorType(v.x), VectorType(v.y), VectorType(v.z))
   {}
 
@@ -126,28 +124,24 @@ class NumMatrix
     return (*this);
   }
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare2(), void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2x2& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2x2& v) requires(isSquare2())
   {
     *this = ThatClass(v);
     return (*this);
   }
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare3(), void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3x3& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3x3& v) requires(isSquare3())
   {
     *this = ThatClass(v);
     return (*this);
   }
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare2(), void>>
-  operator Real2x2() const
+  operator Real2x2() const requires(isSquare2())
   {
     return Real2x2(m_values[0], m_values[1]);
   }
 
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare3(), void>>
-  operator Real3x3() const
+  operator Real3x3() const requires(isSquare3())
   {
     return Real3x3(m_values[0], m_values[1], m_values[2]);
   }
@@ -161,15 +155,15 @@ class NumMatrix
   }
 
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare3(), void>>
   constexpr ARCCORE_HOST_DEVICE static ThatClass fromColumns(T ax, T ay, T az, T bx, T by, T bz, T cx, T cy, T cz)
+  requires(isSquare3())
   {
     return ThatClass(VectorType(ax, bx, cx), VectorType(ay, by, cy), VectorType(az, bz, cz));
   }
 
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare3(), void>>
   constexpr ARCCORE_HOST_DEVICE static ThatClass fromLines(T ax, T bx, T cx, T ay, T by, T cy, T az, T bz, T cz)
+  requires(isSquare3())
   {
     return ThatClass(VectorType(ax, bx, cx), VectorType(ay, by, cy), VectorType(az, bz, cz));
   }
@@ -336,35 +330,32 @@ class NumMatrix
 
  public:
 
-  template <int S = RowSize, typename = std::enable_if_t<S >= 1, void>>
-  VectorType& vx()
-  {
-    return m_values[0];
-  }
-  template <int S = RowSize, typename = std::enable_if_t<S >= 1, void>>
-  VectorType vx() const
+  VectorType& vx() requires(RowSize >= 1)
   {
     return m_values[0];
   }
 
-  template <int S = RowSize, typename = std::enable_if_t<S >= 2, void>>
-  VectorType& vy()
+  VectorType vx() const requires(RowSize >= 1)
   {
-    return m_values[1];
+    return m_values[0];
   }
-  template <int S = RowSize, typename = std::enable_if_t<S >= 2, void>>
-  VectorType vy() const
+
+  VectorType& vy() requires(RowSize >= 2)
   {
     return m_values[1];
   }
 
-  template <int S = RowSize, typename = std::enable_if_t<S >= 3, void>>
-  VectorType& vz()
+  VectorType vy() const requires(RowSize >= 2)
+  {
+    return m_values[1];
+  }
+
+  VectorType& vz() requires(RowSize >= 3)
   {
     return m_values[2];
   }
-  template <int S = RowSize, typename = std::enable_if_t<S >= 3, void>>
-  VectorType vz() const
+
+  VectorType vz() const requires(RowSize >= 3)
   {
     return m_values[2];
   }
