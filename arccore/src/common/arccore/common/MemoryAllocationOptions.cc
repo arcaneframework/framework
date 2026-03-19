@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryAllocationOptions.cc                                  (C) 2000-2025 */
+/* MemoryAllocationOptions.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Options pour configurer les allocations.                                  */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,6 @@ allocationArgs(RunQueue* queue) const
 {
   MemoryAllocationArgs x;
   x.setMemoryLocationHint(m_memory_location_hint);
-  x.setHostDeviceMemoryLocation(m_host_device_memory_location);
   x.setDevice(m_device);
   x.setDebugInfo(m_debug_info);
   x.setRunQueue(queue);
