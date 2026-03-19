@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumVector.h                                                 (C) 2000-2023 */
+/* NumVector.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Vecteur de taille fixe de types numériques.                               */
 /*---------------------------------------------------------------------------*/
@@ -55,16 +55,16 @@ class NumVector
   NumVector() = default;
 
   //! Construit avec le couple (ax,ay)
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay)
+  constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay) requires(Size == 2)
+
   {
     m_values[0] = ax;
     m_values[1] = ay;
   }
 
   //! Construit avec le triplet (ax,ay,az)
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay, T az)
+  constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay, T az) requires(Size == 3)
+
   {
     m_values[0] = ax;
     m_values[1] = ay;
@@ -72,8 +72,8 @@ class NumVector
   }
 
   //! Construit avec le quadruplet (a1,a2,a3,a4)
-  template <int S = Size, typename = std::enable_if_t<S == 4, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4)
+  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4) requires(Size == 4)
+
   {
     m_values[0] = a1;
     m_values[1] = a2;
@@ -82,8 +82,7 @@ class NumVector
   }
 
   //! Construit avec le quintuplet (a1,a2,a3,a4,a5)
-  template <int S = Size, typename = std::enable_if_t<S == 5, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4, T a5)
+  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4, T a5) requires(Size == 5)
   {
     m_values[0] = a1;
     m_values[1] = a2;
@@ -114,13 +113,11 @@ class NumVector
       m_values[i] = v;
   }
 
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real2 v)
+  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real2 v) requires(Size == 2)
   : NumVector(v.x, v.y)
   {}
 
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real3 v)
+  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real3 v) requires(Size == 3)
   : NumVector(v.x, v.y, v.z)
   {}
 
@@ -132,25 +129,21 @@ class NumVector
     return (*this);
   }
 
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2& v) requires(Size == 2)
   {
     *this = ThatClass(v);
     return (*this);
   }
 
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3& v) requires(Size == 3)
   {
     *this = ThatClass(v);
     return (*this);
   }
 
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  operator Real2() const { return Real2(m_values[0], m_values[1]); }
+  operator Real2() const requires(Size == 2) { return Real2(m_values[0], m_values[1]); }
 
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  operator Real3() const { return Real3(m_values[0], m_values[1], m_values[2]); }
+  operator Real3() const requires(Size == 3) { return Real3(m_values[0], m_values[1], m_values[2]); }
 
  public:
 
@@ -323,40 +316,34 @@ class NumVector
   }
 
   //! Valeur de la première composante
-  template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T& vx()
+  T& vx() requires(Size >= 1)
   {
     return m_values[0];
   }
   //! Valeur de la première composante
-  template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T vx() const
+  T vx() const requires(Size >= 1)
   {
     return m_values[0];
   }
 
   //! Valeur de la deuxième composante
-  template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T& vy()
+  T& vy() requires(Size >= 2)
   {
     return m_values[1];
   }
   //! Valeur de la deuxième composante
-  template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T vy() const
+  T vy() const requires(Size >= 2)
   {
     return m_values[1];
   }
 
   //! Valeur de la troisième composante
-  template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T& vz()
+  T& vz() requires(Size >= 3)
   {
     return m_values[2];
   }
   //! Valeur de la troisième composante
-  template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T vz() const
+  T vz() const requires(Size >= 3)
   {
     return m_values[2];
   }
