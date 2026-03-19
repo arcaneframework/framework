@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryAllocationOptions.h                                   (C) 2000-2025 */
+/* MemoryAllocationOptions.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Options pour configurer les allocations.                                  */
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,6 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
   , m_debug_info(rhs.m_debug_info)
   , m_device(rhs.m_device)
   , m_memory_location_hint(rhs.m_memory_location_hint)
-  , m_host_device_memory_location(rhs.m_host_device_memory_location)
   {
     if (m_debug_info)
       _addDebugReference();
@@ -79,7 +78,6 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
       _removeDebugReference();
     m_allocator = rhs.m_allocator;
     m_memory_location_hint = rhs.m_memory_location_hint;
-    m_host_device_memory_location = rhs.m_host_device_memory_location;
     m_device = rhs.m_device;
     m_debug_info = rhs.m_debug_info;
     if (m_debug_info)
@@ -94,9 +92,6 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
 
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
-
-  void setHostDeviceMemoryLocation(eHostDeviceMemoryLocation v) { m_host_device_memory_location = v; }
-  eHostDeviceMemoryLocation hostDeviceMemoryLocation() const { return m_host_device_memory_location; }
 
   Int16 device() const { return m_device; }
   void setDevice(Int16 device) { m_device = device; }
@@ -118,8 +113,6 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
       return false;
     if (a.m_memory_location_hint != b.m_memory_location_hint)
       return false;
-    if (a.m_host_device_memory_location != b.m_host_device_memory_location)
-      return false;
     if (a.m_device != b.m_device)
       return false;
     if (a.m_queue != b.m_queue)
@@ -133,7 +126,6 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
   ArrayDebugInfo* m_debug_info = nullptr;
   Int16 m_device = -1;
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
-  eHostDeviceMemoryLocation m_host_device_memory_location = eHostDeviceMemoryLocation::Unknown;
   RunQueue* m_queue = nullptr;
 
  private:

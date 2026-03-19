@@ -93,7 +93,7 @@ _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_
 void ArrayMetaData::
 _setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
 {
-  allocation_options.setHostDeviceMemoryLocation(location);
+  m_host_device_memory_location = location;
 }
 
 /*---------------------------------------------------------------------------*/

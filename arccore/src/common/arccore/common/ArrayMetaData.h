@@ -72,6 +72,8 @@ class ARCCORE_COMMON_EXPORT ArrayMetaData
   MemoryAllocationOptions allocation_options;
   //! Nombre de références sur l'instance
   Int32 nb_ref = 0;
+  //! Information sur la localisation physique de la mémoire (si connue)
+  eHostDeviceMemoryLocation m_host_device_memory_location = eHostDeviceMemoryLocation::Unknown;
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
   //! Indique si cette instance n'est pas l'instance nulle (partagée par tous les SharedArray)

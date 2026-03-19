@@ -353,13 +353,13 @@ class AbstractArray
    */
   void _internalSetHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
   {
-    m_md->_setHostDeviceMemoryLocation(location);
+    m_md->m_host_device_memory_location = location;
   }
 
   //! Positionne l'emplacement physique de la zone mémoire.
   eHostDeviceMemoryLocation hostDeviceMemoryLocation() const
   {
-    return m_md->allocation_options.hostDeviceMemoryLocation();
+    return m_md->m_host_device_memory_location;
   }
 
  public:
