@@ -200,6 +200,11 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
     return m_block_wrapper.adjustedCapacity(wanted_capacity, element_size);
   }
   eMemoryResource memoryResource() const final { return m_direct_sub_allocator->memoryResource(); }
+  void copyMemory([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo destination,
+                  AllocatedMemoryInfo source) final
+  {
+    m_direct_sub_allocator->doMemoryCopy(destination.baseAddress(), source.baseAddress(), source.size());
+  }
   IMemoryPool* memoryPool() { return &m_memory_pool; }
 
  protected:
