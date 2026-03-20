@@ -54,7 +54,7 @@ std::shared_ptr<MultiMatrixImpl>
 Redistributor::redistribute(MultiMatrixImpl* mat)
 {
   auto& red_mat = mat->get<BackEnd::tag::redistributor>(true);
-  if (m_method == csr) {
+  if (m_method == Method::csr) {
     red_mat.useCSRRedistributor();
   }
   return red_mat.updateTargetPM(m_distributor.get());

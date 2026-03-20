@@ -125,9 +125,9 @@ main(int argc, char** argv)
         keep_proc = true;
     }
 
-    Alien::Redistributor::Method method = Alien::Redistributor::dok;
+    Alien::Redistributor::Method method = Alien::Redistributor::Method::dok;
     if(redist_method.compare("csr") == 0) {
-      method = Alien::Redistributor::csr;
+      method = Alien::Redistributor::Method::csr;
     }
 
     auto small_comm = Arccore::MessagePassing::mpSplit(Environment::parallelMng(), keep_proc);
