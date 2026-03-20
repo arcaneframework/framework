@@ -179,6 +179,15 @@ class HybridParallelMng::Impl
 
  public:
 
+  Int32 masterParallelIORank() const override
+  {
+    return m_parallel_mng->m_mpi_parallel_mng->commRank() * m_parallel_mng->m_local_nb_rank;
+  }
+  Int32 nbSendersToMasterParallelIO() const override
+  {
+    return m_parallel_mng->m_local_nb_rank;
+  }
+
   void initializeWindowCreator() override
   {
     m_parallel_mng->traceMng()->debug() << "initializeWindowCreator() Hybrid";

@@ -28,6 +28,7 @@
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/VtkCellTypes.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
@@ -276,10 +277,10 @@ class VtkHdfV2DataWriter
   HGroup m_field_data_offsets_group;
 
   bool m_is_parallel = false;
-  bool m_is_master_io = false;
   bool m_is_collective_io = false;
   bool m_is_first_call = false;
   bool m_is_writer = false;
+  Int32 m_writer = 0;
 
   DatasetInfo m_cell_offset_info;
   DatasetInfo m_point_offset_info;
@@ -377,7 +378,6 @@ beginWrite(const VariableCollection& vars)
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 nb_rank = pm->commSize();
   m_is_parallel = nb_rank > 1;
-  m_is_master_io = pm->isMasterIO();
 
   Int32 time_index = m_times.size();
   const bool is_first_call = (time_index < 2);
@@ -399,7 +399,7 @@ beginWrite(const VariableCollection& vars)
   // * Hdf5 a été compilé avec MPI,
   // * on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride).
   m_is_collective_io = m_is_collective_io && (pm->isParallel() && HInit::hasParallelHdf5());
-  if (pm->isHybridImplementation() || pm->isThreadImplementation())
+  if (pm->isThreadImplementation() && !pm->isHybridImplementation())
     m_is_collective_io = false;
 
   if (is_first_call) {
@@ -408,18 +408,28 @@ beginWrite(const VariableCollection& vars)
     info() << "VtkHdfV2DataWriter: has_material?=" << (m_material_mng != nullptr);
   }
 
+  bool is_master_io = pm->isMasterIO();
+
   // Vrai si on doit participer aux écritures
   // Si on utilise MPI/IO avec HDF5, il faut tout de même que tous
   // les rangs fassent toutes les opérations d'écriture pour garantir
   // la cohérence des méta-données.
-  m_is_writer = m_is_master_io || m_is_collective_io;
+  if (m_is_collective_io) {
+    m_writer = pm->_internalApi()->masterParallelIORank();
+    m_is_writer = (m_writer == pm->commRank());
+  }
+  else {
+    m_writer = pm->masterIORank();
+    m_is_writer = is_master_io;
+  }
 
   // Indique qu'on utilise MPI/IO si demandé
   HProperty plist_id;
-  if (m_is_collective_io)
+  if (m_is_collective_io && m_is_writer)
     plist_id.createFilePropertyMPIIO(pm);
 
-  if (is_first_call && m_is_master_io)
+  // Même avec MPI-IO, un seul proc doit créer le dossier.
+  if (is_first_call && is_master_io)
     dir.createDirectory();
 
   if (m_is_collective_io)
@@ -537,7 +547,7 @@ beginWrite(const VariableCollection& vars)
     }
 
     // Sauve l'uniqueId de chaque nœud dans le dataset "GlobalNodeId".
-    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalNodeId" }, m_cell_offset_info }, nodes_uid);
+    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, nodes_uid);
 
     // Sauve les informations sur le type de nœud (réel ou fantôme).
     _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, nodes_ghost_type);
@@ -551,7 +561,7 @@ beginWrite(const VariableCollection& vars)
 
   // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
   // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
-  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalCellId" }, m_cell_offset_info }, cells_uid);
+  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, cells_uid);
 
   if (m_is_writer) {
     // Liste des temps.
@@ -720,6 +730,10 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     my_index = part_info.offset();
   }
 
+  if (!m_is_writer) {
+    return;
+  }
+
   HProperty write_plist_id;
   if (is_collective)
     write_plist_id.createDatasetTransfertCollectiveMPIIO();
@@ -868,12 +882,44 @@ _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values
 {
   if (!m_is_parallel)
     return _writeDataSet1D(data_info, values);
-  if (m_is_collective_io)
-    return _writeDataSet1DUsingCollectiveIO(data_info, values);
+
+  if (m_is_collective_io) {
+    IParallelMng* pm = m_mesh->parallelMng();
+    if (!pm->isHybridImplementation()) {
+      return _writeDataSet1DUsingCollectiveIO(data_info, values);
+    }
+    else {
+      if (!m_is_writer) {
+        Int64 size = values.size();
+        ArrayView size_value(1, &size);
+        pm->send(size_value, m_writer);
+        pm->send(values.constSmallView(), m_writer);
+        return _writeDataSet1DUsingCollectiveIO(data_info, Span<const DataType>{});
+      }
+      else {
+        UniqueArray<DataType> all_values = values;
+        Int32 nb_sender = pm->_internalApi()->nbSendersToMasterParallelIO();
+        Int64 recv_size = 0;
+        ArrayView s_recv_size(1, &recv_size);
+
+        for (Int32 rank = m_writer + 1; rank < m_writer + nb_sender; ++rank) {
+          pm->recv(s_recv_size, rank);
+
+          Int64 old_size = all_values.size();
+          all_values.resizeNoInit(old_size + recv_size);
+          ArrayView recv_elem = all_values.subView(old_size, recv_size);
+
+          pm->recv(recv_elem, rank);
+        }
+        return _writeDataSet1DUsingCollectiveIO(data_info, all_values.constSpan());
+      }
+    }
+  }
+
   UniqueArray<DataType> all_values;
   IParallelMng* pm = m_mesh->parallelMng();
-  pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
-  if (m_is_master_io)
+  pm->gatherVariable(values.smallView(), all_values, m_writer);
+  if (m_is_writer)
     _writeDataSet1D<DataType>(data_info, all_values);
 }
 
@@ -903,15 +949,55 @@ _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> value
 {
   if (!m_is_parallel)
     return _writeDataSet2D(data_info, values);
-  if (m_is_collective_io)
-    return _writeDataSet2DUsingCollectiveIO(data_info, values);
+
+  if (m_is_collective_io) {
+    IParallelMng* pm = m_mesh->parallelMng();
+    if (!pm->isHybridImplementation()) {
+      return _writeDataSet2DUsingCollectiveIO(data_info, values);
+    }
+    else {
+      Span<const DataType> values_1d(values.data(), values.totalNbElement());
+
+      if (!m_is_writer) {
+        Int64 size = values.totalNbElement();
+        ArrayView size_value(1, &size);
+        pm->send(size_value, m_writer);
+        pm->send(values_1d.smallView(), m_writer);
+        return _writeDataSet2DUsingCollectiveIO(data_info, Span2<const DataType>{});
+      }
+
+      else {
+        UniqueArray<DataType> all_values = values_1d;
+        Int32 nb_sender = pm->_internalApi()->nbSendersToMasterParallelIO();
+        Int64 recv_size = 0;
+        ArrayView s_recv_size(1, &recv_size);
+
+        for (Int32 rank = m_writer + 1; rank < m_writer + nb_sender; ++rank) {
+          pm->recv(s_recv_size, rank);
+
+          Int64 old_size = all_values.size();
+          all_values.resizeNoInit(old_size + recv_size);
+          ArrayView recv_elem = all_values.subView(old_size, recv_size);
+
+          pm->recv(recv_elem, rank);
+        }
+        Int64 dim1_size = all_values.size();
+        Int64 dim2_size = values.dim2Size();
+        if (dim2_size != 0)
+          dim1_size = dim1_size / dim2_size;
+
+        Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
+        return _writeDataSet2DUsingCollectiveIO(data_info, span2);
+      }
+    }
+  }
 
   Int64 dim2_size = values.dim2Size();
   UniqueArray<DataType> all_values;
   IParallelMng* pm = m_mesh->parallelMng();
   Span<const DataType> values_1d(values.data(), values.totalNbElement());
-  pm->gatherVariable(values_1d.smallView(), all_values, pm->masterIORank());
-  if (m_is_master_io) {
+  pm->gatherVariable(values_1d.smallView(), all_values, m_writer);
+  if (m_is_writer) {
     Int64 dim1_size = all_values.size();
     if (dim2_size != 0)
       dim1_size = dim1_size / dim2_size;

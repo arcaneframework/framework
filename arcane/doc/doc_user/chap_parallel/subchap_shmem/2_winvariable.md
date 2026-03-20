@@ -23,7 +23,7 @@ Pour les variables redimensionnées par %Arcane, l'utilisateur n'a pas besoin de
 
 En revanche, pour les variables avec lesquelles une méthode `resize()` est disponible (ou `reshape()` pour les variables
 multi-dimensionnelles), il est nécessaire de s'assurer que tous les sous-domaines de la machine fassent un appel à cette
-méthode.
+méthode (quitte à faire `var.resize(var.size())` pour les sous-domaines ne nécessitant pas de redimensionnement).
 
 Ces appels de redimensionnement mirent de côté, l'utilisation des variables en mémoire partagée est identique à
 l'utilisation des variables en mémoire locale.
@@ -97,7 +97,7 @@ Par exemple, si la vue renvoyée contient `[0, 2, 4, 6]`, on sait que le noeud d
 que l'on a accès à leurs données via `MachineShMemWin`.<br>
 En utilisant la méthode `Arcane::IParallelMng::commSize()`, sachant que les rangs sont contigus, on peut aussi
 déterminer quels sous-domaines ne sont pas dans notre noeud de calcul.
-Par exemple, si `commSize() = 8`, alors les sous-domaines où l'on sera obligé de faire des communications inter-noeuds
+Par exemple, si `commSize() = 8`, alors les sous-domaines pour lesquels on devra faire des communications inter-noeuds
 sont les sous-domaines `[1, 3, 5, 7]`.
 
 <br>
