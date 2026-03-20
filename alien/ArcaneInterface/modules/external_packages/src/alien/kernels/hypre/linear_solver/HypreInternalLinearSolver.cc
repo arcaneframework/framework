@@ -185,8 +185,6 @@ HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int devi
     if (cfg.memory_backend == "umpire")
     {
        /* or use Umpire GPU memory pool */
-       HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
-       HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
 #if defined(HYPRE_USING_UMPIRE)
         HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
         // Enregistrement des noms de pools Umpire dans Hypre
