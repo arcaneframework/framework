@@ -62,36 +62,26 @@ const Arccore::TraceMessageListenerArgs& args)
   return true; // Le ITraceMessageMng won't write this message when leaving
   // ITraceMessageListener
 }
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SolverStat::SolverStat()
-: m_solve_count(0)
-, m_iteration_count(0)
-, m_last_iteration_count(0)
-, m_initialization_time(0)
-, m_initialization_cpu_time(0)
-, m_prepare_time(0)
-, m_prepare_cpu_time(0)
-, m_last_prepare_time(0)
-, m_last_prepare_cpu_time(0)
-, m_solve_time(0)
-, m_solve_cpu_time(0)
-, m_last_solve_time(0)
-, m_last_solve_cpu_time(0)
-{}
 
 /*---------------------------------------------------------------------------*/
+
 void SolverStat::reset()
 {
   m_solve_count = 0;
   m_iteration_count = 0;
-  m_last_iteration_count = 0;
-  m_initialization_time = m_initialization_cpu_time = 0;
-  m_prepare_time = m_prepare_cpu_time = 0;
-  m_last_prepare_time = m_last_prepare_cpu_time = 0;
-  m_solve_time = m_solve_cpu_time = 0;
-  m_last_solve_time = m_last_solve_cpu_time = 0;
+  m_failed_solve_count = 0;
+  m_failed_iteration_count = 0;
+
+  m_initialization_time = 0;
+  m_prepare_time = 0;
+  m_solve_time = 0;
+
+  m_failed_prepare_time = 0;
+  m_failed_solve_time = 0;
+
+  m_last_iteration_count;
+  m_last_prepare_time = 0;
+  m_last_solve_time = 0;
 }
 
 Integer
@@ -117,13 +107,6 @@ Real SolverStat::initializationTime() const
 
 /*---------------------------------------------------------------------------*/
 
-Real SolverStat::initializationCpuTime() const
-{
-  return m_initialization_cpu_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
 Real SolverStat::prepareTime() const
 {
   return m_prepare_time;
@@ -131,23 +114,9 @@ Real SolverStat::prepareTime() const
 
 /*---------------------------------------------------------------------------*/
 
-Real SolverStat::prepareCpuTime() const
-{
-  return m_prepare_cpu_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
 Real SolverStat::solveTime() const
 {
   return m_solve_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
-Real SolverStat::solveCpuTime() const
-{
-  return m_solve_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,23 +136,9 @@ Real SolverStat::lastPrepareTime() const
 
 /*---------------------------------------------------------------------------*/
 
-Real SolverStat::lastPrepareCpuTime() const
-{
-  return m_last_prepare_cpu_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
 Real SolverStat::lastSolveTime() const
 {
   return m_last_solve_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
-Real SolverStat::lastSolveCpuTime() const
-{
-  return m_last_solve_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -203,6 +158,13 @@ ITraceMng* traceMng, const Alien::SolverStatus& status, String title) const
 
   std::ostringstream oss;
   _internalPrint(oss, prefix_size, status, title);
+  traceMng->info() << oss.str();
+}
+
+void SolverStat::finalPrint(ITraceMng* traceMng, String title) const
+{
+  std::ostringstream oss;
+  _internalFinalPrint(oss, title);
   traceMng->info() << oss.str();
 }
 
@@ -231,24 +193,46 @@ void SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
     o << prefix << "| " << title << prefix
       << "|--------------------------------------------------------|";
   }
-  o << prefix << "| Last convergence      : " << std::boolalpha << status.succeeded
-    << prefix << "| Last iteration number : " << status.iteration_count << prefix
+  o << prefix
+    << "| Last convergence      : " << std::boolalpha << status.succeeded << prefix
+    << "| Last iteration number : " << status.iteration_count << prefix
     << "| Last relative residual: " << status.residual << std::setprecision(5) << prefix
-    << "| Last prepare time     : wct:" << std::setw(10) << lastPrepareTime()
-    << " ; cpu:" << std::setw(10) << lastPrepareCpuTime() << prefix
-    << "| Last solve time       : wct:" << std::setw(10) << lastSolveTime()
-    << " ; cpu:" << std::setw(10) << lastSolveCpuTime() << prefix
-    << "| Initialization time   : wct:" << std::setw(10) << initializationTime()
-    << " ; cpu:" << std::setw(10) << initializationCpuTime() << prefix
-    << "| Total prepare time    : wct:" << std::setw(10) << prepareTime()
-    << " ; cpu:" << std::setw(10) << prepareCpuTime() << prefix
-    << "| Total solve time      : wct:" << std::setw(10) << solveTime()
-    << " ; cpu:" << std::setw(10) << solveCpuTime() << prefix
+    << "| Last prepare time     : wct:" << std::setw(10) << lastPrepareTime() << prefix
+    << "| Last solve time       : wct:" << std::setw(10) << lastSolveTime() << prefix
+    << "| Initialization time   : wct:" << std::setw(10) << initializationTime() << prefix
+    << "| Total prepare time    : wct:" << std::setw(10) << prepareTime() << prefix
+    << "| Total solve time      : wct:" << std::setw(10) << solveTime() << prefix
     << "| Total iterations      : " << iterationCount() << prefix
     << "| Solve count           : " << solveCount() << prefix
     << "|--------------------------------------------------------|";
   o.precision(ss);
   delete[] prefix;
+}
+
+void SolverStat::_internalFinalPrint(std::ostream& o, String title) const
+{
+  auto ss = o.precision();
+  o << '\n'
+    << "|--------------------------------------------------------|" << '\n'
+    << "| " << title << '\n'
+    << "|--------------------------------------------------------|" << '\n'
+    << "Total Num calls       : " << m_solve_count << '\n'
+    << "Failed Num calls      : " << m_failed_solve_count << " "
+    << m_failed_solve_count/Real(m_solve_count) << '\n'
+
+    << "Total iterations      : " << m_iteration_count << '\n'
+    << "Failed iterations     : " << m_failed_iteration_count << " "
+    << m_failed_iteration_count/Real(m_iteration_count) << '\n'
+
+    << "Total time            : " << std::setw(10) << m_initialization_time + m_prepare_time + m_solve_time << '\n'
+    << "Failed total time     : " << std::setw(10) << m_failed_prepare_time + m_failed_solve_time << " "
+    << (m_failed_prepare_time + m_failed_solve_time)/Real(m_initialization_time + m_prepare_time + m_solve_time) << '\n'
+
+    << "Init time             : " << std::setw(10) << m_initialization_time << '\n'
+    << "Total prepare time    : " << std::setw(10) << m_prepare_time << '\n'
+    << "Total solve time      : " << std::setw(10) << m_solve_time << '\n'
+    << "|--------------------------------------------------------|";
+  o.precision(ss);
 }
 
 /*---------------------------------------------------------------------------*/
