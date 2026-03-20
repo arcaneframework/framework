@@ -9,6 +9,9 @@
 
 #include <memory>
 
+#include "arccore/base/String.h"
+#include "arccore/base/PlatformUtils.h"
+
 #include <alien/AlienExternalPackagesPrecomp.h>
 
 #include <alien/expression/solver/SolverStater.h>
@@ -50,8 +53,84 @@ bool HypreInternalLinearSolver::m_library_plugin_is_initialized = false ;
 
 std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
 
+
+// -------------------------------------------------------
+// Configuration de l'allocateur mémoire pour Hypre
+// -------------------------------------------------------
+#include <HYPRE.h>
+#include <HYPRE_utilities.h>
+#include <_hypre_utilities.h>   // HYPRE_SetGPUMemoryPoolSize, HYPRE_SetUmpire*
+
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <cstdlib>
+
+
+// -------------------------------------------------------
+// Helper : lecture des variables d'environnement
+// -------------------------------------------------------
+static std::string getEnv(const std::string& key, const std::string& def = "") {
+    const char* v = std::getenv(key.c_str());
+    return v ? std::string(v) : def;
+}
+
+static std::size_t getEnvMB(const std::string& key, std::size_t defMB) {
+    const char* v = std::getenv(key.c_str());
+    return (v ? std::stoul(v) : defMB) * 1024ULL * 1024ULL;
+}
+
+// -------------------------------------------------------
+// Configuration
+// -------------------------------------------------------
+struct HypreConfig {
+    // Backend : "host" | "device" | "unified" | "umpire" | "mempool"
+    std::string memory_backend  = "host";
+
+    // Politique d'exécution : "host" | "device"
+    std::string exec_policy     = "host";
+
+    // Umpire — noms des pools
+    std::string umpire_host_pool    = "HYPRE_HOST_POOL";
+    std::string umpire_device_pool  = "HYPRE_DEVICE_POOL";
+    std::string umpire_um_pool      = "HYPRE_UM_POOL";
+
+    // GpuMemPool — paramètres du BinPoolAllocator de CUB/Umpire interne
+    // HYPRE_SetGPUMemoryPoolSize(bin_growth, min_bin, max_bin, max_bytes)
+    HYPRE_Int   pool_bin_growth = 8;
+    HYPRE_Int   pool_min_bin    = 1;
+    HYPRE_Int   pool_max_bin    = 64;
+    std::size_t pool_max_bytes  = 512ULL * 1024 * 1024; // 512 MB
+
+    // Options solveurs GPU
+    bool spgemm_use_cusparse = false;
+    bool use_gpu_rand        = true;
+};
+
+// -------------------------------------------------------
+// Construire la config depuis l'environnement
+// -------------------------------------------------------
+HypreConfig configFromEnv() {
+    HypreConfig cfg;
+
+    cfg.memory_backend = getEnv("HYPRE_MEMORY_BACKEND", "host");
+    cfg.exec_policy    = getEnv("HYPRE_EXEC_POLICY",
+                                cfg.memory_backend == "host" ? "host" : "device");
+
+    cfg.umpire_host_pool   = getEnv("HYPRE_UMPIRE_HOST_POOL",   "HYPRE_HOST_POOL");
+    cfg.umpire_device_pool = getEnv("HYPRE_UMPIRE_DEVICE_POOL", "HYPRE_DEVICE_POOL");
+    cfg.umpire_um_pool     = getEnv("HYPRE_UMPIRE_UM_POOL",     "HYPRE_UM_POOL");
+
+    cfg.pool_max_bytes     = getEnvMB("HYPRE_POOL_MAX_MB", 512);
+
+    return cfg;
+}
+
+
 HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int device_id)
 {
+  HypreConfig cfg = configFromEnv();
+
   if(exec_on_device)
   {
     m_device_id = device_id ;
@@ -80,21 +159,62 @@ HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int devi
     }
     /* setup AMG on GPUs */
     HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
-    /* use hypre's SpGEMM instead of cuSPARSE */
-    HYPRE_SetSpGemmUseCusparse(true);
-    /* use GPU RNG */
-    HYPRE_SetUseGpuRand(true);
-    bool useHypreGpuMemPool = false ;
-    bool useUmpireGpuMemPool = false ;
-    if (useHypreGpuMemPool) {
-      /* use hypre's GPU memory pool */
-      //HYPRE_SetGPUMemoryPoolSize(bin_growth, min_bin, max_bin, max_bytes);
+
+    // Utiliser SpGEMM interne plutôt que cuSPARSE (plus rapide sur Ampere+)
+    HYPRE_SetSpGemmUseCusparse(cfg.spgemm_use_cusparse ? 1 : 0);
+
+    // Générateur de nombres aléatoires GPU
+    HYPRE_SetUseGpuRand(cfg.use_gpu_rand ? 1 : 0);
+
+    if (cfg.memory_backend == "mempool")
+    {
+#if defined(HYPRE_USING_DEVICE_POOL)
+        HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+        // BinPoolAllocator interne de Hypre (basé sur CUB)
+        // Signature : (bin_growth, min_bin, max_bin, max_bytes)
+        HYPRE_SetGPUMemoryPoolSize(
+            cfg.pool_bin_growth,
+            cfg.pool_min_bin,
+            cfg.pool_max_bin,
+            cfg.pool_max_bytes
+        );
+#else
+        throw std::runtime_error("GpuMemPool : Hypre compilé sans HYPRE_USING_DEVICE_POOL");
+#endif
     }
-    else if (useUmpireGpuMemPool) {
+    if (cfg.memory_backend == "umpire")
+    {
        /* or use Umpire GPU memory pool */
-       //HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
-       //HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
+       HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
+       HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
+#if defined(HYPRE_USING_UMPIRE)
+        HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+        // Enregistrement des noms de pools Umpire dans Hypre
+        // Les pools doivent avoir été créés par Umpire avant cet appel,
+        // ou Hypre les crée automatiquement si --with-umpire-auto-build
+        HYPRE_SetUmpireHostPoolName  (cfg.umpire_host_pool.c_str());
+        HYPRE_SetUmpireDevicePoolName(cfg.umpire_device_pool.c_str());
+        HYPRE_SetUmpireUMPoolName    (cfg.umpire_um_pool.c_str());
+#else
+        throw std::runtime_error("Umpire : Hypre compilé sans HYPRE_USING_UMPIRE");
+#endif
      }
+
+#if defined(HYPRE_USING_UMPIRE)
+    if (cfg.memory_backend == "umpire") {
+        std::cout << "  umpire host    : " << cfg.umpire_host_pool   << "\n"
+                  << "  umpire device  : " << cfg.umpire_device_pool << "\n"
+                  << "  umpire UM      : " << cfg.umpire_um_pool     << "\n";
+    }
+#endif
+
+#if defined(HYPRE_USING_DEVICE_POOL)
+    if (cfg.memory_backend == "mempool") {
+        std::cout << "  pool max bytes : "
+                  << cfg.pool_max_bytes / (1024*1024) << " MB\n";
+    }
+#endif
+
   }
   else
   {

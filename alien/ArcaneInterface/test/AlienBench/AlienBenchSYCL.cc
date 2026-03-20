@@ -369,7 +369,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
       }
 
       {
-        Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        Alien::SYCL::CombineAddProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
         builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
 
         Alien::ParallelEngine engine(*m_default_queue) ;
@@ -439,6 +439,12 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
               std::cout<<std::endl ;
           }
         }*/
+      }
+      {
+        Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
+
+        Alien::ParallelEngine engine(*m_default_queue) ;
         if (options()->sigma() > 0.)
         {
           m_sigma = options()->sigma();
@@ -755,7 +761,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
       }
 
       {
-        Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        Alien::SYCL::CombineAddProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
         builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
 
         Alien::ParallelEngine engine(*m_default_queue) ;
@@ -834,6 +840,13 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
               std::cout<<std::endl ;
           }
         }*/
+      }
+      {
+        Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
+
+        Alien::ParallelEngine engine(*m_default_queue) ;
+
         if (options()->sigma() > 0.)
         {
           m_sigma = options()->sigma();
@@ -924,7 +937,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
         builder.finalize() ;
       }
   }
-  
+
   {
     info()<<"COMPUTE SYCL NORME B";
     std::cout << "COMPUTE SYCL NORME B"<<std::endl ;
@@ -934,7 +947,7 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
     Real normeb = syclAlg.norm2(vectorB);
     std::cout << "||b||=" << normeb<<std::endl ;
     {
-      SYCLInternalLinearAlgebra alg ;
+      SYCLInternalLinearAlgebra   alg ;
 
       auto&  sycl_x = vectorX.impl()->get<Alien::BackEnd::tag::sycl>(true) ;
       alg.assign(sycl_x,0.) ;
