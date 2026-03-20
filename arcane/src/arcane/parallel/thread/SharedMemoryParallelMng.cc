@@ -110,6 +110,9 @@ class SharedMemoryParallelMng::Impl
 
  public:
 
+  Int32 masterParallelIORank() const override { return 0; }
+  Int32 nbSendersToMasterParallelIO() const override { return m_parallel_mng->commSize(); }
+
   void initializeWindowCreator() override {}
 
   bool isMachineShMemWinAvailable() override

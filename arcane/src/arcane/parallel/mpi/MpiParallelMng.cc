@@ -376,6 +376,9 @@ class MpiParallelMng::Impl
 
  public:
 
+  Int32 masterParallelIORank() const override { return m_parallel_mng->commRank(); }
+  Int32 nbSendersToMasterParallelIO() const override { return 1; }
+
   void initializeWindowCreator() override
   {
     m_parallel_mng->traceMng()->info() << "initializeWindowCreator() MPI";

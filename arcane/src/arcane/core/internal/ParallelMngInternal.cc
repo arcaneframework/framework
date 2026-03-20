@@ -98,6 +98,24 @@ setDefaultRunner(const Runner& runner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 ParallelMngInternal::
+masterParallelIORank() const
+{
+  return m_parallel_mng->masterIORank();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 ParallelMngInternal::
+nbSendersToMasterParallelIO() const
+{
+  return m_parallel_mng->commSize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<IParallelMng> ParallelMngInternal::
 createSubParallelMngRef(Int32 color, Int32 key)
 {

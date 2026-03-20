@@ -64,6 +64,14 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
+  //! Donne l'écrivain dans le cas où l'on peut écrire en parallèle (avec
+  //! MPI-IO par exemple).
+  virtual Int32 masterParallelIORank() const = 0;
+
+  //! Donne le nombre de proc qui vont envoyer des données à
+  //! masterParallelIORank().
+  virtual Int32 nbSendersToMasterParallelIO() const = 0;
+
   /*!
    * \brief Méthode permettant d'initialiser le windowCreator spécifique à
    * l'implémentation.

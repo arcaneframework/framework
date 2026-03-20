@@ -833,6 +833,9 @@ class SequentialParallelMng::Impl
 
  public:
 
+  Int32 masterParallelIORank() const override { return 0; }
+  Int32 nbSendersToMasterParallelIO() const override { return 1; }
+
   void initializeWindowCreator() override {}
 
   bool isMachineShMemWinAvailable() override

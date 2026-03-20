@@ -103,7 +103,7 @@ void HInit::
 useMutex([[maybe_unused]] bool is_active, [[maybe_unused]] IParallelMng* pm)
 {
 #if (defined(H5_HAVE_THREADSAFE) || defined(H5_HAVE_CONCURRENCY))
-  pm->traceMng()->info() << "HDF5 -- Is HDF5 threadsafe: 1 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
+  pm->traceMng()->info(4) << "HDF5 -- Is HDF5 threadsafe: 1 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
 #else
   bool env_is_enable = true;
   if (const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_HDF5_DISABLE_MUTEX", true)) {
@@ -114,7 +114,7 @@ useMutex([[maybe_unused]] bool is_active, [[maybe_unused]] IParallelMng* pm)
   global_hdf5_mutex_is_active = env_is_enable && is_active;
   global_hdf5_mutex.unlock();
   pm->barrier();
-  pm->traceMng()->info() << "HDF5 -- Is HDF5 threadsafe: 0 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
+  pm->traceMng()->info(4) << "HDF5 -- Is HDF5 threadsafe: 0 -- Is Mutex enabled: " << global_hdf5_mutex_is_active;
 #endif
 }
 
