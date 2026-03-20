@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <Tests/Options.h>
 
 #include <alien/Alien.h>
@@ -125,9 +131,9 @@ main(int argc, char** argv)
         keep_proc = true;
     }
 
-    Alien::Redistributor::Method method = Alien::Redistributor::dok;
+    Alien::Redistributor::Method method = Alien::Redistributor::Method::dok;
     if(redist_method.compare("csr") == 0) {
-      method = Alien::Redistributor::csr;
+      method = Alien::Redistributor::Method::csr;
     }
 
     auto small_comm = Arccore::MessagePassing::mpSplit(Environment::parallelMng(), keep_proc);

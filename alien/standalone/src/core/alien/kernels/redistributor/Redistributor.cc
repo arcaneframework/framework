@@ -1,27 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*
- * Redistributor.cpp
- *
- *  Created on: 28 juil. 2016
- *      Author: chevalic
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 
 #include "Redistributor.h"
 
@@ -54,7 +36,7 @@ std::shared_ptr<MultiMatrixImpl>
 Redistributor::redistribute(MultiMatrixImpl* mat)
 {
   auto& red_mat = mat->get<BackEnd::tag::redistributor>(true);
-  if (m_method == csr) {
+  if (m_method == Method::csr) {
     red_mat.useCSRRedistributor();
   }
   return red_mat.updateTargetPM(m_distributor.get());
