@@ -33,7 +33,13 @@ namespace Arcane.UnifiedDriver
         case "dotnet_compile":
           return Arcane.ExecDrivers.DotNetCompile.MainClass.MainExec(remaining_args);
         case "template":
+#if ARCANE_HAS_TEMPLATES
           return Arcane.Templates.MainClass.MainExec(remaining_args);
+#else
+          Console.WriteLine("ERROR: templates are not available when using '.Net' version older than 8.0.\n"+
+                            "Please use a newer version of '.Net'");
+          return 1;
+#endif
         case "mesh_utils":
           return Arcane.ExecDrivers.MeshUtilsDriver.MeshUtilsDriver.MainExec(remaining_args);
         case "launcher":

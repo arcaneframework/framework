@@ -1,24 +1,16 @@
 <Project>
   <!--
-      Positionne les propriétés communes aux projets C# qui génèrent un exécutable.
+      Positionne les propriétés communes aux projets C# qui génèrent une DLL.
 
-      Notamment, cela permet de spécifier le 'TargetFramework' par défaut.
-
-      Normalement, $(BundledNETCoreAppTargetFrameworkVersion) est toujours défini sauf si
-      on utilise le `msbuild` d'une veille version de mono (inférieure à la 6.0). Avec 'dotnet', les packages
-      de référence sont inclus dans le SDK. Avec mono, ce n'est pas le cas. Dans ce cas, il
-      faut avoir le git 'dependencies' lié à Arcane qui contient les packages nuget nécessaires.
-
-      A terme, on ne supportera plus que la compilation via 'dotnet'. L'exécution par 'mono' sera
-      toujours disponible.
+      Actuellement, on force l'utilisation de 'netstandard2.0' car cela permet
+      d'être compatible avec les projets utilisant '.Net framework'. Une fois
+      que des projets utilisants les versions récentes de '.Net' (6.0 ou plus),
+      on pourra utiliser la version courante de '.Net'.
 
       Il est toujours possible de spécifier explicitement le `TargetFramework` en ligne de commande si
       nécessaire
   -->
   <PropertyGroup>
-    <TargetFramework
-        Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
-        >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 </Project>

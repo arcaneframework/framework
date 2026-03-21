@@ -1,7 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../CommonExe.props" />
+  <!--
+      'Arcane.Templates' n'est supporté qu'à partir de  'net8'. En théorie
+      il est compatible avec d'anciennes versions mais cela oblige à avoir
+      des packages nuget tels que 'system.text.json' quit sont gros et ont
+      beaucoup de dépendances
+  -->
+  <PropertyGroup>
+    <HasArcaneTemplates>False</HasArcaneTemplates>
+    <HasArcaneTemplates Condition="'$(BundledNETCoreAppTargetFrameworkVersion)' >= '8'">True</HasArcaneTemplates>
+    <DefineConstants Condition="'$(HasArcaneTemplates)'">ARCANE_HAS_TEMPLATES</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Arcane.Templates\Arcane.Templates.csproj" />
+    <ProjectReference Condition="'$(HasArcaneTemplates)'"
+                      Include="..\Arcane.Templates\Arcane.Templates.csproj" />
     <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.csproj" />
   </ItemGroup>
 </Project>
