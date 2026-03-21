@@ -1,0 +1,15 @@
+<Project>
+  <!--
+      Positionne les propriétés communes aux projets C# qui génèrent une DLL
+      utilisées en interne de 'Arcane'.
+
+      Pour ce cas, le TargetFramework est le même que celui de la version
+      par défaut utilisée via 'dotnet'.
+      La version la plus ancienne supportée est la '6.0'.
+  -->
+  <PropertyGroup>
+    <TargetFramework
+        Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
+        >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+  </PropertyGroup>
+</Project>
