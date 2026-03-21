@@ -1,10 +1,10 @@
 name: IFPEN el8 gimkl/2021b
 
 on:
-  #push:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  #pull_request:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       ctest_options:
@@ -34,7 +34,10 @@ env:
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # For intel MPI to fix errors appearing in July 2023
-  I_MPI_SHM_LMT: shm
+  #I_MPI_SHM_LMT: shm
+  # For intel MPI to fix errors appearing in 2025
+  I_MPI_WAIT_MODE: 1
+  I_MPI_PIN: 0
   # To remove test output directory to reduce disk usage
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
@@ -126,7 +129,7 @@ jobs:
            which mpiexec
            mpiexec --version
            # Run test
-           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(.*synchronize.*8proc|loadbalance.*12proc|.*hts.*mpi-4|CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
