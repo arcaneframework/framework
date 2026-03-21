@@ -345,7 +345,12 @@ class NormalizeOpt::Op
     m_block_size = m_equations_num * m_unknowns_num;
     m_diag_first = m.getCSRProfile().getDiagFirstOpt();
     if (!m_diag_first)
-      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset().constView();
+    {
+      if(m.isParallel())
+        m_upper_diag_offset = m.getDistStructInfo().getUpperDiagOffset(m.getCSRProfile());
+      else
+        m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset().constView();
+    }
     m_keep_diag = true;
     if (m_sum_first_eq) {
       if (m_diag_first)

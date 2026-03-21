@@ -1,19 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*---------------------------------------------------------------------------*/
-/* MTLBackEnd                                                  (C) 2000-2025 */
-/*                                                                           */
-/* Tools for Hypre backend                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ALIEN_KERNELS_HYPRE_HYPREBACKEND_H
 #define ALIEN_KERNELS_HYPRE_HYPREBACKEND_H
 
 #include <arccore/message_passing/MessagePassingGlobal.h>
+#include <arccore/common/accelerator/Runner.h>
 #include <alien/core/backend/BackEnd.h>
 #include <alien/AlienExternalPackagesPrecomp.h>
 
@@ -37,8 +34,10 @@ template <class Matrix, class Vector> class IInternalLinearSolver;
 extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<HypreMatrix, HypreVector>*
 HypreInternalLinearAlgebraFactory();
 
-extern IInternalLinearSolver<HypreMatrix, HypreVector>* HypreInternalLinearSolverFactory(
-    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsHypreSolver* options);
+extern IInternalLinearSolver<HypreMatrix, HypreVector>*
+HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                                 IOptionsHypreSolver* options,
+                                 Arcane::Accelerator::Runner* runner = nullptr);
 
 /*---------------------------------------------------------------------------*/
 
@@ -62,10 +61,11 @@ template <> struct AlgebraTraits<BackEnd::tag::hypre>
   {
     return HypreInternalLinearAlgebraFactory();
   }
-  static solver_type* solver_factory(
-      Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
+  static solver_type* solver_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                                     options_type* options,
+                                     Arcane::Accelerator::Runner* runner)
   {
-    return HypreInternalLinearSolverFactory(p_mng, options);
+    return HypreInternalLinearSolverFactory(p_mng, options, runner);
   }
   static BackEndId name() { return "hypre"; }
 };
