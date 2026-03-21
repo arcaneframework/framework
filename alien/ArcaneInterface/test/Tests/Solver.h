@@ -210,7 +210,7 @@ createSolver(boost::program_options::variables_map& vm)
         _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
-    return std::make_shared<Alien::HypreLinearSolver>(pm, options);
+    return std::make_shared<Alien::HypreLinearSolver>(pm, options,nullptr);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif

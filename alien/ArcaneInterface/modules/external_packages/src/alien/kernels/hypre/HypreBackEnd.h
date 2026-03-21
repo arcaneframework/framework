@@ -14,6 +14,7 @@
 #define ALIEN_KERNELS_HYPRE_HYPREBACKEND_H
 
 #include <arccore/message_passing/MessagePassingGlobal.h>
+#include <arccore/common/accelerator/Runner.h>
 #include <alien/core/backend/BackEnd.h>
 #include <alien/AlienExternalPackagesPrecomp.h>
 
@@ -37,8 +38,10 @@ template <class Matrix, class Vector> class IInternalLinearSolver;
 extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<HypreMatrix, HypreVector>*
 HypreInternalLinearAlgebraFactory();
 
-extern IInternalLinearSolver<HypreMatrix, HypreVector>* HypreInternalLinearSolverFactory(
-    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsHypreSolver* options);
+extern IInternalLinearSolver<HypreMatrix, HypreVector>*
+HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                                 IOptionsHypreSolver* options,
+                                 Arcane::Accelerator::Runner* runner = nullptr);
 
 /*---------------------------------------------------------------------------*/
 
@@ -62,10 +65,11 @@ template <> struct AlgebraTraits<BackEnd::tag::hypre>
   {
     return HypreInternalLinearAlgebraFactory();
   }
-  static solver_type* solver_factory(
-      Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
+  static solver_type* solver_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                                     options_type* options,
+                                     Arcane::Accelerator::Runner* runner)
   {
-    return HypreInternalLinearSolverFactory(p_mng, options);
+    return HypreInternalLinearSolverFactory(p_mng, options, runner);
   }
   static BackEndId name() { return "hypre"; }
 };
