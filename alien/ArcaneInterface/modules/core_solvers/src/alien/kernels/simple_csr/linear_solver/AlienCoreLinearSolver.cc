@@ -9,6 +9,9 @@
 
 #include <vector>
 
+#include <arccore/common/accelerator/Runner.h>
+#include <arccore/common/accelerator/DeviceId.h>
+
 #include "alien/kernels/simple_csr/AlienSolverPrecomp.h"
 
 #include <alien/data/Space.h>
@@ -47,8 +50,9 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 AlienCoreLinearSolver::
 AlienCoreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+                      Arcane::Accelerator::Runner* runner,
                      IOptionsAlienCoreSolver* options)
-: BaseType(parallel_mng,options)
+: BaseType(parallel_mng, runner, options)
 , m_stater(this)
 {
 }
@@ -129,10 +133,11 @@ AlienCoreLinearSolver::algebra() const
 }
 
 ILinearSolver*
-AlienCoreLinearSolverFactory(
-    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsAlienCoreSolver* options)
+AlienCoreLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                             Arcane::Accelerator::Runner* runner,
+                             IOptionsAlienCoreSolver* options)
 {
-  return new AlienCoreLinearSolver(p_mng, options);
+  return new AlienCoreLinearSolver(p_mng, runner, options);
 }
 
 }

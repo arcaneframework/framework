@@ -40,12 +40,26 @@ namespace Alien
 
 SYCLEnv::SYCLEnv()
 {
-  m_internal = new SYCLInternal::EnvInternal;
+  SYCLInternal::EnvInternal::printPlatformInfo() ;
+  m_internal.reset(new SYCLInternal::EnvInternal{});
 }
+
+SYCLEnv::SYCLEnv(int device_id)
+{
+  SYCLInternal::EnvInternal::printPlatformInfo() ;
+  auto gpu_devices = sycl::device::get_devices(sycl::info::device_type::gpu);
+  if(device_id < gpu_devices.size())
+  {
+    sycl::device selected_device = gpu_devices[device_id];
+    m_internal.reset(new SYCLInternal::EnvInternal{selected_device,device_id});
+  }
+  else
+    m_internal.reset(new SYCLInternal::EnvInternal{});
+}
+
 
 SYCLEnv::~SYCLEnv()
 {
-  delete m_internal;
 }
 
 SYCLEnv* SYCLEnv::m_instance = nullptr;
@@ -53,8 +67,25 @@ SYCLEnv* SYCLEnv::m_instance = nullptr;
 SYCLEnv* SYCLEnv::instance()
 {
   if (!m_instance)
-    m_instance = new SYCLEnv;
+    m_instance = new SYCLEnv{};
   return m_instance;
+}
+
+SYCLEnv* SYCLEnv::instance(int device_id)
+{
+  if (!m_instance)
+    m_instance = new SYCLEnv{device_id};
+  if (m_instance->deviceId()!= device_id)
+  {
+    delete m_instance ;
+    m_instance = new SYCLEnv{device_id};
+  }
+  return m_instance;
+}
+
+int SYCLEnv::deviceId()
+{
+  return m_internal->deviceId() ;
 }
 
 std::size_t SYCLEnv::maxNumGroups()
@@ -798,8 +829,7 @@ namespace SYCLInternal
     auto& kcol = internal_profile->getKCol();
     auto& block_row_offset = internal_profile->getBlockRowOffset();
 
-    auto
- = m_profile->localRowSize();
+    auto local_row_size = m_profile->localRowSize();
     if (local_row_size == nullptr)
     {
       //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
@@ -2468,7 +2498,7 @@ namespace SYCLInternal
                    });
     }
 
-    if(m_ext_profile.get())
+    if(m_ext_profile)
     {
 
       auto interface_nrows = m_ext_profile->getNRows();
@@ -3017,7 +3047,7 @@ template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,1024>;
 void force_int_instance()
 {
   SYCLBEllPackMatrix<double> matrix ;
-  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer (sycl::range<1>(10)) ;
+  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer{sycl::range<1>(10)} ;
   matrix.internal()->setMatrixValues(buffer) ;
 }
 /*---------------------------------------------------------------------------*/

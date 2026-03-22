@@ -8,9 +8,10 @@
 #define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include <alien/kernels/hypre/linear_solver/arcane/HypreLinearSolver.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
-#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 namespace Alien {
 /*---------------------------------------------------------------------------*/
@@ -20,8 +21,8 @@ namespace Alien {
 HypreLinearSolver::HypreLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneHypreSolverObject(sbi)
 , LinearSolver<BackEnd::tag::hypre>(sbi.subDomain()->parallelMng()->messagePassingMng(),
-                                    options(),
-                                    sbi.subDomain()->acceleratorMng()->defaultRunner())
+                                    sbi.subDomain()->acceleratorMng()->defaultRunner(),
+                                    options())
 {
 
 }
@@ -30,10 +31,10 @@ HypreLinearSolver::HypreLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 
 HypreLinearSolver::HypreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-                                     std::shared_ptr<IOptionsHypreSolver> _options,
-                                     Arcane::Accelerator::Runner* runner)
+                                     Arcane::Accelerator::Runner* runner,
+                                     std::shared_ptr<IOptionsHypreSolver> _options)
 : ArcaneHypreSolverObject(_options)
-, LinearSolver<BackEnd::tag::hypre>(parallel_mng, options(),runner)
+, LinearSolver<BackEnd::tag::hypre>(parallel_mng, runner, options())
 {
   ;
 }

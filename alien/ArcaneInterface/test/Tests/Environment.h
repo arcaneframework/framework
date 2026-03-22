@@ -20,6 +20,7 @@ struct Private
 {
   Arccore::ITraceMng* tm;
   Arccore::MessagePassing::IMessagePassingMng* pm;
+  Arcane::Accelerator::Runner* runner;
 } global_alien_env_info;
 
 extern void
@@ -43,6 +44,8 @@ initialize(int argc, char** argv)
   global_alien_env_info.tm->setClassConfig("*",trace_config);
   global_alien_env_info.tm->setMaster(is_master_io);
   global_alien_env_info.tm->finishInitialize();
+
+  global_alien_env_info.runner = nullptr ; // Arccore does not have defaultAccelerator launcher;
 }
 
 extern void
@@ -64,6 +67,14 @@ traceMng()
   Arccore::ITraceMng* tm = global_alien_env_info.tm;
   return tm;
 }
+
+extern Arcane::Accelerator::Runner*
+runner()
+{
+  Arcane::Accelerator::Runner* runner = global_alien_env_info.runner;
+  return runner;
+}
+
 }
 
 namespace Environment {

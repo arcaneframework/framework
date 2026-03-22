@@ -68,8 +68,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   typedef SolverStatus Status;
 
   HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr,
-                            IOptionsHypreSolver* options = nullptr,
-                            Arcane::Accelerator::Runner* runner = nullptr);
+                            Arcane::Accelerator::Runner* runner = nullptr,
+                            IOptionsHypreSolver* options = nullptr);
 
   virtual ~HypreInternalLinearSolver();
 
@@ -127,8 +127,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   SolverStat m_stat;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
-  IOptionsHypreSolver*                         m_options      = nullptr;
   Arcane::Accelerator::Runner*                 m_runner       = nullptr;
+  IOptionsHypreSolver*                         m_options      = nullptr;
 
 };
 

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-/**
- * Interface du service de résolution de système linéaire
- */
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "alien/AlienLegacyConfig.h"
 
 #ifdef ALIEN_USE_SYCL
@@ -39,18 +39,20 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 AlienSYCLLinearSolver::AlienSYCLLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneAlienCoreSolverObject(sbi)
-, Alien::AlienCoreSYCLLinearSolver(
-      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+, Alien::AlienCoreSYCLLinearSolver(sbi.subDomain()->parallelMng()->messagePassingMng(),
+                                   sbi.subDomain()->acceleratorMng()->defaultRunner(),
+                                   options())
 {
   Alien::setTraceMng(Arcane::TraceAccessor::traceMng());
 }
 #endif
 
-AlienSYCLLinearSolver::AlienSYCLLinearSolver(
-    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-    std::shared_ptr<IOptionsAlienCoreSolver> _options)
+AlienSYCLLinearSolver::
+AlienSYCLLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+                      Arcane::Accelerator::Runner* runner,
+                      std::shared_ptr<IOptionsAlienCoreSolver> _options)
 : ArcaneAlienCoreSolverObject(_options)
-, Alien::AlienCoreSYCLLinearSolver(parallel_mng, options())
+, Alien::AlienCoreSYCLLinearSolver(parallel_mng, runner, options())
 {
 }
 

@@ -25,15 +25,20 @@ class ALIEN_EXPORT SYCLEnv
  public:
   static SYCLEnv* m_instance;
   static SYCLEnv* instance();
+  static SYCLEnv* instance(int device_id);
 
   SYCLEnv();
+
+  SYCLEnv(int device_id);
 
   virtual ~SYCLEnv();
 
   SYCLInternal::EnvInternal* internal()
   {
-    return m_internal;
+    return m_internal.get();
   }
+
+  int deviceId();
 
   std::size_t maxNumGroups();
 
@@ -42,6 +47,6 @@ class ALIEN_EXPORT SYCLEnv
   std::size_t maxNumThreads();
 
  private:
-  SYCLInternal::EnvInternal* m_internal = nullptr;
+  std::unique_ptr<SYCLInternal::EnvInternal> m_internal ;
 };
 } // namespace Alien

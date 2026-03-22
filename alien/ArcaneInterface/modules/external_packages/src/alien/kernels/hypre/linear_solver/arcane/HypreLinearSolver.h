@@ -30,8 +30,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreLinearSolver
 #endif
 
   HypreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-                    std::shared_ptr<IOptionsHypreSolver> _options,
-                    Arcane::Accelerator::Runner* runner);
+                    Arcane::Accelerator::Runner* runner,
+                    std::shared_ptr<IOptionsHypreSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~HypreLinearSolver();

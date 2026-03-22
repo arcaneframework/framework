@@ -36,8 +36,8 @@ HypreInternalLinearAlgebraFactory();
 
 extern IInternalLinearSolver<HypreMatrix, HypreVector>*
 HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
-                                 IOptionsHypreSolver* options,
-                                 Arcane::Accelerator::Runner* runner = nullptr);
+                                 Arcane::Accelerator::Runner* runner,
+                                 IOptionsHypreSolver* options);
 
 /*---------------------------------------------------------------------------*/
 
@@ -62,10 +62,10 @@ template <> struct AlgebraTraits<BackEnd::tag::hypre>
     return HypreInternalLinearAlgebraFactory();
   }
   static solver_type* solver_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
-                                     options_type* options,
-                                     Arcane::Accelerator::Runner* runner)
+                                     Arcane::Accelerator::Runner* runner,
+                                     options_type* options)
   {
-    return HypreInternalLinearSolverFactory(p_mng, options, runner);
+    return HypreInternalLinearSolverFactory(p_mng, runner, options);
   }
   static BackEndId name() { return "hypre"; }
 };

@@ -238,11 +238,11 @@ HypreLibrary::~HypreLibrary()
 
 HypreInternalLinearSolver::
 HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm,
-                          IOptionsHypreSolver* options,
-                          Arcane::Accelerator::Runner* runner)
+                          Arcane::Accelerator::Runner* runner,
+                          IOptionsHypreSolver* options)
 : m_parallel_mng(pm)
-, m_options(options)
 , m_runner(runner)
+, m_options(options)
 {
   if(m_runner)
     m_gpu_device_id = m_runner->deviceId().asInt32();
@@ -1308,10 +1308,10 @@ HypreInternalLinearSolver::algebra() const
 
 IInternalLinearSolver<HypreMatrix, HypreVector>*
 HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
-                                 IOptionsHypreSolver* options,
-                                 Arcane::Accelerator::Runner* runner)
+                                 Arcane::Accelerator::Runner* runner,
+                                 IOptionsHypreSolver* options)
 {
-  return new HypreInternalLinearSolver(p_mng, options, runner);
+  return new HypreInternalLinearSolver(p_mng, runner, options);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1356,7 +1356,7 @@ public :
         _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
-   return new Alien::HypreLinearSolver(pm, solver_options,nullptr);
+   return new Alien::HypreLinearSolver(pm, nullptr, solver_options);
   }
 
   Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
