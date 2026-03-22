@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExecutionStatsDumper.h                                      (C) 2000-2025 */
+/* ExecutionStatsDumper.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Ecriture des statistiques d'exécution.                                    */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ class ISimpleTableOutput;
  * Les statistiques sont sorties à la fois dans le listing et dans les
  * logs.
  */
-class ExecutionStatsDumper
+class ARCANE_IMPL_EXPORT ExecutionStatsDumper
 : public TraceAccessor
 {
  public:
@@ -54,8 +54,6 @@ class ExecutionStatsDumper
  private:
 
   void _dumpProfiling(std::ostream& o);
-  void _dumpOneLoopListStat(std::ostream& o, const Impl::ForLoopStatInfoList& stat_list);
-  void _printGlobalLoopInfos(std::ostream& o, const Impl::ForLoopCumulativeStat& cumulative_stat);
   void _dumpProfilingJSON(const String& filename);
   void _dumpProfilingJSON(JSONWriter& json_writer);
   void _dumpProfilingTable(ISimpleTableOutput* table);

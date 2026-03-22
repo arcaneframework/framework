@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInternal.h                                         (C) 2000-2025 */
+/* ProfilingInternal.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Classes internes pour gérer le profilage.                                 */
 /*---------------------------------------------------------------------------*/
@@ -190,7 +190,16 @@ class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+/*!
+ * \brief Affiche les statistiques de profiling sur le flot \a o.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+dumpProfilingStatistics(std::ostream& o);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
