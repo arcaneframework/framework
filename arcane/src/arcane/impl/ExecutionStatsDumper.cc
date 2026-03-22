@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExecutionStatsDumper.cc                                     (C) 2000-2025 */
+/* ExecutionStatsDumper.cc                                     (C) 2000-2026 */
 /*                                                                           */
 /* Ecriture des statistiques d'exécution.                                    */
 /*---------------------------------------------------------------------------*/
@@ -126,100 +126,7 @@ _dumpProfilingTable(ISimpleTableOutput* table)
 void ExecutionStatsDumper::
 _dumpProfiling(std::ostream& o)
 {
-  // Affiche les informations de profiling sur \a o
-  _printGlobalLoopInfos(o, ProfilingRegistry::globalLoopStat());
-  {
-    auto f = [&](const Impl::ForLoopStatInfoList& stat_list) {
-      _dumpOneLoopListStat(o, stat_list);
-    };
-    ProfilingRegistry::visitLoopStat(f);
-  }
-  // Avant d'afficher le profiling accélérateur, il faudrait être certain
-  // qu'il est désactivé. Normalement c'est le cas si on utilise ArcaneMainBatch.
-  {
-    auto f = [&](const Impl::AcceleratorStatInfoList& stat_list) {
-      stat_list.print(o);
-    };
-    ProfilingRegistry::visitAcceleratorStat(f);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ExecutionStatsDumper::
-_dumpOneLoopListStat(std::ostream& o, const Impl::ForLoopStatInfoList& stat_list)
-{
-  struct SortedStatInfo
-  {
-    bool operator<(const SortedStatInfo& rhs) const
-    {
-      return m_stat.execTime() > rhs.m_stat.execTime();
-    }
-    String m_name;
-    Impl::ForLoopProfilingStat m_stat;
-  };
-
-  // Met 1 pour éviter de diviser par zéro.
-  Int64 cumulative_total = 1;
-
-  // Tri les fonctions par temps d'exécution décroissant
-  std::set<SortedStatInfo> sorted_set;
-  for (const auto& x : stat_list._internalImpl()->m_stat_map) {
-    const auto& s = x.second;
-    sorted_set.insert({ x.first, s });
-    cumulative_total += s.execTime();
-  }
-
-  o << "ProfilingStat\n";
-  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
-    << std::setw(11) << " T (ms)" << std::setw(10) << "Tck (ns)"
-    << "     %  name\n";
-
-  char old_filler = o.fill();
-  for (const auto& x : sorted_set) {
-    const Impl::ForLoopProfilingStat& s = x.m_stat;
-    Int64 nb_loop = s.nbCall();
-    Int64 nb_chunk = s.nbChunk();
-    Int64 total_time_ns = s.execTime();
-    Int64 total_time_us = total_time_ns / 1000;
-    Int64 total_time_ms = total_time_us / 1000;
-    Int64 total_time_remaining_us = total_time_us % 1000;
-    Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time_ns / nb_chunk);
-    Int64 per_mil = (total_time_ns * 1000) / cumulative_total;
-    Int64 percent = per_mil / 10;
-    Int64 percent_digit = per_mil % 10;
-
-    o << std::setw(10) << nb_loop << std::setw(10) << nb_chunk
-      << std::setw(7) << total_time_ms << ".";
-    o << std::setfill('0') << std::setw(3) << total_time_remaining_us << std::setfill(old_filler);
-    o << std::setw(10) << time_per_chunk
-      << std::setw(4) << percent << "." << percent_digit << "  " << x.m_name << "\n";
-  }
-  o << "TOTAL=" << cumulative_total / 1000000 << "\n";
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ExecutionStatsDumper::
-_printGlobalLoopInfos(std::ostream& o, const Impl::ForLoopCumulativeStat& cumulative_stat)
-{
-  Int64 nb_loop_parallel_for = cumulative_stat.nbLoopParallelFor();
-  if (nb_loop_parallel_for == 0)
-    return;
-  Int64 nb_chunk_parallel_for = cumulative_stat.nbChunkParallelFor();
-  Int64 total_time = cumulative_stat.totalTime();
-  double x = static_cast<double>(total_time);
-  double x1 = 0.0;
-  if (nb_loop_parallel_for > 0)
-    x1 = x / static_cast<double>(nb_loop_parallel_for);
-  double x2 = 0.0;
-  if (nb_chunk_parallel_for > 0)
-    x2 = x / static_cast<double>(nb_chunk_parallel_for);
-  o << "LoopStat: global_time (ms) = " << x / 1.0e6 << "\n";
-  o << "LoopStat: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
-  o << "LoopStat: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
+  Impl::dumpProfilingStatistics(o);
 }
 
 /*---------------------------------------------------------------------------*/
