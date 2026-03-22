@@ -11,6 +11,8 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/PlatformUtils.h"
+#include <arccore/common/accelerator/Runner.h>
+#include <arccore/common/accelerator/DeviceId.h>
 
 #include <alien/AlienExternalPackagesPrecomp.h>
 
@@ -234,11 +236,16 @@ HypreLibrary::~HypreLibrary()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HypreInternalLinearSolver::HypreInternalLinearSolver(
-    Arccore::MessagePassing::IMessagePassingMng* pm, IOptionsHypreSolver* options)
+HypreInternalLinearSolver::
+HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm,
+                          Arcane::Accelerator::Runner* runner,
+                          IOptionsHypreSolver* options)
 : m_parallel_mng(pm)
+, m_runner(runner)
 , m_options(options)
 {
+  if(m_runner)
+    m_gpu_device_id = m_runner->deviceId().asInt32();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1300,10 +1307,11 @@ HypreInternalLinearSolver::algebra() const
 /*---------------------------------------------------------------------------*/
 
 IInternalLinearSolver<HypreMatrix, HypreVector>*
-HypreInternalLinearSolverFactory(
-    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsHypreSolver* options)
+HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+                                 Arcane::Accelerator::Runner* runner,
+                                 IOptionsHypreSolver* options)
 {
-  return new HypreInternalLinearSolver(p_mng, options);
+  return new HypreInternalLinearSolver(p_mng, runner, options);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1348,7 +1356,7 @@ public :
         _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
-   return new Alien::HypreLinearSolver(pm, solver_options);
+   return new Alien::HypreLinearSolver(pm, nullptr, solver_options);
   }
 
   Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const

@@ -110,6 +110,7 @@ createSolver(boost::program_options::variables_map& vm)
 {
   auto* pm = Environment::parallelMng();
   auto* tm = Environment::traceMng();
+  auto* runner = Environment::runner();
 
   std::string solver_package = vm["solver-package"].as<std::string>();
 
@@ -130,7 +131,7 @@ createSolver(boost::program_options::variables_map& vm)
         _maxIter = max_iter, _tol = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
-    return std::make_shared<Alien::AlienLinearSolver>(pm, options);
+    return std::make_shared<Alien::AlienLinearSolver>(pm, nullptr, options);
   }
 
   if (solver_package.compare("petsc") == 0) {
@@ -210,7 +211,7 @@ createSolver(boost::program_options::variables_map& vm)
         _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
         _preconditioner = precond_type);
     // service
-    return std::make_shared<Alien::HypreLinearSolver>(pm, options);
+    return std::make_shared<Alien::HypreLinearSolver>(pm, runner, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif

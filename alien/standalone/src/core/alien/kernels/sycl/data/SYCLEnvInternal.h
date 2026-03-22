@@ -30,7 +30,6 @@ namespace SYCLInternal
     EnvInternal()
     : m_queue(sycl::gpu_selector{})
     {
-      printPlatformInfo();
 
       auto device = m_queue.get_device();
 
@@ -49,6 +48,30 @@ namespace SYCLInternal
       std::cout << "MAX NB SUBGROUPs PER GROUP = " << m_max_num_subgroups_per_group << std::endl;
       std::cout << "MAX NB THREADS      = " << m_max_num_threads << std::endl;
     }
+
+    EnvInternal(sycl::device selected_device, int device_id)
+    : m_queue(selected_device,sycl::property::queue::in_order{})
+    , m_device_id(device_id)
+    {
+
+      auto device = m_queue.get_device();
+
+      m_max_num_groups = m_queue.get_device().get_info<sycl::info::device::max_compute_units>();
+      // getting the maximum work group size per thread
+      m_max_work_group_size = m_queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+      m_subgroup_size = m_queue.get_device().get_info<sycl::info::device::sub_group_sizes>()[0];
+      m_max_num_subgroups_per_group = m_max_work_group_size/m_subgroup_size ;
+      m_max_num_threads = m_max_num_groups * m_max_work_group_size;
+
+      std::cout << "========== SYCL QUEUE INFO ===============" << std::endl;
+      std::cout<< " DEVICE NAME         = " << m_queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+      std::cout << "MAX NB GROUPS       = " << m_max_num_groups << std::endl;
+      std::cout << "MAX WORK GROUP SIZE = " << m_max_work_group_size << std::endl;
+      std::cout << "SUB GROUP SIZE      = " << m_subgroup_size << std::endl ;
+      std::cout << "MAX NB SUBGROUPs PER GROUP = " << m_max_num_subgroups_per_group << std::endl;
+      std::cout << "MAX NB THREADS      = " << m_max_num_threads << std::endl;
+    }
+
 
     sycl::queue& queue()
     {
@@ -70,7 +93,12 @@ namespace SYCLInternal
       return m_max_num_threads;
     }
 
-    int printPlatformInfo()
+    int deviceId()
+    {
+      return m_device_id;
+    }
+
+    static int printPlatformInfo()
     {
       // Loop over all available SYCL platforms.
       for (const sycl::platform& platform :
@@ -109,6 +137,7 @@ namespace SYCLInternal
 
     // clang-format off
     //sycl::default_selector     m_device_selector;
+    int                        m_device_id                   = 0;
     sycl::queue                m_queue;
     std::size_t                m_max_num_groups              = 0 ;
     std::size_t                m_max_work_group_size         = 0 ;

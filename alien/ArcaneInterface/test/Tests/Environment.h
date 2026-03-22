@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ struct Private
 {
   Arccore::ITraceMng* tm;
   Arccore::MessagePassing::IMessagePassingMng* pm;
+  Arcane::Accelerator::Runner* runner;
 } global_alien_env_info;
 
 extern void
@@ -43,6 +44,8 @@ initialize(int argc, char** argv)
   global_alien_env_info.tm->setClassConfig("*",trace_config);
   global_alien_env_info.tm->setMaster(is_master_io);
   global_alien_env_info.tm->finishInitialize();
+
+  global_alien_env_info.runner = nullptr ; // Arccore does not have defaultAccelerator launcher;
 }
 
 extern void
@@ -64,6 +67,14 @@ traceMng()
   Arccore::ITraceMng* tm = global_alien_env_info.tm;
   return tm;
 }
+
+extern Arcane::Accelerator::Runner*
+runner()
+{
+  Arcane::Accelerator::Runner* runner = global_alien_env_info.runner;
+  return runner;
+}
+
 }
 
 namespace Environment {

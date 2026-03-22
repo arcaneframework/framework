@@ -38,9 +38,9 @@ public:
   typedef AlienCoreSolverBaseT<Alien::SimpleCSRInternalLinearAlgebra> BaseType ;
 
   /** Constructeur de la classe */
-  AlienCoreLinearSolver(
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
-      IOptionsAlienCoreSolver* options = nullptr);
+  AlienCoreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
+                        Arcane::Accelerator::Runner* runner = nullptr,
+                        IOptionsAlienCoreSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~AlienCoreLinearSolver() {}

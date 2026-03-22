@@ -68,7 +68,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   typedef SolverStatus Status;
 
   HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr,
-      IOptionsHypreSolver* options = nullptr);
+                            Arcane::Accelerator::Runner* runner = nullptr,
+                            IOptionsHypreSolver* options = nullptr);
 
   virtual ~HypreInternalLinearSolver();
 
@@ -83,6 +84,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
 
   Arccore::String getBackEndName() const { return "hypre"; }
+
+  void setDeviceId(Integer device_id) {
+    m_gpu_device_id = device_id ;
+  }
 
   void init();
 
@@ -121,8 +126,9 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   Integer m_gpu_device_id = 0 ;
 
   SolverStat m_stat;
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
-  IOptionsHypreSolver* m_options;
+  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
+  Arcane::Accelerator::Runner*                 m_runner       = nullptr;
+  IOptionsHypreSolver*                         m_options      = nullptr;
 
 };
 

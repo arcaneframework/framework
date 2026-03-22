@@ -32,7 +32,8 @@ class ALIEN_CORE_SOLVERS_EXPORT AlienLinearSolver
 #endif
 
   AlienLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-      std::shared_ptr<IOptionsAlienCoreSolver> _options);
+                    Arcane::Accelerator::Runner* runner,
+                    std::shared_ptr<IOptionsAlienCoreSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~AlienLinearSolver(){};

@@ -46,9 +46,9 @@ class ALIEN_CORE_SYCL_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
   typedef AlienCoreSolverBaseT<Alien::SYCLInternalLinearAlgebra> BaseType ;
 
   /** Constructeur de la classe */
-  AlienCoreSYCLLinearSolver(
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
-      IOptionsAlienCoreSolver* options = nullptr);
+  AlienCoreSYCLLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
+                            Arcane::Accelerator::Runner* runner = nullptr,
+                            IOptionsAlienCoreSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~AlienCoreSYCLLinearSolver() {}

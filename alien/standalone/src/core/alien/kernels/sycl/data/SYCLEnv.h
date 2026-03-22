@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,15 +25,20 @@ class ALIEN_EXPORT SYCLEnv
  public:
   static SYCLEnv* m_instance;
   static SYCLEnv* instance();
+  static SYCLEnv* instance(int device_id);
 
   SYCLEnv();
+
+  SYCLEnv(int device_id);
 
   virtual ~SYCLEnv();
 
   SYCLInternal::EnvInternal* internal()
   {
-    return m_internal;
+    return m_internal.get();
   }
+
+  int deviceId();
 
   std::size_t maxNumGroups();
 
@@ -42,6 +47,6 @@ class ALIEN_EXPORT SYCLEnv
   std::size_t maxNumThreads();
 
  private:
-  SYCLInternal::EnvInternal* m_internal = nullptr;
+  std::unique_ptr<SYCLInternal::EnvInternal> m_internal ;
 };
 } // namespace Alien

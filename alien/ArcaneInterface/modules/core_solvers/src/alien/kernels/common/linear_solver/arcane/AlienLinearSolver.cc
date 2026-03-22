@@ -8,6 +8,8 @@
 /**
  * Interface du service de résolution de système linéaire
  */
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "alien/AlienLegacyConfig.h"
 #include <alien/kernels/common/linear_solver/arcane/AlienLinearSolver.h>
 #include <ALIEN/axl/AlienCoreSolver_StrongOptions.h>
@@ -19,18 +21,20 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 AlienLinearSolver::AlienLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneAlienCoreSolverObject(sbi)
-, Alien::AlienCoreLinearSolver(
-      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+, Alien::AlienCoreLinearSolver(sbi.subDomain()->parallelMng()->messagePassingMng(),
+                               sbi.subDomain()->acceleratorMng()->defaultRunner(),
+                               options())
 {
   Alien::setTraceMng(Arcane::TraceAccessor::traceMng());
 }
 #endif
 
-AlienLinearSolver::AlienLinearSolver(
-    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-    std::shared_ptr<IOptionsAlienCoreSolver> _options)
+AlienLinearSolver::
+AlienLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+                  Arcane::Accelerator::Runner* runner,
+                  std::shared_ptr<IOptionsAlienCoreSolver> _options)
 : ArcaneAlienCoreSolverObject(_options)
-, Alien::AlienCoreLinearSolver(parallel_mng, options())
+, Alien::AlienCoreLinearSolver(parallel_mng, runner, options())
 {
 }
 

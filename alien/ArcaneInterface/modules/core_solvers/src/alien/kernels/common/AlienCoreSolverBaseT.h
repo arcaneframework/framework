@@ -59,8 +59,10 @@ class AlienCoreSolverBaseT
 
   /** Constructeur de la classe */
   AlienCoreSolverBaseT(Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
+                       Arcane::Accelerator::Runner* runner = nullptr,
                        IOptionsAlienCoreSolver* options = nullptr)
   : m_parallel_mng(parallel_mng)
+  , m_runner(runner)
   , m_options(options)
   {}
 
@@ -664,6 +666,7 @@ class AlienCoreSolverBaseT
 
   bool m_use_mpi = false;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
+  Arcane::Accelerator::Runner*                 m_runner       = nullptr;
   Alien::SolverStatus m_status;
   Alien::StdTimer     m_timer;
 

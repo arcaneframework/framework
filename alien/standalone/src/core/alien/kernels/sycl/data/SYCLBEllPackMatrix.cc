@@ -40,12 +40,26 @@ namespace Alien
 
 SYCLEnv::SYCLEnv()
 {
-  m_internal = new SYCLInternal::EnvInternal;
+  SYCLInternal::EnvInternal::printPlatformInfo() ;
+  m_internal.reset(new SYCLInternal::EnvInternal{});
 }
+
+SYCLEnv::SYCLEnv(int device_id)
+{
+  SYCLInternal::EnvInternal::printPlatformInfo() ;
+  auto gpu_devices = sycl::device::get_devices(sycl::info::device_type::gpu);
+  if(device_id < gpu_devices.size())
+  {
+    sycl::device selected_device = gpu_devices[device_id];
+    m_internal.reset(new SYCLInternal::EnvInternal{selected_device,device_id});
+  }
+  else
+    m_internal.reset(new SYCLInternal::EnvInternal{});
+}
+
 
 SYCLEnv::~SYCLEnv()
 {
-  delete m_internal;
 }
 
 SYCLEnv* SYCLEnv::m_instance = nullptr;
@@ -53,8 +67,25 @@ SYCLEnv* SYCLEnv::m_instance = nullptr;
 SYCLEnv* SYCLEnv::instance()
 {
   if (!m_instance)
-    m_instance = new SYCLEnv;
+    m_instance = new SYCLEnv{};
   return m_instance;
+}
+
+SYCLEnv* SYCLEnv::instance(int device_id)
+{
+  if (!m_instance)
+    m_instance = new SYCLEnv{device_id};
+  if (m_instance->deviceId()!= device_id)
+  {
+    delete m_instance ;
+    m_instance = new SYCLEnv{device_id};
+  }
+  return m_instance;
+}
+
+int SYCLEnv::deviceId()
+{
+  return m_internal->deviceId() ;
 }
 
 std::size_t SYCLEnv::maxNumGroups()
@@ -427,11 +458,11 @@ namespace SYCLInternal
     auto nnz       = m_profile->getNnz();
     auto block_nnz = m_profile->getBlockNnz();
 
-    auto internal_profile = m_profile->internal();
-    auto& kcol = internal_profile->getKCol();
+    auto internal_profile  = m_profile->internal();
+    auto& kcol             = internal_profile->getKCol();
     auto& block_row_offset = internal_profile->getBlockRowOffset();
     auto& block_cols       = internal_profile->getBlockCols();
-    auto local_row_size = m_profile->localRowSize();
+    auto local_row_size    = m_profile->localRowSize();
     if(N==1)
     {
       if (local_row_size == nullptr)
@@ -799,7 +830,8 @@ namespace SYCLInternal
     auto& block_row_offset = internal_profile->getBlockRowOffset();
 
     auto local_row_size = m_profile->localRowSize();
-    if (local_row_size == nullptr) {
+    if (local_row_size == nullptr)
+    {
       //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
       // COMPUTE COLS
       // clang-format off
@@ -845,7 +877,8 @@ namespace SYCLInternal
       // clang-format on
       m_values_is_update = true;
     }
-    else {
+    else
+    {
       //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
       IndexBufferType lrowsize_buffer(local_row_size, sycl::range<1>(nrows));
 
@@ -2464,7 +2497,46 @@ namespace SYCLInternal
                                                           });
                    });
     }
-    // clang-format on
+
+    if(m_ext_profile)
+    {
+
+      auto interface_nrows = m_ext_profile->getNRows();
+      auto ext_nnz         = m_ext_profile->getNnz();
+      auto ext_block_nnz   = m_ext_profile->getBlockNnz();
+
+      auto ext_internal_profile  = m_ext_profile->internal();
+      auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+
+      {
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_block_row_offset = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_values     = m_ext_values->template get_access<sycl::access::mode::read_write>(cgh);
+                       auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+                       auto access_y                = y.template get_access<sycl::access::mode::read>(cgh);
+
+                       cgh.parallel_for<class set_matrix_values7>(sycl::range<1>{total_threads},
+                                                                   [=] (sycl::item<1> item_id)
+                                                                   {
+                                                                     auto id = item_id.get_id(0);
+
+                                                                     for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                                                                     {
+                                                                        auto block_id = i/ellpack_size ;
+                                                                        auto local_id = i%ellpack_size ;
+                                                                        auto begin    = access_block_row_offset[block_id] ;
+                                                                        auto end      = access_block_row_offset[block_id+1] ;
+
+                                                                        for(int k=begin;k<end;++k)
+                                                                        {
+                                                                          access_block_values[k*ellpack_size+local_id] *= access_y[access_row_ids[i]] ;
+                                                                        }
+                                                                     }
+                                                                  });
+                       });
+      }
+    }
   }
 
   template <typename ValueT, int EllPackSize>
@@ -2975,7 +3047,7 @@ template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,1024>;
 void force_int_instance()
 {
   SYCLBEllPackMatrix<double> matrix ;
-  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer (sycl::range<1>(10)) ;
+  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer{sycl::range<1>(10)} ;
   matrix.internal()->setMatrixValues(buffer) ;
 }
 /*---------------------------------------------------------------------------*/

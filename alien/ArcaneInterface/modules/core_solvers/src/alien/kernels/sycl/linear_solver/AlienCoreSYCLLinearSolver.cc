@@ -9,6 +9,11 @@
 
 #include <vector>
 
+#include <arcane/ArcaneVersion.h>
+#include <arcane/Timer.h>
+#include <arccore/common/accelerator/Runner.h>
+#include <arccore/common/accelerator/DeviceId.h>
+
 #include "alien/kernels/sycl/AlienSolverSYCLPrecomp.h"
 
 #include <alien/ref/AlienRefSemantic.h>
@@ -58,8 +63,6 @@
 #include <alien/expression/krylov/AlienKrylov.h>
 #include <alien/utils/StdTimer.h>
 
-#include <arcane/ArcaneVersion.h>
-#include <arcane/Timer.h>
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {
@@ -68,10 +71,16 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 AlienCoreSYCLLinearSolver::
 AlienCoreSYCLLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-                     IOptionsAlienCoreSolver* options)
-: BaseType(parallel_mng,options)
+                          Arcane::Accelerator::Runner* runner,
+                          IOptionsAlienCoreSolver* options)
+: BaseType(parallel_mng, runner, options)
 , m_stater(this)
 {
+  if(runner)
+  {
+    auto device_id = m_runner->deviceId().asInt32();
+    auto env = SYCLEnv::instance(device_id);
+  }
 }
 
 void
@@ -147,10 +156,11 @@ AlienCoreSYCLLinearSolver::algebra() const
 }
 
 ILinearSolver*
-AlienCoreSYCLLinearSolverFactory(
-    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsAlienCoreSolver* options)
+AlienCoreSYCLLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, 
+                                 Arcane::Accelerator::Runner* runner,
+                                 IOptionsAlienCoreSolver* options)
 {
-  return new AlienCoreSYCLLinearSolver(p_mng, options);
+  return new AlienCoreSYCLLinearSolver(p_mng, runner, options);
 }
 
 }
