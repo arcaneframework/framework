@@ -19,6 +19,7 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/FixedArray.h"
+#include "arccore/base/Profiling.h"
 
 #include <map>
 #include <atomic>
