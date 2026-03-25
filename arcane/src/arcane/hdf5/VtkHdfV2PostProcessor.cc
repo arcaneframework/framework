@@ -36,6 +36,8 @@
 
 #include "arcane/hdf5/Hdf5Utils.h"
 #include "arcane/hdf5/VtkHdfV2PostProcessor_axl.h"
+#include "arcane/impl/internal/GatherGroup.h"
+#include "arcane/utils/SHA3HashAlgorithm.h"
 
 #include <map>
 
@@ -296,6 +298,10 @@ class VtkHdfV2DataWriter
   ItemGroupCollectiveInfo m_all_nodes_info;
   UniqueArray<Ref<ItemGroupCollectiveInfo>> m_materials_groups;
 
+  GatherGroup::GatherGroupInfo m_all_cells_gather_group_info;
+  GatherGroup::GatherGroupInfo m_all_nodes_gather_group_info;
+  UniqueArray<Ref<GatherGroup::GatherGroupInfo>> m_gather_info_materials_groups;
+
   /*!
    * \brief Taille maximale (en kilo-octet) pour une écriture.
    *
@@ -310,21 +316,21 @@ class VtkHdfV2DataWriter
   void _addStringAttribute(Hid& hid, const char* name, const String& value);
 
   template <typename DataType> void
-  _writeDataSet1D(const DataInfo& data_info, Span<const DataType> values);
+  _writeDataSet1D(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values);
   template <typename DataType> void
-  _writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values);
+  _writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values);
   template <typename DataType> void
-  _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values);
+  _writeDataSet1DCollective(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values);
   template <typename DataType> void
-  _writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values);
+  _writeDataSet2D(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values);
   template <typename DataType> void
-  _writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values);
+  _writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values);
   template <typename DataType> void
-  _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values);
+  _writeDataSet2DCollective(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values);
   template <typename DataType> void
-  _writeBasicTypeDataset(const DataInfo& data_info, IData* data);
-  void _writeReal3Dataset(const DataInfo& data_info, IData* data);
-  void _writeReal2Dataset(const DataInfo& data_info, IData* data);
+  _writeBasicTypeDataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data);
+  void _writeReal3Dataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data);
+  void _writeReal2Dataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data);
 
   String _getFileName()
   {
@@ -333,10 +339,10 @@ class VtkHdfV2DataWriter
     return sb.toString();
   }
   template <typename DataType> void
-  _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+  _writeDataSetGeneric(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Int32 nb_dim,
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
-  void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+  void _writeDataSetGeneric(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Int32 nb_dim,
                             Int64 dim1_size, Int64 dim2_size, ConstMemoryView values_data,
                             const hid_t hdf_datatype_type, bool is_collective);
   void _addInt64Attribute(Hid& hid, const char* name, Int64 value);
@@ -345,7 +351,7 @@ class VtkHdfV2DataWriter
   void _closeGroups();
   void _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
-  void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
+  void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info, GatherGroup::GatherGroupInfo& gather_info);
   WritePartInfo _computeWritePartInfo(Int64 local_size);
   void _writeConstituentsGroups();
 };
@@ -361,6 +367,8 @@ VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool is_colle
 , m_is_collective_io(is_collective_io)
 , m_all_cells_info(mesh->allCells())
 , m_all_nodes_info(mesh->allNodes())
+, m_all_cells_gather_group_info(mesh->parallelMng(), is_collective_io)
+, m_all_nodes_gather_group_info(mesh->parallelMng(), is_collective_io)
 {
 }
 
@@ -453,8 +461,8 @@ beginWrite(const VariableCollection& vars)
   }
 
   // Initialise les informations collectives sur les groupes de mailles et noeuds
-  _initializeItemGroupCollectiveInfos(m_all_cells_info);
-  _initializeItemGroupCollectiveInfos(m_all_nodes_info);
+  _initializeItemGroupCollectiveInfos(m_all_cells_info, m_all_cells_gather_group_info);
+  _initializeItemGroupCollectiveInfos(m_all_nodes_info, m_all_nodes_gather_group_info);
 
   CellGroup all_cells = m_mesh->allCells();
   NodeGroup all_nodes = m_mesh->allNodes();
@@ -502,23 +510,34 @@ beginWrite(const VariableCollection& vars)
 
   _initializeOffsets();
 
-  // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, cells_offset);
+  Ref<GatherGroup::GatherGroupInfo> ggi_ref = createRef<GatherGroup::GatherGroupInfo>(m_mesh->parallelMng(), m_is_collective_io);
+  GatherGroup::GatherGroupInfo* ggi = ggi_ref.get();
 
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info },
-                                   cells_connectivity);
-  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, cells_type);
+  // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
+  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, ggi, cells_offset);
+  ggi->needRecompute();
+
+  _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info }, ggi, cells_connectivity);
+  ggi->needRecompute();
+
+  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, ggi, cells_type);
+  ggi->needRecompute();
 
   {
     Int64 nb_cell_int64 = nb_cell;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info },
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info }, ggi,
                                      asConstSpan(&nb_cell_int64));
+    ggi->needRecompute();
+
     Int64 nb_node_int64 = nb_node;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info },
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info }, ggi,
                                      asConstSpan(&nb_node_int64));
+    ggi->needRecompute();
+
     Int64 number_of_connectivity_ids = cells_connectivity.size();
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info },
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info }, ggi,
                                      asConstSpan(&number_of_connectivity_ids));
+    ggi->needRecompute();
   }
 
   // Sauve les uniqueIds, les types et les coordonnées des noeuds.
@@ -547,31 +566,39 @@ beginWrite(const VariableCollection& vars)
     }
 
     // Sauve l'uniqueId de chaque nœud dans le dataset "GlobalNodeId".
-    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, nodes_uid);
+    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, ggi, nodes_uid);
+    ggi->needRecompute();
 
     // Sauve les informations sur le type de nœud (réel ou fantôme).
-    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, nodes_ghost_type);
+    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, ggi, nodes_ghost_type);
+    ggi->needRecompute();
 
     // Sauve les coordonnées des noeuds.
-    _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, points);
+    _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
+    ggi->needRecompute();
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
-  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, cells_ghost_type);
+  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, ggi, cells_ghost_type);
+  ggi->needRecompute();
 
   // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
   // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
-  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, cells_uid);
+  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, ggi, cells_uid);
+  ggi->needRecompute();
 
   if (m_is_writer) {
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
-    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, asConstSpan(&current_time));
+    // TODO : Remplacer ggi par nullptr en non-collective ?
+    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, ggi, asConstSpan(&current_time));
+    ggi->needRecompute();
 
     // Offset de la partie.
     Int64 comm_size = pm->commSize();
     Int64 part_offset = (time_index - 1) * comm_size;
-    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, asConstSpan(&part_offset));
+    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, ggi, asConstSpan(&part_offset));
+    ggi->needRecompute();
 
     // Nombre de temps
     _addInt64Attribute(m_steps_group, "NSteps", time_index);
@@ -593,15 +620,22 @@ _writeConstituentsGroups()
   // NOTE : Pour l'instant, on ne traite que les milieux.
   for (IMeshEnvironment* env : m_material_mng->environments()) {
     CellGroup cells = env->cells();
+
     Ref<ItemGroupCollectiveInfo> group_info_ref = createRef<ItemGroupCollectiveInfo>(cells);
     m_materials_groups.add(group_info_ref);
+
+    Ref<GatherGroup::GatherGroupInfo> gather_info_ref = createRef<GatherGroup::GatherGroupInfo>(m_material_mng->mesh()->parallelMng(), m_is_collective_io);
+    m_gather_info_materials_groups.add(gather_info_ref);
+
     ItemGroupCollectiveInfo& group_info = *group_info_ref.get();
-    _initializeItemGroupCollectiveInfos(group_info);
+    GatherGroup::GatherGroupInfo& gather_info = *gather_info_ref.get();
+    _initializeItemGroupCollectiveInfos(group_info, gather_info);
+
     ConstArrayView<Int32> groups_ids = cells.view().localIds();
     DatasetGroupAndName dataset_group_name(m_top_group, String("Constituent_") + cells.name());
     if (m_is_first_call)
       info() << "Writing infos for group '" << cells.name() << "'";
-    _writeDataSet1DCollective<Int32>({ dataset_group_name, m_cell_offset_info }, groups_ids);
+    _writeDataSet1DCollective<Int32>({ dataset_group_name, m_cell_offset_info, group_info_ref.get() }, gather_info_ref.get(), groups_ids);
   }
 }
 
@@ -642,10 +676,16 @@ _computeWritePartInfo(Int64 local_size)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
+_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info, GatherGroup::GatherGroupInfo& gather_info)
 {
-  Int64 dim1_size = group_info.m_item_group.size();
-  group_info.setWritePartInfo(_computeWritePartInfo(dim1_size));
+  Int32 dim1_size = group_info.m_item_group.size();
+
+  gather_info.setCollectiveIO(m_is_collective_io);
+  gather_info.computeSize(dim1_size);
+
+  Int32 computed_nb_elem = gather_info.nbElemOutput();
+
+  group_info.setWritePartInfo(_computeWritePartInfo(computed_nb_elem));
 }
 
 namespace
@@ -671,11 +711,12 @@ namespace
  * sauf en cas de retour arrière où l'offset est dans data_info.
  */
 void VtkHdfV2DataWriter::
-_writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+_writeDataSetGeneric(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Int32 nb_dim,
                      Int64 dim1_size, Int64 dim2_size,
                      ConstMemoryView values_data,
                      const hid_t hdf_type, bool is_collective)
 {
+  ARCANE_CHECK_POINTER(gather_info);
   if (nb_dim == 1)
     dim2_size = 1;
 
@@ -716,7 +757,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int32 nb_participating_rank = 1;
 
   if (is_collective) {
-    nb_participating_rank = m_mesh->parallelMng()->commSize();
+    nb_participating_rank = gather_info->nbWriterGlobal();
     WritePartInfo part_info;
     if (data_info.m_group_info) {
       // Si la donnée est associée à un groupe, alors les informations
@@ -730,6 +771,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     my_index = part_info.offset();
   }
 
+  // La seule opération collective était _computeWritePartInfo().
   if (!m_is_writer) {
     return;
   }
@@ -847,162 +889,135 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+_writeDataSetGeneric(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Int32 nb_dim,
                      Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                      bool is_collective)
 {
   const hid_t hdf_type = m_standard_types.nativeType(DataType{});
   ConstMemoryView mem_view = makeConstMemoryView(values_data, sizeof(DataType), dim1_size * dim2_size);
-  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, mem_view, hdf_type, is_collective);
+  _writeDataSetGeneric(data_info, gather_info, nb_dim, dim1_size, dim2_size, mem_view, hdf_type, is_collective);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet1D(const DataInfo& data_info, Span<const DataType> values)
+_writeDataSet1D(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values)
 {
-  _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), false);
+  _writeDataSetGeneric(data_info, gather_info, 1, values.size(), 1, values.data(), false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values)
+_writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values)
 {
-  _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), true);
+  _writeDataSetGeneric(data_info, gather_info, 1, values.size(), 1, values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values)
+_writeDataSet1DCollective(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span<const DataType> values)
 {
-  if (!m_is_parallel)
-    return _writeDataSet1D(data_info, values);
+  {
+    UniqueArray<Byte> test;
+    SHA3_256HashAlgorithm sha;
+    sha.computeHash64(asBytes(values), test);
 
-  if (m_is_collective_io) {
-    IParallelMng* pm = m_mesh->parallelMng();
-    if (!pm->isHybridImplementation()) {
-      return _writeDataSet1DUsingCollectiveIO(data_info, values);
-    }
-    else {
-      if (!m_is_writer) {
-        Int64 size = values.size();
-        ArrayView size_value(1, &size);
-        pm->send(size_value, m_writer);
-        pm->send(values.constSmallView(), m_writer);
-        return _writeDataSet1DUsingCollectiveIO(data_info, Span<const DataType>{});
-      }
-      else {
-        UniqueArray<DataType> all_values = values;
-        Int32 nb_sender = pm->_internalApi()->nbSendersToMasterParallelIO();
-        Int64 recv_size = 0;
-        ArrayView s_recv_size(1, &recv_size);
-
-        for (Int32 rank = m_writer + 1; rank < m_writer + nb_sender; ++rank) {
-          pm->recv(s_recv_size, rank);
-
-          Int64 old_size = all_values.size();
-          all_values.resizeNoInit(old_size + recv_size);
-          ArrayView recv_elem = all_values.subView(old_size, recv_size);
-
-          pm->recv(recv_elem, rank);
-        }
-        return _writeDataSet1DUsingCollectiveIO(data_info, all_values.constSpan());
-      }
-    }
+    String hash1 = Convert::toHexaString(test);
+    info() << "Hash : " << hash1 << " -- Name : " << data_info.dataset.name;
   }
+  ARCANE_CHECK_POINTER(gather_info);
 
-  UniqueArray<DataType> all_values;
-  IParallelMng* pm = m_mesh->parallelMng();
-  pm->gatherVariable(values.smallView(), all_values, m_writer);
-  if (m_is_writer)
-    _writeDataSet1D<DataType>(data_info, all_values);
-}
+  GatherGroup gg;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  gather_info->computeSizeT(values);
+  gg.setGatherGroupInfo(gather_info);
 
-template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values)
-{
-  _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
-}
+  if (gg.needGather()) {
+    UniqueArray<DataType> all_values;
+    gg.gatherToMasterIOT(values, all_values);
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+    {
+      UniqueArray<Byte> test;
+      SHA3_256HashAlgorithm sha;
+      sha.computeHash64(asBytes(all_values.smallSpan()), test);
 
-template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values)
-{
-  _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename DataType> void VtkHdfV2DataWriter::
-_writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values)
-{
-  if (!m_is_parallel)
-    return _writeDataSet2D(data_info, values);
-
-  if (m_is_collective_io) {
-    IParallelMng* pm = m_mesh->parallelMng();
-    if (!pm->isHybridImplementation()) {
-      return _writeDataSet2DUsingCollectiveIO(data_info, values);
+      String hash1 = Convert::toHexaString(test);
+      info() << "Gather Hash : " << hash1 << " -- Name : " << data_info.dataset.name;
     }
-    else {
-      Span<const DataType> values_1d(values.data(), values.totalNbElement());
 
-      if (!m_is_writer) {
-        Int64 size = values.totalNbElement();
-        ArrayView size_value(1, &size);
-        pm->send(size_value, m_writer);
-        pm->send(values_1d.smallView(), m_writer);
-        return _writeDataSet2DUsingCollectiveIO(data_info, Span2<const DataType>{});
-      }
-
-      else {
-        UniqueArray<DataType> all_values = values_1d;
-        Int32 nb_sender = pm->_internalApi()->nbSendersToMasterParallelIO();
-        Int64 recv_size = 0;
-        ArrayView s_recv_size(1, &recv_size);
-
-        for (Int32 rank = m_writer + 1; rank < m_writer + nb_sender; ++rank) {
-          pm->recv(s_recv_size, rank);
-
-          Int64 old_size = all_values.size();
-          all_values.resizeNoInit(old_size + recv_size);
-          ArrayView recv_elem = all_values.subView(old_size, recv_size);
-
-          pm->recv(recv_elem, rank);
-        }
-        Int64 dim1_size = all_values.size();
-        Int64 dim2_size = values.dim2Size();
-        if (dim2_size != 0)
-          dim1_size = dim1_size / dim2_size;
-
-        Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
-        return _writeDataSet2DUsingCollectiveIO(data_info, span2);
-      }
-    }
+    if (m_is_collective_io)
+      _writeDataSet1DUsingCollectiveIO(data_info, gather_info, all_values.constSpan());
+    else
+      _writeDataSet1D(data_info, gather_info, all_values.constSpan());
   }
+  else {
+    if (m_is_collective_io)
+      _writeDataSet1DUsingCollectiveIO(data_info, gather_info, values);
+    else
+      _writeDataSet1D(data_info, gather_info, values);
+  }
+}
 
-  Int64 dim2_size = values.dim2Size();
-  UniqueArray<DataType> all_values;
-  IParallelMng* pm = m_mesh->parallelMng();
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfV2DataWriter::
+_writeDataSet2D(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values)
+{
+  _writeDataSetGeneric(data_info, gather_info, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfV2DataWriter::
+_writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values)
+{
+  _writeDataSetGeneric(data_info, gather_info, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfV2DataWriter::
+_writeDataSet2DCollective(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, Span2<const DataType> values)
+{
+  ARCANE_CHECK_POINTER(gather_info);
+
+  GatherGroup gg;
+
+  gather_info->computeSizeT(values);
+  gg.setGatherGroupInfo(gather_info);
+
   Span<const DataType> values_1d(values.data(), values.totalNbElement());
-  pm->gatherVariable(values_1d.smallView(), all_values, m_writer);
-  if (m_is_writer) {
+  if (gg.needGather()) {
+
+    UniqueArray<DataType> all_values;
+    gg.gatherToMasterIOT(values, all_values);
+
     Int64 dim1_size = all_values.size();
+    Int64 dim2_size = values.dim2Size();
+
     if (dim2_size != 0)
       dim1_size = dim1_size / dim2_size;
+
     Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
-    return _writeDataSet2D<DataType>(data_info, span2);
+
+    if (m_is_collective_io)
+      _writeDataSet2DUsingCollectiveIO(data_info, gather_info, span2);
+    else
+      _writeDataSet2D(data_info, gather_info, span2);
+  }
+  else {
+    if (m_is_collective_io)
+      _writeDataSet2DUsingCollectiveIO(data_info, gather_info, values);
+    else
+      _writeDataSet2D(data_info, gather_info, values);
   }
 }
 
@@ -1094,8 +1109,10 @@ endWrite()
       const DatasetInfo& offset_info = i.first;
       HGroup* hdf_group = offset_info.group();
       //info() << "OFFSET_INFO name=" << offset_info.name() << " offset=" << offset;
-      if (hdf_group)
-        _writeDataSet1D<Int64>({ { *hdf_group, offset_info.name() }, m_time_offset_info }, asConstSpan(&offset));
+      if (hdf_group) {
+        Ref<GatherGroup::GatherGroupInfo> ggi = createRef<GatherGroup::GatherGroupInfo>(m_mesh->parallelMng(), m_is_collective_io);
+        _writeDataSet1D<Int64>({ { *hdf_group, offset_info.name() }, m_time_offset_info }, ggi.get(), asConstSpan(&offset));
+      }
     }
   }
   _closeGroups();
@@ -1160,16 +1177,19 @@ write(IVariable* var, IData* data)
   HGroup* group = nullptr;
   DatasetInfo offset_info;
   ItemGroupCollectiveInfo* group_info = nullptr;
+  GatherGroup::GatherGroupInfo* gather_info = nullptr;
   switch (item_kind) {
   case IK_Cell:
     group = &m_cell_data_group;
     offset_info = m_cell_offset_info;
     group_info = &m_all_cells_info;
+    gather_info = &m_all_cells_gather_group_info;
     break;
   case IK_Node:
     group = &m_node_data_group;
     offset_info = m_point_offset_info;
     group_info = &m_all_nodes_info;
+    gather_info = &m_all_nodes_gather_group_info;
     break;
   default:
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
@@ -1181,19 +1201,19 @@ write(IVariable* var, IData* data)
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
-    _writeBasicTypeDataset<Real>(data_info, data);
+    _writeBasicTypeDataset<Real>(data_info, gather_info, data);
     break;
   case DT_Int64:
-    _writeBasicTypeDataset<Int64>(data_info, data);
+    _writeBasicTypeDataset<Int64>(data_info, gather_info, data);
     break;
   case DT_Int32:
-    _writeBasicTypeDataset<Int32>(data_info, data);
+    _writeBasicTypeDataset<Int32>(data_info, gather_info, data);
     break;
   case DT_Real3:
-    _writeReal3Dataset(data_info, data);
+    _writeReal3Dataset(data_info, gather_info, data);
     break;
   case DT_Real2:
-    _writeReal2Dataset(data_info, data);
+    _writeReal2Dataset(data_info, gather_info, data);
     break;
   default:
     warning() << String::format("Export for datatype '{0}' is not supported (var_name={1})", data_type, var->name());
@@ -1204,18 +1224,18 @@ write(IVariable* var, IData* data)
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfV2DataWriter::
-_writeBasicTypeDataset(const DataInfo& data_info, IData* data)
+_writeBasicTypeDataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<DataType>*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  _writeDataSet1DCollective(data_info, Span<const DataType>(true_data->view()));
+  _writeDataSet1DCollective(data_info, gather_info, Span<const DataType>(true_data->view()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_writeReal3Dataset(const DataInfo& data_info, IData* data)
+_writeReal3Dataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<Real3>*>(data);
   ARCANE_CHECK_POINTER(true_data);
@@ -1230,14 +1250,14 @@ _writeReal3Dataset(const DataInfo& data_info, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = v.z;
   }
-  _writeDataSet2DCollective<Real>(data_info, scalar_values);
+  _writeDataSet2DCollective<Real>(data_info, gather_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_writeReal2Dataset(const DataInfo& data_info, IData* data)
+_writeReal2Dataset(const DataInfo& data_info, GatherGroup::GatherGroupInfo* gather_info, IData* data)
 {
   // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
   auto* true_data = dynamic_cast<IArrayDataT<Real2>*>(data);
@@ -1252,7 +1272,7 @@ _writeReal2Dataset(const DataInfo& data_info, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = 0.0;
   }
-  _writeDataSet2DCollective<Real>(data_info, scalar_values);
+  _writeDataSet2DCollective<Real>(data_info, gather_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
