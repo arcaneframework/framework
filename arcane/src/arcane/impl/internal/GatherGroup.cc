@@ -14,8 +14,8 @@
 
 #include "arcane/impl/internal/GatherGroup.h"
 
-#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/Array2.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
@@ -58,10 +58,6 @@ computeSize(Int32 nb_elem_in)
     m_writer = m_pm->masterIORank();
     m_nb_sender_to_writer = m_pm->commSize();
   }
-
-  ITraceMng* tm = m_pm->traceMng();
-
-  tm->info() << "m_writer : " << m_writer << " -- m_nb_sender : " << m_nb_sender_to_writer;
 
   // Si séquentiel ou MPI + MPI-IO.
   if ((m_pm->commSize() == 1) || (!m_pm->isThreadImplementation() && m_use_collective_io)) {

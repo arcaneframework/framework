@@ -510,6 +510,7 @@ beginWrite(const VariableCollection& vars)
 
   _initializeOffsets();
 
+  // ggi est un GatherGroupInfo pour les tableaux qui ne sont pas de taille nb_cell ou nb_node.
   Ref<GatherGroupInfo> ggi_ref = createRef<GatherGroupInfo>(m_mesh->parallelMng(), m_is_collective_io);
   GatherGroupInfo* ggi = ggi_ref.get();
 
@@ -520,25 +521,22 @@ beginWrite(const VariableCollection& vars)
   _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info }, ggi, cells_connectivity);
   ggi->needRecompute();
 
-  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, ggi, cells_type);
-  ggi->needRecompute();
+  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_type);
 
   {
     Int64 nb_cell_int64 = nb_cell;
     _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info }, ggi,
                                      asConstSpan(&nb_cell_int64));
-    ggi->needRecompute();
 
     Int64 nb_node_int64 = nb_node;
     _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info }, ggi,
                                      asConstSpan(&nb_node_int64));
-    ggi->needRecompute();
 
     Int64 number_of_connectivity_ids = cells_connectivity.size();
     _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info }, ggi,
                                      asConstSpan(&number_of_connectivity_ids));
-    ggi->needRecompute();
   }
+  ggi->needRecompute();
 
   // Sauve les uniqueIds, les types et les coordonnées des noeuds.
   {
@@ -566,12 +564,10 @@ beginWrite(const VariableCollection& vars)
     }
 
     // Sauve l'uniqueId de chaque nœud dans le dataset "GlobalNodeId".
-    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, ggi, nodes_uid);
-    ggi->needRecompute();
+    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_uid);
 
     // Sauve les informations sur le type de nœud (réel ou fantôme).
-    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, ggi, nodes_ghost_type);
-    ggi->needRecompute();
+    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_ghost_type);
 
     // Sauve les coordonnées des noeuds.
     _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
@@ -579,30 +575,27 @@ beginWrite(const VariableCollection& vars)
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
-  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, ggi, cells_ghost_type);
-  ggi->needRecompute();
+  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_ghost_type);
 
   // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
   // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
-  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, ggi, cells_uid);
-  ggi->needRecompute();
+  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_uid);
 
   if (m_is_writer) {
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
     // TODO : Remplacer ggi par nullptr en non-collective ?
     _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, ggi, asConstSpan(&current_time));
-    ggi->needRecompute();
 
     // Offset de la partie.
     Int64 comm_size = pm->commSize();
     Int64 part_offset = (time_index - 1) * comm_size;
     _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, ggi, asConstSpan(&part_offset));
-    ggi->needRecompute();
 
     // Nombre de temps
     _addInt64Attribute(m_steps_group, "NSteps", time_index);
   }
+  //ggi->needRecompute();
 
   _writeConstituentsGroups();
 }
