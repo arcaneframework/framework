@@ -698,7 +698,23 @@ namespace SYCLInternal
       }
       else
       {
-        ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
+        /*
+        alien_info([&] {
+           auto h_kcol = internal_profile->kcol() ;
+           auto cols = internal_profile->cols() ;
+           for(int irow=0;irow<nrows;++irow)
+           {
+             cout()<<"ROW["<<irow<<"]:";
+             for(int k=h_kcol[irow];k<h_kcol[irow]+local_row_size[irow];++k)
+             {
+                cout()<<"\t COL "<<cols[k];
+                for(int i=0;i<N;++i)
+                  for(int j=0;j<N;++j)
+                     cout()<<"\t\t MAT["<<i<<" "<<j<<"] "<<m_h_csr_values[k*NxN+i*N+j];
+             }
+           }
+        });*/
+        ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz*NxN));
         IndexBufferType lrowsize_buffer(local_row_size, sycl::range<1>(nrows));
         // COMPUTE COLS
         // clang-format off
@@ -723,22 +739,22 @@ namespace SYCLInternal
 
                              for (auto i = id; i < nrows; i += item_id.get_range()[0])
                              {
-                                auto block_id = i/ellpack_size ;
-                                auto local_id = i%ellpack_size ;
+                                auto block_id = i/pack_size ;
+                                auto local_id = i%pack_size ;
 
                                 auto begin              = access_kcol_buffer[i] ;
                                 auto lrow_size          = access_lrowsize_buffer[i] ;
                                 auto end                = begin + lrow_size ;
 
-                                int block_row_offset   = access_block_row_offset[block_id];
-                                auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                                auto block_row_offset   = access_block_row_offset[block_id];
+                                auto block_row_size     = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                                 for(int k=0;k<lrow_size;++k)
                                 {
                                   for(int i=0;i<N;++i)
                                     for(int j=0;j<N;++j)
                                     {
-                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*ellpack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
+                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
                                     }
                                 }
                                 for(int k=lrow_size;k<block_row_size;++k)
@@ -746,12 +762,12 @@ namespace SYCLInternal
                                   for(int i=0;i<N;++i)
                                     for(int j=0;j<N;++j)
                                     {
-                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*ellpack_size+local_id] = 0. ;
+                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = 0. ;
                                     }
                                 }
                              }
                           });
-                     }) ;
+                     });
 
 
         auto interface_nrows = m_ext_profile->getNRows();
@@ -781,28 +797,58 @@ namespace SYCLInternal
 
                                for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
                                {
-                                  auto block_id = i/ellpack_size ;
-                                  auto local_id = i%ellpack_size ;
-                                  auto begin              = access_kcol_buffer[i] ;
-                                  auto end                = access_kcol_buffer[i+1] ;
-                                  auto row_size           = end - begin ;
+                                  auto block_id        = i/pack_size ;
+                                  auto local_id        = i%pack_size ;
+                                  auto begin           = access_kcol_buffer[i] ;
+                                  auto end             = access_kcol_buffer[i+1] ;
+                                  auto row_size        = end - begin ;
 
-                                  int block_row_offset   = access_block_row_offset[block_id]*ellpack_size*NxN ;
-                                  auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                                  int block_row_offset = access_block_row_offset[block_id] ;
+                                  auto block_row_size  = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
-                                  for(int k=begin*NxN;k<end*NxN;++k)
+                                  for(int k=0;k<row_size;++k)
                                   {
-                                    access_block_values[block_row_offset+(k-begin*NxN)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                    for(int i=0;i<N;++i)
+                                      for(int j=0;j<N;++j)
+                                      {
+                                        access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
+                                      }
                                   }
-                                  for(int k=row_size*NxN;k<block_row_size*NxN;++k)
+                                  for(int k=row_size;k<block_row_size;++k)
                                   {
-                                    access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                    for(int i=0;i<N;++i)
+                                      for(int j=0;j<N;++j)
+                                      {
+                                        access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = 0 ;
+                                      }
                                   }
                                }
                             });
                          }).wait() ;
           // clang-format on
         }
+        /*
+        {
+            sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_acc(m_values);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> kcol_acc(block_row_offset);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> cols_acc(block_cols);
+            for(int irow=0;irow<nrows;++irow)
+            {
+              auto ib=irow/pack_size ;
+              auto il=irow%pack_size ;
+              alien_info([&] {
+              cout()<<"MAT["<<irow<<","<<ib<<","<<il<<"]:";
+              for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
+              {  
+                cout()<<"\t K"<<k<<" "<<cols_acc[k*pack_size+il];
+                for(int i=0;i<N;++i)
+                  for(int j=0;j<N;++j)
+                    cout()<<"\t\t"<<h_acc[(k*NxN+i*N+j)*pack_size+il]<<",";
+                //std::cout<<std::endl;
+              }
+              });
+            }
+        }*/
         m_values_is_update = true;
       }
     }
@@ -2379,19 +2425,32 @@ namespace SYCLInternal
       {
         auto ib=irow/ellpack_size ;
         auto il=irow%ellpack_size ;
-        std::cout<<"MAT["<<irow<<","<<ib<<"]:";
+        alien_info([&] {
+          cout() <<"MAT["<<irow<<","<<ib<<"]:";
+        });
         for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
         {
-            std::cout<<"COLS["<<k<<"] = "<<cols_acc[k*pack_size+il]<<std::endl;
+          alien_info([&] {
+            cout() <<"\tCOLS["<<k<<"] = "<<cols_acc[k*pack_size+il];
+          });
+            /*
             for(int i=0;i<N;++i)
             {
               for(int j=0;j<N;++j)
                 std::cout<<mat_acc[(k*NxN+i*N+j)*pack_size+il]<<" ";
               std::cout<<std::endl;
-            }
+            }*/
             if(cols_acc[k*pack_size+il]==irow)
             {
-              std::cout<<"COMPUTE INVERSE"<<std::endl ;
+
+              alien_info([&] {
+                cout() <<"\tCOMPUTE INVERSE["<<cols_acc[k*pack_size+il]<<"]" ;
+                for(int i=0;i<N;++i)
+                {
+                  for(int j=0;j<N;++j)
+                    cout()<<mat_acc[(k*NxN+i*N+j)*pack_size+il]<<" ";
+                }
+              });
               lu.factorize(irow,
                           il,
                           ib,
@@ -2404,12 +2463,14 @@ namespace SYCLInternal
                          test_A.data(),
                          test_y.data());
 
+              alien_info([&] {
               for(int i=0;i<N;++i)
               {
                 for(int j=0;j<N;++j)
                   std::cout<<test_y[irow*NxN+i*N+j]<<",";
                 std::cout<<std::endl;
               }
+              });
             }
         }
       }
@@ -2417,13 +2478,15 @@ namespace SYCLInternal
       {
         auto ib=irow/ellpack_size ;
         auto il=irow%ellpack_size ;
-        std::cout<<"INV BLOCK DIAG["<<irow<<","<<il<<"]:\n";
-        for(int i=0;i<N;++i)
-        {
-          for(int j=0;j<N;++j)
-            std::cout<<h_acc[irow*NxN+i*N+j]<<",";
-          std::cout<<std::endl;
-        }
+        alien_info([&] {
+           cout()<<"INV BLOCK DIAG["<<irow<<","<<il<<"]:\n";
+            for(int i=0;i<N;++i)
+            {
+              for(int j=0;j<N;++j)
+                cout()<<h_acc[irow*NxN+i*N+j]<<",";
+              //std::cout<<std::endl;
+            }
+        });
       }
     }
 #endif

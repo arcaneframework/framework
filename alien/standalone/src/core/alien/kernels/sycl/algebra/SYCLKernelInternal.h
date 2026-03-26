@@ -55,6 +55,7 @@ class Future
       //auto h_access = m_d_value.template get_access<sycl::access::mode::read>();
       auto h_access = m_d_value.get_host_access();
       m_value = h_access[0];
+      std::cout<<"FUTURE LOCAL GET : "<<m_value<<std::endl ;
     }
     return m_value;
   }
@@ -1164,6 +1165,7 @@ class KernelInternal
            sycl::buffer<T>& y,
            sycl::buffer<T>& res)
   {
+    std::cout<<"SYCL FUTURE DOT "<<m_dot_algo<<std::endl ;
     switch (m_dot_algo) {
     case 2:
       map4_reduce_sum(x, y, res); // with sycl_reduction
