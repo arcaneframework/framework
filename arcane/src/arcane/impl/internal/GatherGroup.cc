@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* GatherGroup.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire de fabriques de maillages.                                   */
+/* Classe permettant de gérer les regroupements de données sur le ou les     */
+/* sous-domaines écrivains.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,7 +29,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GatherGroup::GatherGroupInfo::
+GatherGroupInfo::
 GatherGroupInfo(IParallelMng* pm, bool use_collective_io)
 : m_pm(pm)
 , m_use_collective_io(use_collective_io)
@@ -37,13 +38,13 @@ GatherGroupInfo(IParallelMng* pm, bool use_collective_io)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GatherGroup::GatherGroupInfo::
+GatherGroupInfo::
 ~GatherGroupInfo() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GatherGroup::GatherGroupInfo::
+void GatherGroupInfo::
 computeSize(Int32 nb_elem_in)
 {
   if (m_is_computed) return;
@@ -97,7 +98,7 @@ computeSize(Int32 nb_elem_in)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SmallSpan<Int32> GatherGroup::GatherGroupInfo::
+SmallSpan<Int32> GatherGroupInfo::
 nbElemRecvGatherToMasterIO()
 {
   return m_nb_elem_recv.smallSpan();
