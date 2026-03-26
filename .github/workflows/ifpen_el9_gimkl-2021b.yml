@@ -32,7 +32,7 @@ env:
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
-  CT_OPTS: "--timeout 1200 -j 4 --output-on-failure ${{ github.event.inputs.ctest_options }}"
+  CT_OPTS: "--timeout 1200 -j 8 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # For intel MPI to fix errors appearing in July 2023
   #I_MPI_SHM_LMT: shm
   # For intel MPI to fix errors appearing in 2025
@@ -46,7 +46,7 @@ jobs:
   build:
     name: build and test
     runs-on: [self-hosted, m-1]
-    timeout-minutes: 120
+    timeout-minutes: 150
     container:
       image: ghcr.io/arcaneframework/ifpen-arcenv-gimkl-2021b-el9:latest
       options: --user root  # Avoid to match github UID in container.
