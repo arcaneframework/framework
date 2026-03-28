@@ -2,6 +2,10 @@ if (NOT TARGET hypre AND NOT TARGET petsc AND NOT TARGET mtl)
     return()
 endif ()
 
+if(ALIEN_USE_HIP)
+  find_package(hip REQUIRED)
+endif(ALIEN_USE_HIP)
+
 createLibrary(alien_external_packages
         EXPORT alien/AlienExternalPackagesExport.h
         )
@@ -78,6 +82,12 @@ endif()
 if (TARGET cuda)
     linkLibraries(alien_external_packages cuda)
 endif()
+
+if(ALIEN_USE_HIP)
+  if (TARGET hip::host)
+    linkLibraries(alien_external_packages hip::host)
+  endif()
+endif(ALIEN_USE_HIP)
 
 linkLibraries(alien_external_packages
               Boost::program_options
