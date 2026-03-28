@@ -29,6 +29,11 @@ if(ALIEN_USE_CUDA)
     find_package(CUDAToolkit REQUIRED)
 endif()
 
+if(ALIEN_USE_HIP)
+    enable_language(HIP)
+    find_package(hip REQUIRED)
+endif()
+
 if(ALIEN_USE_SYCL)
   if(ALIEN_USE_HIPSYCL)
     find_package(hipSYCL CONFIG REQUIRED)
