@@ -299,10 +299,18 @@ class MatrixInternal
   bool setMatrixValuesFromHost();
 
   bool setMatrixValues(ValueBufferType& values);
+  bool setMatrixValues(ValueBufferType& values,
+                       ValueBufferType& ext_values);
 
   bool copy(std::size_t nb_blocks,
             Integer block_size,
             ValueBufferType& rhs_values,
+            Integer rhs_block_size);
+
+  bool copy(std::size_t nb_blocks,
+            Integer block_size,
+            ValueBufferType& rhs_values,
+            ValueBufferType& rhs_ext_values,
             Integer rhs_block_size);
 
   bool needUpdate();
@@ -400,6 +408,7 @@ class MatrixInternal
   mutable IndexBufferPtrType m_interface_row_ids ;
   mutable IndexBufferPtrType m_send_ids ;
   mutable IndexBufferPtrType m_recv_ids ;
+  mutable IndexBufferPtrType m_recv_uids ;
   // clang-format on
 };
 
