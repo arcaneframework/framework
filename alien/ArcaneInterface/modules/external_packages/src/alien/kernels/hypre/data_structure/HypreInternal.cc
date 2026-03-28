@@ -155,7 +155,7 @@ MatrixInternal::freeHostPointers(IndexType* rows,
   cudaFreeHost(cols);
   cudaFreeHost(values);
 #endif
-#ifdef ALIEN_USE_HYPRE
+#ifdef ALIEN_USE_HIP
   hipHostFree(rows);
   hipHostFree(ncols);
   hipHostFree(cols);
@@ -282,9 +282,9 @@ VectorInternal::~VectorInternal()
 #endif
 #ifdef ALIEN_USE_HIP
     if(m_rows)
-      freeFree(m_rows);
+      hipFree(m_rows);
     if(m_zeros_device)
-      freeFree(m_zeros_device);
+      hipFree(m_zeros_device);
 #endif
 
   }

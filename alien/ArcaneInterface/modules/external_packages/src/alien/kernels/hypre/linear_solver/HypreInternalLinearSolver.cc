@@ -276,7 +276,7 @@ void
 HypreInternalLinearSolver::init()
 {
   if(HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
-#ifdef HYPRE_USING_CUDA
+#if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
   if(m_options->execSpace() == HypreOptionTypes::Device)
   {
       if(m_options->memoryType() == HypreOptionTypes::DeviceMemory)
