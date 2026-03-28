@@ -306,6 +306,7 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
 
   auto& dist = vx.distribution();
   if (dist.isParallel()) {
+    res.get() ;
     Real local_value = res() ;
     Real* x = &res();
     auto request = mpNonBlockingAllReduce(dist.parallelMng(),

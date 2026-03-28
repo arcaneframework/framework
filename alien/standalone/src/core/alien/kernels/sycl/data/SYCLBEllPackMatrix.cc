@@ -698,7 +698,23 @@ namespace SYCLInternal
       }
       else
       {
-        ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
+        /*
+        alien_info([&] {
+           auto h_kcol = internal_profile->kcol() ;
+           auto cols = internal_profile->cols() ;
+           for(int irow=0;irow<nrows;++irow)
+           {
+             cout()<<"ROW["<<irow<<"]:";
+             for(int k=h_kcol[irow];k<h_kcol[irow]+local_row_size[irow];++k)
+             {
+                cout()<<"\t COL "<<cols[k];
+                for(int i=0;i<N;++i)
+                  for(int j=0;j<N;++j)
+                     cout()<<"\t\t MAT["<<i<<" "<<j<<"] "<<m_h_csr_values[k*NxN+i*N+j];
+             }
+           }
+        });*/
+        ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz*NxN));
         IndexBufferType lrowsize_buffer(local_row_size, sycl::range<1>(nrows));
         // COMPUTE COLS
         // clang-format off
@@ -723,22 +739,22 @@ namespace SYCLInternal
 
                              for (auto i = id; i < nrows; i += item_id.get_range()[0])
                              {
-                                auto block_id = i/ellpack_size ;
-                                auto local_id = i%ellpack_size ;
+                                auto block_id = i/pack_size ;
+                                auto local_id = i%pack_size ;
 
                                 auto begin              = access_kcol_buffer[i] ;
                                 auto lrow_size          = access_lrowsize_buffer[i] ;
                                 auto end                = begin + lrow_size ;
 
-                                int block_row_offset   = access_block_row_offset[block_id];
-                                auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                                auto block_row_offset   = access_block_row_offset[block_id];
+                                auto block_row_size     = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                                 for(int k=0;k<lrow_size;++k)
                                 {
                                   for(int i=0;i<N;++i)
                                     for(int j=0;j<N;++j)
                                     {
-                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*ellpack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
+                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
                                     }
                                 }
                                 for(int k=lrow_size;k<block_row_size;++k)
@@ -746,12 +762,12 @@ namespace SYCLInternal
                                   for(int i=0;i<N;++i)
                                     for(int j=0;j<N;++j)
                                     {
-                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*ellpack_size+local_id] = 0. ;
+                                      access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = 0. ;
                                     }
                                 }
                              }
                           });
-                     }) ;
+                     });
 
 
         auto interface_nrows = m_ext_profile->getNRows();
@@ -781,28 +797,58 @@ namespace SYCLInternal
 
                                for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
                                {
-                                  auto block_id = i/ellpack_size ;
-                                  auto local_id = i%ellpack_size ;
-                                  auto begin              = access_kcol_buffer[i] ;
-                                  auto end                = access_kcol_buffer[i+1] ;
-                                  auto row_size           = end - begin ;
+                                  auto block_id        = i/pack_size ;
+                                  auto local_id        = i%pack_size ;
+                                  auto begin           = access_kcol_buffer[i] ;
+                                  auto end             = access_kcol_buffer[i+1] ;
+                                  auto row_size        = end - begin ;
 
-                                  int block_row_offset   = access_block_row_offset[block_id]*ellpack_size*NxN ;
-                                  auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                                  int block_row_offset = access_block_row_offset[block_id] ;
+                                  auto block_row_size  = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
-                                  for(int k=begin*NxN;k<end*NxN;++k)
+                                  for(int k=0;k<row_size;++k)
                                   {
-                                    access_block_values[block_row_offset+(k-begin*NxN)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                    for(int i=0;i<N;++i)
+                                      for(int j=0;j<N;++j)
+                                      {
+                                        access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = access_values_buffer[(begin+k)*NxN+i*N+j] ;
+                                      }
                                   }
-                                  for(int k=row_size*NxN;k<block_row_size*NxN;++k)
+                                  for(int k=row_size;k<block_row_size;++k)
                                   {
-                                    access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                    for(int i=0;i<N;++i)
+                                      for(int j=0;j<N;++j)
+                                      {
+                                        access_block_values[((block_row_offset+k)*NxN+i*N+j)*pack_size+local_id] = 0 ;
+                                      }
                                   }
                                }
                             });
                          }).wait() ;
           // clang-format on
         }
+        /*
+        {
+            sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_acc(m_values);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> kcol_acc(block_row_offset);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> cols_acc(block_cols);
+            for(int irow=0;irow<nrows;++irow)
+            {
+              auto ib=irow/pack_size ;
+              auto il=irow%pack_size ;
+              alien_info([&] {
+              cout()<<"MAT["<<irow<<","<<ib<<","<<il<<"]:";
+              for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
+              {
+                cout()<<"\t K"<<k<<" "<<cols_acc[k*pack_size+il];
+                for(int i=0;i<N;++i)
+                  for(int j=0;j<N;++j)
+                    cout()<<"\t\t"<<h_acc[(k*NxN+i*N+j)*pack_size+il]<<",";
+                //std::cout<<std::endl;
+              }
+              });
+            }
+        }*/
         m_values_is_update = true;
       }
     }
@@ -811,6 +857,215 @@ namespace SYCLInternal
 
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::setMatrixValues(ValueBufferType& values_buffer)
+  {
+    alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
+    auto env = SYCLEnv::instance();
+    auto& queue = env->internal()->queue();
+    auto num_groups = env->internal()->maxNumGroups();
+    auto max_work_group_size = env->internal()->maxWorkGroupSize();
+    auto total_threads = num_groups * ellpack_size;
+
+    int NxN = this->m_NxN;
+
+    auto nrows = m_profile->getNRows();
+    auto nnz = m_profile->getNnz();
+    auto block_nnz = m_profile->getBlockNnz();
+
+    auto internal_profile = m_profile->internal();
+    auto& kcol = internal_profile->getKCol();
+    auto& block_row_offset = internal_profile->getBlockRowOffset();
+
+    auto local_row_size = m_profile->localRowSize();
+    if (local_row_size == nullptr)
+    {
+      //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
+      // COMPUTE COLS
+      // clang-format off
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_kcol_buffer      = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values_buffer    = values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_values     = m_values.template get_access<sycl::access::mode::read_write>(cgh);
+
+                       //cgh.parallel_for<class vector_axpy>(sycl::nd_range<1>{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}},[=](sycl::nd_item<1> item_id)
+                       cgh.parallel_for<class set_matrix_values4>(sycl::range<1>{total_threads},
+                                                             [=] (sycl::item<1> item_id)
+                                                             {
+                                                               auto id = item_id.get_id(0);
+                                                               //auto local_id  = item_id.get_local_id(0);
+                                                               //auto block_id  = item_id.get_group(0) ;
+                                                               //auto global_id = item_id.get_global_id(0);
+
+                                                               for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                                                               {
+                                                                  auto block_id = i/ellpack_size ;
+                                                                  auto local_id = i%ellpack_size ;
+
+                                                                  auto begin              = access_kcol_buffer[i] ;
+                                                                  auto end                = access_kcol_buffer[i+1] ;
+                                                                  auto row_size           = end - begin ;
+
+                                                                  int block_row_offset   = access_block_row_offset[block_id]*ellpack_size*NxN ;
+                                                                  auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                                                                  for(int k=begin*NxN;k<end*NxN;++k)
+                                                                  {
+                                                                    access_block_values[block_row_offset+(k-begin*NxN)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                                                  }
+                                                                  for(int k=row_size*NxN;k<block_row_size*NxN;++k)
+                                                                  {
+                                                                    access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                                                  }
+                                                               }
+                                                            });
+                     }) ;
+      // clang-format on
+      m_values_is_update = true;
+    }
+    else
+    {
+      //ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
+      IndexBufferType lrowsize_buffer(local_row_size, sycl::range<1>(nrows));
+
+      // COMPUTE COLS
+      // clang-format off
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto access_kcol_buffer      = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
+                     auto access_lrowsize_buffer  = lrowsize_buffer.template get_access<sycl::access::mode::read>(cgh);
+
+                     auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values_buffer    = values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_block_values     = m_values.template get_access<sycl::access::mode::read_write>(cgh);
+
+                     //cgh.parallel_for<class vector_axpy>(sycl::nd_range<1>{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}},[=](sycl::nd_item<1> item_id)
+                     cgh.parallel_for<class set_matrix_values5>(sycl::range<1>{total_threads},
+                                                           [=] (sycl::item<1> item_id)
+                                                           {
+                                                             auto id = item_id.get_id(0);
+                                                             //auto local_id  = item_id.get_local_id(0);
+                                                             //auto block_id  = item_id.get_group(0) ;
+                                                             //auto global_id = item_id.get_global_id(0);
+
+                                                             for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                                                             {
+                                                                auto block_id = i/ellpack_size ;
+                                                                auto local_id = i%ellpack_size ;
+
+                                                                auto begin              = access_kcol_buffer[i] ;
+                                                                auto lrow_size          = access_lrowsize_buffer[i] ;
+                                                                auto end                = begin + lrow_size ;
+
+                                                                int block_row_offset   = access_block_row_offset[block_id]*ellpack_size*NxN ;
+                                                                auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                                                                for(int k=begin*NxN;k<end*NxN;++k)
+                                                                {
+                                                                  access_block_values[block_row_offset+(k-begin*NxN)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                                                }
+                                                                for(int k=lrow_size*NxN;k<block_row_size*NxN;++k)
+                                                                {
+                                                                  access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                                                }
+                                                             }
+                                                          });
+                   }) ;
+      auto kcol            = m_profile->kcol() ;
+      auto local_row_size  = m_profile->localRowSize() ;
+
+      auto interface_nrows = m_ext_profile->getNRows();
+      auto ext_nnz         = m_ext_profile->getNnz();
+      auto ext_block_nnz   = m_ext_profile->getBlockNnz();
+
+      auto ext_internal_profile  = m_ext_profile->internal();
+      auto& ext_kcol             = ext_internal_profile->getKCol();
+      auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+      //m_h_ext_values.resize(ext_block_nnz) ;
+      m_ext_values.reset(new ValueBufferType(ext_block_nnz * ellpack_size * NxN)) ;
+
+      // EXTRACT EXTERNAL PROFILE
+      {
+        ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), sycl::range<1>(ext_nnz * NxN));
+
+        std::vector<Integer> h_local_row_offset(interface_nrows+1) ;
+        {
+          Integer offset = 0 ;
+          for(std::size_t i=0;i<interface_nrows;++i)
+          {
+            h_local_row_offset[i] = offset ;
+            offset += local_row_size[i] ;
+          }
+          h_local_row_offset[interface_nrows] = offset ;
+        }
+        IndexBufferType local_row_offset(h_local_row_offset.data(),sycl::range<1>(interface_nrows+1)) ;
+
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                        auto access_kcol              = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
+                        auto access_interface_row_ids = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+                        auto access_local_row_size    = lrowsize_buffer.template get_access<sycl::access::mode::read>(cgh);
+                        auto access_local_row_offset  = local_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                        auto access_csr_values        = values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                        auto access_ext_csr_values    = ext_csr_values_buffer.template get_access<sycl::access::mode::read_write>(cgh);
+                        cgh.parallel_for<class set_matrix_values6>(sycl::range<1>{total_threads},
+                                                                     [=] (sycl::item<1> item_id)
+                                                                     {
+                                                                        auto id = item_id.get_id(0);
+                                                                        for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                                                                        {
+                                                                            Integer jcol = access_local_row_offset[i] ;
+                                                                            for (int k = (access_kcol[i] + access_local_row_size[i])*NxN; k < access_kcol[i + 1] * NxN; ++k)
+                                                                                access_ext_csr_values[jcol++] = access_csr_values[k];
+                                                                        }
+                                                                     });
+                     }).wait() ;
+
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_kcol_buffer      = ext_kcol.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_row_offset = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values_buffer    = ext_csr_values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                       //auto access_block_values     = m_ext_values->template get_access<sycl::access::mode::read_write>(cgh);
+                       auto access_block_values     = sycl::accessor { *m_ext_values, cgh, sycl::write_only, sycl::property::no_init{}};
+
+                       cgh.parallel_for<class set_matrix_values7>(sycl::range<1>{total_threads},
+                                                                   [=] (sycl::item<1> item_id)
+                                                                   {
+                                                                     auto id = item_id.get_id(0);
+
+                                                                     for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                                                                     {
+                                                                        auto block_id = i/ellpack_size ;
+                                                                        auto local_id = i%ellpack_size ;
+                                                                        auto begin              = access_kcol_buffer[i] ;
+                                                                        auto end                = access_kcol_buffer[i+1] ;
+                                                                        auto row_size           = end - begin ;
+
+                                                                        int block_row_offset   = access_block_row_offset[block_id]*ellpack_size*NxN ;
+                                                                        auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                                                                        for(int k=begin*NxN;k<end*NxN;++k)
+                                                                        {
+                                                                          access_block_values[block_row_offset+(k-begin*NxN)*ellpack_size+local_id] = access_values_buffer[k] ;
+                                                                        }
+                                                                        for(int k=row_size*NxN;k<block_row_size*NxN;++k)
+                                                                        {
+                                                                          access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
+                                                                        }
+                                                                     }
+                                                                  });
+                       }).wait() ;
+        // clang-format on
+      }
+      m_values_is_update = true;
+    }
+    return true;
+  }
+
+  template <typename ValueT, int EllpackSize>
+  bool MatrixInternal<ValueT, EllpackSize>::setMatrixValues(ValueBufferType& values_buffer,
+                                                            ValueBufferType& ext_values_buffer)
   {
     alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
     auto env = SYCLEnv::instance();
@@ -1065,7 +1320,6 @@ namespace SYCLInternal
                                                ValueBufferType& values_buffer,
                                                int rhs_block_size)
   {
-    alien_debug([&] { cout() << "SYCLMatrix copy "<<nb_blocks<<" "<<block_size<<" RHS BLK-SIZE="<<rhs_block_size; });
     auto env = SYCLEnv::instance();
     auto& queue = env->internal()->queue();
     auto num_groups = env->internal()->maxNumGroups();
@@ -1126,7 +1380,6 @@ namespace SYCLInternal
                           });
                      }) ;
       // clang-format on
-      m_values_is_update = true;
     }
     else
     {
@@ -1181,96 +1434,83 @@ namespace SYCLInternal
                            }
                         });
                    }) ;
-      auto kcol            = m_profile->kcol() ;
-      auto local_row_size  = m_profile->localRowSize() ;
-
-      auto interface_nrows = m_ext_profile->getNRows();
-      auto ext_nnz         = m_ext_profile->getNnz();
-      auto ext_block_nnz   = m_ext_profile->getBlockNnz();
-
-      auto ext_internal_profile  = m_ext_profile->internal();
-      auto& ext_kcol             = ext_internal_profile->getKCol();
-      auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
-      //m_h_ext_values.resize(ext_block_nnz) ;
-      m_ext_values.reset(new ValueBufferType(ext_block_nnz * ellpack_size)) ;
-
-      // EXTRACT EXTERNAL PROFILE
-      {
-        ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), sycl::range<1>(ext_nnz));
-
-        std::vector<Integer> h_local_row_offset(interface_nrows+1) ;
-        {
-          Integer offset = 0 ;
-          for(std::size_t i=0;i<interface_nrows;++i)
-          {
-            h_local_row_offset[i] = offset ;
-            offset += local_row_size[i] ;
-          }
-          h_local_row_offset[interface_nrows] = offset ;
-        }
-        IndexBufferType local_row_offset(h_local_row_offset.data(),sycl::range<1>(interface_nrows+1)) ;
-
-        queue.submit([&](sycl::handler& cgh)
-                     {
-                        auto access_kcol              = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
-                        auto access_interface_row_ids = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
-                        auto access_local_row_size    = lrowsize_buffer.template get_access<sycl::access::mode::read>(cgh);
-                        auto access_local_row_offset  = local_row_offset.template get_access<sycl::access::mode::read>(cgh);
-                        auto access_csr_values        = values_buffer.template get_access<sycl::access::mode::read>(cgh);
-                        auto access_ext_csr_values    = ext_csr_values_buffer.template get_access<sycl::access::mode::read_write>(cgh);
-                        cgh.parallel_for<class set_matrix_values6>(sycl::range<1>{total_threads},
-                                                                     [=] (sycl::item<1> item_id)
-                                                                     {
-                                                                        auto id = item_id.get_id(0);
-                                                                        for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
-                                                                        {
-                                                                            Integer jcol = access_local_row_offset[i] ;
-                                                                            for (int k = access_kcol[i] + access_local_row_size[i]; k < access_kcol[i + 1]; ++k)
-                                                                                access_ext_csr_values[jcol++] = access_csr_values[k];
-                                                                        }
-                                                                     });
-                     }).wait() ;
-
-        queue.submit([&](sycl::handler& cgh)
-                     {
-                       auto access_kcol_buffer      = ext_kcol.template get_access<sycl::access::mode::read>(cgh);
-                       auto access_block_row_offset = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
-                       auto access_values_buffer    = ext_csr_values_buffer.template get_access<sycl::access::mode::read>(cgh);
-                       //auto access_block_values     = m_ext_values->template get_access<sycl::access::mode::read_write>(cgh);
-                       auto access_block_values     = sycl::accessor { *m_ext_values, cgh, sycl::write_only, sycl::property::no_init{}};
-
-                       cgh.parallel_for<class set_matrix_values7>(
-                           sycl::range<1>{total_threads},
-                           [=] (sycl::item<1> item_id)
-                           {
-                             auto id = item_id.get_id(0);
-
-                             for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
-                             {
-                                auto block_id = i/ellpack_size ;
-                                auto local_id = i%ellpack_size ;
-                                auto begin              = access_kcol_buffer[i] ;
-                                auto end                = access_kcol_buffer[i+1] ;
-                                auto row_size           = end - begin ;
-
-                                int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                                auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-
-                                for(int k=begin;k<end;++k)
-                                {
-                                  access_block_values[block_row_offset+(k-begin)*ellpack_size+local_id] = access_values_buffer[k] ;
-                                }
-                                for(int k=row_size;k<block_row_size;++k)
-                                {
-                                  access_block_values[block_row_offset+k*ellpack_size+local_id] = 0 ;
-                                }
-                             }
-                          });
-                       }).wait() ;
-        // clang-format on
-      }
-      m_values_is_update = true;
+      // clang-format on
     }
+    m_values_is_update = true;
+    return true;
+  }
+
+  template <typename ValueT, int EllpackSize>
+  bool MatrixInternal<ValueT, EllpackSize>::copy(std::size_t nb_blocks,
+                                               int block_size,
+                                               ValueBufferType& values_buffer,
+                                               ValueBufferType& ext_values_buffer,
+                                               int rhs_block_size)
+  {
+    copy(nb_blocks,block_size,values_buffer,rhs_block_size) ;
+
+    auto env = SYCLEnv::instance();
+    auto& queue = env->internal()->queue();
+    auto num_groups = env->internal()->maxNumGroups();
+    auto max_work_group_size = env->internal()->maxWorkGroupSize();
+    auto total_threads = num_groups * ellpack_size;
+
+    int pack_size  = ellpack_size;
+    int N1         = block_size ;
+    int N1xN1      = N1*N1 ;
+    int N2         = rhs_block_size ;
+    int N2xN2      = N2*N2 ;
+    auto nrows     = m_profile->getNRows();
+    auto nnz       = m_profile->getNnz();
+    auto block_nnz = m_profile->getBlockNnz();
+
+    auto internal_profile  = m_profile->internal();
+    auto& kcol             = internal_profile->getKCol();
+    auto& block_row_offset = internal_profile->getBlockRowOffset();
+
+    assert(m_ext_profile) ;
+    auto interface_nrows   = m_ext_profile->getNRows();
+    auto ext_nnz           = m_ext_profile->getNnz();
+    auto ext_block_nnz     = m_ext_profile->getBlockNnz();
+    auto ext_internal_profile  = m_ext_profile->internal();
+    auto& ext_kcol             = ext_internal_profile->getKCol();
+    auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+
+    m_h_ext_values.resize(ext_block_nnz*N1xN1) ;
+    m_ext_values.reset(new ValueBufferType(ext_block_nnz * N1xN1* ellpack_size)) ;
+    {
+      ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), sycl::range<1>(ext_nnz*N1xN1));
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto access_block_row_offset  = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_ext_values_buffer = ext_values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_ext_values        = sycl::accessor { *m_ext_values, cgh, sycl::write_only, sycl::property::no_init{}};
+
+                     cgh.parallel_for<class set_matrix_ext_values3>(
+                         sycl::range<1>{total_threads},
+                         [=] (sycl::item<1> item_id)
+                         {
+                           auto id = item_id.get_id(0);
+                           for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                           {
+                              auto block_id = i/pack_size ;
+                              auto local_id = i%pack_size ;
+
+                              auto begin              = access_block_row_offset[block_id] ;
+                              auto end                = access_block_row_offset[block_id+1] ;
+
+                              for(int k=begin;k<begin;++k)
+                              {
+                                for(int i=0;i<N1;++i)
+                                  for(int j=0;j<N1;++j)
+                                    access_ext_values[(k*N1xN1 +i*N1+j)*pack_size+local_id] = access_ext_values_buffer[(k*N2xN2+i*N2+j)*pack_size+local_id] ;
+                              }
+                           }
+                        });
+                     }) ;
+      // clang-format on
+    }
+    m_values_is_update = true;
     return true;
   }
 
@@ -2379,19 +2619,32 @@ namespace SYCLInternal
       {
         auto ib=irow/ellpack_size ;
         auto il=irow%ellpack_size ;
-        std::cout<<"MAT["<<irow<<","<<ib<<"]:";
+        alien_info([&] {
+          cout() <<"MAT["<<irow<<","<<ib<<"]:";
+        });
         for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
         {
-            std::cout<<"COLS["<<k<<"] = "<<cols_acc[k*pack_size+il]<<std::endl;
+          alien_info([&] {
+            cout() <<"\tCOLS["<<k<<"] = "<<cols_acc[k*pack_size+il];
+          });
+            /*
             for(int i=0;i<N;++i)
             {
               for(int j=0;j<N;++j)
                 std::cout<<mat_acc[(k*NxN+i*N+j)*pack_size+il]<<" ";
               std::cout<<std::endl;
-            }
+            }*/
             if(cols_acc[k*pack_size+il]==irow)
             {
-              std::cout<<"COMPUTE INVERSE"<<std::endl ;
+
+              alien_info([&] {
+                cout() <<"\tCOMPUTE INVERSE["<<cols_acc[k*pack_size+il]<<"]" ;
+                for(int i=0;i<N;++i)
+                {
+                  for(int j=0;j<N;++j)
+                    cout()<<mat_acc[(k*NxN+i*N+j)*pack_size+il]<<" ";
+                }
+              });
               lu.factorize(irow,
                           il,
                           ib,
@@ -2404,12 +2657,14 @@ namespace SYCLInternal
                          test_A.data(),
                          test_y.data());
 
+              alien_info([&] {
               for(int i=0;i<N;++i)
               {
                 for(int j=0;j<N;++j)
                   std::cout<<test_y[irow*NxN+i*N+j]<<",";
                 std::cout<<std::endl;
               }
+              });
             }
         }
       }
@@ -2417,13 +2672,15 @@ namespace SYCLInternal
       {
         auto ib=irow/ellpack_size ;
         auto il=irow%ellpack_size ;
-        std::cout<<"INV BLOCK DIAG["<<irow<<","<<il<<"]:\n";
-        for(int i=0;i<N;++i)
-        {
-          for(int j=0;j<N;++j)
-            std::cout<<h_acc[irow*NxN+i*N+j]<<",";
-          std::cout<<std::endl;
-        }
+        alien_info([&] {
+           cout()<<"INV BLOCK DIAG["<<irow<<","<<il<<"]:\n";
+            for(int i=0;i<N;++i)
+            {
+              for(int j=0;j<N;++j)
+                cout()<<h_acc[irow*NxN+i*N+j]<<",";
+              //std::cout<<std::endl;
+            }
+        });
       }
     }
 #endif
@@ -2557,15 +2814,16 @@ namespace SYCLInternal
   {
 
     auto env = SYCLEnv::instance() ;
-    auto max_num_treads = env->maxNumThreads() ;
+    auto max_num_threads = env->maxNumThreads() ;
     auto& queue = env->internal()->queue() ;
+    auto pack_size         = ellpack_size;
 
     auto internal_profile  = m_profile->internal() ;
     auto& kcol             = internal_profile->getKCol() ;
     auto& block_row_offset = internal_profile->getBlockRowOffset() ;
     auto& block_cols       = internal_profile->getBlockCols() ;
 
-    auto pack_size         = ellpack_size;
+    auto local_row_size    = m_profile->localRowSize();
     /*
     {
       std::cout<<"CHECK KCOL : "<<std::endl ;
@@ -2591,62 +2849,157 @@ namespace SYCLInternal
         std::cout<<std::endl ;
       }
     }*/
-
-    queue.submit( [&](sycl::handler& cgh)
-                 {
-                   auto acc_val   = m_values.template get_access<sycl::access::mode::read>(cgh);
-                   auto acc_bkcol = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
-                   auto acc_cols  = block_cols.template get_access<sycl::access::mode::read>(cgh);
-                   auto acc_kcol  = kcol.template get_access<sycl::access::mode::read>(cgh);
-                   cgh.parallel_for<class copy_device_ptr>(
-                       sycl::range<1>{max_num_treads},
-                       [=] (sycl::item<1> itemId)
-                       {
-                           auto id = itemId.get_id(0);
-                           for (auto i = id; i < nrows; i += itemId.get_range()[0])
-                           {
-                             auto block_id = i/pack_size ;
-                             auto local_id = i%pack_size ;
-
-                             int begin    = acc_bkcol[block_id] ;
-                             int end      = acc_bkcol[block_id+1] ;
-                             int row_size = acc_kcol[i+1] - acc_kcol[i];
-
-                             rows[i]       = local_offset + i ;
-                             ncols[i]      = row_size ;
-
-                             auto offset   = acc_kcol[i];
-
-                             for(int k=begin;k<end;++k)
+    if(local_row_size == nullptr)
+    {
+      queue.submit( [&](sycl::handler& cgh)
+                   {
+                     auto acc_val   = m_values.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_bkcol = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_cols  = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_kcol  = kcol.template get_access<sycl::access::mode::read>(cgh);
+                     cgh.parallel_for<class copy_device_ptr>(
+                         sycl::range<1>{max_num_threads},
+                         [=] (sycl::item<1> itemId)
+                         {
+                             auto id = itemId.get_id(0);
+                             for (auto i = id; i < nrows; i += itemId.get_range()[0])
                              {
-                               auto j = k-begin ;
-                               if(j<row_size)
+                               auto block_id = i/pack_size ;
+                               auto local_id = i%pack_size ;
+
+                               int begin    = acc_bkcol[block_id] ;
+                               int end      = acc_bkcol[block_id+1] ;
+                               int row_size = acc_kcol[i+1] - acc_kcol[i];
+
+                               rows[i]       = local_offset + i ;
+                               ncols[i]      = row_size ;
+
+                               auto offset   = acc_kcol[i];
+
+                               for(int k=begin;k<end;++k)
                                {
-                                 values[offset+j] = acc_val[k*pack_size+local_id] ;
-                                 cols[offset+j]   = acc_cols[k*pack_size+local_id] ;
+                                 auto j = k-begin ;
+                                 if(j<row_size)
+                                 {
+                                   values[offset+j] = acc_val[k*pack_size+local_id] ;
+                                   cols[offset+j]   = acc_cols[k*pack_size+local_id] ;
+                                 }
                                }
                              }
-                           }
-                       });
-                 }).wait();
-    /*
+                         });
+                   });
+    }
+    else
     {
-      std::vector<ValueT> h_data(nnz) ;
-      queue.memcpy(h_data.data(), values, nnz * sizeof(ValueT)).wait();
-      std::vector<int> h_cols(nnz) ;
-      queue.memcpy(h_cols.data(), cols, nnz * sizeof(int)).wait();
-      sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
-      for(int irow=0;irow<nrows;++irow)
-      {
-        std::cout<<"COPY MAT["<<irow<<"]:";
-        for(int k=h_kcol[irow];k<h_kcol[irow+1];++k)
-        {
-          std::cout<<h_cols[k]<<" "<<h_data[k]<<" ";
+      IndexBufferType lrowsize(local_row_size, sycl::range<1>(nrows));
+      queue.submit( [&](sycl::handler& cgh)
+                   {
+                     auto acc_val       = m_values.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_bkcol     = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_cols      = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_kcol      = kcol.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_lrowsize  = lrowsize.template get_access<sycl::access::mode::read>(cgh);
+                     cgh.parallel_for<class copy_device_ptr>(
+                         sycl::range<1>{max_num_threads},
+                         [=] (sycl::item<1> itemId)
+                         {
+                             auto id = itemId.get_id(0);
+                             for (auto i = id; i < nrows; i += itemId.get_range()[0])
+                             {
+                               auto block_id = i/pack_size ;
+                               auto local_id = i%pack_size ;
+
+                               int begin     = acc_bkcol[block_id] ;
+                               int end       = acc_bkcol[block_id+1] ;
+                               int row_size  = acc_kcol[i+1] - acc_kcol[i];
+                               int lrow_size = acc_lrowsize[i] ;
+                               rows[i]       = local_offset + i ;
+                               ncols[i]      = row_size ;
+
+                               auto offset   = acc_kcol[i];
+
+                               for(int k=begin;k<end;++k)
+                               {
+                                 auto j = k-begin ;
+                                 if(j<lrow_size)
+                                 {
+                                   values[offset+j] = acc_val[k*pack_size+local_id];
+                                   cols[offset+j]   = local_offset + acc_cols[k*pack_size+local_id];
+                                 }
+                               }
+                             }
+                         });
+                   });
+
+      assert(m_ext_profile) ;
+
+      auto interface_nrows = m_ext_profile->getNRows();
+      auto ext_nnz         = m_ext_profile->getNnz();
+      auto ext_block_nnz   = m_ext_profile->getBlockNnz();
+
+      auto ext_internal_profile  = m_ext_profile->internal();
+      auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+      auto& ext_block_cols       = ext_internal_profile->getBlockCols() ;
+
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto acc_kcol             = kcol.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_ext_bkcol        = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_ext_cols         = ext_block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_ext_values       = m_ext_values->template get_access<sycl::access::mode::read_write>(cgh);
+                     auto acc_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_lrowsize         = lrowsize.template get_access<sycl::access::mode::read>(cgh);
+                     auto acc_recv_uids        = m_recv_uids->template get_access<sycl::access::mode::read>(cgh);
+
+                     cgh.parallel_for<class ext_copy_device_ptr>(
+                         sycl::range<1>{max_num_threads},
+                         [=] (sycl::item<1> item_id)
+                         {
+                           auto id = item_id.get_id(0);
+
+                           for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                           {
+                              auto block_id = i/pack_size ;
+                              auto local_id = i%pack_size ;
+                              auto begin    = acc_ext_bkcol[block_id] ;
+                              auto end      = acc_ext_bkcol[block_id+1] ;
+
+                              auto row_id   = acc_row_ids[i];
+                              int row_size  = acc_kcol[row_id+1] - acc_kcol[row_id];
+                              int lrow_size = acc_lrowsize[row_id] ;
+                              auto offset   = acc_kcol[row_id] + lrow_size;
+
+                              for(int k=begin;k<end;++k)
+                              {
+                                auto j = k-begin ;
+                                if(j<row_size-lrow_size)
+                                {
+                                  values[offset+j] = acc_ext_values[k*pack_size+local_id] ;
+                                  cols[offset+j]   = acc_recv_uids[acc_ext_cols[k*pack_size+local_id]] ;
+                                }
+                              }
+                           }
+                        });
+                     });
         }
-        std::cout<<std::endl ;
-      }
-    }*/
-  }
+        /*
+        {
+          std::vector<ValueT> h_data(nnz) ;
+          queue.memcpy(h_data.data(), values, nnz * sizeof(ValueT)).wait();
+          std::vector<int> h_cols(nnz) ;
+          queue.memcpy(h_cols.data(), cols, nnz * sizeof(int)).wait();
+          sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
+          for(int irow=0;irow<nrows;++irow)
+          {
+            std::cout<<"COPY MAT["<<irow<<"]:";
+            for(int k=h_kcol[irow];k<h_kcol[irow+1];++k)
+            {
+              std::cout<<h_cols[k]<<" "<<h_data[k]<<" ";
+            }
+            std::cout<<std::endl ;
+          }
+        }*/
+    }
 } // namespace SYCLInternal
 
 
@@ -2789,6 +3142,8 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
                                                         m_matrix_dist_info.m_send_info.m_ids.size() });
     m_matrix1024->m_recv_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_ids.data(),
                                                         m_matrix_dist_info.m_recv_info.m_ids.size() });
+    m_matrix1024->m_recv_uids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_uids.data(),
+                                                         m_matrix_dist_info.m_recv_info.m_uids.size() });
   }
   else {
 
@@ -2970,13 +3325,29 @@ void SYCLBEllPackMatrix<ValueT>::copy(SYCLBEllPackMatrix<ValueT> const& matrix)
              matrix.m_matrix_dist_info,
              block_size);
   if(block_size==matrix.blockSize())
-    m_matrix1024->setMatrixValues(matrix.m_matrix1024->m_values);
+  {
+    if(m_is_parallel)
+      m_matrix1024->setMatrixValues(matrix.m_matrix1024->m_values,
+                                    (*matrix.m_matrix1024->m_ext_values));
+    else
+      m_matrix1024->setMatrixValues(matrix.m_matrix1024->m_values);
+  }
   else
   {
     assert(m_profile1024.get());
     assert(m_matrix1024.get());
     auto nb_blocks = m_profile1024->getBlockNnz();
-    m_matrix1024->copy(nb_blocks, block_size, matrix.m_matrix1024->m_values, matrix.blockSize()) ;
+    if(m_is_parallel)
+      m_matrix1024->copy(nb_blocks,
+                         block_size,
+                         matrix.m_matrix1024->m_values,
+                         (*matrix.m_matrix1024->m_ext_values),
+                         matrix.blockSize()) ;
+    else
+      m_matrix1024->copy(nb_blocks,
+                         block_size,
+                         matrix.m_matrix1024->m_values,
+                         matrix.blockSize()) ;
   }
 }
 
