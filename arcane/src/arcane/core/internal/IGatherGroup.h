@@ -30,6 +30,48 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
+ * \brief Interface de classe permettant de regrouper les données de certains
+ * sous-domaines sur d'autres sous-domaines.
+ */
+class ARCANE_CORE_EXPORT IGatherGroup
+{
+
+ public:
+
+  virtual ~IGatherGroup() = default;
+
+ public:
+
+  /*!
+   * \brief Méthode permettant de savoir si l'on doit effectuer le
+   * regroupement ou si l'on peut directement écrire les données.
+   *
+   * Appel non collectif, mais la valeur retournée sera la même pour tous les
+   * appelants.
+   *
+   * L'appel à gatherToMasterIO() peut tout de même être effectué, le tableau
+   * \a in sera simplement copié dans le tableau \a out.
+   */
+  virtual bool needGather() = 0;
+
+  /*!
+   * \brief Méthode permettant de regrouper les données de plusieurs
+   * sous-domaines sur un ou plusieurs sous-domaines.
+   *
+   * Appel collectif.
+   *
+   * \param sizeof_elem La taille d'un élément.
+   * \param in Notre tableau que l'on souhaite regrouper.
+   * \param out Le tableau regroupé. Si l'on n'est pas écrivain, il n'y aura
+   * aucune modification.
+   */
+  virtual void gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
  * \brief Interface de classe permettant de calculer et de conserver les
  * informations de regroupements.
  */
@@ -91,48 +133,6 @@ class ARCANE_CORE_EXPORT IGatherGroupInfo
    * écrivains.
    */
   virtual Int32 nbWriterGlobal() = 0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Interface de classe permettant de regrouper les données de certains
- * sous-domaines sur d'autres sous-domaines.
- */
-class ARCANE_CORE_EXPORT IGatherGroup
-{
-
- public:
-
-  virtual ~IGatherGroup() = default;
-
- public:
-
-  /*!
-   * \brief Méthode permettant de savoir si l'on doit effectuer le
-   * regroupement ou si l'on peut directement écrire les données.
-   *
-   * Appel non collectif, mais la valeur retournée sera la même pour tous les
-   * appelants.
-   *
-   * L'appel à gatherToMasterIO() peut tout de même être effectué, le tableau
-   * \a in sera simplement copié dans le tableau \a out.
-   */
-  virtual bool needGather() = 0;
-
-  /*!
-   * \brief Méthode permettant de regrouper les données de plusieurs
-   * sous-domaines sur un ou plusieurs sous-domaines.
-   *
-   * Appel collectif.
-   *
-   * \param sizeof_elem La taille d'un élément.
-   * \param in Notre tableau que l'on souhaite regrouper.
-   * \param out Le tableau regroupé. Si l'on n'est pas écrivain, il n'y aura
-   * aucune modification.
-   */
-  virtual void gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

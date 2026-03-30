@@ -143,8 +143,6 @@ set( ARCANE_SOURCES
   internal/Array2Data.h
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h
-  internal/GatherGroup.h
-  internal/GatherGroup.cc
   internal/IDataSynchronizeDispatcher.h
   internal/IBufferCopier.h
   internal/LegacyMeshBuilder.h

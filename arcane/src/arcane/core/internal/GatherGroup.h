@@ -12,8 +12,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_IMPL_INTERNAL_GATHERGROUP_H
-#define ARCANE_IMPL_INTERNAL_GATHERGROUP_H
+#ifndef ARCANE_CORE_INTERNAL_GATHERGROUP_H
+#define ARCANE_CORE_INTERNAL_GATHERGROUP_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,88 +31,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class GatherGroup;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Classe permettant de calculer et de conserver les informations de
- * regroupements.
- *
- * Les écrivains seront les masterIO ou les masterParallelIO si
- * \a m_use_collective_io est vrai.
- */
-class ARCANE_IMPL_EXPORT GatherGroupInfo
-: public IGatherGroupInfo
-{
-  friend GatherGroup;
-
- public:
-
-  /*!
-   * \brief Constructeur.
-   *
-   * \param pm Le parallelMng qui contient les masterIO.
-   * \param use_collective_io True si l'on souhaite que tous les processus
-   * écrivent (avec MPI-IO par exemple). Les écrivains seront donc les
-   * masterParallelIO. Si False, l'écrivain sera masterIO.
-   */
-  GatherGroupInfo(IParallelMng* pm, bool use_collective_io);
-
-  ~GatherGroupInfo() override;
-
- public:
-
-  void computeSize(Int32 nb_elem_in) override;
-  void needRecompute() override { m_is_computed = false; }
-  bool isComputed() override { return m_is_computed; }
-  Int32 nbElemOutput() override { return m_nb_elem_output; }
-  Int32 sizeOfOutput(Int32 sizeof_type) override { return m_nb_elem_output * sizeof_type; }
-  SmallSpan<Int32> nbElemRecvGatherToMasterIO() override;
-  Int32 nbWriterGlobal() override { return m_nb_writer_global; }
-
- public:
-
-  void setCollectiveIO(bool enable) { m_use_collective_io = enable; }
-
-  /*!
-   * \brief Méthode permettant de calculer les informations de regroupements.
-   *
-   * Appel collectif.
-   *
-   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
-   * la méthode \a needRecompute() avant.
-   *
-   * \param in La vue qui sera partagée.
-   */
-  template <class T>
-  void computeSizeT(Span<const T> in);
-
-  /*!
-   * \brief Méthode permettant de calculer les informations de regroupements.
-   *
-   * Appel collectif.
-   *
-   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
-   * la méthode \a needRecompute() avant.
-   *
-   * \param in La vue qui sera partagée.
-   */
-  template <class T>
-  void computeSizeT(Span2<const T> in);
-
- private:
-
-  IParallelMng* m_pm = nullptr;
-  bool m_use_collective_io = false;
-  UniqueArray<Int32> m_nb_elem_recv;
-  Int32 m_nb_elem_output = -1;
-  Int32 m_writer = -1;
-  Int32 m_nb_sender_to_writer = -1;
-  Int32 m_nb_writer_global = -1;
-  bool m_is_computed = false;
-};
+class GatherGroupInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,7 +43,7 @@ class ARCANE_IMPL_EXPORT GatherGroupInfo
  * Les écrivains seront les masterIO ou les masterParallelIO si
  * \a m_use_collective_io est vrai.
  */
-class ARCANE_IMPL_EXPORT GatherGroup
+class ARCANE_CORE_EXPORT GatherGroup
 : public IGatherGroup
 {
 
@@ -197,25 +116,83 @@ class ARCANE_IMPL_EXPORT GatherGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class T>
-void GatherGroupInfo::
-computeSizeT(Span<const T> in)
+/*!
+ * \brief Classe permettant de calculer et de conserver les informations de
+ * regroupements.
+ *
+ * Les écrivains seront les masterIO ou les masterParallelIO si
+ * \a m_use_collective_io est vrai.
+ */
+class ARCANE_CORE_EXPORT GatherGroupInfo
+: public IGatherGroupInfo
 {
-  computeSize(in.size());
-}
+  friend class GatherGroup;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+ public:
 
-template <class T>
-void GatherGroupInfo::
-computeSizeT(Span2<const T> in)
-{
-  computeSize(in.dim1Size());
-}
+  /*!
+   * \brief Constructeur.
+   *
+   * \param pm Le parallelMng qui contient les masterIO.
+   * \param use_collective_io True si l'on souhaite que tous les processus
+   * écrivent (avec MPI-IO par exemple). Les écrivains seront donc les
+   * masterParallelIO. Si False, l'écrivain sera masterIO.
+   */
+  GatherGroupInfo(IParallelMng* pm, bool use_collective_io);
+
+  ~GatherGroupInfo() override;
+
+ public:
+
+  void computeSize(Int32 nb_elem_in) override;
+  void needRecompute() override { m_is_computed = false; }
+  bool isComputed() override { return m_is_computed; }
+  Int32 nbElemOutput() override { return m_nb_elem_output; }
+  Int32 sizeOfOutput(Int32 sizeof_type) override { return m_nb_elem_output * sizeof_type; }
+  SmallSpan<Int32> nbElemRecvGatherToMasterIO() override;
+  Int32 nbWriterGlobal() override { return m_nb_writer_global; }
+
+ public:
+
+  void setCollectiveIO(bool enable) { m_use_collective_io = enable; }
+
+  /*!
+   * \brief Méthode permettant de calculer les informations de regroupements.
+   *
+   * Appel collectif.
+   *
+   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
+   * la méthode \a needRecompute() avant.
+   *
+   * \param in La vue qui sera partagée.
+   */
+  template <class T>
+  void computeSizeT(Span<const T> in);
+
+  /*!
+   * \brief Méthode permettant de calculer les informations de regroupements.
+   *
+   * Appel collectif.
+   *
+   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
+   * la méthode \a needRecompute() avant.
+   *
+   * \param in La vue qui sera partagée.
+   */
+  template <class T>
+  void computeSizeT(Span2<const T> in);
+
+ private:
+
+  IParallelMng* m_pm = nullptr;
+  bool m_use_collective_io = false;
+  UniqueArray<Int32> m_nb_elem_recv;
+  Int32 m_nb_elem_output = -1;
+  Int32 m_writer = -1;
+  Int32 m_nb_sender_to_writer = -1;
+  Int32 m_nb_writer_global = -1;
+  bool m_is_computed = false;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -256,6 +233,29 @@ gatherToMasterIOT(Span2<const T> in, UniqueArray2<T>& out)
   Span<Byte> out_b(reinterpret_cast<Byte*>(out.span().data()), final_nb_elem * in.dim2Size() * sizeof(T));
 
   gatherToMasterIO(in.dim2Size() * sizeof(T), in_b, out_b);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void GatherGroupInfo::
+computeSizeT(Span<const T> in)
+{
+  computeSize(in.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void GatherGroupInfo::
+computeSizeT(Span2<const T> in)
+{
+  computeSize(in.dim1Size());
 }
 
 /*---------------------------------------------------------------------------*/

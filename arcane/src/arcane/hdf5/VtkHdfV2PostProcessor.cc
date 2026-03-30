@@ -30,14 +30,13 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/VtkCellTypes.h"
+#include "arcane/core/internal/GatherGroup.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshEnvironment.h"
 
 #include "arcane/hdf5/Hdf5Utils.h"
 #include "arcane/hdf5/VtkHdfV2PostProcessor_axl.h"
-
-#include "arcane/impl/internal/GatherGroup.h"
 
 #include <map>
 
