@@ -115,13 +115,13 @@ class UnderlyingAllocator
 
  public:
 
-  void* allocateMemory(size_t size) final
+  void* allocateMemory(Int64 size) final
   {
     void* out = nullptr;
     ARCCORE_CHECK_CUDA(m_concrete_allocator._allocate(&out, size));
     return out;
   }
-  void freeMemory(void* ptr, [[maybe_unused]] size_t size) final
+  void freeMemory(void* ptr, [[maybe_unused]] Int64 size) final
   {
     ARCCORE_CHECK_CUDA_NOTHROW(m_concrete_allocator._deallocate(ptr));
   }

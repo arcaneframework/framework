@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryPool.h                                                (C) 2000-2025 */
+/* MemoryPool.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Classe pour gérer une liste de zone allouées.                             */
 /*---------------------------------------------------------------------------*/
@@ -44,9 +44,9 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
  public:
 
   //! Alloue un bloc pour \a size octets
-  virtual void* allocateMemory(size_t size) = 0;
+  virtual void* allocateMemory(Int64 size) = 0;
   //! Libère le bloc situé à l'adresse \a address contenant \a size octets
-  virtual void freeMemory(void* address, size_t size) = 0;
+  virtual void freeMemory(void* address, Int64 size) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -80,8 +80,8 @@ class ARCCORE_COMMON_EXPORT MemoryPool
 
  public:
 
-  void* allocateMemory(size_t size) override;
-  void freeMemory(void* ptr, size_t size) override;
+  void* allocateMemory(Int64 size) override;
+  void freeMemory(void* ptr, Int64 size) override;
   void dumpStats(std::ostream& ostr);
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
@@ -90,8 +90,8 @@ class ARCCORE_COMMON_EXPORT MemoryPool
   //@{
   void setMaxCachedBlockSize(Int32 v) override;
   void freeCachedMemory() override;
-  size_t totalAllocated() const override;
-  size_t totalCached() const override;
+  Int64 totalAllocated() const override;
+  Int64 totalCached() const override;
   //@}
 
  private:
