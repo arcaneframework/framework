@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../CommonInternalDll.props" />
   <ItemGroup>
-    <PackageReference Include="Scriban" Version="6.6.0" />
+    <PackageReference Include="Scriban" Version="7.0.6" />
     <PackageReference Include="Mono.Options" Version="6.*" />
   </ItemGroup>
 </Project>
