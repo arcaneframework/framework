@@ -64,7 +64,7 @@ jobs:
           echo "m_md5=$(cat coverity-tool/md5-new)" >> $GITHUB_ENV
 
       - name: Restore cached files
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         # Disabled for `act`
         if: ${{ !env.ACT }}
         with:
