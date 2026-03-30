@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 
 #include <alien/AlienExternalPackagesPrecomp.h>
+#include <alien/utils/ObjectWithTrace.h>
 #include "HypreInternal.h"
 #include <numeric>
 
@@ -79,20 +80,27 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
     const int* cols, const Arccore::Real* values)
 {
 #ifdef PRINT_DEBUG_INFO
+  alien_info([&] {
+  cout()<<"HYPREMATRXIXINTERNAL SET MATRXI VALUES : "<<nrow<<" "<<m_memory_type;
+  });
+
   if(m_memory_type==BackEnd::Memory::Host)
   {
+    int nnz = std::accumulate(ncols,ncols+nrow,0);
+    alien_info([&]{
+      cout()<<"MATRIX : "<<nrow<<" "<<nnz;
     int offset = 0 ;
     for(int i=0;i<nrow;++i)
     {
       int row_size = ncols[i];
-      std::cout<<"MAT["<<i<<"]:";
+      cout()<<"MAT["<<i<<","<<row_size<<"]:";
       for(int k=0;k<row_size;++k)
       {
-        std::cout<<values[offset+k]<<" ";
+        cout()<<'\t'<<cols[offset+k]<<" "<<values[offset+k]<<" ";
       }
-      std::cout<<std::endl ;
       offset += row_size;
     }
+    });
   }
   else
   {
@@ -101,18 +109,22 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
     int nnz = std::accumulate(row_size.begin(),row_size.end(),0);
     std::vector<ValueType> val(nnz) ;
     cudaMemcpy(val.data(), values, nnz * sizeof(ValueType), cudaMemcpyDeviceToHost);
+    std::vector<int> h_cols(nnz) ;
+    cudaMemcpy(h_cols.data(), cols, nnz * sizeof(int), cudaMemcpyDeviceToHost);
 
+    alien_info([&]{
+      cout()<<"MATRIX : "<<nrow<<" "<<nnz;
     int offset = 0 ;
     for(int i=0;i<nrow;++i)
     {
-      std::cout<<"MAT["<<i<<","<<row_size[i]<<"]:";
+      cout()<<"MAT["<<i<<","<<row_size[i]<<"]:";
       for(int k=0;k<row_size[i];++k)
       {
-        std::cout<<val[offset+k]<<" ";
+        cout()<<'\t'<<h_cols[offset+k]<<" "<<val[offset+k]<<" ";
       }
-      std::cout<<std::endl ;
       offset += row_size[i];
     }
+    });
   }
 #endif
   int ierr = HYPRE_IJMatrixSetValues(

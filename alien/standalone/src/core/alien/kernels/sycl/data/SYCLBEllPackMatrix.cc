@@ -438,13 +438,13 @@ namespace SYCLInternal
   , m_values(m_h_values.data(), sycl::range<1>(profile->getBlockNnz() * ellpack_size * N*N))
   {
     //m_values.set_final_data(nullptr);
-    alien_debug([&] { cout() << "SYCL InternalMATRIX" << profile->getBlockNnz() * ellpack_size<< "N="<<m_N; });
+    //alien_debug([&] { cout() << "SYCL InternalMATRIX" << profile->getBlockNnz() * ellpack_size<< "N="<<m_N; });
   }
 
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::setMatrixValuesFromHost()
   {
-    alien_debug([&] { cout() << "SYCLMatrix setMatrixValuesFromHost "; });
+    //alien_debug([&] { cout() << "SYCLMatrix setMatrixValuesFromHost "; });
     auto env = SYCLEnv::instance();
     auto& queue = env->internal()->queue();
     auto num_groups = env->internal()->maxNumGroups();
@@ -858,7 +858,7 @@ namespace SYCLInternal
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::setMatrixValues(ValueBufferType& values_buffer)
   {
-    alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
+    //alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
     auto env = SYCLEnv::instance();
     auto& queue = env->internal()->queue();
     auto num_groups = env->internal()->maxNumGroups();
@@ -1067,7 +1067,7 @@ namespace SYCLInternal
   bool MatrixInternal<ValueT, EllpackSize>::setMatrixValues(ValueBufferType& values_buffer,
                                                             ValueBufferType& ext_values_buffer)
   {
-    alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
+    //alien_debug([&] { cout() << "SYCLMatrix setMatrixValues "; });
     auto env = SYCLEnv::instance();
     auto& queue = env->internal()->queue();
     auto num_groups = env->internal()->maxNumGroups();
@@ -1275,7 +1275,7 @@ namespace SYCLInternal
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::setMatrixValues(ValueT const* values, bool only_host)
   {
-    alien_debug([&] { cout() << "SYCLMatrix setMatrixValues " << only_host; });
+    //alien_debug([&] { cout() << "SYCLMatrix setMatrixValues " << only_host; });
 
     int NxN = this->m_NxN;
 
@@ -2812,6 +2812,11 @@ namespace SYCLInternal
                      int* cols,
                      ValueT* values) const
   {
+#ifdef PRINT_DEBUG_INFO
+    alien_info([&] {
+      cout()<<"SYCLMATRIX COPY DEVICE POINTERS : "<<nrows<<" "<<nnz;
+    });
+#endif
 
     auto env = SYCLEnv::instance() ;
     auto max_num_threads = env->maxNumThreads() ;
@@ -2851,6 +2856,7 @@ namespace SYCLInternal
     }*/
     if(local_row_size == nullptr)
     {
+
       queue.submit( [&](sycl::handler& cgh)
                    {
                      auto acc_val   = m_values.template get_access<sycl::access::mode::read>(cgh);
@@ -2887,10 +2893,32 @@ namespace SYCLInternal
                                }
                              }
                          });
-                   });
+                   }).wait();
+#ifdef PRINT_DEBUG_INFO
+      {
+        std::vector<ValueT> h_data(nnz) ;
+        queue.memcpy(h_data.data(), values, nnz * sizeof(ValueT)).wait();
+        std::vector<int> h_cols(nnz) ;
+        queue.memcpy(h_cols.data(), cols, nnz * sizeof(int)).wait();
+        sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
+        alien_info([&]{
+          cout()<<"SYCL DEVICE COPY : "<<nrows<<" "<<nnz;
+        for(int irow=0;irow<nrows;++irow)
+        {
+          cout()<<"COPY MAT["<<irow<<"]:"<<h_kcol[irow+1]-h_kcol[irow];
+          for(int k=h_kcol[irow];k<h_kcol[irow+1];++k)
+          {
+            std::cout<<h_cols[k]<<" "<<h_data[k]<<" ";
+          }
+          std::cout<<std::endl ;
+        }
+        });
+      }
+#endif
     }
     else
     {
+
       IndexBufferType lrowsize(local_row_size, sycl::range<1>(nrows));
       queue.submit( [&](sycl::handler& cgh)
                    {
@@ -2981,25 +3009,29 @@ namespace SYCLInternal
                            }
                         });
                      });
-        }
-        /*
+#ifdef PRINT_DEBUG_INFO
         {
           std::vector<ValueT> h_data(nnz) ;
           queue.memcpy(h_data.data(), values, nnz * sizeof(ValueT)).wait();
           std::vector<int> h_cols(nnz) ;
           queue.memcpy(h_cols.data(), cols, nnz * sizeof(int)).wait();
           sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
+          alien_info([&] {
+            cout()<<"SYCL DEVICE COPY : "<<nrows<<" "<<nnz<<" "<<ext_nnz<<" "<<interface_nrows;
           for(int irow=0;irow<nrows;++irow)
           {
-            std::cout<<"COPY MAT["<<irow<<"]:";
+            std::cout<<"COPY MAT["<<irow<<"]:"<<local_row_size[irow]<<" "<<h_kcol[irow+1]-h_kcol[irow];
             for(int k=h_kcol[irow];k<h_kcol[irow+1];++k)
             {
               std::cout<<h_cols[k]<<" "<<h_data[k]<<" ";
             }
             std::cout<<std::endl ;
           }
-        }*/
+          });
+        }
+#endif
     }
+  }
 } // namespace SYCLInternal
 
 
@@ -3038,6 +3070,13 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
            SimpleCSRInternal::DistStructInfo const& matrix_dist_info,
            int block_size)
 {
+#ifdef PRINT_DEBUG_INFO
+  alien_debug([&] {
+    cout()<<"SYCLBellPackMatrix::initMatrix : "<<local_offset<<" "<<nrows<<" "<<global_size;
+    cout()<<"ParalleMng : "<<parallel_mng;
+  });
+#endif
+
   m_nproc = 1;
   m_myrank = 0;
   m_parallel_mng = parallel_mng;
@@ -3047,25 +3086,16 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
   }
   m_is_parallel = (m_nproc > 1);
 
-  // clang-format off
-  m_local_offset = 0;
-  m_local_size   = nrows;
-  m_global_size  = m_local_size;
-  m_ghost_size   = 0;
-  // clang-format on
 
   m_matrix_dist_info.copy(matrix_dist_info);
 
   m_ellpack_size = 1024;
-  if (m_nproc > 1) {
-    UniqueArray<Integer> offset(m_nproc + 1);
-    Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-                                         ConstArrayView<Integer>(1, &m_local_offset), offset.subView(0, m_nproc));
+  if (m_nproc > 1)
+  {
+    m_local_size   = nrows;
+    m_local_offset = local_offset;
+    m_global_size  = global_size;
 
-    offset[m_nproc] = m_global_size;
-
-    m_local_offset = offset[m_myrank];
-    m_global_size = offset[m_nproc];
     m_ghost_size = m_matrix_dist_info.m_ghost_nrow;
 
     auto& local_row_size = m_matrix_dist_info.m_local_row_size;
@@ -3077,6 +3107,7 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
 
     // clang-format off
     alien_debug([&] {
+                      cout() << "OFFSET = "<<m_local_offset ;
                       cout() << "NROWS  = "<<nrows;
                       cout() << "NNZ    = "<<kcol[nrows];
                       cout() << "BNROWS = "<<block_nrows;
@@ -3145,7 +3176,14 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
     m_matrix1024->m_recv_uids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_uids.data(),
                                                          m_matrix_dist_info.m_recv_info.m_uids.size() });
   }
-  else {
+  else
+  {
+    // clang-format off
+    m_local_offset = 0;
+    m_local_size   = nrows;
+    m_global_size  = m_local_size;
+    m_ghost_size   = 0;
+    // clang-format on
 
     std::size_t block_nrows = ProfileInternal1024::nbBlocks(nrows);
 

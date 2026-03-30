@@ -130,9 +130,12 @@ class AlienCoreSolverBaseT
 
     auto backend      = m_options->backend() ;
     auto asynch       = m_options->asynch() ;
+    auto dot_prod     = m_options->dotProdOpt() ;
 
     m_timer.reset() ;
     AlgebraType alg;
+    if constexpr (requires{alg.setDotAlgo(dot_prod);})
+        alg.setDotAlgo(dot_prod);
     StopCriteriaType stop_criteria{alg,vectorB,m_precision,m_max_iteration,m_output_level>0?this->traceMng():nullptr} ;
 
     switch(solver_opt)
@@ -380,7 +383,8 @@ class AlienCoreSolverBaseT
               solver.solve2(precond,stop_criteria,matrixA,vectorB,vectorX) ;
           }
         }
-        break ;          case AlienCoreSolverOptionTypes::AMG:
+        break ;
+        case AlienCoreSolverOptionTypes::AMG:
         {
           ILinearSolver* amg_solver = nullptr ;
           if(m_options->amgSolver().size()>0)

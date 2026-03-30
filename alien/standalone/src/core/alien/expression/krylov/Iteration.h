@@ -39,6 +39,7 @@ class Iteration
   {
     m_algebra.dot(b, b, m_f_value);
     m_nrm2_b = m_f_value.get();
+    //m_nrm2_b = m_algebra.dot(b, b) ;
     if (m_trace_mng)
       m_trace_mng->info() << "STOP CRITERIA NORME B = " << m_nrm2_b;
     m_criteria_value = m_tol * m_tol * m_nrm2_b;
@@ -69,6 +70,8 @@ class Iteration
       return true;
     m_algebra.dot(r, r, m_f_value);
     m_status = m_f_value.get() < m_criteria_value;
+    //m_value = m_algebra.dot(r, r) ;
+    //m_status = m_value < m_criteria_value;
     return m_status;
   }
 

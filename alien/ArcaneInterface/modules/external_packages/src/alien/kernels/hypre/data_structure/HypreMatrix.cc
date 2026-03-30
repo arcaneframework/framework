@@ -105,7 +105,7 @@ HypreMatrix::setMatrixValuesFrom(const int nrow,
     return m_internal->setMatrixValues(nrow, rows, ncols, cols, values);
   else
   {
-#define NEED_COPY_DATA
+//#define NEED_COPY_DATA
 #ifdef NEED_COPY_DATA
     auto view = HCSRView{this,m_internal->getMemoryType(),std::size_t(nrow),std::size_t(nnz)} ;
     if(memory == BackEnd::Memory::Host)
@@ -138,6 +138,9 @@ void HypreMatrix::allocateDevicePointers(std::size_t nrows,
                                          HypreMatrix::IndexType** cols,
                                          HypreMatrix::ValueType** values) const
 {
+  alien_info([&] {
+    cout()<<"HYPREMATRXI ALLOCATE DEVICE POINTERS : "<<nrows<<" "<<nnz;
+  });
   m_internal->allocateDevicePointers(nrows, nnz, rows, ncols, cols, values) ;
 }
 
@@ -156,6 +159,9 @@ void HypreMatrix::allocateHostPointers(std::size_t nrows,
                                        HypreMatrix::IndexType** cols,
                                        HypreMatrix::ValueType** values) const
 {
+  alien_info([&] {
+    cout()<<"HYPREMATRXI ALLOCATE HOST POINTERS : "<<nrows<<" "<<nnz;
+  });
   m_internal->allocateHostPointers(nrows, nnz, rows, ncols, cols, values) ;
 }
 

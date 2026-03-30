@@ -35,7 +35,7 @@ namespace Alien::Internal {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MatrixInternal
+class MatrixInternal : public ObjectWithTrace
 {
  public:
   typedef Arccore::Real ValueType ;

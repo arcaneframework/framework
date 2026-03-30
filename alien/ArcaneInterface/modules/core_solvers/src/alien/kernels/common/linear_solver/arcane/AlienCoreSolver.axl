@@ -32,6 +32,9 @@
           </enumvalue>
         </enumeration>
 
+        <simple name="dot-prod-opt" type="integer" default="3">
+            <description>dot product reduction option : default 3</description>
+        </simple>
 
         <simple name="asynch" type="integer" default="1">
             <description>enable async mode with future</description>
