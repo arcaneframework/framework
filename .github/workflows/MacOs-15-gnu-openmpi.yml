@@ -67,7 +67,7 @@ jobs:
           brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache
 
       - name: Get cache for 'ccache' tool
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{env.CCACHE_DIR}}
           key: framework-ccache1-macos-gnu-${{ matrix.os }}-${{ github.run_number }}
