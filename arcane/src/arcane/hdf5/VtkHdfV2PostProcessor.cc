@@ -515,10 +515,10 @@ beginWrite(const VariableCollection& vars)
 
   // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
   _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, ggi, cells_offset);
-  ggi->needRecompute();
+  ggi->setNeedRecompute();
 
   _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info }, ggi, cells_connectivity);
-  ggi->needRecompute();
+  ggi->setNeedRecompute();
 
   _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_type);
 
@@ -535,7 +535,7 @@ beginWrite(const VariableCollection& vars)
     _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info }, ggi,
                                      asConstSpan(&number_of_connectivity_ids));
   }
-  ggi->needRecompute();
+  ggi->setNeedRecompute();
 
   // Sauve les uniqueIds, les types et les coordonnées des noeuds.
   {
@@ -570,7 +570,7 @@ beginWrite(const VariableCollection& vars)
 
     // Sauve les coordonnées des noeuds.
     _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
-    ggi->needRecompute();
+    ggi->setNeedRecompute();
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
@@ -921,7 +921,7 @@ _writeDataSet1DCollective(const DataInfo& data_info, GatherGroupInfo* gather_inf
   gather_info->computeSizeT(values);
   gg.setGatherGroupInfo(gather_info);
 
-  if (gg.needGather()) {
+  if (gg.isNeedGather()) {
     UniqueArray<DataType> all_values;
     gg.gatherToMasterIOT(values, all_values);
 
@@ -969,7 +969,7 @@ _writeDataSet2DCollective(const DataInfo& data_info, GatherGroupInfo* gather_inf
   gather_info->computeSizeT(values);
   gg.setGatherGroupInfo(gather_info);
 
-  if (gg.needGather()) {
+  if (gg.isNeedGather()) {
     UniqueArray2<DataType> all_values;
     gg.gatherToMasterIOT(values, all_values);
 

@@ -30,10 +30,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 GatherGroup::
-GatherGroup(GatherGroupInfo* ggi)
-: m_ggi(ARCANE_CHECK_POINTER(ggi))
+GatherGroup(GatherGroupInfo* gather_group_info)
+: m_gather_group_info(ARCANE_CHECK_POINTER(gather_group_info))
 {
-  ARCANE_FATAL_IF(!ggi->isComputed(), "GatherGroupInfo is not computed");
+  ARCANE_FATAL_IF(!gather_group_info->isComputed(), "GatherGroupInfo is not computed");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -52,13 +52,13 @@ GatherGroup::
 /*---------------------------------------------------------------------------*/
 
 bool GatherGroup::
-needGather()
+isNeedGather()
 {
-  ARCANE_CHECK_POINTER(m_ggi);
-  IParallelMng* pm = m_ggi->m_pm;
+  ARCANE_CHECK_POINTER(m_gather_group_info);
+  IParallelMng* pm = m_gather_group_info->m_parallel_mng;
   // True si Thread ou Hybride ou MPI sans MPI-IO
   // False si Séquentiel ou MPI + MPI-IO.
-  return pm->commSize() != 1 && (pm->isThreadImplementation() || !m_ggi->m_use_collective_io);
+  return pm->commSize() != 1 && (pm->isThreadImplementation() || !m_gather_group_info->m_use_collective_io);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -67,16 +67,16 @@ needGather()
 void GatherGroup::
 gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out)
 {
-  ARCANE_CHECK_POINTER(m_ggi);
-  IParallelMng* pm = m_ggi->m_pm;
+  ARCANE_CHECK_POINTER(m_gather_group_info);
+  IParallelMng* pm = m_gather_group_info->m_parallel_mng;
 
   // Si séquentiel ou MPI + MPI-IO.
-  if ((pm->commSize() == 1) || (!pm->isThreadImplementation() && m_ggi->m_use_collective_io)) {
+  if ((pm->commSize() == 1) || (!pm->isThreadImplementation() && m_gather_group_info->m_use_collective_io)) {
     out.copy(in);
     return;
   }
 
-  const Int32 writer = m_ggi->m_writer;
+  const Int32 writer = m_gather_group_info->m_writer;
 
   if (writer != pm->commRank()) {
     pm->send(in.constSmallView(), writer);
@@ -85,9 +85,9 @@ gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out)
 
   out.copy(in);
 
-  const Int32 nb_sender = m_ggi->m_nb_sender_to_writer;
+  const Int32 nb_sender = m_gather_group_info->m_nb_sender_to_writer;
 
-  SmallSpan<const Int32> nb_elem_recved = m_ggi->m_nb_elem_recv.smallSpan();
+  SmallSpan<const Int32> nb_elem_recved = m_gather_group_info->m_nb_elem_recv.smallSpan();
 
   UniqueArray<Parallel::Request> requests(nb_sender - 1);
 
@@ -108,11 +108,11 @@ gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out)
 /*---------------------------------------------------------------------------*/
 
 void GatherGroup::
-setGatherGroupInfo(GatherGroupInfo* ggi)
+setGatherGroupInfo(GatherGroupInfo* gather_group_info)
 {
-  ARCANE_CHECK_POINTER(ggi);
-  ARCANE_FATAL_IF(!ggi->isComputed(), "GatherGroupInfo is not computed");
-  m_ggi = ggi;
+  ARCANE_CHECK_POINTER(gather_group_info);
+  ARCANE_FATAL_IF(!gather_group_info->isComputed(), "GatherGroupInfo is not computed");
+  m_gather_group_info = gather_group_info;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,8 +122,8 @@ setGatherGroupInfo(GatherGroupInfo* ggi)
 /*---------------------------------------------------------------------------*/
 
 GatherGroupInfo::
-GatherGroupInfo(IParallelMng* pm, bool use_collective_io)
-: m_pm(pm)
+GatherGroupInfo(IParallelMng* parallel_mng, bool use_collective_io)
+: m_parallel_mng(parallel_mng)
 , m_use_collective_io(use_collective_io)
 {}
 
@@ -144,23 +144,23 @@ computeSize(Int32 nb_elem_in)
   m_is_computed = true;
 
   if (m_use_collective_io) {
-    m_writer = m_pm->_internalApi()->masterParallelIORank();
-    m_nb_sender_to_writer = m_pm->_internalApi()->nbSendersToMasterParallelIO();
+    m_writer = m_parallel_mng->_internalApi()->masterParallelIORank();
+    m_nb_sender_to_writer = m_parallel_mng->_internalApi()->nbSendersToMasterParallelIO();
   }
   else {
-    m_writer = m_pm->masterIORank();
-    m_nb_sender_to_writer = m_pm->commSize();
+    m_writer = m_parallel_mng->masterIORank();
+    m_nb_sender_to_writer = m_parallel_mng->commSize();
   }
 
   // Si séquentiel ou MPI + MPI-IO.
-  if ((m_pm->commSize() == 1) || (!m_pm->isThreadImplementation() && m_use_collective_io)) {
+  if ((m_parallel_mng->commSize() == 1) || (!m_parallel_mng->isThreadImplementation() && m_use_collective_io)) {
     m_nb_elem_output = nb_elem_in;
-    m_nb_writer_global = m_pm->commSize();
+    m_nb_writer_global = m_parallel_mng->commSize();
     return;
   }
 
-  if (m_writer != m_pm->commRank()) {
-    m_pm->send({ 1, &nb_elem_in }, m_writer);
+  if (m_writer != m_parallel_mng->commRank()) {
+    m_parallel_mng->send({ 1, &nb_elem_in }, m_writer);
     m_nb_elem_output = 0;
   }
   else {
@@ -170,9 +170,9 @@ computeSize(Int32 nb_elem_in)
       UniqueArray<Parallel::Request> requests(m_nb_sender_to_writer - 1);
       for (Int32 i = 0; i < m_nb_sender_to_writer - 1; ++i) {
         const Int32 rank = i + m_writer + 1;
-        requests[i] = m_pm->recv({ 1, &m_nb_elem_recv[i] }, rank, false);
+        requests[i] = m_parallel_mng->recv({ 1, &m_nb_elem_recv[i] }, rank, false);
       }
-      m_pm->waitAllRequests(requests);
+      m_parallel_mng->waitAllRequests(requests);
     }
 
     m_nb_elem_output = nb_elem_in;
@@ -181,7 +181,7 @@ computeSize(Int32 nb_elem_in)
     }
   }
 
-  m_nb_writer_global = m_pm->reduce(MessagePassing::ReduceSum, (m_writer == m_pm->commRank()));
+  m_nb_writer_global = m_parallel_mng->reduce(MessagePassing::ReduceSum, (m_writer == m_parallel_mng->commRank()));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -52,7 +52,7 @@ class ARCANE_CORE_EXPORT IGatherGroup
    * L'appel à gatherToMasterIO() peut tout de même être effectué, le tableau
    * \a in sera simplement copié dans le tableau \a out.
    */
-  virtual bool needGather() = 0;
+  virtual bool isNeedGather() = 0;
 
   /*!
    * \brief Méthode permettant de regrouper les données de plusieurs
@@ -100,7 +100,7 @@ class ARCANE_CORE_EXPORT IGatherGroupInfo
    * \brief Méthode permettant de demander un recalcul des informations de
    * regroupements. Pour cela, il faudra rappeler la méthode \a computeSize().
    */
-  virtual void needRecompute() = 0;
+  virtual void setNeedRecompute() = 0;
 
   /*!
    * \brief Méthode permettant de savoir si la méthode \a computeSize() a déjà

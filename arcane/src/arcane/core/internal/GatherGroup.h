@@ -51,10 +51,10 @@ class ARCANE_CORE_EXPORT GatherGroup
 
   /*!
    * \brief Constructeur.
-   * \param ggi Les informations de regroupement. \a isComputed() devra être
+   * \param gather_group_info Les informations de regroupement. \a isComputed() devra être
    * vrai.
    */
-  explicit GatherGroup(GatherGroupInfo* ggi);
+  explicit GatherGroup(GatherGroupInfo* gather_group_info);
 
   /*!
    * \brief Constructeur.
@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT GatherGroup
 
  public:
 
-  bool needGather() override;
+  bool isNeedGather() override;
   void gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out) override;
 
  public:
@@ -78,7 +78,7 @@ class ARCANE_CORE_EXPORT GatherGroup
    * Cette méthode peut être utilisée pour remplacer les informations déjà
    * enregistrées dans l'objet.
    */
-  void setGatherGroupInfo(GatherGroupInfo* ggi);
+  void setGatherGroupInfo(GatherGroupInfo* gather_group_info);
 
   /*!
    * \brief Méthode permettant de regrouper les données de plusieurs
@@ -92,7 +92,7 @@ class ARCANE_CORE_EXPORT GatherGroup
    * aucune modification.
    */
   template <class T>
-  void gatherToMasterIOT(Span<const T> in, UniqueArray<T>& out);
+  void gatherToMasterIOT(Span<const T> in, Array<T>& out);
 
   /*!
    * \brief Méthode permettant de regrouper les données de plusieurs
@@ -106,11 +106,11 @@ class ARCANE_CORE_EXPORT GatherGroup
    * aucune modification.
    */
   template <class T>
-  void gatherToMasterIOT(Span2<const T> in, UniqueArray2<T>& out);
+  void gatherToMasterIOT(Span2<const T> in, Array2<T>& out);
 
  private:
 
-  GatherGroupInfo* m_ggi = nullptr;
+  GatherGroupInfo* m_gather_group_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,19 +133,19 @@ class ARCANE_CORE_EXPORT GatherGroupInfo
   /*!
    * \brief Constructeur.
    *
-   * \param pm Le parallelMng qui contient les masterIO.
+   * \param parallel_mng Le parallelMng qui contient les masterIO.
    * \param use_collective_io True si l'on souhaite que tous les processus
    * écrivent (avec MPI-IO par exemple). Les écrivains seront donc les
    * masterParallelIO. Si False, l'écrivain sera masterIO.
    */
-  GatherGroupInfo(IParallelMng* pm, bool use_collective_io);
+  GatherGroupInfo(IParallelMng* parallel_mng, bool use_collective_io);
 
   ~GatherGroupInfo() override;
 
  public:
 
   void computeSize(Int32 nb_elem_in) override;
-  void needRecompute() override { m_is_computed = false; }
+  void setNeedRecompute() override { m_is_computed = false; }
   bool isComputed() override { return m_is_computed; }
   Int32 nbElemOutput() override { return m_nb_elem_output; }
   Int32 sizeOfOutput(Int32 sizeof_type) override { return m_nb_elem_output * sizeof_type; }
@@ -184,7 +184,7 @@ class ARCANE_CORE_EXPORT GatherGroupInfo
 
  private:
 
-  IParallelMng* m_pm = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
   bool m_use_collective_io = false;
   UniqueArray<Int32> m_nb_elem_recv;
   Int32 m_nb_elem_output = -1;
@@ -202,13 +202,13 @@ class ARCANE_CORE_EXPORT GatherGroupInfo
 
 template <class T>
 void GatherGroup::
-gatherToMasterIOT(Span<const T> in, UniqueArray<T>& out)
+gatherToMasterIOT(Span<const T> in, Array<T>& out)
 {
   out.clear();
 
   Span<const Byte> in_b(reinterpret_cast<const Byte*>(in.data()), in.sizeBytes());
 
-  Int32 final_nb_elem = m_ggi->m_nb_elem_output;
+  Int32 final_nb_elem = m_gather_group_info->m_nb_elem_output;
   out.resizeNoInit(final_nb_elem);
 
   Span<Byte> out_b(reinterpret_cast<Byte*>(out.data()), final_nb_elem * sizeof(T));
@@ -221,13 +221,13 @@ gatherToMasterIOT(Span<const T> in, UniqueArray<T>& out)
 
 template <class T>
 void GatherGroup::
-gatherToMasterIOT(Span2<const T> in, UniqueArray2<T>& out)
+gatherToMasterIOT(Span2<const T> in, Array2<T>& out)
 {
   out.clear();
 
   Span<const Byte> in_b(reinterpret_cast<const Byte*>(in.data()), in.totalNbElement() * sizeof(T));
 
-  Int32 final_nb_elem = m_ggi->m_nb_elem_output;
+  Int32 final_nb_elem = m_gather_group_info->m_nb_elem_output;
   out.resizeNoInit(final_nb_elem, in.dim2Size());
 
   Span<Byte> out_b(reinterpret_cast<Byte*>(out.span().data()), final_nb_elem * in.dim2Size() * sizeof(T));
