@@ -38,8 +38,12 @@ jobs:
         include:
         - os: macos-15
           full-name: "MacOs-15-gnu-openmpi"
+          cxx-compiler : "g++-15"
+          c-compiler : "gcc-15"
         - os: macos-26
           full-name: "MacOs-26-gnu-openmpi"
+          cxx-compiler : "clang++"
+          c-compiler : "clang"
     steps:
       - uses: actions/checkout@v5
         with:
@@ -88,8 +92,8 @@ jobs:
             -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
             -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
             -DARCCORE_CXX_STANDARD=20 \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_C_COMPILER=gcc-15 \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx-compiler }} \
+            -DCMAKE_C_COMPILER=${{ matrix.c-compiler }} \
             -DARCANE_ENABLE_DOTNET_WRAPPER=OFF \
             -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE \
             -G Ninja
