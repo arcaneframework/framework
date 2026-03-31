@@ -32,6 +32,8 @@ jobs:
       CCACHE_MAXSIZE: 5G
       # To tell 'openmpi' we may use more cpu core than available
       OMPI_MCA_rmaps_base_oversubscribe : true
+      # To use passive wait for thread barriers
+      ARCANE_THREAD_IMPLEMENTATION : LegacyStd
     strategy:
       fail-fast: false
       matrix:
