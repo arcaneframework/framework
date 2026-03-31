@@ -112,6 +112,12 @@ class ARCANE_MESH_EXPORT ItemFamily
   // TODO: à enlever mi 2025
   using AdjencyGroupMap = AdjacencyGroupMap;
 
+  /*!
+   * \brief Fonction permettant de comparer deux noms de variable (strcmp).
+   * \return True si le nom de a est lexicographiquement inférieur au nom de b.
+   */
+  static bool _cmpIVariablePtr(const IVariable* a, const IVariable* b);
+
  public:
 
   using ItemInternalMap = ::Arcane::mesh::ItemInternalMap;
@@ -347,7 +353,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Ref<IVariableSynchronizer> m_variable_synchronizer;
   Integer m_current_variable_item_size = 0;
   IItemInternalSortFunction* m_item_sort_function = nullptr;
-  std::set<IVariable*> m_used_variables;
+  std::set<IVariable*, decltype(&_cmpIVariablePtr)> m_used_variables;
   UniqueArray<ItemFamily*> m_child_families;
   ItemConnectivityInfo* m_local_connectivity_info = nullptr;
   ItemConnectivityInfo* m_global_connectivity_info = nullptr;

@@ -22,6 +22,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/CStringUtils.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISubDomain.h"
@@ -249,6 +250,15 @@ class ItemFamily::Variables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool ItemFamily::
+_cmpIVariablePtr(const IVariable* a, const IVariable* b)
+{
+  return CStringUtils::isLess(a->name().localstr(), b->name().localstr());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -263,6 +273,7 @@ ItemFamily(IMesh* mesh, eItemKind ik, const String& name)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_common_item_shared_info(new ItemSharedInfo(this, m_item_internal_list, &m_item_connectivity_list))
 , m_item_shared_infos(new ItemSharedInfoList(this, m_common_item_shared_info))
+, m_used_variables(&_cmpIVariablePtr)
 , m_properties(new Properties(*mesh->properties(), name))
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 {
