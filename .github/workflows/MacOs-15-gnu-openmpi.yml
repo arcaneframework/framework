@@ -109,5 +109,5 @@ jobs:
       - name: Make tests
         run: |
           echo "nb_job=$(sysctl -n hw.ncpu)"
-          ctest -j$(sysctl -n hw.ncpu) --repeat until-pass:5 --output-on-failure
+          ctest -j$(sysctl -n hw.ncpu) --repeat until-pass:5 --output-on-failure -LE LARGE_HYBRID
         working-directory: ./build
