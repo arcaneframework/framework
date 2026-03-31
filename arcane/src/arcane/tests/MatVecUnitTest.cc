@@ -1,24 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVecUnitTest.cc                                           (C) 2000-2023 */
+/* MatVecUnitTest.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Service de test des matrices/vecteurs.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/core/Directory.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/matvec/Matrix.h"
 #include "arcane/matvec/Vector.h"
@@ -29,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,17 +45,15 @@ using namespace MatVec;
 class MatVecUnitTest
 : public ArcaneMatVecUnitTestObject
 {
-public:
+ public:
 
-public:
-
-  MatVecUnitTest(const ServiceBuildInfo& cb);
+  explicit MatVecUnitTest(const ServiceBuildInfo& cb);
   ~MatVecUnitTest();
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
@@ -65,6 +63,7 @@ public:
 
   void _testArcaneMatrix1();
   void _testArcaneMatrix2();
+  void _testArcaneMatrix3();
   void _initPressure();
   void _initMatrix();
   void _testMatrix2();
@@ -104,7 +103,8 @@ void MatVecUnitTest::
 executeTest(){
   info() << "** EXEC TEST";
   //_testArcaneMatrix2();
-  _initMatrix();
+  //_initMatrix();
+  _testArcaneMatrix3();
   //_testMatrix2();
 }
 
@@ -319,7 +319,7 @@ _initMatrix()
   //}
   Real epsilon = 1.0e-7;
 
-  if (0){
+  if (1){
     //AMGSolver amg(traceMng());
     //amg.build(matrix);
 
@@ -335,8 +335,8 @@ _initMatrix()
     OStringStream ostr;
     x.dump(ostr());
     info() << "SOLVE FULL_PRECONDITIONNER NB_ITERATION=" << cgs.nbIteration()
-           << " norm=" << cgs.residualNorm()
-           << " X=" << ostr.str();
+           << " norm=" << cgs.residualNorm();
+    //<< " X=" << ostr.str();
     _printResidualInfo(matrix,rhs,x);
   }
 
@@ -496,6 +496,48 @@ _testMatrix2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MatVecUnitTest::
+_testArcaneMatrix3()
+{
+  Directory base_dir("hypre_small_poisson");
+
+  String matrix_path = base_dir.file("IJ.out.A.00000");
+
+  info() << "Reading matrix path=" << matrix_path;
+  Matrix matrix(Matrix::readHypre(matrix_path));
+  const Int32 nb_row = matrix.nbRow();
+
+  String vector_b_path = base_dir.file("IJ.out.b.00000");
+  info() << "Reading vector path=" << vector_b_path;
+  Vector vector_b(Vector::readHypre(vector_b_path));
+
+  String vector_x_path = base_dir.file("IJ.out.x.00000");
+  info() << "Reading vector path=" << vector_b_path;
+  Vector vector_x_ref(Vector::readHypre(vector_x_path));
+
+  Vector vector_x(nb_row);
+  vector_x.values().fill(0.0);
+
+  {
+    ConjugateGradientSolver cg;
+    //DiagonalPreconditioner diag(matrix);
+
+    AMGPreconditioner amg_preconditioner(traceMng());
+    amg_preconditioner.build(matrix);
+
+    cg.solve(matrix,vector_b,vector_x,1e-12,&amg_preconditioner);
+    auto vx = vector_x.values();
+    for (Int32 i = 0; i < nb_row; ++i) {
+      Real v = vx[i];
+      Real v_ref = vector_x_ref.values()[i];
+      Real diff = (v - v_ref);
+      if (v_ref != 0.0)
+        diff /= v_ref;
+      info() << "X[" << i << "] = " << v << " ref=" << v_ref << " diff=" << diff;
+    }
+    info() << String::format("DIAG NB ITER={0} RESIDU={1}", cg.nbIteration(), cg.residualNorm());
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -526,7 +568,7 @@ _testArcaneMatrix2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
