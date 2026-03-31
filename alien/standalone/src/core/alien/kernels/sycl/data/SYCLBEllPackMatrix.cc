@@ -1800,14 +1800,18 @@ namespace SYCLInternal
     // getting the maximum work group size per thread
     auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
-    auto total_threads = num_groups * ellpack_size;
+    //auto total_threads = num_groups * ellpack_size;
 
     // clang-format off
     int N                  = this->m_N;
     int NxN                = this->m_NxN;
-    int pack_size          = ellpack_size;
+    std::size_t pack_size  = ellpack_size;
     auto nrows             = m_profile->getNRows();
     auto nnz               = m_profile->getNnz();
+
+    auto blocks_needed = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_target = std::max(blocks_needed, num_groups * 4UL);
+    auto total_threads = blocks_target * ellpack_size;
 
     auto internal_profile  = m_profile->internal();
     auto& kcol             = internal_profile->getKCol();
@@ -1818,90 +1822,97 @@ namespace SYCLInternal
     // clang-format on
     {
       // clang-format off
-        queue.submit([&](sycl::handler& cgh)
+      queue.submit(
+         [&](sycl::handler& cgh)
+         {
+           auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+           auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+           auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+           auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+
+
+           auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+           auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+           if(N==1)
+           {
+             sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
+             sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+             //cgh.parallel_for<class compute_lmult>(sycl::range<1>{total_threads},[=] (sycl::item<1> item_id)
+             cgh.parallel_for<class compute_lmult>(r,
+                 [=](sycl::nd_item<1> item_id)
                  {
-                   auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
-                   auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
-                   auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
-                   auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+                      //auto id        = item_id.get_id(0);
+                      auto local_id  = item_id.get_local_id(0);
+                      //auto block_id  = item_id.get_group(0) ;
+                      auto global_id = item_id.get_global_id(0);
 
+                      //for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                      for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                      {
+                         auto block_id = i/pack_size ;
+                         //auto local_id = i%ellpack_size ;
 
-                   auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
-                   auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+                         int begin           = access_block_row_offset[block_id] ;
+                         int end             = access_block_row_offset[block_id+1] ;
 
-                   if(N==1)
-                   {
-                     //sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}};
-                     //cgh.parallel_for<class compute_mult>(r, [&](sycl::nd_item<1> item_id)
-                     cgh.parallel_for<class compute_lmult>(
-                        sycl::range<1>{total_threads},
-                        [=] (sycl::item<1> item_id)
-                        {
-                          auto id = item_id.get_id(0);
-                          //auto local_id  = item_id.get_local_id(0);
-                          //auto block_id  = item_id.get_group(0) ;
-                          //auto global_id = item_id.get_global_id(0);
-
-                          for (auto i = id; i < nrows; i += item_id.get_range()[0])
-                          {
-                             auto block_id = i/ellpack_size ;
-                             auto local_id = i%ellpack_size ;
-
-                             int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-
-                             ValueType value = access_y[i] ;
-                             for(int j=0;j<block_row_size;++j)
-                             {
-                               auto k = block_row_offset+j*ellpack_size+local_id ;
-                                value += alpha * access_mask[k] * access_values[k]* access_x[access_cols[k]] ;
-                             }
-                             access_y[i] = value ;
-                          }
-                      });
-                   }
-                   else
-                   {
-                     //sycl::nd_range<1> range{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}};
-                     sycl::range<1> range{total_threads} ;
-                     auto tile = Tile(N) ;
-                     cgh.parallel_for<class compute_block_lmult>(
-                         sycl::range<1>{total_threads},
-                         [=] (sycl::item<1> item_id)
+                         ValueType value = access_y[i] ;
+                         for(int k=begin;k<end;++k)
                          {
-                           auto id = item_id.get_id(0);
-                           //auto local_id  = item_id.get_local_id(0);
-                           //auto block_id  = item_id.get_group(0) ;
-                           //auto global_id = item_id.get_global_id(0);
+                           //auto k = block_row_offset+j*ellpack_size+local_id ;
+                           const int col = access_cols[k * pack_size + local_id];
+                           lds_x[local_id] = access_x[col];
+                           item_id.barrier(sycl::access::fence_space::local_space);
+                           if(access_mask[k * pack_size + local_id])
+                             value += alpha * access_values[k * pack_size + local_id] * lds_x[local_id] ;
+                           item_id.barrier(sycl::access::fence_space::local_space);
+                         }
+                         access_y[i] = value ;
+                      }
+                  });
+           }
+           else
+           {
+             //sycl::nd_range<1> range{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}};
+             sycl::range<1> range{total_threads} ;
+             auto tile = Tile(N) ;
+             cgh.parallel_for<class compute_block_lmult>(
+                 sycl::range<1>{total_threads},
+                 [=] (sycl::item<1> item_id)
+                 {
+                   auto id = item_id.get_id(0);
+                   //auto local_id  = item_id.get_local_id(0);
+                   //auto block_id  = item_id.get_group(0) ;
+                   //auto global_id = item_id.get_global_id(0);
 
-                           for (auto i = id; i < nrows; i += item_id.get_range()[0])
-                           {
-                              auto block_id = i/ellpack_size ;
-                              auto local_id = i%ellpack_size ;
+                   for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                   {
+                      auto block_id = i/ellpack_size ;
+                      auto local_id = i%ellpack_size ;
 
-                              int block_row_offset   = access_block_row_offset[block_id] ;
-                              auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                      int block_row_offset   = access_block_row_offset[block_id] ;
+                      auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
-                              for(int ieq=0;ieq<N;++ieq)
-                              {
-                                ValueType value = 0. ;
-                                for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
-                                {
-                                  // value += access_values[k]* access_x[access_cols[k]] ;
-                                  value += tile.mult(ieq,
-                                                     local_id,
-                                                     k,
-                                                     access_cols,
-                                                     access_mask,
-                                                     access_values,
-                                                     access_x) ;
-                                }
-                                access_y[i*N+ieq] += alpha*value;
-                              }
-                           }
-                       });
-}
-                 });
+                      for(int ieq=0;ieq<N;++ieq)
+                      {
+                        ValueType value = 0. ;
+                        for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
+                        {
+                          // value += access_values[k]* access_x[access_cols[k]] ;
+                          value += tile.mult(ieq,
+                                             local_id,
+                                             k,
+                                             access_cols,
+                                             access_mask,
+                                             access_values,
+                                             access_x) ;
+                        }
+                        access_y[i*N+ieq] += alpha*value;
+                      }
+                   }
+               });
+           }
+         });
       // clang-format on
     }
 
@@ -1962,14 +1973,18 @@ namespace SYCLInternal
     // getting the maximum work group size per thread
     auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
-    auto total_threads = num_groups * ellpack_size;
+    //auto total_threads = num_groups * ellpack_size;
 
     // clang-format off
     int N                  = this->m_N;
     int NxN                = this->m_NxN;
-    int pack_size          = ellpack_size;
+    std::size_t pack_size  = ellpack_size;
     auto nrows = m_profile->getNRows() ;
     auto nnz   = m_profile->getNnz() ;
+
+    auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
+    auto total_threads     = blocks_target * ellpack_size;
 
     auto internal_profile  = m_profile->internal() ;
     auto& kcol             = internal_profile->getKCol() ;
@@ -1978,84 +1993,95 @@ namespace SYCLInternal
     auto& mask             = internal_profile->getUpperMask() ;
     {
       // COMPUTE VALUES
-      queue.submit([&](sycl::handler& cgh)
-               {
-                 auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
-                 auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
-                 auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
-                 auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+      queue.submit(
+         [&](sycl::handler& cgh)
+         {
+           auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+           auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+           auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+           auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
 
 
-                 auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
-                 auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+           auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+           auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
-                 if(N==1)
-                 {
-                   cgh.parallel_for<class compute_umult>(sycl::range<1>{total_threads},
-                                                        [=] (sycl::item<1> item_id)
-                                                        {
-                                                          auto id = item_id.get_id(0);
-                                                          //auto local_id  = item_id.get_local_id(0);
-                                                          //auto block_id  = item_id.get_group(0) ;
-                                                          //auto global_id = item_id.get_global_id(0);
+           if(N==1)
+           {
+             sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
+             sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+             //cgh.parallel_for<class compute_umult>(sycl::range<1>{total_threads},[=] (sycl::item<1> item_id)
+             cgh.parallel_for<class compute_umult>(r,
+                [=](sycl::nd_item<1> item_id)
+                {
+                  //auto id = item_id.get_id(0);
+                  auto local_id  = item_id.get_local_id(0);
+                  //auto block_id  = item_id.get_group(0) ;
+                  auto global_id = item_id.get_global_id(0);
 
-                                                          for (auto i = id; i < nrows; i += item_id.get_range()[0])
-                                                          {
-                                                             auto block_id = i/ellpack_size ;
-                                                             auto local_id = i%ellpack_size ;
+                  for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                  {
+                     auto block_id = i/pack_size ;
+                     //auto local_id = i%ellpack_size ;
 
-                                                             int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                                                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                     auto begin = access_block_row_offset[block_id] ;
+                     auto end   = access_block_row_offset[block_id+1] ;
+                     //auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
-                                                             ValueType value = access_y[i] ;
-                                                             for(int j=0;j<block_row_size;++j)
-                                                             {
-                                                               auto k = block_row_offset+j*ellpack_size+local_id ;
-                                                                value += alpha * access_mask[k] * access_values[k]* access_x[access_cols[k]] ;
-                                                             }
-                                                             access_y[i] = value ;
-                                                          }
-                                                      });
-                 }
-                 else
-                 {
-                   auto tile = Tile(N) ;
-                   cgh.parallel_for<class compute_block_umult>(
-                      sycl::range<1>{total_threads},
-                      [=] (sycl::item<1> item_id)
-                      {
-                        auto id = item_id.get_id(0);
-                        //auto local_id  = item_id.get_local_id(0);
-                        //auto block_id  = item_id.get_group(0) ;
-                        //auto global_id = item_id.get_global_id(0);
+                     ValueType value = access_y[i] ;
+                     for(int k=begin;k<end;++k)
+                     {
+                       //auto k = block_row_offset+j*ellpack_size+local_id ;
+                       //value += alpha * access_mask[k] * access_values[k]* access_x[access_cols[k]] ;
+                       const int col = access_cols[k * pack_size + local_id];
+                       lds_x[local_id] = access_x[col];
+                       item_id.barrier(sycl::access::fence_space::local_space);
+                       if(access_mask[k * pack_size + local_id])
+                         value += alpha * access_values[k * pack_size + local_id] * lds_x[local_id] ;
+                       item_id.barrier(sycl::access::fence_space::local_space);
+                     }
+                     access_y[i] = value ;
+                  }
+              });
+           }
+           else
+           {
+             auto tile = Tile(N) ;
+             cgh.parallel_for<class compute_block_umult>(
+                sycl::range<1>{total_threads},
+                [=] (sycl::item<1> item_id)
+                {
+                  auto id = item_id.get_id(0);
+                  //auto local_id  = item_id.get_local_id(0);
+                  //auto block_id  = item_id.get_group(0) ;
+                  //auto global_id = item_id.get_global_id(0);
 
-                        for (auto i = id; i < nrows; i += item_id.get_range()[0])
-                        {
-                           auto block_id = i/ellpack_size ;
-                           auto local_id = i%ellpack_size ;
+                  for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                  {
+                     auto block_id = i/ellpack_size ;
+                     auto local_id = i%ellpack_size ;
 
-                           int block_row_offset   = access_block_row_offset[block_id] ;
-                           auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-                           for(int ieq=0;ieq<N;++ieq)
-                           {
-                             ValueType value = 0. ;
-                             for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
-                             {
-                               // value += access_values[k]* access_x[access_cols[k]] ;
-                               value += tile.mult(ieq,
-                                                  local_id,
-                                                  k,
-                                                  access_cols,
-                                                  access_mask,
-                                                  access_values,
-                                                  access_x) ;
-                             }
-                             access_y[i*N+ieq] += alpha*value;
-                           }
-                        }
-                    });
-                 }
-               });
+                     int block_row_offset   = access_block_row_offset[block_id] ;
+                     auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                     for(int ieq=0;ieq<N;++ieq)
+                     {
+                       ValueType value = 0. ;
+                       for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
+                       {
+                         // value += access_values[k]* access_x[access_cols[k]] ;
+                         value += tile.mult(ieq,
+                                            local_id,
+                                            k,
+                                            access_cols,
+                                            access_mask,
+                                            access_values,
+                                            access_x) ;
+                       }
+                       access_y[i*N+ieq] += alpha*value;
+                     }
+                  }
+              });
+           }
+         });
     }
     // clang-format on
 
