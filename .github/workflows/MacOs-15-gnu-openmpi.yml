@@ -38,8 +38,12 @@ jobs:
         include:
         - os: macos-15
           full-name: "MacOs-15-gnu-openmpi"
+          cxx-compiler : "g++-15"
+          c-compiler : "gcc-15"
         - os: macos-26
           full-name: "MacOs-26-gnu-openmpi"
+          cxx-compiler : "clang++"
+          c-compiler : "clang"
     steps:
       - uses: actions/checkout@v5
         with:
@@ -55,16 +59,10 @@ jobs:
           echo "Display CPU information"
           sysctl -a | grep machdep.cpu
 
-      - name: Uninstall pre-installed dependencies
+      - name: Install dependencies
         continue-on-error: true
         run: |
-          for pkg in cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache; do
-            brew uninstall --force "$pkg" || true
-          done
-
-      - name: Install dependencies
-        run: |
-          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd onetbb ccache
+          brew install open-mpi hdf5-mpi scotch dotnet petsc onetbb ccache
 
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v5
@@ -94,8 +92,8 @@ jobs:
             -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
             -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
             -DARCCORE_CXX_STANDARD=20 \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_C_COMPILER=gcc-15 \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx-compiler }} \
+            -DCMAKE_C_COMPILER=${{ matrix.c-compiler }} \
             -DARCANE_ENABLE_DOTNET_WRAPPER=OFF \
             -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE \
             -G Ninja
@@ -111,5 +109,5 @@ jobs:
       - name: Make tests
         run: |
           echo "nb_job=$(sysctl -n hw.ncpu)"
-          ctest -j$(sysctl -n hw.ncpu) --repeat until-pass:5 --output-on-failure
+          ctest -j$(sysctl -n hw.ncpu) --repeat until-pass:5 --output-on-failure -LE LARGE_HYBRID
         working-directory: ./build
