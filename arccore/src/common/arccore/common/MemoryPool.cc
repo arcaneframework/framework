@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryPool.cc                                               (C) 2000-2025 */
+/* MemoryPool.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Classe pour gérer une liste de zone allouées.                             */
 /*---------------------------------------------------------------------------*/
@@ -224,8 +224,8 @@ class MemoryPool::Impl
   AllocatedMap m_allocated_map;
   //! Liste des allocations libres dans le cache
   FreedMap m_free_map;
-  std::atomic<size_t> m_total_allocated = 0;
-  std::atomic<size_t> m_total_free = 0;
+  std::atomic<Int64> m_total_allocated = 0;
+  std::atomic<Int64> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
   std::atomic<Int32> m_nb_no_cached = 0;
   size_t m_max_memory_size_to_pool = 1024 * 64 * 4 * 4;
@@ -361,11 +361,11 @@ MemoryPool::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* MemoryPool::allocateMemory(size_t size)
+void* MemoryPool::allocateMemory(Int64 size)
 {
   return m_p->allocateMemory(size);
 }
-void MemoryPool::freeMemory(void* ptr, size_t size)
+void MemoryPool::freeMemory(void* ptr, Int64 size)
 {
   m_p->freeMemory(ptr, size);
 }
@@ -392,12 +392,12 @@ freeCachedMemory()
 {
   m_p->freeCachedMemory();
 }
-size_t MemoryPool::
+Int64 MemoryPool::
 totalAllocated() const
 {
   return m_p->m_total_allocated;
 }
-size_t MemoryPool::
+Int64 MemoryPool::
 totalCached() const
 {
   return m_p->m_total_free;
