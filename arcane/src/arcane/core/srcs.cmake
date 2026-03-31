@@ -95,6 +95,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/MachineShMemWinMemoryAllocator.h
   internal/MachineShMemWinVariableBase.cc
   internal/MachineShMemWinVariableBase.h
+  internal/GatherGroup.h
+  internal/GatherGroup.cc
   )
 
 set(ARCANE_ORIGINAL_SOURCES
