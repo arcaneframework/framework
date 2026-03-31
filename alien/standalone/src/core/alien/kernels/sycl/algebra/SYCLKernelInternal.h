@@ -274,21 +274,25 @@ class KernelInternal
   void copy(sycl::buffer<T>& x,
             sycl::buffer<T>& y)
   {
-    sycl::range<1> work_items{ m_total_threads };
+    //sycl::range<1> work_items{ m_total_threads };
     {
       // clang-format off
-      m_env->internal()->queue().submit( [&](sycl::handler& cgh)
-                                         {
-                                           auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
-                                           auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
-                                           auto y_length = y.size() ;
-                                           cgh.parallel_for<class vector_copy>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
-                                                                              {
-                                                                                 auto id = itemId.get_id(0);
-                                                                                 for (auto i = id; i < y_length; i += itemId.get_range()[0])
-                                                                                    access_y[i] = access_x[i];
-                                                                              });
-                                         });
+      m_env->internal()->queue().submit(
+          [&](sycl::handler& cgh)
+         {
+           auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+           auto access_y = y.template get_access<sycl::access::mode::discard_write>(cgh);
+           cgh.copy(access_x,access_y) ;
+           /*
+           auto y_length = y.size() ;
+           cgh.parallel_for<class vector_copy>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                              {
+                                                 auto id = itemId.get_id(0);
+                                                 for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                    access_y[i] = access_x[i];
+                                              });
+                                              */
+         });
       // clang-format on
     }
   }
