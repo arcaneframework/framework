@@ -122,6 +122,13 @@ class KernelInternal
   void assign(T const a,
               sycl::buffer<T>& y)
   {
+    m_env->internal()->queue().submit(
+        [&](sycl::handler& cgh)
+        {
+          auto acc = y.template get_access<sycl::access::mode::discard_write>(cgh);
+          cgh.fill(acc, a);
+        });
+    /*
     sycl::range<1> work_items{ m_total_threads };
     {
       // clang-format off
@@ -137,7 +144,7 @@ class KernelInternal
                                                                                 });
                                          });
       // clang-format on
-    }
+    }*/
   }
 
   template <typename T, typename Lambda>
@@ -183,7 +190,7 @@ class KernelInternal
       // clang-format on
     }
   }
-
+#ifdef NAIVE
   template <typename T>
   void axpy(T const a,
             sycl::buffer<T>& x,
@@ -207,7 +214,58 @@ class KernelInternal
       // clang-format on
     }
   }
+#endif
+  template <typename T>
+  void axpy(T const a,
+            sycl::buffer<T>& x,
+            sycl::buffer<T>& y)
+  {
+      using VecT = sycl::vec<T, 2>;
 
+      auto& queue       = m_env->internal()->queue();
+      const size_t n    = y.size();
+      const size_t n2   = n / 2;           // éléments traités vectoriellement
+      const size_t tail = n % 2;
+
+      static constexpr size_t WG_SIZE = 256;
+      const size_t num_sm  = queue.get_device()
+                                 .get_info<sycl::info::device::max_compute_units>();
+      const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
+                                       num_sm * 4UL);
+      const size_t total   = blocks * WG_SIZE;
+
+      // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
+      // Requiert que les buffers soient alignés 16 bytes (garantit par
+      // sycl::buffer qui aligne sur max_required_work_group_size).
+      sycl::buffer<VecT> x2{ x.template reinterpret<VecT>(sycl::range<1>{n2}) };
+      sycl::buffer<VecT> y2{ y.template reinterpret<VecT>(sycl::range<1>{n2}) };
+
+      queue.submit([&](sycl::handler& cgh) {
+          auto ax = x2.template get_access<sycl::access::mode::read>(cgh);
+          auto ay = y2.template get_access<sycl::access::mode::read_write>(cgh);
+
+          cgh.parallel_for<class vector_axpy_vec>(
+              sycl::nd_range<1>{ {total}, {WG_SIZE} },
+              [=](sycl::nd_item<1> item) {
+                  const size_t stride = item.get_global_range()[0];
+                  for (size_t i = item.get_global_id(0); i < n2; i += stride) {
+                      // Un seul load 128-bit pour x, un pour y
+                      ay[i] = ay[i] + VecT{a, a} * ax[i]; // fused multiply-add
+                  }
+              });
+      });
+
+      // Epilogue scalaire si n est impair (rare en pratique)
+      if (tail) {
+          sycl::buffer<T> xt{ x.template reinterpret<T>(sycl::range<1>{n}) };
+          sycl::buffer<T> yt{ y.template reinterpret<T>(sycl::range<1>{n}) };
+          queue.submit([&](sycl::handler& cgh) {
+              auto ax = xt.template get_access<sycl::access::mode::read>(cgh);
+              auto ay = yt.template get_access<sycl::access::mode::read_write>(cgh);
+              cgh.single_task([=]{ ay[n-1] += a * ax[n-1]; });
+          });
+      }
+  }
 
   template <typename T>
   void axpy(T const a,
