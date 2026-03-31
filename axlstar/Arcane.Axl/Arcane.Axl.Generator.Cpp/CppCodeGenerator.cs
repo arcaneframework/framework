@@ -86,6 +86,8 @@ namespace Arcane.Axl
                                "PSubDomainPrivate",ref is_first_attribute);
         _WriteVariableProperty(writer,variable_info.IsNoRestore,
                                "PNoRestore",ref is_first_attribute);
+        _WriteVariableProperty(writer,variable_info.IsInShMem,
+                               "PInShMem",ref is_first_attribute);
         writer.Write("))\n");
       }
     }

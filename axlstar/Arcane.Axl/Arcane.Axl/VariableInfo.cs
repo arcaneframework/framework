@@ -105,6 +105,10 @@ namespace Arcane.Axl
     //! Indique s'il s'agit d'une variable 'materiau'.
     public bool IsMaterial { get { return m_is_material; }}
 
+    readonly bool m_in_shmem;
+    //! Indique si la variable doit être allouée dans la mémoire partagée.
+    public bool IsInShMem { get { return m_in_shmem; } }
+
     public VariableInfo(XmlElement node)
     {
       m_dim = 0;
@@ -203,6 +207,7 @@ namespace Arcane.Axl
       m_no_replica_sync = _ReadProperty(node,"no-replica-sync");
       m_is_environment = _ReadProperty(node,"environment");
       m_is_material = _ReadProperty(node,"material");
+      m_in_shmem = _ReadProperty(node,"in-shmem");
     }
 
     bool _ReadProperty(XmlElement node,string name)

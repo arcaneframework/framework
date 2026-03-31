@@ -411,6 +411,7 @@
             <xs:attribute name="shape-dim" type="ShapeDimension" use="optional" />
             <xs:attribute name="extent0" type="FixedExtent" use="optional" />
             <xs:attribute name="extent1" type="FixedExtent" use="optional" />
+            <xs:attribute name="in-shmem" type="xs:boolean" use="optional"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>

@@ -23,6 +23,7 @@ namespace Arcane.Axl.Xsd
       NoExchange,
       Persistant,
       NoReplicaSync,
+      InShMem,
       Undefined
     }
     [XmlIgnore]
@@ -73,6 +74,8 @@ namespace Arcane.Axl.Xsd
       }
     }
 
+    public bool IsInShMem { get { return inshmemSpecified ? inshmem : false; } }
+
     public int NbProperty {
       get {
         return Convert.ToInt32(IsNoDump)
@@ -80,7 +83,8 @@ namespace Arcane.Axl.Xsd
           + Convert.ToInt32(IsExecutionDepend)
           + Convert.ToInt32(IsSubDomainDepend)
           + Convert.ToInt32(IsSubDomainPrivate)
-          + Convert.ToInt32(IsNoRestore);
+          + Convert.ToInt32(IsNoRestore)
+          + Convert.ToInt32(IsInShMem);
       }
     }
 
@@ -104,6 +108,8 @@ namespace Arcane.Axl.Xsd
           return Property.Persistant;
         if (IsNoReplicaSync)
           return Property.NoReplicaSync;
+        if (IsInShMem)
+          return Property.InShMem;
         return Property.Undefined;
       }
     }
@@ -129,6 +135,8 @@ namespace Arcane.Axl.Xsd
           properties.Add (Property.Persistant);
         if (IsNoReplicaSync)
           properties.Add (Property.NoReplicaSync);
+        if (IsInShMem)
+          properties.Add (Property.InShMem);
         properties.RemoveAt (0);
         return properties;
       }
