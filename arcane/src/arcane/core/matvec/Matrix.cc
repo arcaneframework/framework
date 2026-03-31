@@ -1105,14 +1105,14 @@ read(const String& filename)
   ifile >> ws >> nb_x >> ws >> nb_y;
   //cout << "** ** N=" << nb_x << ' ' << nb_y << '\n';
   if (nb_x!=nb_y)
-    throw FatalErrorException("Matrix::read","not a square matrix");
+    ARCANE_FATAL("not a square matrix nb_x={0} nb_y={1}",nb_x,nb_y);
   Matrix m(nb_x,nb_y);
-  IntegerUniqueArray rows_size(nb_x);
-  IntegerUniqueArray columns;
+  UniqueArray<Int32> rows_size(nb_x);
+  UniqueArray<Int32> columns;
   RealUniqueArray values;
-  for( Integer x=0; x<nb_x; ++x ){
-    Integer nb_column = 0;
-    for( Integer y=0; y<nb_y; ++y ){
+  for( Int32 x=0; x<nb_x; ++x ){
+    Int32 nb_column = 0;
+    for( Int32 y=0; y<nb_y; ++y ){
       Real v =0.0;
       ifile >> v;
       if (!math::isZero(v)){
@@ -1134,33 +1134,48 @@ read(const String& filename)
 Matrix Matrix::
 readHypre(const String& filename)
 {
+  const bool is_verbose = false;
   std::ifstream ifile(filename.localstr());
-  Integer nb_x = 0;
-  Integer nb_y = 0;
-  Integer nb_value = 0;
-  Integer xf;
-  ifile >> ws >> nb_x >> ws >> nb_y;
-  ifile >> ws >> xf >> ws >> xf >> ws >> xf;
-  ifile >> ws >> nb_value >> ws >> xf;
-  ifile >> ws >> xf >> ws >> xf;
-  ifile >> ws >> xf >> ws >> xf;
-  //cout << "** ** N=" << nb_x << ' ' << nb_y << '\n';
+  if (!ifile.good())
+    ARCANE_FATAL("Can not read Hypre matrix file='{0}'",filename);
+  Int32 lower_i = 0;
+  Int32 upper_i = 0;
+  Int32 lower_j = 0;
+  Int32 upper_j = 0;
+  ifile >> lower_i >> upper_i >> lower_j >> upper_j;
+  if (is_verbose) {
+    std::cout << "** ** I=" << lower_i << ' ' << upper_i << '\n';
+    std::cout << "** ** IJ" << lower_j << ' ' << upper_j << '\n';
+  }
+  if (lower_i != 0 || lower_j != 0)
+    ARCANE_FATAL("Only lower_i==0 or lower_j==0 is supported (lower_i={0} lower_j={1})", lower_i,lower_j);
+  Int32 nb_x = 1 + upper_i - lower_i;
+  Int32 nb_y = 1 + upper_j - lower_j;
+  if (is_verbose)
+    std::cout << "** ** N=" << nb_x << ' ' << nb_y << '\n';
   if (nb_x!=nb_y)
-    throw FatalErrorException(A_FUNCINFO,"not a square matrix");
-  Matrix m(nb_x,nb_y);
-  IntegerUniqueArray rows_size(nb_x);
-  IntegerUniqueArray columns;
-  RealUniqueArray values;
+    ARCANE_FATAL("Not a square matrix nb_x={0} nb_y={1}",nb_x,nb_y);
 
-  Integer nb_column = 0;
-  Integer last_row = 0;
-  for( Integer i=0; i<nb_value; ++i ){
-    Integer x = 0;
-    Integer y = 0;
+  Matrix m(nb_x,nb_y);
+  UniqueArray<Int32> rows_size(nb_x);
+  UniqueArray<Int32> columns;
+  UniqueArray<Real> values;
+
+  Int32 nb_column = 0;
+  Int32 last_row = 0;
+  while(!ifile.eof()){
+    Int32 x = 0;
+    Int32 y = 0;
     Real v = 0.0;
-    ifile >> ws >> x >> ws >> y >> ws >> v;
+    ifile >> ws >> x >> ws >> y >> ws >> v >> ws;
+    if (is_verbose)
+      std::cout << "X=" << x << " Y=" << y << " V=" << v << "\n";
+    if (!ifile.good())
+      break;
     if (x!=last_row){
       // Nouvelle ligne.
+      if (is_verbose)
+        std::cout << "New row last_row_size=" << nb_column << "\n";
       rows_size[last_row] = nb_column;
       nb_column = 0;
       last_row = x;
