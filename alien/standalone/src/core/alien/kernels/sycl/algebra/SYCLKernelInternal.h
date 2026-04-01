@@ -1033,7 +1033,7 @@ class KernelInternal
   void asynch_map5_reduce_sum(sycl::buffer<T>& x,
                              sycl::buffer<T>& y,
                              sycl::buffer<T>& res,
-                             sycl::event event)
+                             sycl::event& event)
   {
     std::size_t local = m_max_work_group_size;
     std::size_t total_threads = m_total_threads;
@@ -1546,7 +1546,7 @@ class KernelInternal
   inline void asynch_dot_product_mi300(sycl::buffer<double, 1>& x_buf,
                                        sycl::buffer<double, 1>& y_buf,
                                        sycl::buffer<double, 1>& result_buf,
-                                       sycl::event event)
+                                       sycl::event& event)
   {
       using namespace mi300 ;
 

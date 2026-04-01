@@ -1629,9 +1629,11 @@ namespace SYCLInternal
                              {
                                //auto k = block_row_offset+j*ellpack_size+local_id ;
                                const int col = access_cols[k * pack_size + local_id];
-                               lds_x[local_id] = access_x[col];
+			       if(col>=0)
+                                 lds_x[local_id] = access_x[col];
                                item_id.barrier(sycl::access::fence_space::local_space);
-                               value += access_values[k * pack_size + local_id] * lds_x[local_id] ;
+			       if(col>=0)
+                                 value += access_values[k * pack_size + local_id] * lds_x[local_id] ;
                                item_id.barrier(sycl::access::fence_space::local_space);
                              }
                              access_y[i] = value ;
@@ -1896,7 +1898,8 @@ namespace SYCLInternal
                          {
                            //auto k = block_row_offset+j*ellpack_size+local_id ;
                            const int col = access_cols[k * pack_size + local_id];
-                           lds_x[local_id] = access_x[col];
+			   if(col>=0)
+                             lds_x[local_id] = access_x[col];
                            item_id.barrier(sycl::access::fence_space::local_space);
                            if(access_mask[k * pack_size + local_id])
                              value += alpha * access_values[k * pack_size + local_id] * lds_x[local_id] ;
@@ -2068,6 +2071,7 @@ namespace SYCLInternal
                        //auto k = block_row_offset+j*ellpack_size+local_id ;
                        //value += alpha * access_mask[k] * access_values[k]* access_x[access_cols[k]] ;
                        const int col = access_cols[k * pack_size + local_id];
+		       if(col>=0)
                        lds_x[local_id] = access_x[col];
                        item_id.barrier(sycl::access::fence_space::local_space);
                        if(access_mask[k * pack_size + local_id])
