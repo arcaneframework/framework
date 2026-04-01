@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Matrix.h                                                    (C) 2000-2025 */
+/* Matrix.h                                                    (C) 2000-20265 */
 /*                                                                           */
 /* Matrix d'algèbre linéraire.                                               */
 /*---------------------------------------------------------------------------*/
@@ -44,9 +44,7 @@ class ARCANE_CORE_EXPORT Matrix
 {
  public:
 
-  Matrix()
-  : m_impl(0)
-  {}
+  Matrix() = default;
   Matrix(Integer nb_row, Integer nb_column);
   Matrix(const Matrix& rhs);
   ~Matrix();
@@ -54,7 +52,7 @@ class ARCANE_CORE_EXPORT Matrix
 
  private:
 
-  Matrix(MatrixImpl* impl);
+  explicit Matrix(MatrixImpl* impl);
 
  public:
 
@@ -99,7 +97,7 @@ class ARCANE_CORE_EXPORT Matrix
  private:
 
   //! Implémentation
-  MatrixImpl* m_impl;
+  MatrixImpl* m_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -130,11 +128,7 @@ class ARCANE_CORE_EXPORT ConjugateGradientSolver
 {
  public:
 
-  ConjugateGradientSolver()
-  : m_nb_iteration(0)
-  , m_residual_norm(0.0)
-  , m_max_iteration(5000)
-  {}
+  ConjugateGradientSolver() = default;
   bool solve(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPreconditioner* p = 0);
   Integer nbIteration() const { return m_nb_iteration; }
   Real residualNorm() const { return m_residual_norm; }
@@ -145,9 +139,9 @@ class ARCANE_CORE_EXPORT ConjugateGradientSolver
 
  private:
 
-  Integer m_nb_iteration;
-  Real m_residual_norm;
-  Integer m_max_iteration;
+  Integer m_nb_iteration = 0;
+  Real m_residual_norm = 0.0;
+  Integer m_max_iteration = 5000;
 
  private:
 
@@ -169,7 +163,7 @@ class ARCANE_CORE_EXPORT DiagonalPreconditioner
 {
  public:
 
-  DiagonalPreconditioner(const Matrix& matrix);
+  explicit DiagonalPreconditioner(const Matrix& matrix);
 
  public:
 
@@ -224,11 +218,10 @@ class ARCANE_CORE_EXPORT AMGPreconditioner
 {
  public:
 
-  AMGPreconditioner(ITraceMng* tm)
+  explicit AMGPreconditioner(ITraceMng* tm)
   : m_trace_mng(tm)
-  , m_amg(0)
   {}
-  virtual ~AMGPreconditioner();
+  ~AMGPreconditioner() override;
 
  public:
 
@@ -236,12 +229,12 @@ class ARCANE_CORE_EXPORT AMGPreconditioner
 
  public:
 
-  virtual void apply(Vector& out_vec, const Vector& vec);
+  void apply(Vector& out_vec, const Vector& vec) override;
 
  private:
 
-  ITraceMng* m_trace_mng;
-  AMG* m_amg;
+  ITraceMng* m_trace_mng = nullptr;
+  AMG* m_amg = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -267,8 +260,8 @@ class ARCANE_CORE_EXPORT AMGSolver
 
  private:
 
-  ITraceMng* m_trace_mng;
-  AMG* m_amg;
+  ITraceMng* m_trace_mng = nullptr;
+  AMG* m_amg = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

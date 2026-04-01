@@ -29,29 +29,39 @@ namespace Arcane::MatVec
 class VectorImpl
 {
  public:
+
   VectorImpl(Integer size)
-  : m_values(size), m_nb_reference(0)
+  : m_values(size)
+  , m_nb_reference(0)
   {
   }
-  VectorImpl(Integer size,Real init_value)
-  : m_values(size,init_value), m_nb_reference(0)
+  VectorImpl(Integer size, Real init_value)
+  : m_values(size, init_value)
+  , m_nb_reference(0)
   {
     m_values.fill(init_value);
   }
-  VectorImpl() : m_nb_reference(0)
+  VectorImpl()
+  : m_nb_reference(0)
   {
   }
   VectorImpl(RealConstArrayView v)
-  : m_values(v), m_nb_reference(0)
+  : m_values(v)
+  , m_nb_reference(0)
   {
   }
   VectorImpl(const VectorImpl& rhs)
-  : m_values(rhs.m_values), m_nb_reference()
+  : m_values(rhs.m_values)
+  , m_nb_reference()
   {
   }
+
  private:
+
   void operator=(const VectorImpl& rhs);
+
  public:
+
   Integer size() const { return m_values.size(); }
   RealArrayView values() { return m_values; }
   RealConstArrayView values() const { return m_values; }
@@ -59,7 +69,7 @@ class VectorImpl
   {
     Integer size = m_values.size();
     o << "(Vector ptr=" << this << " size=" << size << ")\n";
-    for( Integer i=0; i<size; ++i )
+    for (Integer i = 0; i < size; ++i)
       o << "[" << i << "]=" << m_values[i] << '\n';
     //o << ")";
   }
@@ -73,7 +83,9 @@ class VectorImpl
   }
   Real normInf();
   static Vector readHypre(const String& file_name);
+
  public:
+
   void addReference()
   {
     ++m_nb_reference;
@@ -81,10 +93,12 @@ class VectorImpl
   void removeReference()
   {
     --m_nb_reference;
-    if (m_nb_reference==0)
+    if (m_nb_reference == 0)
       delete this;
   }
+
  private:
+
   UniqueArray<Real> m_values;
   Integer m_nb_reference;
 };
@@ -184,9 +198,9 @@ normInf()
 {
   Real v = 0.0;
   Integer size = m_values.size();
-  for( Integer i=0; i<size; ++i ){
+  for (Integer i = 0; i < size; ++i) {
     Real v2 = math::abs(m_values[i]);
-    if (v2>v)
+    if (v2 > v)
       v = v2;
   }
   return v;
@@ -209,14 +223,14 @@ readHypre(const String& file_name)
 {
   std::ifstream ifile(file_name.localstr());
   if (!ifile.good())
-    ARCANE_FATAL("Can not read Hypre vector file='{0}'",file_name);
+    ARCANE_FATAL("Can not read Hypre vector file='{0}'", file_name);
   Integer xmin = 0;
   Integer xmax = 0;
   ifile >> ws >> xmin >> ws >> xmax;
   Integer nb = (xmax - xmin) + 1;
   Vector vec(nb);
   RealArrayView values = vec.values();
-  for( Integer i=0; i<nb; ++i ){
+  for (Integer i = 0; i < nb; ++i) {
     Integer column_id = 0;
     Real v = 0.0;
     ifile >> ws >> column_id >> ws >> v;
@@ -228,7 +242,7 @@ readHypre(const String& file_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::MatVec
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
