@@ -3512,8 +3512,8 @@ SYCLBEllPackMatrix<ValueT>::hcsrView(BackEnd::Memory::eType memory, int nrows, i
 /*---------------------------------------------------------------------------*/
 
 template class ALIEN_EXPORT SYCLBEllPackMatrix<double>;
-template class ALIEN_EXPORT BEllPackStructInfo<SYCLBEllPackMatrix<double>::PKSIZE, Integer>;
-template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,SYCLBEllPackMatrix<double>::PKSIZE>;
+template class ALIEN_EXPORT BEllPackStructInfo<PKSIZE, Integer>;
+template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,PKSIZE>;
 
 
 //template bool Alien::SYCLInternal::MatrixInternal<double,1014>::setMatrixValues(Alien::SYCLInternal::MatrixInternal<double,1014>::ValueBufferType& buffer) ;
