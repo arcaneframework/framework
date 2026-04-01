@@ -30,10 +30,13 @@ namespace Arcane::math
 Real divide(Real a, Real b)
 {
   if (b == 0.0)
-    throw FatalErrorException("Division by zero");
+    ARCANE_FATAL("Division by zero");
   return a / b;
 }
 } // namespace Arcane::math
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::MatVec
 {
@@ -61,6 +64,9 @@ solve(const Matrix& matrix, const Vector& vector_b, Vector& vector_x)
   _solve(full_matrix_values, solution_values, nb_row);
   vector_x.values().copy(solution_values);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void DirectSolver::
 _solve(RealArrayView mat_values, RealArrayView vec_values, Integer size)
@@ -107,16 +113,9 @@ matrixMatrixProduct(const Matrix& left_matrix, const Matrix& right_matrix)
   Integer nb_right_row = right_matrix.nbRow();
   Integer nb_left_row = left_matrix.nbRow();
   if (nb_left_col != nb_right_row)
-    throw new ArgumentException("MatrixMatrixProduction", "Bad size");
+    ARCANE_THROW(ArgumentException, "Bad size nb_left_column={0} nb_right_row={1}",
+                 nb_left_col, nb_right_row);
   Integer nb_row_col = nb_left_col;
-
-  //IntegerConstArrayView left_rows_index = left_matrix.rowsIndex();
-  //IntegerConstArrayView left_columns = left_matrix.columns();
-  //RealConstArrayView left_values = left_matrix.values();
-
-  //IntegerConstArrayView right_rows_index = right_matrix.rowsIndex();
-  //IntegerConstArrayView right_columns = right_matrix.columns();
-  //RealConstArrayView right_values = right_matrix.values();
 
   Matrix new_matrix(nb_left_row, nb_right_col);
   IntegerUniqueArray new_matrix_rows_size(nb_left_row);
@@ -151,6 +150,9 @@ matrixMatrixProduct(const Matrix& left_matrix, const Matrix& right_matrix)
   return new_matrix;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Matrix MatrixOperation2::
 matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
 {
@@ -159,7 +161,8 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
   Integer nb_right_row = right_matrix.nbRow();
   Integer nb_left_row = left_matrix.nbRow();
   if (nb_left_col != nb_right_row)
-    throw new ArgumentException("MatrixMatrixProduction", "Bad size");
+    ARCANE_THROW(ArgumentException, "Bad size nb_left_column={0} nb_right_row={1}",
+                 nb_left_col, nb_right_row);
   //Integer nb_row_col = nb_left_col;
 
   IntegerConstArrayView left_rows_index = left_matrix.rowsIndex();
@@ -261,6 +264,9 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
   return new_matrix;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MatrixOperation2::
 _dumpColumnMatrix(std::ostream& o, IntegerConstArrayView columns_index, IntegerConstArrayView rows,
                   RealConstArrayView values)
@@ -277,15 +283,14 @@ _dumpColumnMatrix(std::ostream& o, IntegerConstArrayView columns_index, IntegerC
   o << ")";
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Matrix MatrixOperation2::
 transpose(const Matrix& matrix)
 {
   Integer nb_column = matrix.nbColumn();
   Integer nb_row = matrix.nbRow();
-
-  //IntegerConstArrayView rows_index = matrix.rowsIndex();
-  //IntegerConstArrayView columns = matrix.columns();
-  //RealConstArrayView values = matrix.values();
 
   Integer new_matrix_nb_row = nb_column;
   Integer new_matrix_nb_column = nb_row;
