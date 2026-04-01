@@ -23,4 +23,14 @@
 #endif
 #endif
 
+// Sélection à la compilation selon la cible
+#if defined(__HIP_PLATFORM_AMD__) || defined(__AMDGCN__)
+  static constexpr int PKSIZE      = 1024; // wavefront MI300 should be 64
+  static constexpr int WG_SIZE     = 256;  // 4 WF/bloc
+#else
+  static constexpr int PKSIZE      = 1024;   // warp H100 should be 32
+  static constexpr int WG_SIZE     = 256;  // 8 warps/bloc
+#endif
 
+// Grid dynamique (remplace m_total_threads figé)
+static constexpr int TARGET_WAVES = 4;

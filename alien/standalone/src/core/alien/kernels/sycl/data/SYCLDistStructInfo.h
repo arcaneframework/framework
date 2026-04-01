@@ -27,9 +27,9 @@ class ALIEN_EXPORT SYCLDistStructInfo
 : public SimpleCSRInternal::DistStructInfo
 {
  public:
-  typedef SimpleCSRInternal::DistStructInfo BaseType ;
-
-  typedef BEllPackStructInfo<1024,int>      ProfileType;
+  //static constexpr int PKSIZE   = 256 ;
+  using BaseType                = SimpleCSRInternal::DistStructInfo;
+  using ProfileType             = BEllPackStructInfo<PKSIZE,int>;
 
   SYCLDistStructInfo()
   : BaseType()
