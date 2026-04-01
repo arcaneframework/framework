@@ -1,28 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Vector.cc                                                   (C) 2000-2014 */
+/* Vector.cc                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Vecteur d'algèbre linéraire.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/matvec/Vector.h"
+#include "arcane/core/matvec/Vector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-namespace MatVec
+namespace Arcane::MatVec
 {
 
 /*---------------------------------------------------------------------------*/
@@ -210,10 +208,12 @@ Vector Vector::
 readHypre(const String& file_name)
 {
   std::ifstream ifile(file_name.localstr());
+  if (!ifile.good())
+    ARCANE_FATAL("Can not read Hypre vector file='{0}'",file_name);
   Integer xmin = 0;
   Integer xmax = 0;
   ifile >> ws >> xmin >> ws >> xmax;
-  Integer nb = (xmax-xmin)+1;
+  Integer nb = (xmax - xmin) + 1;
   Vector vec(nb);
   RealArrayView values = vec.values();
   for( Integer i=0; i<nb; ++i ){
@@ -229,7 +229,6 @@ readHypre(const String& file_name)
 /*---------------------------------------------------------------------------*/
 
 }
-ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
