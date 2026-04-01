@@ -1,20 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Vector.h                                                    (C) 2000-2007 */
+/* Vector.h                                                    (C) 2000-2026 */
 /*                                                                           */
 /* Vecteur d'algèbre linéraire.                                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATVEC_VECTOR_H
-#define ARCANE_MATVEC_VECTOR_H
+#ifndef ARCANE_CORE_MATVEC_VECTOR_H
+#define ARCANE_CORE_MATVEC_VECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Numeric.h"
@@ -22,8 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-namespace MatVec
+namespace Arcane::MatVec
 {
 
 /*---------------------------------------------------------------------------*/
@@ -35,28 +32,31 @@ class VectorImpl;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vecteur d'algèbre linéraire.
+ *
+ * Cette classe a une sémantique par référence.
  */
 class ARCANE_CORE_EXPORT Vector
 {
  public:
+
   //! Créé un vecteur vide
   Vector();
   /*!
    * \brief Créé pour stocker \a size éléments.
    *
    * Le vecteur n'est pas initialisé et ses valeurs sont quelconques.
-   */  
+   */
   explicit Vector(Integer size);
   /*!
    * \brief Créé pour stocker \a size éléments.
    *
    * Le vecteur est initialisé avec les valeurs de \a init_value.
-   */  
-  Vector(Integer size,Real init_value);
+   */
+  Vector(Integer size, Real init_value);
   /*!
    * \brief Créé un vecteur avec les éléments de \a v.
    */
-  Vector(RealUniqueArray v);
+  explicit Vector(RealUniqueArray v);
   /*!
    * \brief Construit un vecteur qui référence \a rhs.
    */
@@ -65,7 +65,9 @@ class ARCANE_CORE_EXPORT Vector
   const Vector& operator=(const Vector& rhs);
   //! Supprime la référence
   ~Vector();
+
  public:
+
   //! Nombre d'éléments du vecteur
   Integer size() const;
   /*!
@@ -103,21 +105,23 @@ class ARCANE_CORE_EXPORT Vector
    * Si le nombre d'éléments augmente, les nouveaux éléments sont
    * initialisé avec la valeur \a init_value.
    */
-  void resize(Integer new_size,Real init_value);
+  void resize(Integer new_size, Real init_value);
 
   Real normInf();
 
   //! Initialise un vecteur en utilisant un fichier au format Hypre
   static Vector readHypre(const String& file_name);
+
  private:
+
   //! Représentation interne du groupe.
-  VectorImpl* m_impl;
+  VectorImpl* m_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-}
-ARCANE_END_NAMESPACE
+
+} // namespace Arcane::MatVec
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
