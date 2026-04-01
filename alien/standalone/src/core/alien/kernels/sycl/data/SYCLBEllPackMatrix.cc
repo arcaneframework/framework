@@ -1550,7 +1550,7 @@ namespace SYCLInternal
     // clang-format off
     int N                  = this->m_N;
     //int NxN                = this->m_NxN;
-    int pack_size          = ellpack_size;
+    std::size_t pack_size  = ellpack_size;
     auto nrows             = m_profile->getNRows();
     auto nnz               = m_profile->getNnz();
 
@@ -1561,6 +1561,10 @@ namespace SYCLInternal
     // clang-format on
     if(N==1)
     {
+      auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+      auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
+      auto total_threads     = blocks_target * ellpack_size;
+
       // COMPUTE VALUES
       // clang-format off
         queue.submit([&](sycl::handler& cgh)
@@ -1572,8 +1576,7 @@ namespace SYCLInternal
 
                    auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
                    auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
-
-
+#ifdef OLD
                    //sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{ellpack_size}};
                    //cgh.parallel_for<class compute_mult>(r, [&](sycl::nd_item<1> item_id)
                    cgh.parallel_for<class compute_mult>(
@@ -1589,7 +1592,6 @@ namespace SYCLInternal
                         {
                            auto block_id = i/ellpack_size ;
                            auto local_id = i%ellpack_size ;
-
                            int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
                            auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
@@ -1601,7 +1603,40 @@ namespace SYCLInternal
                            }
                            access_y[i] = value ;
                         }
-                    });
+                      });
+
+#endif
+                   sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
+                   sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+                   cgh.parallel_for<class compute_mult>(r,
+                       [=](sycl::nd_item<1> item_id)
+                       {
+                          //auto id        = item_id.get_id(0);
+                          auto local_id  = item_id.get_local_id(0);
+                          //auto block_id  = item_id.get_group(0) ;
+                          auto global_id = item_id.get_global_id(0);
+
+                          //for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                          for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                          {
+                             auto block_id = i/pack_size ;
+                             //auto local_id = i%ellpack_size ;
+
+                             int begin           = access_block_row_offset[block_id] ;
+                             int end             = access_block_row_offset[block_id+1] ;
+                             ValueType value     = 0. ;
+                             for(int k=begin;k<end;++k)
+                             {
+                               //auto k = block_row_offset+j*ellpack_size+local_id ;
+                               const int col = access_cols[k * pack_size + local_id];
+                               lds_x[local_id] = access_x[col];
+                               item_id.barrier(sycl::access::fence_space::local_space);
+                               value += access_values[k * pack_size + local_id] * lds_x[local_id] ;
+                               item_id.barrier(sycl::access::fence_space::local_space);
+                             }
+                             access_y[i] = value ;
+                          }
+                        });
                  });
       // clang-format on
     }
@@ -1800,7 +1835,7 @@ namespace SYCLInternal
     // getting the maximum work group size per thread
     auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
-    //auto total_threads = num_groups * ellpack_size;
+    auto total_threads = num_groups * ellpack_size;
 
     // clang-format off
     int N                  = this->m_N;
@@ -1808,10 +1843,6 @@ namespace SYCLInternal
     std::size_t pack_size  = ellpack_size;
     auto nrows             = m_profile->getNRows();
     auto nnz               = m_profile->getNnz();
-
-    auto blocks_needed = (nrows + ellpack_size - 1) / ellpack_size;
-    auto blocks_target = std::max(blocks_needed, num_groups * 4UL);
-    auto total_threads = blocks_target * ellpack_size;
 
     auto internal_profile  = m_profile->internal();
     auto& kcol             = internal_profile->getKCol();
@@ -1836,6 +1867,10 @@ namespace SYCLInternal
 
            if(N==1)
            {
+             auto blocks_needed = (nrows + ellpack_size - 1) / ellpack_size;
+             auto blocks_target = std::max(blocks_needed, num_groups * 4UL);
+             auto total_threads = blocks_target * ellpack_size;
+
              sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
              sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
              //cgh.parallel_for<class compute_lmult>(sycl::range<1>{total_threads},[=] (sycl::item<1> item_id)
@@ -3115,7 +3150,7 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
 
   m_matrix_dist_info.copy(matrix_dist_info);
 
-  m_ellpack_size = 1024;
+  m_ellpack_size = PKSIZE;
   if (m_nproc > 1)
   {
     m_local_size   = nrows;
@@ -3127,9 +3162,9 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
     auto& local_row_size = m_matrix_dist_info.m_local_row_size;
     auto sorted_cols = m_matrix_dist_info.m_cols.data();
 
-    std::size_t block_nrows = ProfileInternal1024::nbBlocks(nrows);
+    std::size_t block_nrows = ProfileInternalType::nbBlocks(nrows);
 
-    ProfileInternal1024::computeBlockRowOffset(m_block_row_offset, nrows, kcol);
+    ProfileInternalType::computeBlockRowOffset(m_block_row_offset, nrows, kcol);
 
     // clang-format off
     alien_debug([&] {
@@ -3141,13 +3176,13 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
                     });
     // clang-format on
     //Universe().traceMng()->flush();
-    m_profile1024.reset( new ProfileInternal1024{ nrows,
+    m_profilePKSIZE.reset( new ProfileInternalType{ nrows,
                                                   kcol,
                                                   sorted_cols,
                                                   m_block_row_offset.data(),
                                                   local_row_size.data() });
 
-    m_matrix1024.reset(new MatrixInternal1024{ m_profile1024.get(), block_size });
+    m_matrixPKSIZE.reset(new MatrixInternalType{ m_profilePKSIZE.get(), block_size });
 
     // EXTRACT EXTERNAL PROFILE
     std::size_t interface_nrows = m_matrix_dist_info.m_interface_nrow;
@@ -3172,8 +3207,8 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
       }
     }
 
-    std::size_t ext_block_nrows = ProfileInternal1024::nbBlocks(interface_nrows);
-    ProfileInternal1024::computeBlockRowOffset(m_ext_block_row_offset, interface_nrows, ext_kcol.data());
+    std::size_t ext_block_nrows = ProfileInternalType::nbBlocks(interface_nrows);
+    ProfileInternalType::computeBlockRowOffset(m_ext_block_row_offset, interface_nrows, ext_kcol.data());
     // clang-format off
     alien_debug([&] {
                       cout() << "EXT NROWS  = "<<interface_nrows;
@@ -3183,23 +3218,23 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
                     });
     // clang-format on
 
-    m_ext_profile1024.reset( new ProfileInternal1024{ interface_nrows,
+    m_ext_profilePKSIZE.reset( new ProfileInternalType{ interface_nrows,
                                                       ext_kcol.data(),
                                                       ext_cols.data(),
                                                       m_ext_block_row_offset.data(),
                                                       nullptr });
 
-    m_matrix1024->m_ext_profile = m_ext_profile1024.get();
-    typedef typename MatrixInternal1024::IndexBufferType IndexBufferType;
-    m_matrix1024->m_h_interface_row_ids = m_matrix_dist_info.m_interface_rows.data();
-    m_matrix1024->m_interface_row_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_interface_rows.data(),
+    m_matrixPKSIZE->m_ext_profile = m_ext_profilePKSIZE.get();
+    typedef typename MatrixInternalType::IndexBufferType IndexBufferType;
+    m_matrixPKSIZE->m_h_interface_row_ids = m_matrix_dist_info.m_interface_rows.data();
+    m_matrixPKSIZE->m_interface_row_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_interface_rows.data(),
                                                                  m_matrix_dist_info.m_interface_rows.size() });
 
-    m_matrix1024->m_send_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_send_info.m_ids.data(),
+    m_matrixPKSIZE->m_send_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_send_info.m_ids.data(),
                                                         m_matrix_dist_info.m_send_info.m_ids.size() });
-    m_matrix1024->m_recv_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_ids.data(),
+    m_matrixPKSIZE->m_recv_ids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_ids.data(),
                                                         m_matrix_dist_info.m_recv_info.m_ids.size() });
-    m_matrix1024->m_recv_uids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_uids.data(),
+    m_matrixPKSIZE->m_recv_uids.reset(new IndexBufferType{ m_matrix_dist_info.m_recv_info.m_uids.data(),
                                                          m_matrix_dist_info.m_recv_info.m_uids.size() });
   }
   else
@@ -3211,9 +3246,9 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
     m_ghost_size   = 0;
     // clang-format on
 
-    std::size_t block_nrows = ProfileInternal1024::nbBlocks(nrows);
+    std::size_t block_nrows = ProfileInternalType::nbBlocks(nrows);
 
-    ProfileInternal1024::computeBlockRowOffset(m_block_row_offset, nrows, kcol);
+    ProfileInternalType::computeBlockRowOffset(m_block_row_offset, nrows, kcol);
 
     // clang-format off
     alien_debug([&] {
@@ -3224,13 +3259,13 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
                     });
     // clang-format on
 
-    m_profile1024.reset( new ProfileInternal1024{ nrows,
+    m_profilePKSIZE.reset( new ProfileInternalType{ nrows,
                                                   kcol,
                                                   cols,
                                                   m_block_row_offset.data(),
                                                   nullptr });
 
-    m_matrix1024.reset( new MatrixInternal1024{ m_profile1024.get(), block_size });
+    m_matrixPKSIZE.reset( new MatrixInternalType{ m_profilePKSIZE.get(), block_size });
   }
 
   return true;
@@ -3246,9 +3281,9 @@ SYCLBEllPackMatrix<ValueT>::cloneTo(const MultiMatrixImpl* multi) const
   matrix->initMatrix(m_parallel_mng,
                      m_local_offset,
                      m_global_size,
-                     m_profile1024->getNRows(),
-                     m_profile1024->kcol(),
-                     m_profile1024->cols(),
+                     m_profilePKSIZE->getNRows(),
+                     m_profilePKSIZE->kcol(),
+                     m_profilePKSIZE->cols(),
                      m_matrix_dist_info,
                      block_size);
   matrix->setMatrixValues(getAddressData(), true);
@@ -3258,21 +3293,21 @@ SYCLBEllPackMatrix<ValueT>::cloneTo(const MultiMatrixImpl* multi) const
 template <typename ValueT>
 bool SYCLBEllPackMatrix<ValueT>::setMatrixValues(Arccore::Real const* values, bool only_host)
 {
-  return m_matrix1024->setMatrixValues(values, only_host);
+  return m_matrixPKSIZE->setMatrixValues(values, only_host);
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::notifyChanges()
 {
-  if (m_matrix1024.get())
-    m_matrix1024->notifyChanges();
+  if (m_matrixPKSIZE.get())
+    m_matrixPKSIZE->notifyChanges();
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::endUpdate()
 {
-  if (m_matrix1024.get() && m_matrix1024->needUpdate()) {
-    m_matrix1024->endUpdate();
+  if (m_matrixPKSIZE.get() && m_matrixPKSIZE->needUpdate()) {
+    m_matrixPKSIZE->endUpdate();
     this->updateTimestamp();
   }
 }
@@ -3280,63 +3315,63 @@ void SYCLBEllPackMatrix<ValueT>::endUpdate()
 template <typename ValueT>
 ValueT const* SYCLBEllPackMatrix<ValueT>::getAddressData() const
 {
-  return m_matrix1024->getHCsrData();
+  return m_matrixPKSIZE->getHCsrData();
 }
 
 template <typename ValueT>
 ValueT const* SYCLBEllPackMatrix<ValueT>::data() const
 {
-  return m_matrix1024->getHCsrData();
+  return m_matrixPKSIZE->getHCsrData();
 }
 
 template <typename ValueT>
 ValueT* SYCLBEllPackMatrix<ValueT>::getAddressData()
 {
-  return m_matrix1024->getHCsrData();
+  return m_matrixPKSIZE->getHCsrData();
 }
 
 template <typename ValueT>
 ValueT* SYCLBEllPackMatrix<ValueT>::data()
 {
-  return m_matrix1024->getHCsrData();
+  return m_matrixPKSIZE->getHCsrData();
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::mult(SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
 {
-  return m_matrix1024->mult(x.internal()->values(), y.internal()->values());
+  return m_matrixPKSIZE->mult(x.internal()->values(), y.internal()->values());
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::endDistMult(SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
 {
-  m_matrix1024->addExtMult(x.internal()->ghostValues(getGhostSize()), y.internal()->values());
+  m_matrixPKSIZE->addExtMult(x.internal()->ghostValues(getGhostSize()), y.internal()->values());
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::addLMult(ValueT alpha, SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
 {
-  m_profile1024->dcol();
-  return m_matrix1024->addLMult(alpha, x.internal()->values(), y.internal()->values());
+  m_profilePKSIZE->dcol();
+  return m_matrixPKSIZE->addLMult(alpha, x.internal()->values(), y.internal()->values());
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::addUMult(ValueT alpha, SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
 {
-  m_profile1024->dcol();
-  return m_matrix1024->addUMult(alpha, x.internal()->values(), y.internal()->values());
+  m_profilePKSIZE->dcol();
+  return m_matrixPKSIZE->addUMult(alpha, x.internal()->values(), y.internal()->values());
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const
 {
-  return m_matrix1024->multDiag(x.internal()->values(), y.internal()->values());
+  return m_matrixPKSIZE->multDiag(x.internal()->values(), y.internal()->values());
 }
 
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::multDiag(SYCLVector<ValueType>& y) const
 {
-  return m_matrix1024->multDiag(y.internal()->values());
+  return m_matrixPKSIZE->multDiag(y.internal()->values());
 }
 
 template <typename ValueT>
@@ -3344,9 +3379,9 @@ void SYCLBEllPackMatrix<ValueT>::computeDiag(SYCLVector<ValueType>& y) const
 {
   auto block_size = blockSize() ;
   if((y.blockSize()==1)||(y.blockSize()==block_size))
-    return m_matrix1024->computeDiag(y.internal()->values());
+    return m_matrixPKSIZE->computeDiag(y.internal()->values());
   else if(y.blockSize()==block_size*block_size)
-    return m_matrix1024->computeBlockDiag(y.internal()->values());
+    return m_matrixPKSIZE->computeBlockDiag(y.internal()->values());
   else
     throw Arccore::FatalErrorException(A_FUNCINFO, "Matrix and Vector Block Size are not compatibility");
 }
@@ -3354,7 +3389,7 @@ void SYCLBEllPackMatrix<ValueT>::computeDiag(SYCLVector<ValueType>& y) const
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::multInvDiag(SYCLVector<ValueType>& y) const
 {
-  return m_matrix1024->multInvDiag(y.internal()->values());
+  return m_matrixPKSIZE->multInvDiag(y.internal()->values());
 }
 
 template <typename ValueT>
@@ -3362,9 +3397,9 @@ void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 {
   auto block_size = blockSize() ;
   if((y.blockSize()==1)||(y.blockSize()==block_size))
-    return m_matrix1024->computeInvDiag(y.internal()->values());
+    return m_matrixPKSIZE->computeInvDiag(y.internal()->values());
   else if(y.blockSize()==block_size*block_size)
-    return m_matrix1024->computeInvBlockDiag(y.internal()->values());
+    return m_matrixPKSIZE->computeInvBlockDiag(y.internal()->values());
   else
     throw Arccore::FatalErrorException(A_FUNCINFO, "Matrix and Vector Block Size are not compatibility");
 }
@@ -3372,7 +3407,7 @@ void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::scal(SYCLVector<ValueType> const& diag)
 {
-  return m_matrix1024->scal(diag.internal()->values());
+  return m_matrixPKSIZE->scal(diag.internal()->values());
 }
 
 
@@ -3383,34 +3418,34 @@ void SYCLBEllPackMatrix<ValueT>::copy(SYCLBEllPackMatrix<ValueT> const& matrix)
   initMatrix(matrix.m_parallel_mng,
              matrix.m_local_offset,
              matrix.m_global_size,
-             matrix.m_profile1024->getNRows(),
-             matrix.m_profile1024->kcol(),
-             matrix.m_profile1024->cols(),
+             matrix.m_profilePKSIZE->getNRows(),
+             matrix.m_profilePKSIZE->kcol(),
+             matrix.m_profilePKSIZE->cols(),
              matrix.m_matrix_dist_info,
              block_size);
   if(block_size==matrix.blockSize())
   {
     if(m_is_parallel)
-      m_matrix1024->setMatrixValues(matrix.m_matrix1024->m_values,
-                                    (*matrix.m_matrix1024->m_ext_values));
+      m_matrixPKSIZE->setMatrixValues(matrix.m_matrixPKSIZE->m_values,
+                                    (*matrix.m_matrixPKSIZE->m_ext_values));
     else
-      m_matrix1024->setMatrixValues(matrix.m_matrix1024->m_values);
+      m_matrixPKSIZE->setMatrixValues(matrix.m_matrixPKSIZE->m_values);
   }
   else
   {
-    assert(m_profile1024.get());
-    assert(m_matrix1024.get());
-    auto nb_blocks = m_profile1024->getBlockNnz();
+    assert(m_profilePKSIZE.get());
+    assert(m_matrixPKSIZE.get());
+    auto nb_blocks = m_profilePKSIZE->getBlockNnz();
     if(m_is_parallel)
-      m_matrix1024->copy(nb_blocks,
+      m_matrixPKSIZE->copy(nb_blocks,
                          block_size,
-                         matrix.m_matrix1024->m_values,
-                         (*matrix.m_matrix1024->m_ext_values),
+                         matrix.m_matrixPKSIZE->m_values,
+                         (*matrix.m_matrixPKSIZE->m_ext_values),
                          matrix.blockSize()) ;
     else
-      m_matrix1024->copy(nb_blocks,
+      m_matrixPKSIZE->copy(nb_blocks,
                          block_size,
-                         matrix.m_matrix1024->m_values,
+                         matrix.m_matrixPKSIZE->m_values,
                          matrix.blockSize()) ;
   }
 }
@@ -3460,7 +3495,7 @@ copyDevicePointers(std::size_t nrows,
                    int* cols,
                    ValueT* values) const
 {
-  m_matrix1024->copyDevicePointers(m_local_offset,nrows,nnz,rows,ncols,cols,values) ;
+  m_matrixPKSIZE->copyDevicePointers(m_local_offset,nrows,nnz,rows,ncols,cols,values) ;
 }
 
 
@@ -3473,8 +3508,8 @@ SYCLBEllPackMatrix<ValueT>::hcsrView(BackEnd::Memory::eType memory, int nrows, i
 /*---------------------------------------------------------------------------*/
 
 template class ALIEN_EXPORT SYCLBEllPackMatrix<double>;
-template class ALIEN_EXPORT BEllPackStructInfo<1024, Integer>;
-template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,1024>;
+template class ALIEN_EXPORT BEllPackStructInfo<SYCLBEllPackMatrix<double>::PKSIZE, Integer>;
+template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,SYCLBEllPackMatrix<double>::PKSIZE>;
 
 
 //template bool Alien::SYCLInternal::MatrixInternal<double,1014>::setMatrixValues(Alien::SYCLInternal::MatrixInternal<double,1014>::ValueBufferType& buffer) ;
@@ -3482,7 +3517,7 @@ template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,1024>;
 void force_int_instance()
 {
   SYCLBEllPackMatrix<double> matrix ;
-  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer{sycl::range<1>(10)} ;
+  SYCLBEllPackMatrix<double>::MatrixInternalType::ValueBufferType buffer{sycl::range<1>(10)} ;
   matrix.internal()->setMatrixValues(buffer) ;
 }
 /*---------------------------------------------------------------------------*/

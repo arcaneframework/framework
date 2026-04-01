@@ -169,6 +169,7 @@ class KernelInternal
     }
   }
 
+#ifdef NAIVE
   template <typename T>
   void scal(T a,
             sycl::buffer<T>& y)
@@ -190,7 +191,7 @@ class KernelInternal
       // clang-format on
     }
   }
-#ifdef NAIVE
+
   template <typename T>
   void axpy(T const a,
             sycl::buffer<T>& x,
@@ -216,6 +217,52 @@ class KernelInternal
   }
 #endif
   template <typename T>
+  void scal(T a,
+            sycl::buffer<T>& y)
+  {
+    using VecT = sycl::vec<T, 2>;
+
+    auto& queue       = m_env->internal()->queue();
+    const size_t n    = y.size();
+    const size_t n2   = n / 2;           // éléments traités vectoriellement
+    const size_t tail = n % 2;
+
+    static constexpr size_t WG_SIZE = 256;
+    const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
+                                    m_max_num_groups * 4UL);
+    const size_t total   = blocks * WG_SIZE;
+
+    // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
+    // Requiert que les buffers soient alignés 16 bytes (garantit par
+    // sycl::buffer qui aligne sur max_required_work_group_size).
+    sycl::buffer<VecT> y2{ y.template reinterpret<VecT>(sycl::range<1>{n2}) };
+
+    queue.submit([&](sycl::handler& cgh) {
+        auto ay = y2.template get_access<sycl::access::mode::read_write>(cgh);
+
+        cgh.parallel_for<class vector_xcal_vec>(
+            sycl::nd_range<1>{ {total}, {WG_SIZE} },
+            [=](sycl::nd_item<1> item) {
+                const size_t stride = item.get_global_range()[0];
+                for (size_t i = item.get_global_id(0); i < n2; i += stride) {
+                    // Un seul load 128-bit pour x, un pour y
+                    ay[i] = VecT{a, a} * ay[i];
+                }
+            });
+    });
+
+    // Epilogue scalaire si n est impair (rare en pratique)
+    if (tail) {
+        sycl::buffer<T> yt{ y.template reinterpret<T>(sycl::range<1>{n}) };
+        queue.submit([&](sycl::handler& cgh) {
+            auto ay = yt.template get_access<sycl::access::mode::read_write>(cgh);
+            cgh.single_task([=]{ ay[n-1] = a * ay[n-1]; });
+        });
+    }
+
+  }
+
+  template <typename T>
   void axpy(T const a,
             sycl::buffer<T>& x,
             sycl::buffer<T>& y)
@@ -228,10 +275,8 @@ class KernelInternal
       const size_t tail = n % 2;
 
       static constexpr size_t WG_SIZE = 256;
-      const size_t num_sm  = queue.get_device()
-                                 .get_info<sycl::info::device::max_compute_units>();
       const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
-                                       num_sm * 4UL);
+                                      m_max_num_groups * 4UL);
       const size_t total   = blocks * WG_SIZE;
 
       // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
@@ -297,6 +342,7 @@ class KernelInternal
                      sycl::buffer<T>& y,
                      sycl::buffer<T>& z)
   {
+#ifdef NAIVE
     sycl::range<1> work_items{ m_total_threads };
     {
       // clang-format off
@@ -315,6 +361,55 @@ class KernelInternal
                                          });
       // clang-format on
     }
+#endif
+    using VecT = sycl::vec<T, 2>;
+
+    auto& queue       = m_env->internal()->queue();
+    const size_t n    = y.size();
+    const size_t n2   = n / 2;           // éléments traités vectoriellement
+    const size_t tail = n % 2;
+
+    static constexpr size_t WG_SIZE = 256;
+    const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
+                                    m_max_num_groups * 4UL);
+    const size_t total   = blocks * WG_SIZE;
+
+    // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
+    // Requiert que les buffers soient alignés 16 bytes (garantit par
+    // sycl::buffer qui aligne sur max_required_work_group_size).
+    sycl::buffer<VecT> x2{ x.template reinterpret<VecT>(sycl::range<1>{n2}) };
+    sycl::buffer<VecT> y2{ y.template reinterpret<VecT>(sycl::range<1>{n2}) };
+    sycl::buffer<VecT> z2{ z.template reinterpret<VecT>(sycl::range<1>{n2}) };
+
+    queue.submit([&](sycl::handler& cgh) {
+        auto ax = x2.template get_access<sycl::access::mode::read>(cgh);
+        auto ay = y2.template get_access<sycl::access::mode::read>(cgh);
+        auto az = z2.template get_access<sycl::access::mode::read_write>(cgh);
+
+        cgh.parallel_for<class vector_pointwizemult>(
+            sycl::nd_range<1>{ {total}, {WG_SIZE} },
+            [=](sycl::nd_item<1> item) {
+                const size_t stride = item.get_global_range()[0];
+                for (size_t i = item.get_global_id(0); i < n2; i += stride) {
+                    // Un seul load 128-bit pour x, un pour y
+                    az[i] = ax[i] * ay[i]; // fused multiply-add
+                }
+            });
+    });
+
+    // Epilogue scalaire si n est impair (rare en pratique)
+    if (tail) {
+        sycl::buffer<T> xt{ x.template reinterpret<T>(sycl::range<1>{n}) };
+        sycl::buffer<T> yt{ y.template reinterpret<T>(sycl::range<1>{n}) };
+        sycl::buffer<T> zt{ z.template reinterpret<T>(sycl::range<1>{n}) };
+        queue.submit([&](sycl::handler& cgh) {
+            auto ax = xt.template get_access<sycl::access::mode::read>(cgh);
+            auto ay = yt.template get_access<sycl::access::mode::read>(cgh);
+            auto az = zt.template get_access<sycl::access::mode::read_write>(cgh);
+            cgh.single_task([=]{ az[n-1] = ax[n-1] * ay[n-1]; });
+        });
+    }
+
 #ifdef PRINT_DEBUG_INFO
     {
       sycl::host_accessor<T, 1, sycl::access::mode::read> x_acc(x);
@@ -1412,46 +1507,46 @@ class KernelInternal
   // ---------------------------------------------------------------------------
 
 
-  inline double dot_product_reduction(sycl::buffer<double, 1>& x_buf,
-                                      sycl::buffer<double, 1>& y_buf)
+  inline double dot_product_mi300(sycl::buffer<double, 1>& x_buf,
+                                  sycl::buffer<double, 1>& y_buf)
   {
     using namespace mi300 ;
-      double result = 0.0;
-      std::size_t n = x_buf.size() ;
-      auto& q       = m_env->internal()->queue();
-      {
-          sycl::buffer<double, 1> result_buf(&result, 1);
+    double result = 0.0;
+    std::size_t n = x_buf.size() ;
+    auto& q       = m_env->internal()->queue();
+    {
+        sycl::buffer<double, 1> result_buf(&result, 1);
 
-          const std::size_t stride   = WG_SIZE * ITEMS_PER_WI;
-          const std::size_t n_padded = ((n + stride - 1) / stride) * stride;
+        const std::size_t stride   = WG_SIZE * ITEMS_PER_WI;
+        const std::size_t n_padded = ((n + stride - 1) / stride) * stride;
 
-          q.submit([&](sycl::handler& cgh) {
-              auto x   = x_buf.template get_access<sycl::access::mode::read>(cgh);
-              auto y   = y_buf.template get_access<sycl::access::mode::read>(cgh);
-              auto red = sycl::reduction(result_buf, cgh, sycl::plus<double>{});
+        q.submit([&](sycl::handler& cgh) {
+            auto x   = x_buf.template get_access<sycl::access::mode::read>(cgh);
+            auto y   = y_buf.template get_access<sycl::access::mode::read>(cgh);
+            auto red = sycl::reduction(result_buf, cgh, sycl::plus<double>{});
 
-              cgh.parallel_for(
-                  sycl::nd_range<1>{n_padded, WG_SIZE}, red,
-                  [=](sycl::nd_item<1> item, auto& sum) {
-                      const std::size_t lid  = item.get_local_id(0);
-                      const std::size_t base = item.get_group(0) * stride;
-                      double acc = 0.0;
-                      #pragma unroll
-                      for (std::size_t k = 0; k < ITEMS_PER_WI; ++k) {
-                          const std::size_t idx = base + lid + k * WG_SIZE;
-                          if (idx < n) acc += x[idx] * y[idx];
-                      }
-                      sum.combine(acc);
-                  });
-          });
-      } // destruction du result_buf → sync implicite
-      return result;
+            cgh.parallel_for(
+                sycl::nd_range<1>{n_padded, WG_SIZE}, red,
+                [=](sycl::nd_item<1> item, auto& sum) {
+                    const std::size_t lid  = item.get_local_id(0);
+                    const std::size_t base = item.get_group(0) * stride;
+                    double acc = 0.0;
+                    #pragma unroll
+                    for (std::size_t k = 0; k < ITEMS_PER_WI; ++k) {
+                        const std::size_t idx = base + lid + k * WG_SIZE;
+                        if (idx < n) acc += x[idx] * y[idx];
+                    }
+                    sum.combine(acc);
+                });
+        });
+    } // destruction du result_buf → sync implicite
+    return result;
   }
 
-  inline void asynch_dot_product_reduction(sycl::buffer<double, 1>& x_buf,
-                                           sycl::buffer<double, 1>& y_buf,
-                                           sycl::buffer<double, 1>& result_buf,
-                                           sycl::event event)
+  inline void asynch_dot_product_mi300(sycl::buffer<double, 1>& x_buf,
+                                       sycl::buffer<double, 1>& y_buf,
+                                       sycl::buffer<double, 1>& result_buf,
+                                       sycl::event event)
   {
       using namespace mi300 ;
 
@@ -1497,7 +1592,7 @@ class KernelInternal
     case 3:
       return map3_reduce_sum(x, y);
     case 4: //MI300
-      return dot_product_reduction(x, y);
+      return dot_product_mi300(x, y);
     default:
       return sycl_reduce_sum(x, y);
     }
@@ -1514,7 +1609,7 @@ class KernelInternal
       asynch_map4_reduce_sum(x, y, res, event); // with sycl_reduction
       break;
     case 4:
-      asynch_dot_product_reduction(x, y, res, event);
+      asynch_dot_product_mi300(x, y, res, event);
       break;
     default:
       asynch_map5_reduce_sum(x, y, res, event);
