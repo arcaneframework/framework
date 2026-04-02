@@ -127,6 +127,21 @@ class MatrixInternal
   using QueueType           = sycl::queue;
   // clang-format on
 
+  template<int N>
+  struct TileT
+  {
+    static constexpr int NxN = N*N ;
+    inline std::size_t ijk(std::size_t k, int i, int j) const
+    {
+      return (k*NxN + i*N + j)*ellpack_size;
+    }
+
+    inline std::size_t ij(std::size_t local_id,int i, int j) const
+    {
+      return local_id*NxN+ i*N + j;
+    }
+  };
+
   struct Tile
   {
     static const int ellpack_size = EllPackSize ;
@@ -317,6 +332,83 @@ class MatrixInternal
   void notifyChanges();
   void endUpdate();
 
+  template <int N>
+  void multN(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+
+    // clang-format off
+    std::size_t pack_size  = ellpack_size;
+    auto nrows             = m_profile->getNRows();
+    auto nnz               = m_profile->getNnz();
+
+    auto internal_profile  = m_profile->internal();
+    auto& kcol             = internal_profile->getKCol();
+    auto& block_row_offset = internal_profile->getBlockRowOffset();
+    auto& block_cols       = internal_profile->getBlockCols();
+
+    auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
+    auto total_threads     = blocks_target * pack_size;
+
+    queue.submit(
+        [&](sycl::handler& cgh)
+        {
+          auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+          auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+          auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+
+          auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+          auto access_y                = y.template get_access<sycl::access::mode::discard_write>(cgh);
+
+          auto tile = TileT<N>() ;
+
+          sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+          sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+          cgh.parallel_for<class compute_mult>(r,
+              [=](sycl::nd_item<1> item_id)
+              {
+                 auto local_id  = item_id.get_local_id(0);
+                 auto global_id = item_id.get_global_id(0);
+
+                 for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                 {
+                    auto block_id = i/pack_size ;
+
+                    int begin           = access_block_row_offset[block_id] ;
+                    int end             = access_block_row_offset[block_id+1] ;
+
+                    #pragma unroll
+                    for(int ieq=0;ieq<N;++ieq)
+                    {
+                      ValueType value     = 0. ;
+                      for(int k=begin;k<end;++k)
+                      {
+                        //auto k = block_row_offset+j*ellpack_size+local_id ;
+                        const int col = access_cols[k * pack_size + local_id];
+                        if(col>=0)
+                          for(int ju=0;ju<N;++ju)
+                            lds_x[N*local_id+ju] = access_x[col*N+ju];
+                        item_id.barrier(sycl::access::fence_space::local_space);
+                        if(col>=0)
+                        {
+                          #pragma unroll
+                          for(int ju=0;ju<N;++ju)
+                            value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[local_id*N+ju] ;
+                        }
+                        item_id.barrier(sycl::access::fence_space::local_space);
+                      }
+                      access_y[i*N+ieq] = value ;
+                    }
+                 }
+               });
+        });
+  }
   void mult(ValueBufferType& x, ValueBufferType& y) const;
   void mult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
@@ -411,6 +503,7 @@ class MatrixInternal
   mutable IndexBufferPtrType m_recv_uids ;
   // clang-format on
 };
+
 
 /*---------------------------------------------------------------------------*/
 
