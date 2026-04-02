@@ -53,7 +53,7 @@ class ALIEN_EXPORT SYCLDistStructInfo
     auto const* kcol      = profile.kcol();
     auto const* lrow_size = profile.localRowSize();
     m_upper_diag_offset.resize(nrows);
-    for (int irow = 0; irow < nrows; ++irow)
+    for (std::size_t irow = 0; irow < nrows; ++irow)
     {
       int begin = kcol[irow] ;
       int end   = kcol[irow] + lrow_size[irow] ;

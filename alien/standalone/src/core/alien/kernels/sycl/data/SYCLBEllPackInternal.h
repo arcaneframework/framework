@@ -415,6 +415,163 @@ class MatrixInternal
   void addExtMult(ValueBufferType& x, ValueBufferType& y) const;
   void addExtMult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
+  template<int N>
+  void addLMultN(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+
+    std::size_t pack_size  = ellpack_size;
+    auto nrows             = m_profile->getNRows();
+    auto nnz               = m_profile->getNnz();
+
+    auto internal_profile  = m_profile->internal();
+    auto& kcol             = internal_profile->getKCol();
+    auto& block_row_offset = internal_profile->getBlockRowOffset();
+    auto& block_cols       = internal_profile->getBlockCols();
+
+    auto& mask             = internal_profile->getLowerMask();
+    // clang-format on
+    // clang-format off
+    queue.submit(
+       [&](sycl::handler& cgh)
+       {
+         auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+         auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+         auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+         auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+
+
+         auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+         auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+         auto blocks_needed = (nrows + ellpack_size - 1) / ellpack_size;
+         auto blocks_target = std::max(blocks_needed, num_groups * 4UL);
+         auto total_threads = blocks_target * ellpack_size;
+
+         auto tile = TileT<N>() ;
+         sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+         sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+         cgh.parallel_for<class compute_lmultn>(r,
+             [=](sycl::nd_item<1> item_id)
+             {
+                  auto local_id  = item_id.get_local_id(0);
+                  auto global_id = item_id.get_global_id(0);
+
+                  //for (auto i = id; i < nrows; i += item_id.get_range()[0])
+                  for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                  {
+                     auto block_id = i/pack_size ;
+
+                     int begin           = access_block_row_offset[block_id] ;
+                     int end             = access_block_row_offset[block_id+1] ;
+                     #pragma unroll
+                     for(int ieq=0;ieq<N;++ieq)
+                     {
+                       ValueType value = 0. ;
+                       for(int k=begin;k<end;++k)
+                       {
+                         //auto k = block_row_offset+j*ellpack_size+local_id ;
+                         const int col = access_cols[k * pack_size + local_id];
+                         if(col>=0)
+                           #pragma unroll
+                           for(int ju=0;ju<N;++ju)
+                             lds_x[N*local_id+ju] = access_x[N*col+ju];
+                         item_id.barrier(sycl::access::fence_space::local_space);
+                         if(access_mask[k * pack_size + local_id])
+                           #pragma unroll
+                           for(int ju=0;ju<N;++ju)
+                             value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[N*local_id+ju] ;
+                         item_id.barrier(sycl::access::fence_space::local_space);
+                       }
+                       access_y[i*N+ieq] += alpha*value ;
+                     }
+                  }
+              });
+       });
+  }
+
+  template<int N>
+  void addUMultN(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+    //auto total_threads = num_groups * ellpack_size;
+
+    // clang-format off
+    std::size_t pack_size  = ellpack_size;
+    auto nrows = m_profile->getNRows() ;
+    auto nnz   = m_profile->getNnz() ;
+
+    auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
+    auto total_threads     = blocks_target * ellpack_size;
+
+    auto internal_profile  = m_profile->internal() ;
+    auto& kcol             = internal_profile->getKCol() ;
+    auto& block_row_offset = internal_profile->getBlockRowOffset() ;
+    auto& block_cols       = internal_profile->getBlockCols() ;
+    auto& mask             = internal_profile->getUpperMask() ;
+    // COMPUTE VALUES
+    queue.submit(
+       [&](sycl::handler& cgh)
+       {
+         auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+         auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+         auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+         auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+
+
+         auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+         auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+         auto tile = TileT<N>() ;
+         sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+         sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+         cgh.parallel_for<class compute_umultn>(r,
+            [=](sycl::nd_item<1> item_id)
+            {
+              auto local_id  = item_id.get_local_id(0);
+              auto global_id = item_id.get_global_id(0);
+              for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+              {
+                 auto block_id = i/pack_size ;
+
+                 auto begin = access_block_row_offset[block_id] ;
+                 auto end   = access_block_row_offset[block_id+1] ;
+                 #pragma unroll
+                 for(int ieq=0;ieq<N;++ieq)
+                 {
+                   ValueType value = 0. ;
+                   for(int k=begin;k<end;++k)
+                   {
+                     const int col = access_cols[k * pack_size + local_id];
+                     if(col>=0)
+                       #pragma unroll
+                       for(int ju=0;ju<N;++ju)
+                         lds_x[local_id*N+ju] = access_x[col*N+ju];
+                     item_id.barrier(sycl::access::fence_space::local_space);
+                     if(access_mask[k * pack_size + local_id])
+                       #pragma unroll
+                       for(int ju=0;ju<N;++ju)
+                         value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[local_id*N+ju] ;
+                     item_id.barrier(sycl::access::fence_space::local_space);
+                   }
+                   access_y[i*N+ieq] += alpha*value ;
+                 }
+              }
+          });
+       });
+  }
+
   void addLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
   void addUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
 
