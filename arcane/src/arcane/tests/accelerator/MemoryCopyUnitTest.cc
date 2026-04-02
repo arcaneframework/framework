@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopyUnitTest.cc                                       (C) 2000-2025 */
+/* MemoryCopyUnitTest.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Service de test des noyaux de recopie mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -70,6 +70,7 @@ class MemoryCopyUnitTest
   void _executeCopy(eMemoryRessource mem_kind, bool use_queue);
   void _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index);
   void _fillIndexes(Int32 n1, NumArray<Int32, MDDim1>& indexes);
+  void _executeSimpleFill();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -134,6 +135,7 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
   _executeCopy(mem_kind, use_queue);
   _executeFill(mem_kind, use_queue, false);
   _executeFill(mem_kind, use_queue, true);
+  _executeSimpleFill();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -240,7 +242,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       MutableMemoryView t1_view(t1.to1DSpan());
       ConstMemoryView destination_view(destination_buffer.to1DSpan());
-      MemoryUtils::copyWithIndexedSource(t1_view, destination_view,indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyWithIndexedSource(t1_view, destination_view, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
       MemoryUtils::copyWithIndexedSource(t1_view, destination_view, {}, queue_ptr);
     }
@@ -427,6 +429,31 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     }
   }
   info() << "End of test Rank1";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryCopyUnitTest::
+_executeSimpleFill()
+{
+  info() << "Execute SimpleFill";
+
+  auto queue = makeQueue(m_runner);
+
+  constexpr int n1 = 2500;
+
+  Real3 x(1.0, 2.0, 3.0);
+  Real3 y(4.0, 5.0, 6.0);
+  Real3 z(-1.0, -2.0, -3.0);
+  Real3x3 wanted_value(x, y, z);
+  NumArray<Real3x3, MDDim1> values;
+  values.resize(n1);
+  values.fill(wanted_value, queue);
+
+  for (Int32 i = 0; i < n1; ++i)
+    if (values[i] != wanted_value)
+      ARCANE_FATAL("Bad value i={0} v={1} expected={2}", i, values[i], wanted_value);
 }
 
 /*---------------------------------------------------------------------------*/

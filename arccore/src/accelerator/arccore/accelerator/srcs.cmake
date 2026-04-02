@@ -3,6 +3,8 @@ set(SOURCES
   MemoryCopier.cc
   MemoryCopierTpl1.cc
   MemoryCopierTpl2.cc
+  MemoryCopierTpl3.cc
+  MemoryCopierTpl4.cc
 
   AcceleratorGlobal.h
   AcceleratorGlobal.cc

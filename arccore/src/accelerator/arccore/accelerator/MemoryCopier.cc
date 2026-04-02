@@ -40,6 +40,8 @@ AcceleratorSpecificMemoryCopyList()
   // explicites sont faites dans plusieurs fichiers.
   addExplicitTemplate1();
   addExplicitTemplate2();
+  addExplicitTemplate3();
+  addExplicitTemplate4();
 }
 
 /*---------------------------------------------------------------------------*/
