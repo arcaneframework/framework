@@ -367,7 +367,7 @@ class Array2
   void _resize(Int64 new_size,InitBehaviour rb)
   {
     Int64 old_size = m_md->dim1_size;
-    if (new_size==old_size)
+    if (new_size == old_size && !m_md->is_collective_allocator)
       return;
     _resize2(new_size,m_md->dim2_size,rb);
     m_md->dim1_size = new_size;
