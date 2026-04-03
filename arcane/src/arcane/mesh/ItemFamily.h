@@ -354,6 +354,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Integer m_current_variable_item_size = 0;
   IItemInternalSortFunction* m_item_sort_function = nullptr;
   std::set<IVariable*, decltype(&_cmpIVariablePtr)> m_used_variables;
+  std::set<IVariable*, decltype(&_cmpIVariablePtr)> m_used_shmem_variables;
   UniqueArray<ItemFamily*> m_child_families;
   ItemConnectivityInfo* m_local_connectivity_info = nullptr;
   ItemConnectivityInfo* m_global_connectivity_info = nullptr;
@@ -395,7 +396,11 @@ class ARCANE_MESH_EXPORT ItemFamily
  public:
 
   IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
-  void resizeVariables(bool force_resize) override { _resizeVariables(force_resize); }
+  void resizeVariables(bool force_resize) override
+  {
+    _resizeShMemVariables();
+    _resizeVariables(force_resize);
+  }
 
  private:
 
@@ -528,6 +533,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
+  void _resizeShMemVariables();
   void _shrinkConnectivityAndPrintInfos();
   void _addOnSizeChangedObservable(VariableRef& var_ref);
 };
