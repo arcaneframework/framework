@@ -67,8 +67,10 @@ class MatVecUnitTest
   void _initPressure();
   void _initMatrix();
   void _testMatrix2();
-  void _printResidualInfo(const Matrix& matrix,const Vector& vector_b,
+  void _printResidualInfo(const Matrix& matrix, const Vector& vector_b,
                           const Vector& vector_x);
+  void _buildPoissonMatrixAndRHS(Matrix& matrix, Vector& rhs_vector, Int32 cube_size);
+  void _testPoissonMatrix(Int32 cube_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -100,12 +102,17 @@ MatVecUnitTest::
 /*---------------------------------------------------------------------------*/
 
 void MatVecUnitTest::
-executeTest(){
+executeTest()
+{
   info() << "** EXEC TEST";
   //_testArcaneMatrix2();
   //_initMatrix();
   _testArcaneMatrix3();
   //_testMatrix2();
+  _testPoissonMatrix(4);
+  _testPoissonMatrix(8);
+  //_testPoissonMatrix(16);
+  //_testPoissonMatrix(24);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -567,8 +574,152 @@ _testArcaneMatrix2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Génère une matrice et le vector solution pour une
+ * équation de poisson 3D sur un cube unité.
+ *
+ * \a cube_size est le nombre d'inconnues par côté. La taille de la matrice
+ * est donc `cube_size ^ 3`.
+ */
+void MatVecUnitTest::
+_buildPoissonMatrixAndRHS(Matrix& matrix, Vector& rhs_vector, Int32 cube_size)
+{
+  UniqueArray<Real> val;
+  UniqueArray<Int32> col;
+  UniqueArray<Real> rhs;
 
+  double anisotropy = 1.0;
+
+  const Int32 n2 = cube_size * cube_size;
+  const Int32 n3 = n2 * cube_size;
+
+  col.reserve(n3 * 7);
+  val.reserve(n3 * 7);
+  rhs.reserve(n3);
+
+  const Real hx = 1.0;
+  const Real hy = hx * anisotropy;
+  const Real hz = hy * anisotropy;
+  const Real hx2 = hx * hx;
+  const Real hy2 = hy * hy;
+  const Real hz2 = hz * hz;
+
+  UniqueArray<Int32> rows_size;
+  rows_size.reserve(n3);
+  Int32 last_column_index = 0;
+  Int32 index = 0;
+  for (Int32 k = 0; k < cube_size; ++k) {
+    for (Int32 j = 0; j < cube_size; ++j) {
+      for (Int32 i = 0; i < cube_size; ++i, ++index) {
+        if (k > 0) {
+          col.add(index - n2);
+          val.add(-1.0 / hz2);
+        }
+
+        if (j > 0) {
+          col.add(index - cube_size);
+          val.add(-1.0 / hy2);
+        }
+
+        if (i > 0) {
+          col.add(index - 1);
+          val.add(-1.0 / hx2);
+        }
+
+        col.add(index);
+        val.add((2 / hx2 + 2 / hy2 + 2 / hz2));
+
+        if (i + 1 < cube_size) {
+          col.add(index + 1);
+          val.add(-1.0 / hx2);
+        }
+
+        if (j + 1 < cube_size) {
+          col.add(index + cube_size);
+          val.add(-1.0 / hy2);
+        }
+
+        if (k + 1 < cube_size) {
+          col.add(index + n2);
+          val.add(-1.0 / hz2);
+        }
+
+        rhs.add(1.0);
+        Int32 nb_row = col.size() - last_column_index;
+        //info() << "NB_ROW=" << nb_row;
+        rows_size.add(nb_row);
+        last_column_index = col.size();
+      }
+    }
+  }
+  Int32 nb_row = rows_size.size();
+  Matrix mat(nb_row, nb_row);
+  mat.setRowsSize(rows_size);
+  mat.setValues(col, val);
+  matrix = mat;
+
+  Vector vec(nb_row);
+  vec.values().copy(rhs);
+  rhs_vector = vec;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MatVecUnitTest::
+_testPoissonMatrix(const Int32 cube_size)
+{
+  info() << "Testing 3D Poisson Matrix cube_size=" << cube_size;
+
+  Matrix matrix;
+  Vector rhs;
+  _buildPoissonMatrixAndRHS(matrix, rhs, cube_size);
+  Int32 nb_row = matrix.nbRow();
+
+  ConjugateGradientSolver cg;
+
+  Vector x_diag(nb_row);
+  ArrayView<Real> x_diag_view(x_diag.values());
+  x_diag_view.fill(0.0);
+
+  {
+    DiagonalPreconditioner diag(matrix);
+    cg.solve(matrix, rhs, x_diag, 1e-12, &diag);
+    info() << String::format("DIAG NB_ROW={0} NB ITER={1} RESIDU={2}", nb_row, cg.nbIteration(), cg.residualNorm());
+  }
+
+  Vector x_amg(nb_row);
+  ArrayView<Real> x_amg_view(x_amg.values());
+  x_amg_view.fill(0.0);
+
+  {
+    AMGPreconditioner amg_preconditioner(traceMng());
+    amg_preconditioner.build(matrix);
+    cg.solve(matrix, rhs, x_amg, 1e-12, &amg_preconditioner);
+    info() << String::format("AMG NB_ROW={0} NB ITER={1} RESIDU={2}", nb_row, cg.nbIteration(), cg.residualNorm());
+  }
+
+  Vector x2(nb_row);
+  ArrayView<Real> x2_view(x2.values());
+  x2_view.fill(0.0);
+  if (nb_row < 500) {
+    DirectSolver direct_solver;
+    direct_solver.solve(matrix, rhs, x2);
+  }
+  for (Int32 i = 0; i < 10; ++i) {
+    Real v_diag = x_diag_view[i];
+    Real v_amg = x_amg_view[i];
+    Real v_ref = x2_view[i];
+    info() << "I=" << i << " X_DIAG=" << v_diag << " X_AMG=" << v_amg << " REF=" << v_ref
+           << " diff_diag=" << (v_diag - v_ref) << " diff_amg=" << (v_amg - v_ref)
+           << " diff_amg_diag=" << (v_diag - v_amg);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
