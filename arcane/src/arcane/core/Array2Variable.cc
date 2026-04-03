@@ -495,7 +495,11 @@ _internalResize(const VariableResizeArgs& resize_args)
 
   Integer dim2_size = data_values.dim2Size();
 
-  if (nb_additional_element!=0){
+  const bool is_collective_allocator = data_values.allocator()->isCollective();
+  if (is_collective_allocator) {
+    data_values.reserve(new_size+nb_additional_element*dim2_size);
+  }
+  else if (nb_additional_element != 0) {
     Integer capacity = data_values.capacity();
     if (new_size>capacity)
       data_values.reserve(new_size+nb_additional_element*dim2_size);
