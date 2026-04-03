@@ -1,12 +1,15 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des ios -->
+<!-- Options du jeu de donnÃ©es pour le service de test des ios -->
 
 <service name="IosUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
+  <variables>
+    <variable field-name="test_cell_variable" name="TestCellVariable" data-type="real" item-kind="cell" dim="0" />
+  </variables>
   <options>
     <simple
       name = "output-file-name"
