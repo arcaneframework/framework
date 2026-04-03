@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2025 */
+/* DynamicMesh.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -701,8 +701,8 @@ initializeVariables(const XmlNode& init_node)
     String var_name = i.attrValue("nom");
     IVariable* var = vm->findMeshVariable(this,var_name);
     if (!var){
-      error() << "Failed to initialize the variable `" << var_name
-              << "'\nNo variable with that name exists";
+      error() << "Failed to initialize the variable '" << var_name
+              << "' : no variable with that name exists";
       has_error = true;
       continue;
     }
@@ -710,29 +710,36 @@ initializeVariables(const XmlNode& init_node)
     if (!var->isUsed())
       continue;
 
+    // Teste si la variable a une famille. Normalement c'est toujours
+    // le cas car on a utilisé findMeshVariable() pour trouver la variable.
+    IItemFamily* family = var->itemFamily();
+    if (!family) {
+      error() << "Variable '" << var->name() << "' has no family";
+      continue;
+    }
     String grp_name = i.attrValue("groupe");
-    ItemGroup grp = findGroup(grp_name);
+    ItemGroup grp = family->findGroup(grp_name);
 
     if (grp.null()){
-      error() << "Failed to initialize the variable `" << var_name
-              << "' on the group `" << grp_name << "'\n"
-              << "No group with that name exists";
+      error() << "Failed to initialize the variable '" << var_name
+              << "' on the group `" << grp_name << "' : "
+              << "No group with that name exists for family '" << family->name() << "'\n";
       has_error = true;
       continue;
     }
     debug() << "Read value variable `" << grp_name
-		 << "' `" << var_name << "' " << var;
+            << "' `" << var_name << "' " << var;
     String val_str = i.attrValue("valeur");
     bool ret = var->initialize(grp,val_str);
     if (ret){
-      error() << "Failed to initialized the variable `" << var_name
+      error() << "Failed to initialized the variable '" << var_name
               << "' on the group `" << grp_name << "'";
       has_error = true;
       continue;
     }
   }
   if (has_error)
-    fatal() << "Variable initialization failed";
+    ARCANE_FATAL("Variables initialization failed");
 }
 
 /*---------------------------------------------------------------------------*/
