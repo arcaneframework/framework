@@ -2613,20 +2613,22 @@ namespace SYCLInternal
     auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
     auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
-    // building the best number of global thread
-    auto total_threads = num_groups * ellpack_size;
 
     // clang-format off
-    int N      = this->m_N;
-    int NxN    = this->m_NxN;
-    int pack_size = ellpack_size ;
-    auto nrows = m_profile->getNRows() ;
-    auto nnz   = m_profile->getNnz() ;
+    int N                  = this->m_N;
+    int NxN                = this->m_NxN;
+    std::size_t pack_size  = ellpack_size ;
+    auto nrows             = m_profile->getNRows() ;
+    auto nnz               = m_profile->getNnz() ;
 
     auto internal_profile  = m_profile->internal() ;
     auto& kcol             = internal_profile->getKCol() ;
     auto& block_row_offset = internal_profile->getBlockRowOffset() ;
     auto& block_cols       = internal_profile->getBlockCols() ;
+
+    auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
+    auto total_threads     = blocks_target * ellpack_size;
 
       // COMPUTE VALUES
     queue.submit([&](sycl::handler& cgh)
@@ -2637,6 +2639,31 @@ namespace SYCLInternal
                    auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
                    if(N==1)
                    {
+                     //sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
+                     sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+
+                     cgh.parallel_for<class compute_inv_diag>(r,
+                        [=](sycl::nd_item<1> item_id)
+                        {
+                          auto local_id  = item_id.get_local_id(0);
+                          auto global_id = item_id.get_global_id(0);
+                          for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                          {
+                             auto block_id = i/pack_size ;
+                             //auto local_id = i%ellpack_size ;
+
+                             int begin = access_block_row_offset[block_id];
+                             int end   = access_block_row_offset[block_id+1];
+                             for(int k=begin;k<end;++k)
+                             {
+                               auto kcol = k*pack_size+local_id ;
+                               if((access_cols[kcol])==int(i) && (access_values[kcol]!=0) )
+                                 access_y[i] = 1./access_values[kcol] ;
+                             }
+                          }
+                        });
+
+                     /*
                      cgh.parallel_for<class compute_inv_diag>(
                         sycl::range<1>{total_threads},
                         [=] (sycl::item<1> item_id)
@@ -2649,21 +2676,46 @@ namespace SYCLInternal
                           for (auto i = id; i < nrows; i += item_id.get_range()[0])
                           {
                              auto block_id = i/ellpack_size ;
-                             auto local_id = i%ellpack_size ;
+                             auto local_id = i%ellpack_size ;*/
 
-                             int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
-                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-                             for(int j=0;j<block_row_size;++j)
-                             {
-                               auto k = block_row_offset+j*ellpack_size+local_id ;
-                               if((access_cols[k])==int(i) && (access_values[k]!=0) )
-                                 access_y[i] = 1./access_values[k] ;
-                             }
-                          }
-                        });
                    }
                    else
                    {
+                     //sycl::local_accessor<ValueType, 1> lds_x{pack_size, cgh};
+                     sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+                     cgh.parallel_for<class compute_inv_diagN>(r,
+                        [=](sycl::nd_item<1> item_id)
+                        {
+                          auto local_id  = item_id.get_local_id(0);
+                          auto global_id = item_id.get_global_id(0);
+                          for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                          {
+                             auto block_id = i/pack_size ;
+
+                             int begin = access_block_row_offset[block_id];
+                             int end   = access_block_row_offset[block_id+1];
+
+                             for(int k=begin;k<end;++k)
+                             {
+                               auto kcol = k*pack_size+local_id ;
+                               std::size_t col = access_cols[kcol] ;
+                               if(col==i)
+                               {
+                                 for(int ieq=0;ieq<N;++ieq)
+                                 {
+                                   auto kval = k*NxN + ieq*N + ieq ;
+                                   auto diag = access_values[kval*pack_size+local_id] ;
+                                   if(diag!=0)
+                                     access_y[i*N+ieq] = 1./diag;
+                                   else
+                                     access_y[i*N+ieq] = 1.;
+                                 }
+                               }
+                             }
+                          }
+                        });
+
+                             /*
                      cgh.parallel_for<class compute_inv_diagN>(
                         sycl::range<1>{total_threads},
                         [=] (sycl::item<1> item_id)
@@ -2677,28 +2729,7 @@ namespace SYCLInternal
                           {
                              auto block_id = i/pack_size ;
                              auto local_id = i%pack_size ;
-
-                             int block_row_offset   = access_block_row_offset[block_id] ;
-                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
-                             for(int k=0;k<block_row_size;++k)
-                             {
-                               auto kcol = (block_row_offset+k)*ellpack_size+local_id ;
-                               std::size_t col = access_cols[kcol] ;
-                               if(col==i)
-                               {
-                                 for(int ieq=0;ieq<N;++ieq)
-                                 {
-                                   auto kval = (block_row_offset+k)*NxN + ieq*N + ieq ;
-                                   auto diag = access_values[kval*ellpack_size+local_id] ;
-                                   if(diag!=0)
-                                     access_y[i*N+ieq] = 1./diag;
-                                   else
-                                     access_y[i*N+ieq] = 1.;
-                                 }
-                               }
-                             }
-                          }
-                        });
+*/
                    }
                  });
     /*
