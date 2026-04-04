@@ -548,7 +548,7 @@ initialize(const ItemGroup& group,const String& value)
   eItemKind group_kind = group.itemKind();
 
   error() << "The type of elements (" << itemKindName(group_kind)
-          << ") of the group `" << group.name() << "' does not match \n"
+          << ") of the group `" << group.name() << "' does not match "
           << "the type of the variable (" << itemKindName(this->itemKind()) << ").";
   return true;
 }
