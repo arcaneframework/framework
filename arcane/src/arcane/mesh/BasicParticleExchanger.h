@@ -147,6 +147,8 @@ class BasicParticleExchanger
    */
   Int32 m_max_nb_message_without_reduce = 15;
 
+  bool m_support_shmem_variables = false;
+
  private:
 
   void _clearMessages();

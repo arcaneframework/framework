@@ -67,11 +67,14 @@ initialize(IItemFamily* item_family)
   m_rank = m_parallel_mng->commRank();
   m_timer = new Timer(m_parallel_mng->timerMng(),"BasicParticleExchanger",Timer::TimerReal);
 
-  if (options())
+  if (options()) {
     m_max_nb_message_without_reduce = options()->maxNbMessageWithoutReduce();
+    m_support_shmem_variables = options()->supportShmemVariables();
+  }
 
   info() << "Initialize BasicParticleExchanger family=" << item_family->name();
   info() << "-- MaxNbMessageWithoutReduce = " << m_max_nb_message_without_reduce;
+  info() << "-- SupportShmemVariables = " << m_support_shmem_variables;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -407,17 +410,32 @@ _waitMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,IFunctor* 
   UniqueArray<ISerializeMessage*> current_messages(m_waiting_messages);
   m_waiting_messages.clear();
 
+  Int32 nb_end_update = 0;
+  Int32 max_nb_messages = 0;
+  if (m_support_shmem_variables) {
+    max_nb_messages = m_parallel_mng->reduce(MessagePassing::ReduceMax, current_messages.size());
+  }
+
   Int64UniqueArray items_to_create_unique_id;
   Int64UniqueArray items_to_create_cells_unique_id;
   Int32UniqueArray items_to_create_local_id;
   Int32UniqueArray items_to_create_cells_local_id;
-  for( ISerializeMessage* sm : current_messages ){
-    if (!sm->isSend())
+  for (ISerializeMessage* sm : current_messages) {
+    if (!sm->isSend()) {
       _deserializeMessage(sm,items_to_create_unique_id,items_to_create_cells_unique_id,
                           items_to_create_local_id,items_to_create_cells_local_id,
                           item_group,new_particle_local_ids);
+      nb_end_update++;
+    }
     delete sm;
   }
+
+  if (m_support_shmem_variables) {
+    for (; nb_end_update < max_nb_messages; ++nb_end_update) {
+      m_item_family->endUpdate();
+    }
+  }
+
   if (!m_waiting_messages.empty())
     ARCANE_FATAL("Pending messages n={0}",m_waiting_messages.size());
 }
