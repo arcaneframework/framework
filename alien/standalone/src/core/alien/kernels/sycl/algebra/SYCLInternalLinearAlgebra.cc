@@ -302,10 +302,11 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
 #ifdef ALIEN_USE_PERF_TIMER
   SentryType s(m_timer, "SYCL-DOT-F");
 #endif
-  m_internal->dot(vx.internal()->values(), vy.internal()->values(), res.deviceValue());
+  m_internal->dot(vx.internal()->values(), vy.internal()->values(), res);
 
   auto& dist = vx.distribution();
   if (dist.isParallel()) {
+    res.get() ;
     Real local_value = res() ;
     Real* x = &res();
     auto request = mpNonBlockingAllReduce(dist.parallelMng(),

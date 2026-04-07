@@ -463,27 +463,51 @@ class LUFactorisationAlgo
 
       Block2D aik(N,N) ;
       // clang-format on
+      /*
+      alien_info([&] {
+        cout()<<"BLOCK FACTORIZATION : "<<m_is_parallel<<" "<<m_bjacobi;
+      });*/
       if (m_is_parallel) {
         auto& local_row_size = matrix.getDistStructInfo().m_local_row_size;
+
         if (m_bjacobi) {
           for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
           {
+            /*alien_info([&] {
+              cout()<<"ROW : "<<irow<<" "<<kcol[irow]<<" "<<dcol[irow]<<" "<<kcol[irow+1]-kcol[irow]<<" "<<local_row_size[irow];
+            });*/
             for (int k = kcol[irow]; k < dcol[irow]; ++k) // k=1 ->i-1
             {
               int krow = cols[k];
+              /*alien_info([&] {
+                cout()<<"\tCOL : "<<k<<" "<<cols[k]<<" "<<kcol[krow]<<" "<<local_row_size[krow];
+              });*/
+
               //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
               //values[k] = aik;
               aik = Block2DView(values+k*N2,N,N) * inv(Block2DView(values+dcol[krow]*N2,N,N)) ;
               Block2DView(values+k*N2,N,N) = aik ;
+              /*alien_info([&] {
+                cout()<<"\t\tVALUES["<<k<<"]=";
+                for(int i=0;i<N;++i)
+                  for(int j=0;j<N;++j)
+                    cout()<<"\t\t\t MAT("<<i<<","<<j<<")="<<values[k*N2+i*N+j];
+              });*/
               for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
                 m_work[cols[l]] = l;
-              for (int j = k + 1; j < kcol[krow] + local_row_size[irow]; ++j) // j=k+1->n
+              for (int j = k + 1; j < kcol[irow] + local_row_size[irow]; ++j) // j=k+1->n
               {
                 int jcol = cols[j];
                 int kj = m_work[jcol];
                 if (kj != -1) {
                   //values[j] -= aik * values[kj]; // aij = aij - aik*akj
                   Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+                  /*alien_info([&] {
+                    cout()<<"\t\tVALUES["<<j<<"]=";
+                    for(int ii=0;ii<N;++ii)
+                      for(int jj=0;jj<N;++jj)
+                        cout()<<"\t\t\t MAT("<<ii<<","<<jj<<")="<<values[j*N2+ii*N+jj];
+                  });*/
                 }
               }
               for (int l = kcol[krow]; l < kcol[krow] + local_row_size[krow]; ++l)
@@ -533,13 +557,27 @@ class LUFactorisationAlgo
       else {
         for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
         {
+          /*alien_info([&] {
+            cout()<<"ROW : "<<irow<<" "<<kcol[irow]<<" "<<dcol[irow]<<" "<<kcol[irow+1]-kcol[irow];
+          });*/
           for (int k = kcol[irow]; k < dcol[irow]; ++k) // k=1 ->i-1
           {
             int krow = cols[k];
+            /*alien_info([&] {
+              cout()<<"\tCOL : "<<k<<" "<<cols[k];
+            });*/
+
             //ValueType aik = values[k] / values[dcol[krow]]; // aik = aik/akk
             //values[k] = aik;
             aik = Block2DView(values+k*N2,N,N) * inv(Block2DView(values+dcol[krow]*N2,N,N)) ;
             Block2DView(values+k*N2,N,N) = aik ;
+            /*alien_info([&] {
+              cout()<<"\t\tVALUES["<<k<<"]=";
+              for(int i=0;i<N;++i)
+                for(int j=0;j<N;++j)
+                  cout()<<"\t\t\t MAT("<<i<<","<<j<<")="<<values[k*N2+i*N+j];
+            });*/
+
             for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
               m_work[cols[l]] = l;
             for (int j = k + 1; j < kcol[irow + 1]; ++j) // j=k+1->n
@@ -549,6 +587,12 @@ class LUFactorisationAlgo
               if (kj != -1) {
                 //values[j] -= aik * values[kj]; // aij = aij - aik*akj
                 Block2DView(values+j*N2,N,N) -= aik * Block2DView(values+kj*N2,N,N) ;
+                /*alien_info([&] {
+                  cout()<<"\t\tVALUES["<<j<<"]=";
+                  for(int ii=0;ii<N;++ii)
+                    for(int jj=0;jj<N;++jj)
+                      cout()<<"\t\t\t MAT("<<ii<<","<<jj<<")="<<values[j*N2+ii*N+jj];
+                });*/
               }
             }
             for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)

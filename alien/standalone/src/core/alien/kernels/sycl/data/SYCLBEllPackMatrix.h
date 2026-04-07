@@ -74,16 +74,17 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
  public:
   // clang-format off
   static constexpr bool                                     on_host_only = false ;
+  //static constexpr int                                      PKSIZE       = 256 ;
   typedef BackEnd::tag::sycl                                TagType ;
   typedef ValueT                                            ValueType;
   typedef ValueT                                            value_type ;
 
   typedef SYCLInternal::SYCLDistStructInfo                  DistStructInfo;
-  typedef SYCLInternal::MatrixInternal<ValueType,1024>      MatrixInternal1024;
+  typedef SYCLInternal::MatrixInternal<ValueType,PKSIZE>    MatrixInternalType;
 
 
-  typedef BEllPackStructInfo<1024,int>                      ProfileInternal1024;
-  typedef BEllPackStructInfo<1024,int>                      ProfileType;
+  typedef BEllPackStructInfo<PKSIZE,int>                    ProfileInternalType;
+  typedef BEllPackStructInfo<PKSIZE,int>                    ProfileType;
   typedef typename ProfileType::IndexType                   IndexType ;
 
   typedef Alien::StdTimer                                   TimerType ;
@@ -107,7 +108,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   ProfileType const& getProfile() const
   {
-    return *m_profile1024;
+    return *m_profilePKSIZE;
   }
 
   HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) const;
@@ -204,9 +205,9 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
     return m_recv_policy;
   }
 
-  MatrixInternal1024* internal() { return m_matrix1024.get(); }
+  MatrixInternalType* internal() { return m_matrixPKSIZE.get(); }
 
-  MatrixInternal1024 const* internal() const { return m_matrix1024.get(); }
+  MatrixInternalType const* internal() const { return m_matrixPKSIZE.get(); }
 
   void allocateDevicePointers(std::size_t nrows,
                               std::size_t nnz,
@@ -247,12 +248,12 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   };
 
   // clang-format off
-  std::unique_ptr<ProfileInternal1024>    m_profile1024;
-  std::unique_ptr<MatrixInternal1024>     m_matrix1024;
+  std::unique_ptr<ProfileInternalType>    m_profilePKSIZE;
+  std::unique_ptr<MatrixInternalType>     m_matrixPKSIZE;
 
-  std::unique_ptr<ProfileInternal1024>    m_ext_profile1024;
+  std::unique_ptr<ProfileInternalType>    m_ext_profilePKSIZE;
 
-  int                                     m_ellpack_size = 1024 ;
+  int                                     m_ellpack_size = PKSIZE ;
   std::vector<int>                        m_block_row_offset ;
   std::vector<int>                        m_ext_block_row_offset ;
 

@@ -51,7 +51,7 @@ class FLUFactorisationAlgo
 
     if (m_nb_factorization_iter == 0) {
       if(this->m_block_size==1)
-        BaseType::factorize(*this->m_lu_matrix, false);
+        BaseType::factorize(*this->m_lu_matrix, true);
       else
       {
         BaseType::blockFactorize(*this->m_lu_matrix);

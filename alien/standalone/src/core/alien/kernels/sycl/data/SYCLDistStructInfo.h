@@ -17,20 +17,19 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
-namespace Alien
-{
-
+namespace Alien {
 
 /*---------------------------------------------------------------------------*/
 namespace SYCLInternal {
 
 
-class ALIEN_EXPORT SYCLDistStructInfo : public SimpleCSRInternal::DistStructInfo
+class ALIEN_EXPORT SYCLDistStructInfo
+: public SimpleCSRInternal::DistStructInfo
 {
  public:
-  typedef SimpleCSRInternal::DistStructInfo BaseType ;
-
-  typedef BEllPackStructInfo<1024,int>      ProfileType;
+  //static constexpr int PKSIZE   = 256 ;
+  using BaseType                = SimpleCSRInternal::DistStructInfo;
+  using ProfileType             = BEllPackStructInfo<PKSIZE,int>;
 
   SYCLDistStructInfo()
   : BaseType()
@@ -48,19 +47,45 @@ class ALIEN_EXPORT SYCLDistStructInfo : public SimpleCSRInternal::DistStructInfo
     return *this;
   }
 
-
-  int const* dcol([[maybe_unused]] const ProfileType& profile) const
+  void computeUpperDiagOffset(const ProfileType& profile) const
   {
-    //getUpperDiagOffset(profile);
-    //return m_upper_diag_offset.data();
-    return nullptr ;
+    auto nrows            = profile.getNRows();
+    auto const* kcol      = profile.kcol();
+    auto const* lrow_size = profile.localRowSize();
+    m_upper_diag_offset.resize(nrows);
+    for (std::size_t irow = 0; irow < nrows; ++irow)
+    {
+      int begin = kcol[irow] ;
+      int end   = kcol[irow] + lrow_size[irow] ;
+      int index = begin;
+      for (int k = begin; k < end; ++k)
+      {
+        if (m_cols[k] < irow)
+          ++index;
+        else
+          break;
+      }
+      m_upper_diag_offset[irow] = index;
+    }
   }
 
+  ConstArrayView<Integer> getUpperDiagOffset(const ProfileType& profile) const
+  {
+    if (m_upper_diag_offset.size() == 0)
+      computeUpperDiagOffset(profile);
+    return m_upper_diag_offset.constView();
+  }
+
+  int const* dcol(const ProfileType& profile) const
+  {
+    getUpperDiagOffset(profile);
+    return this->m_upper_diag_offset.data();
+  }
 
 };
 
-}
+} // end namespace SYCLInternal
 
-}
+} // end namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

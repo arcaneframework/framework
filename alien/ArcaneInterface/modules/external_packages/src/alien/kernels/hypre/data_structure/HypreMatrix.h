@@ -121,6 +121,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
                                 IndexType* ncols_d,
                                 IndexType* cols_d,
                                 ValueType* values_d) const ;
+
   HCSRView hcsrView(BackEnd::Memory::eType memory, int nrows, int nnz) ;
 
  public:

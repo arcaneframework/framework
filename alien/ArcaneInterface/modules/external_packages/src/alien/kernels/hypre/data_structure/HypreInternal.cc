@@ -6,12 +6,17 @@
 //-----------------------------------------------------------------------------
 
 #include <alien/AlienExternalPackagesPrecomp.h>
+#include <alien/utils/ObjectWithTrace.h>
 #include "HypreInternal.h"
 #include <numeric>
 
 #ifdef ALIEN_USE_CUDA
 #include <cuda_runtime.h>
 #endif
+#ifdef ALIEN_USE_HIP
+#include <hip_runtime.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -75,20 +80,27 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
     const int* cols, const Arccore::Real* values)
 {
 #ifdef PRINT_DEBUG_INFO
+  alien_info([&] {
+  cout()<<"HYPREMATRXIXINTERNAL SET MATRXI VALUES : "<<nrow<<" "<<m_memory_type;
+  });
+
   if(m_memory_type==BackEnd::Memory::Host)
   {
+    int nnz = std::accumulate(ncols,ncols+nrow,0);
+    alien_info([&]{
+      cout()<<"MATRIX : "<<nrow<<" "<<nnz;
     int offset = 0 ;
     for(int i=0;i<nrow;++i)
     {
       int row_size = ncols[i];
-      std::cout<<"MAT["<<i<<"]:";
+      cout()<<"MAT["<<i<<","<<row_size<<"]:";
       for(int k=0;k<row_size;++k)
       {
-        std::cout<<values[offset+k]<<" ";
+        cout()<<'\t'<<cols[offset+k]<<" "<<values[offset+k]<<" ";
       }
-      std::cout<<std::endl ;
       offset += row_size;
     }
+    });
   }
   else
   {
@@ -97,18 +109,22 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
     int nnz = std::accumulate(row_size.begin(),row_size.end(),0);
     std::vector<ValueType> val(nnz) ;
     cudaMemcpy(val.data(), values, nnz * sizeof(ValueType), cudaMemcpyDeviceToHost);
+    std::vector<int> h_cols(nnz) ;
+    cudaMemcpy(h_cols.data(), cols, nnz * sizeof(int), cudaMemcpyDeviceToHost);
 
+    alien_info([&]{
+      cout()<<"MATRIX : "<<nrow<<" "<<nnz;
     int offset = 0 ;
     for(int i=0;i<nrow;++i)
     {
-      std::cout<<"MAT["<<i<<","<<row_size[i]<<"]:";
+      cout()<<"MAT["<<i<<","<<row_size[i]<<"]:";
       for(int k=0;k<row_size[i];++k)
       {
-        std::cout<<val[offset+k]<<" ";
+        cout()<<'\t'<<h_cols[offset+k]<<" "<<val[offset+k]<<" ";
       }
-      std::cout<<std::endl ;
       offset += row_size[i];
     }
+    });
   }
 #endif
   int ierr = HYPRE_IJMatrixSetValues(
@@ -130,6 +146,13 @@ MatrixInternal::allocateHostPointers(std::size_t nrows,
   cudaMallocHost(cols, nnz * sizeof(HYPRE_BigInt));
   cudaMallocHost(values, nnz * sizeof(ValueType));
 #endif
+#ifdef ALIEN_USE_HIP
+  hipHostMalloc(rows, nrows * sizeof(HYPRE_BigInt));
+  hipHostMalloc(ncols, nrows * sizeof(HYPRE_Int));
+  hipHostMalloc(cols, nnz * sizeof(HYPRE_BigInt));
+  hipHostMalloc(values, nnz * sizeof(ValueType));
+#endif
+
 }
 
 void
@@ -144,6 +167,13 @@ MatrixInternal::freeHostPointers(IndexType* rows,
   cudaFreeHost(cols);
   cudaFreeHost(values);
 #endif
+#ifdef ALIEN_USE_HIP
+  hipHostFree(rows);
+  hipHostFree(ncols);
+  hipHostFree(cols);
+  hipHostFree(values);
+#endif
+
 }
 
 void
@@ -160,6 +190,12 @@ MatrixInternal::allocateDevicePointers(std::size_t nrows,
   cudaMalloc(cols, nnz * sizeof(IndexType));
   cudaMalloc(values, nnz * sizeof(ValueType));
 #endif
+#ifdef ALIEN_USE_HIP
+  hipMalloc(rows, nrows * sizeof(IndexType));
+  hipMalloc(ncols, nrows * sizeof(IndexType));
+  hipMalloc(cols, nnz * sizeof(IndexType));
+  hipMalloc(values, nnz * sizeof(ValueType));
+#endif
 }
 
 void
@@ -174,6 +210,13 @@ MatrixInternal::freeDevicePointers(IndexType* rows,
   cudaFree(cols);
   cudaFree(values);
 #endif
+#ifdef ALIEN_USE_HIP
+  hipFree(rows);
+  hipFree(ncols);
+  hipFree(cols);
+  hipFree(values);
+#endif
+
 }
 
 ;
@@ -197,6 +240,14 @@ MatrixInternal::freeDevicePointers(IndexType* rows,
   cudaMemcpy(cols_d, cols_h, nnz * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
   cudaMemcpy(values_d, values_h, nnz * sizeof(HYPRE_Complex), cudaMemcpyHostToDevice);
 #endif
+#ifdef ALIEN_USE_HIP
+  // Copier Host -> Device
+  hipMemcpy(rows_d, rows_h, nrows * sizeof(HYPRE_BigInt), hipMemcpyHostToDevice);
+  hipMemcpy(ncols_d, ncols_h, nrows * sizeof(HYPRE_Int), hipMemcpyHostToDevice);
+  hipMemcpy(cols_d, cols_h, nnz * sizeof(HYPRE_BigInt), hipMemcpyHostToDevice);
+  hipMemcpy(values_d, values_h, nnz * sizeof(HYPRE_Complex), hipMemcpyHostToDevice);
+#endif
+
 }
 
 void
@@ -218,6 +269,14 @@ MatrixInternal::copyDeviceToHostPointers(std::size_t nrows,
  cudaMemcpy(cols_h, cols_d    , nnz   * sizeof(HYPRE_BigInt),  cudaMemcpyDeviceToHost);
  cudaMemcpy(values_h, values_d, nnz   * sizeof(HYPRE_Complex), cudaMemcpyDeviceToHost);
 #endif
+#ifdef ALIEN_USE_HIP
+ // Copier Device -> Host
+ hipMemcpy(rows_h, rows_d    , nrows * sizeof(HYPRE_BigInt),  hipMemcpyDeviceToHost);
+ hipMemcpy(ncols_h, ncols_d  , nrows * sizeof(HYPRE_Int),     hipMemcpyDeviceToHost);
+ hipMemcpy(cols_h, cols_d    , nnz   * sizeof(HYPRE_BigInt),  hipMemcpyDeviceToHost);
+ hipMemcpy(values_h, values_d, nnz   * sizeof(HYPRE_Complex), hipMemcpyDeviceToHost);
+#endif
+
 }
 /*---------------------------------------------------------------------------*/
 VectorInternal::~VectorInternal()
@@ -233,6 +292,13 @@ VectorInternal::~VectorInternal()
     if(m_zeros_device)
       cudaFree(m_zeros_device);
 #endif
+#ifdef ALIEN_USE_HIP
+    if(m_rows)
+      hipFree(m_rows);
+    if(m_zeros_device)
+      hipFree(m_zeros_device);
+#endif
+
   }
 }
 
@@ -243,6 +309,10 @@ void VectorInternal::setRows(std::size_t nrow,IndexType const* h_rows)
 #ifdef ALIEN_USE_CUDA
     cudaMalloc(&m_rows, nrow * sizeof(IndexType));
     cudaMemcpy(m_rows, h_rows, nrow * sizeof(HYPRE_BigInt), cudaMemcpyHostToDevice);
+#endif
+#ifdef ALIEN_USE_HIP
+    hipMalloc(&m_rows, nrow * sizeof(IndexType));
+    hipMemcpy(m_rows, h_rows, nrow * sizeof(HYPRE_BigInt), hipMemcpyHostToDevice);
 #endif
   }
 }
@@ -386,6 +456,9 @@ VectorInternal::getValuesToDevice(const int nrow, const int* rows, Arccore::Real
 #ifdef ALIEN_USE_CUDA
     cudaMemcpy(values_d, values.data(), nrow * sizeof(ValueType), cudaMemcpyDeviceToHost);
 #endif
+#ifdef ALIEN_USE_HIP
+    hipMemcpy(values_d, values.data(), nrow * sizeof(ValueType), hipMemcpyDeviceToHost);
+#endif
     return (ierr == 0);
   }
   else
@@ -427,7 +500,18 @@ VectorInternal::getValuesToHost(const int nrow, const int* rows, Arccore::Real* 
     cudaFree(values_d);
     return (ierr == 0);
 #else
+#ifdef ALIEN_USE_HIP
+    if(m_rows==nullptr)
+      setRows(nrow,rows) ;
+    ValueType* values_d;
+    hipMalloc(&values_d, nrow * sizeof(ValueType));
+    int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, m_rows, values_d);
+    hipMemcpy(values_h, values_d, nrow * sizeof(ValueType), hipMemcpyDeviceToHost);
+    hipFree(values_d);
+    return (ierr == 0);
+#else
     return false ;
+#endif
 #endif
   }
 }
@@ -436,6 +520,10 @@ void VectorInternal::allocateDevicePointers(std::size_t local_size, ValueType** 
 #ifdef ALIEN_USE_CUDA
       cudaMalloc(values, local_size * sizeof(ValueType));
 #endif
+#ifdef ALIEN_USE_HIP
+      hipMalloc(values, local_size * sizeof(ValueType));
+#endif
+
 }
 
 
@@ -444,6 +532,10 @@ void VectorInternal::freeDevicePointers(ValueType* values)
 #ifdef ALIEN_USE_CUDA
   cudaFree(values);
 #endif
+#ifdef ALIEN_USE_HIP
+  hipFree(values);
+#endif
+
 }
 
 /*---------------------------------------------------------------------------*/

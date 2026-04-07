@@ -23,4 +23,28 @@
 #endif
 #endif
 
+// Sélection à la compilation selon la cible
+#if defined(__HIP_PLATFORM_AMD__) || defined(__AMDGCN__)
+  // Constantes tuned pour MI300 (gfx942)
+  // - CU count  : 228 CUs
+  // - Wavefront : 64 threads (RDNA/CDNA)
+  // - LDS/CU    : 64 KB  → 1024 threads × 8 B (double) = 8 KB/workgroup, safe
 
+  static constexpr int PKSIZE      = 1024; // wavefront MI300 should be 64
+  //static constexpr int WG_SIZE     = 256;  // 4 WF/bloc
+  static constexpr int TARGET_WAVES = 4;
+
+  static constexpr int WG_SIZE       = 256;   // 16 wavefronts/WG
+  static constexpr int ITEMS_PER_WI  = 8;    // unroll : chaque WI traite 8 éléments
+
+
+#else
+  static constexpr int PKSIZE       = 1024;   // warp H100 should be 32
+  //static constexpr int WG_SIZE      = 256;    // 8 warps/bloc
+  static constexpr int WG_SIZE      = 512;   // 16 warps/bloc
+  static constexpr int ITEMS_PER_WI = 8;     // unroll ILP
+  static constexpr int WARP_SIZE    = 32;    // natif CUDA/H100
+  static constexpr int TARGET_WAVES = 4;     // waves/SM pour masquer latence
+#endif
+
+// Grid dynamique (remplace m_total_threads figé)
