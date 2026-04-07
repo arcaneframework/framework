@@ -24,22 +24,199 @@ namespace Alien::SYCLInternal
 #endif
 /*---------------------------------------------------------------------------*/
 namespace mi300 {
-  // Constantes tuned pour MI300 (gfx942)
-  // - CU count  : 228 CUs
-  // - Wavefront : 64 threads (RDNA/CDNA)
-  // - LDS/CU    : 64 KB  → 1024 threads × 8 B (double) = 8 KB/workgroup, safe
-  inline constexpr std::size_t WG_SIZE    = 1024;   // 16 wavefronts/WG
-  inline constexpr std::size_t ITEMS_PER_WI = 8;    // unroll : chaque WI traite 8 éléments
+
+static constexpr int WAVEFRONT     = 64;   // WF natif gfx942
+static constexpr int N_WARPS_BLOC  = WG_SIZE / WAVEFRONT; // 4
+
+  template<typename ValueT, typename ReadAccessorT, typename ReadWriteAccessorT>
+  void dot_kernel_mi300(
+      sycl::nd_item<1>        item,
+      ReadAccessorT           x,
+      ReadAccessorT           y,
+      ReadWriteAccessorT      partials,
+      size_t                  N,
+      sycl::local_accessor<ValueT,1> lds)
+  {
+      const size_t gid    = item.get_global_id(0);
+      const size_t stride = item.get_global_range(0);
+      const size_t lid    = item.get_local_id(0);
+
+      // ── Phase 1a : accumulation avec unroll ───────────────────────────────
+      // Sur MI300, le backend HIP émet des GLOBAL_LOAD_DWORDX2 (64-bit loads).
+      // ITEMS_PER_WI=8 → 8 loads double indépendants = ILP pour masquer ~400 cy HBM3.
+      // La boucle strided garantit la coalescence : WI consécutifs (gid, gid+1, ...)
+      // accèdent à des adresses consécutives → 1 transaction mémoire pour 64 WI.
+      ValueT acc = 0;
+
+      const size_t stride_wi  = stride * ITEMS_PER_WI;
+      size_t i = gid * ITEMS_PER_WI;
+
+      for (; i + ITEMS_PER_WI * stride <= N; i += stride_wi) {
+          // Unroll 8× — le compilateur AMDGCNx émet des v_fma_f64 indépendants
+          // → jusqu'à 2 FMA doubles/cycle sur les SIMD gfx942
+          #pragma unroll
+          for (size_t k = 0; k < ITEMS_PER_WI; ++k)
+              acc += x[i + k * stride] * y[i + k * stride];
+      }
+      // Epilogue
+      for (size_t j = gid; j < N; j += stride)
+          acc += x[j] * y[j];
+
+      // ── Phase 1b : réduction wavefront (sub_group) ────────────────────────
+      // Sur gfx942, reduce_over_group<plus<double>> se compile en :
+      //   ds_swizzle_b32 / v_readlane_b32 / v_writelane_b32
+      // soit 6 niveaux de shuffle pour 64 threads — zéro accès LDS ici.
+      // IMPORTANT : sub_group_size(64) est annoté sur le kernel pour forcer
+      // l'émission de la séquence WF=64 (vs WF=32 qui nécessiterait 5 niveaux
+      // mais casserait la coalescence des loads précédents).
+      auto sg  = item.get_sub_group();
+      acc = reduce_over_group(sg, acc, sycl::plus<ValueT>{});
+
+      // ── Phase 1c : réduction inter-wavefront via LDS ──────────────────────
+      // 4 wavefronts → 4 valeurs LDS = 32 bytes (tient dans 1 cache line LDS)
+      const size_t wf_id   = lid / WAVEFRONT;
+      const size_t lane_id = lid % WAVEFRONT;
+
+      if (lane_id == 0)
+          lds[wf_id] = acc;
+
+      item.barrier(sycl::access::fence_space::local_space);
+
+      // Le premier wavefront charge les 4 partiels LDS et les réduit
+      if (wf_id == 0) {
+          // Lane 0..3 chargent les 4 partiels, lanes 4..63 chargent 0
+        ValueT val = (lid < N_WARPS_BLOC) ? lds[lid] : 0.0;
+          // Réduction sur le sous-groupe — sur les 64 lanes du WF0
+          // seuls les 4 premiers portent des données, le reste est neutre (0.0)
+          val = sycl::reduce_over_group(sg, val, sycl::plus<ValueT>{});
+          if (lane_id == 0)
+              partials[item.get_group(0)] = val;
+      }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Variante avec double buffering explicite — masque davantage la latence HBM3
+  // Recommandée pour très grands N (> 500 M doubles) où la latence domine.
+  // ---------------------------------------------------------------------------
+  template<typename ValueT, typename ReadAccessorT, typename ReadWriteAccessorT>
+  void dot_kernel_mi300_doublebuf(
+      sycl::nd_item<1>              item,
+      ReadAccessorT           x,
+      ReadAccessorT           y,
+      ReadWriteAccessorT      partials,
+      size_t                  N,
+      sycl::local_accessor<ValueT,1> lds)
+  {
+      const size_t gid    = item.get_global_id(0);
+      const size_t stride = item.get_global_range(0);
+      const size_t lid    = item.get_local_id(0);
+
+      ValueT acc0 = 0, acc1 = 0;  // Deux accumulateurs → 2 chaînes FMA indép.
+
+      // Double-stride : deux éléments par itération sur des adresses distantes
+      // → deux séquences de loads indépendantes dans le scoreboard
+      for (size_t i = gid; i + stride < N; i += 2 * stride) {
+        ValueT x0 = x[i],          y0 = y[i];
+        ValueT x1 = x[i + stride], y1 = y[i + stride];
+        acc0 += x0 * y0;
+        acc1 += x1 * y1;
+      }
+      // Fusionner + epilogue
+      ValueT acc = acc0 + acc1;
+      for (size_t i = gid + ((N / (2*stride)) * 2 * stride); i < N; i += stride)
+          acc += x[i] * y[i];
+
+      auto sg = item.get_sub_group();
+      acc = sycl::reduce_over_group(sg, acc, sycl::plus<ValueT>{});
+
+      const size_t wf_id   = lid / WAVEFRONT;
+      const size_t lane_id = lid % WAVEFRONT;
+      if (lane_id == 0) lds[wf_id] = acc;
+      item.barrier(sycl::access::fence_space::local_space);
+      if (wf_id == 0) {
+        ValueT val = (lid < N_WARPS_BLOC) ? lds[lid] : 0.0;
+          val = reduce_over_group(sg, val, sycl::plus<double>{});
+          if (lane_id == 0)
+              partials[item.get_group(0)] = val;
+      }
+  }
+}
+
+
+namespace h100 {
+
+template<typename ValueT, typename ReadAccessorT, typename ReadWriteAccessorT>
+void dot_kernel_h100(
+    sycl::nd_item<1>      item,
+    ReadAccessorT         x,
+    ReadAccessorT         y,
+    ReadWriteAccessorT    partials,   // USM device — 1 double par bloc
+    std::size_t       N,
+    sycl::local_accessor<ValueT,1> lds)     // LDS : WG_SIZE/WARP_SIZE doubles
+{
+  using namespace std;
+  using namespace sycl;
+    const size_t gid    = item.get_global_id(0);
+    const size_t stride = item.get_global_range(0);
+    const size_t lid    = item.get_local_id(0);
+
+    // ── Phase 1a : accumulation locale avec unroll ─────────────────────────
+    // Chaque WI traite ITEMS_PER_WI éléments strided pour coalescence.
+    // Le compilateur NVPTX génère des LDG.128 (128-bit loads) si aligné.
+    double acc = 0.0;
+
+    // Boucle principale — stride de global_range pour couvrir tout N
+    size_t i = gid * ITEMS_PER_WI;
+    const size_t stride_wi = stride * ITEMS_PER_WI;
+
+    for (; i + ITEMS_PER_WI * stride <= N; i += stride_wi) {
+        // Unroll explicite — 8 FMA indépendants → ILP maximal
+        // Le compilateur H100 peut émettre 4 FMA doubles/cycle/SM
+        #pragma unroll
+        for (size_t k = 0; k < ITEMS_PER_WI; ++k)
+            acc += x[i + k * stride] * y[i + k * stride];
+    }
+    // Epilogue — éléments restants
+    for (size_t j = gid; j < N; j += stride)
+        acc += x[j] * y[j];
+
+    // ── Phase 1b : réduction warp-shuffle (sub_group) ─────────────────────
+    // sycl::reduce_over_group utilise les shuffles natifs PTX (__shfl_down)
+    // sur H100 — 5 niveaux pour 32 threads, zéro accès mémoire.
+    auto sg = item.get_sub_group();
+    acc = sycl::reduce_over_group(sg, acc, sycl::plus<ValueT>{});
+
+    // ── Phase 1c : réduction inter-warp via LDS ───────────────────────────
+    // Un seul thread leader par warp écrit en LDS.
+    // LDS = WG_SIZE/WARP_SIZE = 16 doubles = 128 bytes — tient dans 1 cache line
+    const size_t warp_id  = lid / WARP_SIZE;
+    const size_t lane_id  = lid % WARP_SIZE;
+    const size_t n_warps  = WG_SIZE / WARP_SIZE;   // 16
+
+    if (lane_id == 0)
+        lds[warp_id] = acc;
+
+    item.barrier(access::fence_space::local_space);
+
+    // Réduction finale des 16 valeurs LDS par le premier warp
+    if (warp_id == 0) {
+        ValueT val = (lid < n_warps) ? lds[lid] : 0.0;
+        val = reduce_over_group(sg, val, sycl::plus<ValueT>{});
+        if (lane_id == 0)
+            partials[item.get_group(0)] = val;
+    }
+}
 }
 
 template <typename T>
 class Future
 {
  public:
+  using FunctionType = std::function<T(sycl::event&,sycl::buffer<T>&,std::size_t)>;
   Future(T& value)
   : m_value(value)
   //, m_d_value{1}
-  , m_d_value{ SYCLEnv::instance()->maxNumGroups() }
+  , m_d_value{ SYCLEnv::instance()->maxNumGroups() * TARGET_WAVES }
   {
   }
 
@@ -55,15 +232,18 @@ class Future
 
   T get()
   {
-    if (m_parallel_mng) {
+    if (m_parallel_mng)
+    {
       Arccore::MessagePassing::mpWait(m_parallel_mng, m_request);
       m_parallel_mng = nullptr;
     }
-    else {
-      //auto h_access = m_d_value.template get_access<sycl::access::mode::read>();
-      m_event.wait() ;
-      auto h_access = m_d_value.get_host_access();
-      m_value = h_access[0];
+    else
+    {
+      if(m_wait_function)
+      {
+        m_value = m_wait_function(m_event,m_d_value,m_num_blocks) ;
+        m_wait_function = nullptr ;
+      }
     }
     return m_value;
   }
@@ -85,10 +265,22 @@ class Future
     m_request = request;
   }
 
+  void setWaitFunction(FunctionType wait_function)
+  {
+    m_wait_function = wait_function;
+  }
+
+  void setNumBlocks(std::size_t num_blocks)
+  {
+    m_num_blocks = num_blocks;
+  }
+
  private:
   T& m_value;
   sycl::buffer<T, 1> m_d_value;
   sycl::event        m_event;
+  FunctionType       m_wait_function = nullptr;
+  std::size_t        m_num_blocks    = SYCLEnv::instance()->maxNumGroups() * TARGET_WAVES ;
 
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   Arccore::MessagePassing::Request m_request;
@@ -932,9 +1124,9 @@ class KernelInternal
 
   template <typename T>
   void asynch_map4_reduce_sum(sycl::buffer<T>& x,
-                             sycl::buffer<T>& y,
-                             sycl::buffer<T>& res,
-                             sycl::event& event)
+                              sycl::buffer<T>& y,
+                              sycl::buffer<T>& res,
+                              sycl::event& event)
   {
     std::size_t local = m_max_work_group_size;
     std::size_t total_threads = m_total_threads;
@@ -1024,6 +1216,16 @@ class KernelInternal
   }
 
   template <typename T>
+  T end_map4_reduce_sum(sycl::event& event,
+                        sycl::buffer<T>& res,
+                        std::size_t num_blocks)
+  {
+    event.wait() ;
+    auto h_access = res.get_host_access();
+    return h_access[0];
+  }
+
+  template <typename T>
   class map5_reduction_sum {};
 
   template <typename T>
@@ -1031,9 +1233,9 @@ class KernelInternal
 
   template <typename T>
   void asynch_map5_reduce_sum(sycl::buffer<T>& x,
-                             sycl::buffer<T>& y,
-                             sycl::buffer<T>& res,
-                             sycl::event& event)
+                              sycl::buffer<T>& y,
+                              sycl::buffer<T>& res,
+                              sycl::event& event)
   {
     std::size_t local = m_max_work_group_size;
     std::size_t total_threads = m_total_threads;
@@ -1165,6 +1367,17 @@ class KernelInternal
     //return sum;
   }
 
+
+  template <typename T>
+  T end_map5_reduce_sum(sycl::event& event,
+                        sycl::buffer<T>& res,
+                        std::size_t num_blocks)
+  {
+    event.wait() ;
+    auto h_access = res.get_host_access();
+    return h_access[0];
+  }
+
   template <typename T>
   T reduce_sum2(const std::vector<T>& x)
   {
@@ -1180,9 +1393,9 @@ class KernelInternal
       // building the best number of global thread
       auto total_threads = num_groups * work_group_size;
 
-      std::cout << "LOCAL     =" << work_group_size << std::endl;
-      std::cout << "NB GROUPS =" << num_groups << std::endl;
-      std::cout << "NB THREADS=" << total_threads << std::endl;
+      //std::cout << "LOCAL     =" << work_group_size << std::endl;
+      //std::cout << "NB GROUPS =" << num_groups << std::endl;
+      //std::cout << "NB THREADS=" << total_threads << std::endl;
 
       /* The buffer is used to initialise the data on the device, but we don't
        * want to copy back and trash it. buffer::set_final_data() tells the
@@ -1501,36 +1714,186 @@ class KernelInternal
   }
   } */
 
+
+  template <typename T>
+  inline T dot_product_h100(sycl::buffer<T>& buf_x,
+                            sycl::buffer<T>& buf_y)
+  {
+    using namespace sycl;
+    auto& q       = m_env->internal()->queue();
+    const size_t N = buf_x.size();
+    assert(buf_y.size() == N);
+
+    auto dev    = q.get_device();
+    //const size_t num_sm = dev.get_info<info::device::max_compute_units>(); // 132
+
+    // Grid : TARGET_WAVES * num_sm blocs, chacun de WG_SIZE threads,
+    // chaque thread traite ITEMS_PER_WI éléments → couverture totale
+    const size_t blocks_needed = (N + WG_SIZE * ITEMS_PER_WI - 1)
+                                 / (WG_SIZE * ITEMS_PER_WI);
+    const size_t num_blocks    = std::max(blocks_needed,
+                                          m_max_num_groups * TARGET_WAVES);
+    const size_t total_threads = num_blocks * WG_SIZE;
+
+    // Allocation USM pour les partiels (un T par bloc)
+    //T* partials = malloc_device<T>(num_blocks, q);
+    sycl::buffer<T> partials{num_blocks};
+
+    // ── Phase 1 : kernel de réduction par blocs ───────────────────────────
+    q.submit(
+        [&](handler& cgh)
+        {
+          auto ax = buf_x.template get_access<access::mode::read>(cgh);
+          auto ay = buf_y.template get_access<access::mode::read>(cgh);
+          auto ap = partials.template get_access<access::mode::read_write>(cgh);
+          // LDS : 1 T par warp dans le bloc
+          local_accessor<T,1> lds{WG_SIZE / WARP_SIZE, cgh};
+
+          //const T* px = ax.get_pointer();   // accès USM-like depuis accessor
+          //const T* py = ay.get_pointer();
+          //T*       pp = partials;
+          const size_t  n  = N;
+
+          cgh.parallel_for<class dot_h100_phase1>(
+              nd_range<1>{{total_threads}, {WG_SIZE}},
+              [=](nd_item<1> item)
+              [[intel::reqd_sub_group_size(WARP_SIZE)]]
+              {
+                  h100::dot_kernel_h100(item, ax, ay, ap, n, lds);
+              });
+      });
+
+      // ── Phase 2 : réduction finale des partiels sur le CPU ────────────────
+      // Pour N = 100M Ts → num_blocks ≤ 2048 → 16 KB de partiels.
+      // Un memcpy D2H de 16 KB est négligeable vs le kernel principal.
+      // Alternative : second kernel de réduction si num_blocks > 10 000.
+      //std::vector<T> h_partials(num_blocks);
+      //q.memcpy(h_partials.data(), partials, num_blocks * sizeof(T)).wait();
+      //free(partials, q);
+      auto h_partials = partials.get_host_access();
+
+      // Kahan summation pour précision numérique sur la réduction finale
+      T sum = 0.0, c = 0.0;
+      for (size_t b = 0; b < num_blocks; ++b) {
+          T z = h_partials[b] - c;
+          T t = sum + z;
+          c   = (t - sum) - z;
+          sum = t;
+      }
+      return sum;
+  }
+
+  template <typename T>
+  inline std::size_t asynch_dot_product_h100(sycl::buffer<T>& buf_x,
+                                      sycl::buffer<T>& buf_y,
+                                      sycl::buffer<T>& res,
+                                      sycl::event& event)
+  {
+    using namespace sycl;
+    auto& q       = m_env->internal()->queue();
+    const size_t N = buf_x.size();
+    assert(buf_y.size() == N);
+
+    //auto dev    = q.get_device();
+    //const size_t num_sm = dev.get_info<info::device::max_compute_units>(); // 132
+
+    // Grid : TARGET_WAVES * num_sm blocs, chacun de WG_SIZE threads,
+    // chaque thread traite ITEMS_PER_WI éléments → couverture totale
+    const size_t blocks_needed = (N + WG_SIZE * ITEMS_PER_WI - 1)
+                                 / (WG_SIZE * ITEMS_PER_WI);
+    const size_t num_blocks    = std::max(blocks_needed,m_max_num_groups * TARGET_WAVES);
+    const size_t total_threads = num_blocks * WG_SIZE;
+
+    // Allocation USM pour les partiels (un T par bloc)
+    //partials = malloc_device<T>(num_blocks, q);
+
+    // ── Phase 1 : kernel de réduction par blocs ───────────────────────────
+    event = q.submit(
+        [&](handler& cgh)
+        {
+          auto ax = buf_x.template get_access<access::mode::read>(cgh);
+          auto ay = buf_y.template get_access<access::mode::read>(cgh);
+          auto ap = res.template get_access<sycl::access::mode::read_write>(cgh);
+          // LDS : 1 T par warp dans le bloc
+          local_accessor<T,1> lds{WG_SIZE / WARP_SIZE, cgh};
+
+          //const T* px = ax.get_pointer();   // accès USM-like depuis accessor
+          //const T* py = ay.get_pointer();
+          //T*       pp = ap.get_pointer();
+          const size_t  n  = N;
+
+          cgh.parallel_for<class dot_h100_phase1>(
+              nd_range<1>{{total_threads}, {WG_SIZE}},
+              [=](nd_item<1> item)
+              [[intel::reqd_sub_group_size(WARP_SIZE)]]
+              {
+                  h100::dot_kernel_h100(item, ax, ay, ap, n, lds);
+              });
+      });
+    return num_blocks;
+  }
+
+
+  template <typename T>
+  inline T end_dot_product_h100(sycl::event& event,
+                                sycl::buffer<T>& res,
+                                std::size_t num_blocks)
+  {
+    event.wait() ;
+    // ── Phase 2 : réduction finale des partiels sur le CPU ────────────────
+    // Pour N = 100M Ts → num_blocks ≤ 2048 → 16 KB de partiels.
+    // Un memcpy D2H de 16 KB est négligeable vs le kernel principal.
+    // Alternative : second kernel de réduction si num_blocks > 10 000.
+    //std::vector<T> h_partials(num_blocks);
+    //m_env->internal()->queue().memcpy(h_partials.data(), partials, num_blocks * sizeof(T)).wait();
+    //free(partials, q);
+    auto h_partials = res.get_host_access();
+
+    // Kahan summation pour précision numérique sur la réduction finale
+    T sum = 0.0, c = 0.0;
+    for (size_t b = 0; b < num_blocks; ++b) {
+        T z = h_partials[b] - c;
+        T t = sum + z;
+        c   = (t - sum) - z;
+        sum = t;
+    }
+    return sum;
+  }
+
   // ---------------------------------------------------------------------------
   // Variante moderne SYCL 2020 : sycl::reduction (plus concis, potentiellement
   // optimisé par le runtime AdaptiveCPP selon la cible)
   // ---------------------------------------------------------------------------
 
-
-  inline double dot_product_mi300(sycl::buffer<double, 1>& x_buf,
-                                  sycl::buffer<double, 1>& y_buf)
+  template<typename T>
+  inline T dot_product_mi300(sycl::buffer<T, 1>& x_buf,
+                             sycl::buffer<T, 1>& y_buf)
   {
     using namespace mi300 ;
-    double result = 0.0;
-    std::size_t n = x_buf.size() ;
+    std::cout<<" DOT PROD MI300 : "<<WG_SIZE<<" "<<ITEMS_PER_WI<<std::endl ;
+
+    bool use_doublebuf = false;
     auto& q       = m_env->internal()->queue();
-    {
-        sycl::buffer<double, 1> result_buf(&result, 1);
+        /*
+
+        std::size_t n = x_buf.size() ;
+        sycl::buffer<T, 1> result_buf(&result, 1);
 
         const std::size_t stride   = WG_SIZE * ITEMS_PER_WI;
         const std::size_t n_padded = ((n + stride - 1) / stride) * stride;
 
-        q.submit([&](sycl::handler& cgh) {
+        q.submit([&x_buf, &y_buf, &result_buf, n, n_padded, stride](sycl::handler& cgh) {
             auto x   = x_buf.template get_access<sycl::access::mode::read>(cgh);
             auto y   = y_buf.template get_access<sycl::access::mode::read>(cgh);
-            auto red = sycl::reduction(result_buf, cgh, sycl::plus<double>{});
-
+            auto r   = result_buf.template get_access<sycl::access::mode::read_write>(cgh);
+            //sycl::accessor r {result_buf, cgh};
+            auto red = sycl::reduction(r, sycl::plus<T>{});
             cgh.parallel_for(
                 sycl::nd_range<1>{n_padded, WG_SIZE}, red,
                 [=](sycl::nd_item<1> item, auto& sum) {
                     const std::size_t lid  = item.get_local_id(0);
                     const std::size_t base = item.get_group(0) * stride;
-                    double acc = 0.0;
+                    T acc = 0.0;
                     #pragma unroll
                     for (std::size_t k = 0; k < ITEMS_PER_WI; ++k) {
                         const std::size_t idx = base + lid + k * WG_SIZE;
@@ -1539,13 +1902,72 @@ class KernelInternal
                     sum.combine(acc);
                 });
         });
-    } // destruction du result_buf → sync implicite
-    return result;
+        */
+
+       std::size_t N = x_buf.size() ;
+      // Grid : couvrir N en ITEMS_PER_WI éléments/WI
+      const size_t blocks_needed = (N + WG_SIZE * ITEMS_PER_WI - 1)
+                                   / (WG_SIZE * ITEMS_PER_WI);
+      // Minimum : num_cu × TARGET_WAVES × (WG_SIZE/WAVEFRONT) blocs
+      // = 228 × 4 × 4 = 3 648 — cohérent avec les profils rocprof
+      const size_t num_blocks = std::max(blocks_needed,
+                                         m_max_num_groups * TARGET_WAVES
+                                                 * (WG_SIZE / WAVEFRONT));
+      const size_t total_threads = num_blocks * WG_SIZE;
+      //std::cout<<" N = "<<N<<" "<<" num_blocks="<<num_blocks<<" nthreads="<<total_threads<<std::endl ;
+      //double* partials = malloc_device<double>(num_blocks, q);
+      sycl::buffer<T, 1> partials(num_blocks);
+
+      q.submit([&](sycl::handler& cgh)
+      {
+          auto ax = x_buf.template get_access<sycl::access::mode::read>(cgh);
+          auto ay = y_buf.template get_access<sycl::access::mode::read>(cgh);
+          auto ap = partials.template get_access<sycl::access::mode::read_write>(cgh);
+          sycl::local_accessor<double,1> lds{N_WARPS_BLOC, cgh};  // 4 doubles = 32 B
+
+          //const double* px = ax.get_pointer();
+          //const double* py = ay.get_pointer();
+          //double*       pp = partials;
+          const size_t  n  = N;
+          const bool    db = use_doublebuf;
+
+          cgh.parallel_for<class dot_mi300_phase1>(
+              sycl::nd_range<1>{{total_threads}, {WG_SIZE}},
+              // ★ sub_group_size(64) — force WF=64 sur gfx942
+              //   Sans cette annotation, ACPP peut émettre WF=32
+              //   et la réduction sub_group ne couvrirait que 32 lanes
+              [=](sycl::nd_item<1> item)
+              [[intel::reqd_sub_group_size(WAVEFRONT)]]
+              {
+                  if (db)
+                      mi300::dot_kernel_mi300_doublebuf(item, ax, ay, ap, n, lds);
+                  else
+                      mi300::dot_kernel_mi300(item, ax, ay, ap, n, lds);
+              });
+      }).wait();
+
+      // Phase 2 : réduction CPU des partiels
+      //std::vector<ValueT> h_partials(num_blocks);
+      //q.memcpy(h_partials.data(), partials, num_blocks * sizeof(double)).wait();
+      //free(partials, q);
+      auto h_partials = partials.get_host_access();
+
+      // Kahan summation — précision sur la somme des ~3 648 partiels
+      T sum = 0, c = 0;
+      for (std::size_t b = 0; b < num_blocks; ++b)
+      {
+          T z = h_partials[b] - c;
+          double t = sum + z;
+          c   = (t - sum) - z;
+          sum = t;
+      }
+      return sum;
   }
 
-  inline void asynch_dot_product_mi300(sycl::buffer<double, 1>& x_buf,
-                                       sycl::buffer<double, 1>& y_buf,
-                                       sycl::buffer<double, 1>& result_buf,
+  template <typename T>
+  inline void asynch_dot_product_mi300(sycl::buffer<T, 1>& x_buf,
+                                       sycl::buffer<T, 1>& y_buf,
+                                       sycl::buffer<T, 1>& result_buf,
                                        sycl::event& event)
   {
       using namespace mi300 ;
@@ -1559,14 +1981,14 @@ class KernelInternal
       event = q.submit([&](sycl::handler& cgh) {
                       auto x   = x_buf.template get_access<sycl::access::mode::read>(cgh);
                       auto y   = y_buf.template get_access<sycl::access::mode::read>(cgh);
-                      auto red = sycl::reduction(result_buf, cgh, sycl::plus<double>{});
+                      auto red = sycl::reduction(result_buf, cgh, sycl::plus<T>{});
 
                       cgh.parallel_for(
                           sycl::nd_range<1>{n_padded, WG_SIZE}, red,
                           [=](sycl::nd_item<1> item, auto& sum) {
                               const std::size_t lid  = item.get_local_id(0);
                               const std::size_t base = item.get_group(0) * stride;
-                              double acc = 0.0;
+                              T acc = 0.0;
                               #pragma unroll
                               for (std::size_t k = 0; k < ITEMS_PER_WI; ++k) {
                                   const std::size_t idx = base + lid + k * WG_SIZE;
@@ -1577,6 +1999,17 @@ class KernelInternal
                   });
   }
 
+
+
+  template <typename T>
+  T end_dot_product_mi300(sycl::event& event,
+                          sycl::buffer<T>& res,
+                          std::size_t num_blocks)
+  {
+    event.wait() ;
+    auto h_access = res.get_host_access();
+    return h_access[0];
+  }
 
   template <typename T>
   T dot(sycl::buffer<T>& x,
@@ -1591,7 +2024,9 @@ class KernelInternal
       return map2_reduce_sum(x, y); // with sycl_reduction
     case 3:
       return map3_reduce_sum(x, y);
-    case 4: //MI300
+    case 4: //H100
+      return  dot_product_h100(x, y);
+    case 5: //MI300
       return dot_product_mi300(x, y);
     default:
       return sycl_reduce_sum(x, y);
@@ -1601,18 +2036,40 @@ class KernelInternal
   template <typename T>
   void dot(sycl::buffer<T>& x,
            sycl::buffer<T>& y,
-           sycl::buffer<T>& res,
-           sycl::event& event)
+           Future<Real>& res)
 {
-    switch (m_dot_algo) {
+    switch (m_dot_algo)
+    {
     case 2:
-      asynch_map4_reduce_sum(x, y, res, event); // with sycl_reduction
+      asynch_map4_reduce_sum(x, y, res.deviceValue(), res.event());
+      res.setWaitFunction([=](sycl::event& event, sycl::buffer<double>& res, std::size_t num_blocks)
+                          {
+                             return this->end_map4_reduce_sum(event,res, num_blocks) ;
+                          }) ;
       break;
     case 4:
-      asynch_dot_product_mi300(x, y, res, event);
+      {
+        std::size_t num_blocks = asynch_dot_product_h100(x, y, res.deviceValue(), res.event());
+        res.setWaitFunction([=](sycl::event& event, sycl::buffer<double>& res, std::size_t num_blocks)
+                            {
+                               return this->end_dot_product_h100(event, res, num_blocks) ;
+                            }) ;
+        res.setNumBlocks(num_blocks) ;
+      }
+      break;
+    case 5:
+      asynch_dot_product_mi300(x, y, res.deviceValue(), res.event());
+      res.setWaitFunction([=](sycl::event& event, sycl::buffer<T>& res, std::size_t num_blocks)
+                          {
+                             return this->end_dot_product_mi300(event,res, num_blocks) ;
+                          }) ;
       break;
     default:
-      asynch_map5_reduce_sum(x, y, res, event);
+      asynch_map5_reduce_sum(x, y, res.deviceValue(), res.event());
+      res.setWaitFunction([=](sycl::event& event, sycl::buffer<T>& res, std::size_t num_blocks)
+                          {
+                             return this->end_map5_reduce_sum(event,res, num_blocks) ;
+                          }) ;
       break;
     }
   }
