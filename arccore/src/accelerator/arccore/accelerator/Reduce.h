@@ -323,6 +323,10 @@ class HostDeviceReducerBase
     if (m_memory_impl) {
       m_memory_impl->allocateReduceDataMemory(sizeof(DataType));
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
+      // Initialise la valeur finale pour le cas où la réduction ne sera pas
+      // effectuée (par exemple si la RunCommand n'est jamais lancée)
+      DataType* ptr = _getHostPinnedMemoryForReducedValue();
+      *ptr = m_local_value;
     }
   }
 
@@ -400,7 +404,7 @@ class HostDeviceReducerBase
 
     DataType* final_ptr = m_host_memory_for_reduced_value;
     if (m_memory_impl) {
-      final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+      final_ptr = _getHostPinnedMemoryForReducedValue();
       m_memory_impl->release();
       m_memory_impl = nullptr;
     }
@@ -436,7 +440,7 @@ class HostDeviceReducerBase
     Impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
-    dvi.m_host_pinned_final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+    dvi.m_host_pinned_final_ptr = _getHostPinnedMemoryForReducedValue();
     dvi.m_current_value = m_local_value;
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
@@ -453,6 +457,17 @@ class HostDeviceReducerBase
 
     //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
 #endif
+  }
+
+ private:
+
+  /*!
+   * \brief Zone mémoire qui contiendra le résultat de la réduction si cette
+   * dernière est réalisée sur le Device.
+   */
+  ARCCORE_HOST_DEVICE DataType* _getHostPinnedMemoryForReducedValue()
+  {
+    return reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
   }
 };
 
