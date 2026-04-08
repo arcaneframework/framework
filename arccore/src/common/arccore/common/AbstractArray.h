@@ -431,8 +431,7 @@ class AbstractArray
    *
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
-  template <typename PodType>
-  void _internalRealloc(Int64 new_capacity, bool compute_capacity, PodType pod_type, RunQueue* queue = nullptr)
+  void _internalRealloc(Int64 new_capacity, bool compute_capacity, RunQueue* queue = nullptr)
   {
     // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
     // il l'est pour tous les processus.
@@ -454,48 +453,42 @@ class AbstractArray
     // (sauf pour un allocateur collectif).
     if (acapacity <= m_md->capacity) {
       if (m_meta_data.is_collective_allocator) {
-        _internalReallocate(m_md->capacity, pod_type, queue);
+        _internalReallocate(m_md->capacity, queue);
       }
       return;
     }
-    _internalReallocate(acapacity, pod_type, queue);
+    _internalReallocate(acapacity, queue);
   }
 
-  void _internalRealloc(Int64 new_capacity, bool compute_capacity)
+  void _internalReallocate(Int64 new_capacity, RunQueue* queue)
   {
-    _internalRealloc(new_capacity, compute_capacity, IsPODType());
-  }
-
-  //! Réallocation pour un type POD
-  void _internalReallocate(Int64 new_capacity, TrueType, RunQueue* queue)
-  {
-    T* old_ptr = m_ptr;
-    Int64 old_capacity = m_md->capacity;
-    _directReAllocate(new_capacity, queue);
-    bool update = (new_capacity < old_capacity) || (m_ptr != old_ptr);
-    if (update) {
-      _updateReferences();
-    }
-  }
-
-  //! Réallocation pour un type complexe (non POD)
-  void _internalReallocate(Int64 new_capacity, FalseType, RunQueue* queue)
-  {
-    T* old_ptr = m_ptr;
-    ArrayMetaData* old_md = m_md;
-    AllocatedMemoryInfo old_mem_info = _currentMemoryInfo();
-    Int64 old_size = m_md->size;
-    _directAllocate(new_capacity, queue);
-    if (m_ptr != old_ptr) {
-      for (Int64 i = 0; i < old_size; ++i) {
-        new (m_ptr + i) T(old_ptr[i]);
-        old_ptr[i].~T();
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      T* old_ptr = m_ptr;
+      Int64 old_capacity = m_md->capacity;
+      _directReAllocate(new_capacity, queue);
+      bool update = (new_capacity < old_capacity) || (m_ptr != old_ptr);
+      if (update) {
+        _updateReferences();
       }
-      m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_mem_info, queue);
-      _updateReferences();
+    }
+    else {
+      T* old_ptr = m_ptr;
+      ArrayMetaData* old_md = m_md;
+      AllocatedMemoryInfo old_mem_info = _currentMemoryInfo();
+      Int64 old_size = m_md->size;
+      _directAllocate(new_capacity, queue);
+      if (m_ptr != old_ptr) {
+        for (Int64 i = 0; i < old_size; ++i) {
+          new (m_ptr + i) T(old_ptr[i]);
+          old_ptr[i].~T();
+        }
+        m_md->nb_ref = old_md->nb_ref;
+        m_md->_deallocate(old_mem_info, queue);
+        _updateReferences();
+      }
     }
   }
+
   // Libère la mémoire
   void _internalDeallocate(RunQueue* queue = nullptr)
   {
@@ -697,13 +690,13 @@ class AbstractArray
     if (s < 0)
       s = 0;
     if (s > m_md->size) {
-      this->_internalRealloc(s, false, pod_type, queue);
+      this->_internalRealloc(s, false, queue);
       this->_createRangeDefault(m_md->size, s, pod_type);
     }
     else {
       this->_destroyRange(s, m_md->size, pod_type);
       if (m_meta_data.is_collective_allocator) {
-        this->_internalRealloc(s, false, pod_type, queue);
+        this->_internalRealloc(s, false, queue);
       }
     }
     m_md->size = s;
@@ -838,7 +831,7 @@ class AbstractArray
       return;
     if (new_capacity < 4)
       new_capacity = 4;
-    _internalReallocate(new_capacity, IsPODType(), _nullRunQueue());
+    _internalReallocate(new_capacity, _nullRunQueue());
   }
 
   /*!
