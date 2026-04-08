@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -62,6 +62,29 @@ _testReduceDirect(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
             << " nb_part=" << nb_part << " nb_value=" << nb_value
             << " nb_thread=" << nb_thread
             << " GB/s=" << nb_giga_byte_second << " time=" << diff << "\n";
+  return total_x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Int64
+_testReduceEmpty(RunQueue queue, SmallSpan<const Int64> c)
+{
+  Int64 total_x = 0;
+  {
+    SmallSpan<const Int64> c_view(c);
+    auto command = makeCommand(queue);
+    ReducerSum2<Int64> reducer(command);
+    command << RUNCOMMAND_LOOP1(iter, c.size(), reducer)
+    {
+      Int32 i = iter;
+      reducer.combine(iter);
+    };
+    Int64 tx = reducer.reducedValue();
+    total_x += tx;
+  }
+  std::cout << "** TotalReduceEmpty=" << total_x << "\n";
   return total_x;
 }
 
