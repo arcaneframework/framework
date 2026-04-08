@@ -36,6 +36,9 @@ extern "C++" Int64
 _testReduceGridStride(RunQueue queue, SmallSpan<const Int64> c, Int32 nb_thread,
                       Int32 nb_value, Int32 nb_part, Int32 nb_loop, bool is_async);
 
+extern "C++" Int64
+_testReduceEmpty(RunQueue queue, SmallSpan<const Int64> c);
+
 void _doTestReduceDirect(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
@@ -106,6 +109,11 @@ void _doTestReduceDirect(bool use_accelerator, Int32 max_allowed_thread)
       ASSERT_EQ(v2, expected_value);
     }
     nb_part *= 2;
+  }
+  // Teste la réduction avec un tableau vide (dans ce cas le kernel n'est pas lancé)
+  {
+    Int64 v = _testReduceEmpty(queue, {});
+    ASSERT_EQ(v, 0);
   }
 }
 
