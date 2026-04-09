@@ -2,6 +2,13 @@
 
 [TOC]
 
+\warning Cette fonctionnalité est expérimentale. Si des variables avec support sont allouées en mémoire partagée, il
+peut y avoir des adaptations importantes à faire pour rendre les appels de redimensionnements collectifs (risque de
+deadlocks). Ces redimensionnements sont plus lents qu'en mémoire locale. Il est recommandé d'utiliser la mémoire
+partagée uniquement pour les variables sans support. Il n'est pas recommandé d'utiliser la mémoire partagée avec des
+variables sur les particules; les appels à `endUpdate()` sont plutôt fréquents et, avec la mémoire partagée, ils
+deviennent collectifs !
+
 ## Introduction {#arcanedoc_parallel_shmem_winvariable_intro}
 
 Les variables %Arcane utilisent habituellement l'allocateur par défaut pour allouer de la mémoire. Sans GPU, on utilise
