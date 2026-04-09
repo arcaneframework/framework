@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -98,6 +98,7 @@ class PolyhedralMesh
   MeshKind m_mesh_kind;
   MeshEventsImpl m_mesh_events;
   std::unique_ptr<PolyhedralFamilySerializerMng> m_polyhedral_family_serializer_mng;
+  VariableScalarInteger m_connectivity; // todo use MeshVariables (when adding dump handling)
 
  public:
 
@@ -336,6 +337,8 @@ class PolyhedralMesh
   IMeshModifierInternal* _modifierInternalApi() override;
 
   IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override {return nullptr;}
+
+  VariableScalarInteger connectivity() override {return m_connectivity;}
 
   void connectivities(IItemFamily* source_family);
 

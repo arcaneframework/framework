@@ -40,6 +40,7 @@
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 #include "arcane/core/internal/IMeshModifierInternal.h"
+#include "arcane/core/Connectivity.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
@@ -1301,6 +1302,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_exchange_mng{ std::make_unique<MeshExchangeMng>(this) }
 , m_item_family_network{ std::make_unique<ItemFamilyNetwork>(m_trace_mng) }
 , m_ghost_layer_mng{ std::make_unique<GhostLayerMng>(m_trace_mng) }
+, m_connectivity(VariableBuildInfo{subdomain,mbi.name()+"MeshConnectivity"})
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -1364,6 +1366,8 @@ _allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView
                                       connected_family,
                                       current_connected_family_info.connected_items_uids,
                                       current_connected_family_info.connectivity_name);
+      Connectivity connectivity{m_connectivity};
+      connectivity.enableConnectivity(Connectivity::kindsToConnectivity(item_family->itemKind(), connected_family->itemKind()));
     }
     ++family_index;
   }
