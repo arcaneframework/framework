@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMainBatch.cc                                          (C) 2000-2025 */
+/* ArcaneMainBatch.cc                                          (C) 2000-2026 */
 /*                                                                           */
 /* Gestion de l'exécution en mode Batch.                                     */
 /*---------------------------------------------------------------------------*/
@@ -40,28 +40,32 @@
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"
 
-#include "arcane/IIOMng.h"
-#include "arcane/ICodeService.h"
-#include "arcane/ISession.h"
-#include "arcane/Timer.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/SequentialSection.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/IDirectExecution.h"
-#include "arcane/IDirectSubDomainExecuteFunctor.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/ApplicationBuildInfo.h"
-#include "arcane/CaseDatasetSource.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ICodeService.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/SequentialSection.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IDirectExecution.h"
+#include "arcane/core/IDirectSubDomainExecuteFunctor.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/ApplicationBuildInfo.h"
+#include "arcane/core/CaseDatasetSource.h"
 
-#include "arcane/ServiceUtils.h"
+#include "arcane/core/ServiceUtils.h"
+
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
@@ -838,6 +842,14 @@ executeRank(Int32 local_rank)
       Accelerator::RunnerInternal::stopAllProfiling();
     pm->barrier();
     _printStats(sub_domain,trace,time_stat);
+
+    // On doit détruire les variables en mémoire partagée ici parce que leur
+    // destruction est effectuée collectivement.
+    // On ne peut pas détruire toutes les variables car certaines sont
+    // utilisées après (GlobalIteration par exemple).
+    // Si, un jour, on met certaines variables "Global" en mémoire partagée,
+    // cette partie va poser problème.
+    sub_domain->variableMng()->_internalApi()->removeAllShMemVariables();
   }
 
   //BaseForm[Hash["This is the end", "CRC32"], 16]
