@@ -991,9 +991,16 @@ void VariableMng::
 _removeAllShMemVariables()
 {
   UniqueArray<IVariable*> shmem_vars;
-  for (const auto& [fst, snd] : m_full_name_variable_map) {
-    if (snd->property() & IVariable::PInShMem)
-      shmem_vars.add(snd);
+  for (const auto& [fst, var] : m_full_name_variable_map) {
+    if (var->property() & IVariable::PInShMem)
+      shmem_vars.add(var);
+  }
+  for (Integer i = 0; i < m_auto_create_variables.count(); ++i) {
+    VariableRef* var = m_auto_create_variables[i];
+    if (var->property() & IVariable::PInShMem) {
+      //La variable sera détruite juste après avec le removeVariable(var).
+      m_auto_create_variables.removeAt(i--);
+    }
   }
   for (IVariable* var : shmem_vars) {
     removeVariable(var);
