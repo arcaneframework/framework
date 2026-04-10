@@ -18,6 +18,7 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/Connectivity.h"
 #include "arcane/mesh/PolyhedralMesh.h"
 #include "arcane/utils/ValueChecker.h"
 
@@ -56,6 +57,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
       _testGroups(mesh());
       _testMeshUtilities(mesh());
       _testMeshModifier(mesh());
+      _testConnectivity(mesh());
     }
     else
       info() << "No Mesh";
@@ -73,6 +75,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   void _testCoordinates(IMesh* mesh);
   void _testMeshUtilities(IMesh* mesh);
   void _testMeshModifier(IMesh* mesh);
+  void _testConnectivity(IMesh* mesh);
   void _buildGroup(IItemFamily* family, String const& group_name);
   void _checkBoundaryFaceGroup(IMesh* mesh, String const& boundary_face_group_name) const;
   void _checkInternalFaceGroup(IMesh* mesh, String const& internal_face_group_name) const;
@@ -511,6 +514,18 @@ _testMeshModifier(Arcane::IMesh* mesh)
   mesh_modifier->addExtraGhostCellsBuilder(nullptr);
   mesh_modifier->removeExtraGhostCellsBuilder(nullptr);
   mesh_modifier->endUpdate(false, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshPolyhedralTestModule::
+_testConnectivity(IMesh* mesh)
+{
+  info() << "Testing connectivity";
+  Connectivity connectivity{mesh->connectivity()};
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_Default),"PolyhedralMesh must have standard connectivity");
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_EdgeConnectivity),"PolyhedralMesh must have Edge Connectivity");
 }
 
 /*---------------------------------------------------------------------------*/
