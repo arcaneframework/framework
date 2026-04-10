@@ -67,11 +67,20 @@ generate_export_header(alien_semantic_move
         STATIC_DEFINE ${PROJECT_NAME}_BUILT_AS_STATIC
         )
 
-install(TARGETS alien_semantic_move
-        EXPORT ${ALIEN_EXPORT_TARGET}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
+if(MSVC_TOOLSET_VERSION GREATER_EQUAL 143)
+  install(TARGETS alien_semantic_move
+    EXPORT ${ALIEN_EXPORT_TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lib
+  )
+else()
+  install(TARGETS alien_semantic_move
+    EXPORT ${ALIEN_EXPORT_TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+	
 add_library(Alien::alien_semantic_move ALIAS alien_semantic_move)
 
 enable_sanitizers(alien_semantic_move)
