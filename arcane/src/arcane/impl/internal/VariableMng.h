@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.h                                               (C) 2000-2024 */
+/* VariableMng.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant la liste des maillages.                                     */
 /*---------------------------------------------------------------------------*/
@@ -128,6 +128,7 @@ class VariableMng
     void build() override { m_variable_mng->build(); }
     void initialize() override { m_variable_mng->initialize(); }
     void removeAllVariables() override { m_variable_mng->removeAllVariables(); }
+    void removeAllShMemVariables() override { m_variable_mng->_removeAllShMemVariables(); }
     void detachMeshVariables(IMesh* mesh) override { m_variable_mng->detachMeshVariables(mesh); }
     void addVariableRef(VariableRef* var) override { m_variable_mng->addVariableRef(var); }
     void removeVariableRef(VariableRef* var) override { m_variable_mng->removeVariableRef(var); }
@@ -271,6 +272,8 @@ class VariableMng
   static const char* _msgClassName() { return "Variable"; }
   VariableRef* _createVariableFromType(const String& full_type,
                                        const VariableBuildInfo& vbi);
+
+  void _removeAllShMemVariables();
 };
 
 /*---------------------------------------------------------------------------*/

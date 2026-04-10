@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.cc                                              (C) 2000-2025 */
+/* VariableMng.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant l'ensemble des variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -982,6 +982,29 @@ dumpStatsJSON(JSONWriter& writer)
     }
   }
   writer.endArray();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableMng::
+_removeAllShMemVariables()
+{
+  UniqueArray<IVariable*> shmem_vars;
+  for (const auto& [fst, var] : m_full_name_variable_map) {
+    if (var->property() & IVariable::PInShMem)
+      shmem_vars.add(var);
+  }
+  for (Integer i = 0; i < m_auto_create_variables.count(); ++i) {
+    VariableRef* var = m_auto_create_variables[i];
+    if (var->property() & IVariable::PInShMem) {
+      //La variable sera détruite juste après avec le removeVariable(var).
+      m_auto_create_variables.removeAt(i--);
+    }
+  }
+  for (IVariable* var : shmem_vars) {
+    removeVariable(var);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

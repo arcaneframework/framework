@@ -31,6 +31,12 @@
         dans le cas d'un grand nombre de particules.
       </description>
     </simple>
+    <simple name="support-shmem-variables" type="bool" default="false">
+      <description>
+        Indique si l'on ajoute le support des variables particules en mémoire partagée.
+        Cette option peut augmenter la durée de l'échange de particules.
+      </description>
+    </simple>
   </options>
 
 </service>

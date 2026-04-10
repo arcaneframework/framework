@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2025 */
+/* ItemFamily.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -111,6 +111,12 @@ class ARCANE_MESH_EXPORT ItemFamily
   // Garde la version avec faute d'ortographe pour des raisons de compatibilité
   // TODO: à enlever mi 2025
   using AdjencyGroupMap = AdjacencyGroupMap;
+
+  /*!
+   * \brief Fonction permettant de comparer deux noms de variable (strcmp).
+   * \return True si le nom de a est lexicographiquement inférieur au nom de b.
+   */
+  static bool _cmpIVariablePtr(const IVariable* a, const IVariable* b);
 
  public:
 
@@ -347,7 +353,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   Ref<IVariableSynchronizer> m_variable_synchronizer;
   Integer m_current_variable_item_size = 0;
   IItemInternalSortFunction* m_item_sort_function = nullptr;
-  std::set<IVariable*> m_used_variables;
+  std::set<IVariable*, decltype(&_cmpIVariablePtr)> m_used_variables;
+  std::set<IVariable*, decltype(&_cmpIVariablePtr)> m_used_shmem_variables;
   UniqueArray<ItemFamily*> m_child_families;
   ItemConnectivityInfo* m_local_connectivity_info = nullptr;
   ItemConnectivityInfo* m_global_connectivity_info = nullptr;
@@ -389,7 +396,11 @@ class ARCANE_MESH_EXPORT ItemFamily
  public:
 
   IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
-  void resizeVariables(bool force_resize) override { _resizeVariables(force_resize); }
+  void resizeVariables(bool force_resize) override
+  {
+    _resizeShMemVariables();
+    _resizeVariables(force_resize);
+  }
 
  private:
 
@@ -522,6 +533,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
+  void _resizeShMemVariables();
   void _shrinkConnectivityAndPrintInfos();
   void _addOnSizeChangedObservable(VariableRef& var_ref);
 };

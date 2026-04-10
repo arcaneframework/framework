@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2025 */
+/* ItemFamily.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/CStringUtils.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISubDomain.h"
@@ -150,7 +151,8 @@ class ItemFamily::InternalApi
   }
   void resizeVariables(bool force_resize) override
   {
-    return m_family->_resizeVariables(force_resize);
+    m_family->_resizeShMemVariables();
+    m_family->_resizeVariables(force_resize);
   }
 
  private:
@@ -249,6 +251,15 @@ class ItemFamily::Variables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool ItemFamily::
+_cmpIVariablePtr(const IVariable* a, const IVariable* b)
+{
+  return CStringUtils::isLess(a->name().localstr(), b->name().localstr());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -263,6 +274,8 @@ ItemFamily(IMesh* mesh, eItemKind ik, const String& name)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_common_item_shared_info(new ItemSharedInfo(this, m_item_internal_list, &m_item_connectivity_list))
 , m_item_shared_infos(new ItemSharedInfoList(this, m_common_item_shared_info))
+, m_used_variables(&_cmpIVariablePtr)
+, m_used_shmem_variables(&_cmpIVariablePtr)
 , m_properties(new Properties(*mesh->properties(), name))
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 {
@@ -722,6 +735,7 @@ _partialEndUpdate()
 void ItemFamily::
 _endUpdate(bool need_check_remove)
 {
+  _resizeShMemVariables();
   if (_partialEndUpdate())
     return;
 
@@ -824,6 +838,17 @@ _resizeVariables(bool force_resize)
     for (IVariable* var : m_used_variables) {
       _updateVariable(var);
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_resizeShMemVariables()
+{
+  for (IVariable* var : m_used_shmem_variables) {
+    _updateVariable(var);
   }
 }
 
@@ -1597,6 +1622,9 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
       //if (var->itemFamily()==this) {
       var->copyItemsValues(source, destination);
     }
+    for (IVariable* var : m_used_shmem_variables) {
+      var->copyItemsValues(source, destination);
+    }
   }
 }
 
@@ -1627,6 +1655,11 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
         var->copyItemsMeanValues(first_source, second_source, destination);
       }
     }
+    for (IVariable* var : m_used_shmem_variables) {
+      if (!(var->property() & (IVariable::PTemporary | IVariable::PNoRestore))) {
+        var->copyItemsMeanValues(first_source, second_source, destination);
+      }
+    }
   }
 }
 
@@ -1646,6 +1679,10 @@ compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
 
   for (IVariable* var : m_used_variables) {
     debug(Trace::High) << "Compact variable " << var->fullName();
+    var->compact(new_to_old_ids);
+  }
+  for (IVariable* var : m_used_shmem_variables) {
+    debug(Trace::High) << "Compact shmem variable " << var->fullName();
     var->compact(new_to_old_ids);
   }
 
@@ -2090,7 +2127,11 @@ _addVariable(IVariable* var)
   //info() << "Add var=" << var->fullName() << " to family=" << name();
   if (var->itemFamily()!=this)
     ARCANE_FATAL("Can not add a variable to a different family");
-  m_used_variables.insert(var);
+
+  if (var->property() & IVariable::PInShMem)
+    m_used_shmem_variables.insert(var);
+  else
+    m_used_variables.insert(var);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2100,7 +2141,10 @@ void ItemFamily::
 _removeVariable(IVariable* var)
 {
   //info() << "Remove var=" << var->fullName() << " to family=" << name();
-  m_used_variables.erase(var);
+  if (var->property() & IVariable::PInShMem)
+    m_used_shmem_variables.erase(var);
+  else
+    m_used_variables.erase(var);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2110,6 +2154,9 @@ void ItemFamily::
 usedVariables(VariableCollection collection)
 {
   for( IVariable* var : m_used_variables ){
+    collection.add(var);
+  }
+  for (IVariable* var : m_used_shmem_variables) {
     collection.add(var);
   }
 }

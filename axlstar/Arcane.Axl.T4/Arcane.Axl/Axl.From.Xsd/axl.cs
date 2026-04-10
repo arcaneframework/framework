@@ -945,6 +945,10 @@ namespace Arcane.Axl.Xsd {
         
         private string extent1Field;
         
+        private bool inshmemField;
+
+        private bool inshmemFieldSpecified;
+
         public variablesVariable() {
             this.flowField = Flow.inout;
         }
@@ -1310,6 +1314,28 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.extent1Field = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("in-shmem")]
+        public bool inshmem {
+            get {
+                return this.inshmemField;
+            }
+            set {
+                this.inshmemField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool inshmemSpecified {
+            get {
+                return this.inshmemFieldSpecified;
+            }
+            set {
+                this.inshmemFieldSpecified = value;
             }
         }
     }

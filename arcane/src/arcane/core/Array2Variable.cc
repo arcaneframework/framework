@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2025 */
+/* Array2Variable.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -495,7 +495,11 @@ _internalResize(const VariableResizeArgs& resize_args)
 
   Integer dim2_size = data_values.dim2Size();
 
-  if (nb_additional_element!=0){
+  const bool is_collective_allocator = data_values.allocator()->isCollective();
+  if (is_collective_allocator) {
+    data_values.reserve(new_size+nb_additional_element*dim2_size);
+  }
+  else if (nb_additional_element != 0) {
     Integer capacity = data_values.capacity();
     if (new_size>capacity)
       data_values.reserve(new_size+nb_additional_element*dim2_size);

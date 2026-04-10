@@ -2,6 +2,13 @@
 
 [TOC]
 
+\warning Cette fonctionnalité est expérimentale. Si des variables avec support sont allouées en mémoire partagée, il
+peut y avoir des adaptations importantes à faire pour rendre les appels de redimensionnements collectifs (risque de
+deadlocks). Ces redimensionnements sont plus lents qu'en mémoire locale. Il est recommandé d'utiliser la mémoire
+partagée uniquement pour les variables sans support. Il n'est pas recommandé d'utiliser la mémoire partagée avec des
+variables sur les particules; les appels à `endUpdate()` sont plutôt fréquents et, avec la mémoire partagée, ils
+deviennent collectifs !
+
 ## Introduction {#arcanedoc_parallel_shmem_winvariable_intro}
 
 Les variables %Arcane utilisent habituellement l'allocateur par défaut pour allouer de la mémoire. Sans GPU, on utilise
@@ -21,6 +28,10 @@ mémoire soit collectifs.
 Pour les variables redimensionnées par %Arcane, l'utilisateur n'a pas besoin de se préoccuper de ces appels collectifs,
 %Arcane s'en occupe. Exemple des variables au maillage, %Arcane s'occupe de les redimensionner si le maillage évolue.
 
+\warning Pour les variables avec support, au niveau des familles, l'utilisation des variables en mémoire partagée rend
+collectif les appels agissants sur ces variables. On peut notamment citer les méthodes
+`Arcane::IItemFamily::compactItems()` et `Arcane::IItemFamily::endUpdate()`.
+
 En revanche, pour les variables avec lesquelles une méthode `resize()` est disponible (ou `reshape()` pour les variables
 multi-dimensionnelles), il est nécessaire de s'assurer que tous les sous-domaines de la machine fassent un appel à cette
 méthode (quitte à faire `var.resize(var.size())` pour les sous-domaines ne nécessitant pas de redimensionnement).
@@ -29,7 +40,7 @@ Ces appels de redimensionnement mirent de côté, l'utilisation des variables en
 l'utilisation des variables en mémoire locale.
 
 Pour déclarer une variable en mémoire partagée, il suffit d'ajouter la propriété `IVariable::PInShMem` lors de sa
-création (pour l'instant, il n'est pas possible de le faire via l'AXL).
+création (dans les fichiers AXL, l'option correspondante est `in-shmem="true"`).
 
 ## Accès aux segments mémoire des autres sous-domaines {#arcanedoc_parallel_shmem_winvariable_shared}
 

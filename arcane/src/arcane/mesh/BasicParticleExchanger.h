@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicParticleExchanger.h                                    (C) 2000-2025 */
+/* BasicParticleExchanger.h                                    (C) 2000-2026 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_BASICPARTICLEEXCHANGER_H
@@ -146,6 +146,8 @@ class BasicParticleExchanger
    * sur le nombre de particules. Si (-1) alors pas de limite.
    */
   Int32 m_max_nb_message_without_reduce = 15;
+
+  bool m_support_shmem_variables = false;
 
  private:
 

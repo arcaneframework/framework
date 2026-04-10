@@ -652,10 +652,12 @@ _internalResize(const VariableResizeArgs& resize_args)
 
   //const bool is_collective_allocator = value_internal->memoryAllocator().isCollectiveAllocator();
   const bool is_collective_allocator = value_internal->_internalDeprecatedValue().allocator()->isCollective();
-
-  if (nb_additional_element!=0){
+  if (is_collective_allocator) {
+    value_internal->reserve(new_size + nb_additional_element);
+  }
+  else if (nb_additional_element!=0){
     Integer capacity = value_internal->capacity();
-    if (new_size > capacity || is_collective_allocator)
+    if (new_size>capacity)
       value_internal->reserve(new_size+nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();

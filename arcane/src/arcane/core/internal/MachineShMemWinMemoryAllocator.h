@@ -44,6 +44,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinMemoryAllocator
 
  public:
 
+  bool hasRealloc(MemoryAllocationArgs) const override { return true; }
   AllocatedMemoryInfo allocate(MemoryAllocationArgs, Int64 new_size) override;
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size) override;
   void deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr) override;

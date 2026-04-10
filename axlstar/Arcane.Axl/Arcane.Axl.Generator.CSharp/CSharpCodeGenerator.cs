@@ -106,11 +106,13 @@ namespace Arcane.Axl
         _WriteVariableProperty(writer,variable_info.IsNoRestore,
                                "PNoRestore",ref is_first_attribute);
         _WriteVariableProperty(writer,variable_info.IsNoExchange,
-                               "PNoRestore",ref is_first_attribute);
+                               "PNoExchange",ref is_first_attribute);
         _WriteVariableProperty(writer,variable_info.IsPersistant,
                                "PPersistant",ref is_first_attribute);
         _WriteVariableProperty(writer,variable_info.IsNoReplicaSync,
                                "PNoReplicaSync",ref is_first_attribute);
+        _WriteVariableProperty(writer,variable_info.IsInShMem,
+                               "PInShMem",ref is_first_attribute);
         writer.Write("));\n");
       }
     }
