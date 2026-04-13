@@ -106,6 +106,8 @@ set(ARCANE_SOURCES
   MshParallelMeshReader.cc
   MshMeshWriter.cc
 
+  BasicRayMeshIntersection.cc
+
   internal/IosFile.cc
   internal/IosFile.h
   internal/IosGmsh.h

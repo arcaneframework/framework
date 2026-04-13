@@ -1,5 +1,4 @@
 set(ARCANE_SOURCES
-  RayMeshIntersectionUnitTest.cc
   GeometricUnitTest.cc
   IMaterialEquationOfState.h
 )
@@ -16,7 +15,6 @@ set(ARCANE_MATERIAL_SOURCES
 )
 
 set(AXL_FILES 
-  RayMeshIntersectionUnitTest
   MaterialHeatTest
   MeshMaterialTester
   HyodaMixedCellsUnitTest

@@ -41,10 +41,6 @@ if (Lima_FOUND)
   #  ARCANE_ADD_TEST(lima_ev6_mli2 lima-4.arc "-m 10")
 endif ()
 
-if (Lima_FOUND)
-  ARCANE_ADD_TEST(raymesh_intersection_1 testRayMeshIntersection-1.arc "-m 2")
-endif()
-
 # Pour l'instant, les soudures ne sont pas compatibles
 # avec le partitionnement parallele lorqu'on utilise le partitionnement interne
 if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
