@@ -204,6 +204,12 @@ function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
   execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
+function(ARCANE_COPY_MESH_DIRECTORY mesh_dir_name)
+  if (ARCANE_ADDITIONAL_MESHES_PATH)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_dir_name}
+      ${ARCANE_TEST_PATH}/${mesh_dir_name})
+  endif ()
+endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -269,6 +275,15 @@ arcane_copy_mesh(sphere_tied_2 sphere_tied_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
+if (Lima_FOUND)
+  arcane_copy_mesh_direct(tube2x2x4.unf)
+  arcane_copy_mesh_direct(tube3x3x10.unf)
+  arcane_copy_mesh_direct(sphere_multi_soudure.unf)
+  arcane_copy_mesh_direct(sod_cart_lima.unf)
+  #arcane_copy_mesh_direct(soudures_3.mli)
+  arcane_copy_mesh_directory(sphere_multi_soudure_cut_4)
+  #arcane_copy_mesh_directory(soudures_3_cut_4)
+endif ()
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
@@ -1317,6 +1332,23 @@ arcane_add_test_checkpoint_parallel(variable-in-shmem-1-checkpoint testVariableI
 
 if (Lima_FOUND)
   arcane_add_test(raymesh_intersection_1 testRayMeshIntersection-1.arc "-m 2")
+
+  arcane_add_test(lima_mesh_mli testLima-1.arc "-m 10")
+  arcane_add_test(lima_mesh_unf testLima-2.arc "-m 10")
+  arcane_add_test(lima_hydro testLima-hydro.arc "-m 10")
+  arcane_add_test(lima_hydro_meshservice testLima-hydro-meshservice.arc "-m 10")
+
+  arcane_add_test_parallel(lima_mesh_mli_1proc_rep4 testLima-1.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_mesh_mli_3proc_rep4 testLima-1.arc 12 -m 10 -R 4)
+
+  arcane_add_test_parallel(lima_mesh_unf_1proc_rep4 testLima-2.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_mesh_unf_3proc_rep4 testLima-2.arc 12 -m 10 -R 4)
+
+  arcane_add_test_parallel(lima_hydro-1proc_rep4 testLima-hydro.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_hydro-3proc_rep4 testLima-hydro.arc 12 -m 10 -R 4)
+
+  #  arcane_add_test(lima_ev6 testLima-3.arc "-m 10")
+  #  arcane_add_test(lima_ev6_mli2 testLima-4.arc "-m 10")
 endif ()
 
 # ----------------------------------------------------------------------------
