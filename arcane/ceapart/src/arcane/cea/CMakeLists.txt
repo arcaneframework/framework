@@ -6,15 +6,6 @@ arcane_find_package(Lima)
 
 include(srcs.cmake)
 
-if (Lima_FOUND)
-  if (ARCANE_LIMA_HAS_MLI)
-    list(APPEND ARCANE_SOURCES LimaMalipp1.cc LimaMalippT.h)
-  endif()
-  if (ARCANE_LIMA_HAS_MLI2)
-    list(APPEND ARCANE_SOURCES LimaMalipp2.cc)
-  endif()
-endif()
-
 arcane_add_library(arcane_cea
   INPUT_PATH ${ARCANECEA_SRC_PATH}
   RELATIVE_PATH arcane/cea

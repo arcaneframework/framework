@@ -55,6 +55,7 @@
 #include "arcane/core/ICaseMeshReader.h"
 #include "arcane/core/IMeshBuilder.h"
 #include "arcane/core/LimaCutInfosReader.h"
+#include "arcane/core/internal/LimaUtils.h"
 
 #include <Lima/lima++.h>
 
@@ -71,9 +72,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace LimaUtils
+namespace
 {
-void createGroup(IItemFamily* family,const String& name,Int32ArrayView local_ids);
 
 // Mutex pour protéger les appels à Lima dans le cas où on utilise MLI2
 // car ce format utilise HDF5 qui n'est thread-safe dans la plupart des cas
@@ -435,21 +435,6 @@ LimaMeshReaderService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_LIMA_HAS_MLI
-extern "C++" IMeshReader::eReturnType
-_directLimaPartitionMalipp(ITimerMng* timer_mng,IPrimaryMesh* mesh,
-                           const String& filename,Real length_multiplier);
-#endif
-
-#ifdef ARCANE_LIMA_HAS_MLI2
-extern "C++" IMeshReader::eReturnType
-_directLimaPartitionMalipp2(ITimerMng* timer_mng,IPrimaryMesh* mesh,
-                           const String& filename,Real length_multiplier);
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IMeshReader::eReturnType LimaMeshReaderService::
 readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
                  const String& filename,const String& dir_name,
@@ -569,7 +554,7 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
   if (!has_thread && use_internal_partition && ((rpos+4)==loc_file_name.length())){
     info() << "Use direct partitioning with mli";
 #ifdef ARCANE_LIMA_HAS_MLI
-    return _directLimaPartitionMalipp(timer_mng,mesh,filename,length_multiplier);
+    return LimaUtils::_directLimaPartitionMalipp(timer_mng, mesh, filename, length_multiplier);
 #else
     ARCANE_FATAL("Can not use 'mli' files because Lima is not compiled with 'mli' support");
 #endif
@@ -577,7 +562,7 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
   else if (!has_thread && use_internal_partition && ((rpos2+5)==loc_file_name.length())){
     info() << "Use direct partitioning with mli2";
 #ifdef ARCANE_LIMA_HAS_MLI2
-    return _directLimaPartitionMalipp2(timer_mng,mesh,filename,length_multiplier);
+    return LimaUtils::_directLimaPartitionMalipp2(timer_mng, mesh, filename, length_multiplier);
 #else
     ARCANE_FATAL("Can not use 'mli2' files because Lima is not compiled with 'mli2' support");
 #endif
@@ -600,8 +585,8 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
     try{
       {
         Timer::Sentry sentry(&time_to_read);
-        Timer::Phase t_action(sd,TP_InputOutput);
-        LimaUtils::GlobalLimaMutex sc(need_mutex);
+        Timer::Phase t_action(sd, TP_InputOutput);
+        GlobalLimaMutex sc(need_mutex);
         lima.lire(filename.localstr(),Lima::SUFFIXE,true);
         //warning() << "Preparation lima supprimée";
         lima.preparation_parametrable(preparation);
@@ -1521,7 +1506,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
     info(4) << "Writing file '" << std_file_name << "'";
 
     {
-      LimaUtils::GlobalLimaMutex sc(need_mutex);
+      GlobalLimaMutex sc(need_mutex);
       lima.ecrire(std_file_name);
     }
   }
@@ -1536,41 +1521,6 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
   }
 
   return false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé un groupe d'entités.
- *
- * Pour assurer la reproductibilité, s'assure que les entités sont
- * triées suivant leur localid. S'assure aussi qu'il n'y a pas de doublons
- * dans la liste car lima l'autorise mais pas Arcane.
- */
-void LimaUtils::
-createGroup(IItemFamily* family,const String& name,Int32ArrayView local_ids)
-{
-  ITraceMng* tm = family->traceMng();
-  if (!local_ids.empty())
-    std::sort(std::begin(local_ids),std::end(local_ids));
-  Integer nb_item = local_ids.size();
-  Integer nb_duplicated = 0;
-  // Détecte les doublons
-  for( Integer i=1; i<nb_item; ++i )
-    if (local_ids[i]==local_ids[i-1]){
-      ++nb_duplicated;
-    }
-  if (nb_duplicated!=0){
-    tm->warning() << "Duplicated items in group name=" << name
-                  << " nb_duplicated=" << nb_duplicated;
-    auto xbegin = std::begin(local_ids);
-    auto xend = std::end(local_ids);
-    Integer new_size = CheckedConvert::toInteger(std::unique(xbegin,xend)-xbegin);
-    tm->info() << "NEW_SIZE=" << new_size << " old=" << nb_item;
-    local_ids = local_ids.subView(0,new_size);
-  }
-  
-  family->createGroup(name,local_ids,true);
 }
 
 /*---------------------------------------------------------------------------*/
