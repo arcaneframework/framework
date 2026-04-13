@@ -15,6 +15,26 @@ target_link_libraries(arcane_core PUBLIC Arccore::arccore_message_passing Arccor
 target_link_libraries(arcane_core PRIVATE LibXml2::LibXml2)
 target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTORY}>)
 
+
+# TODO : PUBLIC ?
+arcane_find_package(Lima)
+if (TARGET Lima::Lima)
+  message(STATUS "Add Lima::Lima to 'arcane_core' target")
+  target_link_libraries(arcane_core PUBLIC Lima::Lima)
+elseif (TARGET arcane::lima)
+  target_link_libraries(arcane_core PUBLIC arcane::lima)
+  if (ARCANE_LIMA_HAS_MLI2)
+    arcane_add_arccon_packages(arcane_core PUBLIC HDF5)
+  endif ()
+endif ()
+
+if (ARCANE_LIMA_HAS_MLI2)
+  target_compile_definitions(arcane_core PUBLIC ARCANE_LIMA_HAS_MLI2)
+endif ()
+if (ARCANE_LIMA_HAS_MLI)
+  target_compile_definitions(arcane_core PUBLIC ARCANE_LIMA_HAS_MLI)
+endif ()
+
 arcane_register_library(arcane_core)
 
 # Génère pour chaque include 'Toto.h' un fichier d'en-tête

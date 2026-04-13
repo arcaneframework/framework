@@ -26,6 +26,10 @@ if (Neo_FOUND)
 endif()
 
 arcane_find_package(hiredis QUIET)
+arcane_find_package(Lima)
+if (Lima_FOUND)
+  set(TEST_LIBS ${TEST_LIBS} Lima::Lima)
+endif ()
 
 include(srcs.cmake)
 include(accelerator/srcs.cmake)
@@ -1308,6 +1312,12 @@ arcane_add_test_parallel_mpithread(variable-in-shmem-1 testVariableInShMem-1.arc
 
 arcane_add_test_checkpoint_sequential(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 1 1)
 arcane_add_test_checkpoint_parallel(variable-in-shmem-1-checkpoint testVariableInShMem-1.arc 4 1 1)
+
+# ----------------------------------------------------------------------------
+
+if (Lima_FOUND)
+  arcane_add_test(raymesh_intersection_1 testRayMeshIntersection-1.arc "-m 2")
+endif ()
 
 # ----------------------------------------------------------------------------
 

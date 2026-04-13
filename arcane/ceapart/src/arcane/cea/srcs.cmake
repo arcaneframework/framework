@@ -1,5 +1,4 @@
 set( ARCANE_SOURCES
-  BasicRayMeshIntersection.cc
   LimaCutInfosReader.cc
   LimaCutInfosReader.h
   ArcaneCeaVerifierModule.cc
