@@ -49,7 +49,7 @@
 #include "arcane/AbstractService.h"
 #include "arcane/MathUtils.h"
 
-#include "arcane/cea/LimaCutInfosReader.h"
+#include "arcane/core/LimaCutInfosReader.h"
 
 #include <memory>
 

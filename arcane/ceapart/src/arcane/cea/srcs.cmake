@@ -1,6 +1,4 @@
 set( ARCANE_SOURCES
-  LimaCutInfosReader.cc
-  LimaCutInfosReader.h
   ArcaneCeaVerifierModule.cc
   CartesianConnectivity.h
   CellDirectionMng.h
