@@ -166,6 +166,11 @@ if(MPI_FOUND)
   )
 endif()
 
+if (Lima_FOUND)
+  list(APPEND ARCANE_SOURCES Lima.cc)
+endif ()
+
+
 # ----------------------------------------------------------------------------
 
 arcane_add_library(arcane_std

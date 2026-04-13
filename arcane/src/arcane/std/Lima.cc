@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Lima.cc                                                     (C) 2000-2024 */
+/* Lima.cc                                                     (C) 2000-2026 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format Lima.                             */
 /*---------------------------------------------------------------------------*/
@@ -26,36 +26,35 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/Item.h"
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/Service.h"
-#include "arcane/Timer.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/ServiceInfo.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/AbstractService.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/ICaseMeshReader.h"
-#include "arcane/IMeshBuilder.h"
-
-#include "arcane/cea/LimaCutInfosReader.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/ICaseMeshReader.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/LimaCutInfosReader.h"
 
 #include <Lima/lima++.h>
 
