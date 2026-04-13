@@ -2,6 +2,11 @@
 
 include(srcs.cmake)
 
+arcane_find_package(Lima)
+if (Lima_FOUND)
+  list(APPEND ARCANE_SOURCES internal/LimaUtils.cc internal/LimaUtils.h internal/LimaMalippT.h)
+endif ()
+
 arcane_add_library(arcane_core
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/core
@@ -17,7 +22,6 @@ target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTO
 
 
 # TODO : PUBLIC ?
-arcane_find_package(Lima)
 if (TARGET Lima::Lima)
   message(STATUS "Add Lima::Lima to 'arcane_core' target")
   target_link_libraries(arcane_core PUBLIC Lima::Lima)
