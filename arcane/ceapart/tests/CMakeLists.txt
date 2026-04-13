@@ -22,25 +22,6 @@ set(ARCANE_TEST_EXECNAME arcanecea_tests_exec)
 set(ARCANE_TEST_DOTNET_ASSEMBLY ${LIBRARY_OUTPUT_PATH}/ArcaneCeaTest.dll)
 include(${Arcane_SOURCE_DIR}/src/arcane/tests/ArcaneTests.cmake)
 
-if (Lima_FOUND)
-  ARCANE_ADD_TEST(lima_mesh_mli lima-1.arc "-m 10")
-  ARCANE_ADD_TEST(lima_mesh_unf lima-2.arc "-m 10")
-  ARCANE_ADD_TEST(lima_hydro lima-hydro.arc "-m 10")
-  ARCANE_ADD_TEST(lima_hydro_meshservice lima-hydro-meshservice.arc "-m 10")
-
-  ARCANE_ADD_TEST_PARALLEL(lima_mesh_mli_1proc_rep4 lima-1.arc 4 -m 10 -R 4)
-  ARCANE_ADD_TEST_PARALLEL(lima_mesh_mli_3proc_rep4 lima-1.arc 12 -m 10 -R 4)
-
-  ARCANE_ADD_TEST_PARALLEL(lima_mesh_unf_1proc_rep4 lima-2.arc 4 -m 10 -R 4)
-  ARCANE_ADD_TEST_PARALLEL(lima_mesh_unf_3proc_rep4 lima-2.arc 12 -m 10 -R 4)
-
-  ARCANE_ADD_TEST_PARALLEL(lima_hydro-1proc_rep4 lima-hydro.arc 4 -m 10 -R 4)
-  ARCANE_ADD_TEST_PARALLEL(lima_hydro-3proc_rep4 lima-hydro.arc 12 -m 10 -R 4)
-
-  #  ARCANE_ADD_TEST(lima_ev6 lima-3.arc "-m 10")
-  #  ARCANE_ADD_TEST(lima_ev6_mli2 lima-4.arc "-m 10")
-endif ()
-
 # Pour l'instant, les soudures ne sont pas compatibles
 # avec le partitionnement parallele lorqu'on utilise le partitionnement interne
 if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
@@ -166,20 +147,6 @@ function(ARCANE_CEA_COPY_MESH_DIRECTORY mesh_dir_name)
       ${ARCANE_TEST_PATH}/${mesh_dir_name})
   endif()
 endfunction()
-
-if (Lima_FOUND)
-  ARCANE_CEA_COPY_MESH(tube5x5x100.mli2)
-  ARCANE_CEA_COPY_MESH(tube5x5x100.unf)
-  ARCANE_CEA_COPY_MESH(tube2x2x4.unf)
-  ARCANE_CEA_COPY_MESH(tube3x3x10.unf)
-  ARCANE_CEA_COPY_MESH(sphere1.mli2)
-  ARCANE_CEA_COPY_MESH(sphere2.mli2)
-  ARCANE_CEA_COPY_MESH(sphere_multi_soudure.unf)
-  ARCANE_CEA_COPY_MESH(sod_cart_lima.unf)
-  #ARCANE_CEA_COPY_MESH(soudures_3.mli)
-  ARCANE_CEA_COPY_MESH_DIRECTORY(sphere_multi_soudure_cut_4)
-  #ARCANE_CEA_COPY_MESH_DIRECTORY(soudures_3_cut_4)
-endif()
 
 #############
 # GEOMETRIC #
