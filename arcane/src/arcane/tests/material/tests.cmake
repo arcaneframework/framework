@@ -132,7 +132,7 @@ endif ()
 #################################
 #################################
 
-#include(material/TestDotNet.cmake)
+include(material/TestDotNet.cmake)
 
 #################################
 #################################
@@ -186,6 +186,8 @@ endif ()
 ###################
 # TODO: Utiliser les macros génériques pour tester pour les modes
 if (TARGET arcane_test_cs)
+  # Cette variable est utilisée dans 'arcane_add_csharp_test_sequential'
+  set(ARCANE_TEST_DOTNET_ASSEMBLY "${LIBRARY_OUTPUT_PATH}/ArcaneMaterialsTest.dll")
   message(STATUS "Adding '.Net' tests")
   if (MONO_EXEC)
     arcane_add_test_sequential(material2_cs testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -m 4)
@@ -194,6 +196,6 @@ if (TARGET arcane_test_cs)
     arcane_add_test_sequential(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
     arcane_add_test_sequential(material_eos_cs_coreclr testMaterial-eos-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
   endif ()
-  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4)
+  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4 )
 endif ()
 
