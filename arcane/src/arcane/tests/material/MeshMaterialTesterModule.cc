@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/tests/MeshMaterialTesterModule.h"
+#include "arcane/tests/material/MeshMaterialTesterModule.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/OStringStream.h"

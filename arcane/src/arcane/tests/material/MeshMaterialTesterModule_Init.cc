@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/tests/MeshMaterialTesterModule.h"
+#include "MeshMaterialTesterModule.h"
 
 #include "arcane/utils/ValueChecker.h"
 

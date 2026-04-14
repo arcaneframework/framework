@@ -20,8 +20,8 @@
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 #include "arcane/core/materials/MeshEnvironmentVariableRef.h"
 
-#include "arcane/tests/IMaterialEquationOfState.h"
-#include "arcane/tests/MeshMaterialTester_axl.h"
+#include "IMaterialEquationOfState.h"
+#include "arcane/tests/material/MeshMaterialTester_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

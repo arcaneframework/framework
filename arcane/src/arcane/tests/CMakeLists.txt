@@ -125,10 +125,16 @@ if (TARGET arcane_dotnet_wrapper_services)
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
 
+  add_custom_command(OUTPUT ${CSOUTPATH}/material/MeshMaterialCSharpUnitTest_axl.cs
+    DEPENDS ${CSPATH}/material/MeshMaterialCSharpUnitTest.axl ${ARCANE_AXLSTAR_DEPEND} test_material_eos_csharp_swig_depend
+    COMMAND ${ARCANE_AXL2CC}
+    ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH}/material ${CSPATH}/material/MeshMaterialCSharpUnitTest.axl)
+
   add_custom_target(arcane_test_cs_generate ALL DEPENDS
     "${CSOUTPATH}/SimpleHydroCS_axl.cs"
     "${CSOUTPATH}/PerfectGasEOS_axl.cs"
     "${CSOUTPATH}/MeshModification_axl.cs"
+    "${CSOUTPATH}/material/MeshMaterialCSharpUnitTest_axl.cs"
   )
 
   arcane_add_global_csharp_target(arcane_test_cs
@@ -146,6 +152,8 @@ if (TARGET arcane_dotnet_wrapper_services)
     "${CSPATH}/SimpleHydro.cs"
     "${CSPATH}/PerfectGasEOS.cs"
     "${CSPATH}/Launcher.cs"
+    "${CSPATH}/material/Test1.cs"
+    "${CSPATH}/material/StiffenedGasMaterialEos.cs"
     arcane_test_cs_generate
     DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
