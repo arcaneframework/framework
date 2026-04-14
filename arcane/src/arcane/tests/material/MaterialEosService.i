@@ -13,7 +13,7 @@ using Arcane.Materials;
 #include "ArcaneSwigUtils.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/ServiceBuilder.h"
-#include "arcane/tests/IMaterialEquationOfState.h"
+#include "arcane/tests/material/IMaterialEquationOfState.h"
 using namespace Arcane;
 %}
 
