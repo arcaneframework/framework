@@ -29,8 +29,8 @@ html {
   --searchbar-background: var(--page-background-color);
   --searchbar-foreground: var(--page-foreground-color);
 
-  --link-color: #2980b9;
-  --fragment-link: #2980b9;
+  --link-color: var(--primary-color);
+  --fragment-link: var(--primary-color);
   --param-color: #b71c1c;
 
   --warning-color: #f8d1cc;
@@ -73,8 +73,8 @@ html.dark-mode {
 
   --top-side-nav: #280055;
 
-  --link-color: #af7fe4;
-  --fragment-link: #af7fe4;
+  --link-color: var(--primary-color);
+  --fragment-link: var(--primary-color);
   --param-color: #ef9a9a;
 
   --warning-color: #2e1917;
