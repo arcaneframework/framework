@@ -63,7 +63,6 @@ set(ARCANE_SOURCES
   dof/DoFNodeTestService.cc
   graph/GraphUnitTest.cc
   inout/InOutTester.cc
-  geometry/GeometryUnitTest.cc
   StdArrayMeshVariables.h
   StdMeshVariables.h
   StdScalarVariables.h
@@ -124,7 +123,6 @@ set(AXL_FILES
   dof/DoFTester
   graph/GraphUnitTest
   inout/InOutTester
-  geometry/GeometryUnitTest
   MeshPolyhedralTest
   HydroAdditionalTest
   PDESRandomNumberGeneratorUnitTest
