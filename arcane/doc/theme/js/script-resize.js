@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* script-resize.js                                            (C) 2000-2023 */
+/* script-resize.js                                            (C) 2000-2026 */
 /*                                                                           */
 /* Petit script (sans l'utilisation de l'antique jquery) permettant de       */
 /* réintegrer le redimensionnement du volet de navigation.                   */
 /*                                                                           */
 /* À utiliser avec 'doxygen-awesome-sidebar-only' uniquement.                */
-/* Nécessite le script script-helper.js.                                  */
+/* Nécessite le script script-helper.js.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // Utilisation :
-// doxyfile : 
+// doxyfile :
 // HTML_EXTRA_STYLESHEET = doxygen-awesome.css \
 //                         doxygen-awesome-sidebar-only.css
 // HTML_EXTRA_FILES      = script-helper.js \
@@ -31,8 +31,8 @@
 // </script>
 
 
-let width_border_side_nav = 2;
-let min_width_side_nav = 10;
+let width_border_side_nav = 6;
+let min_width_side_nav = 100;
 let max_width_side_nav = 1000;
 
 // Fonction permettant de définir les nouvelles propriétés de la side nav.
@@ -90,8 +90,8 @@ var resizeSideNav = (side_nav) => {
 // Pour définir les évenements, on doit attendre que la side nav soit
 // créée.
 let waitElemForResizeSideNav = () => {
-  let elem = () => { 
-    return document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0]; 
+  let elem = () => {
+    return document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0];
   };
   waitItem(elem, resizeSideNav);
 };
@@ -104,6 +104,7 @@ var setOldSize = () => {
   // On récupère le cookie gentiment créé et mis à jour par doxygen.
   let coo = getStorage("doxygen_width");
   if(coo != "" && coo != null){
-    document.querySelector(':root').style.setProperty('--side-nav-fixed-width', coo+'px');
+    let size = parseInt(coo, 10) + width_border_side_nav;
+    document.querySelector(':root').style.setProperty('--side-nav-fixed-width', size.toString(10) + 'px');
   }
 };

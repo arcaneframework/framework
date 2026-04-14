@@ -1,11 +1,11 @@
 ﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*-----------------------------------------------------------------------------
-/* Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 /* See the top-level COPYRIGHT file for details.
 /* SPDX-License-Identifier: Apache-2.0
 /*-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* custom.css                                                  (C) 2000-2023 */
+/* dev_colors.css                                              (C) 2000-2026 */
 /*                                                                           */
 /* Couleurs pour le thème développeur.                                       */
 /*---------------------------------------------------------------------------*/
@@ -29,8 +29,33 @@ html {
   --searchbar-background: var(--page-background-color);
   --searchbar-foreground: var(--page-foreground-color);
 
-  --link-color: #2980b9;
+  --link-color: var(--primary-color);
+  --fragment-link: var(--primary-color);
   --param-color: #b71c1c;
+
+  --warning-color: #f8d1cc;
+  --warning-color-dark: #b61825;
+  --warning-color-darker: #75070f;
+
+  --note-color: #e4f3ff;
+  --note-color-dark: #1879C4;
+  --note-color-darker: #274a5c;
+
+  --todo-color: #e4dafd;
+  --todo-color-dark: #5b2bdd;
+  --todo-color-darker: #2a0d72;
+
+  --deprecated-color: #ecf0f3;
+  --deprecated-color-dark: #5b6269;
+  --deprecated-color-darker: #43454a;
+
+  --bug-color: #faf3d8;
+  --bug-color-dark: #f3a600;
+  --bug-color-darker: #5f4204;
+
+  --invariant-color: #d8f1e3;
+  --invariant-color-dark: #44b86f;
+  --invariant-color-darker: #265532;
 }
 
 /**
@@ -47,5 +72,32 @@ html.dark-mode {
   --side-nav-foreground: var(--page-foreground-color);
   
   --top-side-nav: #4f1600;
+
+  --link-color: var(--primary-color);
+  --fragment-link: var(--primary-color);
   --param-color: #efba9a;
+
+  --warning-color: #2e1917;
+  --warning-color-dark: #ad2617;
+  --warning-color-darker: #f5b1aa;
+
+  --note-color: #163750;
+  --note-color-dark: #1982D2;
+  --note-color-darker: #dcf0fa;
+
+  --todo-color: #2a2536;
+  --todo-color-dark: #7661b3;
+  --todo-color-darker: #ae9ed6;
+
+  --deprecated-color: #2e323b;
+  --deprecated-color-dark: #738396;
+  --deprecated-color-darker: #abb0bd;
+
+  --bug-color: #3b2e04;
+  --bug-color-dark: #f1b602;
+  --bug-color-darker: #ceb670;
+
+  --invariant-color: #303a35;
+  --invariant-color-dark: #76ce96;
+  --invariant-color-darker: #cceed5;
 }

@@ -50,8 +50,7 @@ chapitre directement depuis la barre de navigation.
 </center>
 \endhtmlonly
 
-
-## Table des matières toujours devant {#arcanedoc_doc_config_toc_above_all}
+## Table des matières toujours devant (Doxygen 1.13.0 et avant) {#arcanedoc_doc_config_toc_above_all}
 
 Cette option permet d'afficher la table des matières
 par dessus le texte.
@@ -78,8 +77,7 @@ sera prise en compte.
 </center>
 \endhtmlonly
 
-
-## Ancien emplacement de la table des matières {#arcanedoc_doc_config_apply_old_toc}
+## Ancien emplacement de la table des matières (Doxygen 1.13.0 et avant) {#arcanedoc_doc_config_apply_old_toc}
 
 Avant la mise à jour du thème, la table des matières était fixée
 en haut de la page. Cette option permet de restaurer l'emplacement
