@@ -37,11 +37,13 @@
     <script type="text/javascript" src="$relpath^script-num-lines-code.js"></script>
     <script type="text/javascript" src="$relpath^script-config-theme.js"></script>
     <script type="text/javascript" src="$relpath^script-edit-config-theme.js"></script>
-    <script type="text/javascript" src="$relpath^script-alternative-theme.js"></script>
+    <script type="text/javascript" src="$relpath^script-doxygen-version.js"></script>
     <script type="text/javascript">
       // On demande l'activation de la personnalisation de la page.
       var no_custom_theme = false;
-      
+
+      setDoxygenVersion("$doxygenversion");
+
       DoxygenAwesomeDarkModeToggle.title = "Thème clair/sombre";
       DoxygenAwesomeDarkModeToggle.init();
 
@@ -49,7 +51,9 @@
       DoxygenAwesomeFragmentCopyButton.init();
 
       DoxygenAwesomeParagraphLink.init();
-      DoxygenAwesomeInteractiveToc.init();
+      if (doxygen_minor_version < 14) {
+        DoxygenAwesomeInteractiveToc.init();
+      }
       DoxygenAwesomeTabs.init()
 
       waitElemForResizeSideNav();

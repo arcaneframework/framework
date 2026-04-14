@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* script-config-theme.js                                      (C) 2000-2023 */
+/* script-config-theme.js                                      (C) 2000-2026 */
 /*                                                                           */
 /* Petit script (sans l'utilisation de l'antique jquery) contenant les       */
 /* fonctions permettant de modifier l'apparence d'une page.                  */
@@ -104,30 +104,56 @@ var nodeSaved = null;
 
 // Fonction permettant d'étendre le niveau deux de la nav bar.
 var expandLevelTwo = (item) => {
-  // Pour déterminer quels items étendre, on regarde "l'orientation"
-  // de la flèche.
-  let symbol = "►";
-  if (stepExpendLevelTwo) {
-    symbol = "▼";
-    stepExpendLevelTwo = false;
+  if (doxygen_minor_version < 14) {
+    // Pour déterminer quels items étendre, on regarde "l'orientation"
+    // de la flèche.
+    let symbol = "►";
+    if (stepExpendLevelTwo) {
+      symbol = "▼";
+      stepExpendLevelTwo = false;
+    }
+    else {
+      stepExpendLevelTwo = true;
+    }
+    // Pour tous les items, on regarde l'orientation de la flèche et
+    // selon, on étend/rétracte le niveau.
+    item.forEach(
+      (node, _) => {
+        if (node.querySelector("span").innerHTML == symbol) {
+          node.onclick();
+        }
+        // Si l'utilisateur a étendu un niveau, on le sauvegarde pour
+        // le restaurer plus tard.
+        else if (stepExpendLevelTwo) {
+          nodeSaved = node;
+        }
+      }
+    );
   }
   else {
-    stepExpendLevelTwo = true;
-  }
-  // Pour tous les items, on regarde l'orientation de la flèche et
-  // selon, on étend/rétracte le niveau.
-  item.forEach(
-    (node, _) => {
-      if (node.querySelector("span").innerHTML == symbol) {
-        node.onclick();
-      }
-      // Si l'utilisateur a étendu un niveau, on le sauvegarde pour
-      // le restaurer plus tard.
-      else if (stepExpendLevelTwo) {
-        nodeSaved = node;
-      }
+    let symbol = "arrowhead closed";
+    if (stepExpendLevelTwo) {
+      symbol = "arrowhead opened";
+      stepExpendLevelTwo = false;
     }
-  );
+    else {
+      stepExpendLevelTwo = true;
+    }
+    // Pour tous les items, on regarde l'orientation de la flèche et
+    // selon, on étend/rétracte le niveau.
+    item.forEach(
+      (node, _) => {
+        if (node.querySelector("span").querySelector("span").className == symbol) {
+          node.onclick();
+        }
+        // Si l'utilisateur a étendu un niveau, on le sauvegarde pour
+        // le restaurer plus tard.
+        else if (stepExpendLevelTwo) {
+          nodeSaved = node;
+        }
+      }
+    );
+  }
   // Si on est en mode "rétracte", on reétend l'item sauvé.
   if (!stepExpendLevelTwo && nodeSaved != null) {
     nodeSaved.onclick();

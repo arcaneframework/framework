@@ -1,11 +1,11 @@
 ﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*-----------------------------------------------------------------------------
-/* Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 /* See the top-level COPYRIGHT file for details.
 /* SPDX-License-Identifier: Apache-2.0
 /*-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* custom.css                                                  (C) 2000-2025 */
+/* custom.css                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Personnalisation des css de doxygen et du thème.                          */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,21 @@ html.dark-mode {
   border-radius: 10px !important;
   top: 0px !important;
   border-left: 0px !important;
+}
+
+/**
+ * Table des matières (doxygen v1.14.0+).
+ */
+#page-nav {
+  background: var(--side-nav-background) !important;
+}
+
+.vis {
+  background: var(--side-nav-background) !important;
+}
+
+.vis::after {
+  background: var(--primary-color) !important;
 }
 
 /**
@@ -122,7 +137,7 @@ dl.deprecated dd {
   user-select: none;
   position: absolute;
   top: 5px;
-  right: 45px;
+  right: 25px;
   z-index: 0;
   rotate: 90deg;
 }

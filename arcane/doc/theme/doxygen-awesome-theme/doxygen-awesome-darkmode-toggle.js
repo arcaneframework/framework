@@ -1,29 +1,10 @@
+// SPDX-License-Identifier: MIT
 /**
 
 Doxygen Awesome
 https://github.com/jothepro/doxygen-awesome-css
 
-MIT License
-
-Copyright (c) 2021 - 2023 jothepro
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Copyright (c) 2021 - 2025 jothepro
 
 */
 
@@ -38,7 +19,7 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
     static prefersLightModeInDarkModeKey = "prefers-light-mode-in-dark-mode"
     static prefersDarkModeInLightModeKey = "prefers-dark-mode-in-light-mode"
 
-    static _staticConstructor = function () {
+    static _staticConstructor = function() {
         DoxygenAwesomeDarkModeToggle.enableDarkMode(DoxygenAwesomeDarkModeToggle.userPreference)
         // Update the color scheme when the browsers preference changes
         // without user interaction on the website.
@@ -56,8 +37,8 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
     }()
 
     static init() {
-        $(function () {
-            $(document).ready(function () {
+        $(function() {
+            $(document).ready(function() {
                 const toggleButton = document.createElement('doxygen-awesome-dark-mode-toggle')
                 toggleButton.title = DoxygenAwesomeDarkModeToggle.title
                 toggleButton.updateIcon()
@@ -71,10 +52,10 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
                     }
                 });
 
-                $(document).ready(function () {
+                $(document).ready(function(){
                     document.getElementById("MSearchBox").parentNode.appendChild(toggleButton)
                 })
-                $(window).resize(function () {
+                $(window).resize(function(){
                     document.getElementById("MSearchBox").parentNode.appendChild(toggleButton)
                 })
             })
@@ -83,61 +64,7 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
 
     constructor() {
         super();
-        this.onclick = this.toggleDarkMode
-    }
-
-    static createCookie(name, value, days) {
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            var expires = "; expires=" + date.toGMTString();
-        }
-        else var expires = "";
-
-        document.cookie = name + "=" + value + expires + "; path=/";
-    }
-
-    static readCookie(name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-
-    static eraseCookie(name) {
-        DoxygenAwesomeDarkModeToggle.createCookie(name, "", -1);
-    }
-
-
-    static setStorage(name, value, days = 365) {
-        if (window.chrome) {
-            localStorage.setItem(name, value);
-        }
-        else {
-            DoxygenAwesomeDarkModeToggle.createCookie(name, value, days);
-        }
-    }
-
-    static getStorage(name) {
-        if (window.chrome) {
-            return localStorage.getItem(name);
-        }
-        else {
-            return DoxygenAwesomeDarkModeToggle.readCookie(name);
-        }
-    }
-
-    static removeStorage(name) {
-        if (window.chrome) {
-            localStorage.removeItem(name);
-        }
-        else {
-            DoxygenAwesomeDarkModeToggle.eraseCookie(name);
-        }
+        this.onclick=this.toggleDarkMode
     }
 
     /**
@@ -151,30 +78,30 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
      * @returns `true` for dark-mode, `false` for light-mode user preference
      */
     static get userPreference() {
-        return (!DoxygenAwesomeDarkModeToggle.systemPreference && DoxygenAwesomeDarkModeToggle.getStorage(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey) == '1') ||
-            (DoxygenAwesomeDarkModeToggle.systemPreference && !DoxygenAwesomeDarkModeToggle.getStorage(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey) == '1')
+        return (!DoxygenAwesomeDarkModeToggle.systemPreference && localStorage.getItem(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey)) || 
+        (DoxygenAwesomeDarkModeToggle.systemPreference && !localStorage.getItem(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey))
     }
 
     static set userPreference(userPreference) {
         DoxygenAwesomeDarkModeToggle.darkModeEnabled = userPreference
-        if (!userPreference) {
-            if (DoxygenAwesomeDarkModeToggle.systemPreference) {
-                DoxygenAwesomeDarkModeToggle.setStorage(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey, '1')
+        if(!userPreference) {
+            if(DoxygenAwesomeDarkModeToggle.systemPreference) {
+                localStorage.setItem(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey, true)
             } else {
-                DoxygenAwesomeDarkModeToggle.removeStorage(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey)
+                localStorage.removeItem(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey)
             }
         } else {
-            if (!DoxygenAwesomeDarkModeToggle.systemPreference) {
-                DoxygenAwesomeDarkModeToggle.setStorage(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey, '1')
+            if(!DoxygenAwesomeDarkModeToggle.systemPreference) {
+                localStorage.setItem(DoxygenAwesomeDarkModeToggle.prefersDarkModeInLightModeKey, true)
             } else {
-                DoxygenAwesomeDarkModeToggle.removeStorage(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey)
+                localStorage.removeItem(DoxygenAwesomeDarkModeToggle.prefersLightModeInDarkModeKey)
             }
         }
         DoxygenAwesomeDarkModeToggle.onUserPreferenceChanged()
     }
 
     static enableDarkMode(enable) {
-        if (enable) {
+        if(enable) {
             DoxygenAwesomeDarkModeToggle.darkModeEnabled = true
             document.documentElement.classList.add("dark-mode")
             document.documentElement.classList.remove("light-mode")
@@ -200,7 +127,7 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
     }
 
     updateIcon() {
-        if (DoxygenAwesomeDarkModeToggle.darkModeEnabled) {
+        if(DoxygenAwesomeDarkModeToggle.darkModeEnabled) {
             this.innerHTML = DoxygenAwesomeDarkModeToggle.darkModeIcon
         } else {
             this.innerHTML = DoxygenAwesomeDarkModeToggle.lightModeIcon
