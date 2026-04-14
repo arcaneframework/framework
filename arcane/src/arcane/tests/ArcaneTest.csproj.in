@@ -18,16 +18,10 @@
     <Compile Include="@CSOUTPATH@/PerfectGasEOS_axl.cs" />
     <Compile Include="@CSOUTPATH@/SimpleHydroCS_axl.cs" />
     <Compile Include="@CSOUTPATH@/MeshModification_axl.cs" />
-
-    <Compile Include="@CSPATH@/material/Test1.cs"/>
-    <Compile Include="@CSPATH@/material/StiffenedGasMaterialEos.cs"/>
-    <Compile Include="@CSOUTPATH@/material/MeshMaterialCSharpUnitTest_axl.cs"/>
-    <Compile Include="@MATERIAL_CSHARP_OUTDIR@/cs_files/*.cs"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
     <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
     <ProjectReference Include="../Arcane.Launcher/Arcane.Launcher.csproj" />
-    <ProjectReference Include="../Arcane.Cea.Materials/Arcane.Cea.Materials.csproj"/>
   </ItemGroup>
 </Project>
