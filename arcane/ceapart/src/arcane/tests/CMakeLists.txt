@@ -4,10 +4,6 @@ if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     ${ARCANE_MATERIAL_SOURCES}
   )
-  set(ARCANE_ACCELERATOR_SOURCES
-    MeshMaterialSyncUnitTest.cc
-    MaterialHeatTestModule.cc
-  )
   arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 endif()
 

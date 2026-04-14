@@ -57,7 +57,7 @@
 #include "arcane/accelerator/Reduce.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/MaterialHeatTest_axl.h"
+#include "arcane/tests/material/MaterialHeatTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -36,7 +36,7 @@
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/MeshMaterialSyncUnitTest_axl.h"
+#include "arcane/tests/material/MeshMaterialSyncUnitTest_axl.h"
 
 #include <set>
 

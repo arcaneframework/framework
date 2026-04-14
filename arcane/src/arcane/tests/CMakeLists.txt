@@ -12,7 +12,6 @@ if(ARCANE_HAS_SOLVERS)
   set(TEST_LIBS ${TEST_LIBS} arcane_solvers)
 endif()
 
-list(APPEND TEST_DIRS geometry)
 list(APPEND TEST_LIBS arcane_geometry)
 
 if(GEOMETRYKERNEL_FOUND)
@@ -31,9 +30,14 @@ if (Lima_FOUND)
   set(TEST_LIBS ${TEST_LIBS} Lima::Lima)
 endif ()
 
+list(APPEND TEST_LIBS arcane_materials)
+
+
 include(srcs.cmake)
 include(accelerator/srcs.cmake)
 include(cartesianmesh/srcs.cmake)
+include(geometry/srcs.cmake)
+include(material/srcs.cmake)
 
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
@@ -955,10 +959,6 @@ arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNu
 arcane_add_test_sequential(simple_csv_output_service testSimpleCsvOutputService.arc)
 arcane_add_test_sequential(simple_csv_comparator_service testSimpleCsvComparatorService.arc)
 
-arcane_add_test(geometry testGeom.arc)
-arcane_add_test(geometry_applyoperation_v2 testGeom.arc -We,ARCANE_DEBUG_APPLYOPERATION,1)
-arcane_add_test(geometry_applyoperation_v1 testGeom.arc -We,ARCANE_APPLYOPERATION_VERSION,1 -We,ARCANE_DEBUG_APPLYOPERATION,1)
-
 if(ARCANE_HAS_SOLVERS)
   arcane_add_test_parallel(solver testSolver.arc 1)
   arcane_add_test_parallel(solver testSolver.arc 4)
@@ -1355,6 +1355,8 @@ endif ()
 
 include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
+include(geometry/tests.cmake)
+include(material/tests.cmake)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
