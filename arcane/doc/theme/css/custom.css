@@ -462,5 +462,18 @@ div.dyncontent {
   background-color: var(--fragment-linenumber-background) !important;
 }
 
+/*
+ * Ajustement des couleurs des snippets.
+ */
+.doxygen-awesome-fragment-wrapper {
+  background: var(--page-background-color);
+  border: 0 solid var(--section-code-border);
+  border-radius: var(--border-radius-medium);
+}
+
+.fragment {
+  border: 1px solid var(--separator-color);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
