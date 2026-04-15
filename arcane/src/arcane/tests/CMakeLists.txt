@@ -1362,6 +1362,53 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
+# Pour l'instant, les soudures ne sont pas compatibles
+# avec le partitionnement parallele lorqu'on utilise le partitionnement interne
+if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
+  arcane_add_test(tied_interface3 testTiedInterface-3.arc "-m 10")
+  arcane_add_test(tied_interface_multi1 testTiedInterface-4.arc "-m 2")
+  arcane_add_test_parallel(tied_interface3_lb testLoadBalance-tiedinterface-1.arc 4 "-m 10")
+endif ()
+
+arcane_add_test_parallel(splitsd1 testPartition-SplitSD.arc 4)
+arcane_add_test_parallel(splitsd1_legacy_partition_init testPartition-SplitSD.arc 4 "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
+arcane_add_test_parallel(loadbalance_splitsd1 testLoadBalanceHydro-SplitSD.arc 4 "-m 30")
+
+if (Parmetis_FOUND AND Lima_FOUND)
+  arcane_add_test_parallel(case_part_metis_mli testCasePart-1.arc 4)
+  arcane_add_test_parallel(case_part_metis_2_mli testCasePart-2.arc 4)
+endif ()
+
+if (SLOOP_FOUND)
+  # ALEPH STD TEST
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 1)
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 2)
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 4)
+  # ALEPH ODD TEST
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 3)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 4)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 7)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 8)
+  # ALEPH DELETE TEST
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 1)
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 2)
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 4)
+  # ALEPH KAPPA TEST
+  arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 2 -arcane_opt nb_sub_domain 1 -arcane_opt idle_service AlephKappa)
+  arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
+endif ()
+
+# ----------------------------------------------------------------------------
+
+#####################
+# HyODA Mixed Cells #
+#####################
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(hyoda_mixed_cells testHyodaMixedCells.arc)
+endif ()
+
+# ----------------------------------------------------------------------------
+
 include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
 include(geometry/tests.cmake)

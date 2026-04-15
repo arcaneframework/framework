@@ -85,6 +85,7 @@ set(ARCANE_SOURCES
   MDVariableUnitTest.cc
   VariableInShMemUnitTest.cc
   RayMeshIntersectionUnitTest.cc
+  HyodaMixedCellsUnitTest.cc
 )
 set(ARCANE_ACCELERATOR_SOURCES
   ArcaneTestStandaloneSubDomain.cc
@@ -138,4 +139,5 @@ set(AXL_FILES
   ParameterOptionTest
   VariableInShMemUnitTest
   RayMeshIntersectionUnitTest
+  HyodaMixedCellsUnitTest
 )

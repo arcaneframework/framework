@@ -11,18 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
-#include "arcane/IIncrementalItemConnectivity.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/ItemPrinter.h"
 
-#include "HydroAdditionalTest_axl.h"
+#include "arcane/tests/HydroAdditionalTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

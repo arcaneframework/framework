@@ -10,17 +10,18 @@
 /* Service du test de l'affichage des mailles mixtes.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "arcane/BasicTimeLoopService.h"
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/utils/IOnlineDebuggerService.h"
 
+#include "arcane/core/BasicTimeLoopService.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterial.h"
@@ -32,9 +33,8 @@
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MatItemVector.h"
 
-#include <arcane/hyoda/Hyoda.h>
-#include <arcane/hyoda/HyodaMix.h>
-#include "arcane/utils/IOnlineDebuggerService.h"
+#include "arcane/hyoda/Hyoda.h"
+#include "arcane/hyoda/HyodaMix.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/HyodaMixedCellsUnitTest_axl.h"

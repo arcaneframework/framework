@@ -30,32 +30,9 @@ add_subdirectory(src/arcane/meshutils)
 add_subdirectory(src/arcane/hyoda)
 
 # ----------------------------------------------------------------------------
-# Ajoute des tests.
-# Ils doivent être après les autres cibles car ils peuvent en dépendre.
-if (ARCANE_ENABLE_TESTS)
-  add_subdirectory(src/arcane/tests)
-  add_subdirectory(tests)
-endif()
-
-# ----------------------------------------------------------------------------
 # Ce fichier contient les informations de configuration de l'installation 'cea'.
 configure_file(ArcaneCea.config.in ${ARCANE_DOTNET_PUBLISH_BUILD_DIR}/ArcaneCea.config @ONLY)
 install(FILES ${ARCANE_DOTNET_PUBLISH_BUILD_DIR}/ArcaneCea.config DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
-
-# ----------------------------------------------------------------------------
-# Cibles pour generer la documentation spécifique CEA
-
-function(CEA_GENERATE_DOC_TARGET docname)
-  set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
-  configure_file(doc/${docname}.doxyfile ${CMAKE_BINARY_DIR}/share/${docname}.doxyfile @ONLY)
-  add_custom_target(${docname} COMMAND ${DOXYGEN} ${CMAKE_BINARY_DIR}/share/${docname}.doxyfile)
-endfunction()
-
-message(STATUS "CEA_DOXYGEN = ${DOXYGEN}")
-if(DOXYGEN)
-  CEA_GENERATE_DOC_TARGET(ceadevdoc)
-  CEA_GENERATE_DOC_TARGET(ceauserdoc)
-endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
