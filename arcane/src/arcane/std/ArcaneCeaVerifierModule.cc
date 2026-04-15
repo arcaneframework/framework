@@ -30,7 +30,7 @@
 #include "arcane/core/MeshVisitor.h"
 #include "arcane/core/IDirectory.h"
 
-#include "arcane/cea/ArcaneCeaVerifier_axl.h"
+#include "arcane/std/ArcaneCeaVerifier_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

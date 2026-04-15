@@ -1,7 +1,8 @@
 set(ARCANE_SOURCES
+  ArcaneBasicVerifierService.cc
+  ArcaneCeaVerifierModule.cc
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
-  ArcaneBasicVerifierService.cc
   BasicCheckpointService.cc
   BasicGenericReader.cc
   BasicGenericWriter.cc
@@ -130,6 +131,7 @@ set(ARCANE_SOURCES
 
 set(AXL_FILES
   ArcaneBasicCheckpoint
+  ArcaneCeaVerifier
   ArcaneLoadBalance
   Ensight7PostProcessor
   ArcanePostProcessing
