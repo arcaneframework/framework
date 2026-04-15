@@ -11,18 +11,18 @@
 #ifndef _HYODA_PLUGIN_MATERIALS_H_
 #define _HYODA_PLUGIN_MATERIALS_H_
 
-#include "arcane/IApplication.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IParallelMng.h"
 
-#include "arcane/AbstractService.h"
-#include "arcane/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/FactoryService.h"
 
-#include "arcane/IVariableMng.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/CommonVariables.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/CommonVariables.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterial.h"

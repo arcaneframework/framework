@@ -17,17 +17,11 @@ file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 include(cmake/VT100.cmake)
 if(NOT WIN32)
   include(cmake/FindItac.cmake)
-  include(cmake/FindMathlink.cmake)
-endif()
-
-if(NOT WIN32 AND MATHLINK_FOUND)
-  add_subdirectory(src/arcane/mathlink)
 endif()
 
 add_subdirectory(src/arcane/cea)
 add_subdirectory(src/arcane/geometric)
 add_subdirectory(src/arcane/meshutils)
-add_subdirectory(src/arcane/hyoda)
 
 # ----------------------------------------------------------------------------
 # Ce fichier contient les informations de configuration de l'installation 'cea'.
