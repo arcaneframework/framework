@@ -9,8 +9,6 @@ set(ARCANECEA_SRC_PATH ${ARCANE_CEA_SOURCE_PATH}/src CACHE PATH "Arcane CEA 'src
 # Elle ne doit pas être utilisée ailleurs.
 set(ARCANEBUILDROOT ${CMAKE_CURRENT_BINARY_DIR}/src)
 message(STATUS "ARCANEBUILDROOT for CEA = ${ARCANEBUILDROOT}")
-file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share)
-file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
 # ----------------------------------------------------------------------------
 
@@ -21,7 +19,6 @@ endif()
 
 add_subdirectory(src/arcane/cea)
 add_subdirectory(src/arcane/geometric)
-add_subdirectory(src/arcane/meshutils)
 
 # ----------------------------------------------------------------------------
 # Ce fichier contient les informations de configuration de l'installation 'cea'.
