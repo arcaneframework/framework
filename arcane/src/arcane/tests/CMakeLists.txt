@@ -120,6 +120,11 @@ if (TARGET arcane_dotnet_wrapper_services)
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/PerfectGasEOS.axl)
 
+  add_custom_command(OUTPUT ${CSOUTPATH}/MeshModification_axl.cs
+    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXLSTAR_DEPEND}
+    COMMAND ${ARCANE_AXL2CC}
+    ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
+
   add_custom_target(arcane_test_cs_generate ALL DEPENDS
     "${CSOUTPATH}/SimpleHydroCS_axl.cs"
     "${CSOUTPATH}/PerfectGasEOS_axl.cs"
