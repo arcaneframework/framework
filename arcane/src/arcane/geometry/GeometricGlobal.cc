@@ -14,10 +14,10 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
-#include "arcane/geometric/GeometricGlobal.h"
-#include "arcane/geometric/GeomType.h"
+#include "arcane/geometry/GeometricGlobal.h"
+#include "arcane/geometry/GeomType.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

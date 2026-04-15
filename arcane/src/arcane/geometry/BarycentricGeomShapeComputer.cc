@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
+#include "arcane/core/IMesh.h"
 
-#include "arcane/AbstractItemOperationByBasicType.h"
+#include "arcane/core/AbstractItemOperationByBasicType.h"
 
-#include "arcane/geometric/BarycentricGeomShapeComputer.h"
-#include "arcane/geometric/GeomShapeMng.h"
+#include "arcane/geometry/BarycentricGeomShapeComputer.h"
+#include "arcane/geometry/GeomShapeMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

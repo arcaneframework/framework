@@ -12,11 +12,11 @@
 /*---------------------------------------------------------------------------*/
 
 //#include "arcane/geometric/IGeometric.h"
-#include "arcane/geometric/CellConnectivity.h"
+#include "arcane/geometry/CellConnectivity.h"
 //#include "arcane/geometric/CellGeom.h"
 //#include "arcane/geometric/CellGeomList.h"
 
-#include "arcane/AbstractItemOperationByBasicType.h"
+#include "arcane/core/AbstractItemOperationByBasicType.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

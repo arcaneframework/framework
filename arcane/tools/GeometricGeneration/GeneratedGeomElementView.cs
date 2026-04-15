@@ -102,7 +102,7 @@ namespace GeometricGeneration {
             
             
             
-            this.Write("Element()\n *\n * Pour plus d'informations sur l'usage, se reporter à \\ref arcanedoc_cea_geometric_viewusage\n */\nclass ARCANE_CEA_GEOMETRIC_EXPORT ");
+            this.Write("Element()\n *\n * Pour plus d'informations sur l'usage, se reporter à \\ref arcanedoc_cea_geometric_viewusage\n */\nclass ARCANE_GEOMETRY_EXPORT ");
             
             
             
@@ -174,7 +174,7 @@ namespace GeometricGeneration {
             
             
             
-            this.Write("ElementView::view()\n *\n * Pour plus d'informations sur l'usage, se reporter à \\ref arcanedoc_cea_geometric_viewusage\n */\nclass ARCANE_CEA_GEOMETRIC_EXPORT ");
+            this.Write("ElementView::view()\n *\n * Pour plus d'informations sur l'usage, se reporter à \\ref arcanedoc_cea_geometric_viewusage\n */\nclass ARCANE_GEOMETRY_EXPORT ");
             
             
             

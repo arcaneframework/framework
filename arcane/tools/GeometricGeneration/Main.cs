@@ -12,7 +12,7 @@ namespace GeometricGeneration
 
     public MainClass()
     {
-      m_base_path = "../../../ceapart/src/arcane/geometric";
+      m_base_path = "../../../src/arcane/geometry";
       m_output_encoding = Encoding.GetEncoding ("utf-8");
     }
 

@@ -16,7 +16,7 @@
  *
  * Pour plus d'informations sur l'usage, se reporter à \ref arcanedoc_cea_geometric_viewusage
  */
-class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ElementConstView
+class ARCANE_GEOMETRY_EXPORT <#=item.Name#>ElementConstView
 : public GeomElementConstViewBase
 {
  public:
@@ -34,7 +34,7 @@ class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ElementConstView
  *
  * Pour plus d'informations sur l'usage, se reporter à \ref arcanedoc_cea_geometric_viewusage
  */
-class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ElementView
+class ARCANE_GEOMETRY_EXPORT <#=item.Name#>ElementView
 : public GeomElementViewBase
 {
  public:

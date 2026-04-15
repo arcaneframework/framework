@@ -13,9 +13,9 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/geometric/GeomElement.h"
-#include "arcane/geometric/GeomShapeView.h"
-#include "arcane/geometric/CellConnectivity.h"
+#include "arcane/geometry/GeomElement.h"
+#include "arcane/geometry/GeomShapeView.h"
+#include "arcane/geometry/CellConnectivity.h"
 //#include "arcane/geometric/CellGeomList.h"
 
 /*---------------------------------------------------------------------------*/
