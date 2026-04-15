@@ -14,16 +14,16 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ValueChecker.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
 
-#include "arcane/geometric/GeomShapeMng.h"
-#include "arcane/geometric/BarycentricGeomShapeComputer.h"
+#include "arcane/geometry/GeomShapeMng.h"
+#include "arcane/geometry/BarycentricGeomShapeComputer.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
-#include "arcane/tests/GeometricUnitTest_axl.h"
+#include "arcane/tests/geometry/GeometricUnitTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

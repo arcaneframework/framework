@@ -208,7 +208,16 @@ function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
   execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
-function(ARCANE_COPY_MESH_DIRECTORY mesh_dir_name)
+
+# Fonction pour recopier les maillages issus de répertoires
+# qui ne sont pas dans les dépots arcane (pour des raisons de taille)
+function(ARCANE_COPY_ADDITIONAL_MESH_DIRECT mesh_name)
+  if (ARCANE_ADDITIONAL_MESHES_PATH)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_name}
+      ${ARCANE_TEST_PATH}/${mesh_name})
+  endif ()
+endfunction()
+function(ARCANE_COPY_ADDITIONAL_MESH_DIRECTORY mesh_dir_name)
   if (ARCANE_ADDITIONAL_MESHES_PATH)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_dir_name}
       ${ARCANE_TEST_PATH}/${mesh_dir_name})
@@ -280,13 +289,13 @@ arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
 if (Lima_FOUND)
-  arcane_copy_mesh_direct(tube2x2x4.unf)
-  arcane_copy_mesh_direct(tube3x3x10.unf)
-  arcane_copy_mesh_direct(sphere_multi_soudure.unf)
-  arcane_copy_mesh_direct(sod_cart_lima.unf)
-  #arcane_copy_mesh_direct(soudures_3.mli)
-  arcane_copy_mesh_directory(sphere_multi_soudure_cut_4)
-  #arcane_copy_mesh_directory(soudures_3_cut_4)
+  arcane_copy_additional_mesh_direct(tube2x2x4.unf)
+  arcane_copy_additional_mesh_direct(tube3x3x10.unf)
+  arcane_copy_additional_mesh_direct(sphere_multi_soudure.unf)
+  arcane_copy_additional_mesh_direct(sod_cart_lima.unf)
+  #arcane_copy_additional_mesh_direct(soudures_3.mli)
+  arcane_copy_additional_mesh_directory(sphere_multi_soudure_cut_4)
+  #arcane_copy_additional_mesh_direct(soudures_3_cut_4)
 endif ()
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
