@@ -28,3 +28,14 @@ arcane_add_arccon_packages(arcane_hyoda PRIVATE OSMesa IceT MPI)
 arcane_register_library(arcane_hyoda OPTIONAL)
 
 add_subdirectory(gui)
+
+arcane_add_library(arcane_hyoda_plugins
+  INPUT_PATH ${Arcane_SOURCE_DIR}/src
+  RELATIVE_PATH arcane/hyoda
+  FILES ${HYODA_PLUGINS_SOURCES}
+)
+
+target_include_directories(arcane_hyoda_plugins PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src> $<INSTALL_INTERFACE:include>)
+target_link_libraries(arcane_hyoda_plugins arcane_core)
+
+arcane_register_library(arcane_hyoda_plugins OPTIONAL)

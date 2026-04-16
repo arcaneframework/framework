@@ -1,8 +1,5 @@
 set( ARCANE_SOURCES
-  BasicRayMeshIntersection.cc
-  LimaCutInfosReader.cc
-  LimaCutInfosReader.h
-  ArcaneCeaVerifierModule.cc
+  ArcaneCeaRegisterer.cc
   CartesianConnectivity.h
   CellDirectionMng.h
   FaceDirectionMng.h
@@ -19,6 +16,4 @@ set( ARCANE_SOURCES
   )
 
 set(AXL_FILES 
-  ArcaneCeaVerifier
   )
-

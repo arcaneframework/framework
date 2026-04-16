@@ -8,7 +8,7 @@
  * \ingroup ArcaneGeometric
  * \brief Eléments géométriques de type GeomType::<#=item.Name#>.
  */
-class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>Element
+class ARCANE_GEOMETRY_EXPORT <#=item.Name#>Element
 : public GeomElementBase< <#=item.NbNode#> >
 {
  public:

@@ -12,7 +12,6 @@ if(ARCANE_HAS_SOLVERS)
   set(TEST_LIBS ${TEST_LIBS} arcane_solvers)
 endif()
 
-list(APPEND TEST_DIRS geometry)
 list(APPEND TEST_LIBS arcane_geometry)
 
 if(GEOMETRYKERNEL_FOUND)
@@ -26,10 +25,19 @@ if (Neo_FOUND)
 endif()
 
 arcane_find_package(hiredis QUIET)
+arcane_find_package(Lima)
+if (Lima_FOUND)
+  set(TEST_LIBS ${TEST_LIBS} Lima::Lima)
+endif ()
+
+list(APPEND TEST_LIBS arcane_materials)
+
 
 include(srcs.cmake)
 include(accelerator/srcs.cmake)
 include(cartesianmesh/srcs.cmake)
+include(geometry/srcs.cmake)
+include(material/srcs.cmake)
 
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
@@ -113,7 +121,7 @@ if (TARGET arcane_dotnet_wrapper_services)
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/PerfectGasEOS.axl)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/MeshModification_axl.cs
-    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXLSTAR_DEPEND}
+    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
 
@@ -201,6 +209,21 @@ function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
 
+# Fonction pour recopier les maillages issus de répertoires
+# qui ne sont pas dans les dépots arcane (pour des raisons de taille)
+function(ARCANE_COPY_ADDITIONAL_MESH_DIRECT mesh_name)
+  if (ARCANE_ADDITIONAL_MESHES_PATH)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_name}
+      ${ARCANE_TEST_PATH}/${mesh_name})
+  endif ()
+endfunction()
+function(ARCANE_COPY_ADDITIONAL_MESH_DIRECTORY mesh_dir_name)
+  if (ARCANE_ADDITIONAL_MESHES_PATH)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_dir_name}
+      ${ARCANE_TEST_PATH}/${mesh_dir_name})
+  endif ()
+endfunction()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -265,6 +288,15 @@ arcane_copy_mesh(sphere_tied_2 sphere_tied_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
+if (Lima_FOUND)
+  arcane_copy_additional_mesh_direct(tube2x2x4.unf)
+  arcane_copy_additional_mesh_direct(tube3x3x10.unf)
+  arcane_copy_additional_mesh_direct(sphere_multi_soudure.unf)
+  arcane_copy_additional_mesh_direct(sod_cart_lima.unf)
+  #arcane_copy_additional_mesh_direct(soudures_3.mli)
+  arcane_copy_additional_mesh_directory(sphere_multi_soudure_cut_4)
+  #arcane_copy_additional_mesh_direct(soudures_3_cut_4)
+endif ()
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
@@ -936,10 +968,6 @@ arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNu
 arcane_add_test_sequential(simple_csv_output_service testSimpleCsvOutputService.arc)
 arcane_add_test_sequential(simple_csv_comparator_service testSimpleCsvComparatorService.arc)
 
-arcane_add_test(geometry testGeom.arc)
-arcane_add_test(geometry_applyoperation_v2 testGeom.arc -We,ARCANE_DEBUG_APPLYOPERATION,1)
-arcane_add_test(geometry_applyoperation_v1 testGeom.arc -We,ARCANE_APPLYOPERATION_VERSION,1 -We,ARCANE_DEBUG_APPLYOPERATION,1)
-
 if(ARCANE_HAS_SOLVERS)
   arcane_add_test_parallel(solver testSolver.arc 1)
   arcane_add_test_parallel(solver testSolver.arc 4)
@@ -1311,8 +1339,80 @@ arcane_add_test_checkpoint_parallel(variable-in-shmem-1-checkpoint testVariableI
 
 # ----------------------------------------------------------------------------
 
+if (Lima_FOUND)
+  arcane_add_test(raymesh_intersection_1 testRayMeshIntersection-1.arc "-m 2")
+
+  arcane_add_test(lima_mesh_mli testLima-1.arc "-m 10")
+  arcane_add_test(lima_mesh_unf testLima-2.arc "-m 10")
+  arcane_add_test(lima_hydro testLima-hydro.arc "-m 10")
+  arcane_add_test(lima_hydro_meshservice testLima-hydro-meshservice.arc "-m 10")
+
+  arcane_add_test_parallel(lima_mesh_mli_1proc_rep4 testLima-1.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_mesh_mli_3proc_rep4 testLima-1.arc 12 -m 10 -R 4)
+
+  arcane_add_test_parallel(lima_mesh_unf_1proc_rep4 testLima-2.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_mesh_unf_3proc_rep4 testLima-2.arc 12 -m 10 -R 4)
+
+  arcane_add_test_parallel(lima_hydro-1proc_rep4 testLima-hydro.arc 4 -m 10 -R 4)
+  arcane_add_test_parallel(lima_hydro-3proc_rep4 testLima-hydro.arc 12 -m 10 -R 4)
+
+  #  arcane_add_test(lima_ev6 testLima-3.arc "-m 10")
+  #  arcane_add_test(lima_ev6_mli2 testLima-4.arc "-m 10")
+endif ()
+
+# ----------------------------------------------------------------------------
+
+# Pour l'instant, les soudures ne sont pas compatibles
+# avec le partitionnement parallele lorqu'on utilise le partitionnement interne
+if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
+  arcane_add_test(tied_interface3 testTiedInterface-3.arc "-m 10")
+  arcane_add_test(tied_interface_multi1 testTiedInterface-4.arc "-m 2")
+  arcane_add_test_parallel(tied_interface3_lb testLoadBalance-tiedinterface-1.arc 4 "-m 10")
+endif ()
+
+arcane_add_test_parallel(splitsd1 testPartition-SplitSD.arc 4)
+arcane_add_test_parallel(splitsd1_legacy_partition_init testPartition-SplitSD.arc 4 "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
+arcane_add_test_parallel(loadbalance_splitsd1 testLoadBalanceHydro-SplitSD.arc 4 "-m 30")
+
+if (Parmetis_FOUND AND Lima_FOUND)
+  arcane_add_test_parallel(case_part_metis_mli testCasePart-1.arc 4)
+  arcane_add_test_parallel(case_part_metis_2_mli testCasePart-2.arc 4)
+endif ()
+
+if (SLOOP_FOUND)
+  # ALEPH STD TEST
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 1)
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 2)
+  arcane_add_test_parallel(aleph_sloop testAlephSloop.arc 4)
+  # ALEPH ODD TEST
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 3)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 4)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 7)
+  arcane_add_test_parallel(aleph_sloop_odd testAlephSloopOdd.arc 8)
+  # ALEPH DELETE TEST
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 1)
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 2)
+  arcane_add_test_parallel(aleph_delete_sloop testAlephSloopDelete.arc 4)
+  # ALEPH KAPPA TEST
+  arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 2 -arcane_opt nb_sub_domain 1 -arcane_opt idle_service AlephKappa)
+  arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
+endif ()
+
+# ----------------------------------------------------------------------------
+
+#####################
+# HyODA Mixed Cells #
+#####################
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(hyoda_mixed_cells testHyodaMixedCells.arc)
+endif ()
+
+# ----------------------------------------------------------------------------
+
 include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
+include(geometry/tests.cmake)
+include(material/tests.cmake)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

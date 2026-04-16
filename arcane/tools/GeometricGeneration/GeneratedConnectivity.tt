@@ -14,7 +14,7 @@
  * qu'elle a 12 arêtes.
 <# } #>
  */
-class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>Connectivity
+class ARCANE_GEOMETRY_EXPORT <#=item.Name#>Connectivity
 : public CellConnectivity
 {
  public:

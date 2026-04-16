@@ -22,3 +22,7 @@ set(ARCANE_SOURCES
   Hyoda.h
   HyodaIceTGlobal.h
 )
+set(HYODA_PLUGINS_SOURCES
+  HyodaMats.cc
+  HyodaEnvs.cc
+)

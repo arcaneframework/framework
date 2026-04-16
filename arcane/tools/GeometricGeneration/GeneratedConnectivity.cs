@@ -66,7 +66,7 @@ namespace GeometricGeneration {
             
             
             
-            this.Write(" */\nclass ARCANE_CEA_GEOMETRIC_EXPORT ");
+            this.Write(" */\nclass ARCANE_GEOMETRY_EXPORT ");
             
             
             

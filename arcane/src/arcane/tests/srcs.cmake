@@ -63,7 +63,6 @@ set(ARCANE_SOURCES
   dof/DoFNodeTestService.cc
   graph/GraphUnitTest.cc
   inout/InOutTester.cc
-  geometry/GeometryUnitTest.cc
   StdArrayMeshVariables.h
   StdMeshVariables.h
   StdScalarVariables.h
@@ -85,6 +84,8 @@ set(ARCANE_SOURCES
   StackTraceUnitTest.cc
   MDVariableUnitTest.cc
   VariableInShMemUnitTest.cc
+  RayMeshIntersectionUnitTest.cc
+  HyodaMixedCellsUnitTest.cc
 )
 set(ARCANE_ACCELERATOR_SOURCES
   ArcaneTestStandaloneSubDomain.cc
@@ -123,7 +124,6 @@ set(AXL_FILES
   dof/DoFTester
   graph/GraphUnitTest
   inout/InOutTester
-  geometry/GeometryUnitTest
   MeshPolyhedralTest
   HydroAdditionalTest
   PDESRandomNumberGeneratorUnitTest
@@ -138,4 +138,6 @@ set(AXL_FILES
   MeshCriteriaLoadBalanceMngTest
   ParameterOptionTest
   VariableInShMemUnitTest
+  RayMeshIntersectionUnitTest
+  HyodaMixedCellsUnitTest
 )

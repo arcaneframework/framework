@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <numeric>
+#include "arcane/utils/ValueChecker.h"
 
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IMesh.h"
@@ -19,11 +19,13 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/internal/IMeshInternal.h"
 #include "arcane/core/Connectivity.h"
-#include "arcane/mesh/PolyhedralMesh.h"
-#include "arcane/utils/ValueChecker.h"
+#include "arcane/core/ItemGroup.h"
 
-#include "arcane/ItemGroup.h"
-#include "MeshPolyhedralTest_axl.h"
+#include "arcane/mesh/PolyhedralMesh.h"
+
+#include <numeric>
+
+#include "arcane/tests/MeshPolyhedralTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

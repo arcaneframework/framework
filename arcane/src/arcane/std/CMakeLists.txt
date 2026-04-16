@@ -1,5 +1,5 @@
 ﻿arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en focntion des versions de VTK
-set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd DW)
+set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd DW Lima)
 set(PUBLIC_PKGS MPI ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
@@ -166,6 +166,11 @@ if(MPI_FOUND)
   )
 endif()
 
+if (Lima_FOUND)
+  list(APPEND ARCANE_SOURCES Lima.cc)
+endif ()
+
+
 # ----------------------------------------------------------------------------
 
 arcane_add_library(arcane_std
@@ -203,6 +208,25 @@ endif()
 
 arcane_add_arccon_packages(arcane_std PRIVATE ${PRIVATE_PKGS})
 arcane_add_arccon_packages(arcane_std PUBLIC ${PUBLIC_PKGS})
+
+if (Lima_FOUND)
+  if (TARGET Lima::Lima)
+    message(STATUS "Add Lima::Lima to 'arcane_std' target")
+    target_link_libraries(arcane_std PRIVATE Lima::Lima)
+  elseif (TARGET arcane::lima)
+    target_link_libraries(arcane_std PRIVATE arcane::lima)
+    if (ARCANE_LIMA_HAS_MLI2)
+      arcane_add_arccon_packages(arcane_std PRIVATE HDF5)
+    endif ()
+  endif ()
+
+  if (ARCANE_LIMA_HAS_MLI2)
+    target_compile_definitions(arcane_std PRIVATE ARCANE_LIMA_HAS_MLI2)
+  endif ()
+  if (ARCANE_LIMA_HAS_MLI)
+    target_compile_definitions(arcane_std PRIVATE ARCANE_LIMA_HAS_MLI)
+  endif ()
+endif ()
 
 arcane_register_library(arcane_std)
 

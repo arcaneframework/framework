@@ -7,7 +7,7 @@
  * \ingroup ArcaneGeometric
  * \brief Vue spécifique sur les formes géométriques de type GeomType::<#=item.Name#>.
  */
-class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ShapeView
+class ARCANE_GEOMETRY_EXPORT <#=item.Name#>ShapeView
 : public GeomShape<#=item.Dimension#>DView
 {
  public: 
