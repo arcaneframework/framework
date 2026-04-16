@@ -20,7 +20,7 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: ${{ env.ARCANE_SOURCE_DIR }}
           fetch-depth: 0
@@ -126,7 +126,7 @@ jobs:
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Upload the logs artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ failure() && steps.check-files.conclusion == 'failure' }}
         with:
           name: Header Check Logs

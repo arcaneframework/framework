@@ -112,12 +112,12 @@ jobs:
 
     steps:
       - name: Checkout actions
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
       - name: Checkout framework-ci
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository_owner }}/framework-ci
           path: framework-ci
@@ -133,7 +133,7 @@ jobs:
           ls -lart '${{ env.FRAMEWORKCI_ROOT_PATH }}'
 
       - name: Setup .Net
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '${{ matrix.dotnet_version }}'
 
@@ -156,7 +156,7 @@ jobs:
           cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
           mkdir -p ${{ env.CCACHE_DIR }}
           cp "${{ github.workspace }}/.github/compile-vcpkg-global.${{ matrix.dotnet_version }}.json" "${{ github.workspace }}/global.json"
-      
+
       - name: Install numpy
         shell: 'bash'
         run: |
@@ -169,7 +169,7 @@ jobs:
           pip3 install numpy
 
       - name: Get cache for 'ccache' tool
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{env.CCACHE_DIR}}
           key: framework-ccache1-${{matrix.full_name}}-${{ github.run_number }}
@@ -283,8 +283,8 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
 
-      # Comme ces tests sont un peu long on ne les exÈcute que sous Windows.
-      # Pour Linux, ils sont dÈj‡ lancÈs dans des CI dÈdiÈs.
+      # Comme ces tests sont un peu long on ne les ex√©cute que sous Windows.
+      # Pour Linux, ils sont d√©j√† lanc√©s dans des CI d√©di√©s.
       - name: Test Checkpoint
         shell: bash
         if: matrix.full_name == 'windows-2022-cxx20-intelmpi'

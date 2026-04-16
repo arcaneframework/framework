@@ -64,7 +64,7 @@ jobs:
 
       - name: Restore cache
         id: restore-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ifpen-el9-gimkl-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
@@ -76,7 +76,7 @@ jobs:
         id: checkout
         if: |
           (success() || failure())
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -133,7 +133,7 @@ jobs:
 
       - name: Upload test artifact
         id: upload-test-artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: |
           (success() || failure()) &&
           steps.test.outcome == 'failure'
@@ -148,7 +148,7 @@ jobs:
         if: |
           (success() || failure()) &&
           steps.build.outcome == 'success'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}

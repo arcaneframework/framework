@@ -31,7 +31,7 @@ jobs:
           source /root/scripts/use_gcc.sh
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -93,7 +93,7 @@ jobs:
           cov-build --dir cov-int make -C build -j $(nproc)
 
       - name: Upload log artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverity-artifact
           path: cov-int/build-log.txt
