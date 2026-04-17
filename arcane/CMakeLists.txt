@@ -955,6 +955,15 @@ endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+# Handling of Alina
+option (ARCANE_ENABLE_ALINA "Is Alina (linear algebra) component enabled?" OFF)
+if (ARCANE_ENABLE_ALINA)
+  # Source files are in Arccore at the moment but we need some parts of Arcane
+  add_subdirectory(../arccore/src/alina/arccore/alina alina)
+endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Gestion des outils 'C#' et du wrapper 'Swig'
 
 add_subdirectory(tools)
