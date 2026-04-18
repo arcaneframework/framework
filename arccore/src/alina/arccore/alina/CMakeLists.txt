@@ -15,7 +15,7 @@ target_compile_definitions(arccore_alina PRIVATE ARCANE_COMPONENT_arccore_alina)
 target_link_libraries(arccore_alina PUBLIC Arcane::arcane_utils)
 arcane_register_library(arccore_alina OPTIONAL)
 
-if ((CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
   target_compile_options(arccore_alina PUBLIC -Wno-conversion -Wno-float-conversion)
 endif()
 
@@ -43,21 +43,31 @@ else()
 endif()
 
 #----------------------------------------------------------------------------
-# OpenMP
+# OpenMP Support
 
-set (ARCCORE_ALINA_ENABLE_OMP TRUE)
-if (ARCCORE_ALINA_ENABLE_OMP)
+set (ARCCORE_ALINA_ENABLE_OPENMP  FALSE)
+set (ARCCORE_ALINA_HAS_OPENMP FALSE)
+if (ARCCORE_ALINA_ENABLE_OPENMP)
   find_package(OpenMP)
   if (OPENMP_FOUND)
+    set (ARCCORE_ALINA_HAS_OPENMP TRUE)
     target_compile_options(arccore_alina PUBLIC ${OpenMP_CXX_FLAGS})
     target_link_libraries(arccore_alina PUBLIC
       $<$<CXX_COMPILER_ID:GNU>:${OpenMP_CXX_FLAGS}>
       $<$<CXX_COMPILER_ID:Clang>:${OpenMP_CXX_FLAGS}>
       $<$<CXX_COMPILER_ID:Intel>:${OpenMP_CXX_FLAGS}>
-      )
+    )
   endif()
 endif()
 
+# Remove warnings about omp pragmas
+if (NOT ARCCORE_ALINA_HAS_OPENMP)
+  if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
+    target_compile_options(arccore_alina PUBLIC "-Wno-unknown-pragmas")
+  endif()
+endif()
+
+#----------------------------------------------------------------------------
 # Add Arccore MPI
 # In the future, it will not be needed. Only 'arccore_message_passing' will be needed
 target_link_libraries(arccore_alina PUBLIC Arccore::arccore_message_passing_mpi)
