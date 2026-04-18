@@ -38,6 +38,8 @@
 #include "arccore/alina/BackendInterface.h"
 #include "arccore/alina/SparseMatrixMatrixProduct.h"
 
+#include <random>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
