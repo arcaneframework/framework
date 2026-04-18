@@ -208,14 +208,12 @@ class CPRPreconditioner
 
     // Get the pressure matrix nonzero pattern,
     // extract and invert block diagonals.
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<row_iterator> k;
       k.reserve(B);
       multi_array<scalar_type, 2> v(B, B);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < static_cast<ptrdiff_t>(np); ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ik = ip * B;
         bool done = true;
         ptrdiff_t cur_col = 0;
@@ -286,7 +284,7 @@ class CPRPreconditioner
           }
         }
       }
-    }
+    });
 
     if (get_app)
       App->set_nonzeros(App->scan_row_sizes());
@@ -311,13 +309,11 @@ class CPRPreconditioner
     scatter->set_nonzeros(np);
     scatter->ptr[0] = 0;
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<row_iterator> k;
       k.reserve(B);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < static_cast<ptrdiff_t>(np); ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ik = ip * B;
         ptrdiff_t head = App->ptr[ip];
         bool done = true;
@@ -383,7 +379,7 @@ class CPRPreconditioner
           scatter->ptr[ik + i + 1] = nnz;
         }
       }
-    }
+    });
 
     for (size_t i = N; i < n; ++i)
       scatter->ptr[i + 1] = scatter->ptr[i];
@@ -432,41 +428,42 @@ class CPRPreconditioner
     App->set_nonzeros(K->nbNonZero());
     App->ptr[0] = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(np); ++i) {
-      ptrdiff_t ik = i * B;
-      for (int k = 0; k < B; ++k, ++ik) {
-        fpp->col[ik] = ik;
-        scatter->ptr[ik + 1] = i + 1;
-      }
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ik = i * B;
+        for (int k = 0; k < B; ++k, ++ik) {
+          fpp->col[ik] = ik;
+          scatter->ptr[ik + 1] = i + 1;
+        }
 
-      fpp->ptr[i + 1] = ik;
-      scatter->col[i] = i;
-      scatter->val[i] = math::identity<value_type_p>();
+        fpp->ptr[i + 1] = ik;
+        scatter->col[i] = i;
+        scatter->val[i] = math::identity<value_type_p>();
 
-      ptrdiff_t row_beg = K->ptr[i];
-      ptrdiff_t row_end = K->ptr[i + 1];
-      App->ptr[i + 1] = row_end;
+        ptrdiff_t row_beg = K->ptr[i];
+        ptrdiff_t row_end = K->ptr[i + 1];
+        App->ptr[i + 1] = row_end;
 
-      // Extract and invert block diagonals
-      value_type_p* d = &fpp->val[i * B];
-      for (ptrdiff_t j = row_beg; j < row_end; ++j) {
-        if (K->col[j] == i) {
-          value_type v = math::adjoint(K->val[j]);
-          invert(v.data(), d);
-          break;
+        // Extract and invert block diagonals
+        value_type_p* d = &fpp->val[i * B];
+        for (ptrdiff_t j = row_beg; j < row_end; ++j) {
+          if (K->col[j] == i) {
+            value_type v = math::adjoint(K->val[j]);
+            invert(v.data(), d);
+            break;
+          }
+        }
+
+        for (ptrdiff_t j = row_beg; j < row_end; ++j) {
+          value_type_p app = 0;
+          for (int k = 0; k < B; ++k)
+            app += d[k] * K->val[j](k, 0);
+
+          App->col[j] = K->col[j];
+          App->val[j] = app;
         }
       }
-
-      for (ptrdiff_t j = row_beg; j < row_end; ++j) {
-        value_type_p app = 0;
-        for (int k = 0; k < B; ++k)
-          app += d[k] * K->val[j](k, 0);
-
-        App->col[j] = K->col[j];
-        App->val[j] = app;
-      }
-    }
+    });
 
     ARCCORE_ALINA_TIC("pprecond");
     P = std::make_shared<PPrecond>(App, prm.pprecond, bprm);
@@ -495,28 +492,29 @@ class CPRPreconditioner
     fpp->set_nonzeros(np * B);
     fpp->ptr[0] = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(np); ++i) {
-      ptrdiff_t ik = i * B;
-      for (int k = 0; k < B; ++k, ++ik) {
-        fpp->col[ik] = ik;
-      }
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ik = i * B;
+        for (int k = 0; k < B; ++k, ++ik) {
+          fpp->col[ik] = ik;
+        }
 
-      fpp->ptr[i + 1] = ik;
+        fpp->ptr[i + 1] = ik;
 
-      ptrdiff_t row_beg = K->ptr[i];
-      ptrdiff_t row_end = K->ptr[i + 1];
+        ptrdiff_t row_beg = K->ptr[i];
+        ptrdiff_t row_end = K->ptr[i + 1];
 
-      // Extract and invert block diagonals
-      value_type_p* d = &fpp->val[i * B];
-      for (ptrdiff_t j = row_beg; j < row_end; ++j) {
-        if (K->col[j] == i) {
-          value_type v = math::adjoint(K->val[j]);
-          invert(v.data(), d);
-          break;
+        // Extract and invert block diagonals
+        value_type_p* d = &fpp->val[i * B];
+        for (ptrdiff_t j = row_beg; j < row_end; ++j) {
+          if (K->col[j] == i) {
+            value_type v = math::adjoint(K->val[j]);
+            invert(v.data(), d);
+            break;
+          }
         }
       }
-    }
+    });
     Fpp = backend_type_p::copy_matrix(fpp, bprm);
   }
 

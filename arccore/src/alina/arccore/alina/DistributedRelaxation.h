@@ -210,27 +210,28 @@ struct DistributedSPAI0Relaxation
     auto m = std::make_shared<numa_vector<value_type>>(n, false);
     typedef CSRMatrix<value_type> build_matrix;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      value_type num = math::zero<value_type>();
-      scalar_type den = math::zero<scalar_type>();
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        value_type num = math::zero<value_type>();
+        scalar_type den = math::zero<scalar_type>();
 
-      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
-        value_type v = A_loc.val[j];
-        scalar_type norm_v = math::norm(v);
-        den += norm_v * norm_v;
-        if (A_loc.col[j] == i)
-          num += v;
+        for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
+          value_type v = A_loc.val[j];
+          scalar_type norm_v = math::norm(v);
+          den += norm_v * norm_v;
+          if (A_loc.col[j] == i)
+            num += v;
+        }
+
+        for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
+          value_type v = A_rem.val[j];
+          scalar_type norm_v = math::norm(v);
+          den += norm_v * norm_v;
+        }
+
+        (*m)[i] = math::inverse(den) * num;
       }
-
-      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
-        value_type v = A_rem.val[j];
-        scalar_type norm_v = math::norm(v);
-        den += norm_v * norm_v;
-      }
-
-      (*m)[i] = math::inverse(den) * num;
-    }
+    });
 
     M = Backend::copy_vector(m, bprm);
   }
