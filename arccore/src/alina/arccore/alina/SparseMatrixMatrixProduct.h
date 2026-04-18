@@ -66,12 +66,10 @@ void spgemm_saad(const AMatrix& A, const BMatrix& B, CMatrix& C, bool sort = tru
   C.set_size(A.nbRow(), B.ncols);
   C.ptr[0] = 0;
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> marker(B.ncols, -1);
 
-#pragma omp for
-    for (Idx ia = 0; ia < static_cast<Idx>(A.nbRow()); ++ia) {
+    for (Idx ia = begin; ia < (begin + size); ++ia) {
       Col C_cols = 0;
       for (Idx ja = A.ptr[ia], ea = A.ptr[ia + 1]; ja < ea; ++ja) {
         Col ca = A.col[ja];
@@ -86,16 +84,14 @@ void spgemm_saad(const AMatrix& A, const BMatrix& B, CMatrix& C, bool sort = tru
       }
       C.ptr[ia + 1] = C_cols;
     }
-  }
+  });
 
   C.set_nonzeros(C.scan_row_sizes());
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> marker(B.ncols, -1);
 
-#pragma omp for
-    for (Idx ia = 0; ia < static_cast<Idx>(A.nbRow()); ++ia) {
+    for (Idx ia = begin; ia < (begin + size); ++ia) {
       Idx row_beg = C.ptr[ia];
       Idx row_end = row_beg;
 
@@ -122,7 +118,7 @@ void spgemm_saad(const AMatrix& A, const BMatrix& B, CMatrix& C, bool sort = tru
       if (sort)
         detail::sort_row(C.col + row_beg, C.val + row_beg, row_end - row_beg);
     }
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,6 +168,9 @@ merge_rows(const Idx* col1, const Idx* col1_end,
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <class Idx, class Val> Idx*
 merge_rows(const Val& alpha1, const Idx* col1, const Idx* col1_end, const Val* val1,
            const Val& alpha2, const Idx* col2, const Idx* col2_end, const Val* val2,
@@ -217,6 +216,9 @@ merge_rows(const Val& alpha1, const Idx* col1, const Idx* col1_end, const Val* v
 
   return col3;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <class Col, class Ptr> Ptr
 prod_row_width(const Col* acol, const Col* acol_end,
@@ -291,6 +293,9 @@ prod_row_width(const Col* acol, const Col* acol_end,
                            tmp_col2) -
   tmp_col2;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <class Col, class Ptr, class Val>
 void prod_row(const Col* acol, const Col* acol_end, const Val* aval,
