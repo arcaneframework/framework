@@ -31,15 +31,13 @@
 #include <algorithm>
 #include <cmath>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/QRFactorizationImpl.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/ValueTypeInterface.h"
+
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -220,17 +218,18 @@ struct plain_aggregates
 
     /* 1. Get strong connections */
     auto dia = diagonal(A);
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      value_type eps_dia_i = eps_squared * (*dia)[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        value_type eps_dia_i = eps_squared * (*dia)[i];
 
-      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-        ptrdiff_t c = A.col[j];
-        value_type v = A.val[j];
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+          ptrdiff_t c = A.col[j];
+          value_type v = A.val[j];
 
-        strong_connection[j] = (c != i) && (eps_dia_i * (*dia)[c] < v * v);
+          strong_connection[j] = (c != i) && (eps_dia_i * (*dia)[c] < v * v);
+        }
       }
-    }
+    });
 
     /* 2. Get aggregate ids */
 
@@ -378,9 +377,11 @@ tentative_prolongation(size_t n,
     P->set_size(n, nullspace.cols * nba);
     P->ptr[0] = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-      P->ptr[i + 1] = aggr[i] < 0 ? 0 : nullspace.cols;
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        P->ptr[i + 1] = aggr[i] < 0 ? 0 : nullspace.cols;
+      }
+    });
 
     P->scan_row_sizes();
     P->set_nonzeros();
@@ -390,13 +391,11 @@ tentative_prolongation(size_t n,
     std::vector<double> Bnew;
     Bnew.resize(nba * nullspace.cols * nullspace.cols);
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, nba, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       Alina::detail::QRFactorization<double> qr;
       std::vector<double> Bpart;
 
-#pragma omp for
-      for (ptrdiff_t i = 0; i < nba; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         auto aggr_beg = aggr_ptr[i];
         auto aggr_end = aggr_ptr[i + 1];
         auto d = aggr_end - aggr_beg;
@@ -427,26 +426,29 @@ tentative_prolongation(size_t n,
           }
         }
       }
-    }
+    });
 
     std::swap(nullspace.B, Bnew);
   }
   else {
     P->set_size(n, naggr);
     P->ptr[0] = 0;
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-      P->ptr[i + 1] = (aggr[i] >= 0);
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        P->ptr[i + 1] = (aggr[i] >= 0);
+      }
+    });
 
     P->set_nonzeros(P->scan_row_sizes());
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      if (aggr[i] >= 0) {
-        P->col[P->ptr[i]] = aggr[i];
-        P->val[P->ptr[i]] = math::identity<value_type>();
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        if (aggr[i] >= 0) {
+          P->col[P->ptr[i]] = aggr[i];
+          P->val[P->ptr[i]] = math::identity<value_type>();
+        }
       }
-    }
+    });
   }
   ARCCORE_ALINA_TOC("tentative");
 
@@ -533,13 +535,11 @@ class pointwise_aggregates
 
       count = pw_aggr.count * prm.block_size;
 
-#pragma omp parallel
-      {
+      arccoreParallelFor(0, Ap.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
         std::vector<ptrdiff_t> j(prm.block_size);
         std::vector<ptrdiff_t> e(prm.block_size);
 
-#pragma omp for
-        for (ptrdiff_t ip = 0; ip < static_cast<ptrdiff_t>(Ap.nbRow()); ++ip) {
+        for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
           ptrdiff_t ia = ip * prm.block_size;
 
           for (unsigned k = 0; k < prm.block_size; ++k, ++ia) {
@@ -568,7 +568,7 @@ class pointwise_aggregates
             }
           }
         }
-      }
+      });
     }
   }
 
@@ -1002,117 +1002,119 @@ struct RugeStubenCoarsening
       Amax.resize(n);
     }
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      if (cf[i] == 'C') {
-        ++P->ptr[i + 1];
-        continue;
-      }
-
-      if (prm.do_trunc) {
-        Val amin = zero, amax = zero;
-
-        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-          if (!S.val[j] || cf[A.col[j]] != 'C')
-            continue;
-
-          amin = std::min(amin, A.val[j]);
-          amax = std::max(amax, A.val[j]);
-        }
-
-        Amin[i] = (amin *= prm.eps_trunc);
-        Amax[i] = (amax *= prm.eps_trunc);
-
-        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-          if (!S.val[j] || cf[A.col[j]] != 'C')
-            continue;
-
-          if (A.val[j] < amin || amax < A.val[j])
-            ++P->ptr[i + 1];
-        }
-      }
-      else {
-        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-          if (S.val[j] && cf[A.col[j]] == 'C')
-            ++P->ptr[i + 1];
-      }
-    }
-
-    P->set_nonzeros(P->scan_row_sizes());
-
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      ptrdiff_t row_head = P->ptr[i];
-
-      if (cf[i] == 'C') {
-        P->col[row_head] = cidx[i];
-        P->val[row_head] = math::identity<Val>();
-        continue;
-      }
-
-      Val dia = zero;
-      Val a_num = zero, a_den = zero;
-      Val b_num = zero, b_den = zero;
-      Val d_neg = zero, d_pos = zero;
-
-      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-        ptrdiff_t c = A.col[j];
-        Val v = A.val[j];
-
-        if (c == i) {
-          dia = v;
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        if (cf[i] == 'C') {
+          ++P->ptr[i + 1];
           continue;
         }
 
-        if (v < zero) {
-          a_num += v;
-          if (S.val[j] && cf[c] == 'C') {
-            a_den += v;
-            if (prm.do_trunc && Amin[i] < v)
-              d_neg += v;
+        if (prm.do_trunc) {
+          Val amin = zero, amax = zero;
+
+          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+            if (!S.val[j] || cf[A.col[j]] != 'C')
+              continue;
+
+            amin = std::min(amin, A.val[j]);
+            amax = std::max(amax, A.val[j]);
+          }
+
+          Amin[i] = (amin *= prm.eps_trunc);
+          Amax[i] = (amax *= prm.eps_trunc);
+
+          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+            if (!S.val[j] || cf[A.col[j]] != 'C')
+              continue;
+
+            if (A.val[j] < amin || amax < A.val[j])
+              ++P->ptr[i + 1];
           }
         }
         else {
-          b_num += v;
-          if (S.val[j] && cf[c] == 'C') {
-            b_den += v;
-            if (prm.do_trunc && v < Amax[i])
-              d_pos += v;
-          }
+          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+            if (S.val[j] && cf[A.col[j]] == 'C')
+              ++P->ptr[i + 1];
         }
       }
+    });
 
-      Scalar cf_neg = 1;
-      Scalar cf_pos = 1;
+    P->set_nonzeros(P->scan_row_sizes());
 
-      if (prm.do_trunc) {
-        if (math::norm(static_cast<Val>(a_den - d_neg)) > eps)
-          cf_neg = math::norm(a_den) / math::norm(static_cast<Val>(a_den - d_neg));
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t row_head = P->ptr[i];
 
-        if (math::norm(static_cast<Val>(b_den - d_pos)) > eps)
-          cf_pos = math::norm(b_den) / math::norm(static_cast<Val>(b_den - d_pos));
-      }
-
-      if (zero < b_num && math::norm(b_den) < eps)
-        dia += b_num;
-
-      Scalar alpha = math::norm(a_den) > eps ? -cf_neg * math::norm(a_num) / (math::norm(dia) * math::norm(a_den)) : 0;
-      Scalar beta = math::norm(b_den) > eps ? -cf_pos * math::norm(b_num) / (math::norm(dia) * math::norm(b_den)) : 0;
-
-      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-        ptrdiff_t c = A.col[j];
-        Val v = A.val[j];
-
-        if (!S.val[j] || cf[c] != 'C')
+        if (cf[i] == 'C') {
+          P->col[row_head] = cidx[i];
+          P->val[row_head] = math::identity<Val>();
           continue;
-        if (prm.do_trunc && Amin[i] <= v && v <= Amax[i])
-          continue;
+        }
 
-        P->col[row_head] = cidx[c];
-        P->val[row_head] = (v < zero ? alpha : beta) * v;
-        ++row_head;
+        Val dia = zero;
+        Val a_num = zero, a_den = zero;
+        Val b_num = zero, b_den = zero;
+        Val d_neg = zero, d_pos = zero;
+
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+          ptrdiff_t c = A.col[j];
+          Val v = A.val[j];
+
+          if (c == i) {
+            dia = v;
+            continue;
+          }
+
+          if (v < zero) {
+            a_num += v;
+            if (S.val[j] && cf[c] == 'C') {
+              a_den += v;
+              if (prm.do_trunc && Amin[i] < v)
+                d_neg += v;
+            }
+          }
+          else {
+            b_num += v;
+            if (S.val[j] && cf[c] == 'C') {
+              b_den += v;
+              if (prm.do_trunc && v < Amax[i])
+                d_pos += v;
+            }
+          }
+        }
+
+        Scalar cf_neg = 1;
+        Scalar cf_pos = 1;
+
+        if (prm.do_trunc) {
+          if (math::norm(static_cast<Val>(a_den - d_neg)) > eps)
+            cf_neg = math::norm(a_den) / math::norm(static_cast<Val>(a_den - d_neg));
+
+          if (math::norm(static_cast<Val>(b_den - d_pos)) > eps)
+            cf_pos = math::norm(b_den) / math::norm(static_cast<Val>(b_den - d_pos));
+        }
+
+        if (zero < b_num && math::norm(b_den) < eps)
+          dia += b_num;
+
+        Scalar alpha = math::norm(a_den) > eps ? -cf_neg * math::norm(a_num) / (math::norm(dia) * math::norm(a_den)) : 0;
+        Scalar beta = math::norm(b_den) > eps ? -cf_pos * math::norm(b_num) / (math::norm(dia) * math::norm(b_den)) : 0;
+
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+          ptrdiff_t c = A.col[j];
+          Val v = A.val[j];
+
+          if (!S.val[j] || cf[c] != 'C')
+            continue;
+          if (prm.do_trunc && Amin[i] <= v && v <= Amax[i])
+            continue;
+
+          P->col[row_head] = cidx[c];
+          P->val[row_head] = (v < zero ? alpha : beta) * v;
+          ++row_head;
+        }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("interpolation");
 
     return std::make_tuple(P, transpose(*P));
@@ -1151,26 +1153,28 @@ struct RugeStubenCoarsening
     S.val.resize(nnz);
     S.ptr[0] = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      S.ptr[i + 1] = 0;
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
 
-      Val a_min = math::zero<Val>();
+        S.ptr[i + 1] = 0;
 
-      for (auto a = backend::row_begin(A, i); a; ++a)
-        if (a.col() != i)
-          a_min = std::min(a_min, a.value());
+        Val a_min = math::zero<Val>();
 
-      if (math::norm(a_min) < eps) {
-        cf[i] = 'F';
-        continue;
+        for (auto a = backend::row_begin(A, i); a; ++a)
+          if (a.col() != i)
+            a_min = std::min(a_min, a.value());
+
+        if (math::norm(a_min) < eps) {
+          cf[i] = 'F';
+          continue;
+        }
+
+        a_min *= eps_strong;
+
+        for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+          S.val[j] = (A.col[j] != i && A.val[j] < a_min);
       }
-
-      a_min *= eps_strong;
-
-      for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-        S.val[j] = (A.col[j] != i && A.val[j] < a_min);
-    }
+    });
 
     // Transposition of S:
     for (size_t i = 0; i < nnz; ++i)
@@ -1429,13 +1433,11 @@ struct SmoothedAggregationCoarserning
     }
 
     ARCCORE_ALINA_TIC("smoothing");
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(P->ncols, -1);
 
       // Count number of entries in P.
-#pragma omp for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         for (ptrdiff_t ja = A.ptr[i], ea = A.ptr[i + 1]; ja < ea; ++ja) {
           ptrdiff_t ca = A.col[ja];
 
@@ -1453,18 +1455,16 @@ struct SmoothedAggregationCoarserning
           }
         }
       }
-    }
+    });
 
     P->scan_row_sizes();
     P->set_nonzeros();
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(P->ncols, -1);
 
       // Fill the interpolation matrix.
-#pragma omp for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
 
         // Diagonal of the filtered matrix is the original matrix
         // diagonal minus its weak connections.
@@ -1505,7 +1505,7 @@ struct SmoothedAggregationCoarserning
           }
         }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("smoothing");
 
     return std::make_tuple(P, transpose(*P));
@@ -1587,52 +1587,55 @@ struct SmoothedAggregationEnergyMinCoarsening
 
     std::vector<Val> dia(Af.nbRow());
 
-#pragma omp parallel for
-    for (Idx i = 0; i < static_cast<Idx>(Af.nbRow()); ++i) {
-      Idx row_begin = A.ptr[i];
-      Idx row_end = A.ptr[i + 1];
-      Idx row_width = row_end - row_begin;
+    arccoreParallelFor(0, Af.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (Idx i = begin; i < (begin + size); ++i) {
+        Idx row_begin = A.ptr[i];
+        Idx row_end = A.ptr[i + 1];
+        Idx row_width = row_end - row_begin;
 
-      Val D = math::zero<Val>();
-      for (Idx j = row_begin; j < row_end; ++j) {
-        Idx c = A.col[j];
-        Val v = A.val[j];
+        Val D = math::zero<Val>();
+        for (Idx j = row_begin; j < row_end; ++j) {
+          Idx c = A.col[j];
+          Val v = A.val[j];
 
-        if (c == i)
-          D += v;
-        else if (!aggr.strong_connection[j]) {
-          D += v;
-          --row_width;
+          if (c == i)
+            D += v;
+          else if (!aggr.strong_connection[j]) {
+            D += v;
+            --row_width;
+          }
         }
-      }
 
-      dia[i] = D;
-      Af.ptr[i + 1] = row_width;
-    }
+        dia[i] = D;
+        Af.ptr[i + 1] = row_width;
+      }
+    });
 
     Af.set_nonzeros(Af.scan_row_sizes());
 
-#pragma omp parallel for
-    for (Idx i = 0; i < static_cast<Idx>(Af.nbRow()); ++i) {
-      Idx row_begin = A.ptr[i];
-      Idx row_end = A.ptr[i + 1];
-      Idx row_head = Af.ptr[i];
+    arccoreParallelFor(0, Af.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (Idx i = begin; i < (begin + size); ++i) {
 
-      for (Idx j = row_begin; j < row_end; ++j) {
-        Idx c = A.col[j];
+        Idx row_begin = A.ptr[i];
+        Idx row_end = A.ptr[i + 1];
+        Idx row_head = Af.ptr[i];
 
-        if (c == i) {
-          Af.col[row_head] = i;
-          Af.val[row_head] = dia[i];
-          ++row_head;
-        }
-        else if (aggr.strong_connection[j]) {
-          Af.col[row_head] = c;
-          Af.val[row_head] = A.val[j];
-          ++row_head;
+        for (Idx j = row_begin; j < row_end; ++j) {
+          Idx c = A.col[j];
+
+          if (c == i) {
+            Af.col[row_head] = i;
+            Af.val[row_head] = dia[i];
+            ++row_head;
+          }
+          else if (aggr.strong_connection[j]) {
+            Af.col[row_head] = c;
+            Af.val[row_head] = A.val[j];
+            ++row_head;
+          }
         }
       }
-    }
+    });
 
     std::vector<Val> omega;
 
@@ -1647,7 +1650,7 @@ struct SmoothedAggregationEnergyMinCoarsening
   std::shared_ptr<Matrix>
   coarse_operator(const Matrix& A, const Matrix& P, const Matrix& R) const
   {
-    return detail::galerkin(A, P, R);
+      return detail::galerkin(A, P, R);
   }
 
  private:
@@ -1666,8 +1669,11 @@ struct SmoothedAggregationEnergyMinCoarsening
     omega.resize(nc, math::zero<Val>());
     std::vector<Val> denum(nc, math::zero<Val>());
 
-#pragma omp parallel
-    {
+    // TODO CONCURRENCY: remove these mutex
+    std::mutex mutex1;
+    std::mutex mutex2;
+
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(nc, -1);
 
       // Compute A * Dinv * AP row by row and compute columnwise
@@ -1676,8 +1682,7 @@ struct SmoothedAggregationEnergyMinCoarsening
       std::vector<Col> adap_col(128);
       std::vector<Val> adap_val(128);
 
-#pragma omp for
-      for (ptrdiff_t ia = 0; ia < static_cast<ptrdiff_t>(n); ++ia) {
+      for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         adap_col.clear();
         adap_val.clear();
 
@@ -1701,8 +1706,7 @@ struct SmoothedAggregationEnergyMinCoarsening
           }
         }
 
-        Alina::detail::sort_row(
-        &adap_col[0], &adap_val[0], adap_col.size());
+        detail::sort_row(&adap_col[0], &adap_val[0], adap_col.size());
 
         // Update columnwise scalar products (AP,ADAP) and (ADAP,ADAP).
         // 1. (AP, ADAP)
@@ -1719,10 +1723,12 @@ struct SmoothedAggregationEnergyMinCoarsening
             ++jb;
           else /*ca == cb*/ {
             Val v = AP->val[ja] * adap_val[jb];
-#pragma omp critical
-            omega[ca] += v;
-            ++ja;
-            ++jb;
+            {
+              std::scoped_lock lock(mutex1);
+              omega[ca] += v;
+              ++ja;
+              ++jb;
+            }
           }
         }
 
@@ -1730,12 +1736,14 @@ struct SmoothedAggregationEnergyMinCoarsening
         for (size_t j = 0, e = adap_col.size(); j < e; ++j) {
           Col c = adap_col[j];
           Val v = adap_val[j];
-#pragma omp critical
-          denum[c] += v * v;
-          marker[c] = -1;
+          {
+            std::scoped_lock lock(mutex2);
+            denum[c] += v * v;
+            marker[c] = -1;
+          }
         }
       }
-    }
+    });
 
     for (size_t i = 0, m = omega.size(); i < m; ++i)
       omega[i] = math::inverse(denum[i]) * omega[i];
@@ -1747,30 +1755,31 @@ struct SmoothedAggregationEnergyMinCoarsening
      *
      * AP(i,j) = sum_k(A_ik P_kj), and A_ii != 0.
      */
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      Val dia = math::inverse(Adia[i]);
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        Val dia = math::inverse(Adia[i]);
 
-      for (Ptr ja = AP->ptr[i], ea = AP->ptr[i + 1],
-               jp = P_tent.ptr[i], ep = P_tent.ptr[i + 1];
-           ja < ea; ++ja) {
-        Col ca = AP->col[ja];
-        Val va = -dia * AP->val[ja] * omega[ca];
+        for (Ptr ja = AP->ptr[i], ea = AP->ptr[i + 1],
+                 jp = P_tent.ptr[i], ep = P_tent.ptr[i + 1];
+             ja < ea; ++ja) {
+          Col ca = AP->col[ja];
+          Val va = -dia * AP->val[ja] * omega[ca];
 
-        for (; jp < ep; ++jp) {
-          Col cp = P_tent.col[jp];
-          if (cp > ca)
-            break;
+          for (; jp < ep; ++jp) {
+            Col cp = P_tent.col[jp];
+            if (cp > ca)
+              break;
 
-          if (cp == ca) {
-            va += P_tent.val[jp];
-            break;
+            if (cp == ca) {
+              va += P_tent.val[jp];
+              break;
+            }
           }
-        }
 
-        AP->val[ja] = va;
+          AP->val[ja] = va;
+        }
       }
-    }
+    });
 
     return AP;
   }
@@ -1795,30 +1804,31 @@ struct SmoothedAggregationEnergyMinCoarsening
      *
      * RA(i,j) = sum_k(R_ik A_kj), and A_jj != 0.
      */
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(nc); ++i) {
-      Val w = omega[i];
+    arccoreParallelFor(0, nc, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        Val w = omega[i];
 
-      for (Ptr ja = RA->ptr[i], ea = RA->ptr[i + 1],
-               jr = R_tent->ptr[i], er = R_tent->ptr[i + 1];
-           ja < ea; ++ja) {
-        Col ca = RA->col[ja];
-        Val va = -w * math::inverse(Adia[ca]) * RA->val[ja];
+        for (Ptr ja = RA->ptr[i], ea = RA->ptr[i + 1],
+                 jr = R_tent->ptr[i], er = R_tent->ptr[i + 1];
+             ja < ea; ++ja) {
+          Col ca = RA->col[ja];
+          Val va = -w * math::inverse(Adia[ca]) * RA->val[ja];
 
-        for (; jr < er; ++jr) {
-          Col cr = R_tent->col[jr];
-          if (cr > ca)
-            break;
+          for (; jr < er; ++jr) {
+            Col cr = R_tent->col[jr];
+            if (cr > ca)
+              break;
 
-          if (cr == ca) {
-            va += R_tent->val[jr];
-            break;
+            if (cr == ca) {
+              va += R_tent->val[jr];
+              break;
+            }
           }
-        }
 
-        RA->val[ja] = va;
+          RA->val[ja] = va;
+        }
       }
-    }
+    });
 
     return RA;
   }
