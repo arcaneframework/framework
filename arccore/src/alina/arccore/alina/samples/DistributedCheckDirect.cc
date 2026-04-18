@@ -16,61 +16,49 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-
+#if defined(ARCCORE_ALINA_HAVE_EIGEN)
 // To remove warnings about deprecated Eigen usage.
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#include "arccore/alina/DistributedEigenSparseLUDirectSolver.h"
+#endif
 
-#include <boost/scope_exit.hpp>
-#include <boost/program_options.hpp>
+#include "arccore/trace/ITraceMng.h"
 
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/Profiler.h"
 
-namespace Arcane::Alina
-{
-Profiler prof;
-}
+#include "AlinaSamplesCommon.h"
+
+#include <boost/program_options.hpp>
 
 using namespace Arcane;
 
-int main(int argc, char* argv[])
+int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
+  ITraceMng* tm = ctx.traceMng();
+
+  auto& prof = Alina::Profiler::globalProfiler();
 
   Alina::mpi_communicator comm(MPI_COMM_WORLD);
 
-  if (comm.rank == 0)
-    std::cout << "World size: " << comm.size << std::endl;
+  tm->info() << "World size: " << comm.size;
 
   namespace po = boost::program_options;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
-  "size,n",
-  po::value<int>()->default_value(128),
-  "domain size")("prm-file,P",
-                 po::value<std::string>(),
-                 "Parameter file in json format. ")(
-  "prm,p",
-  po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300");
+  desc.add_options()("help,h", "show help")("size,n",
+                                            po::value<int>()->default_value(128),
+                                            "domain size");
+  desc.add_options()("prm-file,P",
+                     po::value<std::string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<std::vector<std::string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -95,8 +83,6 @@ int main(int argc, char* argv[])
 
   const int n = vm["size"].as<int>();
   const int n2 = n * n;
-
-  using Alina::prof;
 
   int chunk = (n2 + comm.size - 1) / comm.size;
   int chunk_start = comm.rank * chunk;
@@ -152,34 +138,59 @@ int main(int argc, char* argv[])
   A.setNbNonZero(A.ptr[chunk]);
   prof.toc("assemble");
 
-  prof.tic("setup");
-  Alina::DistributedDirectSolverRuntime<double> solve(comm, A, prm);
-  prof.toc("setup");
-
-  prof.tic("solve");
   std::vector<double> x(chunk);
-  solve(rhs, x);
-  solve(rhs, x);
-  prof.toc("solve");
 
-  prof.tic("save");
-  if (comm.rank == 0) {
-    std::vector<double> X(n2);
-    std::copy(x.begin(), x.end(), X.begin());
+  {
+    auto t = prof.scoped_tic("skyline");
 
-    for (int i = 1; i < comm.size; ++i)
-      MPI_Recv(&X[domain[i]], domain[i + 1] - domain[i], MPI_DOUBLE, i, 42, comm, MPI_STATUS_IGNORE);
+    prof.tic("setup");
+    Alina::DistributedDirectSolverRuntime<double> solve(comm, A, prm);
+    tm->info() << "Solver is = " << solve.type();
+    prof.toc("setup");
 
-    std::ofstream f("out.dat", std::ios::binary);
-    f.write((char*)&n2, sizeof(int));
-    f.write((char*)X.data(), n2 * sizeof(double));
+    prof.tic("solve1");
+    solve(rhs, x);
+    prof.toc("solve1");
   }
-  else {
-    MPI_Send(x.data(), chunk, MPI_DOUBLE, 0, 42, comm);
-  }
-  prof.toc("save");
 
-  if (comm.rank == 0) {
-    std::cout << prof << std::endl;
+#if defined(ARCCORE_ALINA_HAVE_EIGEN)
+  {
+    auto t = prof.scoped_tic("eigen");
+
+    prof.tic("setup");
+    Alina::DistributedEigenSparseLUDirectSolver<double> solve(comm, A, prm);
+    prof.toc("setup");
+
+    prof.tic("solve");
+    std::vector<double> x2(chunk);
+    solve(rhs, x2);
+    prof.toc("solve");
+    // Compare values between skyline and eigen
+    Int32 nb_error = 0;
+    for (Int32 i = 0; i < chunk; ++i) {
+      Real x_ref = x[i];
+      Real x_eigen = x2[i];
+      Real abs_sum = std::abs(x_ref);
+
+      Real diff = std::abs(x_eigen - x_ref);
+      if (abs_sum != 0.0)
+        diff /= abs_sum;
+
+      if (diff > 1.0e-12) {
+        tm->info() << "I=" << i << " compare skyline=" << x[i] << " eigen=" << x2[i] << " diff=" << diff;
+        ++nb_error;
+      }
+    }
+    if (nb_error != 0)
+      ARCCORE_FATAL("Error when comparing Eigen and SkylineLU nb_error={0}", nb_error);
   }
+#endif
+
+  tm->info() << prof;
+  return 0;
+}
+
+int main(int argc, char* argv[])
+{
+  return Arcane::Alina::SampleMainContext::execMain(main2, argc, argv);
 }

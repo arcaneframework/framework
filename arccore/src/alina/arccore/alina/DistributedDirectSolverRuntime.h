@@ -24,9 +24,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/alina/DistributedSkylineLUDirectSolver.h"
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-#include "arccore/alina/DistributedEigenSparseLUDirectSolver.h"
-#endif
+
+#include "arccore/base/NotSupportedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,10 +38,6 @@ namespace Arcane::Alina
 enum class eDistributedDirectSolverType
 {
   skyline_lu
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-  ,
-  eigen_splu
-#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -53,10 +48,6 @@ inline std::ostream& operator<<(std::ostream& os, eDistributedDirectSolverType s
   switch (s) {
   case eDistributedDirectSolverType::skyline_lu:
     return os << "skyline_lu";
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-  case eDistributedDirectSolverType::eigen_splu:
-    return os << "eigen_splu";
-#endif
   default:
     return os << "???";
   }
@@ -72,18 +63,8 @@ inline std::istream& operator>>(std::istream& in, eDistributedDirectSolverType& 
 
   if (val == "skyline_lu")
     s = eDistributedDirectSolverType::skyline_lu;
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-  else if (val == "eigen_splu")
-    s = eDistributedDirectSolverType::eigen_splu;
-#endif
   else
-    throw std::invalid_argument("Invalid direct solver value. Valid choices are: "
-                                "skyline_lu"
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-                                ", eigen_splu"
-#endif
-                                ".");
-
+    ARCCORE_FATAL("Invalid direct solver value. Valid choices are: 'skyline_lu'");
   return in;
 }
 
@@ -111,14 +92,8 @@ class DistributedDirectSolverRuntime
       typedef DistributedSkylineLUDirectSolver<value_type> S;
       handle = static_cast<void*>(new S(comm, A, prm));
     } break;
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-    case eDistributedDirectSolverType::eigen_splu: {
-      typedef DistributedEigenSparseLUDirectSolver<value_type> S;
-      do_construct<S, value_type>(comm, A, prm);
-    } break;
-#endif
     default:
-      throw std::invalid_argument("Unsupported direct solver type");
+      ARCCORE_THROW(NotSupportedException, "Invalid solver type '{0}'", s);
     }
   }
 
@@ -135,14 +110,8 @@ class DistributedDirectSolverRuntime
       typedef DistributedSkylineLUDirectSolver<value_type> S;
       static_cast<const S*>(handle)->operator()(rhs, x);
     } break;
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-    case eDistributedDirectSolverType::eigen_splu: {
-      typedef DistributedEigenSparseLUDirectSolver<value_type> S;
-      do_solve<S, value_type>(rhs, x);
-    } break;
-#endif
     default:
-      throw std::invalid_argument("Unsupported direct solver type");
+      ARCCORE_THROW(NotSupportedException, "Invalid solver type '{0}'", s);
     }
   }
 
@@ -153,16 +122,14 @@ class DistributedDirectSolverRuntime
       typedef DistributedSkylineLUDirectSolver<value_type> S;
       delete static_cast<S*>(handle);
     } break;
-#ifdef ARCCORE_ALINA_HAVE_EIGEN
-    case eDistributedDirectSolverType::eigen_splu: {
-      typedef DistributedEigenSparseLUDirectSolver<value_type> S;
-      do_destruct<S, value_type>();
-    } break;
-#endif
     default:
       break;
     }
   }
+
+ public:
+
+  eDistributedDirectSolverType type() const { return s; }
 
  private:
 

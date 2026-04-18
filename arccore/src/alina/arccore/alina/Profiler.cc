@@ -97,7 +97,7 @@ init()
 /*---------------------------------------------------------------------------*/
 
 void Profiler::
-print(std::ostream& out)
+print(std::ostream& out) const
 {
   if (stack.back() != &root)
     out << "Warning! Profile is incomplete." << std::endl;

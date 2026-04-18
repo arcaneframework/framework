@@ -189,7 +189,7 @@ class ARCCORE_ALINA_EXPORT Profiler
 
   void init();
 
-  void print(std::ostream& out);
+  void print(std::ostream& out) const;
 
   /*!
    * \brief Sends formatted profiling data to an output stream.
@@ -197,7 +197,7 @@ class ARCCORE_ALINA_EXPORT Profiler
    * \param out  Output stream.
    * \param prof Profiler.
    */
-  friend std::ostream& operator<<(std::ostream& out, Profiler& prof)
+  friend std::ostream& operator<<(std::ostream& out, const Profiler& prof)
   {
     out << std::endl;
     prof.print(out);
