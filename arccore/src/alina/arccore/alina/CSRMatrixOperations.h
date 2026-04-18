@@ -32,9 +32,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//#include "arccore/alina/SkylineLUSolver.h"
-//#include "arccore/alina/DenseMatrixInverseImpl.h"
-//#include "arccore/alina/MatrixOperationsImpl.h"
 #include "arccore/alina/NumaVector.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/CSRMatrix.h"
@@ -56,12 +53,13 @@ void sort_rows(CSRMatrix<V, C, P>& A)
 {
   const size_t n = A.nbRow();
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-    P beg = A.ptr[i];
-    P end = A.ptr[i + 1];
-    detail::sort_row(A.col + beg, A.val + beg, end - beg);
-  }
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      P beg = A.ptr[i];
+      P end = A.ptr[i + 1];
+      detail::sort_row(A.col + beg, A.val + beg, end - beg);
+    }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -142,13 +140,10 @@ sum(Val alpha, const CSRMatrix<Val, Col, Ptr>& A, Val beta,
   C->set_size(A.nbRow(), A.ncols);
 
   C->ptr[0] = 0;
-
-#pragma omp parallel
-  {
+  Int32 nb_row = static_cast<Idx>(C->nbRow());
+  arccoreParallelFor(0, nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> marker(C->ncols, -1);
-
-#pragma omp for
-    for (Idx i = 0; i < static_cast<Idx>(C->nbRow()); ++i) {
+    for (Idx i = begin; i < (begin + size); ++i) {
       Idx C_cols = 0;
 
       for (Idx j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
@@ -171,16 +166,13 @@ sum(Val alpha, const CSRMatrix<Val, Col, Ptr>& A, Val beta,
 
       C->ptr[i + 1] = C_cols;
     }
-  }
+  });
 
   C->set_nonzeros(C->scan_row_sizes());
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> marker(C->ncols, -1);
-
-#pragma omp for
-    for (Idx i = 0; i < static_cast<Idx>(C->nbRow()); ++i) {
+    for (Idx i = begin; i < (begin + size); ++i) {
       Idx row_beg = C->ptr[i];
       Idx row_end = row_beg;
 
@@ -217,7 +209,7 @@ sum(Val alpha, const CSRMatrix<Val, Col, Ptr>& A, Val beta,
       if (sort)
         Alina::detail::sort_row(C->col + row_beg, C->val + row_beg, row_end - row_beg);
     }
-  }
+  });
 
   return C;
 }
@@ -229,13 +221,14 @@ sum(Val alpha, const CSRMatrix<Val, Col, Ptr>& A, Val beta,
 template <class Val, class Col, class Ptr, class T> void
 scale(CSRMatrix<Val, Col, Ptr>& A, T s)
 {
-  ptrdiff_t n = backend::nbRow(A);
+  const ptrdiff_t nb_row = backend::nbRow(A);
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-      A.val[j] *= s;
-  }
+  arccoreParallelFor(0, nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (Int32 i = begin; i < (begin + size); ++i) {
+      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+        A.val[j] *= s;
+    }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -263,14 +256,10 @@ pointwise_matrix(const CSRMatrix<value_type, col_type, ptr_type>& A, unsigned bl
 
   Ap.set_size(np, mp, true);
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptr_type> j(block_size);
     std::vector<ptr_type> e(block_size);
-
-    // Count number of nonzeros in block matrix.
-#pragma omp for
-    for (ptrdiff_t ip = 0; ip < np; ++ip) {
+    for (Int32 ip = begin; ip < (begin + size); ++ip) {
       ptrdiff_t ia = ip * block_size;
       col_type cur_col = 0;
       bool done = true;
@@ -323,17 +312,14 @@ pointwise_matrix(const CSRMatrix<value_type, col_type, ptr_type>& A, unsigned bl
         }
       }
     }
-  }
+  });
 
   Ap.set_nonzeros(Ap.scan_row_sizes());
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptr_type> j(block_size);
     std::vector<ptr_type> e(block_size);
-
-#pragma omp for
-    for (ptrdiff_t ip = 0; ip < np; ++ip) {
+    for (Int32 ip = begin; ip < (begin + size); ++ip) {
       ptrdiff_t ia = ip * block_size;
       col_type cur_col = 0;
       ptr_type head = Ap.ptr[ip];
@@ -403,7 +389,7 @@ pointwise_matrix(const CSRMatrix<value_type, col_type, ptr_type>& A, unsigned bl
         Ap.val[head++] = cur_val;
       }
     }
-  }
+  });
 
   ARCCORE_ALINA_TOC("pointwise_matrix");
   return ap;
@@ -416,22 +402,23 @@ pointwise_matrix(const CSRMatrix<value_type, col_type, ptr_type>& A, unsigned bl
 template <typename V, typename C, typename P> std::shared_ptr<numa_vector<V>>
 diagonal(const CSRMatrix<V, C, P>& A, bool invert = false)
 {
-  const size_t n = A.nbRow();
-  auto dia = std::make_shared<numa_vector<V>>(n, false);
+  const size_t nb_row = A.nbRow();
+  auto dia = std::make_shared<numa_vector<V>>(nb_row, false);
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-    for (auto a = A.row_begin(i); a; ++a) {
-      if (a.col() == i) {
-        V d = a.value();
-        if (invert) {
-          d = math::is_zero(d) ? math::identity<V>() : math::inverse(d);
+  arccoreParallelFor(0, nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (Int32 i = begin; i < (begin + size); ++i) {
+      for (auto a = A.row_begin(i); a; ++a) {
+        if (a.col() == i) {
+          V d = a.value();
+          if (invert) {
+            d = math::is_zero(d) ? math::identity<V>() : math::inverse(d);
+          }
+          (*dia)[i] = d;
+          break;
         }
-        (*dia)[i] = d;
-        break;
       }
     }
-  }
+  });
 
   return dia;
 }
@@ -455,6 +442,7 @@ spectral_radius(const Matrix& A, int power_iters = 0)
   const ptrdiff_t n = backend::nbRow(A);
   scalar_type radius;
 
+  // TODO: CONCURRENCY Use arccore concurrency for spectral_radius
   if (power_iters <= 0) {
     // Use Gershgorin disk theorem.
     radius = 0;
