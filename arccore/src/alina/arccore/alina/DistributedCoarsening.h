@@ -106,7 +106,7 @@ struct DistributedPMISAggregation
     }
     else {
       typedef typename math::scalar_of<value_type>::type scalar;
-      using sbackend = BuiltinBackend<scalar,col_type,ptr_type>;
+      using sbackend = BuiltinBackend<scalar, col_type, ptr_type>;
 
       ptrdiff_t np = n / prm.block_size;
 
@@ -123,22 +123,22 @@ struct DistributedPMISAggregation
 
       ptrdiff_t naggr = aggregates(*conn_pw, state_pw, owner_pw);
 
-      conn = std::make_shared<DistributedMatrix<bool_backend>>(
-      A.comm(),
-      expand_conn(*A.local(), *A_pw.local(), *conn_pw->local(), prm.block_size),
-      expand_conn(*A.remote(), *A_pw.remote(), *conn_pw->remote(), prm.block_size));
+      conn = std::make_shared<DistributedMatrix<bool_backend>>(A.comm(),
+                                                               expand_conn(*A.local(), *A_pw.local(), *conn_pw->local(), prm.block_size),
+                                                               expand_conn(*A.remote(), *A_pw.remote(), *conn_pw->remote(), prm.block_size));
 
-#pragma omp parallel for
-      for (ptrdiff_t ip = 0; ip < np; ++ip) {
-        ptrdiff_t i = ip * prm.block_size;
-        ptrdiff_t s = state_pw[ip];
-        int o = owner_pw[ip];
+      arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
+          ptrdiff_t i = ip * prm.block_size;
+          ptrdiff_t s = state_pw[ip];
+          int o = owner_pw[ip];
 
-        for (unsigned k = 0; k < prm.block_size; ++k) {
-          state[i + k] = (s < 0) ? s : (s * prm.block_size + k);
-          owner[i + k] = o;
+          for (unsigned k = 0; k < prm.block_size; ++k) {
+            state[i + k] = (s < 0) ? s : (s * prm.block_size + k);
+            owner[i + k] = o;
+          }
         }
-      }
+      });
 
       p_tent = tentative_prolongation(A.comm(), n, naggr * prm.block_size, state, owner);
     }
@@ -192,13 +192,11 @@ struct DistributedPMISAggregation
     S_rem.ptr[0] = 0;
 
     ARCCORE_ALINA_TIC("analyze");
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> loc_marker(A_rows, -1);
       std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
-#pragma omp for
-      for (ptrdiff_t ia = 0; ia < A_rows; ++ia) {
+      for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t loc_cols = 0;
         ptrdiff_t rem_cols = 0;
 
@@ -258,20 +256,18 @@ struct DistributedPMISAggregation
         S_rem.ptr[ia + 1] = rem_cols;
         S_loc.ptr[ia + 1] = rem_cols ? loc_cols : 0;
       }
-    }
+    });
     ARCCORE_ALINA_TOC("analyze");
 
     S_loc.set_nonzeros(S_loc.scan_row_sizes(), false);
     S_rem.set_nonzeros(S_rem.scan_row_sizes(), false);
 
     ARCCORE_ALINA_TIC("compute");
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> loc_marker(A_rows, -1);
       std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
-#pragma omp for
-      for (ptrdiff_t ia = 0; ia < A_rows; ++ia) {
+      for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t loc_beg = S_loc.ptr[ia];
         ptrdiff_t rem_beg = S_rem.ptr[ia];
         ptrdiff_t loc_end = loc_beg;
@@ -332,7 +328,7 @@ struct DistributedPMISAggregation
           }
         }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("compute");
 
     return std::make_shared<DistributedMatrix<bool_backend>>(A.comm(), s_loc, s_rem);
@@ -377,26 +373,27 @@ struct DistributedPMISAggregation
     S_loc.val.resize(A_loc.nbNonZero());
     S_rem.val.resize(A_rem.nbNonZero());
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      val_type eps_dia_i = eps_squared * D[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        val_type eps_dia_i = eps_squared * D[i];
 
-      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
-        ptrdiff_t c = A_loc.col[j];
-        val_type v = A_loc.val[j];
+        for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
+          ptrdiff_t c = A_loc.col[j];
+          val_type v = A_loc.val[j];
 
-        if ((S_loc.val[j] = (c == i || (eps_dia_i * D[c] < v * v))))
-          ++S_loc.ptr[i + 1];
+          if ((S_loc.val[j] = (c == i || (eps_dia_i * D[c] < v * v))))
+            ++S_loc.ptr[i + 1];
+        }
+
+        for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
+          ptrdiff_t c = C.local_index(A_rem.col[j]);
+          val_type v = A_rem.val[j];
+
+          if ((S_rem.val[j] = (eps_dia_i * D_rem[c] < v * v)))
+            ++S_rem.ptr[i + 1];
+        }
       }
-
-      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
-        ptrdiff_t c = C.local_index(A_rem.col[j]);
-        val_type v = A_rem.val[j];
-
-        if ((S_rem.val[j] = (eps_dia_i * D_rem[c] < v * v)))
-          ++S_rem.ptr[i + 1];
-      }
-    }
+    });
 
     S_loc.setNbNonZero(S_loc.scan_row_sizes());
     S_rem.setNbNonZero(S_rem.scan_row_sizes());
@@ -404,19 +401,20 @@ struct DistributedPMISAggregation
     S_loc.col.resize(S_loc.nbNonZero());
     S_rem.col.resize(S_rem.nbNonZero());
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      ptrdiff_t loc_head = S_loc.ptr[i];
-      ptrdiff_t rem_head = S_rem.ptr[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t loc_head = S_loc.ptr[i];
+        ptrdiff_t rem_head = S_rem.ptr[i];
 
-      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
-        if (S_loc.val[j])
-          S_loc.col[loc_head++] = A_loc.col[j];
+        for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
+          if (S_loc.val[j])
+            S_loc.col[loc_head++] = A_loc.col[j];
 
-      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
-        if (S_rem.val[j])
-          S_rem.col[rem_head++] = A_rem.col[j];
-    }
+        for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
+          if (S_rem.val[j])
+            S_rem.col[rem_head++] = A_rem.col[j];
+      }
+    });
     ARCCORE_ALINA_TOC("conn_strength");
 
     return std::make_shared<DistributedMatrix<bool_backend>>(A.comm(), s_loc, s_rem);
@@ -909,13 +907,11 @@ struct DistributedPMISAggregation
       std::vector<double> Bnew;
       Bnew.resize(nba * null_cols * null_cols);
 
-#pragma omp parallel
-      {
+      arccoreParallelFor(0, nba, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
         Alina::detail::QRFactorization<double> qr;
         std::vector<double> Bpart;
 
-#pragma omp for
-        for (ptrdiff_t i = 0; i < nba; ++i) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
           auto aggr_beg = aggr_ptr[i];
           auto aggr_end = aggr_ptr[i + 1];
           auto d = aggr_end - aggr_beg;
@@ -950,7 +946,7 @@ struct DistributedPMISAggregation
             }
           }
         }
-      }
+      });
 
       // Exchange the computed rows of the prolongation operator with the
       // owners.
@@ -969,26 +965,27 @@ struct DistributedPMISAggregation
       }
 
       // Fill column numbers
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        ptrdiff_t s = state[i];
-        if (s == DistributedPMISAggregation::deleted)
-          continue;
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptrdiff_t s = state[i];
+          if (s == DistributedPMISAggregation::deleted)
+            continue;
 
-        int d = owner[i];
-        if (d == comm.rank) {
-          auto col = &P_loc.col[P_loc.ptr[i]];
-          for (int j = 0; j < null_cols; ++j) {
-            col[j] = null_cols * s / prm.block_size + j;
+          int d = owner[i];
+          if (d == comm.rank) {
+            auto col = &P_loc.col[P_loc.ptr[i]];
+            for (int j = 0; j < null_cols; ++j) {
+              col[j] = null_cols * s / prm.block_size + j;
+            }
+          }
+          else {
+            auto col = &P_rem.col[P_rem.ptr[i]];
+            for (int j = 0; j < null_cols; ++j) {
+              col[j] = null_cols * (s + cdom[d]) / prm.block_size + j;
+            }
           }
         }
-        else {
-          auto col = &P_rem.col[P_rem.ptr[i]];
-          for (int j = 0; j < null_cols; ++j) {
-            col[j] = null_cols * (s + cdom[d]) / prm.block_size + j;
-          }
-        }
-      }
+      });
 
       ARCCORE_ALINA_TIC("MPI Wait");
       comm.waitAll(send_req);
@@ -1014,38 +1011,40 @@ struct DistributedPMISAggregation
       P_loc.set_size(n, naggr, true);
       P_rem.set_size(n, 0, true);
 
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        if (state[i] == DistributedPMISAggregation::deleted)
-          continue;
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          if (state[i] == DistributedPMISAggregation::deleted)
+            continue;
 
-        if (owner[i] == comm.rank) {
-          ++P_loc.ptr[i + 1];
+          if (owner[i] == comm.rank) {
+            ++P_loc.ptr[i + 1];
+          }
+          else {
+            ++P_rem.ptr[i + 1];
+          }
         }
-        else {
-          ++P_rem.ptr[i + 1];
-        }
-      }
+      });
 
       P_loc.set_nonzeros(P_loc.scan_row_sizes());
       P_rem.set_nonzeros(P_rem.scan_row_sizes());
 
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        ptrdiff_t s = state[i];
-        if (s == DistributedPMISAggregation::deleted)
-          continue;
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptrdiff_t s = state[i];
+          if (s == DistributedPMISAggregation::deleted)
+            continue;
 
-        int d = owner[i];
-        if (d == comm.rank) {
-          P_loc.col[P_loc.ptr[i]] = s;
-          P_loc.val[P_loc.ptr[i]] = math::identity<value_type>();
+          int d = owner[i];
+          if (d == comm.rank) {
+            P_loc.col[P_loc.ptr[i]] = s;
+            P_loc.val[P_loc.ptr[i]] = math::identity<value_type>();
+          }
+          else {
+            P_rem.col[P_rem.ptr[i]] = s + dom[d];
+            P_rem.val[P_rem.ptr[i]] = math::identity<value_type>();
+          }
         }
-        else {
-          P_rem.col[P_rem.ptr[i]] = s + dom[d];
-          P_rem.val[P_rem.ptr[i]] = math::identity<value_type>();
-        }
-      }
+      });
     }
     ARCCORE_ALINA_TOC("tentative prolongation");
 
@@ -1066,13 +1065,11 @@ struct DistributedPMISAggregation
     C.set_size(n, n, true);
     C.val.resize(A.nbNonZero());
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> j(block_size);
       std::vector<ptrdiff_t> e(block_size);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < np; ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ia = ip * block_size;
 
         for (unsigned k = 0; k < block_size; ++k) {
@@ -1101,19 +1098,17 @@ struct DistributedPMISAggregation
           }
         }
       }
-    }
+    });
 
     C.setNbNonZero(C.scan_row_sizes());
     C.col.resize(C.nbNonZero());
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> j(block_size);
       std::vector<ptrdiff_t> e(block_size);
       std::vector<ptrdiff_t> h(block_size);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < np; ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ia = ip * block_size;
 
         for (unsigned k = 0; k < block_size; ++k) {
@@ -1144,7 +1139,7 @@ struct DistributedPMISAggregation
           }
         }
       }
-    }
+    });
 
     return c;
   }
@@ -1356,38 +1351,40 @@ struct DistributedSmoothedAggregationCoarsening
 
     numa_vector<value_type> Df(n, false);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      ptrdiff_t loc_head = Af_loc.ptr[i];
-      ptrdiff_t rem_head = Af_rem.ptr[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
 
-      value_type dia_f = math::zero<value_type>();
+        ptrdiff_t loc_head = Af_loc.ptr[i];
+        ptrdiff_t rem_head = Af_rem.ptr[i];
 
-      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
-        if (A_loc.col[j] == i || !S_loc.val[j])
-          dia_f += A_loc.val[j];
+        value_type dia_f = math::zero<value_type>();
 
-      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
-        if (!S_rem.val[j])
-          dia_f += A_rem.val[j];
+        for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
+          if (A_loc.col[j] == i || !S_loc.val[j])
+            dia_f += A_loc.val[j];
 
-      dia_f = -omega * math::inverse(dia_f);
+        for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
+          if (!S_rem.val[j])
+            dia_f += A_rem.val[j];
 
-      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
-        if (A_loc.col[j] == i) {
-          Af_loc.val[loc_head++] = (1 - omega) * math::identity<value_type>();
+        dia_f = -omega * math::inverse(dia_f);
+
+        for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
+          if (A_loc.col[j] == i) {
+            Af_loc.val[loc_head++] = (1 - omega) * math::identity<value_type>();
+          }
+          else if (S_loc.val[j]) {
+            Af_loc.val[loc_head++] = dia_f * A_loc.val[j];
+          }
         }
-        else if (S_loc.val[j]) {
-          Af_loc.val[loc_head++] = dia_f * A_loc.val[j];
+
+        for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
+          if (S_rem.val[j]) {
+            Af_rem.val[rem_head++] = dia_f * A_rem.val[j];
+          }
         }
       }
-
-      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j) {
-        if (S_rem.val[j]) {
-          Af_rem.val[rem_head++] = dia_f * A_rem.val[j];
-        }
-      }
-    }
+    });
 
     auto Af = std::make_shared<DM>(comm, af_loc, af_rem);
     ARCCORE_ALINA_TOC("filtered matrix");
