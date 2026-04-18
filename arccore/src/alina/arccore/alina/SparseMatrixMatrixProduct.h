@@ -39,13 +39,14 @@
  *     Sparse Matrix-Matrix Multiplication for Multi-Core CPUs, GPUs, and Xeon
  *     Phi. Submitted
  */
-#include <vector>
-#include <algorithm>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include "arccore/alina/BackendInterface.h"
+#include "arccore/accelerator/Atomic.h"
+#include "arccore/common/SmallArray.h"
+
+#include <vector>
+#include <algorithm>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -420,12 +421,9 @@ void spgemm_rmerge(const AMatrix& A, const BMatrix& B, CMatrix& C)
 
   Idx max_row_width = 0;
 
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     Idx my_max = 0;
-
-#pragma omp for
-    for (int i = 0; i < static_cast<Idx>(A.nbRow()); ++i) {
+    for (Idx i = begin; i < (begin + size); ++i) {
       Idx row_beg = A.ptr[i];
       Idx row_end = A.ptr[i + 1];
       Idx row_width = 0;
@@ -436,18 +434,14 @@ void spgemm_rmerge(const AMatrix& A, const BMatrix& B, CMatrix& C)
       my_max = std::max(my_max, row_width);
     }
 
-#pragma omp critical
-    max_row_width = std::max(max_row_width, my_max);
-  }
+    Accelerator::doAtomic<Accelerator::eAtomicOperation::Max>(&max_row_width,my_max);
+  });
 
-#ifdef _OPENMP
-  const int nthreads = omp_get_max_threads();
-#else
-  const int nthreads = 1;
-#endif
+  const int nthreads = ConcurrencyBase::maxAllowedThread();
 
-  std::vector<std::vector<Col>> tmp_col(nthreads);
-  std::vector<std::vector<Val>> tmp_val(nthreads);
+  // TODO: keep these values instead of rebuilding them
+  SmallArray<std::vector<Col>,16> tmp_col(nthreads);
+  SmallArray<std::vector<Val>,16> tmp_val(nthreads);
 
   for (int i = 0; i < nthreads; ++i) {
     tmp_col[i].resize(3 * max_row_width);
@@ -457,18 +451,12 @@ void spgemm_rmerge(const AMatrix& A, const BMatrix& B, CMatrix& C)
   C.set_size(A.nbRow(), B.ncols);
   C.ptr[0] = 0;
 
-#pragma omp parallel
-  {
-#ifdef _OPENMP
-    const int tid = omp_get_thread_num();
-#else
-    const int tid = 0;
-#endif
+  arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    const int tid = TaskFactory::currentTaskThreadIndex();
 
     Col* t_col = &tmp_col[tid][0];
 
-#pragma omp for
-    for (Idx i = 0; i < static_cast<Idx>(A.nbRow()); ++i) {
+    for (Idx i = begin; i < (begin + size); ++i) {
       Idx row_beg = A.ptr[i];
       Idx row_end = A.ptr[i + 1];
 
@@ -476,23 +464,17 @@ void spgemm_rmerge(const AMatrix& A, const BMatrix& B, CMatrix& C)
                                     B.ptr.data(), B.col.data(),
                                     t_col, t_col + max_row_width, t_col + 2 * max_row_width);
     }
-  }
+  });
 
   C.set_nonzeros(C.scan_row_sizes());
 
-#pragma omp parallel
-  {
-#ifdef _OPENMP
-    const int tid = omp_get_thread_num();
-#else
-    const int tid = 0;
-#endif
+  arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    const int tid = TaskFactory::currentTaskThreadIndex();
 
     Col* t_col = tmp_col[tid].data();
     Val* t_val = tmp_val[tid].data();
 
-#pragma omp for
-    for (Idx i = 0; i < static_cast<Idx>(A.nbRow()); ++i) {
+    for (Idx i = begin; i < (begin + size); ++i) {
       Idx row_beg = A.ptr[i];
       Idx row_end = A.ptr[i + 1];
 
@@ -501,7 +483,7 @@ void spgemm_rmerge(const AMatrix& A, const BMatrix& B, CMatrix& C)
                C.col.data() + C.ptr[i], C.val.data() + C.ptr[i],
                t_col, t_val, t_col + max_row_width, t_val + max_row_width);
     }
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
