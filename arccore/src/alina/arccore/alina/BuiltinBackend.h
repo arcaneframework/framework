@@ -23,17 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#pragma GCC diagnostic ignored "-Wconversion"
-
-#include <vector>
-#include <numeric>
-#include <memory>
-#include <random>
-#include <type_traits>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+//#pragma GCC diagnostic ignored "-Wconversion"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,6 +34,9 @@
 
 #include "arccore/base/ConcurrencyBase.h"
 #include "arccore/common/SmallArray.h"
+
+#include <numeric>
+#include <random>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -275,10 +268,11 @@ struct clear_impl<Vec, typename std::enable_if<is_builtin_vector<Vec>::value>::t
     typedef typename backend::value_type<Vec>::type V;
 
     const size_t n = x.size();
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      x[i] = math::zero<V>();
-    }
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        x[i] = math::zero<V>();
+      }
+    });
   }
 };
 
@@ -365,18 +359,18 @@ struct axpby_impl<A, Vec1, B, Vec2, typename std::enable_if<is_builtin_vector<Ve
   static void apply(A a, const Vec1& x, B b, Vec2& y)
   {
     const size_t n = x.size();
-    if (!math::is_zero(b)) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        y[i] = a * x[i] + b * y[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      if (!math::is_zero(b)) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          y[i] = a * x[i] + b * y[i];
+        }
       }
-    }
-    else {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        y[i] = a * x[i];
+      else {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          y[i] = a * x[i];
+        }
       }
-    }
+    });
   }
 };
 
@@ -393,19 +387,19 @@ struct axpbypcz_impl<A, Vec1, B, Vec2, C, Vec3,
   static void apply(A a, const Vec1& x, B b, const Vec2& y, C c, Vec3& z)
   {
     const size_t n = x.size();
-    if (!math::is_zero(c)) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        z[i] = a * x[i] + b * y[i] + c * z[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      if (!math::is_zero(c)) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          z[i] = a * x[i] + b * y[i] + c * z[i];
+        }
       }
-    }
-    else {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        z[i] = a * x[i] + b * y[i];
+      else {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          z[i] = a * x[i] + b * y[i];
+        }
       }
-    }
-  }
+    });
+  }   
 };
 
 /*---------------------------------------------------------------------------*/
@@ -423,18 +417,18 @@ struct vmul_impl<Alpha, Vec1, Vec2, Beta, Vec3,
   static void apply(Alpha a, const Vec1& x, const Vec2& y, Beta b, Vec3& z)
   {
     const size_t n = x.size();
-    if (!math::is_zero(b)) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        z[i] = a * x[i] * y[i] + b * z[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      if (!math::is_zero(b)) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          z[i] = a * x[i] * y[i] + b * z[i];
+        }
       }
-    }
-    else {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        z[i] = a * x[i] * y[i];
+      else {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          z[i] = a * x[i] * y[i];
+        }
       }
-    }
+    });
   }
 };
 
@@ -458,18 +452,18 @@ struct vmul_impl<Alpha, Vec1, Vec2, Beta, Vec3,
 
     const size_t n = x.size();
 
-    if (!math::is_zero(b)) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        Z[i] = a * x[i] * Y[i] + b * Z[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      if (!math::is_zero(b)) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          Z[i] = a * x[i] * Y[i] + b * Z[i];
+        }
       }
-    }
-    else {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-        Z[i] = a * x[i] * Y[i];
+      else {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          Z[i] = a * x[i] * Y[i];
+        }
       }
-    }
+    });
   }
 };
 
@@ -485,10 +479,11 @@ struct copy_impl<Vec1, Vec2,
   static void apply(const Vec1& x, Vec2& y)
   {
     const size_t n = x.size();
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      y[i] = x[i];
-    }
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        y[i] = x[i];
+      }
+    });
   }
 };
 

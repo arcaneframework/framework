@@ -228,7 +228,7 @@ void test_backend(typename Backend::params const& bprm = typename Backend::param
     std::vector<value_type> val;
     std::vector<rhs_type> rhs;
 
-    size_t n = sample_problem(32, val, col, ptr, rhs);
+    size_t n = sample_problem(24, val, col, ptr, rhs);
 
     test_problem<Backend>(n, ptr, col, val, rhs, bprm);
   }
@@ -250,5 +250,32 @@ void test_backend(typename Backend::params const& bprm = typename Backend::param
     test_problem<Backend>(n, ptr, col, val, rhs, bprm);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_HAS_ACCELERATOR_THREAD)
+#define ARCCORE_ALINA_TEST_DO_TEST_TASK(name1, name2, func) \
+  TEST(name1, name2##_task4) \
+  { \
+    func(false, 4); \
+  }
+#else
+#define ARCCORE_ALINA_TEST_DO_TEST_TASK(name1, name2, func)
+#endif
+
+#define ARCCORE_ALINA_TEST_DO_TEST_SEQUENTIAL(name1, name2, func) \
+  TEST(name1, name2) \
+  { \
+    func(false, 0); \
+  }
+
+//! Macro pour définir les tests en fonction de l'accélérateur
+#define ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(name1, name2, func) \
+  ARCCORE_ALINA_TEST_DO_TEST_TASK(name1, name2, func); \
+  ARCCORE_ALINA_TEST_DO_TEST_SEQUENTIAL(name1, name2, func);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif

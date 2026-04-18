@@ -388,34 +388,36 @@ unblock_matrix(const Matrix& B)
 
   const ptrdiff_t nb = backend::nbRow(B);
 
-#pragma omp for
-  for (ptrdiff_t ib = 0; ib < nb; ++ib) {
-    auto w = backend::row_nonzeros(B, ib);
-    for (ptrdiff_t i = 0, ia = ib * brows; i < brows; ++i, ++ia) {
-      A->ptr[ia + 1] = w * bcols;
+  arccoreParallelFor(0, nb, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t ib = begin; ib < (begin + size); ++ib) {
+      auto w = backend::row_nonzeros(B, ib);
+      for (ptrdiff_t i = 0, ia = ib * brows; i < brows; ++i, ++ia) {
+        A->ptr[ia + 1] = w * bcols;
+      }
     }
-  }
+  });
 
   A->scan_row_sizes();
   A->set_nonzeros();
 
-#pragma omp for
-  for (ptrdiff_t ib = 0; ib < nb; ++ib) {
-    for (auto b = backend::row_begin(B, ib); b; ++b) {
-      auto c = b.col();
-      auto v = b.value();
+  arccoreParallelFor(0, nb, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t ib = begin; ib < (begin + size); ++ib) {
+      for (auto b = backend::row_begin(B, ib); b; ++b) {
+        auto c = b.col();
+        auto v = b.value();
 
-      for (ptrdiff_t i = 0, ia = ib * brows; i < brows; ++i, ++ia) {
-        auto row_head = A->ptr[ia];
-        for (int j = 0; j < bcols; ++j) {
-          A->col[row_head] = c * bcols + j;
-          A->val[row_head] = v(i, j);
-          ++row_head;
+        for (ptrdiff_t i = 0, ia = ib * brows; i < brows; ++i, ++ia) {
+          auto row_head = A->ptr[ia];
+          for (int j = 0; j < bcols; ++j) {
+            A->col[row_head] = c * bcols + j;
+            A->val[row_head] = v(i, j);
+            ++row_head;
+          }
+          A->ptr[ia] = row_head;
         }
-        A->ptr[ia] = row_head;
       }
     }
-  }
+  });
 
   std::rotate(A->ptr.data(), A->ptr.data() + A->nbRow(), A->ptr.data() + A->nbRow() + 1);
   A->ptr[0] = 0;
@@ -752,9 +754,11 @@ class reorder
   , iperm(n)
   {
     ordering::get(A, perm);
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i)
-      iperm[perm[i]] = i;
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        iperm[perm[i]] = i;
+      }
+    });
   }
 
   template <class Matrix>
@@ -781,17 +785,21 @@ class reorder
   template <class Vector1, class Vector2>
   void forward(const Vector1& x, Vector2& y) const
   {
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i)
-      y[i] = x[perm[i]];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        y[i] = x[perm[i]];
+      }
+    });
   }
 
   template <class Vector1, class Vector2>
   void inverse(const Vector1& x, Vector2& y) const
   {
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i)
-      y[perm[i]] = x[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        y[perm[i]] = x[i];
+      }
+    });
   }
 
  private:
@@ -910,15 +918,16 @@ scale_diagonal(const Matrix& A,
   ptrdiff_t n = backend::nbRow(A);
   auto s = std::make_shared<std::vector<scalar_type>>(n);
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    for (auto a = backend::row_begin(A, i); a; ++a) {
-      if (a.col() == i) {
-        (*s)[i] = math::inverse(sqrt(math::norm(a.value())));
-        break;
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      for (auto a = backend::row_begin(A, i); a; ++a) {
+        if (a.col() == i) {
+          (*s)[i] = math::inverse(sqrt(math::norm(a.value())));
+          break;
+        }
       }
     }
-  }
+  });
 
   return scaled_problem<Backend, std::vector<scalar_type>>(s, bprm);
 }

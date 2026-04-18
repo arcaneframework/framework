@@ -63,89 +63,90 @@ mpi_symm_graph(const DistributedMatrix<Backend>& A,
   // Build symmetric graph
   ptr.resize(n + 1, 0);
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    using Alina::detail::sort_row;
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      using Alina::detail::sort_row;
 
-    ptrdiff_t A_loc_beg = A_loc.ptr[i];
-    ptrdiff_t A_loc_end = A_loc.ptr[i + 1];
+      ptrdiff_t A_loc_beg = A_loc.ptr[i];
+      ptrdiff_t A_loc_end = A_loc.ptr[i + 1];
 
-    ptrdiff_t A_rem_beg = A_rem.ptr[i];
-    ptrdiff_t A_rem_end = A_rem.ptr[i + 1];
+      ptrdiff_t A_rem_beg = A_rem.ptr[i];
+      ptrdiff_t A_rem_end = A_rem.ptr[i + 1];
 
-    ptrdiff_t T_loc_beg = T_loc.ptr[i];
-    ptrdiff_t T_loc_end = T_loc.ptr[i + 1];
+      ptrdiff_t T_loc_beg = T_loc.ptr[i];
+      ptrdiff_t T_loc_end = T_loc.ptr[i + 1];
 
-    ptrdiff_t T_rem_beg = T_rem.ptr[i];
-    ptrdiff_t T_rem_end = T_rem.ptr[i + 1];
+      ptrdiff_t T_rem_beg = T_rem.ptr[i];
+      ptrdiff_t T_rem_end = T_rem.ptr[i + 1];
 
-    sort_row(A_loc.col + A_loc_beg, A_loc.val + A_loc_beg, A_loc_end - A_loc_beg);
-    sort_row(A_rem.col + A_rem_beg, A_rem.val + A_rem_beg, A_rem_end - A_rem_beg);
+      sort_row(A_loc.col + A_loc_beg, A_loc.val + A_loc_beg, A_loc_end - A_loc_beg);
+      sort_row(A_rem.col + A_rem_beg, A_rem.val + A_rem_beg, A_rem_end - A_rem_beg);
 
-    sort_row(T_loc.col + T_loc_beg, T_loc.val + T_loc_beg, T_loc_end - T_loc_beg);
-    sort_row(T_rem.col + T_rem_beg, T_rem.val + T_rem_beg, T_rem_end - T_rem_beg);
+      sort_row(T_loc.col + T_loc_beg, T_loc.val + T_loc_beg, T_loc_end - T_loc_beg);
+      sort_row(T_rem.col + T_rem_beg, T_rem.val + T_rem_beg, T_rem_end - T_rem_beg);
 
-    Ptr row_width = 0;
+      Ptr row_width = 0;
 
-    for (ptrdiff_t ja = A_loc_beg, jt = T_loc_beg; ja < A_loc_end || jt < T_loc_end;) {
-      ptrdiff_t c;
-      if (ja == A_loc_end) {
-        c = T_loc.col[jt];
-        ++jt;
-      }
-      else if (jt == T_loc_end) {
-        c = A_loc.col[ja];
-        ++ja;
-      }
-      else {
-        ptrdiff_t ca = A_loc.col[ja];
-        ptrdiff_t ct = T_loc.col[jt];
-        if (ca < ct) {
-          c = ca;
-          ++ja;
-        }
-        else if (ca == ct) {
-          c = ca;
-          ++ja;
+      for (ptrdiff_t ja = A_loc_beg, jt = T_loc_beg; ja < A_loc_end || jt < T_loc_end;) {
+        ptrdiff_t c;
+        if (ja == A_loc_end) {
+          c = T_loc.col[jt];
           ++jt;
+        }
+        else if (jt == T_loc_end) {
+          c = A_loc.col[ja];
+          ++ja;
         }
         else {
-          c = ct;
-          ++jt;
+          ptrdiff_t ca = A_loc.col[ja];
+          ptrdiff_t ct = T_loc.col[jt];
+          if (ca < ct) {
+            c = ca;
+            ++ja;
+          }
+          else if (ca == ct) {
+            c = ca;
+            ++ja;
+            ++jt;
+          }
+          else {
+            c = ct;
+            ++jt;
+          }
         }
+
+        if (c != i)
+          ++row_width;
       }
 
-      if (c != i)
+      for (ptrdiff_t ja = A_rem_beg, jt = T_rem_beg; ja < A_rem_end || jt < T_rem_end;) {
+        if (ja == A_rem_end) {
+          ++jt;
+        }
+        else if (jt == T_rem_end) {
+          ++ja;
+        }
+        else {
+          ptrdiff_t ca = A_rem.col[ja];
+          ptrdiff_t ct = T_rem.col[jt];
+          if (ca < ct) {
+            ++ja;
+          }
+          else if (ca == ct) {
+            ++ja;
+            ++jt;
+          }
+          else {
+            ++jt;
+          }
+        }
+
         ++row_width;
+      }
+
+      ptr[i + 1] = row_width;
     }
-
-    for (ptrdiff_t ja = A_rem_beg, jt = T_rem_beg; ja < A_rem_end || jt < T_rem_end;) {
-      if (ja == A_rem_end) {
-        ++jt;
-      }
-      else if (jt == T_rem_end) {
-        ++ja;
-      }
-      else {
-        ptrdiff_t ca = A_rem.col[ja];
-        ptrdiff_t ct = T_rem.col[jt];
-        if (ca < ct) {
-          ++ja;
-        }
-        else if (ca == ct) {
-          ++ja;
-          ++jt;
-        }
-        else {
-          ++jt;
-        }
-      }
-
-      ++row_width;
-    }
-
-    ptr[i + 1] = row_width;
-  }
+  });
 
   std::partial_sum(ptr.begin(), ptr.end(), ptr.begin());
 
@@ -153,84 +154,85 @@ mpi_symm_graph(const DistributedMatrix<Backend>& A,
   if (col.empty())
     col.reserve(1); // So that col.data() is not NULL
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    ptrdiff_t A_loc_beg = A_loc.ptr[i];
-    ptrdiff_t A_loc_end = A_loc.ptr[i + 1];
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      ptrdiff_t A_loc_beg = A_loc.ptr[i];
+      ptrdiff_t A_loc_end = A_loc.ptr[i + 1];
 
-    ptrdiff_t A_rem_beg = A_rem.ptr[i];
-    ptrdiff_t A_rem_end = A_rem.ptr[i + 1];
+      ptrdiff_t A_rem_beg = A_rem.ptr[i];
+      ptrdiff_t A_rem_end = A_rem.ptr[i + 1];
 
-    ptrdiff_t T_loc_beg = T_loc.ptr[i];
-    ptrdiff_t T_loc_end = T_loc.ptr[i + 1];
+      ptrdiff_t T_loc_beg = T_loc.ptr[i];
+      ptrdiff_t T_loc_end = T_loc.ptr[i + 1];
 
-    ptrdiff_t T_rem_beg = T_rem.ptr[i];
-    ptrdiff_t T_rem_end = T_rem.ptr[i + 1];
+      ptrdiff_t T_rem_beg = T_rem.ptr[i];
+      ptrdiff_t T_rem_end = T_rem.ptr[i + 1];
 
-    Ptr head = ptr[i];
+      Ptr head = ptr[i];
 
-    for (ptrdiff_t ja = A_loc_beg, jt = T_loc_beg; ja < A_loc_end || jt < T_loc_end;) {
-      ptrdiff_t c;
-      if (ja == A_loc_end) {
-        c = T_loc.col[jt];
-        ++jt;
-      }
-      else if (jt == T_loc_end) {
-        c = A_loc.col[ja];
-        ++ja;
-      }
-      else {
-        ptrdiff_t ca = A_loc.col[ja];
-        ptrdiff_t ct = T_loc.col[jt];
-
-        if (ca < ct) {
-          c = ca;
-          ++ja;
-        }
-        else if (ca == ct) {
-          c = ca;
-          ++ja;
+      for (ptrdiff_t ja = A_loc_beg, jt = T_loc_beg; ja < A_loc_end || jt < T_loc_end;) {
+        ptrdiff_t c;
+        if (ja == A_loc_end) {
+          c = T_loc.col[jt];
           ++jt;
+        }
+        else if (jt == T_loc_end) {
+          c = A_loc.col[ja];
+          ++ja;
         }
         else {
-          c = ct;
+          ptrdiff_t ca = A_loc.col[ja];
+          ptrdiff_t ct = T_loc.col[jt];
+
+          if (ca < ct) {
+            c = ca;
+            ++ja;
+          }
+          else if (ca == ct) {
+            c = ca;
+            ++ja;
+            ++jt;
+          }
+          else {
+            c = ct;
+            ++jt;
+          }
+        }
+        if (c != i)
+          col[head++] = c + row_beg;
+      }
+
+      for (ptrdiff_t ja = A_rem_beg, jt = T_rem_beg; ja < A_rem_end || jt < T_rem_end;) {
+        if (ja == A_rem_end) {
+          col[head] = T_rem.col[jt];
           ++jt;
         }
-      }
-      if (c != i)
-        col[head++] = c + row_beg;
-    }
-
-    for (ptrdiff_t ja = A_rem_beg, jt = T_rem_beg; ja < A_rem_end || jt < T_rem_end;) {
-      if (ja == A_rem_end) {
-        col[head] = T_rem.col[jt];
-        ++jt;
-      }
-      else if (jt == T_rem_end) {
-        col[head] = A_rem.col[ja];
-        ++ja;
-      }
-      else {
-        ptrdiff_t ca = A_rem.col[ja];
-        ptrdiff_t ct = T_rem.col[jt];
-
-        if (ca < ct) {
-          col[head] = ca;
+        else if (jt == T_rem_end) {
+          col[head] = A_rem.col[ja];
           ++ja;
-        }
-        else if (ca == ct) {
-          col[head] = ca;
-          ++ja;
-          ++jt;
         }
         else {
-          col[head] = ct;
-          ++jt;
+          ptrdiff_t ca = A_rem.col[ja];
+          ptrdiff_t ct = T_rem.col[jt];
+
+          if (ca < ct) {
+            col[head] = ca;
+            ++ja;
+          }
+          else if (ca == ct) {
+            col[head] = ca;
+            ++ja;
+            ++jt;
+          }
+          else {
+            col[head] = ct;
+            ++jt;
+          }
         }
+        ++head;
       }
-      ++head;
     }
-  }
+  });
 
   ARCCORE_ALINA_TOC("symm graph");
 }
@@ -300,38 +302,40 @@ mpi_graph_perm_matrix(mpi_communicator comm, ptrdiff_t col_beg, ptrdiff_t col_en
   I_loc.ptr[0] = 0;
   I_rem.ptr[0] = 0;
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    ptrdiff_t j = perm[i];
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      ptrdiff_t j = perm[i];
 
-    if (col_beg <= j && j < col_end) {
-      I_loc.ptr[i + 1] = 1;
-      I_rem.ptr[i + 1] = 0;
+      if (col_beg <= j && j < col_end) {
+        I_loc.ptr[i + 1] = 1;
+        I_rem.ptr[i + 1] = 0;
+      }
+      else {
+        I_loc.ptr[i + 1] = 0;
+        I_rem.ptr[i + 1] = 1;
+      }
     }
-    else {
-      I_loc.ptr[i + 1] = 0;
-      I_rem.ptr[i + 1] = 1;
-    }
-  }
+  });
 
   I_loc.set_nonzeros(I_loc.scan_row_sizes());
   I_rem.set_nonzeros(I_rem.scan_row_sizes());
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    ptrdiff_t j = perm[i];
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      ptrdiff_t j = perm[i];
 
-    if (col_beg <= j && j < col_end) {
-      ptrdiff_t k = I_loc.ptr[i];
-      I_loc.col[k] = j - col_beg;
-      I_loc.val[k] = math::identity<value_type>();
+      if (col_beg <= j && j < col_end) {
+        ptrdiff_t k = I_loc.ptr[i];
+        I_loc.col[k] = j - col_beg;
+        I_loc.val[k] = math::identity<value_type>();
+      }
+      else {
+        ptrdiff_t k = I_rem.ptr[i];
+        I_rem.col[k] = j;
+        I_rem.val[k] = math::identity<value_type>();
+      }
     }
-    else {
-      ptrdiff_t k = I_rem.ptr[i];
-      I_rem.col[k] = j;
-      I_rem.val[k] = math::identity<value_type>();
-    }
-  }
+  });
 
   ARCCORE_ALINA_TOC("perm matrix");
   return std::make_shared<DistributedMatrix<Backend>>(comm, i_loc, i_rem);

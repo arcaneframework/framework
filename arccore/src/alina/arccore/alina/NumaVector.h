@@ -23,10 +23,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/ValueTypeInterface.h"
 
@@ -58,9 +54,11 @@ class numa_vector
   , p(new T[n])
   {
     if (init) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-        p[i] = math::zero<T>();
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          p[i] = math::zero<T>();
+        }
+      });
     }
   }
 
@@ -73,9 +71,11 @@ class numa_vector
     p = new T[n];
 
     if (init) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-        p[i] = math::zero<T>();
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          p[i] = math::zero<T>();
+        }
+      });
     }
   }
 
@@ -85,9 +85,11 @@ class numa_vector
   : n(other.size())
   , p(new T[n])
   {
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-      p[i] = other[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        p[i] = other[i];
+      }
+    });
   }
 
   template <class Iterator>
@@ -99,9 +101,11 @@ class numa_vector
                                typename std::iterator_traits<Iterator>::iterator_category>::value,
                   "Iterator has to be random access");
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-      p[i] = beg[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        p[i] = beg[i];
+      }
+    });
   }
 
   ~numa_vector()
@@ -125,11 +129,13 @@ class numa_vector
     return p[i];
   }
 
-  const T* data() const  {
+  const T* data() const
+  {
     return p;
   }
 
-  T* data()  {
+  T* data()
+  {
     return p;
   }
 

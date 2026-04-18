@@ -17,14 +17,37 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "arccore/alina/BuiltinBackend.h"
+#include "arccore/accelerator/internal/Initializer.h"
 
 #include "TestSolverCommon.h"
 
-TEST(alina_test_solvers, test_builtin_backend)
+void _doTestSolverBuiltinDefault(bool use_accelerator, Int32 max_allowed_thread)
 {
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
   test_backend< Alina::BuiltinBackend<double> >();
-  test_backend< Alina::BuiltinBackend<double, int, ptrdiff_t> >();
-  test_backend< Alina::BuiltinBackend<double, int, int> >();
+}
+
+void _doTestSolverBuiltinInt32Int64(bool use_accelerator, Int32 max_allowed_thread)
+{
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
+  test_backend< Alina::BuiltinBackend<double, Int32, Int64> >();
+}
+
+void _doTestSolverBuiltinInt32Int32(bool use_accelerator, Int32 max_allowed_thread)
+{
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
+  test_backend< Alina::BuiltinBackend<double, Int32, Int32> >();
+}
+
+void _doTestSolverBuiltinUInt32SizeT(bool use_accelerator, Int32 max_allowed_thread)
+{
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
   test_backend< Alina::BuiltinBackend<double, uint32_t, size_t> >();
 }
+
+ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_default, _doTestSolverBuiltinDefault);
+ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_int32_int64, _doTestSolverBuiltinInt32Int64);
+ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_int32_int32, _doTestSolverBuiltinInt32Int32);
+ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_uint32_sizet, _doTestSolverBuiltinUInt32SizeT);

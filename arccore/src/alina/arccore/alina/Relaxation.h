@@ -1468,23 +1468,24 @@ struct ILUPRelaxation
       ptrdiff_t n = backend::nbRow(A);
       P->val.resize(P->nbNonZero());
 
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        ptrdiff_t p_beg = P->ptr[i];
-        ptrdiff_t p_end = P->ptr[i + 1];
-        ptrdiff_t a_beg = A.ptr[i];
-        ptrdiff_t a_end = A.ptr[i + 1];
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptrdiff_t p_beg = P->ptr[i];
+          ptrdiff_t p_end = P->ptr[i + 1];
+          ptrdiff_t a_beg = A.ptr[i];
+          ptrdiff_t a_end = A.ptr[i + 1];
 
-        std::fill(P->val + p_beg, P->val + p_end, math::zero<value_type>());
+          std::fill(P->val + p_beg, P->val + p_end, math::zero<value_type>());
 
-        for (ptrdiff_t ja = a_beg, ea = a_end, jp = p_beg, ep = p_end; ja < ea; ++ja) {
-          ptrdiff_t ca = A.col[ja];
-          while (jp < ep && P->col[jp] < ca)
-            ++jp;
-          if (P->col[jp] == ca)
-            P->val[jp] = A.val[ja];
+          for (ptrdiff_t ja = a_beg, ea = a_end, jp = p_beg, ep = p_end; ja < ea; ++ja) {
+            ptrdiff_t ca = A.col[ja];
+            while (jp < ep && P->col[jp] < ca)
+              ++jp;
+            if (P->col[jp] == ca)
+              P->val[jp] = A.val[ja];
+          }
         }
-      }
+      });
 
       base = std::make_shared<Base>(*P, prm, bprm);
     }
@@ -1930,21 +1931,22 @@ struct SPAI0Relaxation
 
     auto m = std::make_shared<numa_vector<value_type>>(n, false);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      value_type num = math::zero<value_type>();
-      scalar_type den = math::zero<scalar_type>();
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        value_type num = math::zero<value_type>();
+        scalar_type den = math::zero<scalar_type>();
 
-      for (auto a = backend::row_begin(A, i); a; ++a) {
-        value_type v = a.value();
-        scalar_type norm_v = math::norm(v);
-        den += norm_v * norm_v;
-        if (a.col() == i)
-          num += v;
+        for (auto a = backend::row_begin(A, i); a; ++a) {
+          value_type v = a.value();
+          scalar_type norm_v = math::norm(v);
+          den += norm_v * norm_v;
+          if (a.col() == i)
+            num += v;
+        }
+
+        (*m)[i] = math::inverse(den) * num;
       }
-
-      (*m)[i] = math::inverse(den) * num;
-    }
+    });
 
     M = Backend::copy_vector(m, backend_prm);
   }
@@ -2015,15 +2017,13 @@ struct SPAI1Relaxation
 
     auto Ainv = std::make_shared<Matrix>(A);
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(m, -1);
       std::vector<ptrdiff_t> I, J;
       std::vector<value_type> B, ek;
       Alina::detail::QRFactorization<value_type> qr;
 
-#pragma omp for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         ptrdiff_t row_beg = A.ptr[i];
         ptrdiff_t row_end = A.ptr[i + 1];
 
@@ -2063,7 +2063,7 @@ struct SPAI1Relaxation
         for (size_t j = 0; j < J.size(); ++j)
           marker[J[j]] = -1;
       }
-    }
+    });
 
     M = Backend::copy_matrix(Ainv, backend_prm);
   }

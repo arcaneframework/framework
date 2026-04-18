@@ -427,42 +427,44 @@ class DistributedMatrix
     A_loc.set_size(n_loc_rows, n_loc_cols, true);
     A_rem.set_size(n_loc_rows, 0, true);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n_loc_rows; ++i) {
-      for (auto a = backend::row_begin(A, i); a; ++a) {
-        ptrdiff_t c = a.col();
+    arccoreParallelFor(0, n_loc_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        for (auto a = backend::row_begin(A, i); a; ++a) {
+          ptrdiff_t c = a.col();
 
-        if (loc_beg <= c && c < loc_end)
-          ++A_loc.ptr[i + 1];
-        else
-          ++A_rem.ptr[i + 1];
+          if (loc_beg <= c && c < loc_end)
+            ++A_loc.ptr[i + 1];
+          else
+            ++A_rem.ptr[i + 1];
+        }
       }
-    }
+    });
 
     A_loc.set_nonzeros(A_loc.scan_row_sizes());
     A_rem.set_nonzeros(A_rem.scan_row_sizes());
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n_loc_rows; ++i) {
-      ptrdiff_t loc_head = A_loc.ptr[i];
-      ptrdiff_t rem_head = A_rem.ptr[i];
+    arccoreParallelFor(0, n_loc_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t loc_head = A_loc.ptr[i];
+        ptrdiff_t rem_head = A_rem.ptr[i];
 
-      for (auto a = backend::row_begin(A, i); a; ++a) {
-        ptrdiff_t c = a.col();
-        value_type v = a.value();
+        for (auto a = backend::row_begin(A, i); a; ++a) {
+          ptrdiff_t c = a.col();
+          value_type v = a.value();
 
-        if (loc_beg <= c && c < loc_end) {
-          A_loc.col[loc_head] = c - loc_beg;
-          A_loc.val[loc_head] = v;
-          ++loc_head;
-        }
-        else {
-          A_rem.col[rem_head] = c;
-          A_rem.val[rem_head] = v;
-          ++rem_head;
+          if (loc_beg <= c && c < loc_end) {
+            A_loc.col[loc_head] = c - loc_beg;
+            A_loc.val[loc_head] = v;
+            ++loc_head;
+          }
+          else {
+            A_rem.col[rem_head] = c;
+            A_rem.val[rem_head] = v;
+            ++rem_head;
+          }
         }
       }
-    }
+    });
 
     C = std::make_shared<CommPattern>(comm, n_loc_cols, a_rem->nbNonZero(), a_rem->col);
     a_rem->ncols = C->recv.count();
@@ -962,13 +964,11 @@ product(const DistributedMatrix<Backend>& A, const DistributedMatrix<Backend>& B
   C_rem.ptr[0] = 0;
 
   ARCCORE_ALINA_TIC("analyze");
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> loc_marker(B_end - B_beg, -1);
     std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
-#pragma omp for
-    for (ptrdiff_t ia = 0; ia < A_rows; ++ia) {
+    for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
       ptrdiff_t loc_cols = 0;
       ptrdiff_t rem_cols = 0;
 
@@ -1022,20 +1022,18 @@ product(const DistributedMatrix<Backend>& A, const DistributedMatrix<Backend>& B
       C_loc.ptr[ia + 1] = loc_cols;
       C_rem.ptr[ia + 1] = rem_cols;
     }
-  }
+  });
   ARCCORE_ALINA_TOC("analyze");
 
   C_loc.set_nonzeros(C_loc.scan_row_sizes());
   C_rem.set_nonzeros(C_rem.scan_row_sizes());
 
   ARCCORE_ALINA_TIC("compute");
-#pragma omp parallel
-  {
+  arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
     std::vector<ptrdiff_t> loc_marker(B_end - B_beg, -1);
     std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
-#pragma omp for
-    for (ptrdiff_t ia = 0; ia < A_rows; ++ia) {
+    for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
       ptrdiff_t loc_beg = C_loc.ptr[ia];
       ptrdiff_t rem_beg = C_rem.ptr[ia];
       ptrdiff_t loc_end = loc_beg;
@@ -1122,7 +1120,7 @@ product(const DistributedMatrix<Backend>& A, const DistributedMatrix<Backend>& B
         }
       }
     }
-  }
+  });
   ARCCORE_ALINA_TOC("compute");
   ARCCORE_ALINA_TOC("product");
 
@@ -1142,13 +1140,14 @@ void scale(DistributedMatrix<Backend>& A, T s)
 
   ptrdiff_t n = A_loc.nbRow();
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < n; ++i) {
-    for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
-      A_loc.val[j] *= s;
-    for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
-      A_rem.val[j] *= s;
-  }
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j)
+        A_loc.val[j] *= s;
+      for (ptrdiff_t j = A_rem.ptr[i], e = A_rem.ptr[i + 1]; j < e; ++j)
+        A_rem.val[j] *= s;
+    }
+  });
 }
 
 /*---------------------------------------------------------------------------*/

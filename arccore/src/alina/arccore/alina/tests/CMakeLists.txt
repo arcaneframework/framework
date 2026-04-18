@@ -39,6 +39,7 @@ target_include_directories(arccore_alina.tests INTERFACE ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(arccore_alina.tests PUBLIC
   arccore_alina
+  arccore_accelerator
   ${Boost_SYSTEM_LIBRARY}
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   GTest::GTest
@@ -47,6 +48,9 @@ target_link_libraries(arccore_alina.tests PUBLIC
 
 if (TARGET eigen_target)
   target_link_libraries(arccore_alina.tests PUBLIC eigen_target)
+endif()
+if (ARCCORE_ENABLE_TBB)
+  target_compile_definitions(arccore_alina.tests PRIVATE ARCCORE_HAS_ACCELERATOR_THREAD)
 endif()
 
 

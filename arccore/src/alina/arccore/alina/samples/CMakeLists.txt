@@ -13,7 +13,6 @@ add_library(arccore_alina_samples_lib
 arcane_target_set_standard_path(arccore_alina_samples_lib)
 target_link_libraries(arccore_alina_samples_lib PRIVATE arcane_launcher arcane_full)
 target_link_libraries(arccore_alina_samples_lib PUBLIC arccore_alina)
-#target_compile_definitions(arccore_alina_samples_lib PRIVATE ARCANE_COMPONENT_arccore_alina)
 target_include_directories(arccore_alina_samples_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(ALINA_SAMPLE_BUILD_DIR "${CMAKE_BINARY_DIR}/alina_samples")
@@ -37,6 +36,7 @@ function(add_arccore_alina_example EXAMPLE SOURCES)
     WORKING_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}"
   )
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
+  set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_NB_TASK=2")
 endfunction()
 
 add_arccore_alina_example_no_test(mm2bin MatrixMarkerToBinary.cc)
@@ -119,6 +119,7 @@ function(add_mpi_example example sources nb_core)
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${nb_core} ./${example}
   )
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
+  set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_NB_TASK=2")
 endfunction()
 
 function(add_mpi_example_no_test example sources)

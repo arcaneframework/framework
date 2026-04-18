@@ -59,24 +59,24 @@ struct spmv_impl<Alpha, Matrix, Vector1, Beta, Vector2,
 
     const ptrdiff_t n = static_cast<ptrdiff_t>(nbRow(A));
 
-    if (!math::is_zero(beta)) {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        V sum = math::zero<V>();
-        for (typename row_iterator<Matrix>::type a = row_begin(A, i); a; ++a)
-          sum += a.value() * x[a.col()];
-        y[i] = alpha * sum + beta * y[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      if (!math::is_zero(beta)) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          V sum = math::zero<V>();
+          for (typename row_iterator<Matrix>::type a = row_begin(A, i); a; ++a)
+            sum += a.value() * x[a.col()];
+          y[i] = alpha * sum + beta * y[i];
+        }
       }
-    }
-    else {
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < n; ++i) {
-        V sum = math::zero<V>();
-        for (typename row_iterator<Matrix>::type a = row_begin(A, i); a; ++a)
-          sum += a.value() * x[a.col()];
-        y[i] = alpha * sum;
+      else {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          V sum = math::zero<V>();
+          for (typename row_iterator<Matrix>::type a = row_begin(A, i); a; ++a)
+            sum += a.value() * x[a.col()];
+          y[i] = alpha * sum;
+        }
       }
-    }
+    });
   }
 };
 

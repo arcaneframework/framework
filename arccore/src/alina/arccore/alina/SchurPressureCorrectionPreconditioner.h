@@ -358,85 +358,87 @@ class SchurPressureCorrectionPreconditioner
     Kpu->set_size(np, nu, true);
     Kpp->set_size(np, np, true);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      ptrdiff_t ci = idx[i];
-      char pi = prm.pmask[i];
-      for (auto k = backend::row_begin(*K, i); k; ++k) {
-        char pj = prm.pmask[k.col()];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ci = idx[i];
+        char pi = prm.pmask[i];
+        for (auto k = backend::row_begin(*K, i); k; ++k) {
+          char pj = prm.pmask[k.col()];
 
-        if (pi) {
-          if (pj) {
-            ++Kpp->ptr[ci + 1];
+          if (pi) {
+            if (pj) {
+              ++Kpp->ptr[ci + 1];
+            }
+            else {
+              ++Kpu->ptr[ci + 1];
+            }
           }
           else {
-            ++Kpu->ptr[ci + 1];
-          }
-        }
-        else {
-          if (pj) {
-            ++Kup->ptr[ci + 1];
-          }
-          else {
-            ++Kuu->ptr[ci + 1];
+            if (pj) {
+              ++Kup->ptr[ci + 1];
+            }
+            else {
+              ++Kuu->ptr[ci + 1];
+            }
           }
         }
       }
-    }
+    });
 
     Kuu->set_nonzeros(Kuu->scan_row_sizes());
     Kup->set_nonzeros(Kup->scan_row_sizes());
     Kpu->set_nonzeros(Kpu->scan_row_sizes());
     Kpp->set_nonzeros(Kpp->scan_row_sizes());
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
-      ptrdiff_t ci = idx[i];
-      char pi = prm.pmask[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ci = idx[i];
+        char pi = prm.pmask[i];
 
-      ptrdiff_t uu_head = 0, up_head = 0, pu_head = 0, pp_head = 0;
-
-      if (pi) {
-        pu_head = Kpu->ptr[ci];
-        pp_head = Kpp->ptr[ci];
-      }
-      else {
-        uu_head = Kuu->ptr[ci];
-        up_head = Kup->ptr[ci];
-      }
-
-      for (auto k = backend::row_begin(*K, i); k; ++k) {
-        ptrdiff_t j = k.col();
-        value_type v = k.value();
-        ptrdiff_t cj = idx[j];
-        char pj = prm.pmask[j];
+        ptrdiff_t uu_head = 0, up_head = 0, pu_head = 0, pp_head = 0;
 
         if (pi) {
-          if (pj) {
-            Kpp->col[pp_head] = cj;
-            Kpp->val[pp_head] = v;
-            ++pp_head;
-          }
-          else {
-            Kpu->col[pu_head] = cj;
-            Kpu->val[pu_head] = v;
-            ++pu_head;
-          }
+          pu_head = Kpu->ptr[ci];
+          pp_head = Kpp->ptr[ci];
         }
         else {
-          if (pj) {
-            Kup->col[up_head] = cj;
-            Kup->val[up_head] = v;
-            ++up_head;
+          uu_head = Kuu->ptr[ci];
+          up_head = Kup->ptr[ci];
+        }
+
+        for (auto k = backend::row_begin(*K, i); k; ++k) {
+          ptrdiff_t j = k.col();
+          value_type v = k.value();
+          ptrdiff_t cj = idx[j];
+          char pj = prm.pmask[j];
+
+          if (pi) {
+            if (pj) {
+              Kpp->col[pp_head] = cj;
+              Kpp->val[pp_head] = v;
+              ++pp_head;
+            }
+            else {
+              Kpu->col[pu_head] = cj;
+              Kpu->val[pu_head] = v;
+              ++pu_head;
+            }
           }
           else {
-            Kuu->col[uu_head] = cj;
-            Kuu->val[uu_head] = v;
-            ++uu_head;
+            if (pj) {
+              Kup->col[up_head] = cj;
+              Kup->val[up_head] = v;
+              ++up_head;
+            }
+            else {
+              Kuu->col[uu_head] = cj;
+              Kuu->val[uu_head] = v;
+              ++uu_head;
+            }
           }
         }
       }
-    }
+    });
 
     if (prm.verbose >= 2) {
       IO::mm_write("Kuu.mtx", *Kuu);
@@ -447,14 +449,15 @@ class SchurPressureCorrectionPreconditioner
 
     if (prm.simplec_dia) {
       Kuu_dia = std::make_shared<numa_vector<value_type>>(nu);
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(nu); ++i) {
-        value_type s = math::zero<value_type>();
-        for (ptrdiff_t j = Kuu->ptr[i], e = Kuu->ptr[i + 1]; j < e; ++j) {
-          s += math::norm(Kuu->val[j]);
+      arccoreParallelFor(0, nu, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          value_type s = math::zero<value_type>();
+          for (ptrdiff_t j = Kuu->ptr[i], e = Kuu->ptr[i + 1]; j < e; ++j) {
+            s += math::norm(Kuu->val[j]);
+          }
+          (*Kuu_dia)[i] = math::inverse(s);
         }
-        (*Kuu_dia)[i] = math::inverse(s);
-      }
+      });
     }
     else {
       Kuu_dia = diagonal(*Kuu, /*invert = */ true);
@@ -465,28 +468,29 @@ class SchurPressureCorrectionPreconditioner
       // to setup the P preconditioner.
       auto L = std::make_shared<numa_vector<value_type>>(np, false);
 
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(np); ++i) {
-        value_type s = math::zero<value_type>();
-        for (ptrdiff_t j = Kpu->ptr[i], e = Kpu->ptr[i + 1]; j < e; ++j) {
-          ptrdiff_t k = Kpu->col[j];
-          value_type v = Kpu->val[j];
-          for (ptrdiff_t jj = Kup->ptr[k], ee = Kup->ptr[k + 1]; jj < ee; ++jj) {
-            if (Kup->col[jj] == i) {
-              s += v * (*Kuu_dia)[k] * Kup->val[jj];
+      arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          value_type s = math::zero<value_type>();
+          for (ptrdiff_t j = Kpu->ptr[i], e = Kpu->ptr[i + 1]; j < e; ++j) {
+            ptrdiff_t k = Kpu->col[j];
+            value_type v = Kpu->val[j];
+            for (ptrdiff_t jj = Kup->ptr[k], ee = Kup->ptr[k + 1]; jj < ee; ++jj) {
+              if (Kup->col[jj] == i) {
+                s += v * (*Kuu_dia)[k] * Kup->val[jj];
+                break;
+              }
+            }
+          }
+
+          (*L)[i] = s;
+          for (ptrdiff_t j = Kpp->ptr[i], e = Kpp->ptr[i + 1]; j < e; ++j) {
+            if (Kpp->col[j] == i) {
+              Kpp->val[j] -= s;
               break;
             }
           }
         }
-
-        (*L)[i] = s;
-        for (ptrdiff_t j = Kpp->ptr[i], e = Kpp->ptr[i + 1]; j < e; ++j) {
-          if (Kpp->col[j] == i) {
-            Kpp->val[j] -= s;
-            break;
-          }
-        }
-      }
+      });
       Ld = backend_type::copy_vector(L, bprm);
     }
     else if (prm.adjust_p == 2) {
@@ -496,13 +500,14 @@ class SchurPressureCorrectionPreconditioner
       // to setup the P preconditioner.
       numa_vector<value_type> val(Kup->nbNonZero());
 
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(nu); ++i) {
-        value_type d = (*Kuu_dia)[i];
-        for (ptrdiff_t j = Kup->ptr[i], e = Kup->ptr[i + 1]; j < e; ++j) {
-          val[j] = d * Kup->val[j];
+      arccoreParallelFor(0, nu, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          value_type d = (*Kuu_dia)[i];
+          for (ptrdiff_t j = Kup->ptr[i], e = Kup->ptr[i + 1]; j < e; ++j) {
+            val[j] = d * Kup->val[j];
+          }
         }
-      }
+      });
 
       build_matrix Kup_hat;
 

@@ -256,53 +256,54 @@ class DistributedSchurPressureCorrection
     Kup_loc->set_size(nu, np, true);
     Kup_rem->set_size(nu, 0, true);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      ptrdiff_t ci = idx[i];
-      char pi = prm.pmask[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ci = idx[i];
+        char pi = prm.pmask[i];
 
-      for (auto a = backend::row_begin(K_loc, i); a; ++a) {
-        char pj = prm.pmask[a.col()];
+        for (auto a = backend::row_begin(K_loc, i); a; ++a) {
+          char pj = prm.pmask[a.col()];
 
-        if (pi) {
-          if (pj) {
-            ++Kpp_loc->ptr[ci + 1];
+          if (pi) {
+            if (pj) {
+              ++Kpp_loc->ptr[ci + 1];
+            }
+            else {
+              ++Kpu_loc->ptr[ci + 1];
+            }
           }
           else {
-            ++Kpu_loc->ptr[ci + 1];
+            if (pj) {
+              ++Kup_loc->ptr[ci + 1];
+            }
+            else {
+              ++Kuu_loc->ptr[ci + 1];
+            }
           }
         }
-        else {
-          if (pj) {
-            ++Kup_loc->ptr[ci + 1];
+
+        for (auto a = backend::row_begin(K_rem, i); a; ++a) {
+          char pj = rmask[a.col()];
+
+          if (pi) {
+            if (pj) {
+              ++Kpp_rem->ptr[ci + 1];
+            }
+            else {
+              ++Kpu_rem->ptr[ci + 1];
+            }
           }
           else {
-            ++Kuu_loc->ptr[ci + 1];
+            if (pj) {
+              ++Kup_rem->ptr[ci + 1];
+            }
+            else {
+              ++Kuu_rem->ptr[ci + 1];
+            }
           }
         }
       }
-
-      for (auto a = backend::row_begin(K_rem, i); a; ++a) {
-        char pj = rmask[a.col()];
-
-        if (pi) {
-          if (pj) {
-            ++Kpp_rem->ptr[ci + 1];
-          }
-          else {
-            ++Kpu_rem->ptr[ci + 1];
-          }
-        }
-        else {
-          if (pj) {
-            ++Kup_rem->ptr[ci + 1];
-          }
-          else {
-            ++Kuu_rem->ptr[ci + 1];
-          }
-        }
-      }
-    }
+    });
 
     Kpp_loc->set_nonzeros(Kpp_loc->scan_row_sizes());
     Kpp_rem->set_nonzeros(Kpp_rem->scan_row_sizes());
@@ -317,93 +318,94 @@ class DistributedSchurPressureCorrection
     Kup_rem->set_nonzeros(Kup_rem->scan_row_sizes());
 
     // Fill subblocks of the system matrix.
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      ptrdiff_t ci = idx[i];
-      char pi = prm.pmask[i];
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t ci = idx[i];
+        char pi = prm.pmask[i];
 
-      ptrdiff_t pp_loc_head = 0, pp_rem_head = 0;
-      ptrdiff_t uu_loc_head = 0, uu_rem_head = 0;
-      ptrdiff_t pu_loc_head = 0, pu_rem_head = 0;
-      ptrdiff_t up_loc_head = 0, up_rem_head = 0;
-
-      if (pi) {
-        pp_loc_head = Kpp_loc->ptr[ci];
-        pp_rem_head = Kpp_rem->ptr[ci];
-        pu_loc_head = Kpu_loc->ptr[ci];
-        pu_rem_head = Kpu_rem->ptr[ci];
-      }
-      else {
-        uu_loc_head = Kuu_loc->ptr[ci];
-        uu_rem_head = Kuu_rem->ptr[ci];
-        up_loc_head = Kup_loc->ptr[ci];
-        up_rem_head = Kup_rem->ptr[ci];
-      }
-
-      for (auto a = backend::row_begin(K_loc, i); a; ++a) {
-        ptrdiff_t j = a.col();
-        value_type v = a.value();
-        char pj = prm.pmask[j];
-        ptrdiff_t cj = idx[j];
+        ptrdiff_t pp_loc_head = 0, pp_rem_head = 0;
+        ptrdiff_t uu_loc_head = 0, uu_rem_head = 0;
+        ptrdiff_t pu_loc_head = 0, pu_rem_head = 0;
+        ptrdiff_t up_loc_head = 0, up_rem_head = 0;
 
         if (pi) {
-          if (pj) {
-            Kpp_loc->col[pp_loc_head] = cj;
-            Kpp_loc->val[pp_loc_head] = v;
-            ++pp_loc_head;
-          }
-          else {
-            Kpu_loc->col[pu_loc_head] = cj;
-            Kpu_loc->val[pu_loc_head] = v;
-            ++pu_loc_head;
-          }
+          pp_loc_head = Kpp_loc->ptr[ci];
+          pp_rem_head = Kpp_rem->ptr[ci];
+          pu_loc_head = Kpu_loc->ptr[ci];
+          pu_rem_head = Kpu_rem->ptr[ci];
         }
         else {
-          if (pj) {
-            Kup_loc->col[up_loc_head] = cj;
-            Kup_loc->val[up_loc_head] = v;
-            ++up_loc_head;
+          uu_loc_head = Kuu_loc->ptr[ci];
+          uu_rem_head = Kuu_rem->ptr[ci];
+          up_loc_head = Kup_loc->ptr[ci];
+          up_rem_head = Kup_rem->ptr[ci];
+        }
+
+        for (auto a = backend::row_begin(K_loc, i); a; ++a) {
+          ptrdiff_t j = a.col();
+          value_type v = a.value();
+          char pj = prm.pmask[j];
+          ptrdiff_t cj = idx[j];
+
+          if (pi) {
+            if (pj) {
+              Kpp_loc->col[pp_loc_head] = cj;
+              Kpp_loc->val[pp_loc_head] = v;
+              ++pp_loc_head;
+            }
+            else {
+              Kpu_loc->col[pu_loc_head] = cj;
+              Kpu_loc->val[pu_loc_head] = v;
+              ++pu_loc_head;
+            }
           }
           else {
-            Kuu_loc->col[uu_loc_head] = cj;
-            Kuu_loc->val[uu_loc_head] = v;
-            ++uu_loc_head;
+            if (pj) {
+              Kup_loc->col[up_loc_head] = cj;
+              Kup_loc->val[up_loc_head] = v;
+              ++up_loc_head;
+            }
+            else {
+              Kuu_loc->col[uu_loc_head] = cj;
+              Kuu_loc->val[uu_loc_head] = v;
+              ++uu_loc_head;
+            }
+          }
+        }
+
+        for (auto a = backend::row_begin(K_rem, i); a; ++a) {
+          ptrdiff_t j = a.col();
+          value_type v = a.value();
+          char pj = rmask[j];
+          ptrdiff_t cj = r_idx[j];
+
+          if (pi) {
+            if (pj) {
+              Kpp_rem->col[pp_rem_head] = cj;
+              Kpp_rem->val[pp_rem_head] = v;
+              ++pp_rem_head;
+            }
+            else {
+              Kpu_rem->col[pu_rem_head] = cj;
+              Kpu_rem->val[pu_rem_head] = v;
+              ++pu_rem_head;
+            }
+          }
+          else {
+            if (pj) {
+              Kup_rem->col[up_rem_head] = cj;
+              Kup_rem->val[up_rem_head] = v;
+              ++up_rem_head;
+            }
+            else {
+              Kuu_rem->col[uu_rem_head] = cj;
+              Kuu_rem->val[uu_rem_head] = v;
+              ++uu_rem_head;
+            }
           }
         }
       }
-
-      for (auto a = backend::row_begin(K_rem, i); a; ++a) {
-        ptrdiff_t j = a.col();
-        value_type v = a.value();
-        char pj = rmask[j];
-        ptrdiff_t cj = r_idx[j];
-
-        if (pi) {
-          if (pj) {
-            Kpp_rem->col[pp_rem_head] = cj;
-            Kpp_rem->val[pp_rem_head] = v;
-            ++pp_rem_head;
-          }
-          else {
-            Kpu_rem->col[pu_rem_head] = cj;
-            Kpu_rem->val[pu_rem_head] = v;
-            ++pu_rem_head;
-          }
-        }
-        else {
-          if (pj) {
-            Kup_rem->col[up_rem_head] = cj;
-            Kup_rem->val[up_rem_head] = v;
-            ++up_rem_head;
-          }
-          else {
-            Kuu_rem->col[uu_rem_head] = cj;
-            Kuu_rem->val[uu_rem_head] = v;
-            ++uu_rem_head;
-          }
-        }
-      }
-    }
+    });
 
     auto Kpp = std::make_shared<matrix>(comm, Kpp_loc, Kpp_rem);
     auto Kuu = std::make_shared<matrix>(comm, Kuu_loc, Kuu_rem);
@@ -436,17 +438,18 @@ class DistributedSchurPressureCorrection
       ARCCORE_ALINA_TIC("Kuu diagonal");
       if (prm.simplec_dia) {
         Kuu_dia = std::make_shared<numa_vector<value_type>>(nu, false);
-#pragma omp parallel
-        for (ptrdiff_t i = 0; i < nu; ++i) {
-          value_type s = math::zero<value_type>();
-          for (ptrdiff_t j = Kuu_loc->ptr[i], e = Kuu_loc->ptr[i + 1]; j < e; ++j) {
-            s += math::norm(Kuu_loc->val[j]);
+        arccoreParallelFor(0, nu, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+            value_type s = math::zero<value_type>();
+            for (ptrdiff_t j = Kuu_loc->ptr[i], e = Kuu_loc->ptr[i + 1]; j < e; ++j) {
+              s += math::norm(Kuu_loc->val[j]);
+            }
+            for (ptrdiff_t j = Kuu_rem->ptr[i], e = Kuu_rem->ptr[i + 1]; j < e; ++j) {
+              s += math::norm(Kuu_rem->val[j]);
+            }
+            (*Kuu_dia)[i] = math::inverse(s);
           }
-          for (ptrdiff_t j = Kuu_rem->ptr[i], e = Kuu_rem->ptr[i + 1]; j < e; ++j) {
-            s += math::norm(Kuu_rem->val[j]);
-          }
-          (*Kuu_dia)[i] = math::inverse(s);
-        }
+        });
       }
       else {
         Kuu_dia = diagonal(*Kuu_loc, /*invert = */ true);

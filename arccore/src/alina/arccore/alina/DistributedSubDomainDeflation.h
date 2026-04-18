@@ -240,9 +240,10 @@ class DistributedSubDomainDeflation
     {
       std::vector<value_type> z(nrows);
       for (int j = 0; j < ndv; ++j) {
-#pragma omp parallel for
-        for (ptrdiff_t i = 0; i < nrows; ++i)
-          z[i] = prm.def_vec(i, j);
+        arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t i = begin; i < (begin + size); ++i)
+            z[i] = prm.def_vec(i, j);
+        });
         Z[j] = backend_type::copy_vector(z, bprm);
       }
     }
@@ -254,12 +255,10 @@ class DistributedSubDomainDeflation
     az_rem->set_size(nrows, 0, true);
     // 1. Build local part of AZ matrix.
     // 2. Count remote nonzeros
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(Acp.recv.nbr.size(), -1);
 
-#pragma omp for
-      for (ptrdiff_t i = 0; i < nrows; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         ptrdiff_t az_loc_head = i * ndv;
         az_loc->ptr[i + 1] = az_loc_head + ndv;
 
@@ -285,7 +284,8 @@ class DistributedSubDomainDeflation
           }
         }
       }
-    }
+    });
+
     az_rem->set_nonzeros(az_rem->scan_row_sizes());
     ARCCORE_ALINA_TOC("first pass");
 
@@ -336,13 +336,11 @@ class DistributedSubDomainDeflation
     comm.waitAll(Acp.recv.req);
     comm.waitAll(Acp.send.req);
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(nz, -1);
 
       // AZ_rem = Arem * Z
-#pragma omp for
-      for (ptrdiff_t i = 0; i < nrows; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         ptrdiff_t az_rem_head = az_rem->ptr[i];
         ptrdiff_t az_rem_tail = az_rem_head;
 
@@ -368,7 +366,7 @@ class DistributedSubDomainDeflation
           }
         }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("remote(A*Z)");
 
     /* Build solver for the deflated matrix E. */

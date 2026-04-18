@@ -39,11 +39,6 @@
 using namespace Arcane;
 using namespace Arcane::Alina;
 
-namespace
-{
-Profiler prof;
-}
-
 TEST(alina_test_complex, complex_matrix_adapter)
 {
   typedef std::complex<double> complex;

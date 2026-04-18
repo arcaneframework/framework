@@ -236,13 +236,14 @@ class mm_reader
     std::rotate(ptr.begin(), ptr.end() - 1, ptr.end());
     ptr.front() = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < chunk; ++i) {
-      Idx beg = ptr[i];
-      Idx end = ptr[i + 1];
+    arccoreParallelFor(0, chunk, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        Idx beg = ptr[i];
+        Idx end = ptr[i + 1];
 
-      Alina::detail::sort_row(&col[0] + beg, &val[0] + beg, end - beg);
-    }
+        Alina::detail::sort_row(&col[0] + beg, &val[0] + beg, end - beg);
+      }
+    });
 
     return std::make_tuple(chunk, m);
   }
@@ -529,12 +530,13 @@ void read_crs(const std::string& fname,
   f.seekg(col_beg + nnz * sizeof(Col) + nnz_beg * sizeof(Val));
   precondition(read(f, val), "File I/O error");
 
-#pragma omp parallel for
-  for (ptrdiff_t i = 0; i < chunk; ++i) {
-    Ptr beg = ptr[i];
-    Ptr end = ptr[i + 1];
-    Alina::detail::sort_row(&col[beg], &val[beg], end - beg);
-  }
+  arccoreParallelFor(0, chunk, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      Ptr beg = ptr[i];
+      Ptr end = ptr[i + 1];
+      Alina::detail::sort_row(&col[beg], &val[beg], end - beg);
+    }
+  });
 }
 
 /*---------------------------------------------------------------------------*/

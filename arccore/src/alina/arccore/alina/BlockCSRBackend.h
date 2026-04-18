@@ -176,25 +176,27 @@ struct spmv_impl<Alpha, BlockCSRMatrix<V, C, P>, Vec1, Beta, Vec2>
 
     if (!math::is_zero(beta)) {
       if (beta != 1) {
-#pragma omp parallel for
-        for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(na); ++i) {
-          y[i] *= beta;
-        }
+        arccoreParallelFor(0, na, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+            y[i] *= beta;
+          }
+        });
       }
     }
     else {
       backend::clear(y);
     }
 
-#pragma omp parallel for
-    for (ptrdiff_t ib = 0; ib < static_cast<ptrdiff_t>(nb); ++ib) {
-      for (P jb = A.ptr[ib], eb = A.ptr[ib + 1]; jb < eb; ++jb) {
-        size_t x0 = A.col[jb] * b1;
-        size_t y0 = ib * b1;
-        block_prod(b1, std::min(b1, ma - x0), std::min(b1, na - y0),
-                   alpha, &A.val[jb * b2], &x[x0], &y[y0]);
+    arccoreParallelFor(0, nb, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t ib = begin; ib < (begin + size); ++ib) {
+        for (P jb = A.ptr[ib], eb = A.ptr[ib + 1]; jb < eb; ++jb) {
+          size_t x0 = A.col[jb] * b1;
+          size_t y0 = ib * b1;
+          block_prod(b1, std::min(b1, ma - x0), std::min(b1, na - y0),
+                     alpha, &A.val[jb * b2], &x[x0], &y[y0]);
+        }
       }
-    }
+    });
   }
 
   static void block_prod(size_t dim, size_t nx, size_t ny,
