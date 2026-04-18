@@ -145,14 +145,16 @@ public:
     val.resize(m_nb_non_zero);
 
     ptr[0] = ptr_range[0];
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(nrows); ++i) {
-      ptr[i + 1] = ptr_range[i + 1];
-      for (auto j = ptr_range[i]; j < ptr_range[i + 1]; ++j) {
-        col[j] = col_range[j];
-        val[j] = val_range[j];
+    arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+
+        ptr[i + 1] = ptr_range[i + 1];
+        for (auto j = ptr_range[i]; j < ptr_range[i + 1]; ++j) {
+          col[j] = col_range[j];
+          val[j] = val_range[j];
+        }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("CSR copy");
   }
 
@@ -166,28 +168,30 @@ public:
     ptr.resize(m_nb_row + 1);
     ptr[0] = 0;
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i) {
-      int row_width = 0;
-      for (auto a = backend::row_begin(A, i); a; ++a)
-        ++row_width;
-      ptr[i + 1] = row_width;
-    }
+    arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        int row_width = 0;
+        for (auto a = backend::row_begin(A, i); a; ++a)
+          ++row_width;
+        ptr[i + 1] = row_width;
+      }
+    });
 
     m_nb_non_zero = scan_row_sizes();
     col.resize(m_nb_non_zero);
     val.resize(m_nb_non_zero);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i) {
-      ptr_type row_head = ptr[i];
-      for (auto a = backend::row_begin(A, i); a; ++a) {
-        col[row_head] = a.col();
-        val[row_head] = a.value();
+    arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptr_type row_head = ptr[i];
+        for (auto a = backend::row_begin(A, i); a; ++a) {
+          col[row_head] = a.col();
+          val[row_head] = a.value();
 
-        ++row_head;
+          ++row_head;
+        }
       }
-    }
+    });
     ARCCORE_ALINA_TOC("CSR copy");
   }
 
@@ -202,14 +206,15 @@ public:
       val.resize(m_nb_non_zero);
 
       ptr[0] = other.ptr[0];
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i) {
-        ptr[i + 1] = other.ptr[i + 1];
-        for (ptr_type j = other.ptr[i]; j < other.ptr[i + 1]; ++j) {
-          col[j] = other.col[j];
-          val[j] = other.val[j];
+      arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptr[i + 1] = other.ptr[i + 1];
+          for (ptr_type j = other.ptr[i]; j < other.ptr[i + 1]; ++j) {
+            col[j] = other.col[j];
+            val[j] = other.val[j];
+          }
         }
-      }
+      });
     }
   }
 
@@ -244,14 +249,15 @@ public:
       val = new val_type[m_nb_non_zero];
 
       ptr[0] = other.ptr[0];
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i) {
-        ptr[i + 1] = other.ptr[i + 1];
-        for (ptr_type j = other.ptr[i]; j < other.ptr[i + 1]; ++j) {
-          col[j] = other.col[j];
-          val[j] = other.val[j];
+      arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptr[i + 1] = other.ptr[i + 1];
+          for (ptr_type j = other.ptr[i]; j < other.ptr[i + 1]; ++j) {
+            col[j] = other.col[j];
+            val[j] = other.val[j];
+          }
         }
-      }
+      });
     }
 
     return *this;
@@ -290,9 +296,11 @@ public:
 
     if (clean_ptr) {
       ptr[0] = 0;
-#pragma omp parallel for
-      for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i)
-        ptr[i + 1] = 0;
+      arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+          ptr[i + 1] = 0;
+        }
+      });
     }
   }
 
@@ -306,15 +314,16 @@ public:
   {
     set_nonzeros(ptr[m_nb_row]);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_nb_row); ++i) {
-      ptrdiff_t row_beg = ptr[i];
-      ptrdiff_t row_end = ptr[i + 1];
-      for (ptrdiff_t j = row_beg; j < row_end; ++j) {
-        col[j] = 0;
-        val[j] = math::zero<val_type>();
+    arccoreParallelFor(0, m_nb_row, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t row_beg = ptr[i];
+        ptrdiff_t row_end = ptr[i + 1];
+        for (ptrdiff_t j = row_beg; j < row_end; ++j) {
+          col[j] = 0;
+          val[j] = math::zero<val_type>();
+        }
       }
-    }
+    });
   }
 
   void set_nonzeros(size_t n, bool need_values = true)
