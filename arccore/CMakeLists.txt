@@ -117,6 +117,7 @@ if (
   )
   set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED TRUE)
 endif()
+set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED ${ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED} CACHE BOOL "Is GNU/GCC Compatible compiler" FORCE)
 
 # ----------------------------------------------------------------------------
 # Il faut au moins GCC 11 ou Clang 15 pour le support du C++20 dans Arccore/Arcane
