@@ -28,10 +28,6 @@
 #include "arccore/alina/HybridBuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,10 +36,9 @@ namespace Arcane::Alina::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief  Solver for sparse triangular systems obtained as a result of an
- *         incomplete LU factorization.
+ * \brief Solver for sparse triangular systems obtained as a result of an
+ *        incomplete LU factorization.
  */
 template <class Backend>
 class ILUSolver
@@ -222,15 +217,6 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
 
  private:
 
-  static int thread_id()
-  {
-#ifdef _OPENMP
-    return omp_get_thread_num();
-#else
-    return 0;
-#endif
-  }
-
   // copies of the input matrices for the fallback (serial)
   // implementation:
   std::shared_ptr<matrix> L;
@@ -296,6 +282,7 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
     UniqueArray<UniqueArray<value_type>> val;
     UniqueArray<UniqueArray<ptrdiff_t>> ord; // rows ordered by levels
     UniqueArray<UniqueArray<value_type>> D;
+    Int32 m_nb_level = 0;
 
     template <class Matrix>
     sptr_solve(const Matrix& A, const value_type* _D = 0)
@@ -326,6 +313,7 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
         level[i] = l;
         nlev = std::max(nlev, l + 1);
       }
+      m_nb_level = nlev;
 
       // 2. reorder matrix rows.
       UniqueArray<ptrdiff_t> start(nlev + 1, 0);
@@ -419,35 +407,33 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
     template <class Vector>
     void solve(Vector& x) const
     {
-#pragma omp parallel
-      {
-        int tid = thread_id();
+      const Int32 nb_level = m_nb_level;
+      for (Int32 lev = 0; lev < nb_level; ++lev) {
+        arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
+            //for (ptrdiff_t tid = 0; tid < nthreads; ++tid) {
+            const task& t = tasks[tid][lev];
+            for (ptrdiff_t r = t.beg; r < t.end; ++r) {
+              ptrdiff_t i = ord[tid][r];
+              ptrdiff_t beg = ptr[tid][r];
+              ptrdiff_t end = ptr[tid][r + 1];
 
-        for (const task& t : tasks[tid]) {
-          for (ptrdiff_t r = t.beg; r < t.end; ++r) {
-            ptrdiff_t i = ord[tid][r];
-            ptrdiff_t beg = ptr[tid][r];
-            ptrdiff_t end = ptr[tid][r + 1];
+              rhs_type X = math::zero<rhs_type>();
+              for (ptrdiff_t j = beg; j < end; ++j)
+                X += val[tid][j] * x[col[tid][j]];
 
-            rhs_type X = math::zero<rhs_type>();
-            for (ptrdiff_t j = beg; j < end; ++j)
-              X += val[tid][j] * x[col[tid][j]];
-
-            if (lower)
-              x[i] -= X;
-            else
-              x[i] = D[tid][r] * (x[i] - X);
+              if (lower)
+                x[i] -= X;
+              else
+                x[i] = D[tid][r] * (x[i] - X);
+            }
           }
-
-          // each task corresponds to a level, so we need
-          // to synchronize across threads at this point:
-#pragma omp barrier
-          ;
-        }
+        });
       }
     }
 
-    size_t bytes() const
+    size_t
+    bytes() const
     {
       size_t b = 0;
 
