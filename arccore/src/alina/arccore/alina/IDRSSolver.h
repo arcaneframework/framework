@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* solver_idrs.h                                               (C) 2000-2026 */
+/* IDDRSolver.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* IDR(s) (Induced Dimension Reduction) method.                              */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- *  The code is ported from Matlab code published at
+ * The code is ported from Matlab code published at
  * http://ta.twi.tudelft.nl/nw/users/gijzen/IDR.html.
  *
  * This is a very stable and efficient IDR(s) variant (implemented in the MATLAB
@@ -37,10 +37,6 @@
 
 #include "arccore/alina/SolverUtils.h"
 #include "arccore/alina/AlinaUtils.h"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <random>
 
@@ -194,30 +190,17 @@ class IDRSSolver
       std::vector<rhs_type> p(n);
 
       int pid = inner_product.rank();
+      const int nt = 1;
 
-#pragma omp parallel
-      {
-#ifdef _OPENMP
-        int tid = omp_get_thread_num();
-        int nt = omp_get_max_threads();
-#else
-        int tid = 0;
-        int nt = 1;
-#endif
+      const int tid = 0;
+      std::mt19937 rng(pid * nt + tid);
+      std::uniform_real_distribution<scalar_type> rnd(-1, 1);
 
-        std::mt19937 rng(pid * nt + tid);
-        std::uniform_real_distribution<scalar_type> rnd(-1, 1);
-
-        for (unsigned j = 0; j < prm.s; ++j) {
-#pragma omp for
-          for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i)
-            p[i] = math::constant<rhs_type>(rnd(rng));
-
-#pragma omp single
-          {
-            P.push_back(Backend::copy_vector(p, bprm));
-          }
+      for (unsigned j = 0; j < prm.s; ++j) {
+        for (ptrdiff_t i = 0; i < n; ++i) {
+          p[i] = math::constant<rhs_type>(rnd(rng));
         }
+        P.push_back(Backend::copy_vector(p, bprm));
       }
 
       for (unsigned j = 0; j < prm.s; ++j) {
