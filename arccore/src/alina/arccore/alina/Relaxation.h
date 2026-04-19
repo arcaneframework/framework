@@ -23,19 +23,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <type_traits>
-
-#include <vector>
-#include <memory>
-#include <numeric>
-#include <cmath>
-#include <deque>
-#include <queue>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "arccore/alina/BackendInterface.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/ValueTypeInterface.h"
@@ -46,6 +33,9 @@
 #include "arccore/alina/ILUSolverImpl.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/RelaxationBase.h"
+
+#include <deque>
+#include <queue>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,16 +160,16 @@ class RelaxationAsPreconditioner
 
   template <class Matrix>
   RelaxationAsPreconditioner(const Matrix& M,
-                    const params& prm = params(),
-                    const backend_params& bprm = backend_params())
+                             const params& prm = params(),
+                             const backend_params& bprm = backend_params())
   : prm(prm)
   {
     init(std::make_shared<build_matrix>(M), bprm);
   }
 
   RelaxationAsPreconditioner(std::shared_ptr<build_matrix> M,
-                    const params& prm = params(),
-                    const backend_params& bprm = backend_params())
+                             const params& prm = params(),
+                             const backend_params& bprm = backend_params())
   : prm(prm)
   {
     init(M, bprm);
@@ -295,7 +285,7 @@ class ChebyshevRelaxation
     , ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, power_iters)
     , ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, scale)
     {
-      p.check_params( { "degree", "higher", "lower", "power_iters", "scale" });
+      p.check_params({ "degree", "higher", "lower", "power_iters", "scale" });
     }
 
     void get(PropertyTree& p, const std::string& path) const
@@ -424,16 +414,18 @@ struct DampedJacobiRelaxation
   struct params
   {
     /// Damping factor.
-    scalar_type damping;
+    scalar_type damping = 0.72;
 
-    params(scalar_type damping = 0.72)
+    params() = default;
+
+    params(scalar_type damping)
     : damping(damping)
     {}
 
     params(const PropertyTree& p)
     : ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, damping)
     {
-      p.check_params( { "damping" });
+      p.check_params({ "damping" });
     }
 
     void get(PropertyTree& p, const std::string& path) const
@@ -529,7 +521,7 @@ struct GaussSeidelRelaxation
     params(const PropertyTree& p)
     : ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, serial)
     {
-      p.check_params( { "serial" });
+      p.check_params({ "serial" });
     }
 
     void get(PropertyTree& p, const std::string& path) const
@@ -543,7 +535,7 @@ struct GaussSeidelRelaxation
   /// \copydoc DampedJacobiRelaxation::DampedJacobiRelaxation
   template <class Matrix>
   GaussSeidelRelaxation(const Matrix& A, const params& prm, const typename Backend::params&)
-  : is_serial(prm.serial || num_threads() < 4)
+  : is_serial(prm.serial || ConcurrencyBase::maxAllowedThread() < 4)
   {
     if (!is_serial) {
       forward = std::make_shared<parallel_sweep<true>>(A);
@@ -597,24 +589,6 @@ struct GaussSeidelRelaxation
 
  private:
 
-  static int num_threads()
-  {
-#ifdef _OPENMP
-    return omp_get_max_threads();
-#else
-    return 1;
-#endif
-  }
-
-  static int thread_id()
-  {
-#ifdef _OPENMP
-    return omp_get_thread_num();
-#else
-    return 0;
-#endif
-  }
-
   template <class Matrix, class VectorRHS, class VectorX>
   static void serial_sweep(const Matrix& A, const VectorRHS& rhs, VectorX& x, bool forward)
   {
@@ -661,29 +635,30 @@ struct GaussSeidelRelaxation
       {}
     };
 
-    int nthreads;
+    int nthreads = 0;
 
     // thread-specific storage:
-    std::vector<std::vector<task>> tasks;
-    std::vector<std::vector<ptrdiff_t>> ptr;
-    std::vector<std::vector<ptrdiff_t>> col;
-    std::vector<std::vector<value_type>> val;
-    std::vector<std::vector<ptrdiff_t>> ord;
+    UniqueArray<UniqueArray<task>> tasks;
+    UniqueArray<UniqueArray<ptrdiff_t>> ptr;
+    UniqueArray<UniqueArray<ptrdiff_t>> col;
+    UniqueArray<UniqueArray<value_type>> val;
+    UniqueArray<UniqueArray<ptrdiff_t>> ord;
 
     template <class Matrix>
     parallel_sweep(const Matrix& A)
-    : nthreads(num_threads())
+    : nthreads(ConcurrencyBase::maxAllowedThread())
     , tasks(nthreads)
     , ptr(nthreads)
     , col(nthreads)
     , val(nthreads)
     , ord(nthreads)
     {
+
       ptrdiff_t n = backend::nbRow(A);
       ptrdiff_t nlev = 0;
 
-      std::vector<ptrdiff_t> level(n, 0);
-      std::vector<ptrdiff_t> order(n, 0);
+      UniqueArray<ptrdiff_t> level(n, 0);
+      UniqueArray<ptrdiff_t> order(n, 0);
 
       // 1. split rows into levels.
       ptrdiff_t beg = forward ? 0 : n - 1;
@@ -713,7 +688,7 @@ struct GaussSeidelRelaxation
       }
 
       // 2. reorder matrix rows.
-      std::vector<ptrdiff_t> start(nlev + 1, 0);
+      UniqueArray<ptrdiff_t> start(nlev + 1, 0);
 
       for (ptrdiff_t i = 0; i < n; ++i)
         ++start[level[i] + 1];
@@ -728,77 +703,72 @@ struct GaussSeidelRelaxation
 
       // 3. Organize matrix rows into tasks.
       //    Each level is split into nthreads tasks.
-      std::vector<ptrdiff_t> thread_rows(nthreads, 0);
-      std::vector<ptrdiff_t> thread_cols(nthreads, 0);
+      UniqueArray<ptrdiff_t> thread_rows(nthreads, 0);
+      UniqueArray<ptrdiff_t> thread_cols(nthreads, 0);
 
-#pragma omp parallel
-      {
-        int tid = thread_id();
-        tasks[tid].reserve(nlev);
+      // TODO: Use a grain size of 1 to use all threads
+      arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
+          for (ptrdiff_t lev = 0; lev < nlev; ++lev) {
+            // split each level into tasks.
+            ptrdiff_t lev_size = start[lev + 1] - start[lev];
+            ptrdiff_t chunk_size = (lev_size + nthreads - 1) / nthreads;
 
-        for (ptrdiff_t lev = 0; lev < nlev; ++lev) {
-          // split each level into tasks.
-          ptrdiff_t lev_size = start[lev + 1] - start[lev];
-          ptrdiff_t chunk_size = (lev_size + nthreads - 1) / nthreads;
+            ptrdiff_t beg = std::min(tid * chunk_size, lev_size);
+            ptrdiff_t end = std::min(beg + chunk_size, lev_size);
 
-          ptrdiff_t beg = std::min(tid * chunk_size, lev_size);
-          ptrdiff_t end = std::min(beg + chunk_size, lev_size);
+            beg += start[lev];
+            end += start[lev];
 
-          beg += start[lev];
-          end += start[lev];
+            tasks[tid].push_back(task(beg, end));
 
-          tasks[tid].push_back(task(beg, end));
-
-          // count rows and nonzeros in the current task
-          thread_rows[tid] += end - beg;
-          for (ptrdiff_t i = beg; i < end; ++i) {
-            ptrdiff_t j = order[i];
-            thread_cols[tid] += backend::row_nonzeros(A, j);
+            // count rows and nonzeros in the current task
+            thread_rows[tid] += end - beg;
+            for (ptrdiff_t i = beg; i < end; ++i) {
+              ptrdiff_t j = order[i];
+              thread_cols[tid] += backend::row_nonzeros(A, j);
+            }
           }
         }
-      }
+      });
 
       // 4. reorganize matrix data for better cache and NUMA locality.
-#pragma omp parallel
-      {
-        int tid = thread_id();
+      arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
+          col[tid].reserve(thread_cols[tid]);
+          val[tid].reserve(thread_cols[tid]);
+          ord[tid].reserve(thread_rows[tid]);
+          ptr[tid].reserve(thread_rows[tid] + 1);
+          ptr[tid].push_back(0);
+          for (task& t : tasks[tid]) {
+            ptrdiff_t loc_beg = ptr[tid].size() - 1;
+            ptrdiff_t loc_end = loc_beg;
 
-        col[tid].reserve(thread_cols[tid]);
-        val[tid].reserve(thread_cols[tid]);
-        ord[tid].reserve(thread_rows[tid]);
-        ptr[tid].reserve(thread_rows[tid] + 1);
-        ptr[tid].push_back(0);
+            for (ptrdiff_t r = t.beg; r < t.end; ++r, ++loc_end) {
+              ptrdiff_t i = order[r];
 
-        for (task& t : tasks[tid]) {
-          ptrdiff_t loc_beg = ptr[tid].size() - 1;
-          ptrdiff_t loc_end = loc_beg;
+              ord[tid].push_back(i);
 
-          for (ptrdiff_t r = t.beg; r < t.end; ++r, ++loc_end) {
-            ptrdiff_t i = order[r];
+              for (auto a = backend::row_begin(A, i); a; ++a) {
+                col[tid].push_back(a.col());
+                val[tid].push_back(a.value());
+              }
 
-            ord[tid].push_back(i);
-
-            for (auto a = backend::row_begin(A, i); a; ++a) {
-              col[tid].push_back(a.col());
-              val[tid].push_back(a.value());
+              ptr[tid].push_back(col[tid].size());
             }
 
-            ptr[tid].push_back(col[tid].size());
+            t.beg = loc_beg;
+            t.end = loc_end;
           }
-
-          t.beg = loc_beg;
-          t.end = loc_end;
         }
-      }
+      });
     }
 
     template <class Vector1, class Vector2>
     void sweep(const Vector1& rhs, Vector2& x) const
     {
-#pragma omp parallel
-      {
-        int tid = thread_id();
-
+      // NOTE GG: This part was using OpenMP in the original implementation
+      for (ptrdiff_t tid = 0; tid < nthreads; ++tid) {
         for (const task& t : tasks[tid]) {
           for (ptrdiff_t r = t.beg; r < t.end; ++r) {
             ptrdiff_t i = ord[tid][r];
@@ -824,8 +794,7 @@ struct GaussSeidelRelaxation
 
           // each task corresponds to a level, so we need
           // to synchronize across threads at this point:
-#pragma omp barrier
-          ;
+          // TODO: Thread barrier
         }
       }
     }
@@ -890,7 +859,7 @@ struct ILU0Relaxation
     : ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, damping)
     , ARCCORE_ALINA_PARAMS_IMPORT_CHILD(p, solve)
     {
-      p.check_params( { "damping", "solve" }, { "k" });
+      p.check_params({ "damping", "solve" }, { "k" });
     }
 
     void get(PropertyTree& p, const std::string& path) const
@@ -1106,7 +1075,7 @@ struct ILUKRelaxation
     , ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, damping)
     , ARCCORE_ALINA_PARAMS_IMPORT_CHILD(p, solve)
     {
-      p.check_params( { "k", "damping", "solve" });
+      p.check_params({ "k", "damping", "solve" });
     }
 
     void get(PropertyTree& p, const std::string& path) const
@@ -1340,7 +1309,6 @@ struct ILUKRelaxation
 
 namespace detail
 {
-
   template <class Matrix>
   std::shared_ptr<Matrix> symb_product(const Matrix& A, const Matrix& B)
   {
@@ -1355,12 +1323,10 @@ namespace detail
     auto C_ptr = C->ptr.data();
     C_ptr[0] = 0;
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(B.ncols, -1);
 
-#pragma omp for
-      for (ptrdiff_t ia = 0; ia < static_cast<ptrdiff_t>(A.nbRow()); ++ia) {
+      for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t C_cols = 0;
         for (ptrdiff_t ja = A_ptr[ia], ea = A_ptr[ia + 1]; ja < ea; ++ja) {
           ptrdiff_t ca = A_col[ja];
@@ -1375,17 +1341,15 @@ namespace detail
         }
         C_ptr[ia + 1] = C_cols;
       }
-    }
+    });
 
     C->set_nonzeros(C->scan_row_sizes(), /*need_values = */ false);
     auto C_col = C->col.data();
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(B.ncols, -1);
 
-#pragma omp for
-      for (ptrdiff_t ia = 0; ia < static_cast<ptrdiff_t>(A.nbRow()); ++ia) {
+      for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t row_beg = C_ptr[ia];
         ptrdiff_t row_end = row_beg;
 
@@ -1405,7 +1369,7 @@ namespace detail
 
         std::sort(C_col + row_beg, C_col + row_end);
       }
-    }
+    });
 
     return C;
   }
