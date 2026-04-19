@@ -28,10 +28,6 @@
 #include "arccore/alina/HybridBuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,10 +36,9 @@ namespace Arcane::Alina::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief  Solver for sparse triangular systems obtained as a result of an
- *         incomplete LU factorization.
+ * \brief Solver for sparse triangular systems obtained as a result of an
+ *        incomplete LU factorization.
  */
 template <class Backend>
 class ILUSolver
@@ -164,7 +159,7 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
     bool serial;
 
     params()
-    : serial(num_threads() < 4)
+    : serial(ConcurrencyBase::maxAllowedThread() < 4)
     {}
 
     params(const PropertyTree& p)
@@ -221,24 +216,6 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
   }
 
  private:
-
-  static int num_threads()
-  {
-#ifdef _OPENMP
-    return omp_get_max_threads();
-#else
-    return 1;
-#endif
-  }
-
-  static int thread_id()
-  {
-#ifdef _OPENMP
-    return omp_get_thread_num();
-#else
-    return 0;
-#endif
-  }
 
   // copies of the input matrices for the fallback (serial)
   // implementation:
@@ -299,16 +276,17 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
     int nthreads;
 
     // thread-specific storage:
-    std::vector<std::vector<task>> tasks;
-    std::vector<std::vector<ptrdiff_t>> ptr;
-    std::vector<std::vector<ptrdiff_t>> col;
-    std::vector<std::vector<value_type>> val;
-    std::vector<std::vector<ptrdiff_t>> ord; // rows ordered by levels
-    std::vector<std::vector<value_type>> D;
+    UniqueArray<UniqueArray<task>> tasks;
+    UniqueArray<UniqueArray<ptrdiff_t>> ptr;
+    UniqueArray<UniqueArray<ptrdiff_t>> col;
+    UniqueArray<UniqueArray<value_type>> val;
+    UniqueArray<UniqueArray<ptrdiff_t>> ord; // rows ordered by levels
+    UniqueArray<UniqueArray<value_type>> D;
+    Int32 m_nb_level = 0;
 
     template <class Matrix>
     sptr_solve(const Matrix& A, const value_type* _D = 0)
-    : nthreads(num_threads())
+    : nthreads(ConcurrencyBase::maxAllowedThread())
     , tasks(nthreads)
     , ptr(nthreads)
     , col(nthreads)
@@ -318,8 +296,8 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
       ptrdiff_t n = A.nbRow();
       ptrdiff_t nlev = 0;
 
-      std::vector<ptrdiff_t> level(n, 0);
-      std::vector<ptrdiff_t> order(n, 0);
+      UniqueArray<ptrdiff_t> level(n, 0);
+      UniqueArray<ptrdiff_t> order(n, 0);
 
       // 1. split rows into levels.
       ptrdiff_t beg = lower ? 0 : n - 1;
@@ -335,9 +313,10 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
         level[i] = l;
         nlev = std::max(nlev, l + 1);
       }
+      m_nb_level = nlev;
 
       // 2. reorder matrix rows.
-      std::vector<ptrdiff_t> start(nlev + 1, 0);
+      UniqueArray<ptrdiff_t> start(nlev + 1, 0);
 
       for (ptrdiff_t i = 0; i < n; ++i)
         ++start[level[i] + 1];
@@ -352,110 +331,109 @@ class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>
 
       // 3. Organize matrix rows into tasks.
       //    Each level is split into nthreads tasks.
-      std::vector<ptrdiff_t> thread_rows(nthreads, 0);
-      std::vector<ptrdiff_t> thread_cols(nthreads, 0);
+      UniqueArray<ptrdiff_t> thread_rows(nthreads, 0);
+      UniqueArray<ptrdiff_t> thread_cols(nthreads, 0);
 
-#pragma omp parallel
-      {
-        int tid = thread_id();
-        tasks[tid].reserve(nlev);
+      // TODO: Use a grain size of 1 to use all threads
+      arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
+          tasks[tid].reserve(nlev);
 
-        for (ptrdiff_t lev = 0; lev < nlev; ++lev) {
-          // split each level into tasks.
-          ptrdiff_t lev_size = start[lev + 1] - start[lev];
-          ptrdiff_t chunk_size = (lev_size + nthreads - 1) / nthreads;
+          for (ptrdiff_t lev = 0; lev < nlev; ++lev) {
+            // split each level into tasks.
+            ptrdiff_t lev_size = start[lev + 1] - start[lev];
+            ptrdiff_t chunk_size = (lev_size + nthreads - 1) / nthreads;
 
-          ptrdiff_t beg = std::min(tid * chunk_size, lev_size);
-          ptrdiff_t end = std::min(beg + chunk_size, lev_size);
+            ptrdiff_t beg = std::min(tid * chunk_size, lev_size);
+            ptrdiff_t end = std::min(beg + chunk_size, lev_size);
 
-          beg += start[lev];
-          end += start[lev];
+            beg += start[lev];
+            end += start[lev];
 
-          tasks[tid].push_back(task(beg, end));
+            tasks[tid].push_back(task(beg, end));
 
-          // count rows and nonzeros in the current task
-          thread_rows[tid] += end - beg;
-          for (ptrdiff_t i = beg; i < end; ++i) {
-            ptrdiff_t j = order[i];
-            thread_cols[tid] += A.ptr[j + 1] - A.ptr[j];
+            // count rows and nonzeros in the current task
+            thread_rows[tid] += end - beg;
+            for (ptrdiff_t i = beg; i < end; ++i) {
+              ptrdiff_t j = order[i];
+              thread_cols[tid] += A.ptr[j + 1] - A.ptr[j];
+            }
           }
         }
-      }
+      });
 
       // 4. reorganize matrix data for better cache and NUMA locality.
       if (!lower)
         D.resize(nthreads);
 
-#pragma omp parallel
-      {
-        int tid = thread_id();
+      arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
 
-        col[tid].reserve(thread_cols[tid]);
-        val[tid].reserve(thread_cols[tid]);
-        ord[tid].reserve(thread_rows[tid]);
-        ptr[tid].reserve(thread_rows[tid] + 1);
-        ptr[tid].push_back(0);
+          col[tid].reserve(thread_cols[tid]);
+          val[tid].reserve(thread_cols[tid]);
+          ord[tid].reserve(thread_rows[tid]);
+          ptr[tid].reserve(thread_rows[tid] + 1);
+          ptr[tid].push_back(0);
 
-        if (!lower)
-          D[tid].reserve(thread_rows[tid]);
+          if (!lower)
+            D[tid].reserve(thread_rows[tid]);
 
-        for (task& t : tasks[tid]) {
-          ptrdiff_t loc_beg = ptr[tid].size() - 1;
-          ptrdiff_t loc_end = loc_beg;
+          for (task& t : tasks[tid]) {
+            ptrdiff_t loc_beg = ptr[tid].size() - 1;
+            ptrdiff_t loc_end = loc_beg;
 
-          for (ptrdiff_t r = t.beg; r < t.end; ++r, ++loc_end) {
-            ptrdiff_t i = order[r];
-            if (!lower)
-              D[tid].push_back(_D[i]);
+            for (ptrdiff_t r = t.beg; r < t.end; ++r, ++loc_end) {
+              ptrdiff_t i = order[r];
+              if (!lower)
+                D[tid].push_back(_D[i]);
 
-            ord[tid].push_back(i);
+              ord[tid].push_back(i);
 
-            for (auto j = A.ptr[i]; j < A.ptr[i + 1]; ++j) {
-              col[tid].push_back(A.col[j]);
-              val[tid].push_back(A.val[j]);
+              for (auto j = A.ptr[i]; j < A.ptr[i + 1]; ++j) {
+                col[tid].push_back(A.col[j]);
+                val[tid].push_back(A.val[j]);
+              }
+
+              ptr[tid].push_back(col[tid].size());
             }
 
-            ptr[tid].push_back(col[tid].size());
+            t.beg = loc_beg;
+            t.end = loc_end;
           }
-
-          t.beg = loc_beg;
-          t.end = loc_end;
         }
-      }
+      });
     }
 
     template <class Vector>
     void solve(Vector& x) const
     {
-#pragma omp parallel
-      {
-        int tid = thread_id();
+      const Int32 nb_level = m_nb_level;
+      for (Int32 lev = 0; lev < nb_level; ++lev) {
+        arccoreParallelFor(0, nthreads, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t tid = begin; tid < (begin + size); ++tid) {
+            //for (ptrdiff_t tid = 0; tid < nthreads; ++tid) {
+            const task& t = tasks[tid][lev];
+            for (ptrdiff_t r = t.beg; r < t.end; ++r) {
+              ptrdiff_t i = ord[tid][r];
+              ptrdiff_t beg = ptr[tid][r];
+              ptrdiff_t end = ptr[tid][r + 1];
 
-        for (const task& t : tasks[tid]) {
-          for (ptrdiff_t r = t.beg; r < t.end; ++r) {
-            ptrdiff_t i = ord[tid][r];
-            ptrdiff_t beg = ptr[tid][r];
-            ptrdiff_t end = ptr[tid][r + 1];
+              rhs_type X = math::zero<rhs_type>();
+              for (ptrdiff_t j = beg; j < end; ++j)
+                X += val[tid][j] * x[col[tid][j]];
 
-            rhs_type X = math::zero<rhs_type>();
-            for (ptrdiff_t j = beg; j < end; ++j)
-              X += val[tid][j] * x[col[tid][j]];
-
-            if (lower)
-              x[i] -= X;
-            else
-              x[i] = D[tid][r] * (x[i] - X);
+              if (lower)
+                x[i] -= X;
+              else
+                x[i] = D[tid][r] * (x[i] - X);
+            }
           }
-
-          // each task corresponds to a level, so we need
-          // to synchronize across threads at this point:
-#pragma omp barrier
-          ;
-        }
+        });
       }
     }
 
-    size_t bytes() const
+    size_t
+    bytes() const
     {
       size_t b = 0;
 

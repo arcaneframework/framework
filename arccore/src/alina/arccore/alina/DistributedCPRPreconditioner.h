@@ -178,14 +178,12 @@ class DistributedCPRPreconditioner
 
     // Get the pressure matrix nonzero pattern,
     // extract and invert block diagonals.
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<row_iterator> k;
       k.reserve(B);
       multi_array<value_type, 2> v(B, B);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < static_cast<ptrdiff_t>(np); ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ik = ip * B;
         bool done = true;
         ptrdiff_t cur_col = 0;
@@ -295,7 +293,7 @@ class DistributedCPRPreconditioner
           }
         }
       }
-    }
+    });
 
     App_loc->set_nonzeros(App_loc->scan_row_sizes());
     App_rem->set_nonzeros(App_rem->scan_row_sizes());
@@ -305,13 +303,11 @@ class DistributedCPRPreconditioner
     scatter->set_nonzeros(np);
     scatter->ptr[0] = 0;
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<row_iterator> k;
       k.reserve(B);
 
-#pragma omp for
-      for (ptrdiff_t ip = 0; ip < static_cast<ptrdiff_t>(np); ++ip) {
+      for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ik = ip * B;
         bool done = true;
         ptrdiff_t cur_col;
@@ -428,7 +424,7 @@ class DistributedCPRPreconditioner
           scatter->ptr[ik + i + 1] = nnz;
         }
       }
-    }
+    });
 
     auto App = std::make_shared<matrix>(comm, App_loc, App_rem);
 

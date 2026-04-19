@@ -29,9 +29,6 @@
 #include <numeric>
 #include <cmath>
 #include <cassert>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <boost/scope_exit.hpp>
 
@@ -319,14 +316,12 @@ int main(int argc, char* argv[])
   prof.toc("read problem");
 
   prof.tic("setup");
-  typedef DistributedSubDomainDeflation<
-    AMG<
-      BuiltinBackend<double>,
-      CoarseningRuntime,
-      RelaxationRuntime>,
-    DistributedSolverRuntime<BuiltinBackend<double>>,
-    DistributedDirectSolverRuntime<double>>
-  SDD;
+  using SDD = DistributedSubDomainDeflation<AMG<
+                                            BuiltinBackend<double>,
+                                            CoarseningRuntime,
+                                            RelaxationRuntime>,
+                                            DistributedSolverRuntime<BuiltinBackend<double>>,
+                                            DistributedDirectSolverRuntime<double>>;
 
   std::function<double(ptrdiff_t, unsigned)> dv = Alina::constant_deflation(block_size);
   prm.put("num_def_vec", block_size);
@@ -363,22 +358,9 @@ int main(int argc, char* argv[])
   }
 
   if (world.rank == 0) {
-    std::cout
-    << "Iterations: " << iters << std::endl
-    << "Error:      " << resid << std::endl
-    << std::endl
-    << prof << std::endl;
-
-#ifdef _OPENMP
-    int nt = omp_get_max_threads();
-#else
-    int nt = 1;
-#endif
-    std::ostringstream log_name;
-    log_name << "log_" << domain.back() << "_" << nt << "_" << world.size << ".txt";
-    std::ofstream log(log_name.str().c_str(), std::ios::app);
-    log << domain.back() << "\t" << nt << "\t" << world.size
-        << "\t" << tm_setup << "\t" << tm_solve
-        << "\t" << iters << "\t" << std::endl;
+    std::cout << "Iterations: " << iters << std::endl
+              << "Error:      " << resid << std::endl
+              << std::endl
+              << prof << std::endl;
   }
 }

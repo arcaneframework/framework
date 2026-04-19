@@ -16,10 +16,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour Eigen
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
-#pragma GCC diagnostic ignored "-Wint-in-bool-context"
-
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -27,16 +23,14 @@
 #include <numeric>
 #include <cmath>
 #include <stdexcept>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #if defined(SOLVER_BACKEND_CUDA)
 // This seems not defined with CUDA
 namespace boost::math
 {
-class rounding_error{};
-}
+class rounding_error
+{};
+} // namespace boost::math
 #endif
 
 #include "DomainPartition.h"
@@ -70,6 +64,7 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/DistributedSubDomainDeflation.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/Profiler.h"
+#include "AlinaSamplesCommon.h"
 
 using namespace Arcane;
 
@@ -459,16 +454,9 @@ struct renumbering
   }
 };
 
-int main(int argc, char* argv[])
+int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
 
   Alina::mpi_communicator world(MPI_COMM_WORLD);
 
@@ -738,9 +726,6 @@ int main(int argc, char* argv[])
 
   Alina::backend::clear(*x);
 
-  size_t iters;
-  double resid, tm_setup, tm_solve;
-
   if (just_relax) {
     prm.put("local.class", "relaxation");
     prm.put("local.type", relaxation);
@@ -751,65 +736,26 @@ int main(int argc, char* argv[])
   }
 
   prof.tic("setup");
-  typedef Alina::DistributedSubDomainDeflation<
-    Alina::PreconditionerRuntime<Backend>,
-    Alina::DistributedSolverRuntime<Backend>,
-    Alina::DistributedDirectSolverRuntime<double>>
-  SDD;
+  using SDD = Alina::DistributedSubDomainDeflation<Alina::PreconditionerRuntime<Backend>,
+                                                   Alina::DistributedSolverRuntime<Backend>,
+                                                   Alina::DistributedDirectSolverRuntime<double>>;
 
   SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
-  tm_setup = prof.toc("setup");
+  prof.toc("setup");
 
   prof.tic("solve");
-  std::tie(iters, resid) = solve(*f, *x);
-  tm_solve = prof.toc("solve");
+  Alina::SolverResult r = solve(*f, *x);
+  prof.toc("solve");
 
   if (world.rank == 0) {
-    std::cout
-    << "Iterations: " << iters << std::endl
-    << "Error:      " << resid << std::endl
-    << prof << std::endl;
-
-#ifdef _OPENMP
-    int nt = omp_get_max_threads();
-#else
-    int nt = 1;
-#endif
-    std::ostringstream log_name;
-    log_name << "log_" << n2 << "_" << nt << "_" << world.size << ".txt";
-    std::ofstream log(log_name.str().c_str(), std::ios::app);
-    log << n2 << "\t" << nt << "\t" << world.size
-        << "\t" << tm_setup << "\t" << tm_solve
-        << "\t" << iters << "\t" << std::endl;
+    std::cout << "Iterations: " << r.nbIteration() << std::endl
+              << "Error:      " << r.residual() << std::endl
+              << prof << std::endl;
   }
+  return 0;
+}
 
-  if (!out_file.empty()) {
-    std::vector<double> X(world.rank == 0 ? n2 : chunk);
-
-#if defined(SOLVER_BACKEND_VEXCL)
-    vex::copy(x->begin(), x->end(), X.begin());
-#elif defined(SOLVER_BACKEND_CUDA)
-    thrust::copy(x->begin(), x->end(), X.begin());
-#else
-    std::copy(x->data(), x->data() + chunk, X.begin());
-#endif
-
-    if (world.rank == 0) {
-      for (int i = 1; i < world.size; ++i)
-        MPI_Recv(&X[domain[i]], domain[i + 1] - domain[i], MPI_DOUBLE, i, 42, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-      std::ofstream f(out_file.c_str(), std::ios::binary);
-      int m = n;
-      f.write((char*)&m, sizeof(int));
-      for (int j = 0; j < n; ++j) {
-        for (int i = 0; i < n; ++i) {
-          double buf = X[renum(i, j)];
-          f.write((char*)&buf, sizeof(double));
-        }
-      }
-    }
-    else {
-      MPI_Send(X.data(), chunk, MPI_DOUBLE, 0, 42, MPI_COMM_WORLD);
-    }
-  }
+int main(int argc, char* argv[])
+{
+  return Arcane::Alina::SampleMainContext::execMain(main2, argc, argv);
 }

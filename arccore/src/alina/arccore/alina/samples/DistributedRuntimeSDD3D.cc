@@ -23,13 +23,10 @@
 #include <array>
 #include <numeric>
 #include <cmath>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 // To remove warnings about deprecated Eigen usage.
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
-#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+//#pragma GCC diagnostic ignored "-Wdeprecated-copy"
+//ragma GCC diagnostic ignored "-Wint-in-bool-context"
 
 #if defined(SOLVER_BACKEND_CUDA)
 // This seems not defined with CUDA
@@ -55,6 +52,8 @@ class rounding_error
 typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #endif
 
+#include "arccore/trace/ITraceMng.h"
+
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedSubDomainDeflation.h"
@@ -62,6 +61,7 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/Profiler.h"
+#include "AlinaSamplesCommon.h"
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -119,21 +119,13 @@ struct renumbering
   }
 };
 
-int main(int argc, char* argv[])
+int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
-
+  ITraceMng* tm = ctx.traceMng();
   Alina::mpi_communicator world(MPI_COMM_WORLD);
 
-  if (world.rank == 0)
-    std::cout << "World size: " << world.size << std::endl;
+  tm->info() << "World size: " << world.size;
 
   // Read configuration from command line
   ptrdiff_t n = 128;
@@ -211,8 +203,6 @@ int main(int argc, char* argv[])
 
   prm.put("isolver.type", iterative_solver);
   prm.put("dsolver.type", direct_solver);
-
-  const ptrdiff_t n3 = n * n * n;
 
   boost::array<ptrdiff_t, 3> lo = { { 0, 0, 0 } };
   boost::array<ptrdiff_t, 3> hi = { { n - 1, n - 1, n - 1 } };
@@ -328,71 +318,51 @@ int main(int argc, char* argv[])
   Alina::backend::clear(*x);
 
   size_t iters;
-  double resid, tm_setup, tm_solve;
+  double resid;
 
   std::function<double(ptrdiff_t, unsigned)> def_vec = std::cref(def);
   prm.put("num_def_vec", def.dim());
   prm.put("def_vec", &def_vec);
 
-  try {
-    if (just_relax) {
-      prm.put("local.type", relaxation);
+  if (just_relax) {
+    prm.put("local.type", relaxation);
 
-      prof.tic("setup");
-      typedef DistributedSubDomainDeflation<
-        RelaxationAsPreconditioner<Backend, RelaxationRuntime>,
-        DistributedSolverRuntime<Backend>,
-        DistributedDirectSolverRuntime<double>>
-      SDD;
+    prof.tic("setup");
+    using SDD = DistributedSubDomainDeflation<RelaxationAsPreconditioner<Backend, RelaxationRuntime>,
+                                              DistributedSolverRuntime<Backend>,
+                                              DistributedDirectSolverRuntime<double>>;
 
-      SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
-      tm_setup = prof.toc("setup");
+    SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+    prof.toc("setup");
 
-      prof.tic("solve");
-      std::tie(iters, resid) = solve(*f, *x);
-      tm_solve = prof.toc("solve");
-    }
-    else {
-      prm.put("local.coarsening.type", coarsening);
-      prm.put("local.relax.type", relaxation);
-
-      prof.tic("setup");
-      typedef Alina::DistributedSubDomainDeflation<
-      Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>,
-        Alina::DistributedSolverRuntime<Backend>,
-      Alina::DistributedDirectSolverRuntime<double>>
-      SDD;
-
-      SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
-      tm_setup = prof.toc("setup");
-
-      prof.tic("solve");
-      std::tie(iters, resid) = solve(*f, *x);
-      tm_solve = prof.toc("solve");
-    }
+    prof.tic("solve");
+    std::tie(iters, resid) = solve(*f, *x);
+    prof.toc("solve");
   }
-  catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
-    throw e;
+  else {
+    prm.put("local.coarsening.type", coarsening);
+    prm.put("local.relax.type", relaxation);
+
+    prof.tic("setup");
+    using SDD = DistributedSubDomainDeflation<AMG<Backend, CoarseningRuntime, RelaxationRuntime>,
+                                              DistributedSolverRuntime<Backend>,
+                                              DistributedDirectSolverRuntime<double>>;
+
+    SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+    prof.toc("setup");
+
+    prof.tic("solve");
+    std::tie(iters, resid) = solve(*f, *x);
+    prof.toc("solve");
   }
 
-  if (world.rank == 0) {
-    std::cout
-    << "Iterations: " << iters << std::endl
-    << "Error:      " << resid << std::endl
-    << std::endl
-    << prof << std::endl;
+  tm->info() << "Iterations: " << iters << "\n"
+             << "Error:      " << resid << "\n\n"
+             << prof << "\n";
+  return 0;
+}
 
-#ifdef _OPENMP
-    int nt = omp_get_max_threads();
-#else
-    int nt = 1;
-#endif
-    std::ostringstream log_name;
-    log_name << "log3d_" << n3 << "_" << nt << "_" << world.size << ".txt";
-    std::ofstream log(log_name.str().c_str(), std::ios::app);
-    log << n3 << "\t" << nt << "\t" << world.size
-        << "\t" << tm_setup << "\t" << tm_solve
-        << "\t" << iters << "\t" << std::endl;
-  }
+int main(int argc, char* argv[])
+{
+  return Arcane::Alina::SampleMainContext::execMain(main2, argc, argv);
 }

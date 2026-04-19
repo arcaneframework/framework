@@ -58,12 +58,16 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THISSOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 \endverbatim
 */
-
-#include <vector>
-#include <algorithm>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arccore/alina/BackendInterface.h"
 #include "arccore/alina/AlinaUtils.h"
+
+#include "arccore/accelerator/Atomic.h"
+
+#include <vector>
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,22 +108,17 @@ struct CuthillMcKeeReorderer
     std::vector<ptrdiff_t> levelSet(n, 0);
     std::vector<ptrdiff_t> nextSameDegree(n, -1);
 
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       ptrdiff_t maxd = 0;
-#pragma omp for
-      for (ptrdiff_t i = 0; i < n; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         ptrdiff_t row_width = 0;
         for (auto a = backend::row_begin(A, i); a; ++a, ++row_width)
           ;
         degree[i] = row_width;
         maxd = std::max(maxd, degree[i]);
       }
-#pragma omp critical
-      {
-        maxDegree = std::max(maxDegree, maxd);
-      }
-    }
+      Accelerator::doAtomic<Accelerator::eAtomicOperation::Max>(&maxDegree, maxd);
+    });
 
     std::vector<ptrdiff_t> firstWithDegree(maxDegree + 1, -1);
     std::vector<ptrdiff_t> nFirstWithDegree(maxDegree + 1);

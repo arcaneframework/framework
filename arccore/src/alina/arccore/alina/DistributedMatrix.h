@@ -28,10 +28,6 @@
 
 #include "arccore/accelerator/Atomic.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include <vector>
 #include <algorithm>
 

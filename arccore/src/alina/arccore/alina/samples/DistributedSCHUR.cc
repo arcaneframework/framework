@@ -27,9 +27,6 @@
 #include <vector>
 #include <numeric>
 #include <cmath>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -322,17 +319,5 @@ int main(int argc, char* argv[])
     std::cout << "Iters: " << r.nbIteration() << std::endl
               << "Error: " << r.residual() << std::endl
               << prof << std::endl;
-
-#ifdef _OPENMP
-    int nt = omp_get_max_threads();
-#else
-    int nt = 1;
-#endif
-    std::ostringstream log_name;
-    log_name << "schur_" << domain.back() << "_" << nt << "_" << world.size << ".txt";
-    std::ofstream log(log_name.str().c_str(), std::ios::app);
-    log << domain.back() << "\t" << nt << "\t" << world.size
-        << "\t" << tm_setup << "\t" << tm_solve
-        << "\t" << r.nbIteration() << "\t" << std::endl;
   }
 }

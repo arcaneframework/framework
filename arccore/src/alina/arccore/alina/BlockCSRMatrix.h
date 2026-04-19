@@ -78,58 +78,52 @@ struct BlockCSRMatrix
   , bcols((ncols + block_size - 1) / block_size)
   , ptr(brows + 1, 0)
   {
-#pragma omp parallel
-    {
-      std::vector<ptrdiff_t> marker(bcols, -1);
+    std::vector<ptrdiff_t> marker(bcols, -1);
 
-      // Count number of nonzeros in block matrix.
-#pragma omp for
-      for (ptr_type ib = 0; ib < static_cast<ptr_type>(brows); ++ib) {
-        ptr_type ia = ib * block_size;
+    // Count number of nonzeros in block matrix.
+    for (ptr_type ib = 0; ib < static_cast<ptr_type>(brows); ++ib) {
+      ptr_type ia = ib * block_size;
 
-        for (size_t k = 0; k < block_size && ia < static_cast<ptr_type>(nrows); ++k, ++ia) {
-          for (auto a = backend::row_begin(A, ia); a; ++a) {
-            col_type cb = a.col() / block_size;
+      for (size_t k = 0; k < block_size && ia < static_cast<ptr_type>(nrows); ++k, ++ia) {
+        for (auto a = backend::row_begin(A, ia); a; ++a) {
+          col_type cb = a.col() / block_size;
 
-            if (marker[cb] != static_cast<col_type>(ib)) {
-              marker[cb] = static_cast<col_type>(ib);
-              ++ptr[ib + 1];
-            }
+          if (marker[cb] != static_cast<col_type>(ib)) {
+            marker[cb] = static_cast<col_type>(ib);
+            ++ptr[ib + 1];
           }
         }
       }
+    }
 
-#pragma omp single
-      {
-        std::partial_sum(ptr.begin(), ptr.end(), ptr.begin());
-        col.resize(ptr.back());
-        val.resize(ptr.back() * block_size * block_size, 0);
-      }
+    {
+      std::partial_sum(ptr.begin(), ptr.end(), ptr.begin());
+      col.resize(ptr.back());
+      val.resize(ptr.back() * block_size * block_size, 0);
+    }
 
-      std::fill(marker.begin(), marker.end(), -1);
+    std::fill(marker.begin(), marker.end(), -1);
 
-      // Fill the block matrix.
-#pragma omp for
-      for (ptr_type ib = 0; ib < static_cast<ptr_type>(brows); ++ib) {
-        ptr_type ia = ib * block_size;
-        ptr_type row_beg = ptr[ib];
-        ptr_type row_end = row_beg;
+    // Fill the block matrix.
+    for (ptr_type ib = 0; ib < static_cast<ptr_type>(brows); ++ib) {
+      ptr_type ia = ib * block_size;
+      ptr_type row_beg = ptr[ib];
+      ptr_type row_end = row_beg;
 
-        for (size_t k = 0; k < block_size && ia < static_cast<ptr_type>(nrows); ++k, ++ia) {
-          for (auto a = backend::row_begin(A, ia); a; ++a) {
-            col_type cb = a.col() / block_size;
-            col_type cc = a.col() % block_size;
-            val_type va = a.value();
+      for (size_t k = 0; k < block_size && ia < static_cast<ptr_type>(nrows); ++k, ++ia) {
+        for (auto a = backend::row_begin(A, ia); a; ++a) {
+          col_type cb = a.col() / block_size;
+          col_type cc = a.col() % block_size;
+          val_type va = a.value();
 
-            if (marker[cb] < row_beg) {
-              marker[cb] = row_end;
-              col[row_end] = cb;
-              val[block_size * (block_size * row_end + k) + cc] = va;
-              ++row_end;
-            }
-            else {
-              val[block_size * (block_size * marker[cb] + k) + cc] = va;
-            }
+          if (marker[cb] < row_beg) {
+            marker[cb] = row_end;
+            col[row_end] = cb;
+            val[block_size * (block_size * row_end + k) + cc] = va;
+            ++row_end;
+          }
+          else {
+            val[block_size * (block_size * marker[cb] + k) + cc] = va;
           }
         }
       }
