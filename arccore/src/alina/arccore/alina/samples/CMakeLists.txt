@@ -109,17 +109,21 @@ if (TARGET eigen_target)
   target_link_libraries(arccore_alina_mpi_example INTERFACE eigen_target)
 endif()
 
-function(add_mpi_example example sources nb_core)
-  add_executable(${example} ${sources})
-  set_target_properties(${example} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
-  target_link_libraries(${example} PUBLIC arccore_alina_samples_lib arccore_alina_mpi_example)
-  set(TEST_NAME "alina_sample_mpi${nb_core}_${example}")
+function(add_mpi_example_test target test_name nb_core)
+  set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
+  target_link_libraries(${target} PUBLIC arccore_alina_samples_lib arccore_alina_mpi_example)
+  set(TEST_NAME "alina_sample_mpi${nb_core}_${test_name}")
   add_test(NAME ${TEST_NAME}
     WORKING_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}"
-    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${nb_core} ./${example}
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${nb_core} ./${target} ${ARGN}
   )
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_NB_TASK=2")
+endfunction()
+
+function(add_mpi_example example sources nb_core)
+  add_executable(${example} ${sources} ${ARGN})
+  add_mpi_example_test(${example} ${example} ${nb_core})
 endfunction()
 
 function(add_mpi_example_no_test example sources)
@@ -142,6 +146,9 @@ add_mpi_example(spmm_scaling DistributedSPMMScaling.cc 4)
 add_mpi_example(mpi_solver DistributedSolver.cc 2)
 add_mpi_example(mpi_basic_solver DistributedBasicSolver.cc 2)
 add_mpi_example(mpi_complex DistributedComplex.cc 2)
+
+add_mpi_example_test(mpi_basic_solver mpi_basic_solver_spectral_radius1 2 -p precond.coarsening.estimate_spectral_radius=1)
+add_mpi_example_test(mpi_basic_solver mpi_basic_solver_spectral_radius2 2 -p precond.coarsening.estimate_spectral_radius=1 -p precond.coarsening.power_iters=4)
 
 # Il faut un argument 'matrix' pour le test
 add_mpi_example_no_test(schur_pc_mpi DistributedSCHUR.cc)
