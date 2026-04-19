@@ -1257,22 +1257,18 @@ struct DistributedSmoothedAggregationCoarsening
     aggr_params aggr;
 
     /// Relaxation factor.
-    scalar_type relax;
+    scalar_type relax = 1.0;
 
     // Estimate the matrix spectral radius.
     // This usually improves convergence rate and results in faster solves,
     // but costs some time during setup.
-    bool estimate_spectral_radius;
+    bool estimate_spectral_radius = false;
 
     // Number of power iterations to apply for the spectral radius
     // estimation. Use Gershgorin disk theorem when power_iters = 0.
-    int power_iters;
+    int power_iters = 0;
 
-    params()
-    : relax(1.0f)
-    , estimate_spectral_radius(false)
-    , power_iters(0)
-    {}
+    params() = default;
 
     params(const PropertyTree& p)
     : ARCCORE_ALINA_PARAMS_IMPORT_CHILD(p, aggr)

@@ -28,6 +28,10 @@
 #include "arccore/alina/HybridBuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

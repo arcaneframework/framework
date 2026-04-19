@@ -4,15 +4,9 @@ arccore_add_component_library(alina
   FILES ${SOURCES}
 )
 
-#arcane_add_library(ARCCORE_ALINA
-#  INPUT_PATH ${Arcane_SOURCE_DIR}/src
-#  RELATIVE_PATH arcane/alina
-#  FILES ${ARCANE_SOURCES}
-#)
-
 target_compile_definitions(arccore_alina PRIVATE ARCANE_COMPONENT_arccore_alina)
 
-target_link_libraries(arccore_alina PUBLIC Arcane::arcane_utils)
+target_link_libraries(arccore_alina PUBLIC Arcane::arcane_utils arccore_accelerator)
 arcane_register_library(arccore_alina OPTIONAL)
 
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)

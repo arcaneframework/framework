@@ -223,6 +223,9 @@ void solve_scalar(Alina::mpi_communicator comm,
     auto t = prof.scoped_tic("setup");
     A = get_distributed_matrix();
     solve = std::make_shared<Solver>(comm, A, prm, bprm);
+    Alina::PropertyTree prm2;
+    solve->prm.get(prm2);
+    std::cout << "SOLVER parameters=" << prm2 << "\n";
   }
 
   if (comm.rank == 0) {
@@ -322,6 +325,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   if (vm.count("prm")) {
     for (const std::string& v : vm["prm"].as<std::vector<std::string>>()) {
+      tm->info() << "PUT_KEY_VALUE v=" << v;
       prm.putKeyValue(v);
     }
   }
