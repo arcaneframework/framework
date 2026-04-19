@@ -23,18 +23,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <memory>
-#include <functional>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/MessagePassingUtils.h"
 #include "arccore/alina/DistributedSkylineLUDirectSolver.h"
 #include "arccore/alina/DistributedInnerProduct.h"
 #include "arccore/alina/DistributedMatrix.h"
+
+#include <vector>
+#include <algorithm>
+#include <numeric>
+#include <memory>
+#include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,10 +49,11 @@ namespace Arcane::Alina
 struct constant_deflation
 {
   const int block_size;
-  /// Constructor
-  /**
-     * \param block_size Number of degrees of freedom per grid point
-     */
+  /*!
+   * \brief Constructor.
+   *
+   * \param block_size Number of degrees of freedom per grid point
+   */
   constant_deflation(int block_size = 1)
   : block_size(block_size)
   {}
@@ -395,27 +396,17 @@ class DistributedSubDomainDeflation
     E.set_nonzeros(E.ptr[ndv]);
 
     // Build local strip of E.
-#ifdef _OPENMP
-    int nthreads = omp_get_max_threads();
-#else
-    int nthreads = 1;
-#endif
+    int nthreads = ConcurrencyBase::maxAllowedThread();
     multi_array<value_type, 3> erow(nthreads, ndv, nz);
     std::fill_n(erow.data(), erow.size(), 0);
 
     {
       ptrdiff_t dv_offset = dv_start[comm.rank];
-#pragma omp parallel
-      {
-#ifdef _OPENMP
-        const int tid = omp_get_thread_num();
-#else
-        const int tid = 0;
-#endif
+      arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+        const int tid = TaskFactory::currentTaskThreadIndex();
         std::vector<value_type> z(ndv);
 
-#pragma omp for
-        for (ptrdiff_t i = 0; i < nrows; ++i) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
           for (ptrdiff_t j = 0; j < ndv; ++j)
             z[j] = prm.def_vec(i, j);
 
@@ -435,7 +426,7 @@ class DistributedSubDomainDeflation
               erow(tid, j, c) += v * z[j];
           }
         }
-      }
+      });
     }
 
     for (int i = 0; i < ndv; ++i) {
