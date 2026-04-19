@@ -23,15 +23,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#pragma GCC diagnostic ignored "-Wconversion"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #include "arccore/alina/NumaVector.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/CSRMatrix.h"

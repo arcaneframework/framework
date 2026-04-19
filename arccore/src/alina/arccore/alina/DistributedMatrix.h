@@ -23,6 +23,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/alina/AlinaUtils.h"
+#include "arccore/alina/MessagePassingUtils.h"
+
+#include "arccore/accelerator/Atomic.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <vector>
 #include <algorithm>
 
@@ -31,10 +40,6 @@
 #include <random>
 
 #include <mpi.h>
-
-#include "arccore/alina/BuiltinBackend.h"
-#include "arccore/alina/AlinaUtils.h"
-#include "arccore/alina/MessagePassingUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1249,14 +1254,13 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
   const ptrdiff_t n = A_loc.nbRow();
   scalar_type radius = 0;
 
+  // TODO: Use the code in CSRMatrixOperation.h
   if (power_iters <= 0) {
-#pragma omp parallel
-    {
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       scalar_type emax = 0;
       value_type dia = math::identity<value_type>();
 
-#pragma omp for nowait
-      for (ptrdiff_t i = 0; i < n; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         scalar_type s = 0;
 
         for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
@@ -1278,9 +1282,8 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
         emax = std::max(emax, s);
       }
 
-#pragma omp critical
-      radius = std::max(radius, emax);
-    }
+      Accelerator::doAtomic<Accelerator::eAtomicOperation::Max>(&radius, emax);
+    });
   }
   else {
     numa_vector<rhs_type> b0(n, false), b1(n, false);
@@ -1288,24 +1291,18 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
 
     // Fill the initial vector with random values.
     // Also extract the inverted matrix diagonal values.
-    scalar_type b0_loc_norm = 0;
+    std::atomic<scalar_type> atomic_b0_loc_norm = {};
 
-#pragma omp parallel
-    {
-#ifdef _OPENMP
-      int tid = omp_get_thread_num();
-      int nt = omp_get_max_threads();
-#else
-      int tid = 0;
-      int nt = 1;
-#endif
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      const int tid = TaskFactory::currentTaskThreadIndex();
+      const int nt = ConcurrencyBase::maxAllowedThread();
+
       std::mt19937 rng(comm.size * nt + tid);
       std::uniform_real_distribution<scalar_type> rnd(-1, 1);
 
       scalar_type t_norm = 0;
 
-#pragma omp for nowait
-      for (ptrdiff_t i = 0; i < n; ++i) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         rhs_type v = math::constant<rhs_type>(rnd(rng));
 
         b0[i] = v;
@@ -1316,18 +1313,19 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
         }
       }
 
-#pragma omp critical
-      b0_loc_norm += t_norm;
-    }
-
+      // GG: Not reproducible
+      atomic_b0_loc_norm += t_norm;
+    });
+    scalar_type b0_loc_norm = atomic_b0_loc_norm;
     scalar_type b0_norm = comm.reduceSum(b0_loc_norm);
 
     // Normalize b0
     b0_norm = 1 / sqrt(b0_norm);
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      b0[i] = b0_norm * b0[i];
-    }
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        b0[i] = b0_norm * b0[i];
+      }
+    });
 
     std::vector<rhs_type> b0_send(C.send.count());
     std::vector<rhs_type> b0_recv(C.recv.count());
@@ -1340,17 +1338,16 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
       // b1 = (D * A) * b0
       // b1_norm = ||b1||
       // radius = <b1,b0>
-      scalar_type b1_loc_norm = 0;
-      scalar_type loc_radius = 0;
 
-#pragma omp parallel
-      {
+      std::atomic<scalar_type> atomic_b1_loc_norm = 0;
+      std::atomic<scalar_type> atomic_loc_radius = 0;
+
+      arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
         scalar_type t_norm = 0;
         scalar_type t_radi = 0;
         value_type dia = math::identity<value_type>();
 
-#pragma omp for nowait
-        for (ptrdiff_t i = 0; i < n; ++i) {
+        for (ptrdiff_t i = begin; i < (begin + size); ++i) {
           rhs_type s = math::zero<rhs_type>();
 
           for (ptrdiff_t j = A_loc.ptr[i], e = A_loc.ptr[i + 1]; j < e; ++j) {
@@ -1373,12 +1370,14 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
           b1[i] = s;
         }
 
-#pragma omp critical
         {
-          b1_loc_norm += t_norm;
-          loc_radius += t_radi;
+          // GG: Not reproducible
+          atomic_b1_loc_norm += t_norm;
+          atomic_loc_radius += t_radi;
         }
-      }
+      });
+      scalar_type b1_loc_norm = atomic_b1_loc_norm;
+      scalar_type loc_radius = atomic_loc_radius;
 
       radius = comm.reduceSum(loc_radius);
 
@@ -1388,10 +1387,11 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
 
         // b0 = b1 / b1_norm
         b1_norm = 1 / sqrt(b1_norm);
-#pragma omp parallel for
-        for (ptrdiff_t i = 0; i < n; ++i) {
-          b0[i] = b1_norm * b1[i];
-        }
+        arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+          for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+            b0[i] = b1_norm * b1[i];
+          }
+        });
 
         for (size_t i = 0, m = C.send.count(); i < m; ++i)
           b0_send[i] = b0[C.send.col[i]];
