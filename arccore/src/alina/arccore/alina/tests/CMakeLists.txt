@@ -61,7 +61,6 @@ endif()
 
 gtest_discover_tests(arccore_alina.tests
   DISCOVERY_TIMEOUT 30
-  PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=2"
 )
 
 # ----------------------------------------------------------------------------

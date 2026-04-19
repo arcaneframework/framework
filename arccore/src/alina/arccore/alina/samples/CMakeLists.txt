@@ -35,7 +35,6 @@ function(add_arccore_alina_example EXAMPLE SOURCES)
     COMMAND ${EXAMPLE} ${ARGN}
     WORKING_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}"
   )
-  set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_NB_TASK=2")
 endfunction()
 
@@ -117,7 +116,6 @@ function(add_mpi_example_test target test_name nb_core)
     WORKING_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}"
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${nb_core} ./${target} ${ARGN}
   )
-  set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
   set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_NB_TASK=2")
 endfunction()
 
