@@ -185,6 +185,7 @@ class ARCCORE_ALINA_EXPORT PropertyTree
 
   void check_params(const std::set<std::string>& names) const;
   void check_params(const std::set<std::string>& names, const std::set<std::string>& opt_names) const;
+  ARCCORE_ALINA_EXPORT friend std::ostream& operator<<(std::ostream& o, const PropertyTree& obj);
 
  private:
 
@@ -292,15 +293,12 @@ namespace detail
 #define ARCCORE_ALINA_PARAMS_EXPORT_CHILD(p, path, name) \
   ::Arcane::Alina::detail::params_export_child(p, path, #name, name)
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Missing parameter action
 #ifndef ARCCORE_ALINA_PARAM_MISSING
 #define ARCCORE_ALINA_PARAM_MISSING(name) (void)0
-#endif
-
-// Unknown parameter action
-#ifndef ARCCORE_ALINA_PARAM_UNKNOWN
-#define ARCCORE_ALINA_PARAM_UNKNOWN(name) \
-  std::cerr << "AMGCL WARNING: unknown parameter " << name << std::endl
 #endif
 
 /*---------------------------------------------------------------------------*/

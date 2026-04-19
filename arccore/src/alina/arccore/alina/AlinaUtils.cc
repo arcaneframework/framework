@@ -223,7 +223,7 @@ void PropertyTree::
 check_params(const std::set<std::string>& names) const
 {
   const auto& p = toBoostPTree(this);
-
+  bool has_error = false;
   for (const auto& n : names) {
     if (!p.count(n)) {
       ARCCORE_ALINA_PARAM_MISSING(n);
@@ -231,9 +231,12 @@ check_params(const std::set<std::string>& names) const
   }
   for (const auto& v : p) {
     if (!names.count(v.first)) {
-      ARCCORE_ALINA_PARAM_UNKNOWN(v.first);
+      std::cerr << "WARNING: unknown parameter " << v.first << "\n";
+      has_error = true;
     }
   }
+  if (has_error)
+    ARCANE_FATAL("Invalid parameters");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,6 +247,7 @@ check_params(const std::set<std::string>& names,
              const std::set<std::string>& opt_names) const
 {
   const auto& p = toBoostPTree(this);
+  bool has_error = false;
 
   for (const auto& n : names) {
     if (!p.count(n)) {
@@ -257,9 +261,12 @@ check_params(const std::set<std::string>& names,
   }
   for (const auto& v : p) {
     if (!names.count(v.first) && !opt_names.count(v.first)) {
-      ARCCORE_ALINA_PARAM_UNKNOWN(v.first);
+      std::cerr << "WARNING: unknown parameter " << v.first << "\n";
+      has_error = true;
     }
   }
+  if (has_error)
+    ARCANE_FATAL("Invalid parameters");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -271,7 +278,7 @@ putKeyValue(const std::string& param)
   auto& p = toBoostPTree(this);
   size_t eq_pos = param.find('=');
   if (eq_pos == std::string::npos)
-    throw std::invalid_argument("param in put() should have \"key=value\" format!");
+    ARCANE_FATAL("param in put() should have \"key=value\" format (param='{0}')", param);
   p.put(param.substr(0, eq_pos), param.substr(eq_pos + 1));
 }
 
@@ -285,6 +292,18 @@ empty_params(const PropertyTree& ap)
   for (const auto& v : p) {
     std::cerr << "Alina: unknown parameter " << v.first << "\n";
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::ostream& operator<<(std::ostream& o, const PropertyTree& obj)
+{
+  const auto& p = toBoostPTree(obj);
+  std::ostringstream ostr;
+  boost::property_tree::json_parser::write_json(ostr, p);
+  o << ostr.str();
+  return o;
 }
 
 /*---------------------------------------------------------------------------*/
