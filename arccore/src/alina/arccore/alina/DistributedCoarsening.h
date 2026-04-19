@@ -23,6 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <cstddef>
 #include <tuple>
 #include <memory>
 #include <numeric>
@@ -55,7 +56,7 @@ struct DistributedPMISAggregation
   using build_matrix = Backend::matrix;
   using col_type = Backend::col_type;
   using ptr_type = Backend::ptr_type;
-  using bool_backend = BuiltinBackend<char,col_type,ptr_type>;
+  using bool_backend = BuiltinBackend<char, col_type, ptr_type>;
   using bool_matrix = bool_backend::matrix;
 
   struct params
@@ -451,23 +452,25 @@ struct DistributedPMISAggregation
     std::vector<int> send_owner(Sp.send.count());
 
     // Remove lonely nodes.
-#pragma omp parallel for reduction(+ : n_undone)
-    for (ptrdiff_t i = 0; i < n; ++i) {
-      ptrdiff_t wl = A_loc.ptr[i + 1] - A_loc.ptr[i];
-      ptrdiff_t wr = S_rem.ptr[i + 1] - S_rem.ptr[i];
+    std::atomic<ptrdiff_t> atomic_n_undone = 0;
+    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+        ptrdiff_t wl = A_loc.ptr[i + 1] - A_loc.ptr[i];
+        ptrdiff_t wr = S_rem.ptr[i + 1] - S_rem.ptr[i];
 
-      if (wl + wr == 1) {
-        loc_state[i] = DistributedPMISAggregation::deleted;
-        ++n_undone;
+        if (wl + wr == 1) {
+          loc_state[i] = DistributedPMISAggregation::deleted;
+          ++atomic_n_undone;
+        }
+        else {
+          loc_state[i] = DistributedPMISAggregation::undone;
+        }
+
+        loc_owner[i] = -1;
       }
-      else {
-        loc_state[i] = DistributedPMISAggregation::undone;
-      }
+    });
 
-      loc_owner[i] = -1;
-    }
-
-    n_undone = n - n_undone;
+    n_undone = n - atomic_n_undone;
 
     // Exchange state
     for (ptrdiff_t i = 0, m = Sp.send.count(); i < m; ++i)
@@ -1247,7 +1250,7 @@ struct DistributedSmoothedAggregationCoarsening
   using build_matrix = Backend::matrix;
   using col_type = Backend::col_type;
   using ptr_type = Backend::ptr_type;
-  using bool_backend = BuiltinBackend<char,col_type,ptr_type>;
+  using bool_backend = BuiltinBackend<char, col_type, ptr_type>;
   using bool_matrix = bool_backend::matrix;
 
   struct params
