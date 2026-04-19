@@ -31,7 +31,7 @@ namespace Arcane::Accelerator
 {
 //! Liste des types supportant les opérations atomiques.
 template <typename T>
-concept AcceleratorAtomicConcept = std::same_as<T, Real> || std::same_as<T, Int32> || std::same_as<T, Int64>;
+concept AcceleratorAtomicConcept = std::same_as<T, float> || std::same_as<T, double> || std::same_as<T, Int32> || std::same_as<T, Int64>;
 } // namespace Arcane::Accelerator
 
 namespace Arcane::Accelerator::Impl
