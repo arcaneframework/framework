@@ -30,6 +30,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 using Backend = Alina::BuiltinBackend<double>;
+//using Backend = Alina::BuiltinBackend<double,Int32,Int32>;
 using PreconditionerType = Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>;
 using SequentialSolverType = Alina::PreconditionedSolver<PreconditionerType, Alina::SolverRuntime<Backend>>;
 typedef Alina::PropertyTree Params;
@@ -38,7 +39,7 @@ typedef Alina::PropertyTree Params;
 
 using DistributedSolverType = Alina::DistributedSubDomainDeflation<PreconditionerType,
                                                                    Alina::DistributedSolverRuntime<Backend>,
-                                                                   Alina::DistributedDirectSolverRuntime<double>>;
+                                                                   Alina::DistributedDirectSolverRuntime<Backend>>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -239,6 +240,11 @@ solver_create(int n, const int* ptr,
     solver = new SequentialSolverType(A, prm->m_properties);
   else
     solver = new SequentialSolverType(A);
+  std::cout << "Printing solver infos\n";
+  std::cout << (*solver) << std::endl;
+  Alina::PropertyTree ptree;
+  solver->prm.get(ptree);
+  std::cout << "SOLVER_PARAMS: " << ptree << "\n";
   return new AlinaSequentialSolver(solver);
 }
 

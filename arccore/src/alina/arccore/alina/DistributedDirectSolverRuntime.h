@@ -73,12 +73,14 @@ inline std::istream& operator>>(std::istream& in, eDistributedDirectSolverType& 
 /*!
  * \brief Runtime wrapper for distributed direct solvers.
  */
-template <class value_type>
+template <typename Backend>
 class DistributedDirectSolverRuntime
 {
  public:
 
+  typedef typename Backend::value_type value_type;
   typedef Alina::PropertyTree params;
+  using SkylineSolverType = DistributedSkylineLUDirectSolver<Backend>;
 
   template <class Matrix>
   DistributedDirectSolverRuntime(Alina::mpi_communicator comm, const Matrix& A, params prm = params())
@@ -89,8 +91,7 @@ class DistributedDirectSolverRuntime
 
     switch (s) {
     case eDistributedDirectSolverType::skyline_lu: {
-      typedef DistributedSkylineLUDirectSolver<value_type> S;
-      handle = static_cast<void*>(new S(comm, A, prm));
+      handle = static_cast<void*>(new SkylineSolverType(comm, A, prm));
     } break;
     default:
       ARCCORE_THROW(NotSupportedException, "Invalid solver type '{0}'", s);
@@ -107,8 +108,7 @@ class DistributedDirectSolverRuntime
   {
     switch (s) {
     case eDistributedDirectSolverType::skyline_lu: {
-      typedef DistributedSkylineLUDirectSolver<value_type> S;
-      static_cast<const S*>(handle)->operator()(rhs, x);
+      static_cast<const SkylineSolverType*>(handle)->operator()(rhs, x);
     } break;
     default:
       ARCCORE_THROW(NotSupportedException, "Invalid solver type '{0}'", s);
@@ -119,8 +119,7 @@ class DistributedDirectSolverRuntime
   {
     switch (s) {
     case eDistributedDirectSolverType::skyline_lu: {
-      typedef DistributedSkylineLUDirectSolver<value_type> S;
-      delete static_cast<S*>(handle);
+      delete static_cast<SkylineSolverType*>(handle);
     } break;
     default:
       break;

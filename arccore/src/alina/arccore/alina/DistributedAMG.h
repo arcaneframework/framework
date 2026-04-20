@@ -46,7 +46,7 @@ namespace Arcane::Alina
 template <class Backend,
           class Coarsening,
           class Relaxation,
-          class DirectSolver = DistributedSkylineLUDirectSolver<typename Backend::value_type>,
+          class DirectSolver = DistributedSkylineLUDirectSolver<Backend>,
           class Repartition = SimpleMatrixPartitioner<Backend>>
 class DistributedAMG
 {

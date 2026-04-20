@@ -330,7 +330,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     prof.tic("setup");
     using SDD = DistributedSubDomainDeflation<RelaxationAsPreconditioner<Backend, RelaxationRuntime>,
                                               DistributedSolverRuntime<Backend>,
-                                              DistributedDirectSolverRuntime<double>>;
+                                              DistributedDirectSolverRuntime<Backend>>;
 
     SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
     prof.toc("setup");
@@ -346,7 +346,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     prof.tic("setup");
     using SDD = DistributedSubDomainDeflation<AMG<Backend, CoarseningRuntime, RelaxationRuntime>,
                                               DistributedSolverRuntime<Backend>,
-                                              DistributedDirectSolverRuntime<double>>;
+                                              DistributedDirectSolverRuntime<Backend>>;
 
     SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
     prof.toc("setup");

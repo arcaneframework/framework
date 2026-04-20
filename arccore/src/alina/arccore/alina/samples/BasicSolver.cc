@@ -101,7 +101,11 @@ solve(const Alina::PropertyTree& prm,
     Solver solve(std::tie(rows, ptr, col, val), prm, bprm);
     prof.toc("setup");
 
+    std::cout << "Printing solver infos\n";
     std::cout << solve << std::endl;
+    Alina::PropertyTree ptree;
+    solve.prm.get(ptree);
+    std::cout << "SOLVER PARAMS: " << ptree << "\n";
 
     auto f_b = Backend::copy_vector(rhs, bprm);
     auto x_b = Backend::copy_vector(x, bprm);
@@ -201,6 +205,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     _doHypreSolver(rows, ptr, col, val, rhs, x, argc, argv);
   }
   else {
+
     solver_result = solve(prm, rows, ptr, col, val, rhs, x);
 
     if (vm.count("output")) {

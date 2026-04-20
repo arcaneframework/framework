@@ -738,7 +738,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   prof.tic("setup");
   using SDD = Alina::DistributedSubDomainDeflation<Alina::PreconditionerRuntime<Backend>,
                                                    Alina::DistributedSolverRuntime<Backend>,
-                                                   Alina::DistributedDirectSolverRuntime<double>>;
+                                                   Alina::DistributedDirectSolverRuntime<Backend>>;
 
   SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
   prof.toc("setup");
