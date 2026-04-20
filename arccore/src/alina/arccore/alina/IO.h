@@ -38,6 +38,8 @@
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/BackendInterface.h"
 
+#include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
