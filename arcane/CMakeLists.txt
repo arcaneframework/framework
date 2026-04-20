@@ -922,6 +922,7 @@ if (ARCANE_ENABLE_ALEPH)
 endif()
 add_subdirectory(src/arcane/driverlib)
 add_subdirectory(src/arcane/driver)
+add_subdirectory(src/arcane/lima)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

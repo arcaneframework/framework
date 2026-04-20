@@ -10,7 +10,7 @@
 /* Fonctions utilitaires pour Lima.                                          */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/internal/LimaUtils.h"
+#include "arcane/lima/internal/LimaUtils.h"
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ITraceMng.h"
@@ -19,7 +19,7 @@
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/ItemGroup.h"
 
-#include "arcane/core/internal/LimaMalippT.h"
+#include "arcane/lima/internal/LimaMalippT.h"
 
 #include <algorithm>
 

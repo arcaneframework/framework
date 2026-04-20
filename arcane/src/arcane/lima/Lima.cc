@@ -54,8 +54,9 @@
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/ICaseMeshReader.h"
 #include "arcane/core/IMeshBuilder.h"
-#include "arcane/core/LimaCutInfosReader.h"
-#include "arcane/core/internal/LimaUtils.h"
+
+#include "arcane/lima/LimaCutInfosReader.h"
+#include "arcane/lima/internal/LimaUtils.h"
 
 #include <Lima/lima++.h>
 

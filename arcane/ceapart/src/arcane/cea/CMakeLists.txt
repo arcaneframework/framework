@@ -1,8 +1,7 @@
 message(STATUS "Parsing '${CMAKE_CURRENT_SOURCE_DIR}' binary='${CMAKE_CURRENT_BINARY_DIR}'")
 
-set(PKGS MPI Lima)
+set(PKGS MPI)
 arcane_find_package(MPI)
-arcane_find_package(Lima)
 
 include(srcs.cmake)
 
@@ -17,23 +16,6 @@ arcane_add_arccon_packages(arcane_cea PRIVATE ${PKGS})
 
 target_include_directories(arcane_cea PUBLIC $<BUILD_INTERFACE:${ARCANEBUILDROOT}>)
 target_include_directories(arcane_cea PUBLIC $<BUILD_INTERFACE:${ARCANECEA_SRC_PATH}> $<INSTALL_INTERFACE:include>)
-
-if(TARGET Lima::Lima)
-  message(STATUS "Add Lima::Lima to 'arcane_cea' target")
-  target_link_libraries(arcane_cea PRIVATE Lima::Lima)
-elseif(TARGET arcane::lima)
-  target_link_libraries(arcane_cea PRIVATE arcane::lima)
-  if (ARCANE_LIMA_HAS_MLI2)
-    arcane_add_arccon_packages(arcane_cea PRIVATE HDF5)
-  endif()
-endif()
-
-if (ARCANE_LIMA_HAS_MLI2)
-  target_compile_definitions(arcane_cea PRIVATE ARCANE_LIMA_HAS_MLI2)
-endif()
-if (ARCANE_LIMA_HAS_MLI)
-  target_compile_definitions(arcane_cea PRIVATE ARCANE_LIMA_HAS_MLI)
-endif()
 
 target_link_libraries(arcane_cea PUBLIC arcane_cartesianmesh arcane_core)
 
