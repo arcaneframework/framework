@@ -33,7 +33,6 @@ _mainHelper(int argc,char* argv[])
   app_info.addDynamicLibrary("arcane_ios");
   app_info.addDynamicLibrary("arcane_std");
   app_info.addDynamicLibrary("arcane_mesh");
-  app_info.addDynamicLibrary("arcane_cea");
   return ArcaneMain::run();
 }
 

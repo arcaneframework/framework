@@ -1,5 +1,4 @@
 set( ARCANE_SOURCES
-  ArcaneCeaRegisterer.cc
   CartesianConnectivity.h
   CellDirectionMng.h
   FaceDirectionMng.h
@@ -12,8 +11,4 @@ set( ARCANE_SOURCES
   NodeDirectionMng.h
   ICartesianMesh.h
   ICartesianMeshPatch.h
-  CeaGlobal.h
-  )
-
-set(AXL_FILES 
-  )
+)

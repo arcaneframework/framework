@@ -11,18 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
+#include "arcane/core/IMesh.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/ICartesianMeshPatch.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/FaceDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
 
-#include "arcane/ItemPrinter.h"
-#include "arcane/SimpleSVGMeshExporter.h"
-#include "arcane/Directory.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/SimpleSVGMeshExporter.h"
+#include "arcane/core/Directory.h"
 
 #include "arcane/tests/cartesianmesh/UnitTestCartesianMeshPatch_axl.h"
 

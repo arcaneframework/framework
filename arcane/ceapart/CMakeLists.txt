@@ -27,28 +27,6 @@ install(FILES ${ARCANE_DOTNET_PUBLISH_BUILD_DIR}/ArcaneCea.config DESTINATION ${
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Exporte dans le CMakeLists.txt de Arcane les informations des packages.
-# A terme, cela devrait être supprimé lorsqu'on utilisera les cibles importées
-# partout.
-
-macro(arcanecea_export_package pkg)
-  set(${pkg}_FOUND ${${pkg}_FOUND} PARENT_SCOPE)
-  set(${pkg}_LIBRARIES ${${pkg}_LIBRARIES} PARENT_SCOPE)
-  set(${pkg}_INCLUDE_DIRS ${${pkg}_INCLUDE_DIRS} PARENT_SCOPE)
-endmacro()
-
-foreach(pkg in ${ARCANE_ADDITIONAL_EXTERNAL_PACKAGES})
-  arcanecea_export_package(${pkg})
-endforeach()
-
-set(ARCANE_LIBRARIES ${ARCANE_LIBRARIES} PARENT_SCOPE)
-set(ARCANE_ADDITIONAL_EXTERNAL_PACKAGES ${ARCANE_ADDITIONAL_EXTERNAL_PACKAGES} PARENT_SCOPE)
-
-message(STATUS "(CEA) ARCANE_LIBRARIES: ${ARCANE_LIBRARIES}")
-message(STATUS "(CEA) ARCANE_ADDITIONAL_EXTERNAL_PACKAGES ${ARCANE_ADDITIONAL_EXTERNAL_PACKAGES}")
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 # Local Variables:
