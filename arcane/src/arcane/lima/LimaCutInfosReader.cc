@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/LimaCutInfosReader.h"
+#include "arcane/lima/LimaCutInfosReader.h"
 
 #include "arcane/utils/ArcanePrecomp.h"
 

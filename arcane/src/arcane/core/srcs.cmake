@@ -522,8 +522,6 @@ set(ARCANE_ORIGINAL_SOURCES
   GlobalTimeHistoryAdder.h
   GroupIndexTable.cc
   GroupIndexTable.h
-  LimaCutInfosReader.cc
-  LimaCutInfosReader.h
   MathUtils.cc
   MathUtils.h
   MeshAccessor.cc

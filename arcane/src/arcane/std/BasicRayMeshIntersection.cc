@@ -32,20 +32,8 @@
 
 #include "arcane_packages.h"
 
-#ifdef ARCANE_HAS_PACKAGE_LIMA
-#include <Lima/lima++.h>
-#define GLOBAL_HAS_LIMA true
-#else
-#define GLOBAL_HAS_LIMA false
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace
-{
-const bool global_has_lima = GLOBAL_HAS_LIMA;
-}
 
 namespace Arcane
 {
@@ -507,10 +495,6 @@ class BasicRayMeshIntersection
       max_bounding_box->z = p.z;
   }
 
-  void _writeSegments(Int32 rank,
-                      Real3ConstArrayView positions,
-                      Real3ConstArrayView directions,
-                      RealConstArrayView distances);
  private:
   IRayFaceIntersector* m_face_intersector;
 };
@@ -833,57 +817,8 @@ compute(IItemFamily* ray_family,
       local_directions[index] = rays_direction[iitem];
       local_positions[index] = rays_position[iitem];
     }
-    if (global_has_lima)
-      _writeSegments(my_rank,local_positions,local_directions,local_distances);
   }
 
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicRayMeshIntersection::
-_writeSegments(Int32 rank,
-               Real3ConstArrayView positions,
-               Real3ConstArrayView directions,
-               RealConstArrayView distances)
-{
-#ifdef ARCANE_HAS_PACKAGE_LIMA
-  Lima::Maillage lima("segments");
-  lima.dimension(Lima::D3);
-
-  Integer nb_segment = positions.size();
-  UniqueArray<Lima::Noeud> lm_nodes(nb_segment*2);
-  for( Integer i=0; i<nb_segment; ++i ){
-    Real t = distances[i];
-    if (t<0.0)
-      t = 10.0;
-    lm_nodes[i*2].set_x(positions[i].x);
-    lm_nodes[i*2].set_y(positions[i].y);
-    lm_nodes[i*2].set_z(positions[i].z);
-    
-    lm_nodes[(i*2)+1].set_x(positions[i].x + t*directions[i].x);
-    lm_nodes[(i*2)+1].set_y(positions[i].y + t*directions[i].y);
-    lm_nodes[(i*2)+1].set_z(positions[i].z + t*directions[i].z);
-    lima.ajouter(lm_nodes[(i*2)]);
-    lima.ajouter(lm_nodes[(i*2)+1]);
-		lima.ajouter(Lima::Bras(lm_nodes[i*2],lm_nodes[(i*2)+1]));
-  }
-  StringBuilder sb("segments");
-  sb+=rank;
-  sb+=".unf";
-  std::string s(sb.toString().localstr());
-  lima.ecrire(s);
-#else
-  ARCANE_UNUSED(rank);
-  ARCANE_UNUSED(positions);
-  ARCANE_UNUSED(directions);
-  ARCANE_UNUSED(distances);
-  ARCANE_THROW(NotSupportedException,"Lima is not available");
-#endif
 }
 
 /*---------------------------------------------------------------------------*/

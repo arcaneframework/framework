@@ -2,11 +2,6 @@
 
 include(srcs.cmake)
 
-arcane_find_package(Lima)
-if (Lima_FOUND)
-  list(APPEND ARCANE_SOURCES internal/LimaUtils.cc internal/LimaUtils.h internal/LimaMalippT.h)
-endif ()
-
 arcane_add_library(arcane_core
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/core
@@ -19,26 +14,6 @@ target_link_libraries(arcane_core PUBLIC arcane_accelerator_core arcane_utils)
 target_link_libraries(arcane_core PUBLIC Arccore::arccore_message_passing Arccore::arccore_serialize)
 target_link_libraries(arcane_core PRIVATE LibXml2::LibXml2)
 target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTORY}>)
-
-
-if (Lima_FOUND)
-  if (TARGET Lima::Lima)
-    message(STATUS "Add Lima::Lima to 'arcane_core' target")
-    target_link_libraries(arcane_core PRIVATE Lima::Lima)
-  elseif (TARGET arcane::lima)
-    target_link_libraries(arcane_core PRIVATE arcane::lima)
-    if (ARCANE_LIMA_HAS_MLI2)
-      arcane_add_arccon_packages(arcane_core PRIVATE HDF5)
-    endif ()
-  endif ()
-
-  if (ARCANE_LIMA_HAS_MLI2)
-    target_compile_definitions(arcane_core PRIVATE ARCANE_LIMA_HAS_MLI2)
-  endif ()
-  if (ARCANE_LIMA_HAS_MLI)
-    target_compile_definitions(arcane_core PRIVATE ARCANE_LIMA_HAS_MLI)
-  endif ()
-endif ()
 
 arcane_register_library(arcane_core)
 

@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LimaCutInfosReader.h                                        (C) 2000-2026 */
+/* LimaUtils.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Lecteur des informations de découpages avec les fichiers Lima.            */
+/* Fonctions utilitaires pour Lima.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_LIMACUTINFOSREADER_H
-#define ARCANE_CORE_LIMACUTINFOSREADER_H
+#ifndef ARCANE_CORE_INTERNAL_LIMAUTILS_H
+#define ARCANE_CORE_INTERNAL_LIMAUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/TraceAccessor.h"
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/lima/ArcaneLimaGlobal.h"
+#include "arcane/core/IMeshReader.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,36 +26,32 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class XmlNode;
-class IParallelMng;
+class IItemFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Construction d'un maillage 3D.
- */
-class ARCANE_CORE_EXPORT LimaCutInfosReader
-: public TraceAccessor
+
+class ARCANE_LIMA_EXPORT LimaUtils
 {
  public:
 
-  LimaCutInfosReader(IParallelMng* parallel_mng);
-  virtual ~LimaCutInfosReader() {}
+  LimaUtils() = default;
+
+  ~LimaUtils() = default;
 
  public:
 
-  void readItemsUniqueId(Int64ArrayView nodes_id, Int64ArrayView cells_id,
-                         const String& dir_name);
+  /*!
+   * \brief Créé un groupe d'entités.
+   *
+   * Pour assurer la reproductibilité, s'assure que les entités sont
+   * triées suivant leur localid. S'assure aussi qu'il n'y a pas de doublons
+   * dans la liste car lima l'autorise mais pas Arcane.
+   */
+  static void createGroup(IItemFamily* family, const String& name, Int32ArrayView local_ids);
 
- private:
-
-  IParallelMng* m_parallel_mng;
-
- private:
-
-  void _readUniqueIndex(Int64ArrayView nodes_id, Int64ArrayView cells_id, const String& dir_name);
-  void _readUniqueIndexFromXml(Int64ArrayView nodes_id, Int64ArrayView cells_id,
-                               XmlNode root_element, Int32 rank);
+  static IMeshReader::eReturnType _directLimaPartitionMalipp(ITimerMng* timer_mng, IPrimaryMesh* mesh, const String& filename, Real length_multiplier);
+  static IMeshReader::eReturnType _directLimaPartitionMalipp2(ITimerMng* timer_mng, IPrimaryMesh* mesh, const String& filename, Real length_multiplier);
 };
 
 /*---------------------------------------------------------------------------*/

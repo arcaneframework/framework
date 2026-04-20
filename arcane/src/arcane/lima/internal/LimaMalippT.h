@@ -48,8 +48,9 @@
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/MathUtils.h"
-#include "arcane/core/LimaCutInfosReader.h"
-#include "arcane/core/internal/LimaUtils.h"
+
+#include "arcane/lima/LimaCutInfosReader.h"
+#include "arcane/lima/internal/LimaUtils.h"
 
 #include <Lima/lima++.h>
 
