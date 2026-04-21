@@ -809,3 +809,65 @@ TEST(NeoMeshAPITest,ConnectUnexistingItems) {
   auto empty_connectivity = mesh.getConnectivity(cell_family, node_family, "empty_cell_to_nodes");
   EXPECT_TRUE(empty_connectivity.isEmpty());
 }
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshAPITest,FilterNullItemInConnectivity) {
+  // After connectivity creation some items may be connected with null items: an algo is automatically added to filter
+  // The algo outputs the position of the filtered items
+  auto mesh = Neo::Mesh{ "FilterNullItemInConnectivity" };
+  auto& face_family = mesh.addFamily(Neo::ItemKind::IK_Face, "FaceFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  std::vector<Neo::utils::Int64> face_uids{ 0, 1, 2, 3 };
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1};
+  auto future_faces = Neo::FutureItemRange{};
+  auto future_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(face_family, std::move(face_uids), future_faces);
+  mesh.scheduleAddItems(cell_family, std::move(cell_uids), future_cells);
+  // Create connectivity (fictive mesh) between faces and cells
+  // Two faces have only one cell, one has two and one has zero
+  std::string face_to_cells_connectivity_name{ "face_to_cells" };
+  auto nb_cell_per_face = 2;
+  std::vector<Neo::utils::Int64> face_cells{ -1, 0, 1, -1, 0, 1, -1, -1 };
+  mesh.scheduleAddConnectivity(face_family, future_faces, cell_family,
+                               nb_cell_per_face, face_cells,
+                               face_to_cells_connectivity_name);
+  mesh.applyScheduledOperations();
+  auto face_2_cells = mesh.getConnectivity(face_family, cell_family, face_to_cells_connectivity_name);
+  EXPECT_EQ(face_2_cells[0].size(), 1);
+  EXPECT_EQ(face_2_cells[1].size(), 1);
+  EXPECT_EQ(face_2_cells[2].size(), 2);
+  EXPECT_EQ(face_2_cells[3].size(), 0);
+  // Check last face (isolated) is removed
+  face_2_cells.connectivity_value.debugPrint();
+  // Try to remove a cell
+  mesh.scheduleRemoveItems(cell_family, { 0 });
+  mesh.applyScheduledOperations();
+  face_2_cells.connectivity_value.debugPrint();
+  auto&  null_connected_cells = face_family.getConcreteProperty<Neo::MeshArrayPropertyT<Neo::utils::Int32>>(Neo::Mesh::removedTargetItemIndexfilteredItemPropertyName(face_to_cells_connectivity_name));
+  std::vector<Neo::utils::Int32> null_face_cell_connection_ref{ 0, 0, 2, 0};
+  std::vector<Neo::utils::Int32> null_face_cell_connection;
+  null_connected_cells.debugPrint();
+  for (auto face = 0 ; face < 4 ; ++face) {
+    if (null_connected_cells[face].size() > 0) {
+      null_face_cell_connection.push_back(face);
+    }
+    for (auto null_connected_cell : null_connected_cells[face]) {
+      null_face_cell_connection.push_back(null_connected_cell);
+    }
+  }
+  Neo::printer() << "null face cell connection " << null_face_cell_connection << Neo::endline;
+  Neo::printer() << "null face cell connection ref " << null_face_cell_connection_ref << Neo::endline;
+  Neo::printer() << "faces " << face_family.all() << Neo::endline;
+  EXPECT_TRUE(std::equal(null_face_cell_connection.begin(), null_face_cell_connection.end(), null_face_cell_connection_ref.begin()));
+  for (auto face : face_family.all()) {
+    Neo::printer() << "face " << face << " has cells " << face_2_cells[face] << Neo::endline;
+    EXPECT_EQ(face_2_cells[face].size(), 1);
+  }
+  // Try to remove last cell
+  mesh.scheduleRemoveItems(cell_family, { 1 });
+  mesh.applyScheduledOperations();
+  face_2_cells.connectivity_value.debugPrint();
+  EXPECT_EQ(face_family.nbElements(), 0);
+  // Add a test (maybe a dedicated one) where source and item targets are removed
+}
