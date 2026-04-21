@@ -736,9 +736,6 @@ add_subdirectory(src/arcane/ios)
 
 if(NOT ARCANE_DISABLE_HYODA)
   add_subdirectory(src/arcane/hyoda)
-  if(TARGET arcane_hyoda)
-    list(APPEND ARCANE_ADDITIONAL_COMPONENTS arcane_hyoda)
-  endif()
 endif()
 
 add_subdirectory(src/arcane/dotnet/coreclr)
@@ -908,7 +905,6 @@ add_subdirectory(src/arcane/corefinement)
 
 if(ARCANE_WANT_TOTALVIEW)
   add_subdirectory(src/arcane/totalview)
-  set(ARCANE_ADDITIONAL_COMPONENTS arcane_totalview ${ARCANE_ADDITIONAL_COMPONENTS})
 endif()
 
 if (ARCANE_WANT_64BIT)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneTestInit.cc                                           (C) 2000-2025 */
+/* ArcaneTestInit.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Initialisation pour les tests.                                            */
 /*---------------------------------------------------------------------------*/
@@ -49,8 +49,6 @@ arcaneTestSetApplicationInfo()
 #ifdef ARCANE_OS_WIN32
   app_build_info.addDynamicLibrary("PerfectGas");
   app_build_info.addDynamicLibrary("StiffenedGas");
-  app_build_info.addDynamicLibrary("arcane_cea");
-  app_build_info.addDynamicLibrary("arcane_cea_tests");
   app_build_info.addDynamicLibrary("arcane_aleph_tests");
   app_build_info.addDynamicLibrary("arcane_aleph_hypre");
   app_build_info.addDynamicLibrary("arcane_aleph_kappa");
