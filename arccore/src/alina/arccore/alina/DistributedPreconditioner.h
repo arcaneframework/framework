@@ -99,7 +99,7 @@ class DistributedPreconditioner
   using AMGPrecondType = DistributedAMG<Backend,
                                         DistributedCoarseningRuntime<Backend>,
                                         DistributedRelaxationRuntime<Backend>,
-                                        DistributedDirectSolverRuntime<value_type>,
+                                        DistributedDirectSolverRuntime<Backend>,
                                         MatrixPartitionerRuntime<Backend>>;
 
   template <class Matrix>

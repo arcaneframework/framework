@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
   using AMG = DistributedAMG<Backend,
                              DistributedCoarseningRuntime<Backend>,
                              DistributedRelaxationRuntime<Backend>,
-                             DistributedDirectSolverRuntime<double>,
+                             DistributedDirectSolverRuntime<Backend>,
                              MatrixPartitionerRuntime<Backend>>;
 
   typedef DistributedPreconditionedSolver<

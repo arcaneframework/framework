@@ -316,12 +316,13 @@ int main(int argc, char* argv[])
   prof.toc("read problem");
 
   prof.tic("setup");
+  using Backend = BuiltinBackend<double>;
   using SDD = DistributedSubDomainDeflation<AMG<
-                                            BuiltinBackend<double>,
+                                            Backend,
                                             CoarseningRuntime,
                                             RelaxationRuntime>,
-                                            DistributedSolverRuntime<BuiltinBackend<double>>,
-                                            DistributedDirectSolverRuntime<double>>;
+                                            DistributedSolverRuntime<Backend>,
+                                            DistributedDirectSolverRuntime<Backend>>;
 
   std::function<double(ptrdiff_t, unsigned)> dv = Alina::constant_deflation(block_size);
   prm.put("num_def_vec", block_size);

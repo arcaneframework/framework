@@ -44,12 +44,15 @@ namespace Arcane::Alina
  * This is a wrapper around Eigen SparseLU solver that provides a
  * distributed direct solver interface but always works sequentially.
  */
-template <typename value_type>
+template <typename Backend>
 class DistributedEigenSparseLUDirectSolver
-: public DistributedDirectSolverBase<value_type, DistributedEigenSparseLUDirectSolver<value_type>>
+: public DistributedDirectSolverBase<Backend, DistributedEigenSparseLUDirectSolver<Backend>>
 {
+  using Base = DistributedDirectSolverBase<Backend, DistributedEigenSparseLUDirectSolver<Backend>>;
+
  public:
 
+  using value_type = Backend::value_type;
   using EigenMatrix = Eigen::SparseMatrix<value_type, Eigen::ColMajor, int>;
   using Solver = EigenSolver<Eigen::SparseLU<EigenMatrix>>;
   typedef typename Solver::params params;
@@ -93,7 +96,6 @@ class DistributedEigenSparseLUDirectSolver
 
  private:
 
-  typedef DistributedDirectSolverBase<value_type, DistributedEigenSparseLUDirectSolver<value_type>> Base;
   params prm;
   std::shared_ptr<Solver> S;
 };

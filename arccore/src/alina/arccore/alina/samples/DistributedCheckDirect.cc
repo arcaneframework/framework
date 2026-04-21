@@ -21,6 +21,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #include "arccore/alina/DistributedEigenSparseLUDirectSolver.h"
+#include "arccore/alina/EigenBackend.h"
 #endif
 
 #include "arccore/trace/ITraceMng.h"
@@ -144,7 +145,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     auto t = prof.scoped_tic("skyline");
 
     prof.tic("setup");
-    Alina::DistributedDirectSolverRuntime<double> solve(comm, A, prm);
+    using Backend = Alina::BuiltinBackend<double>;
+    Alina::DistributedDirectSolverRuntime<Backend> solve(comm, A, prm);
     tm->info() << "Solver is = " << solve.type();
     prof.toc("setup");
 
@@ -158,7 +160,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     auto t = prof.scoped_tic("eigen");
 
     prof.tic("setup");
-    Alina::DistributedEigenSparseLUDirectSolver<double> solve(comm, A, prm);
+    using Backend = Alina::backend::EigenBackend<double>;
+    Alina::DistributedEigenSparseLUDirectSolver<Backend> solve(comm, A, prm);
     prof.toc("setup");
 
     prof.tic("solve");

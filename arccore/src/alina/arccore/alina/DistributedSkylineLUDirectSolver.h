@@ -42,15 +42,18 @@ namespace Arcane::Alina
  * This is a wrapper around Skyline LU factorization solver that provides a
  * distributed direct solver interface but always works sequentially.
  */
-template <typename value_type>
+template <typename Backend>
 class DistributedSkylineLUDirectSolver
-: public DistributedDirectSolverBase<value_type, DistributedSkylineLUDirectSolver<value_type>>
+: public DistributedDirectSolverBase<Backend, DistributedSkylineLUDirectSolver<Backend>>
 {
+  using Base = DistributedDirectSolverBase<Backend, DistributedSkylineLUDirectSolver<Backend>>;
+
  public:
 
+  typedef typename Backend::value_type value_type;
   typedef Alina::solver::SkylineLUSolver<value_type> Solver;
   typedef typename Solver::params params;
-  typedef CSRMatrix<value_type> build_matrix;
+  typedef Backend::matrix build_matrix;
 
   /// Constructor.
   template <class Matrix>
@@ -90,7 +93,6 @@ class DistributedSkylineLUDirectSolver
 
  private:
 
-  typedef DistributedDirectSolverBase<value_type, DistributedSkylineLUDirectSolver<value_type>> Base;
   params prm;
   std::shared_ptr<Solver> S;
 };

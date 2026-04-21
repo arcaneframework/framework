@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
       DistributedSubDomainDeflation<
         AMG<Backend, CoarseningRuntime, RelaxationRuntime>,
         DistributedSolverRuntime<Backend>,
-        DistributedDirectSolverRuntime<double>>>,
+        DistributedDirectSolverRuntime<Backend>>>,
     DistributedSolverRuntime<Backend>>
   Solver;
 

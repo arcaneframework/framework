@@ -37,14 +37,18 @@ namespace Arcane::Alina
 /*!
  * \brief Base class for distributed direct solver.
  */
-template <class value_type, class Solver>
+template <typename Backend, class Solver>
 class DistributedDirectSolverBase
 {
  public:
 
+  typedef typename Backend::value_type value_type;
   typedef typename math::scalar_of<value_type>::type scalar_type;
   typedef typename math::rhs_of<value_type>::type rhs_type;
-  typedef CSRMatrix<value_type> build_matrix;
+  //typedef Backend::matrix build_matrix;
+  using col_type = Backend::col_type;
+  using ptr_type = Backend::ptr_type;
+  typedef CSRMatrix<value_type, col_type, ptr_type> build_matrix;
 
   DistributedDirectSolverBase() {}
 

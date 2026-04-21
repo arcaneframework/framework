@@ -190,7 +190,7 @@ void solve_scalar(Alina::mpi_communicator comm,
   //using RelaxationType = Alina::DistributedRelaxationRuntime<Backend>,
 
   using AMGPrecondType = Alina::DistributedAMG<Backend, CoarseningType, RelaxationType,
-                                               Alina::DistributedDirectSolverRuntime<BackendValueType>,
+                                               Alina::DistributedDirectSolverRuntime<Backend>,
                                                Alina::MatrixPartitionerRuntime<Backend>>;
 
   using Solver = Alina::DistributedPreconditionedSolver<AMGPrecondType, Alina::DistributedSolverRuntime<Backend>>;
