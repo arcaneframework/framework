@@ -269,6 +269,10 @@ class cuda_matrix
                  thrust::raw_pointer_cast(&buf[0])));
   }
 
+  size_t nbRow() const { return nrows; }
+  size_t nbColumn() const { return ncols; }
+  size_t nbNonZero() const { return nnz; }
+
   size_t rows() const { return nrows; }
   size_t cols() const { return ncols; }
   size_t nonzeros() const { return nnz; }

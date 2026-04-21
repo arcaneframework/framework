@@ -82,17 +82,24 @@ add_arccore_alina_example(call_lib AlinaLibraryUsage.cc)
 if (TARGET cuda_target)
   enable_language(CUDA)
   function(add_cuda_example example)
-    add_executable(${example}_cuda ${example}.cc)
-    set_source_files_properties(${example}.cc PROPERTIES LANGUAGE CUDA)
+    set(SOURCE_FILE "${example}Accelerator.cc")
+    add_executable(${example}_cuda "${SOURCE_FILE}")
+    set_target_properties(${example}_cuda PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
+    set_source_files_properties("${SOURCE_FILE}" PROPERTIES LANGUAGE CUDA)
     target_compile_definitions(${example}_cuda PUBLIC SOLVER_BACKEND_CUDA)
     target_include_directories(${example}_cuda PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../tests" )
-    target_link_libraries(${example}_cuda PUBLIC arccore_alina cuda_target arccore_cuda_compile_flags Boost::program_options)
+    target_link_libraries(${example}_cuda PUBLIC
+      arccore_alina
+      arccore_accelerator
+      cuda_target
+      Boost::program_options
+      )
     add_test(NAME alina_${example}_cuda COMMAND ${example}_cuda ${SAMPLE_MATRIX_ARGS})
   endfunction()
 
-  add_cuda_example(solver)
-  add_cuda_example(schur_pressure_correction)
-  add_cuda_example(cpr_drs)
+  add_cuda_example(Solver)
+  add_cuda_example(SchurPressureCorrection)
+  add_cuda_example(CPRDynamicRowSum)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -162,15 +169,21 @@ if (TARGET arccon::Parmetis)
   target_link_libraries(partition PUBLIC arccon::Parmetis ${Boost_PROGRAM_OPTIONS_LIBRARY})
 endif()
 
-if (TARGET cuda_target)
-  foreach(example runtime_sdd runtime_sdd_3d schur_pc_mpi mpi_solver)
-    add_executable(${example}_cuda ${example}.cc)
-    set_source_files_properties(${example}.cc PROPERTIES LANGUAGE CUDA)
+# At the moment the samples with CUDA and MPI do not work
+# because there is missing methods in the CUDA backend for
+# Distributed Matrix
+set(DO_CUDA_MPI FALSE)
+if (DO_CUDA_MPI AND TARGET cuda_target)
+  foreach(example DistributedRuntimeSDD DistributedRuntimeSDD3D DistributedSCHUR DistributedSolver)
+    set(SOURCE_FILE "${example}Accelerator.cc")
+    add_executable(${example}_cuda "${SOURCE_FILE}")
+    set_target_properties(${example}_cuda PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
+    set_source_files_properties("${SOURCE_FILE}" PROPERTIES LANGUAGE CUDA)
     target_compile_definitions(${example}_cuda PUBLIC SOLVER_BACKEND_CUDA)
     target_link_libraries(${example}_cuda PUBLIC
       arccore_alina
+      arccore_accelerator
       cuda_target
-      arccore_cuda_compile_flags
       Boost::program_options
     )
   endforeach()
