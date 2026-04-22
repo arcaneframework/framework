@@ -1,9 +1,8 @@
-﻿
-include(srcs.cmake)
+﻿include(srcs.cmake)
 
+arcane_find_package(MPI)
 arcane_find_package(HDF5)
 arcane_find_package(Lima)
-
 
 if (NOT Lima_FOUND)
   message(STATUS "Lima not found. Disabling 'arcane_lima'")
@@ -17,7 +16,6 @@ arcane_add_library(arcane_lima
 )
 
 target_link_libraries(arcane_lima PUBLIC arcane_core)
-
 
 if (TARGET Lima::Lima)
   message(STATUS "Add Lima::Lima to 'arcane_lima' target")
@@ -36,8 +34,11 @@ if (ARCANE_LIMA_HAS_MLI)
   target_compile_definitions(arcane_lima PRIVATE ARCANE_LIMA_HAS_MLI)
 endif ()
 
-arcane_register_library(arcane_lima)
+# Si HDF5 est compilé avec MPI et que HDF5 n'est pas compilé avec CMake,
+# il faut ajouter explicitement le support de MPI.
+arcane_add_arccon_packages(arcane_lima PRIVATE MPI)
 
+arcane_register_library(arcane_lima)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
