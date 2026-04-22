@@ -53,6 +53,11 @@ struct common_scalar_backend;
 class ExecutionContext;
 class PropertyTree;
 
+template <typename ValueType_,
+          typename ColumnType_ = ptrdiff_t,
+          typename RowIndexType_ = ColumnType_>
+class CSRMatrixView;
+
 template <typename val_t = double, typename col_t = ptrdiff_t, typename ptr_t = col_t>
 struct CSRMatrix;
 template <typename V, typename C, typename P>
