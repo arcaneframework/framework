@@ -15,6 +15,7 @@ set(SOURCES
   BlockCSRMatrix.h
   CSRMatrix.h
   CSRMatrixOperations.h
+  CSRMatrixView.h
   Coarsening.h
   CoarseningRuntime.h
   DeflatedSolver.h

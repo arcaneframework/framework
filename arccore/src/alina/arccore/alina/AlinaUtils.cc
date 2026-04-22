@@ -14,6 +14,7 @@
 #include "arcane/utils/ArcaneGlobal.h"
 
 #include "arccore/alina/AlinaUtils.h"
+#include "arccore/alina/CSRMatrixView.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
