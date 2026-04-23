@@ -63,6 +63,17 @@ struct CSRMatrix;
 template <typename V, typename C, typename P>
 struct BlockCSRMatrix;
 
+template <typename IndexType_>
+class CSRRow;
+template <typename IndexType_>
+class CSRRowColumnIndex;
+template <typename IndexType_>
+class CSRRowColumnIterator;
+template <typename IndexType_>
+class CSRRowRangeIterator;
+template <typename IndexType_>
+class CSRRowRange;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
