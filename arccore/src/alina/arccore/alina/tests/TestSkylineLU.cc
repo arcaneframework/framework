@@ -33,8 +33,8 @@ using namespace Arcane;
 
 TEST(alina_test_skyline_lu, skyline_lu)
 {
-  std::vector<ptrdiff_t> ptr;
-  std::vector<ptrdiff_t> col;
+  std::vector<Int32> ptr;
+  std::vector<Int32> col;
   std::vector<double> val;
   std::vector<double> rhs;
 

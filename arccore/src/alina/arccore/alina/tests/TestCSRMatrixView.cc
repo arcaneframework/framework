@@ -117,8 +117,8 @@ doTestScale2(CSRMatrixView<Val, Col, Ptr> A, T s, Int32 nb_loop)
 
 TEST(alina_test_csr_matrix_view, basic)
 {
-  std::vector<ptrdiff_t> ptr;
-  std::vector<ptrdiff_t> col;
+  std::vector<Int32> ptr;
+  std::vector<Int32> col;
   std::vector<double> val;
   std::vector<double> rhs;
 

@@ -26,13 +26,12 @@
 
 // Generates matrix for poisson problem in a unit cube.
 template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
-int sample_problem(
-ptrdiff_t n,
-std::vector<ValueType>& val,
-std::vector<ColType>& col,
-std::vector<PtrType>& ptr,
-std::vector<RhsType>& rhs,
-double anisotropy = 1.0)
+int sample_problem(ptrdiff_t n,
+                   std::vector<ValueType>& val,
+                   std::vector<ColType>& col,
+                   std::vector<PtrType>& ptr,
+                   std::vector<RhsType>& rhs,
+                   double anisotropy = 1.0)
 {
   ptrdiff_t n3 = n * n * n;
 

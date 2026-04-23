@@ -47,9 +47,9 @@ template <typename real>
 struct EigenBackend
 {
   typedef real value_type;
-  typedef ptrdiff_t index_type;
-  typedef ptrdiff_t col_type;
-  typedef ptrdiff_t ptr_type;
+  typedef BuiltinBackend<real>::ptr_type index_type;
+  typedef BuiltinBackend<real>::col_type col_type;
+  typedef BuiltinBackend<real>::ptr_type ptr_type;
 
   typedef Eigen::Map<Eigen::SparseMatrix<value_type, Eigen::RowMajor, index_type>> matrix;
 
@@ -113,7 +113,7 @@ struct EigenBackend
 
   struct hold_host
   {
-    typedef std::shared_ptr<CSRMatrix<real, ptrdiff_t, ptrdiff_t>> host_matrix;
+    typedef std::shared_ptr<typename BuiltinBackend<real>::matrix> host_matrix;
     host_matrix host;
 
     hold_host(host_matrix host)

@@ -937,22 +937,22 @@ scale_diagonal(const Matrix& A,
 
 template <typename Ptr, typename Col, typename Val>
 std::shared_ptr<CSRMatrix<Val>>
-zero_copy(size_t nrows, size_t ncols, const Ptr* ptr, const Col* col, const Val* val)
+zero_copy(size_t nrows, size_t ncols, Ptr* ptr, Col* col, Val* val)
 {
   // Check that Ptr and Col types are binary-compatible with ptrdiff_t:
   static_assert(std::is_integral_v<Ptr>, "Unsupported Ptr type");
   static_assert(std::is_integral_v<Col>, "Unsupported Col type");
-  static_assert(sizeof(Ptr) == sizeof(ptrdiff_t), "Unsupported Ptr type");
-  static_assert(sizeof(Col) == sizeof(ptrdiff_t), "Unsupported Col type");
+  static_assert(sizeof(Ptr) == sizeof(Int32), "Unsupported Ptr type");
+  static_assert(sizeof(Col) == sizeof(Int32), "Unsupported Col type");
 
   auto A = std::make_shared<CSRMatrix<Val>>();
   A->setNbRow(nrows);
   A->ncols = ncols;
   A->setNbNonZero(nrows ? ptr[nrows] : 0);
 
-  A->ptr.setPointerZeroCopy((ptrdiff_t*)ptr);
-  A->col.setPointerZeroCopy((ptrdiff_t*)col);
-  A->val.setPointerZeroCopy((Val*)val);
+  A->ptr.setPointerZeroCopy(ptr);
+  A->col.setPointerZeroCopy(col);
+  A->val.setPointerZeroCopy(val);
 
   A->own_data = false;
 
@@ -964,7 +964,7 @@ zero_copy(size_t nrows, size_t ncols, const Ptr* ptr, const Col* col, const Val*
 
 template <typename Ptr, typename Col, typename Val>
 std::shared_ptr<CSRMatrix<Val>>
-zero_copy(size_t n, const Ptr* ptr, const Col* col, const Val* val)
+zero_copy(size_t n, Ptr* ptr, Col* col, Val* val)
 {
   return zero_copy(n, n, ptr, col, val);
 }
@@ -974,7 +974,7 @@ zero_copy(size_t n, const Ptr* ptr, const Col* col, const Val* val)
 
 template <typename Ptr, typename Col, typename Val>
 std::shared_ptr<CSRMatrix<Val, Col, Ptr>>
-zero_copy_direct(size_t nrows, size_t ncols, const Ptr* ptr, const Col* col, const Val* val)
+zero_copy_direct(size_t nrows, size_t ncols, Ptr* ptr, Col* col, Val* val)
 {
   auto A = std::make_shared<CSRMatrix<Val, Col, Ptr>>();
   A->setNbRow(nrows);
@@ -995,7 +995,7 @@ zero_copy_direct(size_t nrows, size_t ncols, const Ptr* ptr, const Col* col, con
 
 template <typename Ptr, typename Col, typename Val>
 std::shared_ptr<CSRMatrix<Val, Col, Ptr>>
-zero_copy_direct(size_t n, const Ptr* ptr, const Col* col, const Val* val)
+zero_copy_direct(size_t n, Ptr* ptr, Col* col, Val* val)
 {
   return zero_copy_direct(n, n, ptr, col, val);
 }

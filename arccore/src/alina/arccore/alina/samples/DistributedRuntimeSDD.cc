@@ -340,8 +340,8 @@ struct harmonic_deflation
     ptrdiff_t nx = hi[0] - lo[0] + 1;
     ptrdiff_t ny = hi[1] - lo[1] + 1;
 
-    std::vector<ptrdiff_t> ptr;
-    std::vector<ptrdiff_t> col;
+    std::vector<Int32> ptr;
+    std::vector<Int32> col;
     std::vector<double> val;
     std::vector<double> rhs(chunk, 0.0);
 
