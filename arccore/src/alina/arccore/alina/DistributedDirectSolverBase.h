@@ -87,7 +87,7 @@ class DistributedDirectSolverBase
       return; // I am not active
 
     // Shift from row pointers to row widths:
-    std::vector<ptrdiff_t> widths(n);
+    std::vector<ptr_type> widths(n);
     for (ptrdiff_t i = 0; i < n; ++i)
       widths[i] = Astrip.ptr[i + 1] - Astrip.ptr[i];
 
