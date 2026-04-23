@@ -80,7 +80,6 @@ doTestScale2(CSRMatrixView<Val, Col, Ptr> A, T s, Int32 nb_loop)
   auto values = A.values(); //.data();
   for (Int32 z = 0; z < nb_loop; ++z) {
     for (Int32 i = 0; i < nb_row; ++i) {
-      //for (ptrdiff_t j = A.ptr(i), e = A.ptr(i + 1); j < e; ++j)
       for (Int32 j = ptrs[i], e = ptrs[i + 1]; j < e; ++j)
         values[j] *= s;
     }
@@ -89,13 +88,23 @@ doTestScale2(CSRMatrixView<Val, Col, Ptr> A, T s, Int32 nb_loop)
   std::cout << "Scale2_Time=" << (t2 - t1) << "\n";
 
   for (Int32 z = 0; z < nb_loop; ++z) {
-    for (Int32 i = 0; i < nb_row; ++i) {
-      for (auto ci : A.rowRange(i))
+    for (auto row : A.rows()) {
+      for (auto ci : row)
         A.value(ci) *= s;
     }
   }
   Real t3 = Platform::getRealTime();
   std::cout << "Scale3_Time=" << (t3 - t2) << "\n";
+
+  {
+    Int32 nb_done = 0;
+    for (auto row : A.rows()) {
+      for ([[maybe_unused]] auto ci : row) {
+        ++nb_done;
+      }
+    }
+    ASSERT_EQ(nb_done, A.nbNonZero());
+  }
 
   if (is_verbose) {
     for (Int32 i = 0; i < 5; ++i) {
