@@ -769,8 +769,12 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
   }
 
   HProperty write_plist_id;
-  if (is_collective)
-    write_plist_id.createDatasetTransfertCollectiveMPIIO();
+  if constexpr (HInit::hasParallelHdf5()) {
+    if (is_collective)
+      write_plist_id.createDatasetTransfertCollectiveMPIIO();
+    else
+      write_plist_id.createDatasetTransfertIndependentMPIIO();
+  }
 
   HSpace file_space;
   FixedArray<hsize_t, MAX_DIM> hyperslab_offsets;
