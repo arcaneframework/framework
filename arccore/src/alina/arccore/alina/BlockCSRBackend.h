@@ -41,7 +41,7 @@ namespace Arcane::Alina::backend
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief block_crs backend definition.
+ * \brief BlockCSRBackend backend definition.
  *
  * \param real Value type.
  * \ingroup backends
@@ -49,10 +49,11 @@ namespace Arcane::Alina::backend
 template <typename real>
 struct BlockCSRBackend
 {
+  using BuiltinBackendType = BuiltinBackend<real>;
   typedef real value_type;
-  typedef ptrdiff_t index_type;
-  typedef ptrdiff_t col_type;
-  typedef ptrdiff_t ptr_type;
+  typedef BuiltinBackendType::ptr_type index_type;
+  typedef BuiltinBackendType::col_type col_type;
+  typedef BuiltinBackendType::ptr_type ptr_type;
 
   typedef BlockCSRMatrix<real, index_type, index_type> matrix;
   typedef typename BuiltinBackend<real>::vector vector;

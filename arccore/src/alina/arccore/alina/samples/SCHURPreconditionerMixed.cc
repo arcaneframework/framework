@@ -113,13 +113,11 @@ void solve_schur(int pb, const Matrix& K, const std::vector<double>& rhs, Alina:
 {
   switch (pb) {
   case 1: {
-    typedef Alina::PreconditionedSolver<
-    Alina::PreconditionerRuntime<Backend<float>>,
-    Alina::SolverRuntime<Backend<float>>>
-    PSolver;
+    using PSolver = Alina::PreconditionedSolver<Alina::PreconditionerRuntime<Backend<float>>,
+                                                Alina::SolverRuntime<Backend<float>>>;
     solve_schur<USolver, PSolver>(K, rhs, prm);
   } break;
-#if defined(SOLVER_BACKEND_BUILTIN) || defined(SOLVER_BACKEND_VEXCL)
+#if defined(SOLVER_BACKEND_BUILTIN)
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_BLOCK_PSOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
 #endif
   default:

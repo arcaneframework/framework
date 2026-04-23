@@ -175,6 +175,8 @@ class DistributedSubDomainDeflation
   typedef typename backend_type::value_type value_type;
   typedef typename math::scalar_of<value_type>::type scalar_type;
   typedef typename backend_type::matrix bmatrix;
+  using col_type = backend_type::col_type;
+  using ptr_type = backend_type::ptr_type;
   typedef typename backend_type::vector vector;
   typedef DistributedMatrix<backend_type> matrix;
 
@@ -215,7 +217,7 @@ class DistributedSubDomainDeflation
             const backend_params& bprm = backend_params())
   {
     ARCCORE_ALINA_TIC("setup deflation");
-    typedef CSRMatrix<value_type, ptrdiff_t> build_matrix;
+    using build_matrix = CSRMatrix<value_type, col_type, ptr_type>;
 
     // Lets see how many deflation vectors are there.
     std::vector<ptrdiff_t> dv_size(comm.size);

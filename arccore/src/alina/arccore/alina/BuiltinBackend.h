@@ -53,7 +53,9 @@ namespace Arcane::Alina
  * moving the constructed hierarchy to the builtin backend, since the backend
  * is used internally during setup.
  */
-template <typename ValueType, typename ColumnType = ptrdiff_t, typename PointerType = ColumnType>
+template <typename ValueType,
+          typename ColumnType = AlinaDefaultColumnType,
+          typename PointerType = AlinaDefaultRowIndexType>
 struct BuiltinBackend
 {
   typedef ValueType value_type;
@@ -66,7 +68,7 @@ struct BuiltinBackend
   struct provides_row_iterator : std::true_type
   {};
 
-  typedef CSRMatrix<value_type, col_type, ptr_type> matrix;
+  using matrix = CSRMatrix<value_type, col_type, ptr_type>;
   typedef numa_vector<rhs_type> vector;
   typedef numa_vector<value_type> matrix_diagonal;
   typedef solver::SkylineLUSolver<value_type> direct_solver;

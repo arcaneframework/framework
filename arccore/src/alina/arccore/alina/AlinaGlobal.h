@@ -52,26 +52,29 @@ struct common_scalar_backend;
 
 class ExecutionContext;
 class PropertyTree;
-
-template <typename ValueType_,
-          typename ColumnType_ = ptrdiff_t,
-          typename RowIndexType_ = ColumnType_>
+using AlinaDefaultColumnType = Int32;
+using AlinaDefaultRowIndexType = Int32;
+template <typename ValueType_ = double,
+          typename ColumnType_ = AlinaDefaultColumnType,
+          typename RowIndexType_ = AlinaDefaultRowIndexType>
 class CSRMatrixView;
 
-template <typename val_t = double, typename col_t = ptrdiff_t, typename ptr_t = col_t>
+template <typename val_t = double,
+          typename col_t = AlinaDefaultColumnType,
+          typename ptr_t = AlinaDefaultRowIndexType>
 struct CSRMatrix;
 template <typename V, typename C, typename P>
 struct BlockCSRMatrix;
 
-template <typename IndexType_>
+template <typename IndexType_ = Int32>
 class CSRRow;
-template <typename IndexType_>
+template <typename IndexType_ = Int32>
 class CSRRowColumnIndex;
-template <typename IndexType_>
+template <typename IndexType_ = Int32>
 class CSRRowColumnIterator;
-template <typename IndexType_>
+template <typename IndexType_ = Int32>
 class CSRRowRangeIterator;
-template <typename IndexType_>
+template <typename IndexType_ = Int32>
 class CSRRowRange;
 
 /*---------------------------------------------------------------------------*/
