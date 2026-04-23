@@ -86,19 +86,6 @@ HInit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool HInit::
-hasParallelHdf5()
-{
-#ifdef H5_HAVE_PARALLEL
-  return true;
-#else
-  return false;
-#endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void HInit::
 useMutex([[maybe_unused]] bool is_active, [[maybe_unused]] IParallelMng* pm)
 {
@@ -913,8 +900,32 @@ createDatasetTransfertCollectiveMPIIO()
 #ifdef H5_HAVE_PARALLEL
   create(H5P_DATASET_XFER);
   H5Pset_dxpl_mpio(id(), H5FD_MPIO_COLLECTIVE);
+
+#if (H5_VERS_MAJOR >= 2 || H5_VERS_MINOR >= 14)
+  H5Pset_selection_io(id(), H5D_SELECTION_IO_MODE_OFF);
+#endif
+
 #else
   ARCANE_THROW(NotSupportedException,"HDF5 is not compiled with MPI support");
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HProperty::
+createDatasetTransfertIndependentMPIIO()
+{
+#ifdef H5_HAVE_PARALLEL
+  create(H5P_DATASET_XFER);
+  H5Pset_dxpl_mpio(id(), H5FD_MPIO_INDEPENDENT);
+
+#if (H5_VERS_MAJOR >= 2 || H5_VERS_MINOR >= 14)
+  H5Pset_selection_io(id(), H5D_SELECTION_IO_MODE_OFF);
+#endif
+
+#else
+  ARCANE_THROW(NotSupportedException, "HDF5 is not compiled with MPI support");
 #endif
 }
 

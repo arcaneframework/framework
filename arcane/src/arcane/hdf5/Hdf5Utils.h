@@ -119,7 +119,14 @@ class ARCANE_HDF5_EXPORT HInit
  public:
 
   //! Vrai HDF5 est compilé avec le support de MPI
-  static bool hasParallelHdf5();
+  static constexpr bool hasParallelHdf5()
+  {
+#ifdef H5_HAVE_PARALLEL
+    return true;
+#else
+    return false;
+#endif
+  }
 
   /*!
    * \brief Fonction permettant d'activer ou de désactiver les verrous à
@@ -241,9 +248,24 @@ class ARCANE_HDF5_EXPORT HProperty
    * \code
    * create(H5P_DATASET_XFER);
    * H5Pset_dxpl_mpio(id(), H5FD_MPIO_COLLECTIVE);
+   * H5Pset_selection_io(id(), H5D_SELECTION_IO_MODE_OFF);
    * \endcode
    */
   void createDatasetTransfertCollectiveMPIIO();
+
+  /*!
+   * \brief Créé une propriété de dataset pour MPIIO.
+   *
+   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
+   * une exception. L'appel à cette méthode créé une propriété comme suit:
+   *
+   * \code
+   * create(H5P_DATASET_XFER);
+   * H5Pset_dxpl_mpio(id(), H5FD_MPIO_INDEPENDENT);
+   * H5Pset_selection_io(id(), H5D_SELECTION_IO_MODE_OFF);
+   * \endcode
+   */
+  void createDatasetTransfertIndependentMPIIO();
 };
 
 /*---------------------------------------------------------------------------*/
