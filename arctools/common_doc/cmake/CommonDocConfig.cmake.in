@@ -1,0 +1,36 @@
+
+function(arcane_initialize_userdoc)
+
+  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
+  configure_file(@common_doc_dir@/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh @ONLY)
+  add_custom_target(generate_axl_doc_User COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh)
+
+  set(DOXYGEN_HTML_EXTRA_STYLESHEET
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome.css
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-custom.css
+    @common_doc_dir@/theme/css/custom.css
+    @common_doc_dir@/theme/css/user_colors.css
+  )
+
+  set(DOXYGEN_HTML_EXTRA_FILES
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-darkmode-toggle.js
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js
+    @common_doc_dir@/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js
+    @common_doc_dir@/theme/js/script-helper.js
+    @common_doc_dir@/theme/js/script-resize.js
+    @common_doc_dir@/theme/js/script-num-lines-code.js
+    @common_doc_dir@/theme/js/script-config-theme.js
+    @common_doc_dir@/theme/js/script-edit-config-theme.js
+    @common_doc_dir@/theme/js/script-apply-config-theme.js
+    @common_doc_dir@/theme/js/script-doxygen-version.js
+  )
+
+endfunction()
+
+function(arcane_after_userdoc doxygen_target_name)
+  add_dependencies(${doxygen_target_name} generate_axl_doc_User)
+endfunction()

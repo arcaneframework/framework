@@ -1072,65 +1072,79 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(GENERATE_DOC_TARGET docname)
-  set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
-  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
-  add_custom_target(${docname} COMMAND
-      ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile &&
-      echo "Doc index file : file://${ARCANEBUILDROOT}/share/${docname}/html/index.html")
+include(${ARCANESRCROOT}/doc/srcs.cmake)
+include(${ARCANEBUILDROOT}/share/common_doc/CommonDocConfig.cmake)
 
-  set(DOC_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX})
-  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile @ONLY)
-  add_custom_target(install_${docname} COMMAND ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile)
-endfunction()
+arcane_initialize_userdoc()
 
-# ----------------------------------------------------------------------------
-# Cibles pour generer la documentation
+doxygen_add_docs(
+  userdoc
+  ${ARCANE_DOXYGEN_INPUT_USER}
+)
 
-# Variable permettant de choisir le thème des documentations user et dev.
-if(ARCANEDOC_LEGACY_THEME STREQUAL ON)
-  set(ARCANEDOC_HEADER_USER "header_no_theme.html")
-  set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
-  set(ARCANEDOC_AXLDOC_LEGACY "--legacy")
-  message(STATUS "User and dev documentations with legacy theme")
-else()
-  set(ARCANEDOC_HEADER_USER "header.html")
-  set(ARCANEDOC_HEADER_DEV "header.html")
-  set(ARCANEDOC_AXLDOC_LEGACY "")
-endif()
-
-# Variable pour savoir si la doc aura accès à internet ou non.
-if(ARCANEDOC_OFFLINE STREQUAL ON)
-  set(ARCANEDOC_MATHJAX "NO")
-  message(STATUS "Offline mode for user and dev documentations")
-else()
-  set(ARCANEDOC_MATHJAX "YES")
-endif()
-
-# ----------------------------------------------------------------------------
-
-set(IS_FOR User)
-configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
-set(IS_FOR Dev)
-configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos_dev.sh @ONLY)
+arcane_after_userdoc(userdoc)
 
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
-# ----------------------------------------------------------------------------
-
-message(STATUS "DOXYGEN = ${DOXYGEN}")
-if(DOXYGEN)
-  GENERATE_DOC_TARGET(devdoc)
-  GENERATE_DOC_TARGET(userdoc)
-  if (UNIX)
-    # Cible pour générer la documentation des axl
-    # TODO: pouvoir changer le shell
-    add_custom_target(generate_axl_doc COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos.sh)
-    add_custom_target(generate_axl_doc_dev COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos_dev.sh)
-    add_dependencies(userdoc generate_axl_doc)
-    add_dependencies(devdoc generate_axl_doc_dev)
-  endif()
-endif()
+#function(GENERATE_DOC_TARGET docname)
+#  set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
+#  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
+#  add_custom_target(${docname} COMMAND
+#      ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile &&
+#      echo "Doc index file : file://${ARCANEBUILDROOT}/share/${docname}/html/index.html")
+#
+#  set(DOC_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX})
+#  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile @ONLY)
+#  add_custom_target(install_${docname} COMMAND ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile)
+#endfunction()
+#
+## ----------------------------------------------------------------------------
+## Cibles pour generer la documentation
+#
+## Variable permettant de choisir le thème des documentations user et dev.
+#if(ARCANEDOC_LEGACY_THEME STREQUAL ON)
+#  set(ARCANEDOC_HEADER_USER "header_no_theme.html")
+#  set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
+#  set(ARCANEDOC_AXLDOC_LEGACY "--legacy")
+#  message(STATUS "User and dev documentations with legacy theme")
+#else()
+#  set(ARCANEDOC_HEADER_USER "header.html")
+#  set(ARCANEDOC_HEADER_DEV "header.html")
+#  set(ARCANEDOC_AXLDOC_LEGACY "")
+#endif()
+#
+## Variable pour savoir si la doc aura accès à internet ou non.
+#if(ARCANEDOC_OFFLINE STREQUAL ON)
+#  set(ARCANEDOC_MATHJAX "NO")
+#  message(STATUS "Offline mode for user and dev documentations")
+#else()
+#  set(ARCANEDOC_MATHJAX "YES")
+#endif()
+#
+## ----------------------------------------------------------------------------
+#
+#set(IS_FOR User)
+#configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
+#set(IS_FOR Dev)
+#configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos_dev.sh @ONLY)
+#
+#file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
+#
+## ----------------------------------------------------------------------------
+#
+#message(STATUS "DOXYGEN = ${DOXYGEN}")
+#if(DOXYGEN)
+#  GENERATE_DOC_TARGET(devdoc)
+#  GENERATE_DOC_TARGET(userdoc)
+#  if (UNIX)
+#    # Cible pour générer la documentation des axl
+#    # TODO: pouvoir changer le shell
+#    add_custom_target(generate_axl_doc COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos.sh)
+#    add_custom_target(generate_axl_doc_dev COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos_dev.sh)
+#    add_dependencies(userdoc generate_axl_doc)
+#    add_dependencies(devdoc generate_axl_doc_dev)
+#  endif()
+#endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
