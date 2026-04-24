@@ -65,6 +65,42 @@ gtest_discover_tests(arccore_alina.tests
 )
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Tests using MPI
+
+set(MPI_SOURCE_FILES
+  TestMainMpi.h
+  TestMainMpi.cc
+  TestDistributedSolver.cc
+)
+arccore_add_component_test_executable(alina_mpi
+  FILES
+  ${MPI_SOURCE_FILES}
+  )
+target_include_directories(arccore_alina_mpi.tests PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(arccore_alina_mpi.tests PRIVATE arccore_alina GTest::GTest)
+
+# Comme il faut lancer les tests avec 'mpiexec', on n'utilise pas 'gtest_discover_tests'
+# mais on ajoute manuellement les tests via la macro 'alina_add_test'
+
+macro(alina_mpi_add_test)
+  set(options)
+  set(oneValueArgs TEST_NAME NB_PROC)
+  set(multiValueArgs)
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  add_test(
+    NAME alina_test_mpi.${ARGS_TEST_NAME}-mpi${ARGS_NB_PROC}
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARGS_NB_PROC} ${MPIEXEC_PREFLAGS}
+    $<TARGET_FILE:arccore_alina_mpi.tests> ${MPIEXEC_POSTFLAGS} "--gtest_filter=alina_test_mpi.${ARGS_TEST_NAME}"
+  )
+endmacro()
+
+alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 1)
+alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 2)
+alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 4)
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil
