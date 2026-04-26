@@ -433,7 +433,14 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   // Lit les faces
   if (is_read_items) {
-    _readFaces(mesh, mesh_dimension, fid, meshname);
+    // Comme la numérotation des faces n'est pas forcément correcte pour tous
+    // les types d'entités (notamment pour l'ordre 2), on ajoute une option pour
+    // ne pas lire les faces.
+    bool is_face_group_disabled = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MED_DISABLE_FACEGROUP", true))
+      is_face_group_disabled = (v.value());
+    if (!is_face_group_disabled)
+      _readFaces(mesh, mesh_dimension, fid, meshname);
   }
 
   UniqueArray<String> face_group_names;
