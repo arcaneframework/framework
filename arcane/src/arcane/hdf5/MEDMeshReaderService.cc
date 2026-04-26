@@ -838,8 +838,8 @@ _readFamilies(med_idt fid, const char* meshname)
     info() << "MED: family index=" << i << " nb_group=" << nb_group;
 
     // Lit les groupes de la famille
-    if (nb_group == 0)
-      continue;
+    // Même s'il n'y a pas de groupes associés à la famille on continue
+    // le traitement car les entités peuvent référencer des familles sans groupe.
 
     // Dans MED, les groupes ont une taille fixe maximale MED_LNAME_SIZE
     UniqueArray<char> all_group_names(MED_LNAME_SIZE * nb_group + 1);
