@@ -7,7 +7,7 @@
  </arcane>
 
  <maillage>
-  <fichier internal-partition="true">mesh2.med</fichier>
+  <fichier internal-partition="true">cube_hexa8.med</fichier>
  </maillage>
 
  <module-test-unitaire>

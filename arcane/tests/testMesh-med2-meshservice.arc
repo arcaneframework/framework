@@ -8,7 +8,7 @@
 
   <meshes>
     <mesh>
-      <filename>mesh2.med</filename>
+      <filename>cube_hexa8.med</filename>
     </mesh>
   </meshes>
 
