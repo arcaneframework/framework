@@ -559,18 +559,16 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
       ++cells_infos_index;
       cells_infos[cells_infos_index] = current_cell_unique_id;
       ++cells_infos_index;
-      // La connectivité dans MED commence à 1 et Arcane à 0.
-      // Il faut donc retrancher 1 de la connectivité donnée par MED.
       Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
       Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
       if (indirection) {
         for (Integer k = 0; k < nb_item_node; ++k) {
-          cinfo_span[k] = med_cinfo_span[indirection[k]] - 1;
+          cinfo_span[k] = med_cinfo_span[indirection[k]];
         }
       }
       else {
         for (Integer k = 0; k < nb_item_node; ++k)
-          cinfo_span[k] = med_cinfo_span[k] - 1;
+          cinfo_span[k] = med_cinfo_span[k];
       }
       if (i < nb_family_values) {
         // Il y a une famille associée à l'entité
@@ -645,18 +643,16 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     Int64 med_connectivity_index = 0;
 
     for (Int32 i = 0; i < nb_item; ++i) {
-      // La connectivité dans MED commence à 1 et Arcane à 0.
-      // Il faut donc retrancher 1 de la connectivité donnée par MED.
       ArrayView<Int64> cinfo_span(orig_nodes_id);
       Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
       if (indirection) {
         for (Integer k = 0; k < nb_item_node; ++k) {
-          cinfo_span[k] = med_cinfo_span[indirection[k]] - 1;
+          cinfo_span[k] = med_cinfo_span[indirection[k]];
         }
       }
       else {
         for (Integer k = 0; k < nb_item_node; ++k)
-          cinfo_span[k] = med_cinfo_span[k] - 1;
+          cinfo_span[k] = med_cinfo_span[k];
       }
       med_connectivity_index += nb_item_node;
       // Recherche la face dans le maillage à partir des uniqueId() triés de ses noeuds
@@ -708,7 +704,10 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
 {
   const bool do_verbose = false;
   // Lit les coordonnées des noeuds et positionne les coordonnées dans Arcane
-  UniqueArray<Real3> nodes_coordinates(nb_node);
+
+  // La connectivité dans MED commence à 1 et Arcane à 0.
+  // Le premier noeud a donc un pour uniqueId() la valeur
+  UniqueArray<Real3> nodes_coordinates(nb_node+1);
   {
     UniqueArray<med_float> coordinates(nb_node * spacedim);
     int err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
@@ -723,7 +722,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
         Real3 xyz(coordinates[i * 3], coordinates[(i * 3) + 1], coordinates[(i * 3) + 2]);
         if (do_verbose)
           info() << "I=" << i << " XYZ=" << xyz;
-        nodes_coordinates[i] = xyz;
+        nodes_coordinates[i+1] = xyz;
       }
     }
     else if (spacedim == 2) {
@@ -731,7 +730,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
         Real3 xyz(coordinates[i * 2], coordinates[(i * 2) + 1], 0.0);
         if (do_verbose)
           info() << "I=" << i << " XYZ=" << xyz;
-        nodes_coordinates[i] = xyz;
+        nodes_coordinates[i+1] = xyz;
       }
     }
     else
