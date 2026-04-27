@@ -258,13 +258,13 @@ _initMEDToArcaneTypes()
   _addTypeInfo(3, 4, MED_TETRA4, ITI_Tetraedron4);
   _addTypeInfo(3, 5, MED_PYRA5, ITI_Pyramid5, Pyramid5_indirection);
   _addTypeInfo(3, 6, MED_PENTA6, ITI_Pentaedron6);
-  _addTypeInfo(3, 8, MED_HEXA8, ITI_Hexaedron8, Hexaedron8_indirection);
+  _addTypeInfo(3, 8, MED_HEXA8, ITI_Hexaedron8);
   _addTypeInfo(3, 10, MED_TETRA10, ITI_Tetraedron10);
   _addTypeInfo(3, 12, MED_OCTA12, ITI_Octaedron12);
   _addTypeInfo(3, 13, MED_PYRA13, ITI_NullType); // Non supporté
   _addTypeInfo(3, 15, MED_PENTA15, ITI_NullType); // Non supporté
   _addTypeInfo(3, 18, MED_PENTA18, ITI_NullType); // Non supporté
-  _addTypeInfo(3, 20, MED_HEXA20, ITI_Hexaedron20, Hexaedron20_indirection);
+  _addTypeInfo(3, 20, MED_HEXA20, ITI_Hexaedron20);
   _addTypeInfo(3, 27, MED_HEXA27, ITI_NullType); // Non supporté
 
   // Mailles dont la géométrie à une connectivité variable.
@@ -272,7 +272,7 @@ _initMEDToArcaneTypes()
   // On traite quand même ces éléments pour afficher une erreur s'ils sont
   // présents dans le maillage. En mettant la valeur (0) pour le nombre
   // de noeuds, on signale à _readItems() qu'on ne sait pas traiter ces éléments.
-  ///
+
   _addTypeInfo(2, 0, MED_POLYGON, ITI_NullType);
   _addTypeInfo(2, 0, MED_POLYGON2, ITI_NullType);
   _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_NullType);
