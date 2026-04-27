@@ -225,7 +225,7 @@ namespace
   const Int32 Hexaedron20_indirection[] = { 1, 8, 10, 3, 9, 2, 0, 11, 5, 14, 18, 7, 6, 4, 16, 15, 13, 12, 17, 19 };
   const Int32 Pyramid5_indirection[] = { 1, 0, 3, 2, 4 };
   const Int32 Quad4_indirection[] = { 1, 0, 3, 2 };
-  const Int32 Quad8_indirection[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
+  const Int32 Quad8_indirection[] = { 1, 0, 3, 2, 4, 7, 6, 5 };
   const Int32 Triangle3_indirection[] = { 1, 0, 2 };
   // PAS utilisé pour l'instant. À tester.
   const Int32 Tetraedron4_indirection[] = { 1, 0, 2, 3 };
