@@ -126,7 +126,7 @@ class StdFunctorWithArgumentT;
 class ReferenceCounterImpl;
 template <typename InstanceType, class T = void>
 struct RefTraits;
-template <typename InstanceType, int ImplTagId = RefTraits<InstanceType>::TagId>
+template <typename InstanceType>
 class Ref;
 
 namespace impl

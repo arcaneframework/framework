@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Ref.h                                                       (C) 2000-2025 */
+/* Ref.h                                                       (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des références sur une instance.                                  */
 /*---------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ class ReferenceCounterWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::impl
+} // namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -119,32 +119,22 @@ struct RefTraitsTagId<InstanceType, REF_TAG_REFERENCE_COUNTER>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Référence à une instance.
+ * \brief Implémentation de la référence à une instance.
  *
- * Cette classe utilise un compteur de référence pour gérer la durée de vie
- * d'une instance C++. Elle fonctionne de manière similaire à std::shared_ptr.
- *
- * Lorsque la dernière instance de cette classe est détruite, l'instance
- * référencée est détruite. La manière de détruire l'instance associée
- * est spécifié lors de la création de la première référence via l'appel
- * à une des méthodes create() ou createWithHandle().
- *
- * Il existe deux implémentation possibles pour compter les références.
- * Par défaut, on utilise 'std::shared_ptr'. Il est aussi possible
- * d'utiliser un compteur de référence interne à la classe ce qui
- * permet d'être compatible avec la classe ReferenceCounter et aussi de
- * pouvoir récupérer une référence à partir de l'instance elle même. Cette
- * deuxième implémentation est accessible si le type \a InstanceType
- * définit un type ReferenceCounterTagType valant ReferenceCounterTag.
+ * \sa Ref
  */
-template <typename InstanceType, int ImplTagId>
-class Ref
+template <typename InstanceType, typename RefClassType, int ImplTagId>
+class RefImpl
 : public RefBase
 {
+  // NOTE: RefClassType est utilisé uniquement pour accéder au destructeur
+  // de \a InstanceType qui peut être privé et 'friend' de 'Ref'.
+
  public:
 
-  typedef Ref<InstanceType, ImplTagId> ThatClass;
-  typedef typename RefTraitsTagId<InstanceType, ImplTagId>::ImplType ImplType;
+  using ThatClass = RefImpl<InstanceType, RefClassType, ImplTagId>;
+  using ImplType = RefTraitsTagId<InstanceType, ImplTagId>::ImplType;
+  template <typename T> friend class Ref;
 
  private:
 
@@ -169,7 +159,7 @@ class Ref
         return;
       bool is_destroyed = this->_destroyHandle(tt, m_handle);
       if (!is_destroyed)
-        delete tt;
+        RefClassType::_destroyInstance(tt);
     }
   };
 
@@ -181,7 +171,7 @@ class Ref
     bool hasExternal() const { return false; }
     void operator()(InstanceType* tt)
     {
-      delete tt;
+      RefClassType::_destroyInstance(tt);
     }
   };
 
@@ -191,19 +181,19 @@ class Ref
 
  private:
 
-  explicit Ref(InstanceType* t)
+  explicit RefImpl(InstanceType* t)
   : m_instance(t, _createBasicDeleter((ImplType*)nullptr)) //BasicDeleter{})
   {}
-  Ref(InstanceType* t, Internal::ExternalRef handle)
+  RefImpl(InstanceType* t, Internal::ExternalRef handle)
   : m_instance(t, Deleter(handle))
   {}
-  Ref(InstanceType* t, bool no_destroy)
+  RefImpl(InstanceType* t, bool no_destroy)
   : m_instance(t, Deleter(nullptr, no_destroy))
   {}
 
  private:
 
-  Ref(ImplType&& t)
+  RefImpl(ImplType&& t)
   : m_instance(t)
   {}
 
@@ -215,54 +205,16 @@ class Ref
    * La conversion est autorisée si on peut construire une instance de 'ImplType'
    * à partir de celle de celle de Ref<T>::ImplType.
    */
-  template <typename T, typename = _IsRefConstructible<typename Ref<T>::ImplType>>
-  Ref(const Ref<T>& rhs) noexcept
+  template <typename T, typename = _IsRefConstructible<typename RefImpl<T, Ref<T>, ImplTagId>::ImplType>>
+  RefImpl(const Ref<T>& rhs) noexcept
   : m_instance(rhs._internalInstance())
   {}
-  Ref() = default;
-  Ref(const ThatClass& rhs) = default;
+  RefImpl() = default;
+  RefImpl(const ThatClass& rhs) = default;
   ThatClass& operator=(const ThatClass& rhs) = default;
-  ~Ref() = default;
+  ~RefImpl() = default;
 
  public:
-
-  /*!
-   * \internal
-   * \brief Créé une référence à partir de l'instance \a t.
-   *
-   * Cette méthode est interne à %Arccore.
-   *
-   * L'instance \a t doit avoir été créée par l'opérateur 'operator new'
-   * et sera détruite par l'opérateur 'operator delete'
-   */
-  static ThatClass create(InstanceType* t)
-  {
-    return ThatClass(t);
-  }
-
-  template <typename PointerType, typename... Args>
-  static inline Ref<InstanceType>
-  createRef(Args&&... args)
-  {
-    PointerType* pt = new PointerType(std::forward<Args>(args)...);
-    return Ref<InstanceType>(pt);
-  }
-
-  /*!
-   * \internal
-   * \brief Créé une référence à partir d'une instance ayant une
-   * référence externe.
-   */
-  static ThatClass createWithHandle(InstanceType* t, Internal::ExternalRef handle)
-  {
-    return ThatClass(t, handle);
-  }
-
-  static ThatClass _createNoDestroy(InstanceType* t)
-  {
-    return ThatClass(t, true);
-  }
-
  public:
 
   friend inline bool operator==(const ThatClass& a, const ThatClass& b)
@@ -337,6 +289,116 @@ class Ref
   static DeleterBase* _getDeleter(impl::ReferenceCounterWrapper<InstanceType>& v)
   {
     return v.getDeleter();
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Référence à une instance.
+ *
+ * Cette classe utilise un compteur de référence pour gérer la durée de vie
+ * d'une instance C++. Elle fonctionne de manière similaire à std::shared_ptr.
+ *
+ * Lorsque la dernière instance de cette classe est détruite, l'instance
+ * référencée est détruite. La manière de détruire l'instance associée
+ * est spécifié lors de la création de la première référence via l'appel
+ * à une des méthodes create() ou createWithHandle().
+ *
+ * Il existe deux implémentation possibles pour compter les références.
+ * Par défaut, on utilise 'std::shared_ptr'. Il est aussi possible
+ * d'utiliser un compteur de référence interne à la classe ce qui
+ * permet d'être compatible avec la classe ReferenceCounter et aussi de
+ * pouvoir récupérer une référence à partir de l'instance elle même. Cette
+ * deuxième implémentation est accessible en spécialisant le type
+ * RefTraits pour qu'il définisse un un type ReferenceCounterTagType
+ * valant ReferenceCounterTag.
+ */
+template <typename InstanceType>
+class Ref
+: public RefImpl<InstanceType, Ref<InstanceType>, RefTraits<InstanceType>::TagId>
+{
+  using Base = RefImpl<InstanceType, Ref<InstanceType>, RefTraits<InstanceType>::TagId>;
+  using ImplType = Base::ImplType;
+  using ThatClass = Ref<InstanceType>;
+  friend Base;
+
+  template <typename... _Args>
+  using _IsRefConstructible = typename std::enable_if<std::is_constructible<ImplType, _Args...>::value>::type;
+
+ private:
+
+  explicit Ref(InstanceType* t)
+  : Base(t)
+  {}
+  Ref(InstanceType* t, Internal::ExternalRef handle)
+  : Base(t, handle)
+  {}
+  Ref(InstanceType* t, bool no_destroy)
+  : Base(t, no_destroy)
+  {}
+
+ public:
+
+  /*!
+   * \brief Construit une référence issue d'une autre référence sur un type compatible.
+   *
+   * La conversion est autorisée si on peut construire une instance de 'ImplType'
+   * à partir de celle de celle de Ref<T>::ImplType.
+   */
+  template <typename T> //, typename = _IsRefConstructible<typename Ref<T>::ImplType>>
+  Ref(const Ref<T>& rhs) noexcept
+  : Base(rhs)
+  {}
+  Ref() = default;
+  Ref(const ThatClass& rhs) = default;
+  ThatClass& operator=(const ThatClass& rhs) = default;
+  ~Ref() = default;
+
+ public:
+
+  /*!
+   * \internal
+   * \brief Créé une référence à partir de l'instance \a t.
+   *
+   * Cette méthode est interne à %Arccore.
+   *
+   * L'instance \a t doit avoir été créée par l'opérateur 'operator new'
+   * et sera détruite par l'opérateur 'operator delete'
+   */
+  static ThatClass create(InstanceType* t)
+  {
+    return ThatClass(t);
+  }
+
+  template <typename PointerType, typename... Args>
+  static inline Ref<InstanceType>
+  createRef(Args&&... args)
+  {
+    PointerType* pt = new PointerType(std::forward<Args>(args)...);
+    return Ref<InstanceType>(pt);
+  }
+
+  /*!
+   * \internal
+   * \brief Créé une référence à partir d'une instance ayant une
+   * référence externe.
+   */
+  static ThatClass createWithHandle(InstanceType* t, Internal::ExternalRef handle)
+  {
+    return ThatClass(t, handle);
+  }
+
+  static ThatClass _createNoDestroy(InstanceType* t)
+  {
+    return ThatClass(t, true);
+  }
+
+ private:
+
+  static void _destroyInstance(InstanceType* t)
+  {
+    delete t;
   }
 };
 
