@@ -162,7 +162,7 @@ add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_fla
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
   target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
   if (ARCCORE_ENABLE_DEPRECATED_WARNINGS)
-    target_compile_options(arccore_build_compile_flags INTERFACE -Wdeprecated})
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wdeprecated)
   else()
     target_compile_options(arccore_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
   endif()
