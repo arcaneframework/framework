@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.cc                                              (C) 2000-2025 */
+/* ItemTypeMng.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire des types d'entite du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -13,18 +13,16 @@
 
 #include "arcane/core/ItemTypeMng.h"
 
-#include "ItemTypeId.h"
-#include "arcane/utils/Iostream.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/IStackTraceService.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Array.h"
 #include "arcane/utils/MultiBuffer.h"
+#include "arcane/utils/PlatformUtils.h"
 
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypeId.h"
 #include "arcane/core/ItemTypeInfoBuilder.h"
 #include "arcane/core/IParallelSuperMng.h"
 #include "arcane/core/ItemTypeInfoBuilder.h"
@@ -321,44 +319,46 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Pentagon5
   {
-    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    m_types[IT_Pentagon5] = type;
+    _addPolygonType(IT_Pentagon5,5, "Pentagon5");
+    // ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    // m_types[IT_Pentagon5] = type;
 
-    type->setInfos(this, IT_Pentagon5, "Pentagon5", Dimension::Dim2, 5, 5, 5);
+    // type->setInfos(this, IT_Pentagon5, "Pentagon5", Dimension::Dim2, 5, 5, 5);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 4);
-    type->addFaceLine(4, 4, 0);
+    // type->addFaceLine(0, 0, 1);
+    // type->addFaceLine(1, 1, 2);
+    // type->addFaceLine(2, 2, 3);
+    // type->addFaceLine(3, 3, 4);
+    // type->addFaceLine(4, 4, 0);
 
-    type->addEdge(0, 0, 1, 4, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 4, 2, 4);
-    type->addEdge(4, 4, 0, 3, 0);
+    // type->addEdge(0, 0, 1, 4, 1);
+    // type->addEdge(1, 1, 2, 0, 2);
+    // type->addEdge(2, 2, 3, 1, 3);
+    // type->addEdge(3, 3, 4, 2, 4);
+    // type->addEdge(4, 4, 0, 3, 0);
   }
 
   // Hexagon6
   {
-    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    m_types[IT_Hexagon6] = type;
+    _addPolygonType(IT_Hexagon6,6, "Hexagon6");
+    // ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    // m_types[IT_Hexagon6] = type;
 
-    type->setInfos(this, IT_Hexagon6, "Hexagon6", Dimension::Dim2, 6, 6, 6);
+    // type->setInfos(this, IT_Hexagon6, "Hexagon6", Dimension::Dim2, 6, 6, 6);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 4);
-    type->addFaceLine(4, 4, 5);
-    type->addFaceLine(5, 5, 0);
+    // type->addFaceLine(0, 0, 1);
+    // type->addFaceLine(1, 1, 2);
+    // type->addFaceLine(2, 2, 3);
+    // type->addFaceLine(3, 3, 4);
+    // type->addFaceLine(4, 4, 5);
+    // type->addFaceLine(5, 5, 0);
 
-    type->addEdge(0, 0, 1, 5, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 4, 2, 4);
-    type->addEdge(4, 4, 5, 3, 5);
-    type->addEdge(5, 5, 0, 4, 0);
+    // type->addEdge(0, 0, 1, 5, 1);
+    // type->addEdge(1, 1, 2, 0, 2);
+    // type->addEdge(2, 2, 3, 1, 3);
+    // type->addEdge(3, 3, 4, 2, 4);
+    // type->addEdge(4, 4, 5, 3, 5);
+    // type->addEdge(5, 5, 0, 4, 0);
   }
 
   // Hexaedron8
@@ -1119,6 +1119,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     }
   }
 
+
   { // Polygon & Polyhedron: generic item types
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
@@ -1134,6 +1135,56 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     if (!type)
       ARCANE_FATAL("ItemType '{0}' is not defined", type);
     type->computeFaceEdgeInfos();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeMng::
+buildPolygonTypes()
+{
+  if (m_has_polygon_type)
+    return;
+  m_has_polygon_type = true;
+  // Ajoute les types polygones génériques
+  // Ils commencent à 7 noeuds.
+  Int16 begin_nb_node = 7;
+  Int16 max_nb_node = 21;
+  Int16 max_type = IT_GenericPolygon + max_nb_node - begin_nb_node;
+  ItemTypeInfo* null_type = typeFromId(IT_NullType);
+  if (m_types.size() <= max_type)
+    // Remplit les types vides par le type correspondant à l'entité nulle.
+    m_types.resize(max_type, null_type);
+  for (Int16 i = begin_nb_node; i < max_nb_node; ++i) {
+    String name = String::format("Polygon{0}", i);
+    _addPolygonType(IT_GenericPolygon + i - begin_nb_node, i, name);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute un type polygone générique
+ *
+ * Ajoute un type polygone d'ordre 1 avec \a nb_node noeuds.
+ * Le type aura comme index \a type_id et comme nom \a type_name.
+ */
+void ItemTypeMng::
+_addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name)
+{
+  m_trace->info() << "AddPolygonType type_id=" << type_id << " nb_node=" << nb_node << " name=" << type_name;
+  ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+  m_types[type_id] = type;
+  type->setInfos(this, type_id, type_name, ItemTypeInfoBuilder::Dimension::Dim2, nb_node, nb_node, nb_node);
+
+  for (Int32 j = 0; j < nb_node; ++j)
+    type->addFaceLine(j, j, (j + 1) % nb_node);
+
+  for (Integer j = 0; j < nb_node; ++j) {
+    Int32 previous_node = (j - 1) % nb_node;
+    Int32 next_node = (j + 1) % nb_node;
+    type->addEdge(j, j, next_node, previous_node, next_node);
   }
 }
 
@@ -1240,7 +1291,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     known_types.insert(i_type);
 
   if (ItemTypeMng::nbBuiltInItemType() != m_types.size())
-    throw FatalErrorException(A_FUNCINFO, "Invalid initialization of built-in item types");
+    ARCANE_FATAL("Invalid initialization of built-in item types");
 
   // Analyse du fichier de types
   std::istringstream ifile((char*)bytes.unguardedBasePointer(), std::istringstream::in);
@@ -1253,10 +1304,10 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     ifile >> typeId >> nbF >> nbE;
     if (typeId >= nb_type || typeId < 0)
-      throw IOException(A_FUNCINFO, String::format("Polyhedron reader cannot allow typeId {0}", typeId));
+      ARCANE_THROW(IOException,"Polyhedron reader cannot allow typeId {0}", typeId);
     typeId += ItemTypeMng::nbBuiltInItemType(); // translation d'indexation
     if (known_types.find(typeId) != known_types.end())
-      throw FatalErrorException(A_FUNCINFO, String::format("Already existing typeId {0}", typeId));
+      ARCANE_FATAL("Already existing typeId {0}", typeId);
     known_types.insert(typeId);
     if (nbE == nbF) // 2d case nbN == nbE == nbF
     {
@@ -1451,7 +1502,8 @@ _legacyTypeName(Integer t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool ItemTypeMng::hasGeneralCells(IMesh* mesh) const
+bool ItemTypeMng::
+hasGeneralCells(IMesh* mesh) const
 {
   auto has_general_cells = false;
   if (m_mesh_with_general_cells.find(mesh) != m_mesh_with_general_cells.end()) {
@@ -1463,7 +1515,8 @@ bool ItemTypeMng::hasGeneralCells(IMesh* mesh) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemTypeMng::setMeshWithGeneralCells(IMesh* mesh) noexcept
+void ItemTypeMng::
+setMeshWithGeneralCells(IMesh* mesh) noexcept
 {
   ARCANE_ASSERT(mesh, ("Trying to indicate a null mesh contains general cells."));
   m_mesh_with_general_cells.insert(mesh);

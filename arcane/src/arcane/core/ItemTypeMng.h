@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.h                                               (C) 2000-2025 */
+/* ItemTypeMng.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire des types d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -161,6 +161,14 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Permet au maillage d'indiquer à l'ItemTypeMng s'il a des mailles génériques
   void setMeshWithGeneralCells(IMesh* mesh) noexcept;
 
+  /*!
+   * \brief Construit les types pour gérer les polygones.
+   *
+   * Cela permet de rendre accessible le type ITI_GenericPolygon.
+   * Si ces types ont déjà été construit, cette méthode est sans effet.
+   */
+  void buildPolygonTypes();
+
   //! nombre de types disponibles
   static Integer nbBasicItemType();
 
@@ -198,12 +206,16 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Tableau contenant les données de type.
   UniqueArray<Integer> m_ids_buffer;
 
+  //! Indique si les types gérant les polygones ont déjà été construits.
+  bool m_has_polygon_type = false;
+
  private:
 
   void _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace);
   void _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace);
   //! Lecture des types a partir d'un fichier de nom filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
+  void _addPolygonType(Int16 type_id,Int32 nb_node,const String& type_name);
 };
 
 /*---------------------------------------------------------------------------*/

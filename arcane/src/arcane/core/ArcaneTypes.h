@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneTypes.h                                               (C) 2000-2025 */
+/* ArcaneTypes.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Définition des types généraux de Arcane.                                  */
 /*---------------------------------------------------------------------------*/
@@ -385,6 +385,9 @@ static const Int16 IT_Triangle10 = 49;
 
 //! Nombre de types d'entités disponible par défaut
 static const Integer NB_BASIC_ITEM_TYPE = 50;
+
+//! Première valeur pour les type polygones génériques (EXPERIMENTAL)
+static const Int16 IT_GenericPolygon = 200;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);

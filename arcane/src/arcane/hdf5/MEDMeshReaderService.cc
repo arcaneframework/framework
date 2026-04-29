@@ -182,7 +182,7 @@ class MEDMeshReader
  private:
 
   Int32 _readItems(med_idt fid, const char* meshnane, const MEDToArcaneItemInfo& iinfo,
-                   Array<med_int>& connectivity, Array<med_int>& family_values);
+                   Array<Int16>& polygon_nb_nodes, Array<med_int>& connectivity, Array<med_int>& family_values);
   void _initMEDToArcaneTypes();
   void _addTypeInfo(int dimension, int nb_node, med_int med_type, ItemTypeId arcane_type)
   {
@@ -273,7 +273,7 @@ _initMEDToArcaneTypes()
   // présents dans le maillage. En mettant la valeur (0) pour le nombre
   // de noeuds, on signale à _readItems() qu'on ne sait pas traiter ces éléments.
 
-  _addTypeInfo(2, 0, MED_POLYGON, ITI_NullType);
+  _addTypeInfo(2, 0, MED_POLYGON, ITI_GenericPolygon);
   _addTypeInfo(2, 0, MED_POLYGON2, ITI_NullType);
   _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_NullType);
 
@@ -390,6 +390,11 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   info() << "MED: nb_node=" << nb_node;
 
   mesh->setDimension(mesh_dimension);
+
+  // Les maillages MED peuvent contenir des polygones.
+  // On construit donc les types correspondants.
+  // (NOTE: tous les sous-domaines doivent faire cela)
+  mesh->itemTypeMng()->buildPolygonTypes();
 
   IParallelMng* pm = mesh->parallelMng();
   bool is_parallel = pm->isParallel();
@@ -523,6 +528,10 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   // maille créée.
   Int64 cell_unique_id = 0;
 
+  UniqueArray<Int16> polygon_nb_nodes;
+  UniqueArray<med_int> med_connectivity;
+  UniqueArray<med_int> med_family_values;
+
   // Alloue les mailles types par type.
   // Parcours les types disponibles et traite ceux qui correspondent à la dimension
   // du maillage.
@@ -534,9 +543,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     // On ne traite que les entités de la dimension du maillage.
     if (item_dimension != mesh_dimension)
       continue;
-    UniqueArray<med_int> med_connectivity;
-    UniqueArray<med_int> med_family_values;
-    Int32 nb_item = _readItems(fid, meshname, iinfo, med_connectivity, med_family_values);
+    Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
     Int16 arcane_type = iinfo.arcaneType();
@@ -548,27 +555,65 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     }
     Int64 cells_infos_index = 0;
     Int64 med_connectivity_index = 0;
-    UniqueArray<Int64> cells_infos((2 + nb_item_node) * nb_item);
+    const bool is_polygon = (iinfo.medType() == MED_POLYGON);
+
+    UniqueArray<Int64> cells_infos;
+    if (is_polygon)
+      cells_infos.resize(2 * nb_item + med_connectivity.size());
+    else
+      cells_infos.resize((2 + nb_item_node) * nb_item);
+
     info() << "CELL_INFOS size=" << cells_infos.size() << " nb_item=" << nb_item
            << " type=" << arcane_type;
+
     const Int32* indirection = iinfo.indirection();
     for (Int32 i = 0; i < nb_item; ++i) {
       Int64 current_cell_unique_id = cell_unique_id;
       ++cell_unique_id;
-      cells_infos[cells_infos_index] = arcane_type;
-      ++cells_infos_index;
-      cells_infos[cells_infos_index] = current_cell_unique_id;
-      ++cells_infos_index;
-      Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
-      Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
-      if (indirection) {
+      if (is_polygon) {
+        nb_item_node = polygon_nb_nodes[i];
+        // En dessous de 7 noeuds, le type est un type interne.
+        // Sinon c'est un polygone.
+        if (nb_item_node == 3)
+          arcane_type = ITI_Triangle3;
+        else if (nb_item_node == 4)
+          arcane_type = ITI_Quad4;
+        else if (nb_item_node == 5)
+          arcane_type = ITI_Pentagon5;
+        else if (nb_item_node == 6)
+          arcane_type = ITI_Hexagon6;
+        else if (nb_item_node > 6 && nb_item_node < 20)
+          arcane_type = ItemTypeId(ITI_GenericPolygon.typeId() + nb_item_node - 7);
+        else
+          ARCANE_THROW(NotSupportedException, "polygon with nb_node={0} (3<=nb_node<=20)", nb_item_node);
+
+        cells_infos[cells_infos_index] = arcane_type;
+        ++cells_infos_index;
+        cells_infos[cells_infos_index] = current_cell_unique_id;
+        ++cells_infos_index;
+        Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
+        Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
         for (Integer k = 0; k < nb_item_node; ++k) {
-          cinfo_span[k] = med_cinfo_span[indirection[k]];
+          cinfo_span[k] = med_cinfo_span[k];
         }
       }
       else {
-        for (Integer k = 0; k < nb_item_node; ++k)
-          cinfo_span[k] = med_cinfo_span[k];
+        cells_infos[cells_infos_index] = arcane_type;
+        ++cells_infos_index;
+
+        cells_infos[cells_infos_index] = current_cell_unique_id;
+        ++cells_infos_index;
+        Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
+        Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
+        if (indirection) {
+          for (Integer k = 0; k < nb_item_node; ++k) {
+            cinfo_span[k] = med_cinfo_span[indirection[k]];
+          }
+        }
+        else {
+          for (Integer k = 0; k < nb_item_node; ++k)
+            cinfo_span[k] = med_cinfo_span[k];
+        }
       }
       if (i < nb_family_values) {
         // Il y a une famille associée à l'entité
@@ -608,6 +653,9 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
   IItemFamily* node_family = mesh->nodeFamily();
   NodeInfoListView mesh_nodes(node_family);
 
+  UniqueArray<Int16> polygon_nb_nodes;
+  UniqueArray<med_int> med_connectivity;
+  UniqueArray<med_int> med_family_values;
   // Parcours les types disponibles et traite ceux qui correspondent à la dimension
   // du maillage moins 1.
   for (med_int geotype : m_med_geotypes_in_mesh) {
@@ -622,9 +670,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     info() << "Reading faces geotype=" << geotype << " arcane_type=" << iinfo.arcaneType()
            << " " << iti->typeName();
 
-    UniqueArray<med_int> med_connectivity;
-    UniqueArray<med_int> med_family_values;
-    Int32 nb_item = _readItems(fid, meshname, iinfo, med_connectivity, med_family_values);
+    Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
     ItemTypeId arcane_type(iinfo.arcaneType());
@@ -707,7 +753,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
 
   // La connectivité dans MED commence à 1 et Arcane à 0.
   // Le premier noeud a donc un pour uniqueId() la valeur
-  UniqueArray<Real3> nodes_coordinates(nb_node+1);
+  UniqueArray<Real3> nodes_coordinates(nb_node + 1);
   {
     UniqueArray<med_float> coordinates(nb_node * spacedim);
     int err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
@@ -722,7 +768,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
         Real3 xyz(coordinates[i * 3], coordinates[(i * 3) + 1], coordinates[(i * 3) + 2]);
         if (do_verbose)
           info() << "I=" << i << " XYZ=" << xyz;
-        nodes_coordinates[i+1] = xyz;
+        nodes_coordinates[i + 1] = xyz;
       }
     }
     else if (spacedim == 2) {
@@ -730,7 +776,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
         Real3 xyz(coordinates[i * 2], coordinates[(i * 2) + 1], 0.0);
         if (do_verbose)
           info() << "I=" << i << " XYZ=" << xyz;
-        nodes_coordinates[i+1] = xyz;
+        nodes_coordinates[i + 1] = xyz;
       }
     }
     else
@@ -753,17 +799,21 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
 /*!
  * \brief Lit les informations des entités d'un type donné.
  *
- * Lit les informations des entités dont le type est donné par \a iinfo. Les entités sont
- * des mailles au sens MED, donc des Edge, Face ou Cell.
+ * Lit les informations des entités dont le type est donné par \a iinfo.
+ * Les entités sont  des mailles au sens MED, donc des Edge, Face ou Cell.
  * En retour, indique le nombre d'entités lues.
  * \a connectivity contiendra les connectivités pour les entités lues et
  * \a family_values le tableau pour chaque entité de la famille à laquelle elle
  * appartient. À noter qu'il est possible que \a family_values soit vide s'il n'y
  * a pas de famille associée aux entités.
+ *
+ * Si le type est MED_POLYGON, alors \a polygon_nb_nodes contiendra le nombre
+ * de noeuds de chaque polygone.
  */
 Int32 MEDMeshReader::
 _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
-           Array<med_int>& connectivity, Array<med_int>& family_values)
+           Array<Int16>& polygon_nb_nodes, Array<med_int>& connectivity,
+           Array<med_int>& family_values)
 {
   constexpr bool is_verbose = false;
 
@@ -771,32 +821,70 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
   family_values.clear();
 
   int med_item_type = iinfo.medType();
-  med_bool coordinatechangement;
-  med_bool geotransformation;
-  med_int nb_med_item = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
-                                         MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
-                                         &geotransformation);
-  if (nb_med_item < 0)
-    ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_med_item);
+  med_bool coordinatechangement = {};
+  med_bool geotransformation = {};
+  med_int nb_med_item = 0;
+  if (iinfo.medType() == MED_POLYGON) {
+    // Pour les polygones, il faut un appel spécifique pour le nombre d'index.
+    // Ce nombre correspond au nombre d'entités plus un.
+    med_int nb_index = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
+                                        MED_INDEX_NODE, MED_NODAL, &coordinatechangement,
+                                        &geotransformation);
+    if (nb_index < 0)
+      ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_index);
 
-  info() << "MED: Reading items";
-  info() << "MED: type=" << med_item_type << " nb_item=" << nb_med_item;
-  if (nb_med_item == 0)
-    return 0;
+    info() << "MED: Reading items";
+    info() << "MED: type=" << med_item_type << " nb_index=" << nb_index;
+    if (nb_index < 1)
+      return 0;
+    nb_med_item = nb_index - 1;
+    polygon_nb_nodes.resize(nb_med_item);
+    // how many nodes for the polygon connectivity ?
+    med_int nb_connectivity = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT,
+                                             MED_CELL, MED_POLYGON, MED_CONNECTIVITY, MED_NODAL,
+                                             &coordinatechangement, &geotransformation);
+    if (nb_connectivity < 0)
+      ARCANE_FATAL("Can not get connectivity size for MED_POLYGON err={0}", nb_connectivity);
 
-  Int64 nb_node = iinfo.nbNode();
-  if (nb_node == 0)
-    // Indique un élément qu'on ne sait pas traiter.
-    ARCANE_THROW(NotImplementedException, "Reading items with MED type '{0}'", med_item_type);
+    // La table \a indexes contient pour chaque maille l'indice de son premier
+    // noeud dans la connectivité. Le nombre de noeuds de la i-ème entité
+    // est donc égal à (indexes[i+1]-indexes[i]).
+    UniqueArray<med_int> indexes(nb_index);
+    connectivity.resize(nb_connectivity);
+    info() << "Reading polygons nb_connectivity=" << nb_connectivity;
+    int r = MEDmeshPolygonRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, MED_NODAL,
+                             indexes.data(), connectivity.data());
+    if (r < 0)
+      ARCANE_FATAL("Can not read connectivity for MED_POLYGON err={0}", r);
+    info() << "INDEXES=" << indexes;
+    for (Int32 i = 0; i < nb_med_item; ++i)
+      polygon_nb_nodes[i] = static_cast<Int16>(indexes[i + 1] - indexes[i]);
+  }
+  else {
+    nb_med_item = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
+                                   MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
+                                   &geotransformation);
+    if (nb_med_item < 0)
+      ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_med_item);
 
-  connectivity.resize(nb_node * nb_med_item);
-  int err = MEDmeshElementConnectivityRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,
-                                         med_item_type, MED_NODAL, MED_FULL_INTERLACE,
-                                         connectivity.data());
-  if (err < 0)
-    ARCANE_FATAL("Can not read connectivity MED med_item_type '{0}' error={1}",
-                 med_item_type, err);
+    info() << "MED: Reading items";
+    info() << "MED: type=" << med_item_type << " nb_item=" << nb_med_item;
+    if (nb_med_item == 0)
+      return 0;
 
+    Int64 nb_node = iinfo.nbNode();
+    if (nb_node == 0)
+      // Indique un élément qu'on ne sait pas traiter.
+      ARCANE_THROW(NotImplementedException, "Reading items with MED type '{0}'", med_item_type);
+
+    connectivity.resize(nb_node * nb_med_item);
+    int err = MEDmeshElementConnectivityRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,
+                                           med_item_type, MED_NODAL, MED_FULL_INTERLACE,
+                                           connectivity.data());
+    if (err < 0)
+      ARCANE_FATAL("Can not read connectivity MED med_item_type '{0}' error={1}",
+                   med_item_type, err);
+  }
   if (is_verbose)
     info() << "CON: " << connectivity;
   {
