@@ -1,16 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshStats.cc                                                (C) 2000-2024 */
+/* MeshStats.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Statistiques sur le maillage.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "ArcaneTypes.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Collection.h"
 
@@ -78,7 +79,7 @@ dumpGraphStats()
 /*---------------------------------------------------------------------------*/
 
 template <> void MeshStats::
-_computeElementsOnGroup<IMesh>(Int64ArrayView nb_type, Int64ArrayView nb_kind, Integer istat)
+_computeElementsOnGroup<IMesh>(ArrayView<Int64> nb_type, Int64ArrayView nb_kind, Integer istat)
 {
   _computeElementsOnGroup(nb_type, nb_kind, m_mesh->allNodes(), istat);
   _computeElementsOnGroup(nb_type, nb_kind, m_mesh->allEdges(), istat);
@@ -104,7 +105,7 @@ _dumpStats()
 {
   Trace::Setter setter(traceMng(), "Mesh");
 
-  const Integer nb_type = ItemTypeMng::nbBasicItemType();
+  const Integer nb_type = m_mesh->itemTypeMng()->types().size();
   const Integer nb_kind = NB_ITEM_KIND;
 
   const char* name[3] = { "(All)", "(Own)", "(Ghost)" };
@@ -324,7 +325,7 @@ _computeElementsOnGroup(Int64ArrayView nb_type, Int64ArrayView nb_kind,
   Int32 ik = static_cast<Int32>(group.itemKind());
   ENUMERATE_ITEM (i, group) {
     Item item = *i;
-    int type = item.type();
+    Int16 type = item.type();
     if (istat == 0 || (istat == 1 && item.isOwn()) || (istat == 2 && !item.isOwn())) {
       ++nb_kind[ik];
       ++nb_type[type];

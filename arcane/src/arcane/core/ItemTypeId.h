@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeId.h                                                (C) 2000-2025 */
+/* ItemTypeId.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Type d'une entité.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -176,6 +176,9 @@ static constexpr ItemTypeId ITI_Hexaedron27(IT_Hexaedron27);
 static constexpr ItemTypeId ITI_Line4(IT_Line4);
 //! Triangle d'ordre 3. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Triangle10(IT_Triangle10);
+
+//! Première valeur pour les type polygones génériques (EXPERIMENTAL)
+static constexpr ItemTypeId ITI_GenericPolygon(IT_GenericPolygon);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
