@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RefDeclarations.h                                           (C) 2000-2025 */
+/* RefDeclarations.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations liées à la gestion des références sur une instance.          */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,8 @@ using Arccore::ExternalReferenceCounterAccessor;
  * };
  * \endcode
  */
-struct ReferenceCounterTag {};
+struct ReferenceCounterTag
+{};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -82,37 +83,38 @@ struct ReferenceCounterTag {};
 constexpr int REF_TAG_SHARED_PTR = 0;
 constexpr int REF_TAG_REFERENCE_COUNTER = 1;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fonction pour savoir quel type de compteur de référence
+ * utilise une classe.
+ *
+ * Par défaut on utilise std::shared_ptr.
+ * Pour utiliser un compteur de référence interne, il faur surcharger cette
+ * méthode via la macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS().
+ */
+inline constexpr int arcaneImplGetRefTagId(void*)
+{
+  return REF_TAG_SHARED_PTR;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Caractéristiques pour gérer les compteurs de référence.
  *
  * Par défaut, on utilise comme implémentation la classe std::shared_ptr.
  */
-template<typename InstanceType,class T>
+template <typename InstanceType>
 struct RefTraits
 {
-  static constexpr int TagId = REF_TAG_SHARED_PTR;
+  static constexpr int TagId = arcaneImplGetRefTagId(static_cast<InstanceType*>(nullptr));
 };
-
-/*!
- * \brief Spécialisation de la classe gérant un compteur de référence
- * si la classe utilise le tag 'ReferenceCounterTag'.
- *
- * Dans ce cas, on utilise 'ReferenceCounter' comme implémentation.
- */
-template<typename InstanceType>
-struct RefTraits<InstanceType,std::enable_if_t<std::is_same_v<typename InstanceType::ReferenceCounterTagType,ReferenceCounterTag>>>
-{
-  static constexpr int TagId = REF_TAG_REFERENCE_COUNTER;
-};
-
-//template<typename InstanceType,
-//         int ImplTagId = RefTraits<InstanceType>::TagId>
-//class Ref;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename InstanceType,int TagType>
+template <typename InstanceType, int TagType>
 struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
@@ -120,31 +122,31 @@ struct RefTraitsTagId;
 
 namespace impl
 {
-//! Classe template pour vérifier si T a la méthode _internalRemoveReference()
-template <typename T, typename = int>
-struct HasInternalRemoveReference
-: std::false_type
-{
-};
-template <typename T>
-struct HasInternalRemoveReference<T, decltype(&T::_internalRemoveReference, 0)>
-: std::true_type
-{
-};
+  //! Classe template pour vérifier si T a la méthode _internalRemoveReference()
+  template <typename T, typename = int>
+  struct HasInternalRemoveReference
+  : std::false_type
+  {
+  };
+  template <typename T>
+  struct HasInternalRemoveReference<T, decltype(&T::_internalRemoveReference, 0)>
+  : std::true_type
+  {
+  };
 
-//! Classe template pour vérifier si T a la méthode _internalAddReference()
-template <typename T, typename = int>
-struct HasInternalAddReference
-: std::false_type
-{
-};
-template <typename T>
-struct HasInternalAddReference<T, decltype(&T::_internalAddReference, 0)>
-: std::true_type
-{
-};
+  //! Classe template pour vérifier si T a la méthode _internalAddReference()
+  template <typename T, typename = int>
+  struct HasInternalAddReference
+  : std::false_type
+  {
+  };
+  template <typename T>
+  struct HasInternalAddReference<T, decltype(&T::_internalAddReference, 0)>
+  : std::true_type
+  {
+  };
 
-}
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -155,20 +157,21 @@ struct HasInternalAddReference<T, decltype(&T::_internalAddReference, 0)>
  * pour gérer les compteurs de références. removeReference() doit détruire
  * l'instance si le compteur arrive à zéro.
  */
-template<class T>
+template <class T>
 class ReferenceCounterAccessor
 {
  public:
+
   static void addReference(T* t)
   {
-    if constexpr(Arcane::impl::HasInternalAddReference<T>::value)
+    if constexpr (Arcane::impl::HasInternalAddReference<T>::value)
       t->_internalAddReference();
     else
       t->addReference();
   }
   static void removeReference(T* t)
   {
-    if constexpr(Arcane::impl::HasInternalRemoveReference<T>::value){
+    if constexpr (Arcane::impl::HasInternalRemoveReference<T>::value) {
       bool need_destroy = t->_internalRemoveReference();
       if (need_destroy)
         delete t;
@@ -213,9 +216,9 @@ class ReferenceCounterAccessor
 \
   using ReferenceCounterTagType = ::Arcane::ReferenceCounterTag; \
   virtual ::Arcane::ReferenceCounterImpl* _internalReferenceCounter() = 0; \
-  virtual void _internalAddReference() =0;\
-  [[nodiscard]] virtual bool _internalRemoveReference() =0
-  // NOTE: les classes 'friend' sont nécessaires pour l'accès au destructeur.
+  virtual void _internalAddReference() = 0; \
+  [[nodiscard]] virtual bool _internalRemoveReference() = 0
+// NOTE: les classes 'friend' sont nécessaires pour l'accès au destructeur.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -246,11 +249,15 @@ class ReferenceCounterAccessor
     { \
       static constexpr int TagId = ::Arcane::REF_TAG_REFERENCE_COUNTER; \
     }; \
-    template<>\
-class ReferenceCounterAccessor<class_name>\
-: public ExternalReferenceCounterAccessor<class_name>\
-{};                                                  \
-}
+    constexpr inline int arcaneImplGetRefTagId(class_name*) \
+    { \
+      return ::Arcane::REF_TAG_REFERENCE_COUNTER; \
+    } \
+    template <> \
+    class ReferenceCounterAccessor<class_name> \
+    : public ExternalReferenceCounterAccessor<class_name> \
+    {}; \
+  }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -268,5 +275,4 @@ using Arcane::ReferenceCounterTag;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

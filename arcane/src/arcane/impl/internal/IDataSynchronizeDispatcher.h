@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeDispatcher.h                                 (C) 2000-2023 */
+/* DataSynchronizeDispatcher.h                                 (C) 2000-2026 */
 /*                                                                           */
 /* Gestion de la synchronisation d'une instance de 'IData'.                  */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,14 @@
 #include "arcane/core/VariableCollection.h"
 
 #include "arcane/impl/IDataSynchronizeImplementation.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
+class IDataSynchronizeDispatcher;
+}
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IDataSynchronizeDispatcher);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

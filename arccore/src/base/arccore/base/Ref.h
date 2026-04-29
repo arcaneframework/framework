@@ -206,7 +206,7 @@ class RefImpl
    * à partir de celle de celle de Ref<T>::ImplType.
    */
   template <typename T, typename = _IsRefConstructible<typename RefImpl<T, Ref<T>, ImplTagId>::ImplType>>
-  RefImpl(const Ref<T>& rhs) noexcept
+  explicit RefImpl(const Ref<T>& rhs) noexcept
   : m_instance(rhs._internalInstance())
   {}
   RefImpl() = default;
