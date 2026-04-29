@@ -124,7 +124,7 @@ class FunctorWithArgumentT;
 template <typename ArgType>
 class StdFunctorWithArgumentT;
 class ReferenceCounterImpl;
-template <typename InstanceType, class T = void>
+template <typename InstanceType>
 struct RefTraits;
 template <typename InstanceType>
 class Ref;
