@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReferenceCounterImpl.h                                      (C) 2000-2025 */
+/* ReferenceCounterImpl.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* Implémentations liées au gestionnaire de compteur de référence.           */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "ArccoreGlobal.h"
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/RefBase.h"
 
@@ -41,7 +42,7 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 addReference(T* t)
 {
-  if constexpr (::Arcane::impl::HasInternalAddReference<T>::value)
+  if constexpr (requires { t->_internalAddReference(); })
     t->_internalAddReference();
   else
     t->addReference();
@@ -54,7 +55,7 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 removeReference(T* t)
 {
-  if constexpr (::Arcane::impl::HasInternalRemoveReference<T>::value) {
+  if constexpr (requires { t->_internalRemoveReference(); }) {
     bool need_destroy = t->_internalRemoveReference();
     if (need_destroy)
       delete t;
@@ -97,13 +98,13 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 
  public:
 
-  // TODO: Rendre obsolète
+  ARCCORE_DEPRECATED_REASON("Y2025: use _internalAddReference() instead")
   void addReference()
   {
     ++m_nb_ref;
   }
 
-  // TODO: Rendre obsolète
+  ARCCORE_DEPRECATED_REASON("Y2025: use _internalRemoveReference() instead")
   void removeReference()
   {
     // Décrémente et retourne la valeur d'avant.

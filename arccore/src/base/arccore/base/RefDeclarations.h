@@ -119,37 +119,6 @@ struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace impl
-{
-  //! Classe template pour vérifier si T a la méthode _internalRemoveReference()
-  template <typename T, typename = int>
-  struct HasInternalRemoveReference
-  : std::false_type
-  {
-  };
-  template <typename T>
-  struct HasInternalRemoveReference<T, decltype(&T::_internalRemoveReference, 0)>
-  : std::true_type
-  {
-  };
-
-  //! Classe template pour vérifier si T a la méthode _internalAddReference()
-  template <typename T, typename = int>
-  struct HasInternalAddReference
-  : std::false_type
-  {
-  };
-  template <typename T>
-  struct HasInternalAddReference<T, decltype(&T::_internalAddReference, 0)>
-  : std::true_type
-  {
-  };
-
-} // namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Accesseur des méthodes de gestion de compteurs de référence.
  *
@@ -164,14 +133,14 @@ class ReferenceCounterAccessor
 
   static void addReference(T* t)
   {
-    if constexpr (Arcane::impl::HasInternalAddReference<T>::value)
+    if constexpr (requires { t->_internalAddReference(); })
       t->_internalAddReference();
     else
       t->addReference();
   }
   static void removeReference(T* t)
   {
-    if constexpr (Arcane::impl::HasInternalRemoveReference<T>::value) {
+    if constexpr (requires { t->_internalRemoveReference(); }) {
       bool need_destroy = t->_internalRemoveReference();
       if (need_destroy)
         delete t;

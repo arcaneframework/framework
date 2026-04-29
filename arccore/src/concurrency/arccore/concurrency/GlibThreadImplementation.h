@@ -67,8 +67,8 @@ class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
 
  public:
 
-  void addReference() override { ReferenceCounterImpl::addReference(); }
-  void removeReference() override { ReferenceCounterImpl::removeReference(); }
+  void addReference() override { ReferenceCounterImpl::_internalAddReference(); }
+  void removeReference() override { ReferenceCounterImpl::_internalRemoveReference(); }
 
  private:
 
