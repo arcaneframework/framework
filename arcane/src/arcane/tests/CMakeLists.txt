@@ -835,6 +835,9 @@ endif()
 if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   arcane_add_test_sequential(ios_vtu testIos-vtu.arc)
 endif()
+if(MEDFile_FOUND)
+  arcane_add_test_sequential(ios_med_polygon testIos-med-polygon.arc)
+endif()
 
 ###############
 # HYODA TESTS #
@@ -1404,6 +1407,9 @@ if (SLOOP_FOUND)
 endif ()
 
 arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
+if(MEDFile_FOUND)
+  arcane_add_test(simple_heat_med_polygon testSimpleHeat-med-polygon.arc)
+endif()
 
 # ----------------------------------------------------------------------------
 
