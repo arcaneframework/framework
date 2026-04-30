@@ -42,6 +42,12 @@
 
 namespace Arcane
 {
+namespace
+{
+  // Nombre de noeuds pour les types polygones additionnels.
+  // Les types jusqu'à ITI_Octogon8 existent toujours.
+  Int16 global_polygon_begin_nb_node = 9;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -208,10 +214,10 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addFaceVertex(1, 1);
   }
 
-  /**
-   * SDP: Pour les polygones les faces et les arêtes sont identiques.
+  /*
+   * Pour les polygones les faces et les arêtes sont identiques.
    *
-   * @note lors des declarations des arêtes, on donne pour faces les
+   * \note lors des declarations des arêtes, on donne pour faces les
    * arêtes qui sont jointes a l'arête courante
    */
 
@@ -266,15 +272,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Quad4
   {
-    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    m_types[IT_Quad4] = type;
-
-    type->setInfos(this, IT_Quad4, "Quad4", Dimension::Dim2, 4, 4, 4);
-
-    type->addEdgeAndFaceLine(0, { 0, 1 }, { 3, 1 });
-    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
-    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
-    type->addEdgeAndFaceLine(3, { 3, 0 }, { 2, 0 });
+    _addPolygonType(IT_Quad4, 4, "Quad4");
   }
 
   // Quad8
@@ -319,46 +317,12 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Pentagon5
   {
-    _addPolygonType(IT_Pentagon5,5, "Pentagon5");
-    // ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    // m_types[IT_Pentagon5] = type;
-
-    // type->setInfos(this, IT_Pentagon5, "Pentagon5", Dimension::Dim2, 5, 5, 5);
-
-    // type->addFaceLine(0, 0, 1);
-    // type->addFaceLine(1, 1, 2);
-    // type->addFaceLine(2, 2, 3);
-    // type->addFaceLine(3, 3, 4);
-    // type->addFaceLine(4, 4, 0);
-
-    // type->addEdge(0, 0, 1, 4, 1);
-    // type->addEdge(1, 1, 2, 0, 2);
-    // type->addEdge(2, 2, 3, 1, 3);
-    // type->addEdge(3, 3, 4, 2, 4);
-    // type->addEdge(4, 4, 0, 3, 0);
+    _addPolygonType(IT_Pentagon5, 5, "Pentagon5");
   }
 
   // Hexagon6
   {
-    _addPolygonType(IT_Hexagon6,6, "Hexagon6");
-    // ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    // m_types[IT_Hexagon6] = type;
-
-    // type->setInfos(this, IT_Hexagon6, "Hexagon6", Dimension::Dim2, 6, 6, 6);
-
-    // type->addFaceLine(0, 0, 1);
-    // type->addFaceLine(1, 1, 2);
-    // type->addFaceLine(2, 2, 3);
-    // type->addFaceLine(3, 3, 4);
-    // type->addFaceLine(4, 4, 5);
-    // type->addFaceLine(5, 5, 0);
-
-    // type->addEdge(0, 0, 1, 5, 1);
-    // type->addEdge(1, 1, 2, 0, 2);
-    // type->addEdge(2, 2, 3, 1, 3);
-    // type->addEdge(3, 3, 4, 2, 4);
-    // type->addEdge(4, 4, 5, 3, 5);
-    // type->addEdge(5, 5, 0, 4, 0);
+    _addPolygonType(IT_Hexagon6, 6, "Hexagon6");
   }
 
   // Hexaedron8
@@ -934,35 +898,12 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Heptagon7
   {
-    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    m_types[IT_Heptagon7] = type;
-
-    type->setInfos(this, IT_Heptagon7, "Heptagon7", Dimension::Dim2, 7, 7, 7);
-
-    type->addEdgeAndFaceLine(0, { 0, 1 }, { 6, 1 });
-    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
-    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
-    type->addEdgeAndFaceLine(3, { 3, 4 }, { 2, 4 });
-    type->addEdgeAndFaceLine(4, { 4, 5 }, { 3, 5 });
-    type->addEdgeAndFaceLine(5, { 5, 6 }, { 4, 6 });
-    type->addEdgeAndFaceLine(6, { 6, 0 }, { 5, 0 });
+    _addPolygonType(IT_Heptagon7, 7, "Heptagon7");
   }
 
   // Octogon8
   {
-    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
-    m_types[IT_Octogon8] = type;
-
-    type->setInfos(this, IT_Octogon8, "Octogon8", Dimension::Dim2, 8, 8, 8);
-
-    type->addEdgeAndFaceLine(0, { 0, 1 }, { 7, 1 });
-    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
-    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
-    type->addEdgeAndFaceLine(3, { 3, 4 }, { 2, 4 });
-    type->addEdgeAndFaceLine(4, { 4, 5 }, { 3, 5 });
-    type->addEdgeAndFaceLine(5, { 5, 6 }, { 4, 6 });
-    type->addEdgeAndFaceLine(6, { 6, 7 }, { 5, 7 });
-    type->addEdgeAndFaceLine(7, { 7, 0 }, { 6, 0 });
+    _addPolygonType(IT_Octogon8, 8, "Octogon8");
   }
 
   // Cell3D_Line2
@@ -1119,7 +1060,6 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     }
   }
 
-
   { // Polygon & Polyhedron: generic item types
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
@@ -1148,8 +1088,8 @@ buildPolygonTypes()
     return;
   m_has_polygon_type = true;
   // Ajoute les types polygones génériques
-  // Ils commencent à 7 noeuds.
-  Int16 begin_nb_node = 7;
+  // Ils commencent à 9 noeuds.
+  const Int16 begin_nb_node = global_polygon_begin_nb_node;
   Int16 max_nb_node = 21;
   Int16 max_type = IT_GenericPolygon + max_nb_node - begin_nb_node;
   ItemTypeInfo* null_type = typeFromId(IT_NullType);
@@ -1173,7 +1113,6 @@ buildPolygonTypes()
 void ItemTypeMng::
 _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name)
 {
-  m_trace->info() << "AddPolygonType type_id=" << type_id << " nb_node=" << nb_node << " name=" << type_name;
   ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
   m_types[type_id] = type;
   type->setInfos(this, type_id, type_name, ItemTypeInfoBuilder::Dimension::Dim2, nb_node, nb_node, nb_node);
@@ -1520,6 +1459,35 @@ setMeshWithGeneralCells(IMesh* mesh) noexcept
 {
   ARCANE_ASSERT(mesh, ("Trying to indicate a null mesh contains general cells."));
   m_mesh_with_general_cells.insert(mesh);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemTypeId ItemTypeMng::
+getPolygonType(Int16 nb_node) const
+{
+  ItemTypeId polygon_type;
+  if (nb_node == 3)
+    polygon_type = ITI_Triangle3;
+  else if (nb_node == 4)
+    polygon_type = ITI_Quad4;
+  else if (nb_node == 5)
+    polygon_type = ITI_Pentagon5;
+  else if (nb_node == 6)
+    polygon_type = ITI_Hexagon6;
+  else if (nb_node == 7)
+    polygon_type = ITI_Heptagon7;
+  else if (nb_node == 8)
+    polygon_type = ITI_Octogon8;
+  else if (nb_node > 8 && nb_node < 20) {
+    if (!m_has_polygon_type)
+      ARCANE_THROW(NotSupportedException, "extended polygon requested (nb_node={0}) but ItemTypeMng::buildPolygonTypes() has not been called", nb_node);
+    polygon_type = ItemTypeId(ITI_GenericPolygon.typeId() + nb_node - 9);
+  }
+  else
+    ARCANE_THROW(NotSupportedException, "polygon with nb_node={0} (3<=nb_node<=20)", nb_node);
+  return polygon_type;
 }
 
 /*---------------------------------------------------------------------------*/
