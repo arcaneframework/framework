@@ -1403,6 +1403,8 @@ if (SLOOP_FOUND)
   arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
 endif ()
 
+arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
+
 # ----------------------------------------------------------------------------
 
 #####################

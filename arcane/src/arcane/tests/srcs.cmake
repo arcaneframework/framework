@@ -42,6 +42,7 @@ set(ARCANE_SOURCES
   StdScalarVariables.h
   StdScalarMeshVariables.cc
   StdScalarMeshVariables.h
+  SimpleHeatTestModule.cc
   PartialVariableTester.cc
   RandomUnitTest.cc
   ArrayUnitTest.cc
@@ -116,6 +117,7 @@ set(AXL_FILES
   PartialVariableTester
   VoronoiTest
   SingletonServiceTest
+  SimpleHeatTest
   TimeHistoryTest
   MeshModificationTester
   DirectedGraphUnitTest
