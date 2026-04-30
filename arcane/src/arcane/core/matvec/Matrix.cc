@@ -480,7 +480,7 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
   r.dump(cout);
   cout << '\n';*/
 
-  Vector d(r.size());
+  Vector d(r.size(), 0.0);
   if (p)
     p->apply(d, r);
   else
@@ -488,7 +488,7 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
 
   Vector q(r.size());
   Vector t(r.size());
-  Vector s(r.size());
+  Vector s(r.size(), 0.0);
   Real delta_new = 0.0;
   //Real r0=mat_op.dot(r);
   if (p) {
@@ -505,7 +505,9 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
   cout << "\n";
 #endif
   //Real norm0 = r.normInf();
-  Real delta0 = delta_new;
+  const Real delta0 = delta_new;
+
+
   //cout << " TOL=" << epsilon << " delta0=" << delta0 << '\n';
   //cout << " deltanew=" << delta_new << '\n';
   Integer nb_iter = 0;
