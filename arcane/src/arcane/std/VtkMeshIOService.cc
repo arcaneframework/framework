@@ -1940,7 +1940,13 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     // Le type doit être coherent avec celui de vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
     ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
-      int type = arcaneToVtkCellType(iitem->typeInfo());
+      const ItemTypeInfo* iti = iitem->typeInfo();
+      // Regarde si le type est un polygone pour VTK (dimension 2 et plus de 4 noeuds)
+      int type = VTK_BAD_ARCANE_TYPE;
+      if (iti->isPolygon())
+        type = VTK_POLYGON;
+      else
+        type = arcaneToVtkCellType(iti);
       ofile << type << '\n';
     }
   }

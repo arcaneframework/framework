@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfoBuilder.cc                                      (C) 2000-2025 */
+/* ItemTypeInfoBuilder.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Constructeur de type d'entité de maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -52,6 +52,7 @@ setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
   m_nb_node = nb_node;
   m_type_name = type_name;
   _setNbEdgeAndFace(nb_edge, nb_face);
+  _checkSetIsPolygon();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,6 +93,7 @@ setOrder(Int16 order, ItemTypeId linear_type_id)
 {
   m_order = order;
   m_linear_type_id = linear_type_id;
+  _checkSetIsPolygon();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -483,6 +485,15 @@ _setNbEdgeAndFace(Integer nb_edge, Integer nb_face)
     m_first_item_index = buf.size();
     buf.resize(m_first_item_index + total);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+_checkSetIsPolygon()
+{
+  m_is_polygon = (m_order == 1 && m_dimension == 2 && m_nb_node > 4);
 }
 
 /*---------------------------------------------------------------------------*/

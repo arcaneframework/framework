@@ -169,6 +169,18 @@ class ARCANE_CORE_EXPORT ItemTypeMng
    */
   void buildPolygonTypes();
 
+  /*!
+   * \brief Retourne le type pour un polygone ayant \a nb_node.
+   *
+   * Si \a nb_node est comprise entre 3 et 8 inclus, retourne le type
+   * interne correspondant (ITI_Triangle3, ITI_Quad4, ..., ITI_Octogon8).
+   * Sinon, retourne le type additionnel à condition que buildPolygonTypes()
+   * ait été appelé avant.
+   *
+   * Lève une exception NotSupportedException si aucun type ne correspond.
+   */
+  ItemTypeId getPolygonType(Int16 nb_node) const;
+
   //! nombre de types disponibles
   static Integer nbBasicItemType();
 

@@ -532,6 +532,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   UniqueArray<med_int> med_connectivity;
   UniqueArray<med_int> med_family_values;
 
+  ItemTypeMng* itm = mesh->itemTypeMng();
   // Alloue les mailles types par type.
   // Parcours les types disponibles et traite ceux qui correspondent à la dimension
   // du maillage.
@@ -572,21 +573,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
       ++cell_unique_id;
       if (is_polygon) {
         nb_item_node = polygon_nb_nodes[i];
-        // En dessous de 7 noeuds, le type est un type interne.
-        // Sinon c'est un polygone.
-        if (nb_item_node == 3)
-          arcane_type = ITI_Triangle3;
-        else if (nb_item_node == 4)
-          arcane_type = ITI_Quad4;
-        else if (nb_item_node == 5)
-          arcane_type = ITI_Pentagon5;
-        else if (nb_item_node == 6)
-          arcane_type = ITI_Hexagon6;
-        else if (nb_item_node > 6 && nb_item_node < 20)
-          arcane_type = ItemTypeId(ITI_GenericPolygon.typeId() + nb_item_node - 7);
-        else
-          ARCANE_THROW(NotSupportedException, "polygon with nb_node={0} (3<=nb_node<=20)", nb_item_node);
-
+        arcane_type = itm->getPolygonType(static_cast<Int16>(nb_item_node));
         cells_infos[cells_infos_index] = arcane_type;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = current_cell_unique_id;

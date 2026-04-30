@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkCellTypes.cc                                             (C) 2000-2025 */
+/* VtkCellTypes.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Définitions des types de maille de VTK.                                   */
 /*---------------------------------------------------------------------------*/
@@ -58,6 +58,10 @@ vtkToArcaneCellType(int vtk_type, Int32 nb_node)
       return IT_Pentagon5;
     if (nb_node == 6)
       return IT_Hexagon6;
+    if (nb_node == 7)
+      return IT_Heptagon7;
+    if (nb_node == 8)
+      return IT_Octogon8;
     ARCANE_THROW(IOException, "Unsupported VtkCellType VTK_POLYGON with nb_node={0}", nb_node);
   case VTK_TETRA:
     return IT_Tetraedron4;
@@ -123,11 +127,10 @@ arcaneToVtkCellTypeNoThrow(Int16 arcane_type)
   case IT_Cell3D_Quad9:
     return VTK_BIQUADRATIC_QUAD;
   case IT_Pentagon5:
-    return VTK_POLYGON;
-    // VTK_POLYGON (a tester...)
   case IT_Hexagon6:
+  case IT_Heptagon7:
+  case IT_Octogon8:
     return VTK_POLYGON;
-    // VTK_POLYGON (a tester ...)
   case IT_Tetraedron4:
     return VTK_TETRA;
   case IT_Tetraedron10:
