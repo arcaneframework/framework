@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -288,8 +288,7 @@ MCGInternalLinearSolver::init()
 
   if (!m_options->ILUk().empty()) {
     m_solver->setOpt(MCGSolver::eOptType::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
-    // override spPrec
-    m_solver->setOpt(MCGSolver::eOptType::SpPrec, m_options->ILUk()[0]->sp());
+    m_solver->setOpt(MCGSolver::eOptType::ILUkSp, m_options->ILUk()[0]->sp());
   }
 
   if (!m_options->CprAmg().empty()) {
