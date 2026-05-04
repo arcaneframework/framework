@@ -407,7 +407,7 @@ namespace Arcane.AxlDoc
               tw.Write ("<td>&space;{0}</td>", service_path);
             }
             tw.Write ("<td>{0}</td>", _GetBriefDescription (service));
-            tw.WriteLine ("</td></tr>");
+            tw.WriteLine ("</tr>");
             if (m_dico_writer != null) {
               m_dico_writer.Write ("pagename=axldoc_service_" + service.FileBaseName + " frname=" + service.GetTranslatedName (out_lang) + "\n");
             }
