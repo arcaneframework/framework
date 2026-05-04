@@ -5,6 +5,8 @@ SOURCE_PATH=@CMAKE_SOURCE_DIR@
 AXL_OUTPATH=@SHARE_AXL_DIR@
 BINARY_PATH=@BINARY_PATH@
 AXLDOC_PATH=@AXLDOC_PATH@
+IS_FOR=@IS_FOR@
+AXLDOC_LEGACY="@AXLDOC_LEGACY@"
 
 mkdir ${AXL_OUTPATH}
 mkdir ${AXL_OUTPATH}/dox
@@ -20,4 +22,4 @@ ${BINARY_PATH} launch -arcane_opt arcane_internal
 /bin/rm ${AXL_OUTPATH}/dox/snippets/*.md
 
 ${AXLDOC_PATH} --generate-final -a ${BUILD_PATH}/lib/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
-${AXLDOC_PATH} -u User -a ${AXL_OUTPATH}/final_axl/final_internal.xml -o ${AXL_OUTPATH}/dox ${AXL_OUTPATH}/final_axl/*.axl
+${AXLDOC_PATH} -u ${IS_FOR} -a ${AXL_OUTPATH}/final_axl/final_internal.xml -o ${AXL_OUTPATH}/dox ${AXLDOC_LEGACY} ${AXL_OUTPATH}/final_axl/*.axl

@@ -1,213 +1,58 @@
 
-function(arcane_after_userdoc doxygen_target_name)
-  add_dependencies(${doxygen_target_name} generate_axl_doc_User)
+function(arcanedoc_initialize_vars doc_type)
+  set(COMMON_DOC_DIR "@common_doc_dir@")
+  set(COMMON_DOC_INSTALL_DIR "@common_doc_install_dir@")
+  if (NOT COMMON_DOC_MATHJAX)
+    set(COMMON_DOC_MATHJAX "OFF")
+  endif ()
+  if (NOT COMMON_DOC_LEGACY_THEME)
+    set(COMMON_DOC_LEGACY_THEME "OFF")
+  endif ()
+
+  if (${doc_type} STREQUAL "user")
+    include(${COMMON_DOC_INSTALL_DIR}/cmake/CommonDocCommonVars.cmake)
+    include(${COMMON_DOC_INSTALL_DIR}/cmake/CommonDocUserVars.cmake)
+    set(IS_FOR "User")
+  elseif (${doc_type} STREQUAL "dev")
+    include(${COMMON_DOC_INSTALL_DIR}/cmake/CommonDocCommonVars.cmake)
+    include(${COMMON_DOC_INSTALL_DIR}/cmake/CommonDocDevVars.cmake)
+    set(IS_FOR "Dev")
+  else ()
+    message(FATAL_ERROR "Unknown doc type")
+  endif ()
 endfunction()
 
 
-function(arcane_initialize_userdoc executable)
 
+function(arcanedoc_initialize_axldoc doc_type executable)
   set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
   set(COMMON_DOC_DIR "@common_doc_dir@")
   set(AXLDOC_PATH "@axldoc_path@")
   set(BINARY_PATH "${executable}")
 
-  configure_file(${COMMON_DOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh @ONLY)
-  add_custom_target(generate_axl_doc_User COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh)
-
-  set(DOXYGEN_HTML_EXTRA_STYLESHEET
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome.css"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-custom.css"
-    "${COMMON_DOC_DIR}/theme/css/custom.css"
-    "${COMMON_DOC_DIR}/theme/css/user_colors.css"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_HTML_EXTRA_FILES
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-darkmode-toggle.js"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js"
-    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js"
-    "${COMMON_DOC_DIR}/theme/js/script-helper.js"
-    "${COMMON_DOC_DIR}/theme/js/script-resize.js"
-    "${COMMON_DOC_DIR}/theme/js/script-num-lines-code.js"
-    "${COMMON_DOC_DIR}/theme/js/script-config-theme.js"
-    "${COMMON_DOC_DIR}/theme/js/script-edit-config-theme.js"
-    "${COMMON_DOC_DIR}/theme/js/script-apply-config-theme.js"
-    "${COMMON_DOC_DIR}/theme/js/script-doxygen-version.js"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_HTML_HEADER
-    "${COMMON_DOC_DIR}/theme/html/header.html"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_HTML_FOOTER
-    "${COMMON_DOC_DIR}/theme/html/footer.html"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_OUTPUT_DIRECTORY
-    "${CMAKE_BINARY_DIR}/share/userdoc"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_EXCLUDE_PATTERNS
-    "*/snippets/*"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_CREATE_SUBDIRS
-    "YES"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_FULL_PATH_NAMES
-    "NO"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_TAB_SIZE
-    "2"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_EXTENSION_MAPPING
-    "axl=xml"
-    "arc=xml"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_TOC_INCLUDE_HEADINGS
-    "5"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_TYPEDEF_HIDES_STRUCT
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_NUM_PROC_THREADS
-    "0"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_TIMESTAMP
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_CASE_SENSE_NAMES
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_GENERATE_TODOLIST
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_GENERATE_TESTLIST
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_GENERATE_BUGLIST
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_FILE_PATTERNS
-    "*.h"
-    "*.H"
-    "*.cc"
-    "*.dox"
-    "*.doc"
-    "*.md"
-    PARENT_SCOPE
-  )
-
-
-  set(DOXYGEN_SOURCE_BROWSER
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_STRIP_CODE_COMMENTS
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_REFERENCED_BY_RELATION
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_REFERENCES_RELATION
-    "YES"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_HTML_COLORSTYLE
-    "TOGGLE"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_HTML_DYNAMIC_SECTIONS
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_HTML_FORMULA_FORMAT
-    "svg"
-    PARENT_SCOPE
-  )
-
-  set(DOXYGEN_USE_MATHJAX
-    "${ARCANEDOC_MATHJAX}"
-    PARENT_SCOPE
-  )
-  if (${ARCANEDOC_MATHJAX} STREQUAL "YES")
-    set(DOXYGEN_MATHJAX_VERSION
-      "MathJax_3"
-      PARENT_SCOPE
-    )
-    set(DOXYGEN_MATHJAX_RELPATH
-      "https://cdn.jsdelivr.net/npm/mathjax@3"
-      PARENT_SCOPE
-    )
+  if (${doc_type} STREQUAL "user")
+    set(IS_FOR "User")
+  elseif (${doc_type} STREQUAL "dev")
+    set(IS_FOR "Dev")
+  else ()
+    message(FATAL_ERROR "Unknown doc type (${doc_type})")
   endif ()
 
-  set(DOXYGEN_MACRO_EXPANSION
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_EXPAND_ONLY_PREDEF
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_SKIP_FUNCTION_MACROS
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_HAVE_DOT
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_CLASS_GRAPH
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_COLLABORATION_GRAPH
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_GROUP_GRAPHS
-    "NO"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_UML_LOOK
-    "YES"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_DOT_IMAGE_FORMAT
-    "svg"
-    PARENT_SCOPE
-  )
-  set(DOXYGEN_INTERACTIVE_SVG
-    "YES"
-    PARENT_SCOPE
-  )
+  if (${COMMON_DOC_LEGACY_THEME} STREQUAL "ON")
+    set(AXLDOC_LEGACY "--legacy")
+  else ()
+    set(AXLDOC_LEGACY "")
+  endif ()
+
+  if (UNIX)
+    configure_file(${COMMON_DOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh @ONLY)
+    add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh)
+  endif ()
+endfunction()
 
 
+function(arcanedoc_link_axldoc_doxygen doc_type doxygen_target_name)
+  if (UNIX)
+    add_dependencies(${doxygen_target_name} generate_axl_${doc_type})
+  endif ()
 endfunction()

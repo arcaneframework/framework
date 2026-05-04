@@ -9,16 +9,31 @@ set(generated_config_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 # Pour Arcane.
 set(common_doc_dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(axldoc_path ${CMAKE_BINARY_DIR}/bin/axldoc)
-configure_file(cmake/CommonDocConfig.cmake.in ${CMAKE_BINARY_DIR}/share/common_doc/CommonDocConfig.cmake @ONLY)
+set(common_doc_install_dir ${CMAKE_BINARY_DIR}/share/common_doc)
+configure_file(cmake/CommonDocConfig.cmake.in ${CMAKE_BINARY_DIR}/share/common_doc/cmake/CommonDocConfig.cmake @ONLY)
+file(COPY
+  cmake/CommonDocCommonVars.cmake
+  cmake/CommonDocUserVars.cmake
+  cmake/CommonDocDevVars.cmake
+  DESTINATION ${CMAKE_BINARY_DIR}/share/common_doc/cmake
+)
 
 # Pour les projets basés sur Arcane.
 set(common_doc_dir ${CMAKE_INSTALL_PREFIX}/share/common_doc)
 set(axldoc_path ${CMAKE_INSTALL_PREFIX}/bin/axldoc)
+set(common_doc_install_dir ${CMAKE_INSTALL_PREFIX}/share/common_doc)
 configure_file(cmake/CommonDocConfig.cmake.in ${generated_config_dir}/CommonDocConfig.cmake @ONLY)
 
 install(DIRECTORY theme/ DESTINATION share/common_doc/theme)
-install(FILES ${generated_config_dir}/CommonDocConfig.cmake DESTINATION share/common_doc/cmake)
 install(FILES generate_axl_infos.sh.in DESTINATION share/common_doc)
+
+install(FILES
+  ${generated_config_dir}/CommonDocConfig.cmake
+  cmake/CommonDocCommonVars.cmake
+  cmake/CommonDocUserVars.cmake
+  cmake/CommonDocDevVars.cmake
+  DESTINATION share/common_doc/cmake
+)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
