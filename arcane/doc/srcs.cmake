@@ -45,7 +45,7 @@ set(ARCANE_DOXYGEN_INPUT_USER
   ${ARCANESRCROOT}/tutorial/microhydro
   ${ARCANESRCROOT}/tutorial/poisson
   ${ARCANESRCROOT}/tutorial/helloworld
-  ${DOC_OUTPUT_DIR}/share/axl/dox
+  ${CMAKE_BINARY_DIR}/share/axl/dox
   ${ARCANE_ADDITIONAL_DOC_PATH}
   ${Arccore_ROOT}/src/base/arccore/base
   ${Arccore_ROOT}/src/collections/arccore/collections

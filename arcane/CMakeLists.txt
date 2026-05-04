@@ -1075,9 +1075,17 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 include(${ARCANESRCROOT}/doc/srcs.cmake)
 include(${ARCANEBUILDROOT}/share/common_doc/CommonDocConfig.cmake)
 
+# Variable pour savoir si la doc aura accès à internet ou non.
+if (ARCANEDOC_OFFLINE STREQUAL ON)
+  set(ARCANEDOC_MATHJAX "NO")
+  message(STATUS "Offline mode for user and dev documentations")
+else ()
+  set(ARCANEDOC_MATHJAX "YES")
+endif ()
+
 arcane_initialize_userdoc(${CMAKE_BINARY_DIR}/bin/arcane_test_driver)
 
-message(STATUS "DOXYGEN_OUTPUT_DIRECTORY = ${DOXYGEN_OUTPUT_DIRECTORY}")
+include(${ARCANESRCROOT}/doc/ArcaneDocConfig.cmake)
 
 doxygen_add_docs(
   userdoc
