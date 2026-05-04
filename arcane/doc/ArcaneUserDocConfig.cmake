@@ -1,4 +1,81 @@
-set(ARCANE_DOXYGEN_INPUT_USER
+
+set(DOXYGEN_STRIP_FROM_PATH
+  "${Arcane_SOURCE_DIR}/src"
+  "${ARCANE_CEA_SOURCE_PATH}/src"
+  "${Arccore_ROOT}/src/base"
+  "${Arccore_ROOT}/src/message_passing"
+  "${Arccore_ROOT}/src/collections"
+  "${Arccore_ROOT}/src/common"
+  "${Arccore_ROOT}/src/accelerator"
+  "${Arccore_ROOT}/src/concurrency"
+  "${Arccore_ROOT}/src/trace"
+  "${Arccore_ROOT}/src/message_passing_mpi"
+  "${Arccore_ROOT}/src/serialize"
+  "${Arccore_ROOT}"
+  "${Arcane_SOURCE_DIR}"
+  "${CMAKE_BINARY_DIR}/share/axl/dox"
+)
+
+set(DOXYGEN_STRIP_FROM_INC_PATH
+  "${Arcane_SOURCE_DIR}/src"
+  "${ARCANE_CEA_SOURCE_PATH}/src"
+  "${Arccore_ROOT}/src/base"
+  "${Arccore_ROOT}/src/message_passing"
+  "${Arccore_ROOT}/src/collections"
+  "${Arccore_ROOT}/src/common"
+  "${Arccore_ROOT}/src/accelerator"
+  "${Arccore_ROOT}/src/concurrency"
+  "${Arccore_ROOT}/src/trace"
+  "${Arccore_ROOT}/src/message_passing_mpi"
+  "${Arccore_ROOT}/src/serialize"
+  "${Arccore_ROOT}"
+  "${Arcane_SOURCE_DIR}"
+  "${CMAKE_BINARY_DIR}/share/axl/dox"
+)
+
+
+set(DOXYGEN_LAYOUT_FILE
+  "${ARCANESRCROOT}/doc/doc_user/layout.xml"
+)
+
+set(DOXYGEN_EXAMPLE_PATH
+  "${Arcane_SOURCE_DIR}/src/arcane/tests/accelerator"
+  "${Arcane_SOURCE_DIR}/src/arcane/tests/cartesianmesh"
+  "${Arcane_SOURCE_DIR}/src/arcane/tests/material"
+  "${Arcane_SOURCE_DIR}/src/arcane/tests"
+  "${ARCANESRCROOT}/samples_build/samples"
+  "${ARCANESRCROOT}/doc/doc_common/chap_build_install/subchap_prerequisites/snippets"
+  "${CMAKE_BINARY_DIR}/share/axl/dox/snippets"
+)
+
+set(DOXYGEN_EXAMPLE_RECURSIVE
+  "YES"
+)
+set(DOXYGEN_IMAGE_PATH
+  "${ARCANESRCROOT}/doc/specifs/images"
+  "${ARCANESRCROOT}/doc/theme/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_core_types/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_entities/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_entities/subchap_amr_cartesianmesh/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_examples/subchap_simple_example/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_examples/subchap_concret_example/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_io/subchap_timehistory/img"
+  "${ARCANESRCROOT}/doc/doc_user/chap_getting_started/img"
+)
+set(DOXYGEN_USE_MDFILE_AS_MAINPAGE
+  "${ARCANESRCROOT}/doc/doc_user/0_usermanual.md"
+)
+
+set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
+  "${ARCANESRCROOT}/doc/theme/img/logo_arcane.svg"
+)
+
+set(DOXYGEN_INCLUDE_PATH
+  "${ARCANE_SRC_PATH}/arcane/utils"
+  "${ARCANE_CEA_SOURCE_PATH}/src"
+)
+
+set(ARCANE_DOXYGEN_INPUT
   ${ARCANE_SRC_PATH}/arcane/core
   ${ARCANE_SRC_PATH}/arcane/utils
   ${ARCANE_SRC_PATH}/arcane/core/datatype
