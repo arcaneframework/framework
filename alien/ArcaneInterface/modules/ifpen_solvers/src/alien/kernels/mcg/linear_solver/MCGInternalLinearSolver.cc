@@ -288,8 +288,7 @@ MCGInternalLinearSolver::init()
 
   if (!m_options->ILUk().empty()) {
     m_solver->setOpt(MCGSolver::eOptType::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
-    // override spPrec
-    m_solver->setOpt(MCGSolver::eOptType::SpPrec, m_options->ILUk()[0]->sp());
+    m_solver->setOpt(MCGSolver::eOptType::ILUkSp, m_options->ILUk()[0]->sp());
   }
 
   if (!m_options->CprAmg().empty()) {
