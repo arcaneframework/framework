@@ -1,0 +1,47 @@
+
+function(arcane_initialize_userdoc executable)
+
+  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
+  set(COMMON_DOC_DIR "@common_doc_dir@")
+  set(AXLDOC_PATH "@axldoc_path@")
+  set(BINARY_PATH "${executable}")
+
+  configure_file(${COMMON_DOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh @ONLY)
+  add_custom_target(generate_axl_doc_User COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_User.sh)
+
+  set(DOXYGEN_HTML_EXTRA_STYLESHEET
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome.css"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-custom.css"
+    "${COMMON_DOC_DIR}/theme/css/custom.css"
+    "${COMMON_DOC_DIR}/theme/css/user_colors.css"
+    PARENT_SCOPE
+  )
+
+  set(DOXYGEN_HTML_EXTRA_FILES
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-darkmode-toggle.js"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js"
+    "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js"
+    "${COMMON_DOC_DIR}/theme/js/script-helper.js"
+    "${COMMON_DOC_DIR}/theme/js/script-resize.js"
+    "${COMMON_DOC_DIR}/theme/js/script-num-lines-code.js"
+    "${COMMON_DOC_DIR}/theme/js/script-config-theme.js"
+    "${COMMON_DOC_DIR}/theme/js/script-edit-config-theme.js"
+    "${COMMON_DOC_DIR}/theme/js/script-apply-config-theme.js"
+    "${COMMON_DOC_DIR}/theme/js/script-doxygen-version.js"
+    PARENT_SCOPE
+  )
+
+  set(DOXYGEN_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/share/userdoc"
+    PARENT_SCOPE
+  )
+
+endfunction()
+
+function(arcane_after_userdoc doxygen_target_name)
+  add_dependencies(${doxygen_target_name} generate_axl_doc_User)
+endfunction()

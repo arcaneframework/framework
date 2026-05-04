@@ -91,6 +91,7 @@ if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
   message(STATUS "Configuring Arcane")
   configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
 
+  add_subdirectory(${ARCFRAMEWORK_ROOT}/arctools/common_doc common_doc)
   add_subdirectory(${ARCFRAMEWORK_ROOT}/arcane arcane)
 
   # ----------------------------------------------------------------------------
