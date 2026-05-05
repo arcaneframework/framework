@@ -57,6 +57,8 @@ Trois fonctions CMake sont disponibles :
 
   Sous Windows, cette fonction n'a aucun effet.
 
+---
+
 ## Utilisation
 
 Un Sample de documentation est disponible dans le dossier d'installation de Arcane (
@@ -67,6 +69,9 @@ le CMakeLists.txt du projet.
 À ajouter dans le CMakeLists.txt :
 
 ```cmake
+# Répertoire où seront regroupés tous les fichiers .axl.
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/axl)
+
 find_package(Doxygen)
 
 # Si le package Doxygen est introuvable, inutile de continuer.

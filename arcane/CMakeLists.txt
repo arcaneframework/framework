@@ -1072,6 +1072,9 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Répertoire où seront regroupés tous les fichiers .axl.
+file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
+
 # La variable ADOC_LEGACY_THEME permet de passer au thème Doxygen classique.
 if (NOT ADOC_LEGACY_THEME)
   if (ARCANEDOC_LEGACY_THEME AND ARCANEDOC_LEGACY_THEME STREQUAL ON)
