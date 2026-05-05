@@ -1124,11 +1124,11 @@ function(GENERATE_DOC_TARGET doctype)
   adoc_initialize_axldoc(${doctype} ${CMAKE_BINARY_DIR}/bin/arcane_test_driver ${CMAKE_BINARY_DIR}/lib)
 
   # Variables Doxygen spécifiques à la documentation Arcane.
-  include(${ARCANESRCROOT}/doc/ArcaneCommonDocConfig.cmake)
+  include(${ARCANESRCROOT}/doc/CommonDocConfig.cmake)
   if (${doctype} STREQUAL "user")
-    include(${ARCANESRCROOT}/doc/ArcaneUserDocConfig.cmake)
+    include(${ARCANESRCROOT}/doc/UserDocConfig.cmake)
   else ()
-    include(${ARCANESRCROOT}/doc/ArcaneDevDocConfig.cmake)
+    include(${ARCANESRCROOT}/doc/DevDocConfig.cmake)
   endif ()
 
   # On définit le dossier de sortie et on génère le Doxyfile.

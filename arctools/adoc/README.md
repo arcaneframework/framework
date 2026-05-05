@@ -115,9 +115,9 @@ if (Doxygen_FOUND)
     # documentation (dans cet exemple, on définit la variable `ADOC_DOXYGEN_INPUT`).
     #
     # Pour un exemple plus complet, il est possible d'aller voir les fichiers :
-    # - "arcane/doc/ArcaneCommonDocConfig.cmake"
-    # - "arcane/doc/ArcaneUserDocConfig.cmake"
-    # - "arcane/doc/ArcaneDevDocConfig.cmake"
+    # - "arcane/doc/CommonDocConfig.cmake"
+    # - "arcane/doc/UserDocConfig.cmake"
+    # - "arcane/doc/DevDocConfig.cmake"
     include(${DOC_DIR}/CommonDocConfig.cmake)
     if (${doc_type} STREQUAL "user")
       include(${DOC_DIR}/UserDocConfig.cmake)
