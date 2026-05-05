@@ -1,7 +1,26 @@
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Fonction permettant de définir les variables DOXYGEN pour générer la
+# documentation ADoc.
+#
+# Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
+#
+# La documentation "user" est destinée aux utilisateurs du code. Sa génération
+# est plus rapide que la "dev", elle est plus légère étant donné qu'elle
+# n'inclut pas de graphes UML.
+#
+# La documentation "dev" est destinée aux développeurs du code.
+# Cette documentation inclut les éléments privés des classes, en autres.
+#
+# Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
+# "ADocDevVars.cmake" pour plus de détails.
 function(adoc_initialize_vars doc_type)
   set(ADOC_DIR "@adoc_dir@")
   set(ADOC_INSTALL_DIR "@adoc_install_dir@")
+
   if (NOT ADOC_MATHJAX)
     set(ADOC_MATHJAX "OFF")
   endif ()
@@ -22,13 +41,33 @@ function(adoc_initialize_vars doc_type)
   endif ()
 endfunction()
 
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
-
-function(adoc_initialize_axldoc doc_type executable)
+# Fonction permettant de configurer le script permettant de générer les
+# informations sur les AXL.
+#
+# Deux valeurs sont possibles pour "doc_type" : "user" et "dev". Cela permet
+# de savoir quelles informations récupérer des fichiers AXL.
+#
+# "executable" correspond au chemin de l'exécutable généré par le code. Il
+# sera lancé avec un mode spécial de Arcane permettant de générer les
+# informations AXL des modules et services.
+#
+# "config_file_dir" correspond au répertoire où est situé le fichier de
+# configuration de l'exécutable (`File.config`). Il est possible de fournir une
+# chaine de caractère vide pour choisir le répertoire de l'exécutable.
+#
+# Sous Windows, cette fonction n'a aucun effet.
+function(adoc_initialize_axldoc doc_type executable config_file_dir)
   set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
   set(ADOC_DIR "@adoc_dir@")
   set(AXLDOC_PATH "@axldoc_path@")
   set(BINARY_PATH "${executable}")
+
+  if (NOT config_file_dir)
+    cmake_path(GET executable PARENT_PATH config_file_dir)
+  endif ()
 
   if (${doc_type} STREQUAL "user")
     set(IS_FOR "User")
@@ -44,13 +83,24 @@ function(adoc_initialize_axldoc doc_type executable)
     set(AXLDOC_LEGACY "")
   endif ()
 
+  file(MAKE_DIRECTORY ${SHARE_AXL_DIR})
+
   if (UNIX)
     configure_file(${ADOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh @ONLY)
     add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh)
   endif ()
 endfunction()
 
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
+# Fonction permettant d'ajouter la génération des informations AXL comme
+# dépendance à la génération de la documentation.
+#
+# Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
+#
+# "doxygen_target_name" correspond au nom de la cible utilisé par la
+# commande "doxygen_add_docs()".
 function(adoc_link_axldoc_doxygen doc_type doxygen_target_name)
   if (UNIX)
     add_dependencies(${doxygen_target_name} generate_axl_${doc_type})

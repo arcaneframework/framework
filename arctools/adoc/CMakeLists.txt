@@ -21,6 +21,7 @@ set(adoc_install_dir ${CMAKE_INSTALL_PREFIX}/share/adoc)
 configure_file(cmake/ADocConfig.cmake.in ${generated_config_dir}/ADocConfig.cmake @ONLY)
 
 install(DIRECTORY theme/ DESTINATION share/adoc/theme)
+install(DIRECTORY doc/ DESTINATION share/adoc/doc)
 install(FILES generate_axl_infos.sh.in DESTINATION share/adoc)
 
 install(FILES

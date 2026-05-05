@@ -28,6 +28,11 @@ set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
   PARENT_SCOPE
 )
 
+set(DOXYGEN_PROJECT_LOGO
+  "${ADOC_DIR}/theme/img/arcane_framework_small.webp"
+  PARENT_SCOPE
+)
+
 if (${ADOC_LEGACY_THEME} STREQUAL "ON")
   set(DOXYGEN_HTML_HEADER
     "${ADOC_DIR}/theme/html/header_no_theme.html"
@@ -168,7 +173,7 @@ set(DOXYGEN_USE_MATHJAX
   "${ADOC_MATHJAX}"
   PARENT_SCOPE
 )
-if (${ADOC_MATHJAX} STREQUAL "YES")
+if (${ADOC_MATHJAX} STREQUAL "ON")
   set(DOXYGEN_MATHJAX_VERSION
     "MathJax_3"
     PARENT_SCOPE

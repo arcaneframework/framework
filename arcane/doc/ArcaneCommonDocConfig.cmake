@@ -1,9 +1,4 @@
 
-
-set(DOXYGEN_PROJECT_LOGO
-  "${ARCANESRCROOT}/doc/theme/img/arcane_framework_small.webp"
-)
-
 set(DOXYGEN_ALIASES
   "arcane{1}=\\ref Arcane::\\1 \\\"\\1\\\""
   "arccore{1}=\\ref Arccore::\\1 \\\"\\1\\\""

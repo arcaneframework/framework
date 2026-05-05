@@ -7,6 +7,7 @@ BINARY_PATH=@BINARY_PATH@
 AXLDOC_PATH=@AXLDOC_PATH@
 IS_FOR=@IS_FOR@
 AXLDOC_LEGACY="@AXLDOC_LEGACY@"
+CONFIG_FILE_DIR="@config_file_dir@"
 
 mkdir ${AXL_OUTPATH}
 mkdir ${AXL_OUTPATH}/dox
@@ -21,5 +22,5 @@ ${BINARY_PATH} launch -arcane_opt arcane_internal
 /bin/rm ${AXL_OUTPATH}/dox/*.md
 /bin/rm ${AXL_OUTPATH}/dox/snippets/*.md
 
-${AXLDOC_PATH} --generate-final -a ${BUILD_PATH}/lib/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
+${AXLDOC_PATH} --generate-final -a ${CONFIG_FILE_DIR}/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
 ${AXLDOC_PATH} -u ${IS_FOR} -a ${AXL_OUTPATH}/final_axl/final_internal.xml -o ${AXL_OUTPATH}/dox ${AXLDOC_LEGACY} ${AXL_OUTPATH}/final_axl/*.axl

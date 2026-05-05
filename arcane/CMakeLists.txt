@@ -1086,10 +1086,10 @@ endif ()
 # Variable pour savoir si la doc aura accès à internet ou non.
 if (NOT ADOC_MATHJAX)
   if (ARCANEDOC_OFFLINE AND ARCANEDOC_OFFLINE STREQUAL ON)
-    set(ADOC_MATHJAX "NO")
+    set(ADOC_MATHJAX "OFF")
     message(STATUS "Offline mode for user and dev documentations")
   else ()
-    set(ADOC_MATHJAX "YES")
+    set(ADOC_MATHJAX "ON")
   endif ()
 endif ()
 
@@ -1098,8 +1098,6 @@ endif ()
 # Ce fichier contient les fonctions cmake ADoc.
 include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 
-file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
-
 # ----------------------------------------------------------------------------
 
 # Fonction permettant de générer les doxyfiles pour générer la documentation.
@@ -1107,12 +1105,12 @@ file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 # Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
 # Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
 function(GENERATE_DOC_TARGET doctype)
-  set(doctarget "${doctype}doc")
-  set(internal_doctarget "_${doctarget}")
+  set(DOC_TARGET "${doctype}doc")
+  set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
 
   # Initialisation des variables Doxygen et configuration de la génération des infos AXL.
   adoc_initialize_vars(${doctype})
-  adoc_initialize_axldoc(${doctype} ${CMAKE_BINARY_DIR}/bin/arcane_test_driver)
+  adoc_initialize_axldoc(${doctype} ${CMAKE_BINARY_DIR}/bin/arcane_test_driver ${CMAKE_BINARY_DIR}/lib)
 
   # Variables Doxygen spécifiques à la documentation Arcane.
   include(${ARCANESRCROOT}/doc/ArcaneCommonDocConfig.cmake)
@@ -1123,33 +1121,33 @@ function(GENERATE_DOC_TARGET doctype)
   endif ()
 
   # On définit le dossier de sortie et on génère le Doxyfile.
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${doctarget}")
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${DOC_TARGET}")
   doxygen_add_docs(
-    ${internal_doctarget}
+    ${INTERNAL_DOC_TARGET}
     ${ARCANE_DOXYGEN_INPUT}
   )
-  # On ajoute une dépendance pour ${internal_doctarget} qui est la génération des infos AXL.
-  adoc_link_axldoc_doxygen(${doctype} ${internal_doctarget})
+  # On ajoute une dépendance pour ${INTERNAL_DOC_TARGET} qui est la génération des infos AXL.
+  adoc_link_axldoc_doxygen(${doctype} ${INTERNAL_DOC_TARGET})
 
   # On donne, dans les logs, l'emplacement de l'index.html généré.
-  add_custom_target(${doctarget} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
-  add_dependencies(${doctarget} ${internal_doctarget})
+  add_custom_target(${DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${DOC_TARGET} ${INTERNAL_DOC_TARGET})
 
 
   # Même chose pour la documentation installée.
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${doctarget}")
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${DOC_TARGET}")
 
-  set(doctarget "install_${doctype}doc")
-  set(internal_doctarget "_${doctarget}")
+  set(DOC_TARGET "install_${doctype}doc")
+  set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
 
   doxygen_add_docs(
-    ${internal_doctarget}
+    ${INTERNAL_DOC_TARGET}
     ${ARCANE_DOXYGEN_INPUT}
   )
-  adoc_link_axldoc_doxygen(${doctype} "${internal_doctarget}")
+  adoc_link_axldoc_doxygen(${doctype} "${INTERNAL_DOC_TARGET}")
 
-  add_custom_target(${doctarget} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
-  add_dependencies(${doctarget} ${internal_doctarget})
+  add_custom_target(${DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${DOC_TARGET} ${INTERNAL_DOC_TARGET})
 endfunction()
 
 # ----------------------------------------------------------------------------
