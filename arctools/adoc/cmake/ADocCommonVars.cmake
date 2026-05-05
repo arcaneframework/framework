@@ -1,48 +1,48 @@
 
 set(DOXYGEN_HTML_EXTRA_STYLESHEET
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome.css"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-custom.css"
-  "${COMMON_DOC_DIR}/theme/css/custom.css"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome.css"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-custom.css"
+  "${ADOC_DIR}/theme/css/custom.css"
 )
 set(DOXYGEN_HTML_EXTRA_STYLESHEET ${DOXYGEN_HTML_EXTRA_STYLESHEET}
   PARENT_SCOPE
 )
 
 set(DOXYGEN_HTML_EXTRA_FILES
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-darkmode-toggle.js"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js"
-  "${COMMON_DOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js"
-  "${COMMON_DOC_DIR}/theme/js/script-helper.js"
-  "${COMMON_DOC_DIR}/theme/js/script-resize.js"
-  "${COMMON_DOC_DIR}/theme/js/script-num-lines-code.js"
-  "${COMMON_DOC_DIR}/theme/js/script-config-theme.js"
-  "${COMMON_DOC_DIR}/theme/js/script-edit-config-theme.js"
-  "${COMMON_DOC_DIR}/theme/js/script-apply-config-theme.js"
-  "${COMMON_DOC_DIR}/theme/js/script-doxygen-version.js"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-darkmode-toggle.js"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js"
+  "${ADOC_DIR}/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js"
+  "${ADOC_DIR}/theme/js/script-helper.js"
+  "${ADOC_DIR}/theme/js/script-resize.js"
+  "${ADOC_DIR}/theme/js/script-num-lines-code.js"
+  "${ADOC_DIR}/theme/js/script-config-theme.js"
+  "${ADOC_DIR}/theme/js/script-edit-config-theme.js"
+  "${ADOC_DIR}/theme/js/script-apply-config-theme.js"
+  "${ADOC_DIR}/theme/js/script-doxygen-version.js"
 )
 set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
   PARENT_SCOPE
 )
 
-if (${COMMON_DOC_LEGACY_THEME} STREQUAL "ON")
+if (${ADOC_LEGACY_THEME} STREQUAL "ON")
   set(DOXYGEN_HTML_HEADER
-    "${COMMON_DOC_DIR}/theme/html/header_no_theme.html"
+    "${ADOC_DIR}/theme/html/header_no_theme.html"
     PARENT_SCOPE
   )
 else ()
   set(DOXYGEN_HTML_HEADER
-    "${COMMON_DOC_DIR}/theme/html/header.html"
+    "${ADOC_DIR}/theme/html/header.html"
     PARENT_SCOPE
   )
 endif ()
 
 
 set(DOXYGEN_HTML_FOOTER
-  "${COMMON_DOC_DIR}/theme/html/footer.html"
+  "${ADOC_DIR}/theme/html/footer.html"
   PARENT_SCOPE
 )
 
@@ -165,10 +165,10 @@ set(DOXYGEN_HTML_FORMULA_FORMAT
 )
 
 set(DOXYGEN_USE_MATHJAX
-  "${COMMON_DOC_MATHJAX}"
+  "${ADOC_MATHJAX}"
   PARENT_SCOPE
 )
-if (${COMMON_DOC_MATHJAX} STREQUAL "YES")
+if (${ADOC_MATHJAX} STREQUAL "YES")
   set(DOXYGEN_MATHJAX_VERSION
     "MathJax_3"
     PARENT_SCOPE

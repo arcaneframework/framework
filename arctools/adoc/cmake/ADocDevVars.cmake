@@ -4,7 +4,7 @@ set(DOXYGEN_PROJECT_BRIEF
 )
 
 set(DOXYGEN_HTML_EXTRA_STYLESHEET ${DOXYGEN_HTML_EXTRA_STYLESHEET}
-  "${COMMON_DOC_DIR}/theme/css/dev_colors.css"
+  "${ADOC_DIR}/theme/css/dev_colors.css"
   PARENT_SCOPE
 )
 

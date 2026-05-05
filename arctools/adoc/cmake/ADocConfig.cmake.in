@@ -1,0 +1,58 @@
+
+function(adoc_initialize_vars doc_type)
+  set(ADOC_DIR "@adoc_dir@")
+  set(ADOC_INSTALL_DIR "@adoc_install_dir@")
+  if (NOT ADOC_MATHJAX)
+    set(ADOC_MATHJAX "OFF")
+  endif ()
+  if (NOT ADOC_LEGACY_THEME)
+    set(ADOC_LEGACY_THEME "OFF")
+  endif ()
+
+  if (${doc_type} STREQUAL "user")
+    include(${ADOC_INSTALL_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_INSTALL_DIR}/cmake/ADocUserVars.cmake)
+    set(IS_FOR "User")
+  elseif (${doc_type} STREQUAL "dev")
+    include(${ADOC_INSTALL_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_INSTALL_DIR}/cmake/ADocDevVars.cmake)
+    set(IS_FOR "Dev")
+  else ()
+    message(FATAL_ERROR "Unknown doc type")
+  endif ()
+endfunction()
+
+
+
+function(adoc_initialize_axldoc doc_type executable)
+  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
+  set(ADOC_DIR "@adoc_dir@")
+  set(AXLDOC_PATH "@axldoc_path@")
+  set(BINARY_PATH "${executable}")
+
+  if (${doc_type} STREQUAL "user")
+    set(IS_FOR "User")
+  elseif (${doc_type} STREQUAL "dev")
+    set(IS_FOR "Dev")
+  else ()
+    message(FATAL_ERROR "Unknown doc type (${doc_type})")
+  endif ()
+
+  if (${ADOC_LEGACY_THEME} STREQUAL "ON")
+    set(AXLDOC_LEGACY "--legacy")
+  else ()
+    set(AXLDOC_LEGACY "")
+  endif ()
+
+  if (UNIX)
+    configure_file(${ADOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh @ONLY)
+    add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh)
+  endif ()
+endfunction()
+
+
+function(adoc_link_axldoc_doxygen doc_type doxygen_target_name)
+  if (UNIX)
+    add_dependencies(${doxygen_target_name} generate_axl_${doc_type})
+  endif ()
+endfunction()

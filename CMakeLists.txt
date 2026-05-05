@@ -39,7 +39,7 @@ elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL alien_standalone)
 elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL neo)
   add_subdirectory(arctools/neo)
 elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL doc)
-  add_subdirectory(arctools/common_doc)
+  add_subdirectory(arctools/adoc)
 else()
   message(FATAL_ERROR "Invalid value '${FRAMEWORK_BUILD_COMPONENT}' for FRAMEWORK_BUILD_COMPONENT"
     "Valid values are: { 'all', 'arcane', 'arccore', 'arccon', 'axlstar', 'alien', 'alien_standalone','neo' }")
