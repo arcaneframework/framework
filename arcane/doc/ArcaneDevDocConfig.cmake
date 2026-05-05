@@ -33,6 +33,9 @@ set(DOXYGEN_INCLUDE_PATH
   "${ARCANE_SRC_PATH}/arcane/utils"
 )
 
+set(DOXYGEN_RECURSIVE
+  "YES"
+)
 
 set(ARCANE_DOXYGEN_INPUT
   ${ARCANESRCROOT}/doc/doc_dev

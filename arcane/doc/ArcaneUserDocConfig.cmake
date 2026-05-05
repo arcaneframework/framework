@@ -75,6 +75,10 @@ set(DOXYGEN_INCLUDE_PATH
   "${ARCANE_CEA_SOURCE_PATH}/src"
 )
 
+set(DOXYGEN_RECURSIVE
+  "NO"
+)
+
 set(ARCANE_DOXYGEN_INPUT
   ${ARCANE_SRC_PATH}/arcane/core
   ${ARCANE_SRC_PATH}/arcane/utils

@@ -1,10 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}  CMAKE_VERSION=${CMAKE_VERSION}")
-
 set(generated_config_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
-
-
 
 # Pour Arcane.
 set(common_doc_dir ${CMAKE_CURRENT_SOURCE_DIR})

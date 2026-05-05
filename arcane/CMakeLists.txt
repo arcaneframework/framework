@@ -1072,6 +1072,7 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# La variable COMMON_DOC_LEGACY_THEME permet de passer au thème Doxygen classique.
 if (NOT COMMON_DOC_LEGACY_THEME)
   if (ARCANEDOC_LEGACY_THEME AND ARCANEDOC_LEGACY_THEME STREQUAL ON)
     set(COMMON_DOC_LEGACY_THEME "ON")
@@ -1079,6 +1080,8 @@ if (NOT COMMON_DOC_LEGACY_THEME)
     set(COMMON_DOC_LEGACY_THEME "OFF")
   endif ()
 endif ()
+
+# ----------------------------------------------------------------------------
 
 # Variable pour savoir si la doc aura accès à internet ou non.
 if (NOT COMMON_DOC_MATHJAX)
@@ -1090,16 +1093,28 @@ if (NOT COMMON_DOC_MATHJAX)
   endif ()
 endif ()
 
+# ----------------------------------------------------------------------------
+
+# Ce fichier contient les fonctions cmake arcanedoc.
 include(${ARCANEBUILDROOT}/share/common_doc/cmake/CommonDocConfig.cmake)
 
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
+# ----------------------------------------------------------------------------
+
+# Fonction permettant de générer les doxyfiles pour générer la documentation.
+# Deux valeurs possibles pour `doctype` : "user" et "dev".
+# Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
+# Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
 function(GENERATE_DOC_TARGET doctype)
   set(doctarget "${doctype}doc")
+  set(internal_doctarget "_${doctarget}")
 
+  # Initialisation des variables Doxygen et configuration de la génération des infos AXL.
   arcanedoc_initialize_vars(${doctype})
   arcanedoc_initialize_axldoc(${doctype} ${CMAKE_BINARY_DIR}/bin/arcane_test_driver)
 
+  # Variables Doxygen spécifiques à la documentation Arcane.
   include(${ARCANESRCROOT}/doc/ArcaneCommonDocConfig.cmake)
   if (${doctype} STREQUAL "user")
     include(${ARCANESRCROOT}/doc/ArcaneUserDocConfig.cmake)
@@ -1107,20 +1122,37 @@ function(GENERATE_DOC_TARGET doctype)
     include(${ARCANESRCROOT}/doc/ArcaneDevDocConfig.cmake)
   endif ()
 
+  # On définit le dossier de sortie et on génère le Doxyfile.
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${doctarget}")
   doxygen_add_docs(
-    ${doctarget}
+    ${internal_doctarget}
     ${ARCANE_DOXYGEN_INPUT}
   )
-  arcanedoc_link_axldoc_doxygen(${doctype} ${doctarget})
+  # On ajoute une dépendance pour ${internal_doctarget} qui est la génération des infos AXL.
+  arcanedoc_link_axldoc_doxygen(${doctype} ${internal_doctarget})
 
+  # On donne, dans les logs, l'emplacement de l'index.html généré.
+  add_custom_target(${doctarget} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${doctarget} ${internal_doctarget})
+
+
+  # Même chose pour la documentation installée.
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${doctarget}")
+
+  set(doctarget "install_${doctype}doc")
+  set(internal_doctarget "_${doctarget}")
+
   doxygen_add_docs(
-    "install_${doctarget}"
+    ${internal_doctarget}
     ${ARCANE_DOXYGEN_INPUT}
   )
-  arcanedoc_link_axldoc_doxygen(${doctype} "install_${doctarget}")
+  arcanedoc_link_axldoc_doxygen(${doctype} "${internal_doctarget}")
+
+  add_custom_target(${doctarget} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${doctarget} ${internal_doctarget})
 endfunction()
+
+# ----------------------------------------------------------------------------
 
 message(STATUS "DOXYGEN = ${DOXYGEN}")
 if (DOXYGEN)
