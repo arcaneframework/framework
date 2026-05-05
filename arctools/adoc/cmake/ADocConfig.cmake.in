@@ -138,6 +138,8 @@ endfunction()
 #
 # "doxygen_target_name" correspond au nom de la cible utilisé par la
 # commande "doxygen_add_docs()".
+#
+# Sous Windows, cette fonction n'a aucun effet.
 function(adoc_link_axldoc_doxygen doc_type doxygen_target_name)
   if (UNIX)
     add_dependencies(${doxygen_target_name} generate_axl_${doc_type})
