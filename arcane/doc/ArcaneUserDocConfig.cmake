@@ -66,10 +66,6 @@ set(DOXYGEN_USE_MDFILE_AS_MAINPAGE
   "${ARCANESRCROOT}/doc/doc_user/0_usermanual.md"
 )
 
-set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
-  "${ARCANESRCROOT}/doc/theme/img/logo_arcane.svg"
-)
-
 set(DOXYGEN_INCLUDE_PATH
   "${ARCANE_SRC_PATH}/arcane/utils"
   "${ARCANE_CEA_SOURCE_PATH}/src"

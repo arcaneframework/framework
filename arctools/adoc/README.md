@@ -88,8 +88,10 @@ endif()
 
 Des variables CMake sont disponibles :
 - `ADOC_LEGACY_THEME` (`ON`/`OFF`) : permet de passer au thème Doxygen classique (par défaut : `OFF`),
-- `ADOC_MATHJAX` (`ON`/`OFF`) : permet de savoir si la doc aura accès à internet ou non (par défaut : `ON`),
-- `ADOC_PROJECT_REPO_LINK` (url) : permet de définir le lien vers le dépot du code.
+- `ADOC_MATHJAX` (`ON`/`OFF`) : permet d'activer MathJax (par défaut : `ON`),
+- `ADOC_PROJECT_REPO_LINK` (url) : permet de définir le lien vers le dépot du code,
+- `ADOC_PROJECT_ICON` (chemin de l'icône) : permet de définir une icône pour la page web (équivalent à l'option Doxygen
+  `PROJECT_ICON` mais qui fonctionne) (trois formats supportés : `svg`, `png` et `webp`).
 
 Deux cibles seront générées (il sera nécessaire de faire `ninja userdoc` et/ou `ninja devdoc` après la configuration
 et la compilation du code) :

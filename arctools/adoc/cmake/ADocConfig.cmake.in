@@ -45,7 +45,30 @@ function(adoc_initialize doc_type)
   file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
   file(MAKE_DIRECTORY ${ADOC_BUILD_DIR}/theme/html)
 
-  # Variables à remplacer : ADOC_PROJECT_REPO_LINK
+  # Doxygen ne gère pas vraiment les icônes...
+  if (ADOC_PROJECT_ICON)
+    set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
+      "${ADOC_PROJECT_ICON}"
+    )
+    set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
+      PARENT_SCOPE
+    )
+
+    cmake_path(GET ADOC_PROJECT_ICON EXTENSION LAST_ONLY lastExt)
+    cmake_path(GET ADOC_PROJECT_ICON FILENAME filename)
+
+    if (${lastExt} STREQUAL ".svg")
+      set(ICON_TYPE "type=\"image/svg+xml\"")
+    elseif (${lastExt} STREQUAL ".png")
+      set(ICON_TYPE "type=\"image/png\"")
+    elseif (${lastExt} STREQUAL ".webp")
+      set(ICON_TYPE "type=\"image/webp\"")
+    endif ()
+
+    set(ADOC_HTML_HEAD ${ADOC_HTML_HEAD} "<link rel=\"icon\" href=\"$relpath^${filename}\" ${ICON_TYPE}>")
+  endif ()
+
+  # Variables à remplacer : ADOC_PROJECT_REPO_LINK, ADOC_HTML_HEAD
   configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header.html @ONLY)
 endfunction()
 

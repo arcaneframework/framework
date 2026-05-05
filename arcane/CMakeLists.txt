@@ -1107,10 +1107,14 @@ include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 function(GENERATE_DOC_TARGET doctype)
   set(DOC_TARGET "${doctype}doc")
   set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
-  
+
   if (NOT ADOC_PROJECT_REPO_LINK)
     set(ADOC_PROJECT_REPO_LINK "https://github.com/arcaneframework/framework")
   endif ()
+
+  set(ADOC_PROJECT_ICON
+    "${ARCANESRCROOT}/doc/theme/img/logo_arcane.svg"
+  )
 
   # Initialisation des variables Doxygen et configuration de la génération des infos AXL.
   adoc_initialize(${doctype})
