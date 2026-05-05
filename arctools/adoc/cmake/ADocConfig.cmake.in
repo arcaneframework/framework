@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 # ----------------------------------------------------------------------------
 
 # Fonction permettant de définir les variables DOXYGEN pour générer la
-# documentation ADoc.
+# documentation ADoc et de générer les fichiers nécessaires.
 #
 # Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
 #
@@ -17,9 +17,11 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 #
 # Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
 # "ADocDevVars.cmake" pour plus de détails.
-function(adoc_initialize_vars doc_type)
-  set(ADOC_DIR "@adoc_dir@")
-  set(ADOC_INSTALL_DIR "@adoc_install_dir@")
+function(adoc_initialize doc_type)
+  set(ADOC_SOURCE_DIR "@adoc_source_dir@")
+  if (NOT ADOC_BUILD_DIR)
+    set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
+  endif ()
 
   if (NOT ADOC_MATHJAX)
     set(ADOC_MATHJAX "OFF")
@@ -29,16 +31,22 @@ function(adoc_initialize_vars doc_type)
   endif ()
 
   if (${doc_type} STREQUAL "user")
-    include(${ADOC_INSTALL_DIR}/cmake/ADocCommonVars.cmake)
-    include(${ADOC_INSTALL_DIR}/cmake/ADocUserVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocUserVars.cmake)
     set(IS_FOR "User")
   elseif (${doc_type} STREQUAL "dev")
-    include(${ADOC_INSTALL_DIR}/cmake/ADocCommonVars.cmake)
-    include(${ADOC_INSTALL_DIR}/cmake/ADocDevVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocDevVars.cmake)
     set(IS_FOR "Dev")
   else ()
     message(FATAL_ERROR "Unknown doc type")
   endif ()
+
+  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
+  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR}/theme/html)
+
+  # Variables à remplacer : ADOC_PROJECT_REPO_LINK
+  configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header.html @ONLY)
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -61,9 +69,13 @@ endfunction()
 # Sous Windows, cette fonction n'a aucun effet.
 function(adoc_initialize_axldoc doc_type executable config_file_dir)
   set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
-  set(ADOC_DIR "@adoc_dir@")
+  set(ADOC_SOURCE_DIR "@adoc_source_dir@")
   set(AXLDOC_PATH "@axldoc_path@")
   set(BINARY_PATH "${executable}")
+
+  if (NOT ADOC_BUILD_DIR)
+    set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
+  endif ()
 
   if (NOT config_file_dir)
     cmake_path(GET executable PARENT_PATH config_file_dir)
@@ -77,17 +89,19 @@ function(adoc_initialize_axldoc doc_type executable config_file_dir)
     message(FATAL_ERROR "Unknown doc type (${doc_type})")
   endif ()
 
-  if (${ADOC_LEGACY_THEME} STREQUAL "ON")
-    set(AXLDOC_LEGACY "--legacy")
-  else ()
-    set(AXLDOC_LEGACY "")
+  set(AXLDOC_LEGACY "")
+  if (ADOC_LEGACY_THEME)
+    if (${ADOC_LEGACY_THEME} STREQUAL "ON")
+      set(AXLDOC_LEGACY "--legacy")
+    endif ()
   endif ()
 
   file(MAKE_DIRECTORY ${SHARE_AXL_DIR})
+  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
 
   if (UNIX)
-    configure_file(${ADOC_DIR}/generate_axl_infos.sh.in ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh @ONLY)
-    add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${CMAKE_BINARY_DIR}/lib/generate_axl_infos_${doc_type}.sh)
+    configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${doc_type}.sh @ONLY)
+    add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${doc_type}.sh)
   endif ()
 endfunction()
 

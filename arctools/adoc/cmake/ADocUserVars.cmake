@@ -4,7 +4,7 @@ set(DOXYGEN_PROJECT_BRIEF
 )
 
 set(DOXYGEN_HTML_EXTRA_STYLESHEET ${DOXYGEN_HTML_EXTRA_STYLESHEET}
-  "${ADOC_DIR}/theme/css/user_colors.css"
+  "${ADOC_SOURCE_DIR}/theme/css/user_colors.css"
   PARENT_SCOPE
 )
 

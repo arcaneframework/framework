@@ -1107,9 +1107,13 @@ include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 function(GENERATE_DOC_TARGET doctype)
   set(DOC_TARGET "${doctype}doc")
   set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
+  
+  if (NOT ADOC_PROJECT_REPO_LINK)
+    set(ADOC_PROJECT_REPO_LINK "https://github.com/arcaneframework/framework")
+  endif ()
 
   # Initialisation des variables Doxygen et configuration de la génération des infos AXL.
-  adoc_initialize_vars(${doctype})
+  adoc_initialize(${doctype})
   adoc_initialize_axldoc(${doctype} ${CMAKE_BINARY_DIR}/bin/arcane_test_driver ${CMAKE_BINARY_DIR}/lib)
 
   # Variables Doxygen spécifiques à la documentation Arcane.

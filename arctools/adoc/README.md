@@ -28,18 +28,27 @@ if(Doxygen_FOUND)
       
     # Pour générer la documentation, on utilisera une cible du nom de "userdoc"/"devdoc".
     set(DOC_TARGET "${doc_type}doc")
-    
-    # Initialisation des variables Doxygen.
-    adoc_initialize_vars(${doc_type})
+
+    # Initialisation des variables Doxygen. C'est ici que l'on définit, entre autres choses,
+    # l'emplacement de tous les fichiers du thème utilisé par Arcane. 
+    adoc_initialize(${doc_type})
     # Configuration de la génération des infos AXL (facultatif).
     adoc_initialize_axldoc(${doc_type} ${AXLINFO_BINARY} "")
     
     # Si nécessaire, il est possible d'ajouter/modifier/écraser des variables Doxygen pour
     # personnaliser la documentation.
-    # Dans ces fichiers, il est aussi possible de définir une variable contenant la
-    # liste des dossiers dans lesquelles se trouve les fichiers à include dans la
+    # Les variables défines par ADoc sont situées dans les fichiers :
+    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocCommonVars.cmake
+    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocUserVars.cmake
+    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocDevVars.cmake
+    #
+    # Les fichiers "SampleCommonDocConfig.cmake", "SampleUserDocConfig.cmake" et
+    # "SampleDevDocConfig.cmake" servent justement à ça !
+    # On en profite aussi pour définir une variable contenant la
+    # liste des dossiers dans lesquelles se trouvent les fichiers à include dans la
     # documentation (dans cet exemple, on définit la
     # variable `SAMPLE_DOXYGEN_INPUT`).
+    #
     # Pour un exemple plus complet, il est possible d'aller voir les fichiers :
     # - "arcane/doc/ArcaneCommonDocConfig.cmake"
     # - "arcane/doc/ArcaneUserDocConfig.cmake"
@@ -77,9 +86,10 @@ if(Doxygen_FOUND)
 endif()
 ```
 
-Deux variables CMake sont disponibles :
+Des variables CMake sont disponibles :
 - `ADOC_LEGACY_THEME` (`ON`/`OFF`) : permet de passer au thème Doxygen classique (par défaut : `OFF`),
-- `ADOC_MATHJAX` (`ON`/`OFF`) : permet de savoir si la doc aura accès à internet ou non (par défaut : `ON`).
+- `ADOC_MATHJAX` (`ON`/`OFF`) : permet de savoir si la doc aura accès à internet ou non (par défaut : `ON`),
+- `ADOC_PROJECT_REPO_LINK` (url) : permet de définir le lien vers le dépot du code.
 
 Deux cibles seront générées (il sera nécessaire de faire `ninja userdoc` et/ou `ninja devdoc` après la configuration
 et la compilation du code) :
