@@ -19,7 +19,7 @@ set(DOXYGEN_RECURSIVE
 )
 
 # Remplacer "${CMAKE_SOURCE_DIR}/sample" par l'emplacement des sources.
-set(SAMPLE_DOXYGEN_INPUT
+set(ADOC_DOXYGEN_INPUT
   "${DOC_DIR}/doc_dev"
   "${DOC_DIR}/doc_common"
   "${DOC_DIR}/doc_common/chap_news"

@@ -62,8 +62,8 @@ Trois fonctions CMake sont disponibles :
 ## Utilisation
 
 Un Sample de documentation est disponible dans le dossier d'installation de Arcane (
-`${ARCANE_PREFIX_DIR}/share/adoc/doc`).
-Il suffit de le copier dans les sources du code (par exemple : `${CMAKE_SOURCE_DIR}/doc`) et de modifier
+`${ARCANE_PREFIX_DIR}/share/adoc/sample_doc`).
+Il suffit de copier son contenu dans les sources du code (par exemple dans : `${CMAKE_SOURCE_DIR}/doc/`) et de modifier
 le CMakeLists.txt du projet.
 
 À ajouter dans le CMakeLists.txt :
@@ -108,22 +108,21 @@ if (Doxygen_FOUND)
     # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocUserVars.cmake
     # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocDevVars.cmake
     #
-    # Les fichiers "SampleCommonDocConfig.cmake", "SampleUserDocConfig.cmake" et
-    # "SampleDevDocConfig.cmake" servent justement à ça !
+    # Les fichiers "CommonDocConfig.cmake", "UserDocConfig.cmake" et
+    # "DevDocConfig.cmake" servent justement à ça !
     # On en profite aussi pour définir une variable contenant la
     # liste des dossiers dans lesquelles se trouvent les fichiers à include dans la
-    # documentation (dans cet exemple, on définit la
-    # variable `SAMPLE_DOXYGEN_INPUT`).
+    # documentation (dans cet exemple, on définit la variable `ADOC_DOXYGEN_INPUT`).
     #
     # Pour un exemple plus complet, il est possible d'aller voir les fichiers :
     # - "arcane/doc/ArcaneCommonDocConfig.cmake"
     # - "arcane/doc/ArcaneUserDocConfig.cmake"
     # - "arcane/doc/ArcaneDevDocConfig.cmake"
-    include(${DOC_DIR}/SampleCommonDocConfig.cmake)
+    include(${DOC_DIR}/CommonDocConfig.cmake)
     if (${doc_type} STREQUAL "user")
-      include(${DOC_DIR}/SampleUserDocConfig.cmake)
+      include(${DOC_DIR}/UserDocConfig.cmake)
     else ()
-      include(${DOC_DIR}/SampleDevDocConfig.cmake)
+      include(${DOC_DIR}/DevDocConfig.cmake)
     endif ()
 
     # On définit le dossier de sortie pour la documentation.
@@ -134,7 +133,7 @@ if (Doxygen_FOUND)
     set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
     doxygen_add_docs(
       ${INTERNAL_DOC_TARGET}
-      ${SAMPLE_DOXYGEN_INPUT}
+      ${ADOC_DOXYGEN_INPUT}
     )
     # On ajoute une dépendance pour ${INTERNAL_DOC_TARGET} qui est la génération
     # des infos AXL (facultatif).
