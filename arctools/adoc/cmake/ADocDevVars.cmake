@@ -1,29 +1,45 @@
-set(DOXYGEN_PROJECT_BRIEF
-  "Documentation développeur"
-  PARENT_SCOPE
-)
+if (NOT DOXYGEN_PROJECT_BRIEF)
+  set(DOXYGEN_PROJECT_BRIEF
+    "Documentation développeur"
+  )
+endif ()
+
+# ----------------------------------------------------------------------------
 
 set(DOXYGEN_HTML_EXTRA_STYLESHEET ${DOXYGEN_HTML_EXTRA_STYLESHEET}
   "${ADOC_SOURCE_DIR}/theme/css/dev_colors.css"
-  PARENT_SCOPE
 )
 
-set(DOXYGEN_EXTRACT_PRIVATE
-  "YES"
-  PARENT_SCOPE
-)
+# ----------------------------------------------------------------------------
 
-set(DOXYGEN_INTERNAL_DOCS
-  "YES"
-  PARENT_SCOPE
-)
+if (NOT DOXYGEN_EXTRACT_PRIVATE)
+  set(DOXYGEN_EXTRACT_PRIVATE
+    "YES"
+  )
+endif ()
 
-set(DOXYGEN_CALL_GRAPH
-  "YES"
-  PARENT_SCOPE
-)
+# ----------------------------------------------------------------------------
 
-set(DOXYGEN_CALLER_GRAPH
-  "YES"
-  PARENT_SCOPE
-)
+if (NOT DOXYGEN_INTERNAL_DOCS)
+  set(DOXYGEN_INTERNAL_DOCS
+    "YES"
+  )
+endif ()
+
+# ----------------------------------------------------------------------------
+
+if (NOT DOXYGEN_CALL_GRAPH)
+  set(DOXYGEN_CALL_GRAPH
+    "YES"
+  )
+endif ()
+
+# ----------------------------------------------------------------------------
+
+if (NOT DOXYGEN_CALLER_GRAPH)
+  set(DOXYGEN_CALLER_GRAPH
+    "YES"
+  )
+endif ()
+
+# ----------------------------------------------------------------------------

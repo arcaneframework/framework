@@ -14,7 +14,7 @@ Il se charge aussi de générer les pages contenant les informations sur les mod
 Trois fonctions CMake sont disponibles :
 
 - `adoc_initialize(doc_type)` :
-  Fonction permettant de définir les variables DOXYGEN pour générer la
+  Macro permettant de définir les variables DOXYGEN pour générer la
   documentation ADoc et de générer les fichiers nécessaires.
 
   Deux valeurs sont possibles pour "doc_type" : "user" et "dev".

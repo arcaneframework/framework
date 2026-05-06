@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Fonction permettant de définir les variables DOXYGEN pour générer la
+# Macro permettant de définir les variables DOXYGEN pour générer la
 # documentation ADoc et de générer les fichiers nécessaires.
 #
 # Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 #
 # Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
 # "ADocDevVars.cmake" pour plus de détails.
-function(adoc_initialize doc_type)
+macro(adoc_initialize doc_type)
   set(ADOC_SOURCE_DIR "@adoc_source_dir@")
   if (NOT ADOC_BUILD_DIR)
     set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
@@ -70,7 +70,7 @@ function(adoc_initialize doc_type)
 
   # Variables à remplacer : ADOC_PROJECT_REPO_LINK, ADOC_HTML_HEAD
   configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header.html @ONLY)
-endfunction()
+endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
