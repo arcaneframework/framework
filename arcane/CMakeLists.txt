@@ -1075,27 +1075,6 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # Répertoire où seront regroupés tous les fichiers .axl.
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
-# La variable ADOC_LEGACY_THEME permet de passer au thème Doxygen classique.
-if (NOT ADOC_LEGACY_THEME)
-  if (ARCANEDOC_LEGACY_THEME AND ARCANEDOC_LEGACY_THEME STREQUAL ON)
-    set(ADOC_LEGACY_THEME "ON")
-  else ()
-    set(ADOC_LEGACY_THEME "OFF")
-  endif ()
-endif ()
-
-# ----------------------------------------------------------------------------
-
-# Variable pour savoir si la doc aura accès à internet ou non.
-if (NOT ADOC_MATHJAX)
-  if (ARCANEDOC_OFFLINE AND ARCANEDOC_OFFLINE STREQUAL ON)
-    set(ADOC_MATHJAX "OFF")
-    message(STATUS "Offline mode for user and dev documentations")
-  else ()
-    set(ADOC_MATHJAX "ON")
-  endif ()
-endif ()
-
 # ----------------------------------------------------------------------------
 
 # Ce fichier contient les fonctions cmake ADoc.
@@ -1110,13 +1089,7 @@ include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 function(GENERATE_DOC_TARGET doctype)
   set(ADOC_DOC_TYPE "${doctype}")
 
-  if (NOT ADOC_PROJECT_REPO_LINK)
-    set(ADOC_PROJECT_REPO_LINK "https://github.com/arcaneframework/framework")
-  endif ()
-
   set(ADOC_DOC_CONFIG_DIR "${ARCANESRCROOT}/doc")
-  set(ADOC_PROJECT_ICON "${ADOC_DOC_CONFIG_DIR}/theme/img/logo_arcane.svg")
-
   set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/arcane_test_driver")
   set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/lib")
 
