@@ -47,7 +47,7 @@ Ces variables seront utilisées uniquement par la fonction `adoc_generate_doc` :
   `UserDocConfig.cmake` et `DevDocConfig.cmake`,
 - `ADOC_DOXYGEN_INPUT` (par défaut : vide) : permet de spécifier les fichiers/dossiers à inclure dans la documentation
   (équivalent à l'option Doxygen `INPUT`). À noter qu'elle est présente dans les fichiers `UserDocConfig.cmake` et
-  `DevDocConfig.cmake` et que c'est la seule variable `ADOC_` qui peut être mise dans ces fichiers.
+  `DevDocConfig.cmake` du Sample.
 
 Une variable CMake Doxygen peut être cité ici (utilisée uniquement par la fonction `adoc_generate_doc`) :
 
@@ -159,32 +159,35 @@ if (Doxygen_FOUND)
     # Pour générer la documentation, on utilisera une cible du nom de "userdoc"/"devdoc".
     set(DOC_TARGET "${ADOC_DOC_TYPE}doc")
 
-    # Initialisation des variables Doxygen. C'est ici que l'on définit, entre autres choses,
-    # l'emplacement de tous les fichiers du thème utilisé par Arcane.
-    adoc_initialize()
-
-    # Si nécessaire, il est possible d'ajouter/modifier/écraser des variables Doxygen pour
-    # personnaliser la documentation.
-    # Les variables défines par ADoc sont situées dans les fichiers :
-    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocCommonVars.cmake
-    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocUserVars.cmake
-    # - ${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocDevVars.cmake
-    #
     # Les fichiers "CommonDocConfig.cmake", "UserDocConfig.cmake" et
-    # "DevDocConfig.cmake" servent justement à ça !
-    # On en profite aussi pour définir une variable contenant la
-    # liste des dossiers dans lesquelles se trouvent les fichiers à include dans la
-    # documentation (dans cet exemple, on définit la variable `ADOC_DOXYGEN_INPUT`).
-    #
+    # "DevDocConfig.cmake" servent à personnaliser la documentation.
     # Pour un exemple plus complet, il est possible d'aller voir les fichiers :
     # - "arcane/doc/CommonDocConfig.cmake"
     # - "arcane/doc/UserDocConfig.cmake"
     # - "arcane/doc/DevDocConfig.cmake"
-    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
-    if (${ADOC_DOC_TYPE} STREQUAL "user")
-      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
-    else ()
-      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
+    if (ADOC_DOC_CONFIG_DIR)
+      include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
+      adoc_commondoc_config_adoc_variables()
+      if (${ADOC_DOC_TYPE} STREQUAL "user")
+        include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
+        adoc_userdoc_config_adoc_variables()
+      else ()
+        include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
+        adoc_devdoc_config_adoc_variables()
+      endif ()
+    endif ()
+
+    # Initialisation des variables Doxygen. C'est ici que l'on définit, entre autres choses,
+    # l'emplacement de tous les fichiers du thème utilisé par Arcane.
+    adoc_initialize()
+
+    if (ADOC_DOC_CONFIG_DIR)
+      adoc_commondoc_config_doxygen_variables()
+      if (${ADOC_DOC_TYPE} STREQUAL "user")
+        adoc_userdoc_config_doxygen_variables()
+      else ()
+        adoc_devdoc_config_doxygen_variables()
+      endif ()
     endif ()
 
     # On définit le dossier de sortie pour la documentation.
@@ -193,6 +196,8 @@ if (Doxygen_FOUND)
     # Pour afficher le lien vers la documentation générée, on doit utiliser une
     # cible intermédiaire.
     set(INTERNAL_DOC_TARGET "_${DOC_TARGET}")
+
+    # Ici, la variable est défini dans "UserDocConfig.cmake" et "DevDocConfig.cmake".
     doxygen_add_docs(
       ${INTERNAL_DOC_TARGET}
       ${ADOC_DOXYGEN_INPUT}

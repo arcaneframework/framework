@@ -34,6 +34,14 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
+if (NOT ADOC_PROJECT_ICON)
+  set(ADOC_PROJECT_ICON
+    "${ADOC_SOURCE_DIR}/theme/img/logo_arcane.svg"
+  )
+endif ()
+
+# ----------------------------------------------------------------------------
+
 if (NOT DOXYGEN_HTML_HEADER AND ${ADOC_LEGACY_THEME} STREQUAL "ON")
   set(DOXYGEN_HTML_HEADER
     "${ADOC_SOURCE_DIR}/theme/html/header_no_theme.html"

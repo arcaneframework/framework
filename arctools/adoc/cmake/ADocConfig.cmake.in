@@ -147,22 +147,38 @@ endfunction()
 #
 # Voir le README pour savoir quelles variables définir.
 function(adoc_generate_doc)
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+
+  if (ADOC_DOC_CONFIG_DIR)
+    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
+    adoc_commondoc_config_adoc_variables()
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
+      adoc_userdoc_config_adoc_variables()
+    else ()
+      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
+      adoc_devdoc_config_adoc_variables()
+    endif ()
+  endif ()
+
   adoc_initialize()
+  
+  if (ADOC_DOC_CONFIG_DIR)
+    adoc_commondoc_config_doxygen_variables()
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      adoc_userdoc_config_doxygen_variables()
+    else ()
+      adoc_devdoc_config_doxygen_variables()
+    endif ()
+  endif ()
 
   if (NOT DOXYGEN_OUTPUT_DIRECTORY)
     set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
   endif ()
 
   set(ADOC_INTERNAL_DOC_TARGET "_ADoc_internal_${ADOC_DOC_TARGET}")
-
-  if (ADOC_DOC_CONFIG_DIR)
-    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
-    if (${ADOC_DOC_TYPE} STREQUAL "user")
-      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
-    else ()
-      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
-    endif ()
-  endif ()
 
   doxygen_add_docs(
     ${ADOC_INTERNAL_DOC_TARGET}
