@@ -40,7 +40,7 @@ if (NOT DOXYGEN_HTML_HEADER AND ${ADOC_LEGACY_THEME} STREQUAL "ON")
   )
 else ()
   set(DOXYGEN_HTML_HEADER
-    "${ADOC_BUILD_DIR}/theme/html/header.html"
+    "${ADOC_BUILD_DIR}/theme/html/header_${ADOC_DOC_TARGET}.html"
   )
 endif ()
 

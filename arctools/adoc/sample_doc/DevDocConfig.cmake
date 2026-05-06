@@ -15,7 +15,7 @@ set(DOXYGEN_STRIP_FROM_INC_PATH ${DOXYGEN_STRIP_FROM_INC_PATH}
 # ----------------------------------------------------------------------------
 
 set(DOXYGEN_IMAGE_PATH ${DOXYGEN_IMAGE_PATH}
-  "${DOC_DIR}/theme/img"
+  "${ADOC_DOC_CONFIG_DIR}/theme/img"
 )
 
 # ----------------------------------------------------------------------------

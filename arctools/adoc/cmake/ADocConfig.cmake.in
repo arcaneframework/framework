@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 # ----------------------------------------------------------------------------
 
 # Macro permettant de définir les variables DOXYGEN pour générer la
-# documentation ADoc et de générer les fichiers nécessaires.
+# documentation ADoc, de générer les fichiers nécessaires et de configurer le
+# script permettant de générer les informations sur les AXL.
 #
 # Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
 #
@@ -19,6 +20,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 # "ADocDevVars.cmake" pour plus de détails.
 macro(adoc_initialize)
   set(ADOC_SOURCE_DIR "@adoc_source_dir@")
+  set(AXLDOC_PATH "@axldoc_path@")
 
   if (NOT ADOC_BUILD_DIR)
     set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
@@ -32,7 +34,11 @@ macro(adoc_initialize)
   if (NOT ADOC_DOC_TYPE)
     set(ADOC_DOC_TYPE "user")
   endif ()
+  if (NOT ADOC_DOC_TARGET)
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+  endif ()
 
+  # On set les variables CMake Doxygen.
   if (${ADOC_DOC_TYPE} STREQUAL "user")
     include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
     include(${ADOC_SOURCE_DIR}/cmake/ADocUserVars.cmake)
@@ -42,7 +48,7 @@ macro(adoc_initialize)
     include(${ADOC_SOURCE_DIR}/cmake/ADocDevVars.cmake)
     set(IS_FOR "Dev")
   else ()
-    message(FATAL_ERROR "Unknown doc type")
+    message(FATAL_ERROR "Unknown doc type (${ADOC_DOC_TYPE})")
   endif ()
 
   file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
@@ -72,78 +78,47 @@ macro(adoc_initialize)
   endif ()
 
   # Variables à remplacer : ADOC_PROJECT_REPO_LINK, ADOC_HTML_HEAD
-  configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header.html @ONLY)
-endmacro()
+  configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header_${ADOC_DOC_TARGET}.html @ONLY)
 
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
+  # -------------------
+  # -------------------
 
-# Fonction permettant de configurer le script permettant de générer les
-# informations sur les AXL.
-#
-# Deux valeurs sont possibles pour "doc_type" : "user" et "dev". Cela permet
-# de savoir quelles informations récupérer des fichiers AXL.
-#
-# "executable" correspond au chemin de l'exécutable généré par le code. Il
-# sera lancé avec un mode spécial de Arcane permettant de générer les
-# informations AXL des modules et services.
-#
-# "config_file_dir" correspond au répertoire où est situé le fichier de
-# configuration de l'exécutable (`File.config`). Il est possible de fournir une
-# chaine de caractère vide pour choisir le répertoire de l'exécutable.
-#
-# Sous Windows, cette fonction n'a aucun effet.
-function(adoc_initialize_axldoc)
+  # On passe à la configuration du script servant à générer les infos AXL.
   if (NOT UNIX)
     return()
   endif ()
-  if (NOT ADOC_EXECUTABLE_AXL_GENERATION)
-    message(WARNING "ADOC_EXECUTABLE_AXL_GENERATION not set")
+  if (TARGET generate_axl_${ADOC_DOC_TARGET})
     return()
   endif ()
-
-  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
-  set(ADOC_SOURCE_DIR "@adoc_source_dir@")
-  set(AXLDOC_PATH "@axldoc_path@")
-
-  if (NOT ADOC_BUILD_DIR)
-    set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
-  endif ()
-  if (NOT ADOC_DOC_TYPE)
-    set(ADOC_DOC_TYPE "user")
+  if (NOT ADOC_EXECUTABLE_AXL_GENERATION)
+    message(STATUS "ADOC_EXECUTABLE_AXL_GENERATION not set")
+    return()
   endif ()
 
   if (NOT ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
     cmake_path(GET ADOC_EXECUTABLE_AXL_GENERATION PARENT_PATH ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
   endif ()
 
-  if (${ADOC_DOC_TYPE} STREQUAL "user")
-    set(IS_FOR "User")
-  elseif (${ADOC_DOC_TYPE} STREQUAL "dev")
-    set(IS_FOR "Dev")
-  else ()
-    message(FATAL_ERROR "Unknown doc type (${ADOC_DOC_TYPE})")
-  endif ()
-
+  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
   set(AXLDOC_LEGACY "")
   if (ADOC_LEGACY_THEME)
     if (${ADOC_LEGACY_THEME} STREQUAL "ON")
       set(AXLDOC_LEGACY "--legacy")
     endif ()
   endif ()
-
   file(MAKE_DIRECTORY ${SHARE_AXL_DIR})
-  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
 
-  configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TYPE}.sh @ONLY)
-  add_custom_target(generate_axl_${ADOC_DOC_TYPE} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TYPE}.sh)
-endfunction()
+  configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TARGET}.sh @ONLY)
+  add_custom_target(generate_axl_${ADOC_DOC_TARGET} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TARGET}.sh)
+endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 # Fonction permettant d'ajouter la génération des informations AXL comme
 # dépendance à la génération de la documentation.
+#
+# Il est nécessaire d'avoir appelé la macro adoc_initialize() avant.
 #
 # Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
 #
@@ -159,30 +134,26 @@ function(adoc_link_axldoc_doxygen doxygen_target_name)
   if (NOT ADOC_DOC_TYPE)
     set(ADOC_DOC_TYPE "user")
   endif ()
-  add_dependencies(${doxygen_target_name} generate_axl_${ADOC_DOC_TYPE})
-
+  if (NOT ADOC_DOC_TARGET)
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+  endif ()
+  add_dependencies(${doxygen_target_name} generate_axl_${ADOC_DOC_TARGET})
 endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Fonction permettant de générer la documentation.
+#
+# Voir le README pour savoir quelles variables définir.
 function(adoc_generate_doc)
-  if (NOT ADOC_DOC_TYPE)
-    set(ADOC_DOC_TYPE "user")
-  endif ()
-  if (NOT ADOC_DOC_TARGET)
-    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
-  endif ()
+  adoc_initialize()
 
   if (NOT DOXYGEN_OUTPUT_DIRECTORY)
     set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
   endif ()
 
-
   set(ADOC_INTERNAL_DOC_TARGET "_ADoc_internal_${ADOC_DOC_TARGET}")
-
-  adoc_initialize()
-  adoc_initialize_axldoc()
 
   if (ADOC_DOC_CONFIG_DIR)
     include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)

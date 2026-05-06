@@ -30,6 +30,7 @@ Ces variables CMake sont disponibles pour personnaliser la génération :
 - `ADOC_BUILD_DIR` (par défaut : `${CMAKE_BINARY_DIR}/share/adoc`) : dossier où seront mis les fichiers temporaires
   servant à générer la documentation,
 - `ADOC_DOC_TYPE` (`user`/`dev`) (par défaut : `user`) : le type de documentation à générer,
+- `ADOC_DOC_TARGET` (par défaut : `userdoc`) : le nom de la cible qui sera générée,
 - `ADOC_EXECUTABLE_AXL_GENERATION` (chemin de l'exécutable) (par défaut : vide) : le chemin de l'exécutable qui servira
   à générer les informations des services et des modules (si vide, alors ces informations ne seront pas générées),
 - `ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION` (par défaut : chemin du dossier contenant l'exécutable) : chemin du
@@ -42,9 +43,11 @@ Ces variables CMake sont disponibles pour personnaliser la génération :
 
 Ces variables seront utilisées uniquement par la fonction `adoc_generate_doc` :
 
-- `ADOC_DOC_TARGET` (par défaut : `userdoc`) : le nom de la cible qui sera généré,
 - `ADOC_DOC_CONFIG_DIR` (par défaut : vide) : le dossier contenant les fichiers `CommonDocConfig.cmake`,
   `UserDocConfig.cmake` et `DevDocConfig.cmake`,
+- `ADOC_DOXYGEN_INPUT` (par défaut : vide) : permet de spécifier les fichiers/dossiers à inclure dans la documentation
+  (équivalent à l'option Doxygen `INPUT`). À noter qu'elle est présente dans les fichiers `UserDocConfig.cmake` et
+  `DevDocConfig.cmake` et que c'est la seule variable `ADOC_` qui peut être mise dans ces fichiers.
 
 Une variable CMake Doxygen peut être cité ici (utilisée uniquement par la fonction `adoc_generate_doc`) :
 
@@ -78,27 +81,32 @@ find_package(Doxygen)
 
 # Si le package Doxygen est introuvable, inutile de continuer.
 if (Doxygen_FOUND)
+  block()
+    # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
+    # Variable utile pour les fichiers du sample `CommonDocConfig.cmake`,
+    # `UserDocConfig.cmake` et `DevDocConfig.cmake`.
+    set(DOC_DIR "${CMAKE_SOURCE_DIR}/doc")
 
-  # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
-  set(ADOC_DOC_CONFIG_DIR "${CMAKE_SOURCE_DIR}/doc")
+    # Emplacement des fichiers de configuration.
+    set(ADOC_DOC_CONFIG_DIR "${DOC_DIR}")
 
-  # Choisir l'exécutable généré (facultatif). TODO À personnaliser.
-  # Arcane l'utilisera pour générer les informations sur les services et les
-  # modules.
-  set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
+    # Choisir l'exécutable généré (facultatif). TODO À personnaliser.
+    # Arcane l'utilisera pour générer les informations sur les services et les
+    # modules.
+    set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
 
-  # Ce fichier contient les fonctions cmake ADoc.
-  include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
+    # Ce fichier contient les fonctions cmake ADoc.
+    include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
 
-  function(adoc_generation doc_type)
-    set(ADOC_DOC_TYPE "${doc_type}")
-    adoc_generate_doc()
-  endfunction()
+    function(doc_generation doc_type)
+      set(ADOC_DOC_TYPE "${doc_type}")
+      adoc_generate_doc()
+    endfunction()
 
-  # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
-  adoc_generation("user")
-  adoc_generation("dev")
-
+    # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
+    doc_generation("user")
+    doc_generation("dev")
+  endblock()
 endif ()
 ```
 
@@ -127,7 +135,12 @@ find_package(Doxygen)
 if (Doxygen_FOUND)
 
   # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
-  set(ADOC_DOC_CONFIG_DIR "${CMAKE_SOURCE_DIR}/doc")
+  # Variable utile pour les fichiers du sample `CommonDocConfig.cmake`,
+  # `UserDocConfig.cmake` et `DevDocConfig.cmake`.
+  set(DOC_DIR "${CMAKE_SOURCE_DIR}/doc")
+
+  # Emplacement des fichiers de configuration.
+  set(ADOC_DOC_CONFIG_DIR "${DOC_DIR}")
 
   # Choisir l'exécutable généré (facultatif). TODO À personnaliser.
   # Arcane l'utilisera pour générer les informations sur les services et les
@@ -139,7 +152,7 @@ if (Doxygen_FOUND)
 
   # On utilise une fonction pour réduire le scope des variables DOXYGEN_ et pour
   # générer les documentations "user" et "dev".
-  function(adoc_generation doc_type)
+  function(doc_generation doc_type)
 
     set(ADOC_DOC_TYPE "${doc_type}")
 
@@ -147,10 +160,8 @@ if (Doxygen_FOUND)
     set(DOC_TARGET "${ADOC_DOC_TYPE}doc")
 
     # Initialisation des variables Doxygen. C'est ici que l'on définit, entre autres choses,
-    # l'emplacement de tous les fichiers du thème utilisé par Arcane. 
+    # l'emplacement de tous les fichiers du thème utilisé par Arcane.
     adoc_initialize()
-    # Configuration de la génération des infos AXL (facultatif).
-    adoc_initialize_axldoc()
 
     # Si nécessaire, il est possible d'ajouter/modifier/écraser des variables Doxygen pour
     # personnaliser la documentation.
@@ -196,8 +207,8 @@ if (Doxygen_FOUND)
   endfunction()
 
   # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
-  adoc_generation("user")
-  adoc_generation("dev")
+  doc_generation("user")
+  doc_generation("dev")
 
 endif ()
 ```

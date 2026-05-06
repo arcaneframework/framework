@@ -27,8 +27,7 @@ set(DOXYGEN_EXAMPLE_RECURSIVE
 # ----------------------------------------------------------------------------
 
 set(DOXYGEN_IMAGE_PATH ${DOXYGEN_IMAGE_PATH}
-  "${DOC_DIR}/theme/img"
-  "${DOC_DIR}/doc_user/chap_core_types/img"
+  "${ADOC_DOC_CONFIG_DIR}/theme/img"
 )
 
 # ----------------------------------------------------------------------------
