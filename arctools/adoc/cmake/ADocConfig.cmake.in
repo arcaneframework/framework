@@ -17,24 +17,27 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 #
 # Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
 # "ADocDevVars.cmake" pour plus de détails.
-macro(adoc_initialize doc_type)
+macro(adoc_initialize)
   set(ADOC_SOURCE_DIR "@adoc_source_dir@")
+
   if (NOT ADOC_BUILD_DIR)
     set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
   endif ()
-
   if (NOT ADOC_MATHJAX)
     set(ADOC_MATHJAX "OFF")
   endif ()
   if (NOT ADOC_LEGACY_THEME)
     set(ADOC_LEGACY_THEME "OFF")
   endif ()
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
 
-  if (${doc_type} STREQUAL "user")
+  if (${ADOC_DOC_TYPE} STREQUAL "user")
     include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
     include(${ADOC_SOURCE_DIR}/cmake/ADocUserVars.cmake)
     set(IS_FOR "User")
-  elseif (${doc_type} STREQUAL "dev")
+  elseif (${ADOC_DOC_TYPE} STREQUAL "dev")
     include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
     include(${ADOC_SOURCE_DIR}/cmake/ADocDevVars.cmake)
     set(IS_FOR "Dev")
@@ -65,7 +68,7 @@ macro(adoc_initialize doc_type)
       set(ICON_TYPE "type=\"image/webp\"")
     endif ()
 
-    set(ADOC_HTML_HEAD ${ADOC_HTML_HEAD} "<link rel=\"icon\" href=\"$relpath^${filename}\" ${ICON_TYPE}>")
+    set(ADOC_HTML_HEAD "${ADOC_HTML_HEAD} <link rel=\"icon\" href=\"$relpath^${filename}\" ${ICON_TYPE}>")
   endif ()
 
   # Variables à remplacer : ADOC_PROJECT_REPO_LINK, ADOC_HTML_HEAD
@@ -90,26 +93,36 @@ endmacro()
 # chaine de caractère vide pour choisir le répertoire de l'exécutable.
 #
 # Sous Windows, cette fonction n'a aucun effet.
-function(adoc_initialize_axldoc doc_type executable config_file_dir)
+function(adoc_initialize_axldoc)
+  if (NOT UNIX)
+    return()
+  endif ()
+  if (NOT ADOC_EXECUTABLE_AXL_GENERATION)
+    message(WARNING "ADOC_EXECUTABLE_AXL_GENERATION not set")
+    return()
+  endif ()
+
   set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
   set(ADOC_SOURCE_DIR "@adoc_source_dir@")
   set(AXLDOC_PATH "@axldoc_path@")
-  set(BINARY_PATH "${executable}")
 
   if (NOT ADOC_BUILD_DIR)
     set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
   endif ()
-
-  if (NOT config_file_dir)
-    cmake_path(GET executable PARENT_PATH config_file_dir)
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
   endif ()
 
-  if (${doc_type} STREQUAL "user")
+  if (NOT ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
+    cmake_path(GET ADOC_EXECUTABLE_AXL_GENERATION PARENT_PATH ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
+  endif ()
+
+  if (${ADOC_DOC_TYPE} STREQUAL "user")
     set(IS_FOR "User")
-  elseif (${doc_type} STREQUAL "dev")
+  elseif (${ADOC_DOC_TYPE} STREQUAL "dev")
     set(IS_FOR "Dev")
   else ()
-    message(FATAL_ERROR "Unknown doc type (${doc_type})")
+    message(FATAL_ERROR "Unknown doc type (${ADOC_DOC_TYPE})")
   endif ()
 
   set(AXLDOC_LEGACY "")
@@ -122,10 +135,8 @@ function(adoc_initialize_axldoc doc_type executable config_file_dir)
   file(MAKE_DIRECTORY ${SHARE_AXL_DIR})
   file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
 
-  if (UNIX)
-    configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${doc_type}.sh @ONLY)
-    add_custom_target(generate_axl_${doc_type} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${doc_type}.sh)
-  endif ()
+  configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TYPE}.sh @ONLY)
+  add_custom_target(generate_axl_${ADOC_DOC_TYPE} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TYPE}.sh)
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -140,8 +151,54 @@ endfunction()
 # commande "doxygen_add_docs()".
 #
 # Sous Windows, cette fonction n'a aucun effet.
-function(adoc_link_axldoc_doxygen doc_type doxygen_target_name)
-  if (UNIX)
-    add_dependencies(${doxygen_target_name} generate_axl_${doc_type})
+function(adoc_link_axldoc_doxygen doxygen_target_name)
+  if (NOT UNIX)
+    return()
   endif ()
+
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+  add_dependencies(${doxygen_target_name} generate_axl_${ADOC_DOC_TYPE})
+
+endfunction()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+function(adoc_generate_doc)
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+  if (NOT ADOC_DOC_TARGET)
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+  endif ()
+
+  if (NOT DOXYGEN_OUTPUT_DIRECTORY)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
+  endif ()
+
+
+  set(ADOC_INTERNAL_DOC_TARGET "_ADoc_internal_${ADOC_DOC_TARGET}")
+
+  adoc_initialize()
+  adoc_initialize_axldoc()
+
+  if (ADOC_DOC_CONFIG_DIR)
+    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
+    else ()
+      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
+    endif ()
+  endif ()
+
+  doxygen_add_docs(
+    ${ADOC_INTERNAL_DOC_TARGET}
+    ${ADOC_DOXYGEN_INPUT}
+  )
+  adoc_link_axldoc_doxygen(${ADOC_INTERNAL_DOC_TARGET})
+
+  add_custom_target(${ADOC_DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${ADOC_DOC_TARGET} ${ADOC_INTERNAL_DOC_TARGET})
 endfunction()

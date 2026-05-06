@@ -75,7 +75,7 @@ set(DOXYGEN_RECURSIVE
   "NO"
 )
 
-set(ARCANE_DOXYGEN_INPUT
+set(ADOC_DOXYGEN_INPUT
   ${ARCANE_SRC_PATH}/arcane/core
   ${ARCANE_SRC_PATH}/arcane/utils
   ${ARCANE_SRC_PATH}/arcane/core/datatype

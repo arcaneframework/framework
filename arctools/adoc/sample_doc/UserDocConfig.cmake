@@ -45,9 +45,10 @@ set(DOXYGEN_RECURSIVE
 
 # ----------------------------------------------------------------------------
 
-# Remplacer "${CMAKE_SOURCE_DIR}/sample" par les emplacements des sources (DOXYGEN_RECURSIVE = NO juste au-dessus).
+# Remplacer "${CMAKE_SOURCE_DIR}/src" par les emplacements des sources (il est possible de mettre la variable
+# DOXYGEN_RECURSIVE (juste au-dessus) à `YES` pour ne pas à avoir à spécifier tous les dossiers).
 set(ADOC_DOXYGEN_INPUT ${ADOC_DOXYGEN_INPUT}
-  "${CMAKE_SOURCE_DIR}/sample"
+  "${CMAKE_SOURCE_DIR}/src"
   "${DOC_DIR}/doc_common"
   "${DOC_DIR}/doc_common/chap_news"
   "${DOC_DIR}/doc_user"

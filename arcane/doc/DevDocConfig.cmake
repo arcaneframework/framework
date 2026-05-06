@@ -37,7 +37,7 @@ set(DOXYGEN_RECURSIVE
   "YES"
 )
 
-set(ARCANE_DOXYGEN_INPUT
+set(ADOC_DOXYGEN_INPUT
   ${ARCANESRCROOT}/doc/doc_dev
   ${ARCANESRCROOT}/doc/doc_common
   ${ARCANESRCROOT}/doc/doc_common/chap_news

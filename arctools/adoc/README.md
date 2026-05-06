@@ -11,62 +11,64 @@ CMake utilisera les variables commençant par `DOXYGEN_` pour compléter ce fich
 ADoc fourni plusieurs variables `DOXYGEN_` permettant à Doxygen de trouver le thème.
 Il se charge aussi de générer les pages contenant les informations sur les modules et services à l'aide de AXLDoc.
 
-Trois fonctions CMake sont disponibles :
+Les fonctions ADoc sont disponibles dans le fichier `ADocConfig.cmake`.
 
-- `adoc_initialize(doc_type)` :
-  Macro permettant de définir les variables DOXYGEN pour générer la
-  documentation ADoc et de générer les fichiers nécessaires.
+Deux types de documentations sont disponibles :
 
-  Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
+- "user" : destinée aux utilisateurs du code. Sa génération est plus rapide que la "dev", elle est plus légère
+  étant donné qu'elle n'inclut pas de graphes UML.
+- "dev" : destinée aux développeurs du code. Cette documentation inclut les éléments privés des classes, en autres.
 
-  La documentation "user" est destinée aux utilisateurs du code. Sa génération
-  est plus rapide que la "dev", elle est plus légère étant donné qu'elle
-  n'inclut pas de graphes UML.
+----
 
-  La documentation "dev" est destinée aux développeurs du code.
-  Cette documentation inclut les éléments privés des classes, en autres.
+## Variables CMake utilisable
 
-  Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
-  "ADocDevVars.cmake" pour plus de détails.
+(Aujourd'hui, toutes ces variables sont facultatives)
 
-- `adoc_initialize_axldoc(doc_type, executable config_file_dir)` :
-  Fonction permettant de configurer le script permettant de générer les
-  informations sur les AXL.
+Ces variables CMake sont disponibles pour personnaliser la génération :
 
-  Deux valeurs sont possibles pour "doc_type" : "user" et "dev". Cela permet
-  de savoir quelles informations récupérer des fichiers AXL.
+- `ADOC_BUILD_DIR` (par défaut : `${CMAKE_BINARY_DIR}/share/adoc`) : dossier où seront mis les fichiers temporaires
+  servant à générer la documentation,
+- `ADOC_DOC_TYPE` (`user`/`dev`) (par défaut : `user`) : le type de documentation à générer,
+- `ADOC_EXECUTABLE_AXL_GENERATION` (chemin de l'exécutable) (par défaut : vide) : le chemin de l'exécutable qui servira
+  à générer les informations des services et des modules (si vide, alors ces informations ne seront pas générées),
+- `ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION` (par défaut : chemin du dossier contenant l'exécutable) : chemin du
+  dossier contenant le fichier `.config` de l'exécutable,
+- `ADOC_LEGACY_THEME` (`ON`/`OFF`) (par défaut : `OFF`) : permet de passer au thème Doxygen classique,
+- `ADOC_MATHJAX` (`ON`/`OFF`) (par défaut : `ON`) : permet d'activer MathJax,
+- `ADOC_PROJECT_REPO_LINK` (url) (par défaut : vide) : permet de définir le lien vers le dépot du code,
+- `ADOC_PROJECT_ICON` (chemin de l'icône) (par défaut : vide) : permet de définir une icône pour la page web (équivalent
+  à l'option Doxygen `PROJECT_ICON` mais qui fonctionne) (trois formats supportés : `svg`, `png` et `webp`),
 
-  "executable" correspond au chemin de l'exécutable généré par le code. Il
-  sera lancé avec un mode spécial de Arcane permettant de générer les
-  informations AXL des modules et services.
+Ces variables seront utilisées uniquement par la fonction `adoc_generate_doc` :
 
-  "config_file_dir" correspond au répertoire où est situé le fichier de
-  configuration de l'exécutable (`File.config`). Il est possible de fournir une
-  chaine de caractère vide pour choisir le répertoire de l'exécutable.
+- `ADOC_DOC_TARGET` (par défaut : `userdoc`) : le nom de la cible qui sera généré,
+- `ADOC_DOC_CONFIG_DIR` (par défaut : vide) : le dossier contenant les fichiers `CommonDocConfig.cmake`,
+  `UserDocConfig.cmake` et `DevDocConfig.cmake`,
 
-  Sous Windows, cette fonction n'a aucun effet.
+Une variable CMake Doxygen peut être cité ici (utilisée uniquement par la fonction `adoc_generate_doc`) :
 
-- `adoc_link_axldoc_doxygen(doc_type, doxygen_target_name)` :
-  Fonction permettant d'ajouter la génération des informations AXL comme
-  dépendance à la génération de la documentation.
+- `DOXYGEN_OUTPUT_DIRECTORY` (par défaut : `${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}`) : le répertoire où sera
+  générée la documentation.
 
-  Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
-
-  "doxygen_target_name" correspond au nom de la cible utilisé par la
-  commande "doxygen_add_docs()".
-
-  Sous Windows, cette fonction n'a aucun effet.
-
----
+----
 
 ## Utilisation
 
 Un Sample de documentation est disponible dans le dossier d'installation de Arcane (
 `${ARCANE_PREFIX_DIR}/share/adoc/sample_doc`).
 Il suffit de copier son contenu dans les sources du code (par exemple dans : `${CMAKE_SOURCE_DIR}/doc/`) et de modifier
-le CMakeLists.txt du projet.
+le CMakeLists.txt du projet (il est aussi possible de créer un `CMakeLists.txt` dans le dossier
+`${CMAKE_SOURCE_DIR}/doc/`).
 
-À ajouter dans le CMakeLists.txt :
+Il y a deux façons d'utiliser ADoc : en appelant une seule fonction qui se charge de tous les appels ou en appelant les
+fonctions de ADoc à la main.
+
+----
+
+### Utilisation simple
+
+À ajouter dans le `CMakeLists.txt` :
 
 ```cmake
 # Répertoire où seront regroupés tous les fichiers .axl.
@@ -78,12 +80,59 @@ find_package(Doxygen)
 if (Doxygen_FOUND)
 
   # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
-  set(DOC_DIR "${CMAKE_SOURCE_DIR}/doc")
+  set(ADOC_DOC_CONFIG_DIR "${CMAKE_SOURCE_DIR}/doc")
 
   # Choisir l'exécutable généré (facultatif). TODO À personnaliser.
   # Arcane l'utilisera pour générer les informations sur les services et les
   # modules.
-  set(AXLINFO_BINARY "${CMAKE_BINARY_DIR}/bin/Nonreg")
+  set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
+
+  # Ce fichier contient les fonctions cmake ADoc.
+  include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
+
+  function(adoc_generation doc_type)
+    set(ADOC_DOC_TYPE "${doc_type}")
+    adoc_generate_doc()
+  endfunction()
+
+  # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
+  adoc_generation("user")
+  adoc_generation("dev")
+
+endif ()
+```
+
+Une fois le `CMakeLists.txt` modifié, il est important de modifier les fichiers `UserDocConfig.cmake` et
+`DevDocConfig.cmake` pour personnaliser les fichiers sources à prendre en compte pour la documentation. Notamment la
+variable `ADOC_DOXYGEN_INPUT` qui contient la liste des dossiers contenant les sources à documenter.
+
+Il est aussi possible de personnaliser les variables `DOXYGEN_` en dehors des fichiers `UserDocConfig.cmake` /
+`DevDocConfig.cmake` avant l'appel à `adoc_generate_doc()`.
+
+----
+
+### Utilisation avancée
+
+Il est possible d'utiliser les autres fonctions de ADoc à la main, si nécessaire.
+
+À ajouter dans le `CMakeLists.txt` :
+
+```cmake
+# Répertoire où seront regroupés tous les fichiers .axl.
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/axl)
+
+find_package(Doxygen)
+
+# Si le package Doxygen est introuvable, inutile de continuer.
+if (Doxygen_FOUND)
+
+  # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
+  set(ADOC_DOC_CONFIG_DIR "${CMAKE_SOURCE_DIR}/doc")
+
+  # Choisir l'exécutable généré (facultatif). TODO À personnaliser.
+  # Arcane l'utilisera pour générer les informations sur les services et les
+  # modules.
+  set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
 
   # Ce fichier contient les fonctions cmake ADoc.
   include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
@@ -92,14 +141,16 @@ if (Doxygen_FOUND)
   # générer les documentations "user" et "dev".
   function(adoc_generation doc_type)
 
+    set(ADOC_DOC_TYPE "${doc_type}")
+
     # Pour générer la documentation, on utilisera une cible du nom de "userdoc"/"devdoc".
-    set(DOC_TARGET "${doc_type}doc")
+    set(DOC_TARGET "${ADOC_DOC_TYPE}doc")
 
     # Initialisation des variables Doxygen. C'est ici que l'on définit, entre autres choses,
     # l'emplacement de tous les fichiers du thème utilisé par Arcane. 
-    adoc_initialize(${doc_type})
+    adoc_initialize()
     # Configuration de la génération des infos AXL (facultatif).
-    adoc_initialize_axldoc(${doc_type} ${AXLINFO_BINARY} "")
+    adoc_initialize_axldoc()
 
     # Si nécessaire, il est possible d'ajouter/modifier/écraser des variables Doxygen pour
     # personnaliser la documentation.
@@ -118,11 +169,11 @@ if (Doxygen_FOUND)
     # - "arcane/doc/CommonDocConfig.cmake"
     # - "arcane/doc/UserDocConfig.cmake"
     # - "arcane/doc/DevDocConfig.cmake"
-    include(${DOC_DIR}/CommonDocConfig.cmake)
-    if (${doc_type} STREQUAL "user")
-      include(${DOC_DIR}/UserDocConfig.cmake)
+    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
     else ()
-      include(${DOC_DIR}/DevDocConfig.cmake)
+      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
     endif ()
 
     # On définit le dossier de sortie pour la documentation.
@@ -137,7 +188,7 @@ if (Doxygen_FOUND)
     )
     # On ajoute une dépendance pour ${INTERNAL_DOC_TARGET} qui est la génération
     # des infos AXL (facultatif).
-    adoc_link_axldoc_doxygen(${doc_type} ${INTERNAL_DOC_TARGET})
+    adoc_link_axldoc_doxygen(${INTERNAL_DOC_TARGET})
 
     # On donne, dans les logs, l'emplacement de l'index.html généré.
     add_custom_target(${DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
@@ -150,18 +201,3 @@ if (Doxygen_FOUND)
 
 endif ()
 ```
-
-Des variables CMake sont disponibles :
-
-- `ADOC_LEGACY_THEME` (`ON`/`OFF`) : permet de passer au thème Doxygen classique (par défaut : `OFF`),
-- `ADOC_MATHJAX` (`ON`/`OFF`) : permet d'activer MathJax (par défaut : `ON`),
-- `ADOC_PROJECT_REPO_LINK` (url) : permet de définir le lien vers le dépot du code,
-- `ADOC_PROJECT_ICON` (chemin de l'icône) : permet de définir une icône pour la page web (équivalent à l'option Doxygen
-  `PROJECT_ICON` mais qui fonctionne) (trois formats supportés : `svg`, `png` et `webp`).
-
-Deux cibles seront générées (il sera nécessaire de faire `ninja userdoc` et/ou `ninja devdoc` après la configuration
-et la compilation du code) :
-
-- "userdoc" : destinée aux utilisateurs du code. Sa génération est plus rapide que la "dev", elle est plus légère
-  étant donné qu'elle n'inclut pas de graphes UML.
-- "devdoc" : destinée aux développeurs du code. Cette documentation inclut les éléments privés des classes, en autres.
