@@ -1108,72 +1108,26 @@ include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 # Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
 # Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
 function(GENERATE_DOC_TARGET doctype)
-  set(ADOC_DOC_TARGET
-    "${doctype}doc"
-  )
-  set(INTERNAL_DOC_TARGET "_${ADOC_DOC_TARGET}")
+  set(ADOC_DOC_TYPE "${doctype}")
 
   if (NOT ADOC_PROJECT_REPO_LINK)
     set(ADOC_PROJECT_REPO_LINK "https://github.com/arcaneframework/framework")
   endif ()
 
-  set(ADOC_DOC_CONFIG_DIR
-    "${ARCANESRCROOT}/doc"
-  )
-  set(ADOC_PROJECT_ICON
-    "${ADOC_DOC_CONFIG_DIR}/theme/img/logo_arcane.svg"
-  )
-  set(ADOC_DOC_TYPE
-    "${doctype}"
-  )
-  set(ADOC_EXECUTABLE_AXL_GENERATION
-    "${CMAKE_BINARY_DIR}/bin/arcane_test_driver"
-  )
-  set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION
-    "${CMAKE_BINARY_DIR}/lib"
-  )
+  set(ADOC_DOC_CONFIG_DIR "${ARCANESRCROOT}/doc")
+  set(ADOC_PROJECT_ICON "${ADOC_DOC_CONFIG_DIR}/theme/img/logo_arcane.svg")
 
+  set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/arcane_test_driver")
+  set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/lib")
 
-  # Initialisation des variables Doxygen et configuration de la génération des infos AXL.
-  adoc_initialize()
-  adoc_initialize_axldoc()
-
-  # Variables Doxygen spécifiques à la documentation Arcane.
-  include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
-  if (${doctype} STREQUAL "user")
-    include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
-  else ()
-    include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
-  endif ()
-
-  # On définit le dossier de sortie et on génère le Doxyfile.
+  set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
-  doxygen_add_docs(
-    ${INTERNAL_DOC_TARGET}
-    ${ADOC_DOXYGEN_INPUT}
-  )
-  # On ajoute une dépendance pour ${INTERNAL_DOC_TARGET} qui est la génération des infos AXL.
-  adoc_link_axldoc_doxygen(${INTERNAL_DOC_TARGET})
+  adoc_generate_doc()
 
-  # On donne, dans les logs, l'emplacement de l'index.html généré.
-  add_custom_target(${ADOC_DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
-  add_dependencies(${ADOC_DOC_TARGET} ${INTERNAL_DOC_TARGET})
-
-
-  # Même chose pour la documentation installée.
+  set(ADOC_DOC_TARGET "install_${ADOC_DOC_TYPE}doc")
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${ADOC_DOC_TARGET}")
+  adoc_generate_doc()
 
-  set(ADOC_DOC_TARGET "install_${doctype}doc")
-  set(INTERNAL_DOC_TARGET "_${ADOC_DOC_TARGET}")
-
-  doxygen_add_docs(
-    ${INTERNAL_DOC_TARGET}
-    ${ADOC_DOXYGEN_INPUT}
-  )
-  adoc_link_axldoc_doxygen("${INTERNAL_DOC_TARGET}")
-
-  add_custom_target(${ADOC_DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
-  add_dependencies(${ADOC_DOC_TARGET} ${INTERNAL_DOC_TARGET})
 endfunction()
 
 # ----------------------------------------------------------------------------
