@@ -73,6 +73,13 @@ endif()
 set(ARCANE_AXL2CC "${AXLSTAR_AXL2CC}")
 
 # ----------------------------------------------------------------------------
+# Récupère le chemin de 'adoc'
+find_package(ADoc REQUIRED
+  HINTS "${ARCANE_ADOC_HINT_PATH}"
+  "${ARCANE_PREFIX_DIR}/${ARCANE_ADOC_CONFIG_INSTALL_DIR}"
+)
+
+# ----------------------------------------------------------------------------
 # Support pour '.Net'.
 set(ARCANE_CORECLR_VERSION "@ARCANE_CORECLR_VERSION@" CACHE STRING ".Net coreclr version" FORCE)
 

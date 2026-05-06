@@ -95,9 +95,6 @@ if (Doxygen_FOUND)
     # modules.
     set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
 
-    # Ce fichier contient les fonctions cmake ADoc.
-    include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
-
     function(doc_generation doc_type)
       set(ADOC_DOC_TYPE "${doc_type}")
       adoc_generate_doc()
@@ -111,8 +108,9 @@ endif ()
 ```
 
 Une fois le `CMakeLists.txt` modifié, il est important de modifier les fichiers `UserDocConfig.cmake` et
-`DevDocConfig.cmake` pour personnaliser les fichiers sources à prendre en compte pour la documentation. Notamment la
-variable `ADOC_DOXYGEN_INPUT` qui contient la liste des dossiers contenant les sources à documenter.
+`DevDocConfig.cmake` (copiés avant la modification du `CMakeLists.txt`) pour personnaliser les fichiers sources à
+prendre en compte pour la documentation. Notamment la variable `ADOC_DOXYGEN_INPUT` qui contient la liste des dossiers
+contenant les sources à documenter.
 
 Il est aussi possible de personnaliser les variables `DOXYGEN_` en dehors des fichiers `UserDocConfig.cmake` /
 `DevDocConfig.cmake` avant l'appel à `adoc_generate_doc()`.
@@ -146,9 +144,6 @@ if (Doxygen_FOUND)
   # Arcane l'utilisera pour générer les informations sur les services et les
   # modules.
   set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/Nonreg")
-
-  # Ce fichier contient les fonctions cmake ADoc.
-  include(${ARCANE_PREFIX_DIR}/share/adoc/cmake/ADocConfig.cmake)
 
   # On utilise une fonction pour réduire le scope des variables DOXYGEN_ et pour
   # générer les documentations "user" et "dev".

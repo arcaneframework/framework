@@ -10,18 +10,28 @@ configure_file(cmake/ADocConfig.cmake.in ${CMAKE_BINARY_DIR}/share/adoc/cmake/AD
 # Pour les projets basés sur Arcane.
 set(adoc_source_dir ${CMAKE_INSTALL_PREFIX}/share/adoc)
 set(axldoc_path ${CMAKE_INSTALL_PREFIX}/bin/axldoc)
-configure_file(cmake/ADocConfig.cmake.in ${generated_config_dir}/ADocConfig.cmake @ONLY)
+#configure_file(cmake/ADocConfig.cmake.in ${generated_config_dir}/ADocConfig.cmake @ONLY)
 
 install(DIRECTORY theme/ DESTINATION share/adoc/theme)
 install(DIRECTORY sample_doc/ DESTINATION share/adoc/sample_doc)
 install(FILES generate_axl_infos.sh.in DESTINATION share/adoc)
 
 install(FILES
-  ${generated_config_dir}/ADocConfig.cmake
   cmake/ADocCommonVars.cmake
   cmake/ADocUserVars.cmake
   cmake/ADocDevVars.cmake
   DESTINATION share/adoc/cmake
+)
+
+configure_package_config_file(
+  "cmake/ADocConfig.cmake.in"
+  "${generated_config_dir}/ADocConfig.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ADoc"
+)
+
+install(FILES
+  ${generated_config_dir}/ADocConfig.cmake
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ADoc"
 )
 
 # ----------------------------------------------------------------------------

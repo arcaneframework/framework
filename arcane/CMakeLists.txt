@@ -1077,36 +1077,41 @@ file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
 # ----------------------------------------------------------------------------
 
-# Ce fichier contient les fonctions cmake ADoc.
-include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
-
-# ----------------------------------------------------------------------------
-
-# Fonction permettant de générer les doxyfiles pour générer la documentation.
-# Deux valeurs possibles pour `doctype` : "user" et "dev".
-# Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
-# Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
-function(GENERATE_DOC_TARGET doctype)
-  set(ADOC_DOC_TYPE "${doctype}")
-
-  set(ADOC_DOC_CONFIG_DIR "${ARCANESRCROOT}/doc")
-  set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/arcane_test_driver")
-  set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/lib")
-
-  set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
-  adoc_generate_doc()
-
-  set(ADOC_DOC_TARGET "install_${ADOC_DOC_TYPE}doc")
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${ADOC_DOC_TARGET}")
-  adoc_generate_doc()
-
-endfunction()
+if (NOT ADoc_FOUND)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/adoc adoc)
+  set(ADoc_FOUND YES)
+  set(ADoc_FOUND YES PARENT_SCOPE)
+endif ()
 
 # ----------------------------------------------------------------------------
 
 message(STATUS "DOXYGEN = ${DOXYGEN}")
 if (DOXYGEN)
+
+  # Ce fichier contient les fonctions cmake ADoc.
+  include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
+
+  # Fonction permettant de générer les doxyfiles pour générer la documentation.
+  # Deux valeurs possibles pour `doctype` : "user" et "dev".
+  # Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
+  # Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
+  function(GENERATE_DOC_TARGET doctype)
+    set(ADOC_DOC_TYPE "${doctype}")
+
+    set(ADOC_DOC_CONFIG_DIR "${ARCANESRCROOT}/doc")
+    set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/arcane_test_driver")
+    set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/lib")
+
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
+    adoc_generate_doc()
+
+    set(ADOC_DOC_TARGET "install_${ADOC_DOC_TYPE}doc")
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${ADOC_DOC_TARGET}")
+    adoc_generate_doc()
+
+  endfunction()
+
   GENERATE_DOC_TARGET(dev)
   GENERATE_DOC_TARGET(user)
 endif ()
