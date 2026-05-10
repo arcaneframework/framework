@@ -9,17 +9,15 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <summary>Liste des dépendances nécessaires</summary>
 <table>
 <tr><th>Nom de la dépendance <th>Version (Mini/Maxi) <th>Description
-<tr><td>[GCC](https://gcc.gnu.org/) <td>11/ <td rowspan="3">Compilateur supportant le C++20
-<tr><td>[CLang](https://clang.llvm.org/) <td>15/
-<tr><td>[Visual Studio](https://visualstudio.microsoft.com/) <td>17.4/
-<tr><td>[Make](https://www.gnu.org/software/make/) <td> <td>Système de génération d'exécutable
-<tr><td>[CMake](https://cmake.org/) <td>3.21/ (3.26/ si utilisation de CUDA) <td>Système de build de projet
-<tr><td>[DotNet](https://dotnet.microsoft.com/) <td>8/ <td>Pour la partie C#
-<tr><td>[GLib](https://www.gtk.org/) <td> <td>Support du multi-threading
-<tr><td>[LibXml2](http://www.xmlsoft.org/) <td> <td>Lecture des fichiers AXL/ARC
+<tr><td>[GCC](https://gcc.gnu.org/)</td> <td>11/</td> <td rowspan="3">Compilateur supportant le C++20</td></tr>
+<tr><td>[CLang](https://clang.llvm.org/)</td> <td>15/</td></tr>
+<tr><td>[Visual Studio](https://visualstudio.microsoft.com/)</td> <td>17.4/</td></tr>
+<tr><td>[Make](https://www.gnu.org/software/make/)</td> <td> <td>Système de génération d'exécutable</td></tr>
+<tr><td>[CMake](https://cmake.org/)</td> <td>3.21/ (3.26/ si utilisation de CUDA) <td>Système de build de projet</td></tr>
+<tr><td>[DotNet](https://dotnet.microsoft.com/)</td> <td>8/</td> <td>Pour AxlStar et le wrapper C#</td></tr>
+<tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>Support du multi-threading</td></tr>
+<tr><td>[LibXml2](http://www.xmlsoft.org/)</td> <td> </td> <td>Lecture des fichiers AXL/ARC</td></tr>
 </table>
-</details>
-
 
 <details>
 <summary>Liste des dépendances recommandées</summary>
@@ -31,7 +29,6 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <tr><td>[ParMetis](https://github.com/KarypisLab/ParMETIS) </td><td>4.0</td><td>Partitionneur de graphe pour l'équilibrage de charge<td></tr>
 </table>
 </details>
-
 
 <details>
 <summary>Liste des dépendances optionnelles</summary>
@@ -55,7 +52,10 @@ Choisissez votre OS :
   Présente les prérequis nécessaires pour %Arcane sous Ubuntu 22.04.
 
 - \subpage arcanedoc_build_install_prerequisites_ubuntu24 <br>
-Présente les prérequis nécessaires pour %Arcane sous Ubuntu 24.04.
+  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 24.04.
+
+- \subpage arcanedoc_build_install_prerequisites_ubuntu26 <br>
+  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 26.04.
 
 - \subpage arcanedoc_build_install_prerequisites_arch <br>
   Présente les prérequis nécessaires pour %Arcane sous ArchLinux.
