@@ -4,8 +4,9 @@
 
 ## Installation des packages nécessaires
 
-Sur Ubuntu 24.04, la version de CMake et de '.Net' sont suffisamment
-récentes pour pouvoir être installés via les packages système.
+Sur Ubuntu 24.04, les versions des dépendances nécessaires pour
+compiler %Arcane (GCC, CMake, '.Net', ...) sont suffisament récentes
+pour pouvoir être installés via les packages système.
 
 Les commandes suivantes permettent d'installer les dépendances
 nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
@@ -82,8 +83,6 @@ cmake -S /path/to/sources -B /path/to/build \
 ~~~
 
 Voir la page suivante pour plus d'informations sur la compilation.
-
-
 
 ____
 
