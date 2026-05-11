@@ -1072,65 +1072,49 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(GENERATE_DOC_TARGET docname)
-  set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
-  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
-  add_custom_target(${docname} COMMAND
-      ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile &&
-      echo "Doc index file : file://${ARCANEBUILDROOT}/share/${docname}/html/index.html")
-
-  set(DOC_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX})
-  configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile @ONLY)
-  add_custom_target(install_${docname} COMMAND ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile)
-endfunction()
-
-# ----------------------------------------------------------------------------
-# Cibles pour generer la documentation
-
-# Variable permettant de choisir le thème des documentations user et dev.
-if(ARCANEDOC_LEGACY_THEME STREQUAL ON)
-  set(ARCANEDOC_HEADER_USER "header_no_theme.html")
-  set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
-  set(ARCANEDOC_AXLDOC_LEGACY "--legacy")
-  message(STATUS "User and dev documentations with legacy theme")
-else()
-  set(ARCANEDOC_HEADER_USER "header.html")
-  set(ARCANEDOC_HEADER_DEV "header.html")
-  set(ARCANEDOC_AXLDOC_LEGACY "")
-endif()
-
-# Variable pour savoir si la doc aura accès à internet ou non.
-if(ARCANEDOC_OFFLINE STREQUAL ON)
-  set(ARCANEDOC_MATHJAX "NO")
-  message(STATUS "Offline mode for user and dev documentations")
-else()
-  set(ARCANEDOC_MATHJAX "YES")
-endif()
-
-# ----------------------------------------------------------------------------
-
-set(IS_FOR User)
-configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
-set(IS_FOR Dev)
-configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos_dev.sh @ONLY)
-
+# Répertoire où seront regroupés tous les fichiers .axl.
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
 # ----------------------------------------------------------------------------
 
+if (NOT ADoc_FOUND)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/adoc adoc)
+  set(ADoc_FOUND YES)
+  set(ADoc_FOUND YES PARENT_SCOPE)
+endif ()
+
+# ----------------------------------------------------------------------------
+
 message(STATUS "DOXYGEN = ${DOXYGEN}")
-if(DOXYGEN)
-  GENERATE_DOC_TARGET(devdoc)
-  GENERATE_DOC_TARGET(userdoc)
-  if (UNIX)
-    # Cible pour générer la documentation des axl
-    # TODO: pouvoir changer le shell
-    add_custom_target(generate_axl_doc COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos.sh)
-    add_custom_target(generate_axl_doc_dev COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos_dev.sh)
-    add_dependencies(userdoc generate_axl_doc)
-    add_dependencies(devdoc generate_axl_doc_dev)
-  endif()
-endif()
+if (DOXYGEN)
+
+  # Ce fichier contient les fonctions cmake ADoc.
+  include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
+
+  # Fonction permettant de générer les doxyfiles pour générer la documentation.
+  # Deux valeurs possibles pour `doctype` : "user" et "dev".
+  # Deux cibles finales seront générées : "userdoc" et "install_userdoc" (user ou dev, selon `doctype`).
+  # Trois cibles intermédiaires seront générées : "generate_axl_user", "_userdoc" et "_install_userdoc"
+  function(GENERATE_DOC_TARGET doctype)
+    set(ADOC_DOC_TYPE "${doctype}")
+
+    set(ADOC_DOC_CONFIG_DIR "${ARCANESRCROOT}/doc")
+    set(ADOC_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/bin/arcane_test_driver")
+    set(ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION "${CMAKE_BINARY_DIR}/lib")
+
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
+    adoc_generate_doc()
+
+    set(ADOC_DOC_TARGET "install_${ADOC_DOC_TYPE}doc")
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/${ADOC_DOC_TARGET}")
+    adoc_generate_doc()
+
+  endfunction()
+
+  GENERATE_DOC_TARGET(dev)
+  GENERATE_DOC_TARGET(user)
+endif ()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

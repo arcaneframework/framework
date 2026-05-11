@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=11" />
     <meta name="generator" content="Doxygen $doxygenversion" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="$relpath^logo_arcane.svg" type="image/svg+xml">
+    @ADOC_HTML_HEAD@
     <!--BEGIN PROJECT_NAME-->
     <title>$projectname: $title</title>
     <!--END PROJECT_NAME-->
@@ -75,7 +75,7 @@
 
     <!--BEGIN CORNER_GITHUB-->
     <!-- https://tholman.com/github-corners/ -->
-    <a href="https://github.com/arcaneframework/framework" class="github-corner" aria-label="Voir les sources sur GitHub">
+    <a href="@ADOC_PROJECT_REPO_LINK@" class="github-corner" aria-label="Voir les sources sur GitHub">
       <svg width="70" height="70" viewBox="0 0 250 250" aria-hidden="true">
         <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
         <path

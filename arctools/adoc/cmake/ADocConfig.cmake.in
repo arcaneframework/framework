@@ -1,0 +1,191 @@
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Macro permettant de définir les variables DOXYGEN pour générer la
+# documentation ADoc, de générer les fichiers nécessaires et de configurer le
+# script permettant de générer les informations sur les AXL.
+#
+# Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
+#
+# La documentation "user" est destinée aux utilisateurs du code. Sa génération
+# est plus rapide que la "dev", elle est plus légère étant donné qu'elle
+# n'inclut pas de graphes UML.
+#
+# La documentation "dev" est destinée aux développeurs du code.
+# Cette documentation inclut les éléments privés des classes, en autres.
+#
+# Voir les fichiers "ADocCommonVars.cmake", "ADocUserVars.cmake" et
+# "ADocDevVars.cmake" pour plus de détails.
+macro(adoc_initialize)
+  set(ADOC_SOURCE_DIR "@adoc_source_dir@")
+  set(AXLDOC_PATH "@axldoc_path@")
+
+  if (NOT ADOC_BUILD_DIR)
+    set(ADOC_BUILD_DIR ${CMAKE_BINARY_DIR}/share/adoc)
+  endif ()
+  if (NOT ADOC_MATHJAX)
+    set(ADOC_MATHJAX "OFF")
+  endif ()
+  if (NOT ADOC_LEGACY_THEME)
+    set(ADOC_LEGACY_THEME "OFF")
+  endif ()
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+  if (NOT ADOC_DOC_TARGET)
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+  endif ()
+
+  # On set les variables CMake Doxygen.
+  if (${ADOC_DOC_TYPE} STREQUAL "user")
+    include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocUserVars.cmake)
+    set(IS_FOR "User")
+  elseif (${ADOC_DOC_TYPE} STREQUAL "dev")
+    include(${ADOC_SOURCE_DIR}/cmake/ADocCommonVars.cmake)
+    include(${ADOC_SOURCE_DIR}/cmake/ADocDevVars.cmake)
+    set(IS_FOR "Dev")
+  else ()
+    message(FATAL_ERROR "Unknown doc type (${ADOC_DOC_TYPE})")
+  endif ()
+
+  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR})
+  file(MAKE_DIRECTORY ${ADOC_BUILD_DIR}/theme/html)
+
+  # Doxygen ne gère pas vraiment les icônes...
+  if (ADOC_PROJECT_ICON)
+    set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
+      "${ADOC_PROJECT_ICON}"
+    )
+    set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
+      PARENT_SCOPE
+    )
+
+    cmake_path(GET ADOC_PROJECT_ICON EXTENSION LAST_ONLY lastExt)
+    cmake_path(GET ADOC_PROJECT_ICON FILENAME filename)
+
+    if (${lastExt} STREQUAL ".svg")
+      set(ICON_TYPE "type=\"image/svg+xml\"")
+    elseif (${lastExt} STREQUAL ".png")
+      set(ICON_TYPE "type=\"image/png\"")
+    elseif (${lastExt} STREQUAL ".webp")
+      set(ICON_TYPE "type=\"image/webp\"")
+    endif ()
+
+    set(ADOC_HTML_HEAD "${ADOC_HTML_HEAD} <link rel=\"icon\" href=\"$relpath^${filename}\" ${ICON_TYPE}>")
+  endif ()
+
+  # Variables à remplacer : ADOC_PROJECT_REPO_LINK, ADOC_HTML_HEAD
+  configure_file(${ADOC_SOURCE_DIR}/theme/html/header.html.in ${ADOC_BUILD_DIR}/theme/html/header_${ADOC_DOC_TARGET}.html @ONLY)
+
+  # -------------------
+  # -------------------
+
+  # On passe à la configuration du script servant à générer les infos AXL.
+  if (NOT UNIX)
+    return()
+  endif ()
+  if (TARGET generate_axl_${ADOC_DOC_TARGET})
+    return()
+  endif ()
+  if (NOT ADOC_EXECUTABLE_AXL_GENERATION)
+    message(STATUS "ADOC_EXECUTABLE_AXL_GENERATION not set")
+    return()
+  endif ()
+
+  if (NOT ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
+    cmake_path(GET ADOC_EXECUTABLE_AXL_GENERATION PARENT_PATH ADOC_CONFIG_DIR_EXECUTABLE_AXL_GENERATION)
+  endif ()
+
+  set(SHARE_AXL_DIR ${CMAKE_BINARY_DIR}/share/axl)
+  set(AXLDOC_LEGACY "")
+  if (ADOC_LEGACY_THEME)
+    if (${ADOC_LEGACY_THEME} STREQUAL "ON")
+      set(AXLDOC_LEGACY "--legacy")
+    endif ()
+  endif ()
+  file(MAKE_DIRECTORY ${SHARE_AXL_DIR})
+
+  configure_file(${ADOC_SOURCE_DIR}/generate_axl_infos.sh.in ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TARGET}.sh @ONLY)
+  add_custom_target(generate_axl_${ADOC_DOC_TARGET} COMMAND "/bin/sh" ${ADOC_BUILD_DIR}/generate_axl_infos_${ADOC_DOC_TARGET}.sh)
+endmacro()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Fonction permettant d'ajouter la génération des informations AXL comme
+# dépendance à la génération de la documentation.
+#
+# Il est nécessaire d'avoir appelé la macro adoc_initialize() avant.
+#
+# Deux valeurs sont possibles pour "doc_type" : "user" et "dev".
+#
+# "doxygen_target_name" correspond au nom de la cible utilisé par la
+# commande "doxygen_add_docs()".
+#
+# Sous Windows, cette fonction n'a aucun effet.
+function(adoc_link_axldoc_doxygen doxygen_target_name)
+  if (NOT UNIX)
+    return()
+  endif ()
+
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+  if (NOT ADOC_DOC_TARGET)
+    set(ADOC_DOC_TARGET "${ADOC_DOC_TYPE}doc")
+  endif ()
+  add_dependencies(${doxygen_target_name} generate_axl_${ADOC_DOC_TARGET})
+endfunction()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Fonction permettant de générer la documentation.
+#
+# Voir le README pour savoir quelles variables définir.
+function(adoc_generate_doc)
+  if (NOT ADOC_DOC_TYPE)
+    set(ADOC_DOC_TYPE "user")
+  endif ()
+
+  if (ADOC_DOC_CONFIG_DIR)
+    include(${ADOC_DOC_CONFIG_DIR}/CommonDocConfig.cmake)
+    adoc_commondoc_config_adoc_variables()
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      include(${ADOC_DOC_CONFIG_DIR}/UserDocConfig.cmake)
+      adoc_userdoc_config_adoc_variables()
+    else ()
+      include(${ADOC_DOC_CONFIG_DIR}/DevDocConfig.cmake)
+      adoc_devdoc_config_adoc_variables()
+    endif ()
+  endif ()
+
+  adoc_initialize()
+  
+  if (ADOC_DOC_CONFIG_DIR)
+    adoc_commondoc_config_doxygen_variables()
+    if (${ADOC_DOC_TYPE} STREQUAL "user")
+      adoc_userdoc_config_doxygen_variables()
+    else ()
+      adoc_devdoc_config_doxygen_variables()
+    endif ()
+  endif ()
+
+  if (NOT DOXYGEN_OUTPUT_DIRECTORY)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/share/${ADOC_DOC_TARGET}")
+  endif ()
+
+  set(ADOC_INTERNAL_DOC_TARGET "_ADoc_internal_${ADOC_DOC_TARGET}")
+
+  doxygen_add_docs(
+    ${ADOC_INTERNAL_DOC_TARGET}
+    ${ADOC_DOXYGEN_INPUT}
+  )
+  adoc_link_axldoc_doxygen(${ADOC_INTERNAL_DOC_TARGET})
+
+  add_custom_target(${ADOC_DOC_TARGET} COMMAND echo "Doc index file : file://${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html")
+  add_dependencies(${ADOC_DOC_TARGET} ${ADOC_INTERNAL_DOC_TARGET})
+endfunction()
