@@ -13,15 +13,15 @@
 
 #include "arcane/core/MachineShMemWinVariable.h"
 
+#include "arcane/utils/NumericTypes.h"
+#include "arcane/utils/MDSpan.h"
+
 #include "arcane/core/VariableRefArray.h"
 #include "arcane/core/VariableRefArray2.h"
 #include "arcane/core/MeshVariable.h"
 #include "arcane/core/IVariable.h"
 #include "arcane/core/MeshVariableScalarRef.h"
-#include "internal/MachineShMemWinVariableBase.h"
-
-#include "arcane/utils/NumericTypes.h"
-#include "arcane/utils/MDSpan.h"
+#include "arcane/core/internal/MachineShMemWinVariableBase.h"
 
 #include "arccore/base/Span2.h"
 #include "arccore/base/MDIndex.h"
@@ -209,7 +209,7 @@ Span2<DataType> MachineShMemWinVariableArray2T<DataType>::
 view(Int32 rank) const
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
-  return { span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2[rank] };
+  return { span1.data(), m_base->nbElemDim1(rank), m_base->nbElemDim2(rank) };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -223,9 +223,6 @@ updateVariable()
   Int64 size_dim2 = m_vart.dim2Size();
 
   m_base->updateVariable(size_dim1, size_dim2, sizeof(DataType));
-
-  m_nb_elem_dim1 = m_base->nbElemDim1();
-  m_nb_elem_dim2 = m_base->nbElemDim2();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -278,7 +275,7 @@ Span2<DataType> MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 view(Int32 rank) const
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
-  return { span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2 };
+  return { span1.data(), m_base->nbElemDim1(rank), m_nb_elem_dim2 };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -289,7 +286,7 @@ Span<DataType> MachineShMemWinMeshVariableArrayT<ItemType, DataType>::
 operator()(Int32 rank, Int32 notlocal_id)
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
-  Span2<DataType> span2(span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2);
+  Span2<DataType> span2(span1.data(), m_base->nbElemDim1(rank), m_nb_elem_dim2);
 
   return span2[notlocal_id];
 }
@@ -305,8 +302,6 @@ updateVariable()
   m_nb_elem_dim2 = m_vart.asArray().dim2Size();
 
   m_base->updateVariable(size_dim1, m_nb_elem_dim2, sizeof(DataType));
-
-  m_nb_elem_dim1 = m_base->nbElemDim1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -361,17 +356,17 @@ view(Int32 rank) const
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
 
   if constexpr (Extents::rank() == 1) {
-    std::array<Int32, 2> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0] };
+    std::array<Int32, 2> nb_elem_mdim{ static_cast<Int32>(m_base->nbElemDim1(rank)), m_shape_dim2[0] };
     MDSpan<DataType, MDDim2> mdspan(span1.data(), MDIndex<2>(nb_elem_mdim));
     return mdspan;
   }
   else if constexpr (Extents::rank() == 2) {
-    std::array<Int32, 3> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0], m_shape_dim2[1] };
+    std::array<Int32, 3> nb_elem_mdim{ static_cast<Int32>(m_base->nbElemDim1(rank)), m_shape_dim2[0], m_shape_dim2[1] };
     MDSpan<DataType, MDDim3> mdspan(span1.data(), MDIndex<3>(nb_elem_mdim));
     return mdspan;
   }
   else if constexpr (Extents::rank() == 3) {
-    std::array<Int32, 4> nb_elem_mdim{ static_cast<Int32>(m_nb_elem_dim1[rank]), m_shape_dim2[0], m_shape_dim2[1], m_shape_dim2[2] };
+    std::array<Int32, 4> nb_elem_mdim{ static_cast<Int32>(m_base->nbElemDim1(rank)), m_shape_dim2[0], m_shape_dim2[1], m_shape_dim2[2] };
     MDSpan<DataType, MDDim4> mdspan(span1.data(), MDIndex<4>(nb_elem_mdim));
     return mdspan;
   }
@@ -386,7 +381,7 @@ MDSpan<DataType, Extents> MachineShMemWinMDVariableT<ItemType, DataType, Extents
 operator()(Int32 rank, Int32 notlocal_id)
 {
   Span<DataType> span1 = asSpan<DataType>(m_base->segmentView(rank));
-  Span2<DataType> span2(span1.data(), m_nb_elem_dim1[rank], m_nb_elem_dim2);
+  Span2<DataType> span2(span1.data(), m_base->nbElemDim1(rank), m_nb_elem_dim2);
   MDSpan<DataType, Extents> mdspan(span2[notlocal_id].data(), MDIndex<Extents::rank()>(m_shape_dim2));
 
   return mdspan;
@@ -407,7 +402,6 @@ updateVariable()
   SmallSpan<Int32> shape_dim2_view(m_shape_dim2.data(), Extents::rank());
   shape_dim2_view.copy(m_base->arrayShape().dimensions());
 
-  m_nb_elem_dim1 = m_base->nbElemDim1();
   m_nb_elem_dim2 = nb_elem_dim2;
 }
 
