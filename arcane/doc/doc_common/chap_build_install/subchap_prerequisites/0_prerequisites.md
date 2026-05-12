@@ -18,6 +18,7 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>Support du multi-threading</td></tr>
 <tr><td>[LibXml2](http://www.xmlsoft.org/)</td> <td> </td> <td>Lecture des fichiers AXL/ARC</td></tr>
 </table>
+</details>
 
 <details>
 <summary>Liste des dépendances recommandées</summary>

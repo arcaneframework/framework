@@ -25,6 +25,23 @@ set(DOXYGEN_HTML_EXTRA_FILES ${DOXYGEN_HTML_EXTRA_FILES}
 )
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Ces trois variables sont nécessaires pour le thème Awesome.
+set(DOXYGEN_GENERATE_TREEVIEW
+  "YES"
+)
+
+set(DOXYGEN_DISABLE_INDEX
+  "NO"
+)
+
+set(DOXYGEN_FULL_SIDEBAR
+  "NO"
+)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 if (NOT DOXYGEN_PROJECT_LOGO)
   set(DOXYGEN_PROJECT_LOGO

@@ -1,7 +1,5 @@
 # Compilation et installation {#arcanedoc_build_install}
 
-\warning Chapitre en cours d'écriture...
-
 Ce chapitre montre comment compiler et installer le framework %Arcane.
 
 Il y a différentes façons d'installer %Arcane. La façon classique qui consiste
