@@ -308,8 +308,6 @@ class MachineShMemWinVariableArray2T
 
   Ref<MachineShMemWinVariable2DBase> m_base;
   VariableRefArray2T<DataType> m_vart;
-  ConstArrayView<Int64> m_nb_elem_dim1;
-  ConstArrayView<Int64> m_nb_elem_dim2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -414,7 +412,6 @@ class MachineShMemWinMeshVariableArrayT
 
   Ref<MachineShMemWinVariableMDBase> m_base;
   MeshVariableArrayRefT<ItemType, DataType> m_vart;
-  ConstArrayView<Int64> m_nb_elem_dim1;
   Int32 m_nb_elem_dim2{};
 };
 
@@ -489,9 +486,6 @@ class MachineShMemWinMDVariableT
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  // template <class X = MDDimType<Extents::rank() + 1>::DimType>
-  // MDSpan<DataType, X> view(Int32 rank) const;
-
   ARCANE_CORE_EXPORT MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> view(Int32 rank) const;
 
   /*!
@@ -525,7 +519,6 @@ class MachineShMemWinMDVariableT
 
   Ref<MachineShMemWinVariableMDBase> m_base;
   MeshVariableArrayRefT<ItemType, DataType> m_vart;
-  ConstArrayView<Int64> m_nb_elem_dim1;
   Int32 m_nb_elem_dim2{};
   std::array<Int32, Extents::rank()> m_shape_dim2{};
 };

@@ -54,7 +54,8 @@ MachineShMemWinVariableBase(IVariable* var)
   else {
     m_pm = m_var->subDomain()->parallelMng();
   }
-  m_sizeof_var.resize(m_pm->commSize(), 0);
+  m_machine_ranks = m_pm->_internalApi()->machineRanks();
+  m_sizeof_var.reserve(m_machine_ranks.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,7 +64,7 @@ MachineShMemWinVariableBase(IVariable* var)
 ConstArrayView<Int32> MachineShMemWinVariableBase::
 machineRanks() const
 {
-  return m_pm->_internalApi()->machineRanks();
+  return m_machine_ranks;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,7 +88,7 @@ segmentView(Int32 rank) const
     ARCANE_FATAL("Variable not initialised yet. Call var.resize() method before.");
   }
 #endif
-  return MachineShMemWinMemoryAllocator::segmentView(data, rank).subSpan(0, m_sizeof_var[rank]);
+  return MachineShMemWinMemoryAllocator::segmentView(data, rank).subSpan(0, m_sizeof_var.at(rank));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,7 +101,11 @@ updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem)
 
   all_size.segmentView()[0] = nb_elem_dim1 * sizeof_elem;
   all_size.barrier();
-  m_sizeof_var = all_size.windowConstView();
+
+  for (Int32 machine_rank = 0; const Int64 size : all_size.windowConstView()) {
+    m_sizeof_var[m_machine_ranks[machine_rank]] = size;
+    machine_rank++;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,9 +117,10 @@ updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem)
 MachineShMemWinVariable2DBase::
 MachineShMemWinVariable2DBase(IVariable* var)
 : MachineShMemWinVariableBase(var)
-, m_nb_elem_dim1(m_pm->commSize(), 0)
-, m_nb_elem_dim2(m_pm->commSize(), 0)
-{}
+{
+  m_nb_elem_dim1.reserve(m_machine_ranks.size());
+  m_nb_elem_dim2.reserve(m_machine_ranks.size());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -122,39 +128,25 @@ MachineShMemWinVariable2DBase(IVariable* var)
 void MachineShMemWinVariable2DBase::
 updateVariable(Int64 nb_elem_dim1, Int64 nb_elem_dim2, Int64 sizeof_elem)
 {
-  ContigMachineShMemWin<Int64> all_size(m_pm, 2);
+  ContigMachineShMemWin<Int64> all_nb_elem(m_pm, 2);
 
-  all_size.segmentView()[0] = nb_elem_dim1;
-  all_size.segmentView()[1] = nb_elem_dim2;
+  all_nb_elem.segmentView()[0] = nb_elem_dim1;
+  all_nb_elem.segmentView()[1] = nb_elem_dim2;
 
-  all_size.barrier();
+  all_nb_elem.barrier();
 
   Int64 sizeof_elem2 = sizeof_elem * sizeof_elem;
 
-  for (Int32 i = 0; i < m_pm->commSize(); ++i) {
-    const Int32 i2 = i * 2;
-    m_nb_elem_dim1[i] = all_size.windowConstView()[i2];
-    m_nb_elem_dim2[i] = all_size.windowConstView()[i2 + 1];
-    m_sizeof_var[i] = m_nb_elem_dim1[i] * m_nb_elem_dim2[i] * sizeof_elem2;
+  for (Int32 machine_rank = 0; const Int32 world_rank : m_machine_ranks) {
+    const Int32 pos = machine_rank * 2;
+    const Int64 nb_elem_dim1_i = all_nb_elem.windowConstView()[pos];
+    const Int64 nb_elem_dim2_i = all_nb_elem.windowConstView()[pos + 1];
+
+    m_nb_elem_dim1[world_rank] = nb_elem_dim1_i;
+    m_nb_elem_dim2[world_rank] = nb_elem_dim2_i;
+    m_sizeof_var[world_rank] = nb_elem_dim1_i * nb_elem_dim2_i * sizeof_elem2;
+    machine_rank++;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ArrayView<Int64> MachineShMemWinVariable2DBase::
-nbElemDim1()
-{
-  return m_nb_elem_dim1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ArrayView<Int64> MachineShMemWinVariable2DBase::
-nbElemDim2()
-{
-  return m_nb_elem_dim2;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,8 +158,9 @@ nbElemDim2()
 MachineShMemWinVariableMDBase::
 MachineShMemWinVariableMDBase(IVariable* var)
 : MachineShMemWinVariableBase(var)
-, m_nb_elem_dim1(m_pm->commSize(), 0)
-{}
+{
+  m_nb_elem_dim1.reserve(m_machine_ranks.size());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -175,35 +168,27 @@ MachineShMemWinVariableMDBase(IVariable* var)
 void MachineShMemWinVariableMDBase::
 updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem)
 {
-  ContigMachineShMemWin<Int64> all_size(m_pm, 1);
+  ContigMachineShMemWin<Int64> all_nb_elem(m_pm, 1);
 
-  all_size.segmentView()[0] = nb_elem_dim1;
+  all_nb_elem.segmentView()[0] = nb_elem_dim1;
 
-  all_size.barrier();
-
-  m_nb_elem_dim1 = all_size.windowConstView();
+  all_nb_elem.barrier();
 
   Int64 mult = nb_elem_dim2 * sizeof_elem * sizeof_elem;
 
-  for (Integer i = 0; i < m_pm->commSize(); ++i) {
-    m_sizeof_var[i] = m_nb_elem_dim1[i] * mult;
+  for (Int32 machine_rank = 0; const auto nb_elem : all_nb_elem.windowConstView()) {
+    const Int32 world_rank = m_machine_ranks[machine_rank];
+    m_nb_elem_dim1[world_rank] = nb_elem;
+    m_sizeof_var[world_rank] = nb_elem * mult;
+    machine_rank++;
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayView<Int64> MachineShMemWinVariableMDBase::
-nbElemDim1()
-{
-  return m_nb_elem_dim1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 ArrayShape MachineShMemWinVariableMDBase::
-arrayShape()
+arrayShape() const
 {
   return m_var->data()->shape();
 }

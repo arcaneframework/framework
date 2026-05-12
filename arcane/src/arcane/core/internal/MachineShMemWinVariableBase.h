@@ -21,6 +21,7 @@
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/HashTableMap2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,6 +82,7 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
   /*!
    * \brief
    * \param nb_elem_dim1 En nb éléments
+   * \param sizeof_elem En octet
    */
   void updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem);
 
@@ -89,8 +91,10 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
   IVariable* m_var = nullptr;
   IParallelMng* m_pm = nullptr;
 
-  // En octet.
-  UniqueArray<Int64> m_sizeof_var;
+  ConstArrayView<Int32> m_machine_ranks;
+
+  // <world_rank, size_bytes>
+  impl::HashTableMap2<Int32, Int64> m_sizeof_var;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,17 +131,18 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
    * \brief
    * \param nb_elem_dim1 En nb elements
    * \param nb_elem_dim2 En nb elements
+   * \param sizeof_elem En octet
    */
   void updateVariable(Int64 nb_elem_dim1, Int64 nb_elem_dim2, Int64 sizeof_elem);
 
-  ArrayView<Int64> nbElemDim1();
-  ArrayView<Int64> nbElemDim2();
+  Int64 nbElemDim1(const Int32 rank) const { return m_nb_elem_dim1.at(rank); }
+  Int64 nbElemDim2(const Int32 rank) const { return m_nb_elem_dim2.at(rank); }
 
  private:
 
-  // En nb éléments.
-  UniqueArray<Int64> m_nb_elem_dim1;
-  UniqueArray<Int64> m_nb_elem_dim2;
+  // <world_rank, size_nb_elems>
+  impl::HashTableMap2<Int32, Int64> m_nb_elem_dim1;
+  impl::HashTableMap2<Int32, Int64> m_nb_elem_dim2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -175,16 +180,17 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
    * \brief
    * \param nb_elem_dim1 En nb elements
    * \param nb_elem_dim2 En nb elements
+   * \param sizeof_elem En octet
    */
   void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem);
 
-  ArrayView<Int64> nbElemDim1();
-  ArrayShape arrayShape();
+  Int64 nbElemDim1(const Int32 rank) const { return m_nb_elem_dim1.at(rank); }
+  ArrayShape arrayShape() const;
 
  private:
 
-  // En nb éléments.
-  UniqueArray<Int64> m_nb_elem_dim1;
+  // <world_rank, size_nb_elems>
+  impl::HashTableMap2<Int32, Int64> m_nb_elem_dim1;
 };
 
 /*---------------------------------------------------------------------------*/
