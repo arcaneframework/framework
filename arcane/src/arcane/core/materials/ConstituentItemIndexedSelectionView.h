@@ -163,7 +163,6 @@ class ConstituentItemIndexedSelectionView
 
     ValueType operator*() const { return m_view->item(m_index); }
     Iterator& operator++() { ++m_index; return *this; };
-    Integer index() const { return index; }
     explicit(false) operator ComponentItemLocalId() const { return m_view->item(m_index); }
 
     friend bool operator!=(const Iterator& a, const Iterator& other)
