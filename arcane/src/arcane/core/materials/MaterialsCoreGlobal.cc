@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialsCoreGlobal.cc                                      (C) 2000-2023 */
+/* MaterialsCoreGlobal.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 // Pas utilisé directement mais nécessaire pour l'exportation des symboles.
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+#include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
