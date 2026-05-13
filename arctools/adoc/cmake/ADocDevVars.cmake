@@ -1,7 +1,13 @@
 if (NOT DOXYGEN_PROJECT_BRIEF)
-  set(DOXYGEN_PROJECT_BRIEF
-    "Documentation développeur"
-  )
+  if (${ADOC_LANGUAGE} STREQUAL "French")
+    set(DOXYGEN_PROJECT_BRIEF
+      "Documentation développeur"
+    )
+  else ()
+    set(DOXYGEN_PROJECT_BRIEF
+      "Developer documentation"
+    )
+  endif ()
 endif ()
 
 # ----------------------------------------------------------------------------

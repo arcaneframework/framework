@@ -93,9 +93,20 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_OUTPUT_LANGUAGE)
+if (ADOC_LANGUAGE)
   set(DOXYGEN_OUTPUT_LANGUAGE
-    "French"
+    ${ADOC_LANGUAGE}
+  )
+elseif (DOXYGEN_OUTPUT_LANGUAGE)
+  set(ADOC_LANGUAGE
+    ${DOXYGEN_OUTPUT_LANGUAGE}
+  )
+else ()
+  set(ADOC_LANGUAGE
+    "English"
+  )
+  set(DOXYGEN_OUTPUT_LANGUAGE
+    "English"
   )
 endif ()
 
