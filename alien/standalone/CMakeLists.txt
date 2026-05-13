@@ -222,6 +222,17 @@ if (ALIEN_EXAMPLES)
 endif ()
 
 add_subdirectory(docs)
+
+if (ALIEN_GENERATE_DOCUMENTATION)
+    unset(DOXYGEN_SOURCE_BROWSER)
+    unset(DOXYGEN_EXTRACT_PRIVATE)
+    unset(DOXYGEN_OUTPUT_DIRECTORY)
+
+    unset(DOXYGEN_GENERATE_HTML)
+    unset(DOXYGEN_GENERATE_XML)
+endif (ALIEN_GENERATE_DOCUMENTATION)
+
+add_subdirectory(doxs)
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
