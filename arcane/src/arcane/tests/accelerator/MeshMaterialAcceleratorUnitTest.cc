@@ -13,8 +13,6 @@
 
 #include "arcane/core/IMeshModifier.h"
 
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/MemoryUtils.h"
@@ -34,13 +32,8 @@
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/MeshMaterialModifier.h"
 #include "arcane/materials/MatCellVector.h"
-#include "arcane/materials/EnvCellVector.h"
 #include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/MeshEnvironmentVariableRef.h"
-#include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/EnvItemVector.h"
-#include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 #include "arcane/accelerator/core/Runner.h"
@@ -52,8 +45,100 @@
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/AsyncRunQueuePool.h"
 #include "arcane/accelerator/Reduce.h"
+#include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"
 
 #include "arcane/accelerator/RunCommandEnumerate.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Materials
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Variante ItemRunCommand (c.f. RunCommandEnumerate.h dans Arcane) permettant de parcourir une instance du template ConstituentItemIndexedSelectionView
+template <typename GenericEnumeratorT>
+struct GenericItemSelectionRunCommand
+{
+  using ThatClass = GenericItemSelectionRunCommand<GenericEnumeratorT>;
+  using CommandType = ThatClass;
+  using IteratorValueType = typename GenericEnumeratorT::ItemType;
+  using ContainerCreateViewType = ConstituentItemIndexedSelectionView<typename GenericEnumeratorT::ContainerView>;
+  using Container = ContainerCreateViewType;
+
+  static CommandType create(Accelerator::RunCommand& run_command, const Container& items)
+  {
+    return CommandType(run_command, items);
+  }
+
+  explicit GenericItemSelectionRunCommand(Accelerator::RunCommand& command, const Container& items)
+  : m_command(command)
+  , m_items(items)
+  {}
+
+  Accelerator::RunCommand& m_command;
+  Container m_items;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Spécialisation des implementations Arcane
+namespace Arcane::Accelerator::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Base du RunCommandTraits qui fait le lien entre le type d'énumerateur d'élément et le type de vue sur le contenur et les valeurs associées
+template <typename GenericEnumeratorT>
+class RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<GenericEnumeratorT>>
+{
+ public:
+
+  using CommandType = ::Arcane::Materials::GenericItemSelectionRunCommand<GenericEnumeratorT>;
+  using IteratorValueType = CommandType::IteratorValueType;
+  using ContainerType = CommandType::Container;
+  using ContainerCreateViewType = CommandType::ContainerCreateViewType;
+
+ public:
+
+  static ContainerType createContainer(const ContainerCreateViewType& items)
+  {
+    return ContainerType{ items };
+  }
+};
+
+// Specialisation des classes d'implémentation Arcane pour pouvoir utiliser nos vues et énumerateurs customisés
+template <typename ContainerViewT, typename ItemTypeT>
+class RunCommandConstituentItemEnumeratorTraitsT<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>
+: public RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>>
+{
+ public:
+
+  using BaseClass = RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>>;
+  using BaseClass::createContainer;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ENUMERATE_SELENVCELL(EC, ECS) for (decltype((ECS).begin()) EC = (ECS).begin(), __##EC##_end = (ECS).end(); EC != __##EC##_end; ++EC)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -131,6 +216,7 @@ class MeshMaterialAcceleratorUnitTest
   void _checkEnvValues1();
   void _checkMatValues1();
   void _checkEnvironmentValues();
+  void _testSelection();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -364,6 +450,9 @@ executeTest()
                         });
     }
     _executeTest7(queue);
+  }
+  {
+    _testSelection();
   }
 }
 
@@ -1002,6 +1091,16 @@ _executeTest7(RunQueue& queue)
         ARCANE_FATAL("Bad mat cell lid={0}", mc.globalCellId());
     }
   }
+  {
+    // Teste sous vecteur vide
+    CellVector empty_cell_vector;
+    MatCellVector mat_vector(empty_cell_vector.view(), m_env1->materials()[1]);
+    MatCellVectorView sub_mat_view(mat_vector.view());
+    Int32 nb_sub_item = sub_mat_view.nbItem();
+    info() << "NB_SUB_ITEM (mat)=" << nb_sub_item;
+    if (nb_sub_item != 0)
+      ARCANE_FATAL("Bad value for number of sub items (v={0}). Should be zero", nb_sub_item);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1093,6 +1192,81 @@ _checkEnvironmentValues()
       _checkOneValue(m_env_c[iev], m_mat_c_ref[iev], "Test1_env_c");
     }
   }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Teste les commandes sur un sous-ensemble de ConstituenItem
+ */
+void MeshMaterialAcceleratorUnitTest::
+_testSelection()
+{
+  info() << "TestingSelection";
+
+  EnvCellVectorView env_cells(m_env1->envView());
+  Int32 nb_env_cell = env_cells.nbItem();
+
+  // Créé une sélection avec une entité sur 2
+  UniqueArray<Int32> selection_indices;
+  selection_indices.reserve((nb_env_cell / 2) + 1);
+  for (Int32 i = 0; i < nb_env_cell; ++i) {
+    if ((i % 2) == 0)
+      selection_indices.add(i);
+  }
+
+  // ... remplit une liste d'indices dans [ 0 ; env_cells.nbItems()-1 ]
+  EnvCellVectorSelectionView partial_env_cells{ env_cells, selection_indices.constSmallSpan() };
+
+  MaterialVariableCellInt32 test_var(VariableBuildInfo(mesh(), "SelectionTestVar"));
+
+  // phase de calcul
+  RunQueue queue = makeQueue(m_runner);
+
+  {
+    auto command = makeCommand(queue);
+    auto myVarView = viewInOut(command, test_var);
+    test_var.fill(0);
+    // premiere methode 1
+    command << RUNCOMMAND_MAT_ENUMERATE(SelEnvCell, evi, partial_env_cells)
+    {
+      myVarView[evi] += 1;
+    };
+  }
+
+  {
+    auto command = makeCommand(queue);
+    auto myVarView = viewInOut(command, test_var);
+    // ensuite, les boucles restent inchangées si on recoit en paramètre un EnvCellVectorSelectionView plutot qu'un EnvCellVectorView
+    command << RUNCOMMAND_MAT_ENUMERATE(SelEnvCell, evi, partial_env_cells)
+    {
+      myVarView[evi] += 1;
+    };
+  }
+
+  {
+    auto command = makeCommand(queue);
+    auto myVarView = viewInOut(command, test_var);
+    // troisieme possibilité
+    command << RUNCOMMAND_LOOP1(idx, partial_env_cells.size())
+    {
+      myVarView[partial_env_cells[idx]] += 1;
+    };
+  }
+
+  Int64 total = 0;
+  ENUMERATE_ENVCELL (ienvcell, env_cells) {
+    total += test_var[ienvcell];
+  }
+
+  ENUMERATE_SELENVCELL(ienvcell, partial_env_cells)
+  {
+    EnvCell x = *ienvcell;
+    total += test_var[x];
+  }
+
+  info() << "TOTAL=" << total;
 }
 
 /*---------------------------------------------------------------------------*/
