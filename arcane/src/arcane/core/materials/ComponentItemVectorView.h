@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.h                                   (C) 2000-2024 */
+/* ComponentItemVectorView.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Vue sur un vecteur sur des entités de constituants.                       */
 /*---------------------------------------------------------------------------*/
@@ -63,6 +63,10 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   friend class LambdaMatItemRangeFunctorT;
   template <typename DataType> friend class
   MaterialVariableArrayTraits;
+
+ public:
+
+ using ValueType = ComponentCell;
 
  public:
 
@@ -163,6 +167,10 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 
  public:
 
+  using ValueType = MatCell;
+
+ public:
+
   MatItemVectorView() = default;
 
  private:
@@ -217,6 +225,10 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
   friend class MeshEnvironment;
   template <typename ViewType, typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
+
+ public:
+
+  using ValueType = EnvCell;
 
  public:
 
