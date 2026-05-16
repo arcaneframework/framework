@@ -54,6 +54,55 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Conteneur contenant les informations nécessaires pour une commande
+ * sur les ConstituentItem.
+ */
+template <typename ConstituentItemLocalIdType_, typename ContainerCreateViewType_>
+class ConstituentIndexedSelectionRunCommandContainer
+{
+ public:
+
+  using ThatClass = ConstituentIndexedSelectionRunCommandContainer;
+  using IteratorValueType = ConstituentItemLocalIdType_;
+  using CommandType = ConstituentRunCommandBase2<ThatClass>;
+  using ContainerCreateViewType = ContainerCreateViewType_;
+
+ public:
+
+  explicit ConstituentIndexedSelectionRunCommandContainer(ContainerCreateViewType view)
+  : m_view(view)
+  {
+  }
+
+ public:
+
+  //! Accesseur pour le i-ème élément de la liste
+  constexpr ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
+  {
+    return { ComponentItemLocalId(m_view[i]) };
+  }
+
+  ARCCORE_HOST_DEVICE Int32 size() { return m_view.size(); }
+
+ private:
+
+  ContainerCreateViewType m_view;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::Materials
 {
 
@@ -87,82 +136,18 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Variante ItemRunCommand (c.f. RunCommandEnumerate.h dans Arcane) permettant de parcourir une instance du template ConstituentItemIndexedSelectionView
-template <typename GenericEnumeratorT>
-struct GenericItemSelectionRunCommand
+using EnvIndexedSelectionRunCommandContainer = Arcane::Accelerator::impl::ConstituentIndexedSelectionRunCommandContainer<EnvItemLocalId, EnvCellVectorSelectionView>;
+
+inline EnvIndexedSelectionRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(EnvCell, EnvCellVectorSelectionView view)
 {
-  using ThatClass = GenericItemSelectionRunCommand<GenericEnumeratorT>;
-  using CommandType = ThatClass;
-  using IteratorValueType = typename GenericEnumeratorT::ItemType;
-  using ContainerCreateViewType = ConstituentItemIndexedSelectionView<typename GenericEnumeratorT::ContainerView>;
-  using Container = ContainerCreateViewType;
-
-  static CommandType create(Accelerator::RunCommand& run_command, const Container& items)
-  {
-    return CommandType(run_command, items);
-  }
-
-  explicit GenericItemSelectionRunCommand(Accelerator::RunCommand& command, const Container& items)
-  : m_command(command)
-  , m_items(items)
-  {}
-
-  Accelerator::RunCommand& m_command;
-  Container m_items;
-};
+  return EnvIndexedSelectionRunCommandContainer{ view };
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Materials
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// Spécialisation des implementations Arcane
-namespace Arcane::Accelerator::impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// Base du RunCommandTraits qui fait le lien entre le type d'énumerateur d'élément et le type de vue sur le contenur et les valeurs associées
-template <typename GenericEnumeratorT>
-class RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<GenericEnumeratorT>>
-{
- public:
-
-  using CommandType = ::Arcane::Materials::GenericItemSelectionRunCommand<GenericEnumeratorT>;
-  using IteratorValueType = CommandType::IteratorValueType;
-  using ContainerType = CommandType::Container;
-  using ContainerCreateViewType = CommandType::ContainerCreateViewType;
-
- public:
-
-  static ContainerType createContainer(const ContainerCreateViewType& items)
-  {
-    return ContainerType{ items };
-  }
-};
-
-// Specialisation des classes d'implémentation Arcane pour pouvoir utiliser nos vues et énumerateurs customisés
-template <typename ContainerViewT, typename ItemTypeT>
-class RunCommandConstituentItemEnumeratorTraitsT<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>
-: public RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>>
-{
- public:
-
-  using BaseClass = RunCommandConstituentItemTraitsBaseT<::Arcane::Materials::GenericItemSelectionRunCommand<::Arcane::Materials::GenericItemSelectionEnumeratorType<ContainerViewT, ItemTypeT>>>;
-  using BaseClass::createContainer;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1244,15 +1229,16 @@ _testSelection()
 
   MaterialVariableCellInt32 test_var(VariableBuildInfo(mesh(), "SelectionTestVar"));
 
+  test_var.fill(0);
+
   // phase de calcul
   RunQueue queue = makeQueue(m_runner);
 
   {
     auto command = makeCommand(queue);
     auto myVarView = viewInOut(command, test_var);
-    test_var.fill(0);
     // premiere methode 1
-    command << RUNCOMMAND_MAT_ENUMERATE(SelEnvCell, evi, partial_env_cells)
+    command << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, partial_env_cells)
     {
       myVarView[evi] += 1;
     };
@@ -1262,7 +1248,7 @@ _testSelection()
     auto command = makeCommand(queue);
     auto myVarView = viewInOut(command, test_var);
     // ensuite, les boucles restent inchangées si on recoit en paramètre un EnvCellVectorSelectionView plutot qu'un EnvCellVectorView
-    command << RUNCOMMAND_MAT_ENUMERATE(SelEnvCell, evi, partial_env_cells)
+    command << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, partial_env_cells)
     {
       myVarView[evi] += 1;
     };
