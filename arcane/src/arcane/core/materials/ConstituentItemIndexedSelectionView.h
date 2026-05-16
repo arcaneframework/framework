@@ -147,37 +147,6 @@ class ConstituentItemIndexedSelectionView
 
  public:
 
-  /*!
-   * Classe d'itérateur pour une utilisation dans les boucles Arcane non accélérées (ENUMERATE_ENVCELL et associées)
-   */
-  class Iterator
-  {
-   public:
-
-    Iterator(const ConstituentItemIndexedSelectionView* view, Int32 index)
-    : m_view(view)
-    , m_index(index)
-    {}
-
-   public:
-
-    ValueType operator*() const { return m_view->item(m_index); }
-    Iterator& operator++() { ++m_index; return *this; };
-    explicit(false) operator ComponentItemLocalId() const { return m_view->item(m_index); }
-
-    friend bool operator!=(const Iterator& a, const Iterator& other)
-    {
-      return &a.m_view != &(other.m_view) && a.m_index != other.m_index;
-    }
-
-   private:
-
-    const ConstituentItemIndexedSelectionView* m_view = nullptr;
-    Int32 m_index = 0;
-  };
-
- public:
-
   ConstituentItemIndexedSelectionView(ItemVecView ecv, IndexArrayView indices)
   : m_container_view(ecv)
   , m_selection_view(indices)
@@ -220,9 +189,6 @@ class ConstituentItemIndexedSelectionView
     return isFullSelection() ? IndexArrayView{} : m_selection_view.constSmallView();
   }
 
-  Iterator begin() const { return Iterator(this, 0); }
-  Iterator end() const { return Iterator(this, size()); }
-
   ARCCORE_HOST_DEVICE ValueType operator[](Int32 i) const
   {
     return item(i);
@@ -252,6 +218,48 @@ class ConstituentItemIndexedSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Enumérateur sur les éléments d'un ConstituentItemIndexedSelectionView.
+ */
+template <typename ContainerView_>
+class ConstituentItemIndexedSelectionEnumerator
+{
+ public:
+
+  using SelectionType = ConstituentItemIndexedSelectionView<ContainerView_>;
+  using ValueType = SelectionType::ValueType;
+
+  friend class EnumeratorTracer;
+  friend class EnumeratorBuilder<ValueType>;
+
+ private:
+
+  explicit ConstituentItemIndexedSelectionEnumerator(const SelectionType& v)
+  : m_size(v.size())
+  , m_container_with_selection(v)
+  {}
+
+ public:
+
+  void operator++() { ++m_index; }
+  bool hasNext() const { return m_index < m_size; }
+
+  ValueType operator*() const
+  {
+    return m_container_with_selection.item(m_index);
+  }
+
+  Int32 index() const { return m_index; }
+
+ private:
+
+  Int32 m_index = 0;
+  Int32 m_size = 0;
+  SelectionType m_container_with_selection;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // types raccourcis pour des vues sur des selections de 'constituants' Arcane
 using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
@@ -260,8 +268,10 @@ using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<Com
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// permet de selectionner un "RunCommandTraits" qui sait parcourir une selection d'éléments Arcane
+/*!
+ * permet de selectionner un "RunCommandTraits" qui sait parcourir une selection d'éléments Arcane.
+ * Cela est utilisé pour RUNCOMMAND_MAT_ENUMERATE.
+ */
 template <typename ContainerViewT, typename ItemTypeT>
 struct GenericItemSelectionEnumeratorType
 {
@@ -272,7 +282,7 @@ struct GenericItemSelectionEnumeratorType
 
 /*
  * Raccourcis vers des types d'énumérateurs, utilisés dans les macros RUNCOMMAND_XXX_ENUMERATE comme premier argument
- * si on utilise SelEnvCell, le type d'énumérateurs récupéré dans le foncteur sera toujours un EnvCell
+ * si on utilise SelEnvCell, le type d'énumérateur récupéré dans le foncteur sera toujours un EnvCell
  * pour etre au maximum compatible avec du code existant.
  */
 using SelEnvCell = GenericItemSelectionEnumeratorType<EnvCellVectorView, EnvCell>;
