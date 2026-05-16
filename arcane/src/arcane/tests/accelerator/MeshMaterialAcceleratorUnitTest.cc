@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// #define ARCANE_TRACE_ENUMERATOR
+
 #include "arcane/core/IMeshModifier.h"
 
 #include "arcane/utils/ValueChecker.h"
@@ -48,6 +50,33 @@
 #include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"
 
 #include "arcane/accelerator/RunCommandEnumerate.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Materials
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour les énumérateurs sur les EnvCell
+template <>
+class EnumeratorBuilder<EnvCell>
+{
+ public:
+
+  static ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
+  create(ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+  {
+    return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>(container);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -131,11 +160,6 @@ class RunCommandConstituentItemEnumeratorTraitsT<::Arcane::Materials::GenericIte
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#define ENUMERATE_SELENVCELL(EC, ECS) for (decltype((ECS).begin()) EC = (ECS).begin(), __##EC##_end = (ECS).end(); EC != __##EC##_end; ++EC)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1194,7 +1218,6 @@ _checkEnvironmentValues()
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -1259,8 +1282,7 @@ _testSelection()
   ENUMERATE_ENVCELL (ienvcell, env_cells) {
     total += test_var[ienvcell];
   }
-
-  ENUMERATE_SELENVCELL(ienvcell, partial_env_cells)
+  ENUMERATE_CONSTITUENTITEM(EnvCell, ienvcell, partial_env_cells)
   {
     EnvCell x = *ienvcell;
     total += test_var[x];

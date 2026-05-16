@@ -52,6 +52,7 @@ class AllEnvCellVectorView;
 class ComponentItemInternalData;
 class ConstituentItem;
 using ComponentCell = ConstituentItem;
+using ConstituentCell = ConstituentItem;
 class ConstituentItemVectorImpl;
 class ConstituentItemLocalIdList;
 class IMeshBlock;
@@ -119,6 +120,10 @@ class MatCellVector;
 
 template <typename ContainerView_>
 class ConstituentItemIndexedSelectionView;
+template <typename ContainerView_>
+class ConstituentItemIndexedSelectionEnumerator;
+template <typename ConstituenItemType_>
+class EnumeratorBuilder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.h                                         (C) 2000-2025 */
+/* MatItemEnumerator.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -526,9 +526,13 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::EnumeratorTraceWrapper< ::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
+#define A_TRACE_COMPONENT_DIRECT_CLASS(_EnumeratorClassName)                        \
+  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
 #else
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::Materials::_EnumeratorClassName
+#define A_TRACE_COMPONENT_DIRECT_CLASS(_EnumeratorClassName) \
+  _EnumeratorClassName
 #endif
 
 #define A_ENUMERATE_COMPONENTCELL(_EnumeratorClassName,iname,...) \
@@ -539,6 +543,9 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 
 #define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName,iname,component_cell) \
   for( ::Arcane::Materials::_EnumeratorClassName iname((::Arcane::Materials::_EnumeratorClassName)(component_cell)); iname.hasNext(); ++iname )
+
+#define A_ENUMERATEBUILDER_HELPER(ClassName_, ...) \
+  ::Arcane::Materials::EnumeratorBuilder<::Arcane::Materials::ClassName_>::create(__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -671,6 +678,27 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  */
 #define ENUMERATE_GENERIC_CELL(iname,mat_or_env_or_group) \
   for( auto iname = ::Arcane::Materials::CellGenericEnumerator::create(mat_or_env_or_group); iname.hasNext(); ++iname )
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Macro générique pour itérer sur les entités d'un matériau ou d'un milieu.
+ *
+ * \warning Cette macro est expérimentale.
+ *
+ * \param ClassName_ nom de la classe du constituant (ConstituentCell, MatCell ou EnvCell)
+ * \param iname nom de la variable contenant l'itérateur
+ * \param container conteneur sur lequel on souhaite itérer.
+ *
+ * Utiliser cette macro support qu'il existe une méthode dans la
+ * classe Arcane::Materials::EnumeratorBuilder<ClassName_> une méthode
+ * create() qui prenne en argument un objet de type \a container. Le type
+ * de l'énumérateur sera le type de retour de cette méthode.
+ */
+#define ENUMERATE_CONSTITUENTITEM(ClassName_, iname, container)     \
+  for (A_TRACE_COMPONENT_DIRECT_CLASS(decltype(A_ENUMERATEBUILDER_HELPER(ClassName_, container))) \
+       iname(A_ENUMERATEBUILDER_HELPER(ClassName_, container) A_TRACE_ENUMERATOR_WHERE); \
+       iname.hasNext(); ++iname)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
