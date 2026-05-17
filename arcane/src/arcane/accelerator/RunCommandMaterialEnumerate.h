@@ -169,7 +169,9 @@ class ConstituentRunCommandBase2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Conteneur pour une commande sur les AllEnvCell.
+ */
 class AllEnvCellRunCommandContainer
 {
  public:
@@ -312,76 +314,6 @@ class ConstituentAndGlobalCellRunCommandContainer
 
 using EnvAndGlobalCellRunCommandContainer = ConstituentAndGlobalCellRunCommandContainer<Arcane::Materials::EnvItemLocalId, Arcane::Materials::EnvCellVectorView>;
 using MatAndGlobalCellRunCommandContainer = ConstituentAndGlobalCellRunCommandContainer<Arcane::Materials::MatItemLocalId, Arcane::Materials::MatCellVectorView>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour une vue sur un milieu et la maille globale associée
-inline EnvAndGlobalCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arcane::Materials::IMeshEnvironment* env)
-{
-  return EnvAndGlobalCellRunCommandContainer{ env->envView() };
-}
-inline EnvAndGlobalCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arcane::Materials::EnvCellVectorView view)
-{
-  return EnvAndGlobalCellRunCommandContainer{ view };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour une vue sur un matériau et la maille globale associée
-inline MatAndGlobalCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::MatAndGlobalCell, Arcane::Materials::IMeshMaterial* mat)
-{
-  return MatAndGlobalCellRunCommandContainer{ mat->matView() };
-}
-inline MatAndGlobalCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::MatAndGlobalCell, Arcane::Materials::MatCellVectorView mat)
-{
-  return MatAndGlobalCellRunCommandContainer{ mat };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour une vue sur les AllEvnCell
-inline AllEnvCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::AllEnvCell, Arcane::Materials::AllEnvCellVectorView items)
-{
-  return AllEnvCellRunCommandContainer{ items };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour une vue sur un milieu.
-inline EnvCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvCell, Arcane::Materials::IMeshEnvironment* env)
-{
-  return EnvCellRunCommandContainer(env->envView());
-}
-inline EnvCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvCell, Arcane::Materials::EnvCellVectorView view)
-{
-  return EnvCellRunCommandContainer(view);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour une vue sur un matériau
-inline MatCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::MatCell, Arcane::Materials::IMeshMaterial* mat)
-{
-  return MatCellRunCommandContainer(mat->matView());
-}
-inline MatCellRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(Arcane::Materials::MatCell, Arcane::Materials::MatCellVectorView view)
-{
-  return MatCellRunCommandContainer(view);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -597,6 +529,87 @@ makeExtendedConstituentItemEnumeratorLoop(ConstituentItemType x,
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator::Impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Materials
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur un milieu et la maille globale associée
+inline Accelerator::Impl::EnvAndGlobalCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arcane::Materials::IMeshEnvironment* env)
+{
+  return Accelerator::Impl::EnvAndGlobalCellRunCommandContainer{ env->envView() };
+}
+inline Accelerator::Impl::EnvAndGlobalCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arcane::Materials::EnvCellVectorView view)
+{
+  return Accelerator::Impl::EnvAndGlobalCellRunCommandContainer{ view };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur un matériau et la maille globale associée
+inline Accelerator::Impl::MatAndGlobalCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(MatAndGlobalCell, IMeshMaterial* mat)
+{
+  return Accelerator::Impl::MatAndGlobalCellRunCommandContainer{ mat->matView() };
+}
+inline Accelerator::Impl::MatAndGlobalCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(MatAndGlobalCell, MatCellVectorView mat)
+{
+  return Accelerator::Impl::MatAndGlobalCellRunCommandContainer{ mat };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur les AllEvnCell
+inline Accelerator::Impl::AllEnvCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(AllEnvCell, AllEnvCellVectorView items)
+{
+  return Accelerator::Impl::AllEnvCellRunCommandContainer{ items };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur un milieu.
+inline Accelerator::Impl::EnvCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(EnvCell, IMeshEnvironment* env)
+{
+  return Accelerator::Impl::EnvCellRunCommandContainer(env->envView());
+}
+inline Accelerator::Impl::EnvCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(EnvCell, EnvCellVectorView view)
+{
+  return Accelerator::Impl::EnvCellRunCommandContainer(view);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur un matériau
+inline Accelerator::Impl::MatCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(MatCell, IMeshMaterial* mat)
+{
+  return Accelerator::Impl::MatCellRunCommandContainer(mat->matView());
+}
+inline Accelerator::Impl::MatCellRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(MatCell, MatCellVectorView view)
+{
+  return Accelerator::Impl::MatCellRunCommandContainer(view);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
