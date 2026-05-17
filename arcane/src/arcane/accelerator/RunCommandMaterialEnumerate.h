@@ -52,7 +52,7 @@ class ConstituentAndGlobalCellIteratorValue
 
  public:
 
-  //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
+  //! Structure interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
   struct Data
   {
    public:
@@ -128,7 +128,7 @@ using MatAndGlobalCellIteratorValue = ConstituentAndGlobalCellIteratorValue<MatI
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -258,7 +258,7 @@ class ConstituentRunCommandContainer
  public:
 
   explicit ConstituentRunCommandContainer(ContainerCreateViewType view)
-  : impl::ConstituentCommandContainerBase(view)
+  : Impl::ConstituentCommandContainerBase(view)
   {
   }
 
@@ -494,7 +494,7 @@ class GenericConstituentCommand
 {
  public:
 
-  using ContainerType = ContainerType_; //typename ConstituentCommandType::ContainerType;
+  using ContainerType = ContainerType_;
   using ConstituentCommandType = ContainerType::CommandType;
 
  public:
@@ -502,7 +502,8 @@ class GenericConstituentCommand
   explicit GenericConstituentCommand(const ConstituentCommandType& command)
   : m_command(command)
   {}
-  explicit GenericConstituentCommand(const ConstituentCommandType& command, const std::tuple<RemainingArgs...>& remaining_args)
+  explicit GenericConstituentCommand(const ConstituentCommandType& command,
+                                     const std::tuple<RemainingArgs...>& remaining_args)
   : m_command(command)
   , m_remaining_args(remaining_args)
   {}
@@ -538,15 +539,15 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    ARCCORE_KERNEL_CUDA_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
-                              launch_info, func, items, remaining_args...);
+    ARCCORE_KERNEL_CUDA_FUNC((doMatContainerGPULambda<ContainerType, Lambda, RemainingArgs...>),
+                             launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    ARCCORE_KERNEL_HIP_FUNC((doMatContainerGPULambda < ContainerType, Lambda, RemainingArgs... >),
+    ARCCORE_KERNEL_HIP_FUNC((doMatContainerGPULambda<ContainerType, Lambda, RemainingArgs...>),
                             launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((impl::DoMatContainerSYCLLambda < ContainerType, Lambda, RemainingArgs... > {}),
+    ARCCORE_KERNEL_SYCL_FUNC((impl::DoMatContainerSYCLLambda<ContainerType, Lambda, RemainingArgs...>{}),
                              launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
@@ -571,12 +572,12 @@ void operator<<(const GenericConstituentCommand<ConstituentCommandType, Remainin
 {
   if constexpr (sizeof...(RemainingArgs) > 0) {
     std::apply([&](auto... vs) {
-      impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func, vs...);
+      Impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func, vs...);
     },
                c.m_remaining_args);
   }
   else
-    impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func);
+    Impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -595,7 +596,7 @@ makeExtendedConstituentItemEnumeratorLoop(ConstituentItemType x,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -607,11 +608,11 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 template <typename TraitsType, typename... RemainingArgs> auto
-operator<<(RunCommand& command, const impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>& args)
+operator<<(RunCommand& command, const Impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>& args)
 {
-  using ContainerType = typename impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>::ContainerType;
+  using ContainerType = typename Impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>::ContainerType;
   using CommandType = typename ContainerType::CommandType;
-  using GenericCommandType = impl::GenericConstituentCommand<CommandType, RemainingArgs...>;
+  using GenericCommandType = Impl::GenericConstituentCommand<CommandType, RemainingArgs...>;
   return GenericCommandType(CommandType::create(command, args.m_container), args.m_remaining_args);
 }
 
@@ -620,10 +621,10 @@ operator<<(RunCommand& command, const impl::GenericConstituentCommandArgs<Traits
 
 // TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
-operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommandContainer& view)
+operator<<(RunCommand& command, const Impl::MatAndGlobalCellRunCommandContainer& view)
 {
-  using CommandType = impl::MatAndGlobalCellRunCommandContainer::CommandType;
-  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
+  using CommandType = Impl::MatAndGlobalCellRunCommandContainer::CommandType;
+  return Impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -631,10 +632,10 @@ operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommandContainer&
 
 // TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
-operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommandContainer& view)
+operator<<(RunCommand& command, const Impl::EnvAndGlobalCellRunCommandContainer& view)
 {
-  using CommandType = impl::EnvAndGlobalCellRunCommandContainer::CommandType;
-  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
+  using CommandType = Impl::EnvAndGlobalCellRunCommandContainer::CommandType;
+  return Impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -642,10 +643,10 @@ operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommandContainer&
 
 // TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
-operator<<(RunCommand& command, const impl::EnvCellRunCommandContainer& view)
+operator<<(RunCommand& command, const Impl::EnvCellRunCommandContainer& view)
 {
-  using CommandType = impl::EnvCellRunCommandContainer::CommandType;
-  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
+  using CommandType = Impl::EnvCellRunCommandContainer::CommandType;
+  return Impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -653,10 +654,10 @@ operator<<(RunCommand& command, const impl::EnvCellRunCommandContainer& view)
 
 // TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
-operator<<(RunCommand& command, const impl::MatCellRunCommandContainer& view)
+operator<<(RunCommand& command, const Impl::MatCellRunCommandContainer& view)
 {
-  using CommandType = impl::MatCellRunCommandContainer::CommandType;
-  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
+  using CommandType = Impl::MatCellRunCommandContainer::CommandType;
+  return Impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,7 +669,7 @@ operator<<(RunCommand& command, const impl::MatCellRunCommandContainer& view)
 /*---------------------------------------------------------------------------*/
 
 #define A_RUNCOMMAND_MAT_ENUMERATE_BUILDER_HELPER(ConstituentItemNameType, env_or_mat_container, ...) \
-  ::Arcane::Accelerator::impl::makeExtendedConstituentItemEnumeratorLoop(ConstituentItemNameType{}, env_or_mat_container __VA_OPT__(, __VA_ARGS__))
+  ::Arcane::Accelerator::Impl::makeExtendedConstituentItemEnumeratorLoop(ConstituentItemNameType{}, env_or_mat_container __VA_OPT__(, __VA_ARGS__))
 
 /*!
  * \brief Macro pour itérer sur un matériau ou un milieu

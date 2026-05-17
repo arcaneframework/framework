@@ -54,7 +54,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using EnvIndexedSelectionRunCommandContainer = Arcane::Accelerator::impl::ConstituentIndexedSelectionRunCommandContainer<EnvItemLocalId, EnvCellVectorSelectionView>;
+using EnvIndexedSelectionRunCommandContainer = Arcane::Accelerator::Impl::ConstituentIndexedSelectionRunCommandContainer<EnvItemLocalId, EnvCellVectorSelectionView>;
 
 inline EnvIndexedSelectionRunCommandContainer
 arcaneCreateRunCommandMaterialContainer(EnvCell, EnvCellVectorSelectionView view)
