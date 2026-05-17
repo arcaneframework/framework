@@ -19,6 +19,7 @@
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"
 
 #include "arcane/accelerator/KernelLauncher.h"
 #include "arcane/accelerator/RunCommand.h"
@@ -317,6 +318,49 @@ using MatAndGlobalCellRunCommandContainer = ConstituentAndGlobalCellRunCommandCo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Conteneur pour les commande sur une sélection indexée de
+ * ConstituentItem.
+ */
+template <typename ConstituentItemLocalIdType_, typename ContainerCreateViewType_>
+class ConstituentIndexedSelectionRunCommandContainer
+{
+ public:
+
+  using ThatClass = ConstituentIndexedSelectionRunCommandContainer;
+  using IteratorValueType = ConstituentItemLocalIdType_;
+  using CommandType = ConstituentRunCommandBase2<ThatClass>;
+  using ContainerCreateViewType = ContainerCreateViewType_;
+
+ public:
+
+  explicit ConstituentIndexedSelectionRunCommandContainer(ContainerCreateViewType view)
+  : m_view(view)
+  {
+  }
+
+ public:
+
+  //! Accesseur pour le i-ème élément de la liste
+  constexpr ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
+  {
+    return { ComponentItemLocalId(m_view[i]) };
+  }
+
+  ARCCORE_HOST_DEVICE Int32 size() { return m_view.size(); }
+
+ private:
+
+  ContainerCreateViewType m_view;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using EnvIndexedSelectionRunCommandContainer = ConstituentIndexedSelectionRunCommandContainer<Arcane::Materials::EnvItemLocalId, Arcane::Materials::EnvCellVectorSelectionView>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_CUDA_OR_HIP)
 /*
@@ -604,6 +648,15 @@ inline Accelerator::Impl::MatCellRunCommandContainer
 arcaneCreateRunCommandMaterialContainer(MatCell, MatCellVectorView view)
 {
   return Accelerator::Impl::MatCellRunCommandContainer(view);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Accelerator::Impl::EnvIndexedSelectionRunCommandContainer
+arcaneCreateRunCommandMaterialContainer(EnvCell, EnvCellVectorSelectionView view)
+{
+  return Accelerator::Impl::EnvIndexedSelectionRunCommandContainer{ view };
 }
 
 /*---------------------------------------------------------------------------*/

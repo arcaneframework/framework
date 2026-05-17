@@ -54,95 +54,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::Impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Conteneur contenant les informations nécessaires pour une commande
- * sur les ConstituentItem.
- */
-template <typename ConstituentItemLocalIdType_, typename ContainerCreateViewType_>
-class ConstituentIndexedSelectionRunCommandContainer
-{
- public:
-
-  using ThatClass = ConstituentIndexedSelectionRunCommandContainer;
-  using IteratorValueType = ConstituentItemLocalIdType_;
-  using CommandType = ConstituentRunCommandBase2<ThatClass>;
-  using ContainerCreateViewType = ContainerCreateViewType_;
-
- public:
-
-  explicit ConstituentIndexedSelectionRunCommandContainer(ContainerCreateViewType view)
-  : m_view(view)
-  {
-  }
-
- public:
-
-  //! Accesseur pour le i-ème élément de la liste
-  constexpr ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
-  {
-    return { ComponentItemLocalId(m_view[i]) };
-  }
-
-  ARCCORE_HOST_DEVICE Int32 size() { return m_view.size(); }
-
- private:
-
-  ContainerCreateViewType m_view;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour les énumérateurs sur les EnvCell
-template <>
-class EnumeratorBuilder<EnvCell>
-{
- public:
-
-  static ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
-  create(ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
-  {
-    return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>(container);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Materials
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Materials
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-using EnvIndexedSelectionRunCommandContainer = Arcane::Accelerator::Impl::ConstituentIndexedSelectionRunCommandContainer<EnvItemLocalId, EnvCellVectorSelectionView>;
-
-inline EnvIndexedSelectionRunCommandContainer
-arcaneCreateRunCommandMaterialContainer(EnvCell, EnvCellVectorSelectionView view)
-{
-  return EnvIndexedSelectionRunCommandContainer{ view };
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1217,7 +1130,7 @@ _testSelection()
   Int32 nb_env_cell = env_cells.nbItem();
 
   // Créé une sélection avec une entité sur 2
-  UniqueArray<Int32> selection_indices;
+  UniqueArray<Int32> selection_indices(MemoryUtils::getDefaultDataAllocator());
   selection_indices.reserve((nb_env_cell / 2) + 1);
   for (Int32 i = 0; i < nb_env_cell; ++i) {
     if ((i % 2) == 0)
@@ -1268,8 +1181,7 @@ _testSelection()
   ENUMERATE_ENVCELL (ienvcell, env_cells) {
     total += test_var[ienvcell];
   }
-  ENUMERATE_CONSTITUENTITEM(EnvCell, ienvcell, partial_env_cells)
-  {
+  ENUMERATE_CONSTITUENTITEM (EnvCell, ienvcell, partial_env_cells) {
     EnvCell x = *ienvcell;
     total += test_var[x];
   }
