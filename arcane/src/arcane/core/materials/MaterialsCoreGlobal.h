@@ -191,6 +191,16 @@ using EnvCellLocalId = EnvItemLocalId;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Selection sur un 'EvnCellVectorView'
+using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
+//! Selection sur un 'MatCellVectorView'
+using MatCellVectorSelectionView = ConstituentItemIndexedSelectionView<MatCellVectorView>;
+//! Selection sur un 'ComponentCellVectorView'
+using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 static const Int32 LEVEL_MATERIAL = 1;
 static const Int32 LEVEL_ENVIRONMENT = 2;
 static const Int32 LEVEL_ALLENVIRONMENT = 0;

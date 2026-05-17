@@ -163,7 +163,7 @@ class ConstituentItemIndexedSelectionView
   }
 
   //! Constructeur à partir d'une vue de ConstituentCell, de MatCell ou EnvCell
-  explicit ConstituentItemIndexedSelectionView(IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
+  explicit ConstituentItemIndexedSelectionView([[maybe_unused]] IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
   requires(IsSpanContainer())
   : m_container_view(ecv)
   , m_selection_view(nullptr, TraitsType::size(m_container_view))
@@ -261,33 +261,18 @@ class ConstituentItemIndexedSelectionEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// types raccourcis pour des vues sur des selections de 'constituants' Arcane
-using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
-using MatCellVectorSelectionView = ConstituentItemIndexedSelectionView<MatCellVectorView>;
-using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * permet de selectionner un "RunCommandTraits" qui sait parcourir une selection d'éléments Arcane.
- * Cela est utilisé pour RUNCOMMAND_MAT_ENUMERATE.
- */
-template <typename ContainerViewT, typename ItemTypeT>
-struct GenericItemSelectionEnumeratorType
+//! Spécialisation pour les énumérateurs sur les EnvCell
+template <>
+class EnumeratorBuilder<EnvCell>
 {
-  using ContainerView = ContainerViewT;
-  using IndexArrayView = typename ConstituentItemIndexedSelectionView<ContainerViewT>::IndexArrayView;
-  using ItemType = ItemTypeT;
-};
+ public:
 
-/*
- * Raccourcis vers des types d'énumérateurs, utilisés dans les macros RUNCOMMAND_XXX_ENUMERATE comme premier argument
- * si on utilise SelEnvCell, le type d'énumérateur récupéré dans le foncteur sera toujours un EnvCell
- * pour etre au maximum compatible avec du code existant.
- */
-using SelEnvCell = GenericItemSelectionEnumeratorType<EnvCellVectorView, EnvCell>;
-using SelMatCell = GenericItemSelectionEnumeratorType<MatCellVectorView, MatCell>;
-using SelCompCell = GenericItemSelectionEnumeratorType<ComponentCellVectorView, ComponentCell>;
+  static ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
+  create(ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+  {
+    return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>(container);
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
