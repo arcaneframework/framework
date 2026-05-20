@@ -4,7 +4,6 @@ if (ALIEN_GENERATE_DOCUMENTATION)
   # Si le package Doxygen est introuvable, inutile de continuer.
   if (Doxygen_FOUND)
     block()
-      # Emplacement du dossier "doc" copié précédemment.
       # Variable utile pour les fichiers du sample `CommonDocConfig.cmake`,
       # `UserDocConfig.cmake` et `DevDocConfig.cmake`.
       set(DOC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -18,9 +17,12 @@ if (ALIEN_GENERATE_DOCUMENTATION)
         adoc_generate_doc()
       endfunction()
 
-      # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
+      # On demande la génération des deux cibles documentations (`alienuserdoc` et `aliendevdoc`).
       doc_generation("user")
       doc_generation("dev")
+
+      # On ajoute une cible pour générer les deux documentations.
+      #      add_custom_target(aliendoc DEPENDS alienuserdoc aliendevdoc)
     endblock()
   endif ()
 endif (ALIEN_GENERATE_DOCUMENTATION)
