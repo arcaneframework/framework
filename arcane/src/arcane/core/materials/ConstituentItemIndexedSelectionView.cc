@@ -13,6 +13,10 @@
 
 #include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"
 
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,10 +36,14 @@ ConstituentItemIndexedSelectionViewBase(IndexArrayView indices)
 /*---------------------------------------------------------------------------*/
 
 ConstituentItemIndexedSelectionViewBase::
-ConstituentItemIndexedSelectionViewBase(Int32 selection_size)
-: m_selection_view(nullptr, selection_size)
-, m_is_full_selection(true)
+ConstituentItemIndexedSelectionViewBase(IMeshComponent* constituent, Int32 selection_size)
 {
+  SmallSpan<const Int32> v = constituent->materialMng()->_internalApi()->identitySelectionView();
+  // Vérifie que la vue retournée a une taille au moins égale à la sélection.
+  if (v.size() < selection_size)
+    ARCANE_FATAL("Invalid size for identity selection (selection_size={0} identity={1})",
+                 selection_size, v.size());
+  m_selection_view = SmallSpan<const Int32>{ v.data(), selection_size };
 }
 
 /*---------------------------------------------------------------------------*/

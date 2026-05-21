@@ -41,7 +41,7 @@ struct ConstituentItemIndexedSelectionViewTraitsBase
   using ThatContainer = ConstituentContainerType_;
   using ValueType = ThatContainer::ValueType;
   static constexpr bool IsSpan() { return false; }
-  static ARCCORE_HOST_DEVICE Int32 size(ThatContainer v)
+  static Int32 size(ThatContainer v)
   {
     return v.nbItem();
   }
@@ -134,13 +134,10 @@ class ARCANE_CORE_EXPORT ConstituentItemIndexedSelectionViewBase
 
  protected:
 
-  explicit ConstituentItemIndexedSelectionViewBase(IndexArrayView indices);
-  explicit ConstituentItemIndexedSelectionViewBase(Int32 selection_size);
+  explicit ConstituentItemIndexedSelectionViewBase(SmallSpan<const Int32> indices);
+  explicit ConstituentItemIndexedSelectionViewBase(IMeshComponent* constituent, Int32 selection_size);
 
  public:
-
-  //! indique si la selection est triviale ou pleine, c'est à dire que l'on a pas de liste d'indices et doit considerer toutes les EnvCell d'origine
-  constexpr bool isFullSelection() const { return m_is_full_selection; }
 
   //! nombre de EnvCell sélectionnées
   ARCCORE_HOST_DEVICE Int32 size() const { return m_selection_view.size(); }
@@ -153,10 +150,7 @@ class ARCANE_CORE_EXPORT ConstituentItemIndexedSelectionViewBase
    * Si ce champ est omis à la construction, le défaut sera une sélection 'pleine'
    * (i.e. tous les éléments d'origine, dans le même ordre)
    */
-  IndexArrayView m_selection_view = {};
-
-  //! Indique si la sélection est pleine.
-  const bool m_is_full_selection = false;
+  SmallSpan<const Int32> m_selection_view = {};
 };
 
 /*---------------------------------------------------------------------------*/
@@ -196,15 +190,15 @@ class ConstituentItemIndexedSelectionView
   //! Construit une sélection contenant tous les éléments de \view
   explicit ConstituentItemIndexedSelectionView(ItemVecView view)
   requires(!IsSpanContainer())
-  : ConstituentItemIndexedSelectionViewBase(TraitsType::size(view))
+  : ConstituentItemIndexedSelectionViewBase(view.component(), TraitsType::size(view))
   , m_container_view(view)
   {
   }
 
   //! Constructeur à partir d'une vue de ConstituentCell, de MatCell ou EnvCell
-  explicit ConstituentItemIndexedSelectionView([[maybe_unused]] IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
+  explicit ConstituentItemIndexedSelectionView(IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
   requires(IsSpanContainer())
-  : ConstituentItemIndexedSelectionViewBase(TraitsType::size(ecv))
+  : ConstituentItemIndexedSelectionViewBase(constituent, TraitsType::size(ecv))
   , m_container_view(ecv)
   {
   }
@@ -215,20 +209,21 @@ class ConstituentItemIndexedSelectionView
   // vue sur le vecteur de EnvCell d'origine (toutes les mailles du milieu)
   ItemVecView sourceView() const { return m_container_view; }
 
-  // le contenu de 'selectionView()' ne doit pas être utilisé quand la selection est dite 'pleine' (aka triviale) et que tous les EnvCell sont selectionnés
+  // Liste des indices de la sélection.
   IndexArrayView selectionView() const
   {
-    return isFullSelection() ? IndexArrayView{} : m_selection_view.constSmallView();
+    return m_selection_view.constSmallView();
   }
 
   ARCCORE_HOST_DEVICE ValueType operator[](Int32 i) const
   {
     return item(i);
   }
+
   ARCCORE_HOST_DEVICE ValueType item(Int32 i) const
   {
     ARCANE_CHECK_AT(i, size());
-    return TraitsType::item(m_container_view, m_is_full_selection ? i : m_selection_view[i]);
+    return TraitsType::item(m_container_view, m_selection_view[i]);
   }
 
  private:
