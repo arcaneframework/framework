@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.cc                                          (C) 2000-2025 */
+/* MeshMaterialMng.cc                                          (C) 2000-2026 */
 /*                                                                           */
 /* Gestionnaire des matériaux et milieux d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
@@ -82,16 +82,16 @@ arcaneCreateMeshMaterialVariableFactoryMng(IMeshMaterialMng* mm);
 
 namespace
 {
-IMeshMaterialMng*
-arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
-{
-  MeshMaterialMng* mmm = new MeshMaterialMng(mesh_handle,name);
-  //std::cout << "CREATE MESH_MATERIAL_MNG mesh_name=" << mesh_handle.meshName()
-  //          << " ref=" << mesh_handle.reference() << " this=" << mmm << "\n";
-  mmm->build();
-  return mmm;
-}
-}
+  IMeshMaterialMng*
+  arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle, const String& name)
+  {
+    MeshMaterialMng* mmm = new MeshMaterialMng(mesh_handle, name);
+    //std::cout << "CREATE MESH_MATERIAL_MNG mesh_name=" << mesh_handle.meshName()
+    //          << " ref=" << mesh_handle.reference() << " this=" << mmm << "\n";
+    mmm->build();
+    return mmm;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ initializeAsyncPool(Int32 nb_queue)
   // pour les opérations indépendantes. Cela permettra d'en exécuter plusieurs
   // à la fois.
   bool is_accelerator = isAcceleratorPolicy(m_runner.executionPolicy());
-  m_async_queue_pool.initialize(m_runner,nb_queue);
+  m_async_queue_pool.initialize(m_runner, nb_queue);
   if (is_accelerator)
     m_async_queue_pool.setAsync(true);
 }
@@ -144,19 +144,20 @@ runQueue(Accelerator::eExecutionPolicy policy) const
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialMng::
-MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
+MeshMaterialMng(const MeshHandle& mesh_handle, const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
 , m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
+, m_indexed_selection_identity(MemoryUtils::getDefaultDataAllocator())
 {
   m_all_env_data = std::make_unique<AllEnvData>(this);
   m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
   m_observer_pool = std::make_unique<ObserverPool>();
-  m_observer_pool->addObserver(this,&MeshMaterialMng::_onMeshDestroyed,mesh_handle.onDestroyObservable());
+  m_observer_pool->addObserver(this, &MeshMaterialMng::_onMeshDestroyed, mesh_handle.onDestroyObservable());
 
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
@@ -181,11 +182,11 @@ MeshMaterialMng::
   m_all_env_data.reset();
   m_properties.reset();
 
-  for( MeshMaterial* m : m_true_materials )
+  for (MeshMaterial* m : m_true_materials)
     delete m;
   m_true_materials.clear();
 
-  for( MeshEnvironment* e : m_true_environments )
+  for (MeshEnvironment* e : m_true_environments)
     delete e;
   m_true_environments.clear();
 
@@ -220,7 +221,7 @@ build()
   // Enregistre les fabriques des variables
   {
     auto* x = MeshMaterialVariableFactoryRegisterer::firstRegisterer();
-    while (x){
+    while (x) {
       m_variable_factory_mng->registerFactory(x->createFactory());
       x = x->nextRegisterer();
     }
@@ -229,8 +230,8 @@ build()
   // Indique si on utilise l'API accélérateur pour le calcul des entités
   // de ConstituentItemVectorImpl
   {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
-      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
+      m_is_use_accelerator_for_constituent_item_vector = (v.value() != 0);
     }
     // N'active pas l'utilisation des RunQueue pour le calcul
     // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
@@ -245,12 +246,12 @@ build()
   {
     IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
     Runner runner;
-    if (acc_mng){
+    if (acc_mng) {
       Runner* default_runner = acc_mng->defaultRunner();
       // Indique si on active la file accélérateur
       bool use_accelerator_runner = true;
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_QUEUE", true))
-        use_accelerator_runner = (v.value()!=0);
+        use_accelerator_runner = (v.value() != 0);
       if (use_accelerator_runner && default_runner)
         runner = *default_runner;
     }
@@ -284,15 +285,15 @@ build()
     int opt_flag_value = 0;
     String env_name = "ARCANE_MATERIAL_MODIFICATION_FLAGS";
     String opt_flag_str = platform::getEnvironmentVariable(env_name);
-    if (!opt_flag_str.null()){
-      if (builtInGetValue(opt_flag_value,opt_flag_str)){
+    if (!opt_flag_str.null()) {
+      if (builtInGetValue(opt_flag_value, opt_flag_str)) {
         pwarning() << "Invalid value '" << opt_flag_str
                    << " 'for environment variable '" << env_name
                    << "'";
         opt_flag_value = default_flags;
       }
     }
-    else{
+    else {
       opt_flag_value = default_flags;
     }
     m_modification_flags = opt_flag_value;
@@ -304,8 +305,8 @@ build()
     String env_value = platform::getEnvironmentVariable(env_name);
     info() << "ENV_VALUE=" << env_value;
     Integer version = m_synchronize_variable_version;
-    if (!env_value.null()){
-      if (builtInGetValue(version,env_value)){
+    if (!env_value.null()) {
+      if (builtInGetValue(version, env_value)) {
         pwarning() << "Invalid value '" << env_value
                    << " 'for environment variable '" << env_name
                    << "'";
@@ -321,7 +322,7 @@ build()
   {
     String env_name = "ARCANE_MATERIAL_DATA_COMPRESSOR_NAME";
     String env_value = platform::getEnvironmentVariable(env_name);
-    if (!env_value.null()){
+    if (!env_value.null()) {
       info() << "Use service '" << env_value << "' for material data compression";
       m_data_compressor_service_name = env_value;
     }
@@ -329,8 +330,8 @@ build()
 
   // Choix du ratio de capacité additionelle
   {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO", true)){
-      if (v>=0.0){
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO", true)) {
+      if (v >= 0.0) {
         m_additional_capacity_ratio = v.value();
         info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
       }
@@ -343,9 +344,9 @@ build()
   // TODO: rendre ce code thread-safe en cas d'utilisation de IParallelMng via les threads
   // et ne l'appeler qu'une fois.
   IItemEnumeratorTracer* item_tracer = IItemEnumeratorTracer::singleton();
-  if (item_tracer){
+  if (item_tracer) {
     info() << "Adding material enumerator tracing";
-    EnumeratorTracer::_setSingleton(new EnumeratorTracer(traceMng(),item_tracer->perfCounterRef()));
+    EnumeratorTracer::_setSingleton(new EnumeratorTracer(traceMng(), item_tracer->perfCounterRef()));
   }
 }
 
@@ -368,16 +369,16 @@ _addVariableIndexer(MeshMaterialVariableIndexer* var_idx)
  * infos \a infos.
  */
 MeshMaterial* MeshMaterialMng::
-_createMaterial(MeshEnvironment* env,MeshMaterialInfo* infos,const String& name)
+_createMaterial(MeshEnvironment* env, MeshMaterialInfo* infos, const String& name)
 {
   _checkEndCreate();
-  if (infos->materialMng()!=this)
+  if (infos->materialMng() != this)
     ARCANE_FATAL("Invalid materialMng() for material info");
-  if (env->materialMng()!=this)
+  if (env->materialMng() != this)
     ARCANE_FATAL("Invalid materialMng() for environment");
   Integer var_index = m_variables_indexer.size();
   Int16 mat_id = CheckedConvert::toInt16(m_materials.size());
-  MeshMaterial* mat = new MeshMaterial(infos,env,name,mat_id);
+  MeshMaterial* mat = new MeshMaterial(infos, env, name, mat_id);
   info() << "Create material name=" << name << "mat_id=" << mat_id << " var_index=" << var_index;
   mat->build();
   m_materials.add(mat);
@@ -398,9 +399,9 @@ registerMaterialInfo(const String& name)
   // Vérifie que le matériau n'est pas déjà enregistré.
   MeshMaterialInfo* old_mmi = _findMaterialInfo(name);
   if (old_mmi)
-    ARCANE_FATAL("Un matériau de nom '{0}' est déjà enregistré",name);
+    ARCANE_FATAL("Un matériau de nom '{0}' est déjà enregistré", name);
 
-  MeshMaterialInfo* mmi = new MeshMaterialInfo(this,name);
+  MeshMaterialInfo* mmi = new MeshMaterialInfo(this, name);
   m_materials_info.add(mmi);
   return mmi;
 }
@@ -423,11 +424,11 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
   const String& env_name = infos.name();
   MeshEnvironment* old_me = _findEnvironment(env_name);
   if (old_me)
-    ARCANE_FATAL("Un milieu de nom '{0}' est déjà enregistré",env_name);
+    ARCANE_FATAL("Un milieu de nom '{0}' est déjà enregistré", env_name);
 
   info() << "Creating environment name=" << env_name << " index=" << env_index;
   // Créé le milieu
-  MeshEnvironment* me = new MeshEnvironment(this,env_name,env_index);
+  MeshEnvironment* me = new MeshEnvironment(this, env_name, env_index);
   me->build();
   m_true_environments.add(me);
   m_environments.add(me);
@@ -436,15 +437,15 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
   // Créé et ajoute les matériaux
   Integer nb_mat = infos.materials().size();
   ConstArrayView<MeshEnvironmentBuildInfo::MatInfo> mat_build_infos = infos.materials();
-  for( Integer i=0; i<nb_mat; ++i ){
+  for (Integer i = 0; i < nb_mat; ++i) {
     const MeshEnvironmentBuildInfo::MatInfo& buildinfo = mat_build_infos[i];
     const String& mat_name = buildinfo.m_name;
     String new_mat_name = env_name + "_" + mat_name;
     MeshMaterialInfo* mat_info = _findMaterialInfo(mat_name);
-    if (!mat_info){
-      ARCANE_FATAL("Aucun matériau de nom '{0}' n'est défini",mat_name);
+    if (!mat_info) {
+      ARCANE_FATAL("Aucun matériau de nom '{0}' n'est défini", mat_name);
     }
-    MeshMaterial* mm = _createMaterial(me,mat_info,new_mat_name);
+    MeshMaterial* mm = _createMaterial(me, mat_info, new_mat_name);
     me->addMaterial(mm);
     mat_info->_addEnvironment(env_name);
   }
@@ -453,11 +454,11 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
   // de son unique matériau.
   {
     MeshMaterialVariableIndexer* var_idx = nullptr;
-    if (nb_mat==1){
+    if (nb_mat == 1) {
       var_idx = me->materials()[0]->_internalApi()->variableIndexer();
     }
-    else{
-      var_idx = new MeshMaterialVariableIndexer(traceMng(),me->name());
+    else {
+      var_idx = new MeshMaterialVariableIndexer(traceMng(), me->name());
       _addVariableIndexer(var_idx);
       m_variables_indexer_to_destroy.add(var_idx);
     }
@@ -479,16 +480,16 @@ createBlock(const MeshBlockBuildInfo& infos)
   const String& name = infos.name();
   const MeshBlock* old_mb = _findBlock(name);
   if (old_mb)
-    ARCANE_FATAL("Un bloc de nom '{0}' est déjà enregistré",name);
+    ARCANE_FATAL("Un bloc de nom '{0}' est déjà enregistré", name);
 
   info() << "Creating block name=" << name << " index=" << block_index
          << " nb_env=" << infos.environments().size();
   Integer nb_env = infos.environments().size();
-  for( Integer i=0; i<nb_env; ++i )
+  for (Integer i = 0; i < nb_env; ++i)
     info() << " Adding environment name=" << infos.environments()[i]->name() << " to block";
 
   // Créé le bloc
-  MeshBlock* mb = new MeshBlock(this,block_index,infos);
+  MeshBlock* mb = new MeshBlock(this, block_index, infos);
   mb->build();
   m_true_blocks.add(mb);
   m_blocks.add(mb);
@@ -500,7 +501,7 @@ createBlock(const MeshBlockBuildInfo& infos)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env)
+addEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env)
 {
   MeshBlock* mb = ARCANE_CHECK_POINTER(dynamic_cast<MeshBlock*>(block));
   mb->addEnvironment(env);
@@ -510,7 +511,7 @@ addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-removeEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env)
+removeEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env)
 {
   MeshBlock* mb = ARCANE_CHECK_POINTER(dynamic_cast<MeshBlock*>(block));
   mb->removeEnvironment(env);
@@ -535,8 +536,8 @@ endCreate(bool is_continue)
   m_all_env_data->endCreate(is_continue);
 
   auto synchronizer = mesh()->cellFamily()->allItemsSynchronizer();
-  m_all_cells_mat_env_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
-  m_all_cells_env_only_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::Environment);
+  m_all_cells_mat_env_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this, synchronizer, MatVarSpace::MaterialAndEnvironment);
+  m_all_cells_env_only_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this, synchronizer, MatVarSpace::Environment);
 
   // Détermine la liste de tous les composants.
   {
@@ -548,7 +549,7 @@ endCreate(bool is_continue)
 
   // Il faut construire et initialiser les variables qui ont été
   // créées avant cette allocation.
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* mv = i.second;
     info(4) << "BUILD FROM MANAGER name=" << mv->name() << " this=" << this;
     mv->buildFromManager(is_continue);
@@ -563,7 +564,7 @@ endCreate(bool is_continue)
   // mais les infos matériaux associées ne sont pas
   // forcément encore créés.
   // (Il faudra regarder une si cela est dû au mode compatible ou pas).
-  for( IMeshEnvironment* env : m_environments ){
+  for (IMeshEnvironment* env : m_environments) {
     env->checkValid();
   }
 
@@ -597,7 +598,7 @@ setAllocateScalarEnvironmentVariableAsMaterial(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void  MeshMaterialMng::
+void MeshMaterialMng::
 setDataCompressorServiceName(const String& name)
 {
   m_data_compressor_service_name = name;
@@ -618,8 +619,8 @@ _modifier()
 MeshMaterialInfo* MeshMaterialMng::
 _findMaterialInfo(const String& name)
 {
-  for( MeshMaterialInfo* mmi : m_materials_info )
-    if (mmi->name()==name)
+  for (MeshMaterialInfo* mmi : m_materials_info)
+    if (mmi->name() == name)
       return mmi;
   return nullptr;
 }
@@ -628,13 +629,13 @@ _findMaterialInfo(const String& name)
 /*---------------------------------------------------------------------------*/
 
 IMeshEnvironment* MeshMaterialMng::
-findEnvironment(const String& name,bool throw_exception)
+findEnvironment(const String& name, bool throw_exception)
 {
   IMeshEnvironment* env = _findEnvironment(name);
   if (env)
     return env;
   if (throw_exception)
-    ARCANE_FATAL("No environment named '{0}'",name);
+    ARCANE_FATAL("No environment named '{0}'", name);
   return nullptr;
 }
 
@@ -644,8 +645,8 @@ findEnvironment(const String& name,bool throw_exception)
 MeshEnvironment* MeshMaterialMng::
 _findEnvironment(const String& name)
 {
-  for( MeshEnvironment* env : m_true_environments )
-    if (env->name()==name)
+  for (MeshEnvironment* env : m_true_environments)
+    if (env->name() == name)
       return env;
   return nullptr;
 }
@@ -654,13 +655,13 @@ _findEnvironment(const String& name)
 /*---------------------------------------------------------------------------*/
 
 IMeshBlock* MeshMaterialMng::
-findBlock(const String& name,bool throw_exception)
+findBlock(const String& name, bool throw_exception)
 {
   IMeshBlock* block = _findBlock(name);
   if (block)
     return block;
   if (throw_exception)
-    ARCANE_FATAL("No block named '{0}'",name);
+    ARCANE_FATAL("No block named '{0}'", name);
   return nullptr;
 }
 
@@ -670,8 +671,8 @@ findBlock(const String& name,bool throw_exception)
 MeshBlock* MeshMaterialMng::
 _findBlock(const String& name)
 {
-  for( MeshBlock* b : m_true_blocks )
-    if (b->name()==name)
+  for (MeshBlock* b : m_true_blocks)
+    if (b->name() == name)
       return b;
   return nullptr;
 }
@@ -709,7 +710,7 @@ _endUpdate()
 void MeshMaterialMng::
 syncVariablesReferences(bool check_resize)
 {
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* mv = i.second;
     info(4) << "SYNC REFERENCES FROM MANAGER name=" << mv->name();
     mv->_internalApi()->syncReferences(check_resize);
@@ -724,7 +725,7 @@ visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor)
 {
   if (!functor)
     return;
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* mv = i.second;
     functor->executeFunctor(mv);
   }
@@ -739,54 +740,54 @@ checkValid()
   const IItemFamily* cell_family = mesh()->cellFamily();
   ItemGroup all_cells = cell_family->allItems();
   ConstArrayView<Int16> nb_env_per_cell = m_all_env_data->componentConnectivityList()->cellsNbEnvironment();
-  ENUMERATE_ALLENVCELL(iallenvcell,view(all_cells.view().localIds())){
+  ENUMERATE_ALLENVCELL (iallenvcell, view(all_cells.view().localIds())) {
     AllEnvCell all_env_cell = *iallenvcell;
     Integer cell_nb_env = all_env_cell.nbEnvironment();
     Cell cell = all_env_cell.globalCell();
     Int64 cell_uid = cell.uniqueId();
-    if (all_env_cell.level()!=LEVEL_ALLENVIRONMENT)
+    if (all_env_cell.level() != LEVEL_ALLENVIRONMENT)
       ARCANE_FATAL("Bad level for all_env_item");
 
-    if (all_env_cell.globalCell()!=cell)
+    if (all_env_cell.globalCell() != cell)
       ARCANE_FATAL("Bad corresponding globalCell() in all_env_item");
     if (cell_nb_env != nb_env_per_cell[cell.localId()])
       ARCANE_FATAL("Bad value for nb_env direct='{0}' var='{1}'",
                    cell_nb_env, nb_env_per_cell[cell.localId()]);
-    for( Integer z=0; z<cell_nb_env; ++z ){
+    for (Integer z = 0; z < cell_nb_env; ++z) {
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
       matimpl::ConstituentItemBase eii = ec.constituentItemBase();
-      if (all_env_cell.constituentItemBase()!=eii._superItemBase())
-        ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
-      if (eii.globalItemBase()!=cell)
+      if (all_env_cell.constituentItemBase() != eii._superItemBase())
+        ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}", cell_uid);
+      if (eii.globalItemBase() != cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
-      if (eii.level()!=LEVEL_ENVIRONMENT)
-        ARCANE_FATAL("Bad level '{0}' for in env_item",eii.level());
+      if (eii.level() != LEVEL_ENVIRONMENT)
+        ARCANE_FATAL("Bad level '{0}' for in env_item", eii.level());
       // Si la maille n'est pas pure, la variable milieu ne peut être équivalente à
       // la variable globale.
-      if (cell_nb_env>1 && ec._varIndex().arrayIndex()==0)
-        ARCANE_FATAL("Global index for a partial cell env_item={0}",ec);
+      if (cell_nb_env > 1 && ec._varIndex().arrayIndex() == 0)
+        ARCANE_FATAL("Global index for a partial cell env_item={0}", ec);
 
-      for( Integer k=0; k<cell_nb_mat; ++k ){
+      for (Integer k = 0; k < cell_nb_mat; ++k) {
         MatCell mc = ec.cell(k);
         matimpl::ConstituentItemBase mci = mc.constituentItemBase();
-        if (eii!=mci._superItemBase())
-          ARCANE_FATAL("Bad corresponding env_item in mat_item k={0} mc={1}",k,mc);
-        if (mci.globalItemBase()!=cell)
+        if (eii != mci._superItemBase())
+          ARCANE_FATAL("Bad corresponding env_item in mat_item k={0} mc={1}", k, mc);
+        if (mci.globalItemBase() != cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
-        if (mci.level()!=LEVEL_MATERIAL)
-          ARCANE_FATAL("Bad level '{0}' for in mat_item",mci.level());
+        if (mci.level() != LEVEL_MATERIAL)
+          ARCANE_FATAL("Bad level '{0}' for in mat_item", mci.level());
         // Si la maille n'est pas pure, la variable matériau ne peut être équivalente à
         // la variable globale.
-        if ((cell_nb_env>1 || cell_nb_mat>1) && mc._varIndex().arrayIndex()==0){
+        if ((cell_nb_env > 1 || cell_nb_mat > 1) && mc._varIndex().arrayIndex() == 0) {
           ARCANE_FATAL("Global index for a partial cell matitem={0} name={1} nb_mat={2} nb_env={3}",
-                       mc,mc.material()->name(),cell_nb_mat,cell_nb_env);
+                       mc, mc.material()->name(), cell_nb_mat, cell_nb_env);
         }
       }
     }
   }
 
-  for( IMeshEnvironment* env : m_environments ){
+  for (IMeshEnvironment* env : m_environments) {
     env->checkValid();
   }
 }
@@ -804,8 +805,8 @@ findVariable(const String& name)
   // Recherche la variable globale de nom \a name
   // et si on la trouve, prend son nom complet pour
   // la variable matériau.
-  const IVariable* global_var = m_variable_mng->findMeshVariable(mesh(),name);
-  if (global_var){
+  const IVariable* global_var = m_variable_mng->findMeshVariable(mesh(), name);
+  if (global_var) {
     v = _findVariableFullyQualified(global_var->fullName());
     if (v)
       return v;
@@ -821,7 +822,7 @@ IMeshMaterialVariable* MeshMaterialMng::
 _findVariableFullyQualified(const String& name)
 {
   auto i = m_full_name_variable_map.find(name);
-  if (i!=m_full_name_variable_map.end())
+  if (i != m_full_name_variable_map.end())
     return i->second;
   return nullptr;
 }
@@ -833,7 +834,7 @@ IMeshMaterialVariable* MeshMaterialMng::
 checkVariable(IVariable* global_var)
 {
   auto i = m_var_to_mat_var_map.find(global_var);
-  if (i!=m_var_to_mat_var_map.end())
+  if (i != m_var_to_mat_var_map.end())
     return i->second;
   return nullptr;
 }
@@ -848,7 +849,7 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 
   // Utilise la map sur les noms des variables pour garantir un même
   // ordre de parcours quels que soient les sous-domaines.
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* ivar = i.second;
     if (ivar->globalVariable()->isUsed())
       variables.add(ivar);
@@ -864,8 +865,8 @@ _addVariable(IMeshMaterialVariable* var)
   //TODO: le verrou m_variable_lock doit etre actif.
   IVariable* gvar = var->globalVariable();
   info(4) << "MAT_ADD_VAR global_var=" << gvar << " var=" << var << " this=" << this;
-  m_var_to_mat_var_map.insert(std::make_pair(gvar,var));
-  m_full_name_variable_map.insert(std::make_pair(gvar->fullName(),var));
+  m_var_to_mat_var_map.insert(std::make_pair(gvar, var));
+  m_full_name_variable_map.insert(std::make_pair(gvar->fullName(), var));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -896,12 +897,12 @@ dumpInfos(std::ostream& o)
   o << "-- Nb Variables partielles: " << nb_var_idx << '\n';
 
   o << "-- Liste des matériaux\n";
-  for( IMeshMaterial* mat : m_materials ){
+  for (IMeshMaterial* mat : m_materials) {
     o << "--   Materiau name=" << mat->name() << '\n';
   }
 
   o << "-- Liste des milieux\n";
-  for( IMeshEnvironment* me : m_environments ){
+  for (IMeshEnvironment* me : m_environments) {
     ConstArrayView<IMeshMaterial*> env_materials = me->materials();
     const MeshMaterialVariableIndexer* env_var_idx = me->_internalApi()->variableIndexer();
     Integer nb_env_mat = env_materials.size();
@@ -911,7 +912,7 @@ dumpInfos(std::ostream& o)
       << " var_idx = " << env_var_idx->index()
       << " ids=" << env_var_idx->matvarIndexes()
       << '\n';
-    for( IMeshMaterial* mm : env_materials ){
+    for (IMeshMaterial* mm : env_materials) {
       const MeshMaterialVariableIndexer* idx = mm->_internalApi()->variableIndexer();
       o << "--     Materiau\n";
       o << "--       name    = " << mm->name() << "\n";
@@ -937,28 +938,28 @@ dumpInfos2(std::ostream& o)
     << " nb_var_idx=" << nb_var_idx
     << "\n";
   Integer nb_cell = mesh()->allCells().size();
-  if (nb_cell!=0){
+  if (nb_cell != 0) {
     Integer nb_pure_env = 0;
-    ENUMERATE_CELL(icell,mesh()->allCells()){
+    ENUMERATE_CELL (icell, mesh()->allCells()) {
       if (nb_env_per_cell[icell.localId()] <= 1)
         ++nb_pure_env;
     }
     o << " nb_cell=" << nb_cell << " nb_pure_env=" << nb_pure_env
-      << " nb_partial=" << (nb_cell-nb_pure_env)
-      << " percent=" << (100*nb_pure_env)/nb_cell
+      << " nb_partial=" << (nb_cell - nb_pure_env)
+      << " percent=" << (100 * nb_pure_env) / nb_cell
       << "\n";
   }
 
   o << "-- Liste des milieux\n";
-  for( MeshEnvironment* me : m_true_environments ){
+  for (MeshEnvironment* me : m_true_environments) {
     ConstArrayView<IMeshMaterial*> env_materials = me->materials();
     const MeshMaterialVariableIndexer* env_var_idx = me->variableIndexer();
     const Int16 env_id = me->componentId();
     Integer nb_env_mat = env_materials.size();
     Integer nb_env_cell = me->cells().size();
     Integer nb_pure_mat = 0;
-    if (nb_env_mat>1){
-      ENUMERATE_CELL(icell,me->cells()){
+    if (nb_env_mat > 1) {
+      ENUMERATE_CELL (icell, me->cells()) {
         if (constituent_list.cellNbMaterial(icell, env_id) <= 1)
           ++nb_pure_mat;
       }
@@ -970,10 +971,10 @@ dumpInfos2(std::ostream& o)
       << " var_idx=" << env_var_idx->index()
       << " nb_cell=" << nb_env_cell
       << " nb_pure_mat=" << nb_pure_mat;
-    if (nb_env_cell!=0)
-      o << " percent=" << (nb_pure_mat*100)/nb_env_cell;
+    if (nb_env_cell != 0)
+      o << " percent=" << (nb_pure_mat * 100) / nb_env_cell;
     o << '\n';
-    for( Integer j=0; j<nb_env_mat; ++j ){
+    for (Integer j = 0; j < nb_env_mat; ++j) {
       IMeshMaterial* mm = env_materials[j];
       const MeshMaterialVariableIndexer* idx = mm->_internalApi()->variableIndexer();
       o << "--     Mat name=" << mm->name()
@@ -1006,16 +1007,16 @@ checkMaterialsInCells(Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-dumpCellInfos(Cell cell,std::ostream& o)
+dumpCellInfos(Cell cell, std::ostream& o)
 {
   CellToAllEnvCellConverter all_env_cell_converter(this);
   AllEnvCell all_env_cell = all_env_cell_converter[cell];
   Cell global_cell = all_env_cell.globalCell();
   o << "Cell uid=" << ItemPrinter(global_cell) << '\n';
-  ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+  ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
     o << "ENV name=" << (*ienvcell).environment()->name()
       << " component_idx=" << ComponentItemLocalId(ienvcell) << '\n';
-    ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+    ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
       o << "MAT name=" << (*imatcell).material()->name()
         << " component_idx=" << ComponentItemLocalId(imatcell) << '\n';
     }
@@ -1057,6 +1058,7 @@ class MeshMaterialMngFactory
 : public IMeshMaterialMng::IFactory
 {
  public:
+
   MeshMaterialMngFactory()
   {
     IMeshMaterialMng::_internalSetFactory(this);
@@ -1065,9 +1067,13 @@ class MeshMaterialMngFactory
   {
     IMeshMaterialMng::_internalSetFactory(nullptr);
   }
+
  public:
-  Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) override;
+
+  Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle, bool is_create) override;
+
  public:
+
   static MeshMaterialMngFactory m_mesh_material_mng_factory;
 };
 
@@ -1077,7 +1083,7 @@ MeshMaterialMngFactory MeshMaterialMngFactory::m_mesh_material_mng_factory{};
 /*---------------------------------------------------------------------------*/
 
 Ref<IMeshMaterialMng> MeshMaterialMngFactory::
-getTrueReference(const MeshHandle& mesh_handle,bool is_create)
+getTrueReference(const MeshHandle& mesh_handle, bool is_create)
 {
   //TODO: faire lock pour multi-thread
   typedef AutoDestroyUserData<Ref<IMeshMaterialMng>> UserDataType;
@@ -1085,13 +1091,13 @@ getTrueReference(const MeshHandle& mesh_handle,bool is_create)
   const char* name = "MeshMaterialMng_StdMat";
   IUserDataList* udlist = mesh_handle.meshUserDataList();
 
-  IUserData* ud = udlist->data(name,true);
-  if (!ud){
+  IUserData* ud = udlist->data(name, true);
+  if (!ud) {
     if (!is_create)
       return {};
-    IMeshMaterialMng* mm = arcaneCreateMeshMaterialMng(mesh_handle,"StdMat");
+    IMeshMaterialMng* mm = arcaneCreateMeshMaterialMng(mesh_handle, "StdMat");
     Ref<IMeshMaterialMng> mm_ref = makeRef(mm);
-    udlist->setData(name,new UserDataType(new Ref<IMeshMaterialMng>(mm_ref)));
+    udlist->setData(name, new UserDataType(new Ref<IMeshMaterialMng>(mm_ref)));
     return mm_ref;
   }
   auto adud = dynamic_cast<UserDataType*>(ud);
@@ -1117,14 +1123,14 @@ _checkCreateProperties()
 {
   if (m_properties)
     return;
-  m_properties = std::make_unique<Properties>(*(mesh()->properties()),String("MeshMaterialMng_")+name());
+  m_properties = std::make_unique<Properties>(*(mesh()->properties()), String("MeshMaterialMng_") + name());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 namespace
 {
-const Int32 SERIALIZE_VERSION = 1;
+  const Int32 SERIALIZE_VERSION = 1;
 }
 void MeshMaterialMng::
 _saveInfosInProperties()
@@ -1132,33 +1138,33 @@ _saveInfosInProperties()
   _checkCreateProperties();
 
   // Sauve le numéro de version pour être certain que c'est OK en reprise
-  m_properties->set("Version",SERIALIZE_VERSION);
+  m_properties->set("Version", SERIALIZE_VERSION);
 
   // Sauve dans les propriétés les infos nécessaires pour recréer les
   // matériaux et milieux.
   UniqueArray<String> material_info_names;
-  for( MeshMaterialInfo* mat_info : m_materials_info ){
+  for (MeshMaterialInfo* mat_info : m_materials_info) {
     material_info_names.add(mat_info->name());
   }
-  m_properties->set("MaterialInfoNames",material_info_names);
+  m_properties->set("MaterialInfoNames", material_info_names);
 
   UniqueArray<String> env_names;
   UniqueArray<Int32> env_nb_mat;
   UniqueArray<String> env_mat_names;
-  ENUMERATE_ENV(ienv,this){
+  ENUMERATE_ENV (ienv, this) {
     IMeshEnvironment* env = *ienv;
     env_names.add(env->name());
     info(5) << "SAVE ENV_NAME name=" << env->name() << " nb_mat=" << env->nbMaterial();
     env_nb_mat.add(env->nbMaterial());
-    ENUMERATE_MAT(imat,env){
+    ENUMERATE_MAT (imat, env) {
       const String& name = (*imat)->infos()->name();
       info(5) << "SAVE MAT_NAME name=" << name;
       env_mat_names.add(name);
     }
   }
-  m_properties->set("EnvNames",env_names);
-  m_properties->set("EnvNbMat",env_nb_mat);
-  m_properties->set("EnvMatNames",env_mat_names);
+  m_properties->set("EnvNames", env_names);
+  m_properties->set("EnvNbMat", env_nb_mat);
+  m_properties->set("EnvMatNames", env_mat_names);
 
   // Sauve les infos nécessaires pour les block.
   // Pour chaque bloc, son nom et le nom du groupe de maille correspondant.
@@ -1166,20 +1172,20 @@ _saveInfosInProperties()
   UniqueArray<String> block_cell_group_names;
   UniqueArray<Int32> block_nb_env;
   UniqueArray<String> block_env_names;
-  for( IMeshBlock* block : m_blocks ){
+  for (IMeshBlock* block : m_blocks) {
     block_names.add(block->name());
     block_cell_group_names.add(block->cells().name());
     block_nb_env.add(block->nbEnvironment());
-    ENUMERATE_ENV(ienv,block){
+    ENUMERATE_ENV (ienv, block) {
       const String& name = (*ienv)->name();
       info(5) << "SAVE BLOCK ENV_NAME name=" << name;
       block_env_names.add(name);
     }
   }
-  m_properties->set("BlockNames",block_names);
-  m_properties->set("BlockCellGroupNames",block_cell_group_names);
-  m_properties->set("BlockNbEnv",block_nb_env);
-  m_properties->set("BlockEnvNames",block_env_names);
+  m_properties->set("BlockNames", block_names);
+  m_properties->set("BlockCellGroupNames", block_cell_group_names);
+  m_properties->set("BlockNbEnv", block_nb_env);
+  m_properties->set("BlockEnvNames", block_env_names);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1197,27 +1203,27 @@ recreateFromDump()
 
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   Int32 v = m_properties->getInt32("Version");
-  if (v!=SERIALIZE_VERSION)
+  if (v != SERIALIZE_VERSION)
     ARCANE_FATAL("Bad serializer version: trying to read from incompatible checkpoint v={0} expected={1}",
-                 v,SERIALIZE_VERSION);
+                 v, SERIALIZE_VERSION);
 
   UniqueArray<String> material_info_names;
-  m_properties->get("MaterialInfoNames",material_info_names);
-  for( const String& mat_name : material_info_names )
+  m_properties->get("MaterialInfoNames", material_info_names);
+  for (const String& mat_name : material_info_names)
     this->registerMaterialInfo(mat_name);
 
   UniqueArray<String> env_names;
   UniqueArray<Int32> env_nb_mat;
   UniqueArray<String> env_mat_names;
-  m_properties->get("EnvNames",env_names);
-  m_properties->get("EnvNbMat",env_nb_mat);
-  m_properties->get("EnvMatNames",env_mat_names);
+  m_properties->get("EnvNames", env_names);
+  m_properties->get("EnvNbMat", env_nb_mat);
+  m_properties->get("EnvMatNames", env_mat_names);
 
   Integer mat_index = 0;
-  for( Integer ienv=0, nenv=env_names.size(); ienv<nenv; ++ienv ){
+  for (Integer ienv = 0, nenv = env_names.size(); ienv < nenv; ++ienv) {
     Materials::MeshEnvironmentBuildInfo env_build(env_names[ienv]);
     Integer nb_mat = env_nb_mat[ienv];
-    for( Integer imat=0; imat<nb_mat; ++imat ){
+    for (Integer imat = 0; imat < nb_mat; ++imat) {
       env_build.addMaterial(env_mat_names[mat_index]);
       ++mat_index;
     }
@@ -1230,28 +1236,28 @@ recreateFromDump()
   UniqueArray<String> block_cell_group_names;
   UniqueArray<String> block_env_names;
   UniqueArray<Int32> block_nb_env;
-  m_properties->get("BlockNames",block_names);
-  m_properties->get("BlockCellGroupNames",block_cell_group_names);
-  m_properties->get("BlockNbEnv",block_nb_env);
-  m_properties->get("BlockEnvNames",block_env_names);
+  m_properties->get("BlockNames", block_names);
+  m_properties->get("BlockCellGroupNames", block_cell_group_names);
+  m_properties->get("BlockNbEnv", block_nb_env);
+  m_properties->get("BlockEnvNames", block_env_names);
   const IItemFamily* cell_family = mesh()->cellFamily();
   Integer block_env_index = 0;
-  for( Integer i=0, n=block_names.size(); i<n; ++i ){
+  for (Integer i = 0, n = block_names.size(); i < n; ++i) {
     String name = block_names[i];
     String cell_group_name = block_cell_group_names[i];
     CellGroup cells = cell_family->findGroup(cell_group_name);
     if (cells.null())
       ARCANE_FATAL("Can not find cell group '{0}' for block creation",
                    cell_group_name);
-    MeshBlockBuildInfo mbbi(name,cells);
-    if (!block_nb_env.empty()){
+    MeshBlockBuildInfo mbbi(name, cells);
+    if (!block_nb_env.empty()) {
       Integer nb_env = block_nb_env[i];
-      for( Integer ienv=0; ienv<nb_env; ++ienv ){
+      for (Integer ienv = 0; ienv < nb_env; ++ienv) {
         const String& name2 = block_env_names[block_env_index];
         ++block_env_index;
-        IMeshEnvironment* env = findEnvironment(name2,false);
+        IMeshEnvironment* env = findEnvironment(name2, false);
         if (!env)
-          ARCANE_FATAL("Invalid environment name '{0}' for recreating blocks",name2);
+          ARCANE_FATAL("Invalid environment name '{0}' for recreating blocks", name2);
         mbbi.addEnvironment(env);
       }
     }
@@ -1287,16 +1293,16 @@ _unregisterAllVariables()
   // car ces derniers modifient la liste chainée des références
   UniqueArray<MeshMaterialVariableRef*> m_all_refs;
 
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     const IMeshMaterialVariable* var = i.second;
 
-    for( MeshMaterialVariableRef::Enumerator iref(var); iref.hasNext(); ++iref ){
+    for (MeshMaterialVariableRef::Enumerator iref(var); iref.hasNext(); ++iref) {
       MeshMaterialVariableRef* ref = *iref;
       m_all_refs.add(ref);
     }
   }
 
-  for( MeshMaterialVariableRef* ref : m_all_refs )
+  for (MeshMaterialVariableRef* ref : m_all_refs)
     ref->unregisterVariable();
 }
 
@@ -1312,7 +1318,7 @@ componentItemSharedInfo(Int32 level) const
     shared_info = data->matSharedInfo();
   else if (level == LEVEL_ENVIRONMENT)
     shared_info = data->envSharedInfo();
-  else if (level==LEVEL_ALLENVIRONMENT)
+  else if (level == LEVEL_ALLENVIRONMENT)
     shared_info = data->allEnvSharedInfo();
   else
     ARCANE_FATAL("Bad internal type of component");
@@ -1354,6 +1360,27 @@ createAllCellToAllEnvCell()
   if (!m_accelerator_envcell_container) {
     m_accelerator_envcell_container = std::make_unique<AllCellToAllEnvCellContainer>(this);
     m_accelerator_envcell_container->initialize();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SmallSpan<const Int32> MeshMaterialMng::
+identitySelectionView()
+{
+  // NOTE: ce tableau pourrait peut-être être géré directement
+  // par la famille s'il y a un intérêt à l'utiliser dans d'autres contextes
+  Int32 max_local_id = m_mesh_handle.mesh()->cellFamily()->maxLocalId();
+  {
+    std::scoped_lock sl(m_indexed_selection_identity_mutex);
+    Int32 size = m_indexed_selection_identity.size();
+    if (max_local_id > size) {
+      m_indexed_selection_identity.resize(max_local_id);
+      for (Int32 i = size; i < max_local_id; ++i)
+        m_indexed_selection_identity[i] = i;
+    }
+    return m_indexed_selection_identity.constView();
   }
 }
 
