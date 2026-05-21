@@ -4,7 +4,7 @@
 
 Written by CEA/IFPEN and Contributors
 
-(C) Copyright 2000-2024 CEA/IFPEN. All rights reserved.
+(C) Copyright 2000-2026 CEA/IFPEN. All rights reserved.
 
 All content is the property of the respective authors or their employers.
 
@@ -26,7 +26,9 @@ ____
 ![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
 ![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
 
-Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of a calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects such as dataset configuration.
+Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of a
+calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects such
+as dataset configuration.
 ____
 
 Table of Contents:
@@ -215,6 +217,7 @@ guide.
 
 To prepare your computer :
 
+- [Ubuntu 26.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu26.md)
 - [Ubuntu 24.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu24.md)
 - [Ubuntu 22.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu22.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
 - [Ubuntu 20.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu20.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
@@ -262,8 +265,6 @@ Finite volume code for solving hydrodynamic equations:
 Lagrangian or Eulerian simulations.
 
 # Rencontres Arcane
-
-The next Rencontres Arcane are scheduled on Monday, the 24th March, 2025.
 
 <p align="center">
   <a href="https://github.com/arcaneframework/events">
