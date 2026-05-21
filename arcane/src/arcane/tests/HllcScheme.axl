@@ -1,0 +1,253 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Description du module 'HllcScheme' -->
+<module name="HllcScheme" version="1.0" namespace-name="ArcaneTest::HllcScheme">
+  <variables>
+    <!-- DENSITY -->
+    <variable
+      field-name="density"
+      name="Density"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- MOMENTUM -->
+    <variable
+      field-name="momentum"
+      name="Momentum"
+      data-type="real3"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- TOTAL ENERGY -->
+    <variable
+      field-name="energy"
+      name="Energy"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- PRESSURE -->
+    <variable
+      field-name="pressure"
+      name="Pressure"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- CELL VOLUME -->
+    <variable
+      field-name="cell_volume"
+      name="CellVolume"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- CELL MASS -->
+    <variable
+      field-name="cell_mass"
+      name="CellMass"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- SOUND SPEED -->
+    <variable
+      field-name="sound_speed"
+      name="SoundSpeed"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- FACE NORMAL -->
+    <variable
+      field-name="face_normal"
+      name="FaceNormal"
+      data-type="real3"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- FACE AREA -->
+    <variable
+      field-name="face_area"
+      name="FaceArea"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- CENTER -->
+    <variable
+      field-name="cell_center"
+      name="CellCenter"
+      data-type="real3"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- FACE CENTER -->
+    <variable
+      field-name="face_center"
+      name="FaceCenter"
+      data-type="real3"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- NODE COORD -->
+    <variable
+      field-name="node_coord"
+      name="NodeCoord"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- FACE BC TYPE -->
+    <variable
+      field-name="face_bc_type"
+      name="FaceBcType"
+      data-type="integer"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- FACE BC INFLOW DENSITY -->
+    <variable
+      field-name="face_bc_density"
+      name="FaceBcDensity"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- FACE BC INFLOW VELOCITY -->
+    <variable
+      field-name="face_bc_velocity"
+      name="FaceBcVelocity"
+      data-type="real3"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+    <!-- FACE BC INFLOW PRESSURE -->
+    <variable
+      field-name="face_bc_pressure"
+      name="FaceBcPressure"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="false" />
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="build" name="HLLC_Build" where="build" property="none" />
+    <entry-point method-name="init" name="HLLC_Init" where="init" property="none" />
+    <entry-point method-name="computeLoop" name="HLLC_ComputeLoop" where="compute-loop" property="none" />
+    <entry-point method-name="exit" name="HLLC_Exit" where="exit" property="none" />
+  </entry-points>
+
+  <options>
+    <!-- CFL -->
+    <simple
+      name = "cfl"
+      type = "real"
+      default = "0.5" >
+      <description>
+        Nombre de Courant-Friedrichs-Lewy pour le pas de temps.
+      </description>
+    </simple>
+
+    <!-- FINAL TIME -->
+    <simple
+      name = "final-time"
+      type = "real"
+      default = "1.0" >
+      <description>
+        Temps final de la simulation.
+      </description>
+    </simple>
+
+    <!-- GAMMA -->
+    <simple
+      name = "gamma"
+      type = "real"
+      default = "1.4" >
+      <description>
+        Coefficient adiabatique (ratio des chaleurs spécifiques).
+      </description>
+    </simple>
+
+    <!-- DELTAT INIT -->
+    <simple
+      name = "deltat-init"
+      type = "real"
+      default = "1.0e-4" >
+      <description>
+        Pas de temps initial.
+      </description>
+    </simple>
+
+    <!-- LIMITER -->
+    <enumeration
+      name = "limiter"
+      type = "ArcaneTest::HllcScheme::TypesHllcScheme::eLimiter"
+      default = "VanLeer" >
+      <description>
+        Limiteur pour la reconstruction MUSCL.
+      </description>
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::MinMod" name="MinMod" />
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::VanLeer" name="VanLeer" />
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::VanAlbada" name="VanAlbada" />
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Superbee" name="Superbee" />
+    </enumeration>
+
+    <!-- ORDER -->
+    <simple
+      name = "spatial-order"
+      type = "int32"
+      default = "2" >
+      <description>
+        Ordre spatial (1 = premier ordre, 2 = MUSCL second ordre).
+      </description>
+    </simple>
+
+    <!-- BOUNDARY CONDITION -->
+    <complex name="boundary-condition" type="BoundaryCondition"
+             minOccurs="0" maxOccurs="unbounded">
+      <description>Boundary condition specification</description>
+      <enumeration name="type" type="ArcaneTest::HllcScheme::TypesHllcScheme::eBoundaryCondition">
+        <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Wall" name="Wall" />
+        <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Inflow" name="Inflow" />
+        <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Outflow" name="Outflow" />
+      </enumeration>
+      <extended name="surface" type="Arcane::FaceGroup">
+        Surface on which BC applies
+      </extended>
+      <simple name="density" type="real" default="1.0">
+        Imposed density (inflow only)
+      </simple>
+      <simple name="velocity-x" type="real" default="0.0">
+        Imposed velocity x-component (inflow only)
+      </simple>
+      <simple name="velocity-y" type="real" default="0.0">
+        Imposed velocity y-component (inflow only)
+      </simple>
+      <simple name="velocity-z" type="real" default="0.0">
+        Imposed velocity z-component (inflow only)
+      </simple>
+      <simple name="pressure" type="real" default="1.0">
+        Imposed pressure (inflow only)
+      </simple>
+    </complex>
+  </options>
+
+</module>

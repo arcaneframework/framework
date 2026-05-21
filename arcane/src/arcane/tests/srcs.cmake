@@ -87,9 +87,12 @@ set(ARCANE_SOURCES
   VariableInShMemUnitTest.cc
   RayMeshIntersectionUnitTest.cc
   HyodaMixedCellsUnitTest.cc
+  HllcSchemeTypes.h
+  HllcSchemeModule.cc
 )
 set(ARCANE_ACCELERATOR_SOURCES
   ArcaneTestStandaloneSubDomain.cc
+  HllcSchemeModule.cc
 )
 set(AXL_FILES
   CheckpointTester
@@ -142,4 +145,5 @@ set(AXL_FILES
   VariableInShMemUnitTest
   RayMeshIntersectionUnitTest
   HyodaMixedCellsUnitTest
+  HllcScheme
 )
