@@ -1169,6 +1169,8 @@ compute()
     }
     _applyEos(false);
   }
+
+  _checkIndexedSelection();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1641,6 +1643,21 @@ _checkCreation()
     if (!is_ok)
       ARCANE_FATAL("Should launch exception for 'MaterialVariableCellArrayInt32' conversion");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Teste IMeshMaterialMng::identitySelectionView().
+ */
+void MeshMaterialTesterModule::
+_checkIndexedSelection()
+{
+  SmallSpan<const Int32> selection_view = m_material_mng->_internalApi()->identitySelectionView();
+  Int32 n = selection_view.size();
+  for (Int32 i = 0; i < n; ++i)
+    if (selection_view[i] != i)
+      ARCANE_FATAL("Bad selection index={0} value={1} (expected={2})", i, selection_view[i]);
 }
 
 /*---------------------------------------------------------------------------*/

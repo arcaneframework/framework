@@ -153,6 +153,7 @@ class MeshMaterialTesterModule
   void _applyEos(bool is_init);
   void _testDumpProperties();
   void _checkNullComponentItem();
+  void _checkIndexedSelection();
 };
 
 /*---------------------------------------------------------------------------*/

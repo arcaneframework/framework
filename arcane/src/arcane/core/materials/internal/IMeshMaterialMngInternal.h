@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMngInternal.h                                  (C) 2000-2025 */
+/* IMeshMaterialMngInternal.h                                  (C) 2000-2026 */
 /*                                                                           */
 /* API interne Arcane de 'IMeshMaterialMng'.                                 */
 /*---------------------------------------------------------------------------*/
@@ -127,6 +127,16 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * ou eExecutionPolicy::Thread.
    */
   virtual RunQueue runQueue(Accelerator::eExecutionPolicy policy) const = 0;
+
+  /*!
+   * \brief Vue sur le tableau correspondant à une sélection sur toutes les entités.
+   *
+   * Retourne une vue d'un tableau \a v dimensionné au nombre de mailles du maillage
+   * et ayant pour `v[i] == i` pour tout \a i. Ce tableau est invalidé si le
+   * nombre de mailles évolue. Il est utilisé notamment pour les sélections
+   * indexées (via la classe ConstituentItemIndexedSelectionView).
+   */
+  virtual SmallSpan<const Int32> identitySelectionView() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2025 */
+/* MeshMaterialMng.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,7 @@ namespace Arcane
 class IVariableMng;
 class Properties;
 class ObserverPool;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,6 +160,10 @@ class MeshMaterialMng
     RunQueue runQueue(Accelerator::eExecutionPolicy policy) const override
     {
       return m_material_mng->m_runner_info->runQueue(policy);
+    }
+    SmallSpan<const Int32> identitySelectionView() const override
+    {
+      return m_material_mng->identitySelectionView();
     }
 
    private:
@@ -327,6 +332,7 @@ class MeshMaterialMng
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
   Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
   Real additionalCapacityRatio() const { return m_additional_capacity_ratio; }
+  SmallSpan<const Int32> identitySelectionView();
   //@}
 
  private:
@@ -398,6 +404,10 @@ class MeshMaterialMng
   bool m_is_use_accelerator_envcell_container = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;
+
+  //! Tableau identité pour la sélection
+  UniqueArray<Int32> m_indexed_selection_identity;
+  std::mutex m_indexed_selection_identity_mutex;
 
  private:
 

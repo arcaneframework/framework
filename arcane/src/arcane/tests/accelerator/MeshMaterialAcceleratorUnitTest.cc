@@ -1129,6 +1129,8 @@ _testSelection()
   EnvCellVectorView env_cells(m_env1->envView());
   Int32 nb_env_cell = env_cells.nbItem();
 
+  info() << "NbEnvCell=" << nb_env_cell;
+
   // Créé une sélection avec une entité sur 2
   UniqueArray<Int32> selection_indices(MemoryUtils::getDefaultDataAllocator());
   selection_indices.reserve((nb_env_cell / 2) + 1);
@@ -1136,13 +1138,17 @@ _testSelection()
     if ((i % 2) == 0)
       selection_indices.add(i);
   }
+  info() << "NbSelection=" << selection_indices.size();
 
   // ... remplit une liste d'indices dans [ 0 ; env_cells.nbItems()-1 ]
   EnvCellVectorSelectionView partial_env_cells{ env_cells, selection_indices.constSmallSpan() };
 
+  // Sélection contenant toutes les entités.
+  EnvCellVectorSelectionView full_partial_env_cells{ env_cells };
+
   MaterialVariableCellInt32 test_var(VariableBuildInfo(mesh(), "SelectionTestVar"));
 
-  test_var.fill(0);
+  test_var.fill(1);
 
   // phase de calcul
   RunQueue queue = makeQueue(m_runner);
@@ -1160,8 +1166,15 @@ _testSelection()
   {
     auto command = makeCommand(queue);
     auto myVarView = viewInOut(command, test_var);
-    // ensuite, les boucles restent inchangées si on recoit en paramètre un EnvCellVectorSelectionView plutot qu'un EnvCellVectorView
     command << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, partial_env_cells)
+    {
+      myVarView[evi] += 1;
+    };
+  }
+  {
+    auto command = makeCommand(queue);
+    auto myVarView = viewInOut(command, test_var);
+    command << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, full_partial_env_cells)
     {
       myVarView[evi] += 1;
     };
@@ -1181,12 +1194,34 @@ _testSelection()
   ENUMERATE_ENVCELL (ienvcell, env_cells) {
     total += test_var[ienvcell];
   }
+  info() << "TOTAL0=" << total;
+  // On fait 3 boucles sur la sélection partielle, 1 sur la sélection complète
+  // et on commence à 1 pour toutes les valeurs.
+  // On a donc la valeur 5 sur toutes les mailles de 'partial_env_cells' et
+  // la valeur 2 sur les autres.
+  Int64 ref0 = (2 * nb_env_cell) + (partial_env_cells.size() * 3);
+  if (ref0 != total)
+    ARCANE_FATAL("Bad value ref0={0} total={1}", ref0, total);
+
+  total = 0;
   ENUMERATE_CONSTITUENTITEM (EnvCell, ienvcell, partial_env_cells) {
     EnvCell x = *ienvcell;
     total += test_var[x];
   }
+  info() << "TOTAL1=" << total;
+  Int64 ref1 = (partial_env_cells.size() * 5);
+  if (ref1 != total)
+    ARCANE_FATAL("Bad value ref1={0} total={1}", ref1, total);
 
-  info() << "TOTAL=" << total;
+  total = 0;
+  ENUMERATE_CONSTITUENTITEM (EnvCell, ienvcell, full_partial_env_cells) {
+    EnvCell x = *ienvcell;
+    total += test_var[x];
+  }
+  info() << "TOTAL2=" << total;
+  Int64 ref2 = ref0;
+  if (ref2 != total)
+    ARCANE_FATAL("Bad value ref2={0} total={1}", ref2, total);
 }
 
 /*---------------------------------------------------------------------------*/
