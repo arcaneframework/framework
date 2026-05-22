@@ -477,3 +477,25 @@ div.dyncontent {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/**
+ * Correction temporaire de l'affichage des formules sans MathJax.
+ */
+html img.light-mode-visible {
+  display: unset;
+}
+
+html.dark-mode img.light-mode-visible {
+  display: none;
+}
+
+html img.dark-mode-visible {
+  display: none;
+}
+
+html.dark-mode img.dark-mode-visible {
+  display: unset;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

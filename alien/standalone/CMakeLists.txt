@@ -162,19 +162,6 @@ endif()
 
 enable_testing()
 
-if (ALIEN_GENERATE_DOCUMENTATION)
-    find_package(Doxygen REQUIRED)
-
-    # doxygen settings can be set here, prefixed with "DOXYGEN_"
-    set(DOXYGEN_SOURCE_BROWSER YES)
-    set(DOXYGEN_EXTRACT_PRIVATE YES)
-    set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-
-    # For sphinx
-    set(DOXYGEN_GENERATE_HTML NO)
-    set(DOXYGEN_GENERATE_XML YES)
-endif (ALIEN_GENERATE_DOCUMENTATION)
-
 
 # ----------------------------------------------------------------------------
 # Configure installation layout.

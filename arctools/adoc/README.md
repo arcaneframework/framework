@@ -40,6 +40,7 @@ Ces variables CMake sont disponibles pour personnaliser la génération :
 - `ADOC_PROJECT_REPO_LINK` (url) (par défaut : vide) : permet de définir le lien vers le dépot du code,
 - `ADOC_PROJECT_ICON` (chemin de l'icône) (par défaut : vide) : permet de définir une icône pour la page web (équivalent
   à l'option Doxygen `PROJECT_ICON` mais qui fonctionne) (trois formats supportés : `svg`, `png` et `webp`),
+- `ADOC_LANGUAGE` (par défaut : `English`) : permet de définir la langue dans laquelle sera générée la documentation.
 
 Ces variables seront utilisées uniquement par la fonction `adoc_generate_doc` :
 
