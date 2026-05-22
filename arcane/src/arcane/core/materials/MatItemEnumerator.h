@@ -13,12 +13,7 @@
 #define ARCANE_CORE_MATERIALS_MATITEMENUMERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \file MatItemEnumerator.h
- *
- * Ce fichier contient les différents types d'itérateur et macros
- * pour itérer sur les mailles matériaux et milieux.
- */
+
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/MatItem.h"
@@ -523,65 +518,90 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Enumérateur sur les AllEnvCell de \a items
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, AllEnvCellVectorView items)
 {
   return AllEnvCellEnumerator::create(items);
 }
+//! Enumérateur sur les AllEnvCell des mailles de \a group
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellGroup& group)
 {
   return AllEnvCellEnumerator::create(mng, group);
 }
+//! Enumérateur sur les AllEnvCell des mailles de \a view
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellVectorView& view)
 {
   return AllEnvCellEnumerator::create(mng, view);
 }
+//! Enumérateur sur les AllEnvCell du bloc \a block
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshBlock* block)
 {
   return AllEnvCellEnumerator::create(block);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Enumérateur sur les ComponentCell du constituant \a component
 inline ComponentCellEnumerator
 arcaneImplCreateConstituentEnumerator(ComponentCell,IMeshComponent* component)
 {
   return ComponentCellEnumerator::create(component);
 }
+//! Enumérateur sur les ComponentCell du vecteur \a v
 inline ComponentCellEnumerator
 arcaneImplCreateConstituentEnumerator(ComponentCell,const ComponentItemVector& v)
 {
   return ComponentCellEnumerator::create(v);
 }
+//! Enumérateur sur les ComponentCell de la vue \a v
 ARCANE_CORE_EXPORT ComponentCellEnumerator
 arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentItemVectorView v);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Enumérateur sur les MatCell du matériau \a component
 inline MatCellEnumerator
 arcaneImplCreateConstituentEnumerator(MatCell,IMeshMaterial* component)
 {
   return MatCellEnumerator::create(component);
 }
+//! Enumérateur sur les MatCell du vecteur \a v
 inline MatCellEnumerator
 arcaneImplCreateConstituentEnumerator(MatCell,const MatCellVector& v)
 {
   return MatCellEnumerator::create(v);
 }
+//! Enumérateur sur les MatCell de la vue \a v
 ARCANE_CORE_EXPORT MatCellEnumerator
 arcaneImplCreateConstituentEnumerator(MatCell, MatItemVectorView v);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Enumérateur sur les EnvCell du milieu \a component
 inline EnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(EnvCell,IMeshEnvironment* component)
 {
   return EnvCellEnumerator::create(component);
 }
+//! Enumérateur sur les EnvCell du vecteur \a v
 inline EnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(EnvCell,const EnvCellVector& v)
 {
   return EnvCellEnumerator::create(v);
 }
+//! Enumérateur sur les EnvCell de la vue \a v
 ARCANE_CORE_EXPORT EnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(EnvCell, EnvItemVectorView v);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 arcaneImplCreateConstituentEnumerator(ComponentPartCell, ComponentPartItemVectorView v);
@@ -613,7 +633,9 @@ arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c,eMatPart 
 
 namespace Impl
 {
-
+/*!
+ * \brief Fonction wrapper pour détecter le type de l'énumérateur pour les constituants.
+ */
 template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
 makeConstituentItemEnumeratorLoop(ConstituentItemType x,
                                   const ConstituentItemContainerType& container,
@@ -662,21 +684,26 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Macro générique pour itérer sur les entités d'un matériau ou d'un milieu.
  *
- * \param enumerate_class_name nom de la classe de l'énumérateur
+ * \param ClassName_ nom de la classe du constituant (ConstituentCell, MatCell ou EnvCell)
  * \param iname nom de la variable contenant l'itérateur
- * \param ...  Les arguments supplémentaires sont passés à la méthode statique create() de
- * la classe de l'énumérateur.
+ * \param container conteneur sur lequel on va itérer
+ * \param ...  Les arguments supplémentaires sont passés à la méthode de création
+ * de l'itérateur.
+ *
+ * Cette macro permet de choisir automatiquement un énumérateur en fonction
+ * des paramètres \a ClassName_ et \a container. Pour qu'elle soit valide, il
+ * faut qu'il existe une surcharge de la fonction
+ * Arcane::Materials::arcaneImplCreateConstituentEnumerator()
+ * prenant en argument ces deux arguments.
  */
-#define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)      \
-  A_ENUMERATE_COMPONENTCELL(enumerator_class_name, iname, __VA_ARGS__)
+#define ENUMERATE_COMPONENTITEM(ClassName_,iname, container, ...) \
+  A_ENUMERATE_COMPONENTCELL(ClassName_, iname, container, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Macro pour itérer sur toutes les mailles AllEnvCell d'un groupe.
  *
@@ -694,7 +721,7 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \brief Macro pour itérer sur toutes les mailles d'un matériau.
  *
  * \param iname nom de l'itérateur, de type MatCellEnumerator.
- * \param mat matériau, de type IMeshMaterial*
+ * \param mat matériau, de type IMeshMaterial*, MatCellVector, MatVectorView
  */
 #define ENUMERATE_MATCELL(iname,mat) \
   A_ENUMERATE_COMPONENTCELL(Arcane::Materials::MatCell,iname,mat)
@@ -703,7 +730,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \brief Macro pour itérer sur toutes les mailles d'un milieu.
  *
  * \param iname nom de l'itérateur, de type EnvCellEnumerator.
- * \param env milieu, de type IMeshEnvironment*
+ * \param env milieu, de type IMeshEnvironment*, EnvCellVector,
+ * EvnVectorView ou EnvCellVectorSelectionView
  */
 #define ENUMERATE_ENVCELL(iname,env) \
   A_ENUMERATE_COMPONENTCELL(Arcane::Materials::EnvCell,iname,env)
@@ -791,27 +819,6 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  */
 #define ENUMERATE_GENERIC_CELL(iname,mat_or_env_or_group) \
   for( auto iname = ::Arcane::Materials::CellGenericEnumerator::create(mat_or_env_or_group); iname.hasNext(); ++iname )
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Macro générique pour itérer sur les entités d'un matériau ou d'un milieu.
- *
- * \warning Cette macro est expérimentale.
- *
- * \param ClassName_ nom de la classe du constituant (ConstituentCell, MatCell ou EnvCell)
- * \param iname nom de la variable contenant l'itérateur
- * \param container conteneur sur lequel on souhaite itérer.
- *
- * Utiliser cette macro suppose qu'il existe une dans la
- * classe Arcane::Materials::EnumeratorBuilder<ClassName_> une méthode
- * create() qui prenne en argument un objet de type \a container. Le type
- * de l'énumérateur sera le type de retour de cette méthode.
- */
-#define ENUMERATE_CONSTITUENTITEM(ClassName_, iname, container)     \
-  for (A_TRACE_COMPONENT_DIRECT_CLASS(decltype(A_ENUMERATEBUILDER_HELPER(ClassName_, container))) \
-       iname(A_ENUMERATEBUILDER_HELPER(ClassName_, container) A_TRACE_ENUMERATOR_WHERE); \
-       iname.hasNext(); ++iname)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

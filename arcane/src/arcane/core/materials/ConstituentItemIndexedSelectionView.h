@@ -243,6 +243,8 @@ class ConstituentItemIndexedSelectionEnumerator
  public:
 
   using SelectionType = ConstituentItemIndexedSelectionView<ContainerView_>;
+  using ThatClass = ConstituentItemIndexedSelectionEnumerator;
+
   using ValueType = SelectionType::ValueType;
 
   friend class EnumeratorTracer;
@@ -254,6 +256,13 @@ class ConstituentItemIndexedSelectionEnumerator
   : m_size(v.size())
   , m_container_with_selection(v)
   {}
+
+ public:
+
+  static ThatClass create(SelectionType container)
+  {
+    return ThatClass(container);
+  }
 
  public:
 
@@ -276,19 +285,25 @@ class ConstituentItemIndexedSelectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Spécialisation pour les énumérateurs sur les EnvCell
-template <>
-class EnumeratorBuilder<EnvCell>
+//! Enumérateur sur une sélection d'un constituant
+inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
+arcaneImplCreateConstituentEnumerator(ComponentCell, ConstituentItemIndexedSelectionView<ComponentCellVectorView> container)
 {
- public:
-
-  static ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
-  create(ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
-  {
-    return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>(container);
-  }
-};
+  return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(container);
+}
+//! Enumérateur sur une sélection d'un constituant
+inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
+arcaneImplCreateConstituentEnumerator(ComponentCell, ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+{
+  ConstituentItemIndexedSelectionView<ComponentCellVectorView> c2(container.sourceView(), container.selectionView());
+  return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(c2);
+}
+//! Enumérateur sur une sélection d'un milieu
+inline ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
+arcaneImplCreateConstituentEnumerator(EnvCell, ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+{
+  return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>::create(container);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
