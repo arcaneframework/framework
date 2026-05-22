@@ -74,8 +74,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -171,18 +171,18 @@ class FullComponentPartCellEnumerator
 #define ENUMERATE_ENVCELL2(iname,env) \
   for( FullComponentPartCellEnumerator iname##_part(Arcane::Materials::FullComponentPartCellEnumerator::create(env)); iname##_part . hasNext(); ++ iname##_part ) \
     PRAGMA_IVDEP \
-    A_ENUMERATE_COMPONENTCELL(ComponentPartCellEnumerator,iname,*(iname##_part))
+    A_ENUMERATE_COMPONENTCELL(ComponentPartCell,iname,*(iname##_part))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ _executeDirect1(Integer nb_z)
   Real *c = new Real[TRUE_SIZE];
   Real *d = new Real[TRUE_SIZE];
   Real *e = new Real[TRUE_SIZE];
-#pragma omp parallel for
+  //#pragma omp parallel for
   for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
     Real z = (Real)i;
     a[i] = b[i] = c[i] = d[i] = e[i] = z;
@@ -695,7 +695,7 @@ _executeTest2(Integer nb_z)
     // ce pragma avec le compilateur intel. A noter que cela semble fonctionner
     // avec les versions 2021+ de Intel (icpc, icpx et DPC++).
 #ifndef __INTEL_COMPILER
-#pragma omp simd
+    //#pragma omp simd
 #endif
     ENUMERATE_ENVCELL(i,m_env1){
       a[i] = b[i] + c[i] * d[i] + e[i];
@@ -1416,10 +1416,7 @@ _computeEquationOfStateV4_noview()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
