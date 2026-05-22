@@ -523,6 +523,111 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline AllEnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(AllEnvCell, AllEnvCellVectorView items)
+{
+  return AllEnvCellEnumerator::create(items);
+}
+inline AllEnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellGroup& group)
+{
+  return AllEnvCellEnumerator::create(mng, group);
+}
+inline AllEnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellVectorView& view)
+{
+  return AllEnvCellEnumerator::create(mng, view);
+}
+inline AllEnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshBlock* block)
+{
+  return AllEnvCellEnumerator::create(block);
+}
+
+inline ComponentCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentCell,IMeshComponent* component)
+{
+  return ComponentCellEnumerator::create(component);
+}
+inline ComponentCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentCell,const ComponentItemVector& v)
+{
+  return ComponentCellEnumerator::create(v);
+}
+ARCANE_CORE_EXPORT ComponentCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentItemVectorView v);
+
+inline MatCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatCell,IMeshMaterial* component)
+{
+  return MatCellEnumerator::create(component);
+}
+inline MatCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatCell,const MatCellVector& v)
+{
+  return MatCellEnumerator::create(v);
+}
+ARCANE_CORE_EXPORT MatCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatCell, MatItemVectorView v);
+
+inline EnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvCell,IMeshEnvironment* component)
+{
+  return EnvCellEnumerator::create(component);
+}
+inline EnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvCell,const EnvCellVector& v)
+{
+  return EnvCellEnumerator::create(v);
+}
+ARCANE_CORE_EXPORT EnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvCell, EnvItemVectorView v);
+
+ARCANE_CORE_EXPORT ComponentPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentPartCell, ComponentPartItemVectorView v);
+
+inline ComponentPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentPartCell, IMeshComponent* c,eMatPart part)
+{
+  return ComponentPartCellEnumerator::create(c, part);
+}
+ARCANE_CORE_EXPORT MatPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatPartCell, MatPartItemVectorView v);
+
+inline MatPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatPartCell, IMeshMaterial* c,eMatPart part)
+{
+  return MatPartCellEnumerator::create(c, part);
+}
+ARCANE_CORE_EXPORT EnvPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvPartCell, EnvPartItemVectorView v);
+
+inline EnvPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c,eMatPart part)
+{
+  return EnvPartCellEnumerator::create(c, part);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Impl
+{
+
+template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
+makeConstituentItemEnumeratorLoop(ConstituentItemType x,
+                                  const ConstituentItemContainerType& container,
+                                  const RemainingArgs&... remaining_args)
+{
+  auto container_instance = arcaneImplCreateConstituentEnumerator(x, container, remaining_args...);
+  return container_instance;
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::EnumeratorTraceWrapper< ::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
@@ -535,10 +640,10 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
   _EnumeratorClassName
 #endif
 
-#define A_ENUMERATE_COMPONENTCELL(_EnumeratorClassName,iname,...) \
+#define A_ENUMERATE_COMPONENTCELL_OLD(_EnumeratorClassName,iname,...) \
   for( A_TRACE_COMPONENT(_EnumeratorClassName) iname(Arcane::Materials::_EnumeratorClassName::create(__VA_ARGS__) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
-#define A_ENUMERATE_COMPONENT(_EnumeratorClassName,iname,container) \
+#define A_ENUMERATE_COMPONENT(_EnumeratorClassName,iname,container)     \
   for( A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(container) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 #define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName,iname,component_cell) \
@@ -546,6 +651,14 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 
 #define A_ENUMERATEBUILDER_HELPER(ClassName_, ...) \
   ::Arcane::Materials::EnumeratorBuilder<::Arcane::Materials::ClassName_>::create(__VA_ARGS__)
+
+#define A_ENUMERATEBUILDER_HELPER2(ConstituentItemNameType, env_or_mat_container, ...) \
+  ::Arcane::Materials::Impl::makeConstituentItemEnumeratorLoop(ConstituentItemNameType(), env_or_mat_container __VA_OPT__(, __VA_ARGS__))
+
+#define A_ENUMERATE_COMPONENTCELL(ClassName_, iname, env_or_mat_container, ...) \
+  for (A_TRACE_COMPONENT_DIRECT_CLASS(decltype(A_ENUMERATEBUILDER_HELPER2(ClassName_, env_or_mat_container __VA_OPT__(, __VA_ARGS__)))) \
+       iname(A_ENUMERATEBUILDER_HELPER2(ClassName_, env_or_mat_container __VA_OPT__(, __VA_ARGS__)) A_TRACE_ENUMERATOR_WHERE); \
+       iname.hasNext(); ++iname)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -559,7 +672,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  * la classe de l'énumérateur.
  */
 #define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)      \
-  A_ENUMERATE_COMPONENTCELL(ComponentItemEnumeratorTraitsT<enumerator_class_name>::EnumeratorType,iname,__VA_ARGS__)
+  A_ENUMERATE_COMPONENTCELL(enumerator_class_name, iname, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -584,7 +697,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  * \param mat matériau, de type IMeshMaterial*
  */
 #define ENUMERATE_MATCELL(iname,mat) \
-  A_ENUMERATE_COMPONENTCELL(MatCellEnumerator,iname,mat)
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::MatCell,iname,mat)
 
 /*!
  * \brief Macro pour itérer sur toutes les mailles d'un milieu.
@@ -593,7 +706,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  * \param env milieu, de type IMeshEnvironment*
  */
 #define ENUMERATE_ENVCELL(iname,env) \
-  A_ENUMERATE_COMPONENTCELL(EnvCellEnumerator,iname,env)
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::EnvCell,iname,env)
 
 /*!
  * \brief Macro pour itérer sur toutes les mailles d'un composant.
@@ -602,7 +715,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  * \param component composant, de type IMeshComponent*
  */
 #define ENUMERATE_COMPONENTCELL(iname,component) \
-  A_ENUMERATE_COMPONENTCELL(ComponentCellEnumerator,iname,component)
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::ComponentCell,iname,component)
 
 /*!
  * \brief Macro pour itérer sur une liste de composants
@@ -690,7 +803,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
  * \param iname nom de la variable contenant l'itérateur
  * \param container conteneur sur lequel on souhaite itérer.
  *
- * Utiliser cette macro support qu'il existe une méthode dans la
+ * Utiliser cette macro suppose qu'il existe une dans la
  * classe Arcane::Materials::EnumeratorBuilder<ClassName_> une méthode
  * create() qui prenne en argument un objet de type \a container. Le type
  * de l'énumérateur sera le type de retour de cette méthode.

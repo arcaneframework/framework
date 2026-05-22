@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.cc                                        (C) 2000-2024 */
+/* MatItemEnumerator.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -424,6 +424,40 @@ EnvPartCellEnumerator EnvPartCellEnumerator::
 create(EnvPartItemVectorView v)
 {
   return EnvPartCellEnumerator(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentItemVectorView v)
+{
+  return ComponentCellEnumerator::create(v);
+}
+MatCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatCell, MatItemVectorView v)
+{
+  return MatCellEnumerator::create(v);
+}
+EnvCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvCell, EnvItemVectorView v)
+{
+  return EnvCellEnumerator::create(v);
+}
+ComponentPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentPartCell, ComponentPartItemVectorView v)
+{
+  return ComponentPartCellEnumerator::create(v);
+}
+MatPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(MatPartCell, MatPartItemVectorView v)
+{
+  return MatPartCellEnumerator::create(v);
+}
+EnvPartCellEnumerator
+arcaneImplCreateConstituentEnumerator(EnvPartCell, EnvPartItemVectorView v)
+{
+  return EnvPartCellEnumerator::create(v);
 }
 
 /*---------------------------------------------------------------------------*/

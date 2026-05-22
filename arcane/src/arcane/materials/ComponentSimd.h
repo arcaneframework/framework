@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentSimd.h                                             (C) 2000-2017 */
+/* ComponentSimd.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Support de la vectorisation pour les matériaux et milieux.                */
 /*---------------------------------------------------------------------------*/
@@ -20,8 +20,8 @@
  * vectorisation sur les composants (matériaux et milieux).
  */
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/SimdItem.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/SimdItem.h"
 
 #include "arcane/materials/MatItem.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -39,8 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,11 +107,17 @@ class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
   IMeshComponent* m_component;
 };
 
+inline ComponentPartSimdCellEnumerator
+arcaneImplCreateConstituentEnumerator(ComponentPartSimdCell, ComponentPartItemVectorView v)
+{
+  return ComponentPartSimdCellEnumerator::create(v);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #define ENUMERATE_SIMD_COMPONENTCELL(iname,env) \
-  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCellEnumerator,iname,env)
+  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCell,iname,env)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -138,7 +144,7 @@ class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
   typedef const SimdMatVarIndex& IterType;
  public:
   LoopFunctorEnvPartSimdCell(ComponentPartItemVectorView pure_items,
-                         ComponentPartItemVectorView impure_items)
+                             ComponentPartItemVectorView impure_items)
   : m_pure_items(pure_items), m_impure_items(impure_items){}
  public:
   static LoopFunctorEnvPartSimdCell create(const EnvCellVector& env);
@@ -366,8 +372,7 @@ viewOut(CellMaterialVariableScalarRef<DataType>& var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
