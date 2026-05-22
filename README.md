@@ -4,7 +4,7 @@
 
 Written by CEA/IFPEN and Contributors
 
-(C) Copyright 2000-2024 CEA/IFPEN. All rights reserved.
+(C) Copyright 2000-2026 CEA/IFPEN. All rights reserved.
 
 All content is the property of the respective authors or their employers.
 
@@ -31,8 +31,7 @@ ____
 
 Table of Contents:
 - [Documentation](#documentation)
-  - [User documentation](#user-documentation)
-  - [Developer documentation](#developer-documentation)
+  - [Arcane documentation](#arcane-documentation)
   - [Alien documentation](#alien-documentation)
 - [Changelog](#changelog)
 - [Key features](#key-features)
@@ -52,14 +51,12 @@ Table of Contents:
 
 The documentation is available online and is generated and stored in this [GitHub repository](https://github.com/arcaneframework/arcaneframework.github.io).
 
-## User documentation
+## Arcane documentation
 
 This documentation is intended for Arcane users.
 
 - [User documentation (French)](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
 - User documentation (English) (Soon)
-
-## Developer documentation
 
 This documentation is intended for Arcane developers.
 
@@ -68,9 +65,13 @@ This documentation is intended for Arcane developers.
 
 ## Alien documentation
 
-This documentation is intended for Alien users and developers.
+This documentation is intended for Alien users.
 
-- [Alien documentation](https://arcaneframework.github.io/framework/aliendoc/html/index.html)
+- [User documentation (English)](https://arcaneframework.github.io/framework/alien/doc/en/user/html/index.html)
+
+This documentation is intended for Alien developers.
+
+- [Developer documentation (English)](https://arcaneframework.github.io/framework/alien/doc/en/dev/html/index.html)
 
 # Changelog
 
@@ -215,6 +216,7 @@ guide.
 
 To prepare your computer :
 
+- [Ubuntu 26.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu26.md)
 - [Ubuntu 24.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu24.md)
 - [Ubuntu 22.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu22.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
 - [Ubuntu 20.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu20.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
@@ -262,8 +264,6 @@ Finite volume code for solving hydrodynamic equations:
 Lagrangian or Eulerian simulations.
 
 # Rencontres Arcane
-
-The next Rencontres Arcane are scheduled on Monday, the 24th March, 2025.
 
 <p align="center">
   <a href="https://github.com/arcaneframework/events">
