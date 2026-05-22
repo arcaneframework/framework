@@ -54,17 +54,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Materials
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace ArcaneTest
 {
 
@@ -1204,7 +1193,7 @@ _testSelection()
     ARCANE_FATAL("Bad value ref0={0} total={1}", ref0, total);
 
   total = 0;
-  ENUMERATE_CONSTITUENTITEM (EnvCell, ienvcell, partial_env_cells) {
+  ENUMERATE_ENVCELL (ienvcell, partial_env_cells) {
     EnvCell x = *ienvcell;
     total += test_var[x];
   }
@@ -1214,12 +1203,16 @@ _testSelection()
     ARCANE_FATAL("Bad value ref1={0} total={1}", ref1, total);
 
   total = 0;
-  ENUMERATE_CONSTITUENTITEM (EnvCell, ienvcell, full_partial_env_cells) {
+  ENUMERATE_ENVCELL (ienvcell, full_partial_env_cells) {
     EnvCell x = *ienvcell;
     total += test_var[x];
   }
+  ENUMERATE_COMPONENTCELL (ienvcell, full_partial_env_cells) {
+    ComponentCell x = *ienvcell;
+    total += test_var[x];
+  }
   info() << "TOTAL2=" << total;
-  Int64 ref2 = ref0;
+  Int64 ref2 = 2 * ref0;
   if (ref2 != total)
     ARCANE_FATAL("Bad value ref2={0} total={1}", ref2, total);
 }
