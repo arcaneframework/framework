@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Famille de faces.                                                         */
+/* Face family.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -164,11 +164,11 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Alloue une face de numéro unique \a uid et de type \a type. Ajout générique d'item.
+ * \brief Allocates a face with unique number \a uid and type \a type. Generic item addition.
  *
- * Cette version est faite pour être appelée dans un bloc générique ignorant le type
- * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
- * et non dans le bloc appelant.
+ * This version is intended to be called in a generic block ignoring the item type
+ * of the item. The update of the mesh item count is therefore done in this method,
+ * and not in the calling block.
  */
 Item FaceFamily::
 allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
@@ -180,7 +180,7 @@ allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Alloue une face de numéro unique \a uid et de type \a type.
+ * \brief Allocates a face with unique number \a uid and type \a type.
  */
 ItemInternal* FaceFamily::
 allocOne(Int64 uid,ItemTypeInfo* type)
@@ -193,13 +193,13 @@ allocOne(Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère ou alloue une face de numéro unique \a uid et de type \a type.
+ * \brief Retrieves or allocates a face with unique number \a uid and type \a type.
  *
- * Cette version est faite pour être appelée dans un bloc générique ignorant le type
- * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
- * et non dans le bloc appelant.
- * Si une face de numéro unique \a uid existe déjà, la retourne. Sinon,
- * la face est créée. \a is_alloc est vrai si la face vient d'être créée.
+ * This version is intended to be called in a generic block ignoring the item type
+ * of the item. The update of the mesh item count is therefore done in this method,
+ * and not in the calling block.
+ * If a face with unique number \a uid already exists, it is returned. Otherwise,
+ * the face is created. \a is_alloc is true if the face has just been created.
  *
  */
 Item FaceFamily::
@@ -214,10 +214,10 @@ findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère ou alloue une face de numéro unique \a uid et de type \a type.
+ * \brief Retrieves or allocates a face with unique number \a uid and type \a type.
  *
- * Si une face de numéro unique \a uid existe déjà, la retourne. Sinon,
- * la face est créée. \a is_alloc est vrai si la face vient d'être créée.
+ * If a face with unique number \a uid already exists, it is returned. Otherwise,
+ * the face is created. \a is_alloc is true if the face has just been created.
  */
 ItemInternal* FaceFamily::
 findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
@@ -261,10 +261,10 @@ preAllocate(Integer nb_item)
 {
   if (!m_has_face)
     return;
-  // On ne préalloue pas par défaut car on ne souhaite pas pré-allouer
-  // pour la connectivité face->face car c'est dernière n'est utilisée que
-  // s'il y a des TiedInterface et cela n'est pas fréquent.
-  // Du coup on pré-alloue explicitement les connectivités qu'on souhaite.
+  // We do not pre-allocate by default because we do not want to pre-allocate
+  // for face->face connectivity because it is only used
+  // if there are TiedInterfaces and this is not frequent.
+  // So we explicitly pre-allocate the connectivities we want.
   this->_preAllocate(nb_item,false);
   m_node_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
   if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
@@ -285,8 +285,8 @@ computeSynchronizeInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace le noeud d'index \a index de la face \a face avec
- * celui de localId() \a node_lid.
+ * \brief Replaces the node at index \a index of the face \a face with
+ * that of localId() \a node_lid.
  */
 void FaceFamily::
 replaceNode(ItemLocalId face,Integer index,ItemLocalId node)
@@ -297,8 +297,8 @@ replaceNode(ItemLocalId face,Integer index,ItemLocalId node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace l'arête d'index \a index de la face \a face avec
- * celle de localId() \a edge_lid.
+ * \brief Replaces the edge at index \a index of the face \a face with
+ * that of localId() \a edge_lid.
  */
 void FaceFamily::
 replaceEdge(ItemLocalId face,Integer index,ItemLocalId edge)
@@ -309,8 +309,8 @@ replaceEdge(ItemLocalId face,Integer index,ItemLocalId edge)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace la face d'index \a index de la face \a face avec
- * celle de localId() \a face_lid.
+ * \brief Replaces the face at index \a index of the face \a face with
+ * that of localId() \a face_lid.
  */
 void FaceFamily::
 replaceFace(ItemLocalId face,Integer index,ItemLocalId face2)
@@ -321,8 +321,8 @@ replaceFace(ItemLocalId face,Integer index,ItemLocalId face2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace la maille d'index \a index de la face \a face avec
- * celle de localId() \a cell_lid.
+ * \brief Replaces the cell at index \a index of the face \a face with
+ * that of localId() \a cell_lid.
  */
 void FaceFamily::
 replaceCell(ItemLocalId face,Integer index,ItemLocalId cell)
@@ -333,12 +333,12 @@ replaceCell(ItemLocalId face,Integer index,ItemLocalId cell)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne la maille derrière et devant la face.
+ * \brief Positions the cell behind and in front of the face.
  *
- * \a iback_cell_lid ou \a ifront_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
- * pour indiquer qu'il n'y a pas de maille derrière ou devant. Si les deux
- * valeurs sont NULL_ITEM_LOCAL_ID cela signifie que la face n'a pas de
- * mailles connectées.
+ * \a iback_cell_lid or \a ifront_cell_lid can have the value NULL_ITEM_LOCAL_ID
+ * to indicate that there is no cell behind or in front. If both
+ * values are NULL_ITEM_LOCAL_ID it means that the face has no
+ * connected cells.
  */
 void FaceFamily::
 setBackAndFrontCells(Face face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
@@ -349,24 +349,24 @@ setBackAndFrontCells(Face face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
   auto c = m_cell_connectivity->trueCustomConnectivity();
   if (c){
     ItemLocalId face_lid(face.localId());
-    // Supprime toutes les mailles connectées.
-    // TODO: optimiser en ne supprimant pas s'il n'y a pas besoin pour éviter
-    // des réallocations.
+    // Removes all connected meshes.
+    // TODO: optimize by not deleting if it is not necessary to avoid
+    // reallocations.
     c->removeConnectedItems(face_lid);
     if (front_cell_lid==NULL_ITEM_LOCAL_ID){
       if (back_cell_lid!=NULL_ITEM_LOCAL_ID){
-        // Reste uniquement la back_cell ou aucune maille.
+        // Only the back_cell or no mesh remains.
         c->IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid); // add the class name for the case of Face to Cell connectivity. The class is overridden to handle family dependencies but the base method must be called here.
       }
-      // Ici reste aucune maille mais comme on a tout supprimé il n'y a rien
-      // à faire.
+      // Here no mesh remains, but since we deleted everything there is nothing
+      // to do.
     }
     else if (back_cell_lid==NULL_ITEM_LOCAL_ID){
-      // Reste uniquement la front cell
+      // Only the front cell remains
       c->IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
     }
     else{
-      // Il y a deux mailles connectées. La back_cell est toujours la première.
+      // There are two connected meshes. The back_cell is always the first.
       c->IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid);
       c->IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
     }
@@ -383,8 +383,8 @@ addBackCellToFace(Face face,Cell new_cell)
 
   Integer nb_cell = face.nbCell();
 
-  // SDP: les tests suivants sont imcompatibles avec le raffinement
-  // par couches
+  // SDP: the following tests are incompatible with refinement
+  // by layers
   if (m_check_orientation){
     Cell current_cell = face.backCell();
     if (face.hasFlags(ItemFlags::II_HasBackCell)){
@@ -401,7 +401,7 @@ addBackCellToFace(Face face,Cell new_cell)
 
   _updateSharedInfo();
 
-  // Si on a déjà une maille, il s'agit de la front cell.
+  // If we already have a mesh, it is the front cell.
   Int32 front_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,new_cell.localId(),front_cell_lid);
 }
@@ -416,8 +416,8 @@ addFrontCellToFace(Face face,Cell new_cell)
 
   Integer nb_cell = face.nbCell();
 
-  // SDP: les tests suivants sont imcompatibles avec le raffinement
-  // par couches
+  // SDP: the following tests are incompatible with refinement
+  // by layers
   if (m_check_orientation){
     Cell current_cell = face.frontCell();
     if (face.hasFlags(ItemFlags::II_HasFrontCell)){
@@ -434,12 +434,11 @@ addFrontCellToFace(Face face,Cell new_cell)
 
   _updateSharedInfo();
 
-  // Si on a déjà une maille, il s'agit de la back cell.
+  // If we already have a mesh, it is the back cell.
   Int32 back_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,back_cell_lid,new_cell.localId());
 }
 
-//! AMR
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -534,10 +533,10 @@ isSubFaceInFace(Face subface,Face face) const
   const Real tol= 1e-02;
   bool is_true= false;
 
-  //TODO : un std::binary_search pour accelerer la recherche
+  //TODO: a std::binary_search to speed up the search
   for( Node inode : subface.nodes() ){
     for( Node inode2 : face.nodes() ){
-      if (inode.uniqueId() == inode2.uniqueId()) {// il suffit qu'un seul noeud concide
+      if (inode.uniqueId() == inode2.uniqueId()) {// it is enough that a single node coincides
         is_true = true;
         break;
       }
@@ -560,10 +559,10 @@ isSubFaceInFace(Face subface,Face face) const
 bool FaceFamily::
 isChildOnFace(ItemWithNodes child,Face face) const
 {
-	//TODO : un std::binary_search pour accelerer la recherche
+	//TODO: a std::binary_search to speed up the search
 	for( Node inode : face.nodes() ){
 		for( Node inode2 : child.nodes() ){
-			if (inode.uniqueId() == inode2.uniqueId()) // il suffit qu'un seul noeud concide
+			if (inode.uniqueId() == inode2.uniqueId()) // it is enough that a single node coincides
 				return true;
 		}
 	}
@@ -784,10 +783,10 @@ _removeFace(Face face)
   }
 
   _removeOne(face);
-  // On ne supprime pas ici les autres relations (ici aucune)
-  // Car l'autre de suppression doit toujours être cell, face, edge, node
-  // donc node est en dernier et tout est déjà fait
-  // Par ailleurs, cela évite des problèmes de récursivité
+  // We do not delete other relations here (none here)
+  // Because the other deletion must always be cell, face, edge, node
+  // so node is last and everything is already done
+  // Furthermore, this avoids recursion problems
 }
 
 /*---------------------------------------------------------------------------*/
@@ -853,28 +852,28 @@ removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid)
   Integer nb_cell_after = nb_cell-1;
   const Int32 null_cell_lid = NULL_ITEM_LOCAL_ID;
   //! AMR
-  // forcer la suppression d'une face entre deux mailles de niveaux differents
-  // car cette face n'est topologiquement attachée a la maille de niveau inferieur
+  // force the deletion of a face between two meshes of different levels
+  // because this face is not topologically attached to the lower level mesh
   if (nb_cell == 2){
     if(face.backCell().level() != face.frontCell().level())
 	  nb_cell_after = 0;
     else if (! (face.backCell().isActive() && face.frontCell().isActive())){
-      // TODO: GG: pour des raisons de performance, il est préférable d'éviter
-      // les allocations dans cette méthode car elle est appelée très souvent.
+      // TODO: GG: for performance reasons, it is better to avoid
+      // allocations in this method because it is called very often.
       UniqueArray<ItemInternal*> subfaces;
       subFaces(face,subfaces);
       for(Integer s=0,ss=subfaces.size();s<ss;s++){
         ItemInternal* face2= subfaces[s];
         Int32 cell0 = face2->cellId(0);
         Int32 cell1 = face2->cellId(1);
-        // On avait obligatoirement deux mailles connectées avant,
-        // donc la back_cell est la maille 0, la front cell la maille 1
+        // We previously had two connected meshes,
+        // so the back_cell is mesh 0, the front cell is mesh 1
         if (cell0==cell_to_remove_lid){
-          // Reste la front cell
+          // The front cell remains
           setBackAndFrontCells(face,null_cell_lid,cell1);
         }
         else{
-          // Reste la back cell
+          // The back cell remains
           setBackAndFrontCells(face,cell0,null_cell_lid);
         }
         _updateSharedInfo();
@@ -885,14 +884,14 @@ removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid)
   if (nb_cell_after!=0){
     Int32 cell0 = face.cellId(0);
     Int32 cell1 = face.cellId(1);
-    // On avait obligatoirement deux mailles connectées avant,
-    // donc la back_cell est la maille 0, la front cell la maille 1
+    // We previously had two connected meshes,
+    // so the back_cell is mesh 0, the front cell is mesh 1
     if (cell0==cell_to_remove_lid){
-      // Reste la front cell
+      // The front cell remains
       setBackAndFrontCells(face,null_cell_lid,cell1);
     }
     else{
-      // Reste la back cell
+      // The back cell remains
       setBackAndFrontCells(face,cell0,null_cell_lid);
     }
   }
@@ -1034,8 +1033,8 @@ setConnectivity(const Integer c)
 void FaceFamily::
 reorientFacesIfNeeded()
 {
-  // Réoriente les faces si nécessaire. Cela est le cas par exemple si on
-  // a changé la numérotation des uniqueId() des noeuds.
+  // Reorients the faces if necessary. This is the case, for example, if we
+  // have changed the uniqueId() numbering of the nodes.
   mesh::FaceReorienter face_reorienter(mesh());
   ENUMERATE_ (Face, iface, allItems()) {
     face_reorienter.checkAndChangeOrientationAMR(*iface);

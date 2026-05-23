@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnstructuredMeshUtilities.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires sur un maillage.                                    */
+/* Utility functions for a mesh.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,25 +88,25 @@ UnstructuredMeshUtilities::
 void UnstructuredMeshUtilities::
 changeOwnersFromCells()
 {
-  // On suppose qu'on connait les nouveaux propriétaires des mailles, qui
-  // se trouvent dans cells_owner. Il faut
-  // maintenant déterminer les nouveaux propriétaires des noeuds et
-  // des faces. En attendant d'avoir un algorithme qui équilibre mieux
-  // les messages, on applique le suivant:
-  // - chaque sous-domaine est responsable pour déterminer le nouveau
-  // propriétaire des noeuds et des faces qui lui appartiennent.
-  // - pour les noeuds, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille connectée à ce noeud dont le uniqueId() est le plus petit.
-  // - pour les faces, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille qui est derrière cette face s'il s'agit d'une face
-  // interne et de la maille connectée s'il s'agit d'une face frontière.
-  // - pour les noeuds duaux, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille connectée à l'élément dual
-  // - pour les liaisons, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille connectée au premier noeud dual, c'est-à-dire le propriétaire
-  // du premier noeud dual de la liaison
+  // We assume that we know the new owners of the cells, which
+  // are found in cells_owner. We must
+  // now determine the new owners of the nodes and
+  // faces. Pending an algorithm that better balances
+  // messages, we apply the following:
+  // - each subdomain is responsible for determining the new
+  // owner of the nodes and faces belonging to it.
+  // - for nodes, the new owner is the new owner
+  // of the cell connected to this node whose uniqueId() is the smallest.
+  // - for faces, the new owner is the new owner
+  // of the cell behind this face if it is an internal face
+  // and of the connected cell if it is a boundary face.
+  // - for dual nodes, the new owner is the new owner
+  // of the cell connected to the dual element
+  // - for links, the new owner is the new owner
+  // of the cell connected to the first dual node, that is, the owner
+  // of the link's first dual node
 
-  // Outil d'affectation des owners pour les items
+  // Utility for assigning owners to items
   mesh::NewItemOwnerBuilder owner_builder;
 
   VariableItemInt32& nodes_owner(m_mesh->nodeFamily()->itemsNewOwner());
@@ -114,7 +114,7 @@ changeOwnersFromCells()
   VariableItemInt32& faces_owner(m_mesh->faceFamily()->itemsNewOwner());
   VariableItemInt32& cells_owner(m_mesh->cellFamily()->itemsNewOwner());
 
-  // Détermine les nouveaux propriétaires des noeuds
+  // Determine the new owners of nodes
   {
     ENUMERATE_NODE(i_node,m_mesh->ownNodes()){
       const Node node = *i_node;
@@ -132,7 +132,7 @@ changeOwnersFromCells()
     nodes_owner.synchronize();
   }
 
-  // Détermine les nouveaux propriétaires des arêtes
+  // Determine the new owners of edges
   {
     ENUMERATE_EDGE(i_edge,m_mesh->ownEdges()){
       const Edge edge = *i_edge;
@@ -150,7 +150,7 @@ changeOwnersFromCells()
     edges_owner.synchronize();
   }
 
-  // Détermine les nouveaux propriétaires des faces
+  // Determine the new owners of faces
   {
     ENUMERATE_FACE(i_face,m_mesh->ownFaces()){
       const Face face = *i_face;
@@ -161,13 +161,12 @@ changeOwnersFromCells()
   }
   
 
-  // Détermine les nouveaux propriétaires des particules
-  // Les particules ont le même propriétaire que celui de la maille dans
-  // laquelle elle se trouve.
+  // Determine the new owners of particles
+  // Particles have the same owner as the cell they are in.
   for( IItemFamily* family : m_mesh->itemFamilies() ){
     if (family->itemKind()!=IK_Particle)
       continue;
-    // Positionne les nouveaux propriétaires des particle
+    // Position the new owners of particles
     VariableItemInt32& particles_owner(family->itemsNewOwner());
     ENUMERATE_PARTICLE(i_particle,family->allItems()){
       Particle particle = *i_particle ;
@@ -416,7 +415,7 @@ Real3 UnstructuredMeshUtilities::
 _round(Real3 value)
 {
   Real3 rvalue = value;
-  // Evite les problèmes d'arrondi numérique
+  // Avoid numerical rounding issues
   if (math::isNearlyZero(value.x))
     rvalue.x = 0.0;
   if (math::isNearlyZero(value.y))
@@ -453,10 +452,10 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
   //Integer nb_item = face_group.size();
   Integer nb_node = 0;
   Integer mesh_dimension = m_mesh->dimension();
-  // 'global_normal' et 'total_global_normal' servent à determiner
-  // une direction pour la surface en supposant qu'il s'agit
-  // d'une surface externe. La direction sert ensuite à orienter
-  // la normale calculée dans le sens normal sortante.
+  // 'global_normal' and 'total_global_normal' are used to determine
+  // a direction for the surface assuming it is
+  // an external surface. The direction is then used to orient
+  // the calculated normal in the outward normal direction.
   Real3 global_normal = Real3::null();
   Real nb_global_normal_used_node = 0.0;
   ENUMERATE_FACE(iface,face_group){
@@ -484,14 +483,14 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
       nb_global_normal_used_node += 1.0;
     }
   }
-  // L'algorithme tente de déterminer les noeuds aux extrémités de la surface
-  // On considère qu'il s'agit de ceux qui n'appartiennent qu'à une seule
-  // face de la surface. Cela fonctionne bien si toutes les faces ont au moins
-  // quatres arêtes. S'il y a des triangles, on suppose que ce n'est pas 
-  // partout et dans ce cas on a au moins deux noeuds extrèmes connus.
+  // The algorithm attempts to determine the nodes at the ends of the surface
+  // It assumes these are nodes that belong to only one
+  // face of the surface. This works well if all faces have at least
+  // four edges. If there are triangles, we assume this is not
+  // everywhere, and in this case, we have at least two known extreme nodes.
   typedef HashTableMapT<Int32,Int32> NodeOccurenceMap;
-  // Range dans la table pour chaque noeud le nombre de faces de la surface
-  // auxquelles il est connecté.
+  // Range in the table for each node the number of surface faces
+  // to which it is connected.
   NodeOccurenceMap nodes_occurence(nb_node*2,true,nb_node);
   ENUMERATE_FACE(iface,face_group){
     Face face = *iface;
@@ -510,7 +509,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
   nodes_occurence.each([&](NodeOccurenceMap::Data* d){
       if (d->value()==1){
         Node node = nodes_internal[d->key()];
-        // En parallèle, ne traite que les noeuds qui nous appartiennent
+        // In parallel, only process the nodes that belong to us
         if (node.owner()==rank){
           single_nodes.add(node);
           //info() << "SINGLE NODE OWNER lid=" << d->key() << " " << ItemPrinter(node)
@@ -518,7 +517,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
         }
       }
     });
-  // Chaque sous-domaine collecte les coordonnées des noeuds des autres sous-domaines
+  // Each sub-domain collects the coordinates of the nodes from the other sub-domains
   Integer nb_single_node = single_nodes.size();
   //info() << "NB SINGLE NODE= " << nb_single_node;
   Integer total_nb_single_node = pm->reduce(Parallel::ReduceSum,nb_single_node);
@@ -532,7 +531,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
     pm->computeMinMaxSum(nb_global_normal_used_node,all_min,all_max,all_sum,min_rank,max_rank);
     Real3 buf;
     if (max_rank==rank){
-      // Je suis celui qui a le point le plus loin. Je l'envoie aux autres.
+      // I am the one with the farthest point. I send it to the others.
       buf = global_normal;
     }
     pm->broadcast(Real3ArrayView(1,&buf),max_rank);
@@ -559,11 +558,11 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
   }
   barycentre /= (Real)total_nb_single_node;
   if (total_nb_single_node==2 && m_mesh->dimension()==3){
-    // On a que deux noeuds. Il en faut au moins un troisième pour déterminer
-    // la normale au plan. Pour cela, chaque processeur cherche le noeud de
-    // la surface qui est le plus éloigné du barycentre des deux noeuds déjà
-    // trouvé. Ce noeud le plus éloigné servira de troisième point pour le
-    // plan.
+    // We only have two nodes. We need at least a third one to determine
+    // the normal to the plane. For this, each processor searches for the node
+    // on the surface that is farthest from the barycenter of the two nodes already
+    // found. This farthest node will serve as the third point for the
+    // plane.
     Real max_distance = 0.0;
     Node farthest_node;
     Real3 s0 = all_nodes_coord[0];
@@ -571,7 +570,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
     nodes_occurence.each([&](NodeOccurenceMap::Data* d){
         Node node = nodes_internal[d->key()];
         Real3 coord = nodes_coord[node];
-        // Ne traite pas les deux noeuds du déjà trouvés
+        // Do not process the two nodes already found
         if (math::isNearlyEqual(coord,s0))
           return;
         if (math::isNearlyEqual(coord,s1))
@@ -579,7 +578,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
         Real distance = (coord - barycentre).squareNormL2();
         if (distance>max_distance){
           Real3 normal = math::cross(coord-s0, s1-s0);
-          // On ne prend le noeud que s'il n'est pas aligné avec les deux autres.
+          // We only take the node if it is not aligned with the other two.
           if (!math::isNearlyZero(normal.squareNormL2())){
             max_distance = distance;
             farthest_node = node;
@@ -596,8 +595,8 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
       all_nodes_coord.add(farthest_coord);
     }
   }
-  // Trie les noeuds pour que le calcul ne dépende pas de l'ordre des
-  // opérations en parallèle.
+  // Sort the nodes so that the calculation does not depend on the order of
+  // parallel operations.
   std::sort(std::begin(all_nodes_coord),std::end(all_nodes_coord));
   Integer nb_final_node = all_nodes_coord.size();
   Real3 full_normal = Real3::null();
@@ -613,14 +612,14 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
     full_normal.y = direction.x;
   }
   else if (m_mesh->dimension()==3){
-    //nb_final_node = 3; // On prend que les 3 premiers points.
-    // NOTE: on pourrait prendre tous les points, car si les trois premiers sont
-    // alignés, la normale ne sera pas bonne.
-    // Si on prend tous les points, il faut être sur qu'ils soient ordonnés
-    // de telle sorte que la normale de trois points consécutifs est toujours
-    // dans le même sens. Cela signifie si on a quatres points par exemple,
-    // que ces 4 points forment un quadrangle non croisé (pas en forme
-    // de papillon)
+    //nb_final_node = 3; // We only take the first 3 points.
+    // NOTE: we could take all points, because if the first three are
+    // aligned, the normal will not be correct.
+    // If we take all points, we must ensure they are ordered
+    // such that the normal of three consecutive points is always
+    // in the same direction. This means if we have four points, for example,
+    // that these 4 points form a non-crossed quadrangle (not in the shape
+    // of a butterfly)
     Real3 first_normal = math::vecMul(all_nodes_coord[2]-all_nodes_coord[0],
                                       all_nodes_coord[1]-all_nodes_coord[0]);
     for( Integer i=0; i<nb_final_node; ++i ){
@@ -658,11 +657,11 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * L'algorithme utilisé est le suivant:
- * 1. calcule le barycentre de l'ensemble des noeuds.
- * 2. détermine le noeud le plus éloigné de ce barycentre, noté n1
- * 3. détermine le noeud le plus éloigné de n1, noté n2.
- * 4. détermine la direction à partir des coordonnées de n1 et n2.
+ * The algorithm used is as follows:
+ * 1. calculates the barycenter of the set of nodes.
+ * 2. determines the node farthest from this barycenter, denoted n1
+ * 3. determines the node farthest from n1, denoted n2.
+ * 4. determines the direction from the coordinates of n1 and n2.
  */
 Real3 UnstructuredMeshUtilities::
 computeDirection(const NodeGroup& node_group,
@@ -688,7 +687,7 @@ computeDirection(const NodeGroup& node_group,
   debug() << " BARYCENTRE COMPUTE DIRECTION = " << barycentre;
   pm->barrier();
 
-  // Détermine le noeud le plus éloigné du barycentre
+  // Determines the node farthest from the barycenter
   Real3 first_boundary_coord;
   {
     Real max_distance = 0.0;
@@ -764,7 +763,7 @@ _broadcastFarthestNode(Real distance,const Node& farthest_node,
   if (max_rank==rank){
     if (farthest_node.null())
       ARCANE_FATAL("can not find farthest node");
-    // Je suis celui qui a le point le plus loin. Je l'envoie aux autres.
+    // I am the one with the farthest point. I send it to the others.
     buf = nodes_coord[farthest_node];
     debug() << " I AM FARTHEST NODE ALL coord=" << buf;
   }
@@ -822,9 +821,9 @@ partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
   IParallelReplication* pr = pm->replication();
   bool has_replication = pr->hasReplication();
 
-  // En mode réplication, seul le premier réplicat fait l'équilibrage.
-  // Il doit ensuite envoyer aux autres ces informations de maillage
-  // pour qu'ils aient le même maillage.
+  // In replication mode, only the first replica performs the balancing.
+  // It must then send this mesh information to the others
+  // so that they have the same mesh.
 
   info() << "Partition start date=" << platform::getCurrentDateTime();
   if (pr->isMasterRank()){
@@ -838,16 +837,16 @@ partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
   if (has_replication){
     pm->barrier();
 
-    // Vérifie que toute les familles sont les mêmes.
+    // Checks that all families are the same.
     mesh->checker()->checkValidReplication();
 
     Int32 replica_master_rank = pr->masterReplicationRank();
     IParallelMng* rep_pm = pr->replicaParallelMng();
 
-    // Seul le replica maitre a les bons propriétaires. Il faut mettre
-    // à jour les autres à partir de celui-ci. Pour cela on synchronize
-    // les propriétaires des mailles et ensuite on met à jour les autres familles
-    // à partir des propriétaires des mailles.
+    // Only the master replica has the correct owners. It must update
+    // the others from this. To do this, we synchronize
+    // the owners of the meshes and then update the other families
+    // from the mesh owners.
     {
       Int32ArrayView owners = mesh->cellFamily()->itemsNewOwner().asArray();
       rep_pm->broadcast(owners,replica_master_rank);
@@ -864,13 +863,13 @@ partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
   info() << "Exchange end date=" << platform::getCurrentDateTime();
   partitioner->notifyEndPartition();
 
-  // Il faut recompacter pour se retrouver dans la même situation que
-  // si on avait juste lu un maillage directement (qui fait un prepareForDump()
-  // lors de l'appel à endAllocate()).
-  // On le fait aussi en cas de réplication pour éviter d'éventuelles
-  // incohérences si par la suite certains réplicas appellent cette
-  // méthode et pas les autres.
-  // TODO: regarder s'il faut le faire aussi en cas de repartitionnement.
+  // It must be compacted to return to the same situation as
+  // if we had just read a mesh directly (which performs a prepareForDump()
+  // when calling endAllocate()).
+  // We do this also in case of replication to avoid potential
+  // inconsistencies if later some replicas call this
+  // method and others do not.
+  // TODO: check if it should also be done in case of repartitioning.
   if (initial_partition || has_replication)
     mesh->prepareForDump();
 }
@@ -950,8 +949,8 @@ recomputeItemsUniqueIdFromNodesUniqueId()
   ITraceMng* tm = mesh->traceMng();
 
   tm->info() << "Calling RecomputeItemsUniqueIdFromNodesUniqueId()";
-  // D'abord indiquer que les noeuds ont changés pour éventuellement
-  // remettre à jour l'orientation des faces.
+  // First indicate that the nodes have changed to potentially
+  // update the orientation of the faces.
   mesh->nodeFamily()->notifyItemsUniqueIdChanged();
   _recomputeUniqueIds(mesh->edgeFamily());
   _recomputeUniqueIds(mesh->faceFamily());

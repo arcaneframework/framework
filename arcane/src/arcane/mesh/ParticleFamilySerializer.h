@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleFamilySerializer.h                                  (C) 2000-2017 */
 /*                                                                           */
-/* Sérialisation/Désérialisation des familles de particules.                 */
+/* Serialization/Deserialization of particle families.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_PARTICLEFAMILYSERIALIZER_H
 #define ARCANE_MESH_PARTICLEFAMILYSERIALIZER_H
@@ -37,7 +37,7 @@ class ParticleFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialisation/Désérialisation des familles de liens.
+ * \brief Serialization/Deserialization of link families.
  */
 class ARCANE_MESH_EXPORT ParticleFamilySerializer
 : public TraceAccessor
@@ -65,4 +65,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 #endif
-

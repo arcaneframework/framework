@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshUniqueIdMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de numérotation des uniqueId() d'un maillage.                */
+/* Mesh uniqueId() numbering manager.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHUNIQUEIDMNG_H
 #define ARCANE_MESH_MESHUNIQUEIDMNG_H
@@ -29,7 +29,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire de numérotation des uniqueId() d'un maillage.
+ * \brief Mesh uniqueId() numbering manager.
  */
 class ARCANE_MESH_EXPORT MeshUniqueIdMng
 : public TraceAccessor

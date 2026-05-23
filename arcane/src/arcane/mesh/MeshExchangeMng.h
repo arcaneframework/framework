@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshExchangeMng.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des échanges de maillages entre sous-domaines.               */
+/* Mesh exchange manager between subdomains.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESHEXCHANGEMNG_H
 #define ARCANE_MESHEXCHANGEMNG_H
@@ -28,8 +28,8 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des échanges de maillages entre
- * sous-domaines.
+ * \brief Interface for the mesh exchange manager between
+ * subdomains.
  *
  */
 class ARCANE_MESH_EXPORT MeshExchangeMng
@@ -67,4 +67,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamilyPolicyMng.cc                                      (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de mailles.                     */
+/* Mesh family policy manager.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de mailles.
+ * \brief Mesh family policy manager.
  */
 class ARCANE_MESH_EXPORT CellFamilyPolicyMng
 : public ItemFamilyPolicyMng

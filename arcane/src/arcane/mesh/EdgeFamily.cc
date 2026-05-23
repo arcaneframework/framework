@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Famille d'arêtes.                                                         */
+/* Edge family.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -118,10 +118,10 @@ _createOne(ItemInternal* item,Int64 uid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Alloue une arête de numéro unique \a uid. Ajout générique d'item.
-* Cette version est faite pour être appelée dans un bloc générique ignorant le type
- * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
- * et non dans le bloc appelant.
+ * \brief Allocates a unique numbered edge \a uid. Generic item addition.
+* This version is designed to be called in a generic block ignoring the item type
+ * of the item. The update of the mesh's item count is therefore done in this method,
+* and not in the calling block.
  */
 Item EdgeFamily::
 allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
@@ -135,7 +135,7 @@ allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Alloue une arête de numéro unique \a uid.
+ * \brief Allocates a unique numbered edge \a uid.
  */
 ItemInternal* EdgeFamily::
 allocOne(Int64 uid)
@@ -148,14 +148,14 @@ allocOne(Int64 uid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère ou alloue une arête de numéro unique \a uid et de type \a type.Ajout générique d'item.
+ * \brief Retrieves or allocates a unique numbered edge \a uid and of type \a type.Generic item addition.
  *
- * Cette version est faite pour être appelée dans un bloc générique ignorant le type
- * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
- * et non dans le bloc appelant.
+ * This version is designed to be called in a generic block ignoring the item type
+ * of the item. The update of the mesh's item count is therefore done in this method,
+ * and not in the calling block.
  *
- * Si une arête de numéro unique \a uid existe déjà, la retourne. Sinon,
- * l'arête est créée. \a is_alloc est vrai si l'arête vient d'être créée.
+ * If a unique numbered edge \a uid already exists, it is returned. Otherwise,
+ * the edge is created. \a is_alloc is true if the edge has just been created.
  */
 Item EdgeFamily::
 findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc)
@@ -171,10 +171,10 @@ findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère ou alloue une arête de numéro unique \a uid et de type \a type.
+ * \brief Retrieves or allocates a unique numbered edge \a uid and of type \a type.
  *
- * Si une arête de numéro unique \a uid existe déjà, la retourne. Sinon,
- * l'arête est créée. \a is_alloc est vrai si l'arête vient d'être créée.
+ * If a unique numbered edge \a uid already exists, it is returned. Otherwise,
+ * the edge is created. \a is_alloc is true if the edge has just been created.
  */
 ItemInternal* EdgeFamily::
 findOrAllocOne(Int64 uid,bool& is_alloc)
@@ -209,8 +209,8 @@ computeSynchronizeInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace le noeud d'index \a index de l'arête \a edge avec
- * celui de localId() \a node_lid.
+ * \brief Replaces the node at index \a index of the edge \a edge with *
+ * that of localId() \a node_lid.
  */
 void EdgeFamily::
 replaceNode(ItemLocalId edge,Integer index,ItemLocalId node)
@@ -253,10 +253,10 @@ _removeEdge(Edge edge)
   for( Node node : edge.nodes() )
     m_node_family->removeEdgeFromNode(node,edge);
   _removeOne(edge);
-  // On ne supprime pas ici les autres relations (face->edge,cell->edge)
-  // Car l'ordre de suppression doit toujours être cell, face, edge, node
-  // donc node est en dernier et tout est déjà fait
-  // Par ailleurs, cela évite des problèmes de récursivité
+  // We do not delete the other relationships here (face->edge,cell->edge)
+  // Because the deletion order must always be cell, face, edge, node
+  // so node is last and everything is already done
+  // Furthermore, this avoids recursion problems
 }
 
 /*---------------------------------------------------------------------------*/
@@ -320,8 +320,8 @@ void EdgeFamily::
 reorientEdgesIfNeeded()
 {
   info() << "Reorient Edges family=" << fullName();
-  // Réoriente les arêtes si nécessaire. Cela est le cas par exemple si on
-  // a changé la numérotation des uniqueId() des noeuds.
+  // Reorients the edges if necessary. This is the case, for example, if we
+  // have changed the numbering of node uniqueIds().
   NodesOfItemReorderer reorderer(mesh()->itemTypeMng());
   SmallArray<Int32> new_nodes_lid;
   IncrementalItemConnectivity* true_connectivity = m_node_connectivity->trueCustomConnectivity();
@@ -329,8 +329,8 @@ reorientEdgesIfNeeded()
     Edge edge = *iedge;
     ItemTypeId edge_type = edge.itemTypeId();
     Int32 nb_node = edge.nbNode();
-    // Il faut que le premier noeud soit celui de plus petit uniqueId().
-    // Si le type est ITI_Line3, le troisième noeud ne change pas.
+    // The first node must be the one with the smallest uniqueId().
+    // If the type is ITI_Line3, the third node does not change.
     if (edge_type == ITI_Line2 || edge_type == ITI_Line3) {
       new_nodes_lid.resize(nb_node);
       for (Int32 i = 0; i < nb_node; ++i)

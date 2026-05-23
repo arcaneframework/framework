@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceUniqueIdBuilder2.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Construction des identifiants uniques des faces.                          */
+/* Construction of unique face identifiers.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,23 +32,23 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des uniqueId() des faces.
+ * \brief Construction of the uniqueId() for faces.
  *
- * Cette classe permet de calculer les uniqueId() des faces.
- * Après appel à computeFacesUniqueId(), les champs uniqueId() et owner()
- * de chaque face sont positionnés.
+ * This class allows calculating the uniqueId() for faces.
+ * After calling computeFacesUniqueId(), the uniqueId() and owner()
+ * fields of each face are set.
  *
- * Cette algorithme garanti que la numérotation est la même
- * indépendamment du découpage et du nombre de processeurs.
- * En séquentiel, l'algorithme peut s'écrire comme suit:
+ * This algorithm guarantees that the numbering is the same
+ * regardless of the decomposition and the number of processors.
+ * In sequential mode, the algorithm can be written as follows:
  \code
  * Int64 face_unique_id_counter = 0;
- * // Parcours les mailles en supposant les uniqueId() croissants.
+ * // Iterate over cells assuming increasing uniqueIds.
  * ENUMERATE_CELL(icell,allCells()){
  *   Cell cell = *icell;
  *   ENUMERATE_FACE(iface,cell.faces()){
  *    Face face = *iface;
- *    // Si je n'ai pas déjà un uniqueId(), en affecte un et incrémente le compteur
+ *    // If I don't already have a uniqueId(), assign one and increment the counter
  *    if (face.uniqueId()==NULL_ITEM_UNIQUE_ID){
  *      face.setUniqueId(face_unique_id_counter);
  *      ++face_unique_id_counter;
@@ -56,15 +56,14 @@ namespace Arcane::mesh
  *   }
  * }
  \endcode
- * L'algorithme séquentiel suppose qu'on parcourt les mailles dans l'ordre
- * croissant des uniqueId(). Pour une face donnée, c'est donc la maille
- * de plus petit uniqueId() qui va donner le uniqueId() de la face et
- * par la même le propriétaire de cette face.
+ * The sequential algorithm assumes that cells are traversed in increasing order
+ * of uniqueIds. For a given face, therefore, the cell with the smallest uniqueId()
+ * will provide the face's uniqueId() and thus the face's owner.
  *
- * Cette version utilise un tri parallèle pour garantir que
- * le nombre de messages augmente en log2(N), avec N le nombre de processeurs.
- * Cela évite d'avoir potentiellement un grand nombre de messages, ce qui
- * n'est pas supporté par certaines implémentations MPI (par exemple MPC).
+ * This version uses a parallel sort to ensure that
+ * the number of messages increases by log2(N), where N is the number of processors.
+ * This avoids potentially having a large number of messages, which
+ * is not supported by certain MPI implementations (for example MPC).
  */
 class FaceUniqueIdBuilder2
 : public TraceAccessor
@@ -80,12 +79,12 @@ class FaceUniqueIdBuilder2
   class BoundaryFaceBitonicSortTraits;
   class UniqueIdSorter;
 
-  // Choisir le bon typedef suivant le choix de la structure d'échange.
+  // Choose the correct typedef depending on the exchange structure choice.
   typedef NarrowCellFaceInfo CellFaceInfo;
 
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the mesh \a mesh
   explicit FaceUniqueIdBuilder2(DynamicMesh* mesh);
 
  public:
@@ -112,28 +111,28 @@ class FaceUniqueIdBuilder2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Stocke les infos sur une face d'une maille.
+ * \brief Stores info about a face of a mesh cell.
 
- * Cette structure est utilisée lors du tri des faces. Comme le tri
- * est parallèle et afin de limiter la taille des messages envoyés,
- * il faut que la taille de cette structure soit la plus petite possible.
- * Pour cela, on suppose que les valeurs max ne sont pas atteignables.
- * Normalement, on a:
+ * This structure is used during face sorting. Since the sort
+ * is parallel and to limit the size of the messages sent,
+ * the size of this structure must be as small as possible.
+ * For this, we assume that max values are not reached.
+ * Normally, we have:
  * - cell_uid -> Int64
  * - rank -> Int32
  * - local_face_index -> Int32
- * On suppose en pratique les limites suivantes:
- * - cell_uid         -> 39 bits soit 250 milliards de mailles
- * - rank             -> 20 bits soit 1048576 PE
- * - local_face_index -> 5 bits soit 32 faces par maille
+ * We assume the following practical limits:
+ * - cell_uid         -> 39 bits, or 250 billion cells
+ * - rank             -> 20 bits, or 1,048,576 PEs
+ * - local_face_index -> 5 bits, or 32 faces per cell
  *
- * Logiquement, ces limites ne seront pas atteintes avant un moment (on est
- * en 2012). Et lorsque ce sera le cas, il suffira d'utiliser la structure
- * WideCellFaceInfo en changeant le typedef qui va bien.
+ * Logically, these limits will not be reached for a while (it is
+ * 2012). And when that happens, it will be enough to use the structure
+ * WideCellFaceInfo by changing the typedef accordingly.
  *
- * On utilise donc un seul Int64, avec les 39 premiers bits pour le uid,
- * les 20 suivantes pour le rang et les 5 derniers pour le local_index.
- * A noter que pour éviter des problèmes de signe, on stocke la valeur donnée
+ * We therefore use a single Int64, with the first 39 bits for the uid,
+ * the next 20 for the rank, and the last 5 for the local_index.
+ * Note that to avoid sign problems, we store the given value
  * plus 1.
  */
 class FaceUniqueIdBuilder2::NarrowCellFaceInfo
@@ -195,7 +194,7 @@ class FaceUniqueIdBuilder2::NarrowCellFaceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Stocke les infos sur une face d'une maille.
+ * \brief Stores info about a face of a mesh cell.
  */
 class FaceUniqueIdBuilder2::WideCellFaceInfo
 {
@@ -234,10 +233,10 @@ class FaceUniqueIdBuilder2::WideCellFaceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour gérer les faces frontières des sous-domaines.
+ * \brief Info for managing boundary faces of sub-domains.
  *
- * Quel que soit le type de la face, une faces peut être déterminée
- * de manière unique par ses trois premiers noeuds.
+ * Regardless of the face type, a face can be uniquely determined
+ * by its first three nodes.
  */
 class FaceUniqueIdBuilder2::BoundaryFaceInfo
 {
@@ -275,11 +274,11 @@ class FaceUniqueIdBuilder2::BoundaryFaceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour gérer les faces des sous-domaines.
+ * \brief Info for managing faces of sub-domains.
  *
- * Une instance de cette classe contient pour une face du maillage
- * les infos sur ces deux mailles attachées. Pour chaque maille, on
- * stocke le uniqueId(), le propriétaire et le numéro local de la face
+ * An instance of this class contains for a mesh face
+ * the info on the two cells attached to it. For each cell, we
+ * store the uniqueId(), the owner, and the local index of the face
  */
 class FaceUniqueIdBuilder2::AnyFaceInfo
 {
@@ -305,13 +304,13 @@ class FaceUniqueIdBuilder2::AnyFaceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Attention, cette classe doit avoir une taille multiple de Int64
+// Attention, this class must have a size multiple of Int64
 class FaceUniqueIdBuilder2::ResendCellInfo
 {
  public:
   Int64 m_cell_uid;
-  // Ce champs contient à la fois le numéro local de la face dans la maille
-  // et le rang du propriétaire de la maille.
+  // This field contains both the local index of the face in the cell
+  // and the rank of the cell owner.
   // m_face_local_index_and_owner_rank / nb_rank -> face_index
   // m_face_local_index_and_owner_rank % nb_rank -> owner_rank
   Int32 m_face_local_index_and_owner_rank;
@@ -327,7 +326,7 @@ class FaceUniqueIdBuilder2::ResendCellInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctor pour trier les BoundaryFaceInfo via le tri bitonic.
+ * \brief Functor for sorting BoundaryFaceInfo via bitonic sort.
  */
 class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
 {
@@ -339,19 +338,19 @@ class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
     if (k1.m_node0_uid>k2.m_node0_uid)
       return false;
 
-    // ke.node0_uid == k2.node0_uid
+    // k1.node0_uid == k2.node0_uid
     if (k1.m_node1_uid<k2.m_node1_uid)
       return true;
     if (k1.m_node1_uid>k2.m_node1_uid)
       return false;
 
-    // ke.node1_uid == k2.node1_uid
+    // k1.node1_uid == k2.node1_uid
     if (k1.m_node2_uid<k2.m_node2_uid)
       return true;
     if (k1.m_node2_uid>k2.m_node2_uid)
       return false;
 
-    // ke.node2_uid == k2.node2_uid
+    // k1.node2_uid == k2.node2_uid
     return (k1.m_cell_uid<k2.m_cell_uid);
   }
 
@@ -388,15 +387,14 @@ class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctor pour trier les AnyFaceInfo via le tri bitonic.
+ * \brief Functor for sorting AnyFaceInfo using bitonic sort.
  *
- * Le but est de trier la liste pour que les mailles de plus petit
- * uniqueId() soient en premier et pour une même maille, le plus
- * petit \a face_local_index en premier.
+ * The goal is to sort the list so that the meshes with the smallest
+ * uniqueId() come first, and for the same mesh, the smallest \a face_local_index comes first.
  *
- * Seul les infos de la première maille de AnyFaceInfo est utilisée
- * pour le tri (la seconde maille sert uniquement à renvoyer les infos
- * au processeurs concerné).
+ * Only the information from the first mesh of AnyFaceInfo is used
+ * for sorting (the second mesh only serves to send the information
+ * to the concerned processors).
  */
 class FaceUniqueIdBuilder2::AnyFaceBitonicSortTraits
 {
@@ -481,7 +479,7 @@ FaceUniqueIdBuilder2(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- *\brief Calcul les numéros uniques de chaque face en parallèle.
+ * \brief Calculates the unique IDs of each face in parallel.
  */  
 void FaceUniqueIdBuilder2::
 computeFacesUniqueIdAndOwnerVersion3()
@@ -495,28 +493,28 @@ computeFacesUniqueIdAndOwnerVersion3()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- *\brief Calcul les numéros uniques de chaque face en sequentiel.
+ * \brief Calculates the unique IDs of each face sequentially.
  */  
 void FaceUniqueIdBuilder2::
 _computeSequential()
 {
   info() << "Compute FacesUniqueId() Sequential V3";
 
-  //TODO: permettre de ne pas commencer a zero.
+  //TODO: allow not to start at zero.
   Int64 face_unique_id_counter = 0;
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   Integer nb_cell = cells_map.count();
   UniqueArray<Cell> cells;
   cells.reserve(nb_cell);
-  // D'abord, il faut trier les mailles par leur uniqueId()
-  // en ordre croissant
+  // First, the meshes must be sorted by their uniqueId()
+  // in ascending order
   cells_map.eachItem([&](Cell item) {
     cells.add(item);
   });
   std::sort(std::begin(cells),std::end(cells),UniqueIdSorter());
 
-  // Invalide les uid pour être certain qu'ils seront tous positionnés.
+  // Invalidate uids to ensure they are all positioned.
   _unsetFacesUniqueId();
 
   for( Integer i=0; i<nb_cell; ++i ){    
@@ -533,7 +531,7 @@ _computeSequential()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- *\brief Calcul les numéros uniques de chaque face en parallèle.
+ * \brief Calculates the unique IDs of each face in parallel.
  */  
 void FaceUniqueIdBuilder2::
 _computeParallel()
@@ -547,23 +545,22 @@ _computeParallel()
 
   info() << "Compute FacesUniqueId() V3 using parallel sort";
 
-  // Calcule et trie pour les faces frontières
+  // Calculate and sort for boundary faces
   UniqueArray<BoundaryFaceInfo> boundary_faces_info;
   _computeAndSortBoundaryFaces(boundary_faces_info);
 
-  // Ici, les faces de bord sont triées en fonction de leur noeuds.
-  // Normalement, dans cette liste, 2 éléments consécutifs BoundaryFaceInfo qui
-  // ont les même noeuds représentent la même face. Dans ce cas, on génère
-  // un AnyFaceInfo avec les infos des deux mailles issus de ces deux éléments de
-  // la liste en faisant bien attention de mettre en premier la maille
-  // de plus petit uniqueId().
-  // Si deux éléments consécutifs de la liste n'ont pas les mêmes noeuds, cela
-  // signifie que la face est au bord du domaine global.
-  // Il faut tout de même traiter le cas des deux éléments consécutifs de la liste
-  // qui se trouvent sur des processeurs différents. Pour gérer ce cas, chaque
-  // processeur envoie au suivant le dernier élément de sa liste s'il ne peut pas
-  // être fusionné avec l'avant dernier, dans l'espoir qu'il pourra l'être avec le
-  // premier de la liste du processeur suivant.
+  // Here, the boundary faces are sorted based on their nodes.
+  // Normally, in this list, 2 consecutive BoundaryFaceInfo elements that
+  // have the same nodes represent the same face. In this case, we generate
+  // an AnyFaceInfo with the information of the two meshes from these two elements of
+  // the list, being careful to put the mesh with the smaller uniqueId() first.
+  // If two consecutive elements of the list do not have the same nodes, it
+  // means that the face is on the edge of the global domain.
+  // We must still handle the case of two consecutive elements of the list
+  // that are located on different processors. To manage this case, each
+  // processor sends the last element of its list to the next one if it cannot
+  // be merged with the second-to-last, in the hope that it can be merged with the
+  // first one of the next processor's list.
   UniqueArray<AnyFaceInfo> all_face_list;
   {
     ConstArrayView<BoundaryFaceInfo> all_fsi = boundary_faces_info;
@@ -573,9 +570,9 @@ _computeParallel()
       const BoundaryFaceInfo& fsi = all_fsi[i];
       Int64 cell_uid0 = fsi.m_cell_uid;
       bool is_inside = false;
-      //TODO: traiter le cas si la maille d'avant est sur un autre proc
-      // Pour cela, il faut recupérer la dernière valeur du proc précédent
-      // et regarder si elle correspond à notre première valeur
+      //TODO: handle the case if the previous mesh is on another proc
+      // For this, it is necessary to retrieve the last value of the previous proc
+      // and check if it corresponds to our first value
       is_inside = ((i+1)!=n && fsi.hasSameNodes(all_fsi[i+1]));
       if (is_last_already_done){
         is_last_already_done = false;
@@ -612,8 +609,8 @@ _computeParallel()
     }
   }
 
-  // Ajoute les faces propres a notre sous-domaine.
-  // Il s'agit de toutes les faces qui ont 2 mailles connectées.
+  // Add the faces belonging to our sub-domain.
+  // These are all faces that have 2 connected meshes.
   cells_map.eachItem([&](Cell cell) {
     Integer cell_nb_face = cell.nbFace();
     Int64 cell_uid = cell.uniqueId();
@@ -625,11 +622,11 @@ _computeParallel()
       Cell cell1 = face.cell(1);
       Cell next_cell = (cell0==cell) ? cell1 : cell0;
       Int64 next_cell_uid = next_cell.uniqueId();
-      // N'enregistre que si je suis la maille de plus petit uid
+      // Only record if I am the mesh with the smaller uid
       if (cell_uid<next_cell_uid){
         AnyFaceInfo csi;
         csi.m_cell0.setValue(cell_uid,my_rank,z);
-        // Le face_local_index de la maille 1 ne sera pas utilisé
+        // The face_local_index of mesh 1 will not be used
         csi.m_cell1.setValue(next_cell_uid,my_rank,-1);
         all_face_list.add(csi);
       }
@@ -661,8 +658,8 @@ _computeParallel()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Détermine la liste des faces frontières de chaque sous-domaine
- * et les trie sur tous les procs.
+ * \brief Determines the list of boundary faces for each subdomain
+ * and sorts them across all procs.
  */
 void FaceUniqueIdBuilder2::
 _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
@@ -733,10 +730,10 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
       }
     }
 
-    // Comme un même noeud peut être présent dans la liste du proc précédent, chaque PE
-    // (sauf le 0) envoie au proc précédent le début sa liste qui contient les même noeuds.
+    // As a single node may be present in the previous proc's list, each PE
+    // (except 0) sends to the previous process the start of its list which contains the same nodes.
     
-    // TODO: fusionner ce code avec celui de GhostLayerBuilder2
+    // TODO: merge this code with that of GhostLayerBuilder2
     UniqueArray<BoundaryFaceInfo> end_face_list;
     Integer begin_own_list_index = 0;
     if (n!=0 && my_rank!=0){
@@ -768,7 +765,7 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
 
     Int32 nb_rank = pm->commSize();
 
-    // Envoie et réceptionne d'abord les tailles.
+    // First sends and receives the sizes.
     if (my_rank!=(nb_rank-1)){
       requests.add(pm->recv(IntegerArrayView(1,&recv_message_size),my_rank+1,false));
     }
@@ -824,8 +821,8 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
   }
 
-  // Calcul pour chaque rang le nombre de valeurs à envoyer
-  // et le stocke dans nb_info_to_send;
+  // Calculation for each rank of the number of values to send
+  // and stores it in nb_info_to_send;
   IntegerUniqueArray nb_info_to_send(nb_rank,0);
   {
     for( Integer i=0; i<nb_computed_face; ++i ){
@@ -835,19 +832,19 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 
       ++nb_info_to_send[rank0];
 
-      // Il ne faut l'envoyer que si le rang est différent de m_rank0
+      // It must only be sent if the rank is different from m_rank0
       if (csi.m_cell1.isValid() && rank1!=rank0)
         ++nb_info_to_send[rank1];
     }
   }
 
-  // Tableau pour chaque proc indiquant le uniqueId() de la première
-  // face de ce proc.
+  // Array for each process indicating the uniqueId() of the first
+  // face of this process.
   Int64UniqueArray all_first_face_uid(nb_rank);
   {
-    // Chaque proc récupère le nombre de mailles dans la liste.
-    // Comme cette liste sera triée, cela correspond aux uid de la première
-    // face de ce proc.
+    // Each process retrieves the number of meshes in the list.
+    // Since this list will be sorted, this corresponds to the uid of the first
+    // face of this process.
     Int64 nb_cell_to_sort = all_csi.size();
     pm->allGather(Int64ConstArrayView(1,&nb_cell_to_sort),all_first_face_uid);
 
@@ -883,7 +880,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
       if (csi.m_cell1.isValid() && rank1!=rank0){
         ResendCellInfo& rci1 = resend_infos[nb_info_to_send_indexes[rank1]];
         rci1.m_cell_uid = csi.m_cell1.cellUid();
-        // Meme si je suis la maille 1, le proprietaire de la face sera la maille 0.
+        // Even if I am mesh 1, the owner of the face will be mesh 0.
         rci1.m_face_local_index_and_owner_rank = (csi.m_cell1.faceLocalIndex() * nb_rank) + rank0;
         rci1.m_index_in_rank_list = i;
         ++nb_info_to_send_indexes[rank1];
@@ -892,11 +889,11 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
   }
 
-  // Faire un seul reduce
+  // Perform a single reduce
   Int64 total_nb_computed_face = pm->reduce(Parallel::ReduceSum,nb_computed_face);
   info() << "TOTAL_NB_COMPUTED_FACE=" << total_nb_computed_face;
   
-  // Indique a chaque PE combien d'infos je vais lui envoyer
+  // Indicates to each PE how many infos I will send to it
   if (is_verbose)
     for( Integer i=0; i<nb_rank; ++i )
       info() << "NB_TO_SEND: I=" << i << " n=" << nb_info_to_send[i];
@@ -915,10 +912,10 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
   for( Integer i=0; i<nb_rank; ++i )
     total_nb_to_recv +=  nb_info_to_recv[i];
 
-  // Il y a de fortes chances que cela ne marche pas si le tableau est trop grand,
-  // il faut proceder avec des tableaux qui ne depassent pas 2Go a cause des
-  // Int32 de MPI.
-  // TODO: Faire le AllToAll en plusieurs fois si besoin.
+  // It is highly likely that this will not work if the array is too large,
+  // it must proceed with arrays that do not exceed 2Go because of the
+  // Int32 of MPI.
+  // TODO: Perform the AllToAll multiple times if necessary.
   UniqueArray<ResendCellInfo> recv_infos;
   {
     Int32 vsize = sizeof(ResendCellInfo) / sizeof(Int64);
@@ -948,7 +945,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
   }
 
-  // Invalide les uid pour être certain qu'ils seront tous positionnés.
+  // Invalidates the uids to ensure they will all be positioned.
   _unsetFacesUniqueId();
 
   if (is_verbose){
@@ -975,7 +972,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
   }
 
-  // Positionne les uniqueId() et les owner() des faces.
+  // Positions the uniqueId() and the owner() of the faces.
   {
     Integer index = 0;
     for( Int32 i=0; i<nb_rank; ++i ){
@@ -1000,14 +997,14 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
   }
 
-  // Vérifie que toutes les faces ont un uid valide
+  // Checks that all faces have a valid uid
   _checkFacesUniqueId();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- *\brief Calcule les uniqueId() via un hash généré par les uniqueId() des noeuds.
+ * \brief Calculates uniqueId() via a hash generated by the uniqueId() of the nodes.
  */
 void FaceUniqueIdBuilder2::
 computeFacesUniqueIdAndOwnerVersion5()
@@ -1032,8 +1029,8 @@ computeFacesUniqueIdAndOwnerVersion5()
     }
     Int64 new_face_uid = MeshUtils::generateHashUniqueId(nodes_uid);
     face.mutableItemBase().setUniqueId(new_face_uid);
-    // En parallèle, indique qu'il faudra positionner le owner de cette face
-    // si elle est frontière.
+    // In parallel, indicates that the owner of this face must be positioned
+    // if it is a boundary face.
     Int32 new_rank = my_rank;
     if (is_parallel && face.nbCell()==1)
       new_rank = A_NULL_RANK;
@@ -1044,7 +1041,7 @@ computeFacesUniqueIdAndOwnerVersion5()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Invalide les uid pour être certain qu'ils seront tous positionnés.
+ * \brief Invalidates the uids to ensure they are all positioned.
  */
 void FaceUniqueIdBuilder2::
 _unsetFacesUniqueId()
@@ -1058,7 +1055,7 @@ _unsetFacesUniqueId()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que toutes les faces ont un uid valide.
+ * \brief Checks that all faces have a valid uid.
  */
 void FaceUniqueIdBuilder2::
 _checkFacesUniqueId()

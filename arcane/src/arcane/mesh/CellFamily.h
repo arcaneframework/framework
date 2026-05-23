@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Famille de mailles.                                                       */
+/* Mesh Family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CELLFAMILY_H
 #define ARCANE_MESH_CELLFAMILY_H
@@ -38,7 +38,7 @@ class HChildCellCompactIncrementalItemConnectivity;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille de mailles.
+ * \brief Mesh Family.
  */
 class ARCANE_MESH_EXPORT CellFamily
 : public ItemFamily
@@ -53,7 +53,7 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   CellFamily(IMesh* mesh,const String& name);
-  virtual ~CellFamily(); //<! Libère les ressources
+  virtual ~CellFamily(); //<! Releases resources
 
  public:
 
@@ -71,51 +71,51 @@ class ARCANE_MESH_EXPORT CellFamily
   Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
   
   /*!
-   * Supprime la maille \a cell
+   * Detaches the mesh \a cell from the mesh without deleting it
    *
-   * @param cell la maille à supprimer
+   * @param cell the mesh to detach
    */
   void removeCell(Cell cell);
 
-  //! Supprime les mailles dont les numéros locaux sont \a cells_local_id
+  //! Removes the meshes whose local numbers are \a cells_local_id
   void removeCells(ConstArrayView<Int32> cells_local_id);
 
   /*!
-   * Detache la maille \a cell du maillage sans la supprimer
+   * Detaches the mesh \a cell from the mesh without deleting it
    *
-   * @param cell la maille à détacher
+   * @param cell the mesh to detach
    */
   void detachCell(Cell cell);
 
   /*!
-   * Detache les mailles d'identifiants locaux \a cell_local_ids du maillage sans les supprimer.
-   * Basé sur le graphe de dépendances des familles ItemFamilyNetwork.
+   * Detaches the meshes with local identifiers \a cell_local_ids from the mesh without deleting them.
+   * Based on the dependency graph of ItemFamilyNetwork families.
    *
-   * @param cells_local_id identifiants locaux des mailles à détacher
+   * @param cells_local_id local identifiers of the meshes to detach
    */
   void detachCells2(Int32ConstArrayView cell_local_ids);
 
   /*!
-   * Detruit la maille \a cell ayant deja ete detachée du maillage
+   * Destroys the mesh \a cell that has already been detached from the mesh
    *
-   * @param cell la maille détachée à detruire
+   * @param cell the detached mesh to destroy
    */
   void removeDetachedCell(Cell cell);
 
   /*!
-   * Supprime le groupe d'entités \a local_ids
+   * Removes the group of entities \a local_ids
    *
-   * @param local_ids le groupe de mailles à supprimer
+   * @param local_ids the group of meshes to remove
    */
   virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) override;
 
-  //! Définit la connectivité active pour le maillage associé
-  /*! Ceci conditionne les connectivités à la charge de cette famille */
+  //! Defines the active connectivity for the associated mesh
+  /*! This conditions the connectivities to the responsibility of this family */
   void setConnectivity(const Integer c);
 
  public:
 
-  // TODO: rendre ces méthodes privées pour obliger à utiliser IItemFamilyTopologyModifier.
+  // TODO: make these methods private to enforce the use of IItemFamilyTopologyModifier.
   void replaceNode(ItemLocalId cell,Integer index,ItemLocalId node);
   void replaceEdge(ItemLocalId cell,Integer index,ItemLocalId edge);
   void replaceFace(ItemLocalId cell,Integer index,ItemLocalId face);

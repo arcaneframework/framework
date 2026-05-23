@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostParticlesBuilder.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Construction des mailles fantômes supplémentaires.                        */
+/* Construction of extra ghost meshes.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -89,7 +89,7 @@ computeExtraGhostParticles()
   info() << "Compute extra ghost particles";
   
   for( IExtraGhostParticlesBuilder* v : m_builders ){
-    // Calcul de mailles extraordinaires à envoyer
+    // Calculate extra particles to send
     v->computeExtraParticlesToSend();
   }
   
@@ -115,15 +115,15 @@ _computeForFamily(ParticleFamily* particle_family)
 
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 
-  // Construction des entités à envoyer
+  // Construction of entities to send
   UniqueArray<std::set<Integer> > to_sends(nsd);
 
-  // Initialisation de l'échangeur de données
+  // Initialization of the data exchanger
   for(Integer isd=0;isd<nsd;++isd){
     std::set<Integer>& particle_set = to_sends[isd];
     for( IExtraGhostParticlesBuilder* builder : m_builders ){
       Int32ConstArrayView extra_particles = builder->extraParticlesToSend(particle_family->name(),isd);
-      // On trie les lids à envoyer pour éviter les doublons
+      // We sort the lids to send to avoid duplicates
       for(Integer j=0, size=extra_particles.size(); j<size; ++j)
         particle_set.insert(extra_particles[j]);
     }
@@ -155,8 +155,8 @@ _computeForFamily(ParticleFamily* particle_family)
     if (!sbuf)
       ARCANE_FATAL("buffer has to have type 'SerializeBuffer'");
 
-    // Sauve les uid des mailles dans lesquelles se trouvent les particules
-    // Il est possible qu'une particule n'appartienne pas à une maille.
+    // Saves the uids of the meshes where the particles are located
+    // It is possible that a particle does not belong to a mesh.
     Int64UniqueArray particles_cell_uid(nb_item);
     for( Integer z=0; z<nb_item; ++z ){
       Particle item(items_internal[dest_items_local_id[z]]);
@@ -164,11 +164,11 @@ _computeForFamily(ParticleFamily* particle_family)
       particles_cell_uid[z] = (has_cell) ? item.cell().uniqueId() : NULL_ITEM_UNIQUE_ID;
     }
 
-    // Réserve la mémoire pour la sérialisation
+    // Reserves memory for serialization
     sbuf->setMode(ISerializer::ModeReserve);
-    sbuf->reserve(DT_Int64,1); // Pour le nombre de particules
-    sbuf->reserveArray(dest_items_unique_id); // Pour les uniqueId() des particules. NOTE: A supprimer
-    sbuf->reserveArray(particles_cell_uid); // Pour les uniqueId() des mailles dans lesquelles se trouve les particules
+    sbuf->reserve(DT_Int64,1); // For the number of particles
+    sbuf->reserveArray(dest_items_unique_id); // For the uniqueId() of the particles. NOTE: To be deleted
+    sbuf->reserveArray(particles_cell_uid); // For the uniqueId() of the meshes where the particles are located
 
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);
@@ -186,7 +186,7 @@ _computeForFamily(ParticleFamily* particle_family)
   IItemFamily* cell_family = m_mesh->cellFamily();
   CellInfoListView internal_cells(cell_family);
 
-  // Réception des particules
+  // Reception of particles
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* sbuf = sm->serializer();
@@ -208,7 +208,7 @@ _computeForFamily(ParticleFamily* particle_family)
 
     particle_family->addParticles2(particles_uid,particles_owner,particles_local_id);
     particle_family->endUpdate();
-    // IMPORTANT: il faut le faire ici car cela peut changer via le endUpdate()
+    // IMPORTANT: it must be done here because it can change via endUpdate()
     ItemInternalList internal_particles(particle_family->itemsInternal());
     for( Integer zz=0; zz<nb_item; ++zz ){
       Particle p = internal_particles[ particles_local_id[zz] ];

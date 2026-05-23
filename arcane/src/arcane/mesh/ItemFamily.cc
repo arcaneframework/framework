@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamily.cc                                               (C) 2000-2026 */
 /*                                                                           */
-/* Infos de maillage pour un genre d'entité donnée.                          */
+/* Mesh info for a given type of entity.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -209,36 +209,36 @@ class ItemFamily::Variables
 
  public:
 
-  //! Indice dans le tableau des ItemSharedInfo pour chaque entité.
-  // TODO: utiliser un Int16 lorsqu'on aura limité le nombre de ItemSharedInfo sur un Int16
+  //! Index in the ItemSharedInfo array for each entity.
+  // TODO: use Int16 when the number of ItemSharedInfo is limited to Int16
   VariableArrayInteger m_items_shared_data_index;
-  //! Contient les uniqueIds() des entités de cette famille
+  //! Contains the uniqueIds() of the entities in this family
   VariableArrayInt64 m_items_unique_id;
-  //! Contient les owner() des entités de cette famille
+  //! Contains the owner() of the entities in this family
   VariableArrayInt32 m_items_owner;
-  //! Contient les flags() des entités de cette famille
+  //! Contains the flags() of the entities in this family
   VariableArrayInt32 m_items_flags;
-  //! Contient les typeId() des entités de cette famille
+  //! Contains the typeId() of the entities in this family
   VariableArrayInt16 m_items_type_id;
   /*!
-   * \brief Contient le parent() des entités de cette famille.
+   * \brief Contains the parent() of the entities in this family.
    *
-   * Cela n'est utilisé qu'avec les sous-maillages et on suppose qu'il n'y a
-   * qu'un seul parent par entité. Si un jour on veut plusieurs parent il faudra
-   * que cette variable soit un 'Array2'.
+   * This is only used with sub-meshes and assumes that there is
+   * only one parent per entity. If we ever want multiple parents,
+   * this variable will need to be an 'Array2'.
    */
   VariableArrayInt32 m_items_nb_parent;
   VariableArrayString m_groups_name;
   VariableScalarInteger m_current_id;
   /*!
-   * \brief Contient le sous-domaine propriétaire de l'entité.
+   * \brief Contains the owning sub-domain of the entity.
    *
-   * Cette variable est redondante avec le champ owner() de ItemInternal
-   * et n'a une valeur différente qu'au moment où des entités changent
-   * de propriétaire. Par conséquent, il ne devrait pas être nécessaire de l'allouer
-   * en séquentiel.
-   * \todo De même, on peut retrouver sa valeur lors d'une reprise
-   * et il faudra la marquer IVariable::PNoDump.
+   * This variable is redundant with the ItemInternal owner() field
+   * and only has a different value when entities change
+   * owners. Therefore, it should not be necessary to allocate
+   * it sequentially.
+   * \todo Similarly, its value can be recovered during a restart
+   * and it should be marked IVariable::PNoDump.
    */
   VariableItemInt32 m_items_new_owner;
   VariableScalarString m_parent_mesh_name;
@@ -323,8 +323,8 @@ build()
 {
   m_item_type_mng = m_mesh->itemTypeMng();
 
-  // Créé le modificateur de topologie si cela n'a pas encore été fait par
-  // la classe dérivée.
+  // Create the topology modifier if it hasn't been done by
+  // the derived class.
   if (!m_topology_modifier)
     m_topology_modifier = new AbstractItemFamilyTopologyModifier(this);
 
@@ -341,13 +341,13 @@ build()
   else
     m_is_parallel = true;
 
-  // D'abord initialiser les infos car cela créé les groupes d'entités
-  // et c'est indispensable avant de créer des variables dessus.
+  // First initialize the infos because this creates the entity groups
+  // and it is essential before creating variables on them.
   m_infos->build();
 
-  // Construit l'instance qui contiendra les variables
-  // NOTE: si on change les noms ici, il faut aussi les changer dans MeshStats.cc
-  // sinon les statistiques ne seront pas fiables.
+  // Constructs the instance that will contain the variables
+  // NOTE: if we change the names here, we must also change them in MeshStats.cc
+  // otherwise the statistics will not be reliable.
   {
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
@@ -371,16 +371,16 @@ build()
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
-    // Il ne faut pas utiliser ces tableaux pour accéder aux entités car il y a un décalage
-    // de 1 pour gérer l'entité nulle. Il faut passer par la vue associée
-    // qui est dans m_common_item_shared_info.
+    // These arrays should not be used to access entities because there is an offset
+    // of 1 to manage the null entity. You must use the associated view
+    // which is in m_common_item_shared_info.
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
     m_items_type_id = &m_internal_variables->m_items_type_id._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
 
-    // Ajoute notification pour la mise à jour des vues après un changement externe
+    // Add notification for view update after an external change
     _addOnSizeChangedObservable(m_internal_variables->m_items_unique_id);
     _addOnSizeChangedObservable(m_internal_variables->m_items_owner);
     _addOnSizeChangedObservable(m_internal_variables->m_items_flags);
@@ -435,8 +435,8 @@ _infos() const
 void ItemFamily::
 _removeOne(Item item)
 {
-  // TODO: vérifier en mode check avec les nouvelles connectivités que l'entité supprimée
-  // n'a pas d'objets connectés.
+  // TODO: check in check mode with the new connectivities that the deleted entity
+  // does not have connected objects.
   m_infos->removeOne(ItemCompatibility::_itemInternal(item));
 }
 void ItemFamily::
@@ -542,11 +542,11 @@ void ItemFamily::
 setParentFamily(IItemFamily* parent)
 {
   m_parent_family = parent;
-  if (parent == this) // Auto-référencement
+  if (parent == this) // Self-referencing
     m_parent_family_depth = 1;
-  else if (!parent) // Pas de parent
+  else if (!parent) // No parent
     m_parent_family_depth = 0;
-  else { // Référencement croisé
+  else { // Cross-referencing
     m_parent_family_depth = parent->parentFamilyDepth() + 1;
     m_parent_family->addChildFamily(this);
   }
@@ -616,14 +616,14 @@ checkValidConnectivity()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Méthode appelée par le maillage à la fin d'un IMesh::endUpdate().
- * Cette méthode est collective et permet donc de faire des opérations
- * collectives une fois les modifications de maillage terminées.
+ * Method called by the mesh at the end of an IMesh::endUpdate().
+ * This method is collective and therefore allows collective operations
+ * once mesh modifications are finished.
  */
 void ItemFamily::
 _notifyEndUpdateFromMesh()
 {
-  // Recalcule les infos de connectivités locale et globales à tous les sous-domaines
+  // Recalculate local and global connectivity info for all sub-domains
   _computeConnectivityInfo(m_local_connectivity_info);
   _computeConnectivityInfo(m_global_connectivity_info);
   m_global_connectivity_info->reduce(parallelMng());
@@ -636,8 +636,8 @@ void ItemFamily::
 endUpdate()
 {
   _endUpdate(true);
-  // TODO: tester la connectivité mais ca fait planter certains cas tests
-  // (dof, amr2 et mesh_modification). A voir si c'est normal.
+  // TODO: test connectivity but it crashes some test cases
+  // (dof, amr2 and mesh_modification). To see if this is normal.
   //if (arcaneIsCheck())
   //checkValidConnectivity();
 }
@@ -648,8 +648,8 @@ endUpdate()
 void ItemFamily::
 _endAllocate()
 {
-  // La variable n'est pas "used" par défaut car la famille n'est pas encore prête.
-  // Sur les sous-familles, il suffit donc de filtrer setUsed au moment du endAllocate
+  // The variable is not "used" by default because the family is not ready yet.
+  // On sub-families, it is enough to filter setUsed at the time of endAllocate
   if (!m_parent_family) {
     m_internal_variables->setUsed();
   }
@@ -672,7 +672,7 @@ _shrinkConnectivityAndPrintInfos()
     const Int64 total_capacity = mem_info.m_total_capacity;
     const Int64 total_size = mem_info.m_total_size;
     Int64 ratio = 100 * (total_capacity - total_size);
-    ratio /= (total_size + 1); // Ajoute 1 pour éviter la division par zéro
+    ratio /= (total_size + 1); // Add 1 to avoid division by zero
     const Int64 sizeof_int32 = sizeof(Int32);
     const Int64 mega_byte = 1024 * 1024;
     Int64 capacity_mega_byte = (mem_info.m_total_capacity * sizeof_int32) / mega_byte;
@@ -705,11 +705,11 @@ _partialEndUpdate()
   bool need_end_update = m_infos->changed();
   info(4) << "ItemFamily::endUpdate() " << fullName() << " need_end_update?=" << need_end_update;
   if (!need_end_update) {
-    // Même si aucune entité n'est ajoutée ou supprimée, si \a m_need_prepare_dump
-    // est vrai cela signifie que quelque chose a changé dans la famille. Dans ce
-    // cas il est préférable d'incrémenter le current_id. Sans cela, si on appelle
-    // readFromDump() (par exemple suite à un retour-arrière), les données ne seront
-    // pas restaurées si entre temps current_id n'a pas changé.
+    // Even if no entity is added or removed, if m_need_prepare_dump
+    // is true, it means something has changed in the family. In this
+    // case, it is preferable to increment the current_id. Otherwise, if we call
+    // readFromDump() (for example, following a rollback), the data will not be
+    // restored if current_id has not changed in the meantime.
     if (m_need_prepare_dump) {
       _computeConnectivityInfo(m_local_connectivity_info);
       ++m_current_id;
@@ -771,7 +771,7 @@ partialEndUpdateGroup(const ItemGroup& group)
 void ItemFamily::
 _updateGroup(ItemGroup group, bool need_check_remove)
 {
-  // Pas besoin de recalculer le groupe des entités globales
+  // No need to recalculate the group of global entities
   if (group == m_infos->allItems())
     return;
 
@@ -964,7 +964,7 @@ ItemGroup ItemFamily::
 createGroup(const String& name)
 {
   //#warning SDP CHANGE
-  // SDP: probleme protection-reprise ...
+  // SDP: checkpointing/recovery problem ...
   {
     ItemGroup g = findGroup(name);
     if (!g.null()) {
@@ -1036,7 +1036,7 @@ notifyItemsOwnerChanged()
       group.invalidate();
   }
 
-  // Propage les modifications sur les sous-familles
+  // Propagate changes to child families
   for (Integer i = 0; i < m_child_families.size(); ++i) {
     IItemFamily* family = m_child_families[i];
     ItemInternalArrayView items(family->itemsInternal());
@@ -1058,16 +1058,16 @@ notifyItemsOwnerChanged()
 void ItemFamily::
 _processNewGroup(ItemGroup group)
 {
-  // Vérifie que le groupe à le bon type
+  // Checks that the group has the correct type
   if (group.itemKind() != itemKind()) {
     ARCANE_FATAL("Incoherent family name={0} wanted={1} current={2}",
                  fullName(), itemKind(), group.itemKind());
   }
   m_item_groups.add(group);
   m_need_prepare_dump = true;
-  // En séquentiel, tous les groupes sont des groupes propres
-  // TODO: regarder pour supprimer le test avec 'm_is_parallel' mais
-  // si on le fait ca fait planter certains tests avec aleph_kappa.
+  // In sequential mode, all groups are owned groups
+  // TODO: look into removing the test with 'm_is_parallel' but
+  // if we do that it crashes some tests with aleph_kappa.
   if (!m_is_parallel && m_mesh->meshPartInfo().nbPart() == 1)
     group.setOwn(true);
 }
@@ -1146,16 +1146,16 @@ prepareForDump()
     p->setInt32("current-change-id", m_current_id);
   }
 
-  // TODO: ajoute flag vérification si nécessaire
+  // TODO: add verification flag if necessary
   if (m_item_need_prepare_dump || m_item_shared_infos->hasChanged()) {
     info(4) << "Prepare for dump:2: name=" << m_name << " nb_alloc=" << m_nb_allocate_info
             << " uid_size=" << m_items_unique_id->size() << " cap=" << m_items_unique_id->capacity()
             << " byte=" << m_items_unique_id->capacity() * sizeof(Int64);
 
-    // TODO: pouvoir spécifier si on souhaite compacter ou pas.
+    // TODO: ability to specify whether or not to compact.
     _compactOnlyItems(false);
 
-    // Suppose compression
+    // Assumes compression
     m_infos->prepareForDump();
     m_item_shared_infos->prepareForDump();
     m_need_prepare_dump = true;
@@ -1163,7 +1163,7 @@ prepareForDump()
   m_item_need_prepare_dump = false;
   if (m_need_prepare_dump) {
     Integer nb_item = m_infos->nbItem();
-    // TODO: regarder si ce ne serait pas mieux de faire cela dans finishCompactItem()
+    // TODO: look into whether it would be better to do this in finishCompactItem()
     _resizeItemVariables(nb_item, true);
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
@@ -1173,7 +1173,7 @@ prepareForDump()
     IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
     info(4) << "ItemFamily::prepareForDump(): " << m_name
             << " count=" << nb_item << " currentid=" << m_current_id;
-    // Normalement items[i]->localId()==i pour toute les entités car on a effectué un compactage
+    // Normally items[i]->localId()==i for all entities because we performed a compaction.
     if (arcaneIsCheck()) {
       for (Integer i = 0; i < nb_item; ++i) {
         ItemInternal* item = items[i];
@@ -1198,7 +1198,7 @@ prepareForDump()
 #endif
     }
 
-    // Données de liaison de familles
+    // Family linking data
     {
       if (m_parent_family) {
         m_internal_variables->m_parent_family_name = m_parent_family->name();
@@ -1215,8 +1215,8 @@ prepareForDump()
     }
 
     {
-      // Détermine le nombre de groupes et d'entités à sauver.
-      // On ne sauve pas les groupes générés dynamiquement
+      // Determines the number of groups and entities to save.
+      // We do not save dynamically generated groups
       Integer nb_group_to_save = 0;
       for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
         const ItemGroup& group = *i;
@@ -1238,10 +1238,10 @@ prepareForDump()
       }
     }
   }
-  // Fait en sorte que les groupes soient à jour, pour être sur que
-  // la sauvegarde sera correcte.
-  // NOTE: Est-ce ici qu'il faut le faire ?
-  // NOTE: plutot utiliser un observer sur la variable du groupe?
+  // Ensures that the groups are up to date, to ensure that
+  // the save will be correct.
+  // NOTE: Should this be done here?
+  // NOTE: better to use an observer on the group variable?
   _applyCheckNeedUpdateOnGroups();
 
   m_need_prepare_dump = false;
@@ -1253,15 +1253,15 @@ prepareForDump()
 void ItemFamily::
 readFromDump()
 {
-  // TODO: GG: utiliser un flag pour indiquer qu'il faudra reconstruire
-  // les infos de synchro mais ne pas le faire directement dans cette methode.
+  // TODO: GG: use a flag to indicate that synchronization info needs to be rebuilt
+  // but not do it directly in this method.
 
   Int32 nb_item = 0;
   Int32 dump_version = 0;
-  // Indique si on utilise la variable contenant le type de l'entité pour
-  // construire les ItemInternal. Cela n'est possible qu'avec les protections
-  // effectuées depuis une version 3.7 de Arcane. Avant cela il faut utiliser
-  // la variable m_items_shared_data_index.
+  // Indicates if we use the variable containing the entity type for
+  // to build the ItemInternal. This is only possible with protections
+  // performed since version 3.7 of Arcane. Before that, we must use
+  // the m_items_shared_data_index variable.
   bool use_type_variable = false;
   {
     Int32 x = 0;
@@ -1284,22 +1284,21 @@ readFromDump()
     if (dump_version < 0x0307)
       ARCANE_FATAL("Your checkpoint is from a version of Arcane which is too old (mininum version is 3.7)");
 
-  // Le numéro de la partie peut changer en reprise. Il faut donc le
-  // remettre à jour. De même, si on passe d'un maillage séquentiel à un
-  // maillage en plusieurs parties en reprise, il faut supprimer le isOwn()
-  // du groupe de toutes les entités.
+  // The part number can change during recovery. Therefore, we must
+  // update it. Similarly, if we transition from a sequential mesh to a
+  // multi-part mesh during recovery, we must remove isOwn() from the group of all entities.
   const MeshPartInfo& part_info = m_mesh->meshPartInfo();
   m_sub_domain_id = part_info.partRank();
   if (m_infos->allItems().isOwn() && part_info.nbPart() > 1)
     m_infos->allItems().setOwn(false);
 
-  // NOTE: l'implémentation actuelle suppose que les dataIndex() des
-  // entites sont consécutifs et croissants avec le localId() des entités
-  // (c.a.d l'entité de localId() valant 0 à aussi un dataIndex() de 0,
-  // celle de localId() valant 1, le dataIndex() suivant ...)
-  // Cette condition est vrai si compactReferences() a été appelé.
-  // Lorsque ce ne sera plus le cas (trou dans la numérotation), il faudra
-  // ajouter une variable data_index sur les entités.
+  // NOTE: the current implementation assumes that the dataIndex() of
+  // entities are consecutive and increasing with the localId() of the entities
+  // (i.e., the entity with localId() of 0 also has a dataIndex() of 0,
+  // the one with localId() of 1, the next dataIndex() ...)
+  // This condition is true if compactReferences() has been called.
+  // When this is no longer the case (gap in numbering), we will need to
+  // add a data_index variable to the entities.
   IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
   if (!use_type_variable)
     nb_item = items_shared_data_index.size();
@@ -1312,22 +1311,22 @@ readFromDump()
           << " dump_version=" << dump_version;
 
   if (!use_type_variable) {
-    // Avec les anciennes protections il n'y a pas la variable pour le type de l'entité.
-    // Il faut donc l'allouer ici car on s'en sert lorsqu'on appelle ItemInternal::setSharedInfo().
+    // With older protections, there is no variable for the entity type.
+    // We must allocate it here because we use it when calling ItemInternal::setSharedInfo().
     if (nb_item > 0)
       MeshUtils::checkResizeArray(*m_items_type_id, nb_item + 1, false);
-    // Il n'y a pas non plus le décalage de 1 pour les flags, owner et uniqueId.
-    // On fait ce décalage ici.
+    // There is also no offset of 1 for flags, owner and uniqueId.
+    // We do this offset here.
     _handleOldCheckpoint();
   }
   _updateItemViews();
 
   if (m_internal_variables->m_current_id() == m_current_id) {
     debug() << "Family unchanged. Nothing to do.";
-    //GG: il faut quand meme recalculer les infos de synchro car cette famille
-    // sur les autres sous-domaine peut avoir changee et dans ce cas cette
-    // fonctione sera appelee. De meme, la liste des groupes peut avoir changée
-    // et leur valeur aussi pour les groupes recalculés donc il faut les invalider
+    //GG: we still need to recalculate the synchronization info because this family
+    // on other sub-domains might have changed and in this case this
+    // function will be called. Similarly, the list of groups might have changed
+    // and their value also for the calculated groups so we must invalidate them
     _checkComputeSynchronizeInfos(0);
     _readGroups();
     _invalidateComputedGroups();
@@ -1335,16 +1334,16 @@ readFromDump()
   }
 
   m_current_id = m_internal_variables->m_current_id();
-  // IMPORTANT: remise à zéro pour obligatoirement redimensionner les variables
-  // au prochain ajout d'entités.
+  // IMPORTANT: reset to zero to force resizing of variables
+  // upon the next addition of entities.
   m_current_variable_item_size = 0;
 
-  // Données de liaison de famille
+  // Family linking data
   {
     IMeshMng* mesh_mng = m_mesh->meshMng();
     if (!m_internal_variables->m_parent_mesh_name().null()) {
       IMesh* parent_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_parent_mesh_name()).mesh();
-      m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(), true); // true=> fatal si non trouvé
+      m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(), true); // true=> fatal if not found
     }
     m_parent_family_depth = m_internal_variables->m_parent_family_depth();
     ARCANE_ASSERT((m_internal_variables->m_child_meshes_name.size() == m_internal_variables->m_child_families_name.size()),
@@ -1352,7 +1351,7 @@ readFromDump()
     Integer child_count = m_internal_variables->m_child_families_name.size();
     for (Integer i = 0; i < child_count; ++i) {
       IMesh* child_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_child_meshes_name[i]).mesh();
-      IItemFamily* child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i], true); // true=> fatal si non trouvé
+      IItemFamily* child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i], true); // true=> fatal if not found
       m_child_families.add(dynamic_cast<ItemFamily*>(child_family));
     }
   }
@@ -1360,8 +1359,8 @@ readFromDump()
   m_item_shared_infos->readFromDump();
   m_infos->readFromDump();
 
-  // En relecture les entités sont compactées donc la valeur max du localId()
-  // est égal au nombre d'entités.
+  // When reading from dump, the entities are compacted, so the max value of localId()
+  // is equal to the number of entities.
 
   if (use_type_variable) {
     ItemTypeMng* type_mng = mesh()->itemTypeMng();
@@ -1375,7 +1374,7 @@ readFromDump()
     }
   }
   else {
-    // Méthode utilisée pour les protections issues des versions 3.6 et antérieure de Arcane.
+    // Method used for protections from versions 3.6 and earlier of Arcane.
     auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
     for (Integer i = 0; i < nb_item; ++i) {
       Integer shared_data_index = items_shared_data_index[i];
@@ -1386,18 +1385,18 @@ readFromDump()
     }
   }
 
-  // Supprime les entités du groupe total car elles vont être remises à jour
-  // lors de l'appel à _endUpdate()
+  // Clear the entities from the total group because they will be updated
+  // when calling _endUpdate()
   m_infos->allItems().clear();
 
-  // Notifie les connectivités sources qu'on vient de faire une relecture.
+  // Notifies the source connectivities that we just read from dump.
   for (auto& c : m_source_incremental_item_connectivities)
     c->notifyReadFromDump();
 
-  // Recréation des groupes si nécessaire
+  // Recreation of groups if necessary
   _readGroups();
 
-  // Invalide les groupes recalculés
+  // Invalidates the recalculated groups
   _invalidateComputedGroups();
 
   _endUpdate(false);
@@ -1413,7 +1412,7 @@ _applyCheckNeedUpdateOnGroups()
 {
   for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
-    // Pas besoin de recalculer le groupe des entités globales
+    // No need to recalculate the group of global entities
     if (group == m_infos->allItems())
       continue;
     group.internal()->checkNeedUpdate();
@@ -1426,9 +1425,9 @@ _applyCheckNeedUpdateOnGroups()
 void ItemFamily::
 _invalidateComputedGroups()
 {
-  // Si le groupe a un parent, il n'a pas de variable associée et
-  // de plus peut contenir des valeurs invalides suite à un retour-arrière.
-  // Dans ce cas, on le vide et on l'invalide.
+  // If the group has a parent, it does not have an associated variable and
+  // furthermore, it may contain invalid values following a rollback.
+  // In this case, we clear it and invalidate it.
   for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
     if (!group.internal()->parentGroup().null()) {
@@ -1470,7 +1469,7 @@ _readGroups()
  * \brief Test collectif permettant de savoir s'il faut mettre
  * à jour les infos de synchro.
  *
- * \a changed vaut 0 si pas de mise à jour, 1 sinon.
+ * \a changed is 0 if no update, 1 otherwise.
  */
 void ItemFamily::
 _checkComputeSynchronizeInfos(Int32 changed)
@@ -1483,34 +1482,34 @@ _checkComputeSynchronizeInfos(Int32 changed)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les entités sans mise à jour des références.
+ * \brief Compresses the entities without updating references.
  *
- * Si on appelle cette méthode, il faut être sur ensuite d'appeler
- * compactReference() sinon le tableau des itemsData() va grossir
- * au cours du temps.
+ * If this method is called, you must ensure that
+ * compactReference() is called afterward, otherwise the itemsData() array
+ * will grow over time.
  */
 void ItemFamily::
 _compactOnlyItems(bool do_sort)
 {
   _compactItems(do_sort);
 
-  // Il est necessaire de mettre a jour les groupes.
-  // TODO verifier s'il faut le faire tout le temps
+  // It is necessary to update the groups.
+  // TODO verify if this needs to be done all the time
   m_need_prepare_dump = true;
 
-  // Indique aussi qu'il faudra refaire un compactReference()
-  // lors du dump.
-  // NOTE: spécifier cela forcera aussi un recompactage lors du prepareForDump()
-  // et ce compactage est inutile dans le cas présent.
-  // TODO: regarder comment indiquer au prepareForDump() qu'on souhaite
-  // juste faire un compactReference().
+  // Indicates that a compactReference() will also be required
+  // during the dump.
+  // NOTE: specifying this will also force a recompacting during prepareForDump()
+  // and this compaction is unnecessary in this case.
+  // TODO: look into how to indicate to prepareForDump() that we only want to
+  // perform a compactReference().
   m_item_need_prepare_dump = true;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les entités.
+ * \brief Compresses the entities.
  */
 void ItemFamily::
 compactItems(bool do_sort)
@@ -1518,8 +1517,8 @@ compactItems(bool do_sort)
   _compactOnlyItems(do_sort);
 
   if (!m_use_legacy_compact_item) {
-    // Il est nécessaire de mettre à jour les groupes
-    // après un compactReferences().
+    // It is necessary to update the groups
+    // after a compactReferences().
     _applyCheckNeedUpdateOnGroups();
   }
 }
@@ -1527,7 +1526,7 @@ compactItems(bool do_sort)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les entités.
+ * \brief Compresses the entities.
  */
 void ItemFamily::
 _compactItems(bool do_sort)
@@ -1575,7 +1574,7 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
   if (m_connectivity_mng)
     m_connectivity_mng->notifyLocalIdChanged(this, old_to_new_ids, nbItem());
 
-  // Compactage des variables internes associées aux entités
+  // Compacting internal variables associated with the entities
   {
     if (m_parent_family_depth > 0)
       m_internal_variables->m_items_nb_parent.variable()->compact(new_to_old_ids);
@@ -1602,11 +1601,11 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /**
- * Copie les valeurs des entités numéros @a source dans les entités
- * numéro @a destination
+ * Copies the values of entities numbered @a source into the entities
+ * numbered @a destination
  *
- * @param source liste des @b localId source
- * @param destination liste des @b localId destination
+ * @param source list of @b source localIds
+ * @param destination list of @b destination localIds
  */
 void ItemFamily::
 copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
@@ -1616,8 +1615,8 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 
   if (source.size() != 0) {
     for (IVariable* var : m_used_variables) {
-      // (HP) : comme vu avec Gilles et Stéphane, on ne met pas de filtre à ce niveau
-      // // si la variable est temporaire ou no restore, on ne la copie pas
+      // (HP) : as seen with Gilles and Stéphane, we do not apply a filter at this level
+      // // if the variable is temporary or no restore, we do not copy it
       // if (!(var->property() & (IVariable::PTemporary | IVariable::PNoRestore))) {
       //if (var->itemFamily()==this) {
       var->copyItemsValues(source, destination);
@@ -1631,13 +1630,13 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /**
- * Copie les moyennes des valeurs des entités numéros
- * @a first_source et @a second_source dans les entités numéros
+ * Copies the average values of entities numbered
+ * @a first_source and @a second_source into the entities numbered
  * @a destination
  *
- * @param first_source liste des @b localId de la 1ère source
- * @param second_source  liste des @b localId de la 2ème source
- * @param destination  liste des @b localId destination
+ * @param first_source list of @b localIds of the 1st source
+ * @param second_source  list of @b localIds of the 2nd source
+ * @param destination  list of @b destination localIds
  */
 void ItemFamily::
 copyItemsMeanValues(Int32ConstArrayView first_source,
@@ -1666,10 +1665,10 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les variables et les groupes.
+ * \brief Compresses the variables and groups.
  *
- * \warning: Cette méthode doit être appelée durant un compactage
- * (entre un appel à m_infos->beginCompactItems() et m_info->endCompactItems()).
+ * \warning: This method must be called during a compaction
+ * (between a call to m_infos->beginCompactItems() and m_info->endCompactItems()).
  */
 void ItemFamily::
 compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
@@ -1703,19 +1702,19 @@ compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
           << " max_local_id=" << maxLocalId()
           << " nb_item=" << nbItem();
 
-  // Apres compactage, les variables seront allouées avec comme nombre
-  // d'éléments le nombre d'entité (c'est dans DynamicMeshKindInfos::finishCompactItems()
-  // que maxLocalId() devient égal à nbItem()).
+  // After compaction, variables will be allocated with the number
+  // of elements being the number of entities (this is in DynamicMeshKindInfos::finishCompactItems()
+  // where maxLocalId() becomes equal to nbItem()).
   m_current_variable_item_size = nbItem();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les connectivités.
+ * \brief Compresses the connectivities.
  *
- * \warning: Cette méthode doit être appelée durant un compactage
- * (entre un appel à m_infos.beginCompactItems() et m_infos.endCompactItems()).
+ * \warning: This method must be called during a compaction
+ * (between a call to m_infos.beginCompactItems() and m_infos.endCompactItems()).
  */
 #ifdef NEED_MERGE
 void ItemFamily::
@@ -1754,9 +1753,9 @@ _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos)
     Int32 old_parent_lid = item->parentId(0); // depth==1 only !!
     item->setParent(0, old_to_new_lids[old_parent_lid]);
   }
-  // Si depth>1, il faudrait plutot propager le compactage en modifiant les
-  // oldToNewLocalIds des familles du sous-maillage courant et en appelant
-  // DynamicMesh::_compactItems en cascade (à partir de ce sous-maillage)
+  // If depth>1, it would be better to propagate the compaction by modifying the
+  // oldToNewLocalIds of the current sub-mesh families and calling
+  // DynamicMesh::_compactItems in cascade (starting from this sub-mesh)
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1776,7 +1775,7 @@ internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost)
 void ItemFamily::
 _checkValid()
 {
-  // Vérifie que le numéro de la partie est le même que celui du maillage
+  // Checks that the part number is the same as the mesh's part number
   {
     Int32 part_rank = m_mesh->meshPartInfo().partRank();
     if (m_sub_domain_id != part_rank)
@@ -1828,7 +1827,7 @@ _findSharedInfo(ItemTypeInfo* type)
 void ItemFamily::
 _updateSharedInfo()
 {
-  //TODO: Regarder si cela est toujours utile
+  //TODO: Check if this is still useful
   m_need_prepare_dump = true;
 }
 
@@ -1857,8 +1856,8 @@ _resizeItemVariables(Int32 new_size, bool force_resize)
   if (is_resize)
     _updateItemViews();
 
-  // Positionne les valeurs pour l'entité nulle.
-  // NOTE: regarder pour faire cela à l'init.
+  // Positions the values for the null entity.
+  // NOTE: check if this should be done at initialization.
   (*m_items_unique_id)[0] = NULL_ITEM_UNIQUE_ID;
   (*m_items_flags)[0] = 0;
   (*m_items_owner)[0] = A_NULL_RANK;
@@ -1871,12 +1870,12 @@ _resizeItemVariables(Int32 new_size, bool force_resize)
 void ItemFamily::
 _allocateInfos(ItemInternal* item, Int64 uid, ItemSharedInfoWithType* isi)
 {
-  // TODO: faire en même temps que le réalloc de la variable uniqueId()
-  //  le réalloc des m_source_incremental_item_connectivities.
+  // TODO: do simultaneously with the realloc of the uniqueId() variable
+  //  the realloc of the m_source_incremental_item_connectivities.
   Int32 local_id = item->localId();
   _resizeItemVariables(local_id + 1, false);
 
-  // TODO: regarder si encore utile car ItemInternal::reinitialize() doit le faire
+  // TODO: check if still useful because ItemInternal::reinitialize() must do it
   //(*m_items_unique_id)[local_id] = uid;
 
   ItemTypeId iti = isi->itemTypeId();
@@ -1884,7 +1883,7 @@ _allocateInfos(ItemInternal* item, Int64 uid, ItemSharedInfoWithType* isi)
 
   item->reinitialize(uid, m_default_sub_domain_owner, m_sub_domain_id);
   ++m_nb_allocate_info;
-  // Notifie les connectivitées incrémentales qu'on a ajouté un élément à la source
+  // Notify the incremental connectivities that we added an item to the source
   for (auto& c : m_source_incremental_item_connectivities)
     c->notifySourceItemAdded(ItemLocalId(local_id));
 }
@@ -1929,10 +1928,10 @@ getCommunicatingSubDomains(Int32Array& sub_domains) const
 void ItemFamily::
 computeSynchronizeInfos()
 {
-  // Ne calcul les infos de synchronisation que si on est en parallèle
-  // et que le nombre de parties est égal au nombre de rang du parallelMng(),
-  // ce qui n'est pas le cas en reprise lors d'un changement du nombre de
-  // sous-domaines.
+  // Only calculate synchronization info if we are in parallel
+  // and the number of parts equals the number of ranks of the parallelMng(),
+  // which is not the case during recovery after a change in the number of
+  // sub-domains.
   if (m_is_parallel && m_mesh->meshPartInfo().nbPart() == parallelMng()->commSize()) {
     m_variable_synchronizer->compute();
     _updateItemsSharedFlag();
@@ -1941,7 +1940,7 @@ computeSynchronizeInfos()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO déplacer cette méthode en dehors de ItemFamily
+// TODO move this method outside of ItemFamily
 void ItemFamily::
 reduceFromGhostItems(IVariable* v, IDataOperation* operation)
 {
@@ -1957,7 +1956,7 @@ reduceFromGhostItems(IVariable* v, IDataOperation* operation)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO déplacer cette méthode en dehors de ItemFamily
+// TODO move this method outside of ItemFamily
 void ItemFamily::
 reduceFromGhostItems(IVariable* v, Parallel::eReduceType reduction)
 {
@@ -2344,9 +2343,9 @@ _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_p
 void ItemFamily::
 _detachCells2(Int32ConstArrayView local_ids)
 {
-  //- Only cells are detached, ie no parent dependencies are to be found
+  //- Only cells are detached, i.e., no parent dependencies are to be found
   ARCANE_ASSERT((m_mesh->itemFamilyNetwork()->getParentDependencies(this).empty()),("Only cells are detached, no parent dependencies are to be found."))
-  // Remove all the relations parent and child. Keep child dependencies => used when removing detach cells. No parent dependencies
+  // Remove all parent and child relations. Keep child dependencies => used when removing detached cells. No parent dependencies
   // 1 Remove relations for child relations
   for (auto removed_item_lid : local_ids) {
       for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
@@ -2375,7 +2374,7 @@ _detachCells2(Int32ConstArrayView local_ids)
   }
   // 4-Detach items.
   for (auto detached_item_lid : local_ids) {
-    m_infos->detachOne(m_infos->itemInternal(detached_item_lid)); // when family/mesh endUpdate is done ? needed ?
+    m_infos->detachOne(m_infos->itemInternal(detached_item_lid)); // when family/mesh endUpdate is done? needed?
   }
 }
 
@@ -2413,7 +2412,7 @@ removeNeedRemoveMarkedItems()
     return;
 
   // Update connectivities => remove all con pointing on the removed items
-  // Todo the nearly same procedure is done in _detachCells2 : mutualize in a method (watchout the connectivities used are parentConnectivities or parentRelations...)
+  // TODO the nearly same procedure is done in _detachCells2: mutualize in a method (watch out the connectivities used are parentConnectivities or parentRelations...)
   ItemScalarProperty<bool> is_removed_item;
   is_removed_item.resize(this,false);
   for (auto removed_item: items_to_remove) {
@@ -2443,7 +2442,7 @@ class CompareUniqueIdWithSuppression
  public:
   bool operator()(const ItemInternal* item1,const ItemInternal* item2) const
   {
-    // Il faut mettre les entités détruites en fin de liste
+    // Destroyed entities must be placed at the end of the list.
     //cout << "Compare: " << item1->uniqueId() << " " << item2->uniqueId() << '\n';
     bool s1 = item1->isSuppressed();
     bool s2 = item2->isSuppressed();
@@ -2578,7 +2577,7 @@ void ItemFamily::
 _checkValidConnectivity()
 {
   {
-    // Vérifie qu'il n'y a pas d'entité nulle.
+    // Checks that there are no null entities.
     ENUMERATE_ITEM(i,allItems()){
       Item item = *i;
       if (item.null())
@@ -2586,7 +2585,7 @@ _checkValidConnectivity()
     }
   }
   {
-    // Vérifie la cohérence de la partie interne
+    // Checks the consistency of the internal part
     ENUMERATE_ITEM(i,allItems()){
       Item item = *i;
       Item i1 = item;
@@ -2610,9 +2609,9 @@ _checkValidConnectivity()
 
     Int32 max_nb = 0;
     if (con_nb_item_size!=0){
-      // Il faut itérer sur toutes les entités et pas sur \a con_nb_item
-      // car certaines valeurs peuvent ne pas être valides s'il y a des
-      // trous dans la numérotation.
+      // It is necessary to iterate over all entities and not over \a con_nb_item
+      // because some values may not be valid if there are
+      // gaps in the numbering.
       ENUMERATE_ITEM(i,allItems()){
         Int32 x = con_view.nbItem(i);
         if (x>max_nb)
@@ -2624,8 +2623,8 @@ _checkValidConnectivity()
       computed_max[i] = max_nb;
     }
   }
-  // Vérifie que la valeur retournée par m_local_connectivity_info
-  // est au moins supérieure à 'computed_max'
+  // Checks that the value returned by m_local_connectivity_info
+  // is at least greater than 'computed_max'
   {
     std::array<Int32,MAX_KIND> stored_max;
     stored_max.fill(0);
@@ -2634,8 +2633,8 @@ _checkValidConnectivity()
     stored_max[ItemInternalConnectivityList::EDGE_IDX] = ci->maxEdgePerItem();
     stored_max[ItemInternalConnectivityList::FACE_IDX] = ci->maxFacePerItem();
     stored_max[ItemInternalConnectivityList::CELL_IDX] = ci->maxCellPerItem();
-    // Pour les deux suivants, il n'y a pas l'équivalent dans 'ItemConnectivityInfo' donc
-    // on mets les valeurs calculées pour ne pas générer d'erreur.
+    // For the following two, there is no equivalent in 'ItemConnectivityInfo' so
+    // we put the calculated values to avoid generating an error.
     stored_max[ItemInternalConnectivityList::HPARENT_IDX] = computed_max[ItemInternalConnectivityList::HPARENT_IDX];
     stored_max[ItemInternalConnectivityList::HCHILD_IDX] = computed_max[ItemInternalConnectivityList::HCHILD_IDX];
     for( Integer i=0; i<MAX_KIND; ++i )
@@ -2690,11 +2689,11 @@ _setTopologyModifier(IItemFamilyTopologyModifier* tm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne les infos Item::isShared() pour les entités de la
- * famille.
+ * \brief Positions Item::isShared() info for the entities of the
+ * family.
  *
- * Cette méthode n'est valide que si les infos de connectivité de
- * m_variable_synchronizer sont à jour.
+ * This method is only valid if the connectivity info of
+ * m_variable_synchronizer is up to date.
  */
 void ItemFamily::
 _updateItemsSharedFlag()
@@ -2704,8 +2703,8 @@ _updateItemsSharedFlag()
     items[i]->removeFlags(ItemFlags::II_Shared);
   Int32ConstArrayView comm_ranks = m_variable_synchronizer->communicatingRanks();
   Integer nb_rank = comm_ranks.size();
-  // Parcours les sharedItems() du synchroniseur et positionne le flag
-  // II_Shared pour les entités de la liste.
+  // Iterates through the synchronizer's sharedItems() and sets the flag
+  // II_Shared for the entities in the list.
   for( Integer i=0; i<nb_rank; ++i ){
     Int32ConstArrayView shared_ids = m_variable_synchronizer->sharedItems(i);
     for( auto id : shared_ids )
@@ -2731,8 +2730,8 @@ _computeConnectivityInfo(ItemConnectivityInfo* ici)
 void ItemFamily::
 _handleOldCheckpoint()
 {
-  // Pas besoin de gérer 'm_items_type_id' car il n'est pas présent dans
-  // les anciennes protections.
+  // No need to manage 'm_items_type_id' because it is not present in
+  // the old protections.
   _offsetArrayByOne(m_items_unique_id);
   _offsetArrayByOne(m_items_flags);
   _offsetArrayByOne(m_items_owner);
@@ -2747,7 +2746,7 @@ _handleOldCheckpoint()
 namespace
 {
 
-// Retourne une vue qui commence sur le dexuème élément du tableau.
+// Returns a view that starts on the second element of the array.
 template<typename DataType>
 ArrayView<DataType> _getView(Array<DataType>* v)
 {

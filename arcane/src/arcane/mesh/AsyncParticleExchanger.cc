@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AsyncParticleExchanger.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Echangeur de particules asynchrone.                                       */
+/* Asynchronous particle exchanger.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,8 +51,8 @@ void AsyncParticleExchanger::
 build()
 {
   m_bpe.build();
-  // Par défaut met à 0 le niveau de verbosité pour éviter trop de messages
-  // lors des phases asynchrones.
+  // By default sets the verbosity level to 0 to avoid too many messages
+  // during asynchronous phases.
   m_bpe.setVerboseLevel(0);
 }
 
@@ -199,7 +199,7 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
   bool is_finished = false;
   ++m_bpe.m_nb_loop;
 
-  //Génère tous les Isend et les Imrecv matchés avec Improbe
+  // Generates all Isend and Imrecv matched with Improbe
   m_bpe.m_nb_particle_send = local_ids.size();
   {
     Timer::Sentry ts(m_bpe.m_timer);
@@ -217,20 +217,20 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
     has_local_flying_particles = true;
 
   //----------------------------------------
-  //Ici on a le coeur de l'algo de condition d'arrêt lors de l'utilisation de AsyncParticleExchanger
+  // Here is the core of the stopping condition algorithm when using AsyncParticleExchanger
   //
-  //Si taille de chunk == 0 && pas de req(red) en vol
-  //Si (Q > 0) avec Q le nombre de particule en vol (résultat du Iallreduce)
+  //If chunk size == 0 && no req(red) in flight
+  //If (Q > 0) with Q being the number of particles in flight (result of the Iallreduce)
   //  Iallreduce (P, Q, req(red));
-  //  P=0; avec P le nombre de particule envoyé depuis le dernier Iallreduce
-  //Sinon
-  //  retourner is_finished = true
+  //  P=0; with P being the number of particles sent since the last Iallreduce
+  //Otherwise
+  //  return is_finished = true
   //
 
   IParallelMng* pm = m_bpe.m_parallel_mng;
   UniqueArray<Integer> isIallReduceRunning = pm->testSomeRequests(m_reduce_requests);
 
-  //Si la requête a matché, on clear le tableau de requête
+  //If the request matched, we clear the request array
   if (isIallReduceRunning.size() != 0){
     m_reduce_requests.clear();
     if (m_bpe.m_verbose_level>=1)
@@ -238,12 +238,12 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
              << " total=" << m_sum_of_nb_particle_sent;
   }
 
-  //Ici, on teste si on a des particules à traiter en local
-  //Qu'il n'y a pas de requête Iallreduce en vol
-  //et qu'il n'y a pas de requête à envoyer ou recevoir en vol
+  //Here, we test if we have particles to process locally
+  //If there are no Iallreduce requests in flight
+  //and no requests to send or receive in flight
   if ((!has_local_flying_particles) && (m_reduce_requests.size() == 0) && (m_bpe.m_waiting_messages.size() == 0) && (m_bpe.m_pending_messages.size()==0)) {
     if (m_sum_of_nb_particle_sent > 0) {
-      //Faire MPI_Iallreduce
+      //Perform MPI_Iallreduce
       IParallelNonBlockingCollective* pnbc = pm->nonBlockingCollective();
       m_nb_particle_send_before_reduction = m_nb_particle_send_before_reduction_tmp;
       if (m_bpe.m_verbose_level>=1)
@@ -256,7 +256,7 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
       m_nb_particle_send_before_reduction_tmp = 0;
     }
     else {
-      is_finished = true; // is_finished = true, il n'y a plus de particules à traiter globalement
+      is_finished = true; // is_finished = true, there are no more particles to process globally
     }
   }
   return is_finished;
@@ -278,22 +278,22 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
   Integer nb_connected_sub_domain = communicating_sub_domains.size();
 
   UniqueArray<SharedArray<Int32>> ids_to_send(nb_connected_sub_domain);
-  // Infos pour chaque sous-domaine connecté
+  // Info for each connected sub-domain
   m_bpe.m_accumulate_infos.clear();
   m_bpe.m_accumulate_infos.resize(nb_connected_sub_domain);
 
   m_bpe._addItemsToSend(local_ids, sub_domains_to_send, communicating_sub_domains, ids_to_send);
 
   Int64UniqueArray items_to_send_uid;
-  Int64UniqueArray items_to_send_cells_uid; // Uniquement pour les particules;
+  Int64UniqueArray items_to_send_cells_uid; // Only for particles;
 
   IParallelMng* pm = m_bpe.m_parallel_mng;
 
   //-------------------------------
-  // Gestion des envoies de particules
+  // Handling particle sends
   //
-  // [HT] En mode asynchrone, nous devons envoyer que si nous avons des particules
-  // et les réceptions se feront avec des MPI_Improbe
+  // [HT] In asynchronous mode, we must only send if we have particles
+  // and receptions will be done with MPI_Improbe
   for (Integer j = 0; j < nb_connected_sub_domain; ++j) {
     if (ids_to_send[j].size() != 0) {
       auto* sm = new SerializeMessage(pm->commRank(), communicating_sub_domains[j],
@@ -306,9 +306,9 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
   }
 
   //-------------------------------
-  // Gestion des réceptions de particules
+  // Handling particle receives
   //
-  // [HT] En mode asynchrone, les réceptions se font avec des MPI_Improbe et MPI_Imrecv
+  // [HT] In asynchronous mode, receptions are done with MPI_Improbe and MPI_Imrecv
   for (Integer j = 0; j < nb_connected_sub_domain; ++j) {
 
     MessageTag tag(Arcane::MessagePassing::internal::BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
@@ -324,7 +324,7 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
   }
 
   m_bpe.m_accumulate_infos.clear();
-  // Détruit les entités qui viennent d'être envoyées
+  // Deletes the entities that were just sent
   m_bpe.m_item_family->toParticleFamily()->removeParticles(local_ids);
   m_bpe.m_item_family->endUpdate();
 }
@@ -341,8 +341,8 @@ _waitSomeMessages(ItemGroup item_group, Int32Array* new_particle_local_ids)
   }
   m_bpe.m_total_time_waiting += m_bpe.m_timer->lastActivationTime();
 
-  // Sauve les communications actuellements traitées car le traitement
-  // peut en ajouter de nouvelles
+  // Save the currently processed communications because processing
+  // might add new ones
   UniqueArray<ISerializeMessage*> current_messages(m_bpe.m_waiting_messages);
 
   m_bpe.m_waiting_messages.clear();
@@ -355,12 +355,12 @@ _waitSomeMessages(ItemGroup item_group, Int32Array* new_particle_local_ids)
   for (Integer i = 0, is = current_messages.size(); i < is; ++i) {
     ISerializeMessage* sm = current_messages[i];
     if (sm->finished()) {
-      if (!sm->isSend()) { //Si le msg est un recv
+      if (!sm->isSend()) { //If the msg is a recv
         m_bpe._deserializeMessage(sm, items_to_create_unique_id, items_to_create_cells_unique_id,
                                   items_to_create_local_id, items_to_create_cells_local_id,
                                   item_group, new_particle_local_ids);
-        // Indique qu'on a recu des particules et donc il faudrait dire
-        // que has_local_flying_particle est vra
+        // Indicates that particles were received and therefore it should be stated
+        // that has_local_flying_particle is true
         if (!items_to_create_unique_id.empty())
           has_new_particle = true;
       }

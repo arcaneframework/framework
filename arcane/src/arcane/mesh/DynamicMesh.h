@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMesh.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe de gestion d'un maillage évolutif.                                 */
+/* Class for managing an adaptive mesh.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DYNAMICMESH_H
 #define ARCANE_MESH_DYNAMICMESH_H
@@ -86,7 +86,7 @@ class DynamicMeshInternal;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation d'un maillage.
+ * \brief Implementation of a mesh.
  */
 class ARCANE_MESH_EXPORT DynamicMesh
 : public MeshVariables
@@ -100,7 +100,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
 
   friend DynamicMeshInternal;
 
-  // TEMPORAIRE
+  // TEMPORARY
   friend DynamicMeshMergerHelper;
 
  public:
@@ -147,7 +147,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
 #endif
  public:
 
-  void _checkKindRange(eItemKind ik) const // Il faut rendre fatal pour les particules, les dofs et le graph ??
+  void _checkKindRange(eItemKind ik) const // Must be made fatal for particles, dofs and graph ??
   {
     if (ik==IK_Node || 
         ik==IK_Edge || 
@@ -207,7 +207,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void clearItems() override;
 
   /**
-   * Met à jour les mailles fantômes
+   * Updates the ghost layers
    *
    */
   void updateGhostLayers() override;
@@ -217,7 +217,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
                                   Array<Int64>& cells_to_coarsen,
                                   bool remove_old_ghost) override;
 
-  //! Fusionne les maillages de \a meshes avec le maillage actuel.
+  //! Merges the meshes of \a meshes with the current mesh.
   void mergeMeshes(ConstArrayView<IMesh*> meshes) override;
 
   void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) override;
@@ -285,7 +285,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   bool isPrimaryMesh() const override;
   IPrimaryMesh* toPrimaryMesh() override;
 
-  //! Informations sur les parties du maillage
+  //! Information about mesh parts
   const MeshPartInfo& meshPartInfo() const override { return m_mesh_part_info; }
   void setMeshPartInfo(const MeshPartInfo& mpi) override;
   IUserDataList* userDataList() override { return m_mesh_handle.meshUserDataList(); }
@@ -357,7 +357,7 @@ public:
   FaceGroup allFaces() override { return allItems(IK_Face); }
   CellGroup allCells() override { return allItems(IK_Cell); }
 
-  //TODO: supprimer cette méthode
+  //TODO: remove this method
   ItemGroup allItems(eItemKind kind)
   {
     _checkKindRange(kind);
@@ -369,7 +369,7 @@ public:
   FaceGroup ownFaces() override { return ownItems(IK_Face); }
   CellGroup ownCells() override { return ownItems(IK_Cell); }
 
-  //TODO: supprimer cette méthode
+  //TODO: remove this method
   ItemGroup ownItems(eItemKind kind)
   {
     _checkKindRange(kind);
@@ -379,28 +379,28 @@ public:
   FaceGroup outerFaces() override;
 
   //! AMR
-  //! Groupe de toutes les mailles actives
+  //! Group of all active cells
   CellGroup allActiveCells() override;
 
-  //! Groupe de toutes les mailles actives et propres au domaine
+  //! Group of all active and domain-specific cells
   CellGroup ownActiveCells() override;
 
-  //! Groupe de toutes les mailles de niveau \p level
+  //! Group of all cells at level \p level
   CellGroup allLevelCells(const Integer& level) override;
 
-  //! Groupe de toutes les mailles propres de niveau \p level
+  //! Group of all domain-specific cells at level \p level
   CellGroup ownLevelCells(const Integer& level) override;
 
-  //! Groupe de toutes les faces actives
+  //! Group of all active faces
   FaceGroup allActiveFaces() override;
 
-  //! Groupe de toutes les faces actives sur la frontière.
+  //! Group of all active faces on the boundary.
   FaceGroup ownActiveFaces() override;
 
-  //! Groupe de toutes les faces actives
+  //! Group of all active faces
   FaceGroup innerActiveFaces() override;
 
-  //! Groupe de toutes les faces actives sur la frontière.
+  //! Group of all active faces on the boundary.
   FaceGroup outerActiveFaces() override;
 
 //  void readAmrActivator(const XmlNode& mesh_node) override;
@@ -580,13 +580,13 @@ public:
 
   bool m_is_dynamic = false;
 
-  //! Liste des groupes d'entités
+  //! List of entity groups
   ItemGroupList m_all_groups;
 
-  //! Liste des interfaces familles d'entités
+  //! List of entity family interfaces
   ItemFamilyList m_item_families;
 
-  //! Liste des implémentations des familles d'entités
+  //! List of entity family implementations
   UniqueArray<ItemFamily*> m_true_item_families;
   UniqueArray<IItemFamilyModifier*> m_family_modifiers; // used for item family network
 
@@ -634,7 +634,7 @@ public:
   void _readFromDump();
 
   void _setOwnersFromCells();
-  // Les méthodes _synchronizeXXX ne sont pas récursives sur les sous-maillages
+  // The _synchronizeXXX methods are not recursive on sub-meshes
   void _synchronizeGroupsAndVariables();
   void _synchronizeGroups();
   void _synchronizeVariables();
@@ -691,8 +691,8 @@ public:
   void _updateGroupsAfterRemove();
   void _printConnectivityPolicy();
 
-  // Add a dependency (downward adjacencies only) between two family: ie the source family
-  // is built on the target family (ex a cell is build owns its nodes)
+  // Add a dependency (downward adjacencies only) between two families: i.e., the source family
+  // is built on the target family (e.g., a cell owns its nodes)
   template <class SourceFamily, class TargetFamily>
   void _addDependency(SourceFamily* source_family, TargetFamily* target_family)
   {
@@ -702,7 +702,7 @@ public:
     m_item_family_network->addDependency(source_family,target_family,connectivity);
   }
 
-  // Add a relation : source family "sees" target family (ex a face sees its cells). Often upward adjacencies.
+  // Add a relation: source family "sees" target family (e.g., a face sees its cells). Often upward adjacencies.
   template <class SourceFamily, class TargetFamily>
   void _addRelation(SourceFamily* source_family, TargetFamily* target_family)
   {

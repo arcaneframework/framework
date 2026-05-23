@@ -37,12 +37,12 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Sérialisation/Désérialisation des familles d'entités.
+ * \brief Serialization/Deserialization of item families.
  *
- * Cette implémentation de sérialiseur utilise le graphe des familles IItemFamilyNetwork
- * pour fonctionner. Ce graphe permet d'échanger chaque famille d'entité indépendemment,
- * sans utiliser la notion de sérialisation directe ou indirecte. Les informations de connectivités
- * pour chaque famille sont stockées dans la classe ItemData qui sera ensuite sérialisée/désérialisée.
+ * This serializer implementation uses the IItemFamilyNetwork family graph
+ * to function. This graph allows exchanging each item family independently,
+ * without using the concept of direct or indirect serialization. The connectivity information
+ * for each family is stored in the ItemData class, which will then be serialized/deserialized.
  */
 class ARCANE_MESH_EXPORT ItemFamilySerializer : public IItemFamilySerializer
 {

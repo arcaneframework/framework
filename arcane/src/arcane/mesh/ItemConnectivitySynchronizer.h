@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivitySynchronizer.h                              (C) 2000-2021 */
 /*                                                                           */
-/* Synchronization des connectivités.                                        */
+/* Synchronization of connectivities.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DOF_CONNECTIVITYSYNCHRONIZER_H
 #define ARCANE_DOF_CONNECTIVITYSYNCHRONIZER_H
@@ -41,7 +41,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySynchronizer
 {
  public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemConnectivitySynchronizer(IItemConnectivity* connectivity,
                                IItemConnectivityGhostPolicy* ghost_policy);
 
@@ -51,9 +51,9 @@ class ARCANE_MESH_EXPORT ItemConnectivitySynchronizer
   //! Interface IConnectivitySynchronizer
 
   /*!
-   * Ajoute le items fantôme définis par IItemConnectivityGhostPolicy.
-   * Les uids des items fantômes ajoutés sont conservés.
-   * Lors d'un deuxième appel, les fantômes déjà ajoutés ne le sont pas une deuxième fois.
+   * Adds the ghost items defined by IItemConnectivityGhostPolicy.
+   * The uids of the added ghost items are preserved.
+   * On a second call, the already added ghosts are not added a second time.
    */
 
   void synchronize();

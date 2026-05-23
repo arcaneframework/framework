@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FullItemInfo.h                                              (C) 2000-2021 */
 /*                                                                           */
-/* Information de sérialisation d'une maille.                                */
+/* Serialization information for a mesh.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -82,11 +82,11 @@ Integer FullCellInfo::
 memoryUsed(ItemTypeInfo* it, Integer parent_info, bool has_edge, bool has_amr,bool with_flags)
 {
   Integer memory_used = 0;
-  // description de base d'une cellule
+  // basic description of a cell
   memory_used += 3 + 2*it->nbLocalNode() + 2*it->nbLocalFace();
   if (has_edge)
     memory_used += 2*it->nbLocalEdge();
-  // Facteur *2 : uid + type (tous sauf node)
+  // Factor *2: uid + type (all except node)
   if (parent_info & PI_Node)
     memory_used += it->nbLocalNode();
   if (parent_info & PI_Edge)
@@ -137,18 +137,18 @@ _dumpCellInfo(Cell cell,Adapter buf, Integer parent_info,
   buf.put(cell.type());
   buf.put(cell.uniqueId().asInt64());
   buf.put(cell.owner());
-  // Ajoute la liste des noeuds
+  // Adds the list of nodes
   for( Item node : cell.nodes() ){
     buf.put(node.uniqueId().asInt64());
     buf.put(node.owner());
   }
-  // Ajoute la liste des arêtes
+  // Adds the list of edges
   if (has_edge)
     for( Edge edge : cell.edges() ){
       buf.put(edge.uniqueId().asInt64());
       buf.put(edge.owner());
     }
-  // Ajoute la liste des faces
+  // Adds the list of faces
   for( Face face : cell.faces() ){
     buf.put(face.uniqueId().asInt64());
     buf.put(face.owner());

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshKindInfos.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Infos de maillage pour un genre d'entité donnée.                          */
+/* Mesh info for a given entity kind.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -78,10 +78,10 @@ DynamicMeshKindInfos::
 void DynamicMeshKindInfos::
 build()
 {
-  // Créé le groupe contenant toutes les entités de ce genre
+  // Create the group containing all entities of this kind.
   {
-    // Si le nom de ce groupe change, il faut mettre a jour 
-    // le nom equivalent dans VariableInfo.cc
+    // If the name of this group changes, it must be updated 
+    // the equivalent name in VariableInfo.cc
     StringBuilder str("All");
     str += m_kind_name;
     str += "s";
@@ -136,21 +136,21 @@ finalizeMeshChanged()
           << " nb_add=" << nb_added_items
           << " nb_remove=" << nb_removed_items;
 
-  // GG: passage en OLD le 11/2018. Si tout est OK du côté IFPEN
-  // on pourra définitivement supprimer cela.
+  // GG: switched to OLD in 11/2018. If everything is OK on the IFPEN side
+  // we will be able to permanently remove this.
 #if OLD
   IParallelMng* pm = m_mesh->parallelMng();
-  // En séquentiel, positionne le champs m_owner de chaque entité.
-  // TODO: ne doit pas être fait ici, mais dans le lecteur de maillage...
+  // In sequential mode, position the m_owner field of each entity.
+  // TODO: should not be done here, but in the mesh reader...
   if (!pm->isParallel() && nb_added_items!=0){
     const Integer sid = pm->commRank();
     for( Integer i=0; i<nb_added_items; ++i )
       m_internals[ m_added_items[i] ]->setOwner(sid,sid);
   }
 #endif
-  // (HP) TODO: On peut surement optimiser la réorganisation via des 
+  // (HP) TODO: We can probably optimize the reorganization via
   // addItems, removeItems, changeIds...
-  // Le problème est qu'ici il ne faut pas impacter les sous-groupes calculés
+  // The problem is that here we must not impact the calculated sub-groups
   impl.beginTransaction();
   if (nb_added_items==0 && nb_removed_items!=0 && test_mode){
     impl.removeItems(m_removed_items,true);
@@ -161,15 +161,15 @@ finalizeMeshChanged()
   }
   impl.endTransaction();
   
-  // restore integrity of allItems group after this agressive modification
+  // restore integrity of allItems group after this aggressive modification
   impl.checkNeedUpdate();
 
 #if defined(ARCANE_DEBUG_MESH)
   if (arcaneIsCheck())
     m_all_group.checkValid();
 #endif
-  // Il faut aussi changer les groupes des entités propres
-  // (A faire uniquement en parallele ?)
+  // We must also change the groups of the owned entities
+  // (To be done only in parallel?)
   m_item_family->notifyItemsOwnerChanged();
 
 #if defined(ARCANE_DEBUG_MESH)
@@ -327,7 +327,7 @@ void DynamicMeshKindInfos::
 readFromDump()
 {
   m_all_group = m_mesh->findGroup(m_all_group_name);
-  // Supprime toutes les entités
+  // Remove all entities
   m_nb_item = 0;
   m_internals.clear();
   _updateItemSharedInfoInternalView();
@@ -352,8 +352,8 @@ checkValid()
   Integer nb_internal = m_internals.size();
   Integer nb_error = 0;
 
-  // Premièrement, le item->localId() doit correspondre à l'indice
-  // dans le tableau m_internal
+  // First, item->localId() must correspond to the index
+  // in the m_internal array
   for( Integer i=0; i<nb_internal; ++i ){
     ItemInternal* item = m_internals[i];
     if (item->localId()!=i && nb_error<10){
@@ -405,7 +405,7 @@ class ItemParticleCompareWithSuppression
  public:
   bool operator()(const ItemInternal* item1,const ItemInternal* item2) const
   {
-    // Il faut mettre les entités détruites en fin de liste
+    // Deleted entities must be placed at the end of the list
     //cout << "Compare: " << item1->uniqueId() << " " << item2->uniqueId() << '\n';
     bool s1 = item1->isSuppressed();
     bool s2 = item2->isSuppressed();
@@ -461,17 +461,17 @@ newToOldLocalIds() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcule les nouveaux id locaux des entités pour qu'ils soient consécutifs.
+  \brief Calculates the new local IDs of the entities so that they are consecutive.
     
-  Si \a do_sort est vrai, les entités sont triées de telle sorte que leur id unique
-  et id local soient dans un ordre croissant.
+  If \a do_sort is true, the entities are sorted such that their unique id
+  and local id are in ascending order.
     
-  Avant appel à cette fonction, le maillage doit être valide et finalisé
+  Before calling this function, the mesh must be valid and finalized
 
-  Après appel à cette fonction, les tableaux oldToNewLocalIds() et
-  newToOldLocalIds() sont renseignés et
-  contiennent pour chaque entité les conversions entre nouveaux et
-  anciens numéros locaux.
+  After calling this function, the oldToNewLocalIds() and
+  newToOldLocalIds() arrays are populated and
+  contain the conversions between new and
+  old local numbers.
 */
 void DynamicMeshKindInfos::
 beginCompactItems(ItemFamilyCompactInfos& compact_infos)
@@ -952,4 +952,3 @@ _notifyAdd2(ItemInternal* item,Int64 uid)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

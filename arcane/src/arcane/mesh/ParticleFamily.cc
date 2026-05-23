@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleFamily.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Famille de particules.                                                    */
+/* Particle family.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,7 +66,7 @@ build()
   m_particle_type_info = itm->typeFromId(IT_NullType);
   m_sub_domain_id = subDomain()->subDomainId();
 
-  // Temporaire: pour désactiver la table de hashage pour uniqueId
+  // Temporary: to disable the hash table for uniqueId
   if (!platform::getEnvironmentVariable("ARCANE_PARTICLE_NO_UNIQUE_ID_MAP").null()) {
     pwarning() << "TEMPORARY: suppress particule uniqueId map";
     setHasUniqueIdMap(false);
@@ -82,7 +82,7 @@ build()
 
   _buildConnectivitySelectors();
 
-  // Préalloue une maille par particule.
+  // Pre-allocates a mesh per particle.
   m_cell_connectivity->setPreAllocatedSize(1);
 
   _setSharedInfo();
@@ -96,8 +96,7 @@ build()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne les infos de connectivité pour une particule qui
- * vient d'être allouée en mémoire.
+ * \brief Positions the connectivity info for a particle that has just been allocated in memory.
  */
 inline void ParticleFamily::
 _initializeNewlyAllocatedParticle(ItemInternal* particle, Int64 uid)
@@ -119,7 +118,7 @@ _allocParticle(Int64 uid, bool& need_alloc)
   else
     _initializeNewlyAllocatedParticle(ii, uid);
 
-  // Une particule appartient toujours au sous-domaine qui l'a créée
+  // A particle always belongs to the sub-domain that created it
   ii->setOwner(m_sub_domain_id, m_sub_domain_id);
   return ii;
 }
@@ -239,7 +238,7 @@ addItems(Int64ConstArrayView unique_ids, Int32ConstArrayView owners, Int32ArrayV
   if (nb_item == 0)
     return;
   preAllocate(nb_item);
-  // La méthode _findOrAlloc nécessite la table de hashage des uniqueId().
+  // The _findOrAlloc method requires the uniqueId hash map.
   if (!hasUniqueIdMap())
     ARCANE_FATAL("Can not add particles with owners when hasUniqueIdMap()==false family={0}",
                  name());
@@ -295,10 +294,10 @@ internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost)
 
   InternalConnectivityPolicy policy = mesh()->_connectivityPolicy();
 
-  // A noter que cette boucle n'est pas utile pour le moment si on
-  // n'utilise pas les nouvelles connectivités.
-  // Elle le sera si on souhaite avoir des connectivités inverses
-  // maille->particule.
+  // Note that this loop is not useful for the moment if we
+  // are not using the new connectivities.
+  // It will be if we want to have inverse connectivities
+  // mesh->particle.
   bool want_nullify_cell = (policy != InternalConnectivityPolicy::Legacy);
   ItemLocalId null_item_lid(NULL_ITEM_LOCAL_ID);
 
@@ -367,7 +366,7 @@ void ParticleFamily::
 readFromDump()
 {
   ItemFamily::readFromDump();
-  // Actualise le shared_info car il peut changer suite à une relecture
+  // Updates the shared_info because it may change after a reload
   _setSharedInfo();
 }
 

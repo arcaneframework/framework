@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVariables.h                                             (C) 2000-2005 */
 /*                                                                           */
-/* Variables pour contenant les informations géométrique d'un maillage.      */
+/* Variables containing the geometric information of a mesh.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHVARIABLES_H
 #define ARCANE_MESH_MESHVARIABLES_H
@@ -33,8 +33,8 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Variables contenant les informations de
- * connectivités communes aux maillages 1D, 2D et 3D.
+ * \brief Variables containing the information of
+ * connectivities common to 1D, 2D, and 3D meshes.
  */
 class MeshVariables
 {
@@ -48,25 +48,25 @@ class MeshVariables
   
   ISubDomain* m_sub_domain;
 
-  //! Dimension du maillage
+  //! Mesh dimension
   VariableScalarInteger m_mesh_dimension;
 
-  //! Connectivité du maillage
+  //! Mesh connectivity
   VariableScalarInteger m_mesh_connectivity;
 
-  //! Noms des familles d'entités
+  //! Names of entity families
   VariableArrayString m_item_families_name;
 
-  //! Genre des entités des familles
+  //! Kind of entities in the families
   VariableArrayInteger m_item_families_kind;
 
-  //! Nom du maillage parent
+  //! Name of the parent mesh
   VariableScalarString m_parent_mesh_name;
 
-  //! Nom du groupe parent
+  //! Name of the parent group
   VariableScalarString m_parent_group_name;
 
-  //! Noms des maillages parentés
+  //! Names of parent meshes
   VariableArrayString m_child_meshes_name;
 
  public:
@@ -81,4 +81,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

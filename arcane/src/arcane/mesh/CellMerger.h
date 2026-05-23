@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellMerger.h                                                (C) 2000-2023 */
 /*                                                                           */
-/* Fusionne deux mailles.                                                    */
+/* Merges two meshes.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CELLMERGER_H
 #define ARCANE_MESH_CELLMERGER_H
@@ -28,63 +28,63 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe d'aide pour fusionner deux mailles.
+ * \brief Helper class for merging two meshes.
  */
 class ARCANE_MESH_EXPORT CellMerger
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   CellMerger(ITraceMng*) {}
 
-  //! Destructeur
+  //! Destructor
   ~CellMerger() = default;
 
  public:
 
   /*!
-   * \brief Effectue la fusion des deux mailles \a i_cell_1 et \a i_cell_2.
+   * \brief Merges the two meshes \a i_cell_1 and \a i_cell_2.
    * 
-   * \param i_cell_1 un pointeur sur la premiere maille
-   * \param i_cell_2 un pointeur sur la deuxième maille
+   * \param i_cell_1 a pointer to the first mesh
+   * \param i_cell_2 a pointer to the second mesh
    * 
-   * \note la fusion est \b toujours effectuée dans \a i_cell_1, \a i_cell_2
-   * devient une maille applatie qui sera détruite par la suite.
+   * \note the merge is \b always performed in \a i_cell_1, \a i_cell_2
+   * becomes a flattened mesh that will be destroyed later.
    */
   void merge(Cell i_cell_1, Cell i_cell_2);
 
   /*!
-   * \brief Retourne l'ItemInteral utilisé par la maille après fusion
+   * \brief Returns the ItemInternal used by the mesh after merging
    *
-   * \param i_cell_1 un pointeur sur la premiere maille
-   * \param i_cell_2 un pointeur sur la deuxième maille
+   * \param i_cell_1 a pointer to the first mesh
+   * \param i_cell_2 a pointer to the second mesh
    *
-   * \return un pointeur sur la nouvelle maille.
+   * \return a pointer to the new mesh.
    *
-   * \note le nouveau pointeur est toujours soit \a i_cell_1 soit
-   * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
+   * \note the new pointer is always either \a i_cell_1 or
+   * \a i_cell_2. No memory allocation is performed.
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use getCell() instead")
   ItemInternal* getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2);
 
   /*!
-   * \brief Retourne la maille utilisé par la maille après fusion
+   * \brief Returns the mesh used by the mesh after merging
    * 
-   * \param i_cell_1 un pointeur sur la premiere maille
-   * \param i_cell_2 un pointeur sur la deuxième maille
+   * \param i_cell_1 a pointer to the first mesh
+   * \param i_cell_2 a pointer to the second mesh
    * 
-   * \return la nouvelle maille.
+   * \return the new mesh.
    * 
-   * \note la nouvelle maille est toujours soit \a i_cell_1 soit
-   * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
+   * \note the new mesh is always either \a i_cell_1 or
+   * \a i_cell_2. No memory allocation is performed.
    */
   Cell getCell(Cell i_cell_1, Cell i_cell_2);
 
  private:
 
   /*!
-   * On se donne un type énuméré local afin de pouvoir effectuer des
-   * operations arithmétiques (voir \see _promoteType)
+   * We define a local enumerated type in order to perform
+   * arithmetic operations (see \see _promoteType)
    */
   enum _Type
   {
@@ -97,31 +97,31 @@ class ARCANE_MESH_EXPORT CellMerger
   };
 
   /*!
-   * \brief Retourne le nom associé à type de maille
+   * \brief Returns the name associated with the mesh type
    * 
-   * \param t le type
+   * \param t the type
    * 
-   * \return la chaîne contenant le nom.
+   * \return the string containing the name.
    */
   String _typeName(const _Type& t) const;
 
   /*!
-   * \brief Détermine le _Type de la maille en fonction de son type "ItemInternal"
+   * \brief Determines the mesh _Type based on its "ItemInternal" type
    * 
-   * \param internal_cell_type le type "ItemInternal"
+   * \param internal_cell_type the "ItemInternal" type
    * 
-   * \return le _Type de la maille
+   * \return the mesh _Type
    */
   _Type _getCellType(const Integer& internal_cell_type) const;
 
   /*!
-   * \bfrief Détermine le type de maille résultat de la fusion de deux types donnés.
-   * \note à ce stade rien ne garanti que la fusion va aboutir
+   * \brief Determines the mesh type resulting from the merging of two given types.
+   * \note at this stage, nothing guarantees that the merge will succeed
    * 
-   * \param t1 le 1er type
-   * \param t2 le second type
+   * \param t1 the first type
+   * \param t2 the second type
    * 
-   * \return le type de la maille fusionnée
+   * \return the type of the merged mesh
    */
   _Type _promoteType(const _Type& t1, const _Type& t2) const;
 };

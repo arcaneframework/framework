@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshExchange.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Echange un maillage entre entre sous-domaines.                            */
+/* Exchanges a mesh between sub-domains.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -205,7 +205,7 @@ MeshExchange::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Liste par sous-domaine des entités à envoyer pour la famille \a family.
+//! List of entities to send by sub-domain for family \a family.
 ConstArrayView<std::set<Int32>> MeshExchange::
 getItemsToSend(IItemFamily* family) const
 {
@@ -218,7 +218,7 @@ getItemsToSend(IItemFamily* family) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Liste par sous-domaine des entités à envoyer pour la famille \a family.
+//! List of entities to send by sub-domain for family \a family.
 ArrayView<std::set<Int32>> MeshExchange::
 _getItemsToSend(IItemFamily* family)
 {
@@ -234,8 +234,8 @@ _getItemsToSend(IItemFamily* family)
 void MeshExchange::
 computeInfos()
 {
-  // Créé les tableaux contenant pour chaque famille la liste des entités
-  // à envoyer.
+  // Create the arrays containing the list of entities
+  // to send for each family.
   for( IItemFamily* family : m_mesh->itemFamilies()){
     m_items_to_send.insert(std::make_pair(family,new UniqueArray< std::set<Int32> >));
   }
@@ -256,7 +256,7 @@ computeInfos()
     {
       _computeMeshConnectivityInfos3();
       _computeGraphConnectivityInfos();
-      _exchangeCellDataInfos3(); // todo renommer itemDataInfo
+      _exchangeCellDataInfos3(); // todo rename itemDataInfo
       _exchangeGhostItemDataInfos();
       _markRemovableItems();
       _markRemovableParticles();
@@ -358,7 +358,7 @@ _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner)
   ENUMERATE_CELL(icell,m_cell_family->allItems().own()){
     Cell cell = *icell;
     Integer cell_local_id = cell.localId();
-    // On ne se rajoute pas à notre liste de maille connectée
+    // We do not add to our connected mesh list
     tmp_owner[m_rank] = cell_local_id;
     
     m_neighbour_cells_owner->beginIncrement(cell_local_id);
@@ -369,8 +369,8 @@ _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner)
         Integer cell2_local_id = icell2.localId();
         Integer cell2_new_owner = cells_new_owner[cell2_local_id];
         Integer cell2_owner = icell2->owner();
-        // Regarde si on n'est pas dans la liste et si on n'y est pas,
-        // s'y rajoute
+        // Checks if it is not in the list and if it is not there,
+        // adds it.
         if (tmp_new_owner[cell2_new_owner]!=cell_local_id){
           tmp_new_owner[cell2_new_owner] = cell_local_id;
           m_neighbour_cells_new_owner->addData(cell2_new_owner);
@@ -409,7 +409,7 @@ _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool
 
   ItemGroup own_items = m_cell_family->allItems().own();
   ItemGroup all_items = m_cell_family->allItems();
-  // Avec l'AMR, on utilise les mailles actives et pas toutes les mailles.
+  // With AMR, we use the active cells and not all the cells.
   if (use_active_cells){
     own_items = m_cell_family->allItems().ownActiveCellGroup();
     all_items = m_cell_family->allItems().activeCellGroup();
@@ -457,7 +457,7 @@ _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserveInt64(1); // Pour le nombre de mailles
+    sbuf->reserveInt64(1); // For the number of cells
     sbuf->reserveArray(cells_to_comm_uid);
     sbuf->reserveArray(cells_to_comm_owner_size);
     sbuf->reserveArray(cells_to_comm_owner);
@@ -617,7 +617,7 @@ _computeItemsToSend(bool send_dof)
     }
   }
 
-  // S'assure qu'on ne s'envoie pas les entités
+  // Ensures that we do not send the entities
   for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 
@@ -634,13 +634,12 @@ _computeItemsToSend(bool send_dof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette version est plus générale que la première puisque elle prend en compte
- * le cas AMR. En revanche, la version actuelle est moins performante que la première.
- * C'est pour cela, la version initiale restera comme version par defaut dans le cas
- * non AMR.
- * NOTE: la version initiale, peut être utiliser dans le cas amr comme les échanges
- * ce font par rapport à la connectivité autour des noeuds. Donc l'échange se fait
- * sur l'arbre d'une maille active. Cette idée n'a pas été TODO testée pour la confirmer.
+ * This version is more general than the first because it takes into account
+ * the AMR case. However, the current version is less performant than the first.
+ * For this reason, the initial version will remain the default version in the non-AMR case.
+ * NOTE: the initial version can be used in the AMR case, as the exchanges
+ * happen regarding the connectivity around the nodes. So the exchange happens
+ * on the tree of an active cell. This idea has not been TODO tested to confirm it.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -661,7 +660,7 @@ _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner)
   ENUMERATE_CELL(icell,m_cell_family->allItems().ownActiveCellGroup()){
     const Cell& cell = *icell;
     Integer cell_local_id = cell.localId();
-    // On ne se rajoute pas à notre liste de maille connectée
+    // We do not add ourselves to our list of connected cells.
     tmp_owner[m_rank] = cell_local_id;
     
     m_neighbour_cells_owner->beginIncrement(cell_local_id);
@@ -673,8 +672,7 @@ _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner)
         Integer cell2_local_id = icell2.localId();
         Integer cell2_new_owner = cells_new_owner[cell2_local_id];
         Integer cell2_owner = icell2->owner();
-        // Regarde si on n'est pas dans la liste et si on n'y est pas,
-        // s'y rajoute
+        // Checks if it is not in the list and, if not, adds it.
         if (tmp_new_owner[cell2_new_owner]!=cell_local_id){
           tmp_new_owner[cell2_new_owner] = cell_local_id;
           m_neighbour_cells_new_owner->addData(cell2_new_owner);
@@ -705,7 +703,7 @@ _addTreeCellToSend(ArrayView< std::set<Int32> > items_to_send,
 	if(cell.level() == 0){
     for( Integer zz=0, nb_new_owner = new_owners.size(); zz<nb_new_owner; ++zz )
       items_to_send[new_owners[zz]].insert(local_id);
-    // Graphe ok sur le niveau actif
+    // Graph is okay on the active level
     Int32ConstArrayView extra_new_owners = m_neighbour_extra_cells_new_owner->at(cell_local_id);
     for( Integer zz=0, nb_extra_new_owner = extra_new_owners.size(); zz<nb_extra_new_owner; ++zz )
       items_to_send[extra_new_owners[zz]].insert(local_id);
@@ -746,9 +744,9 @@ _addTreeItemToSend(Int32 cell_local_id,CellInfoListView cells)
   ArrayView<std::set<Int32>> edges_to_send = _getItemsToSend(edge_family);
   ArrayView<std::set<Int32>> faces_to_send = _getItemsToSend(face_family);
 
-	// On suppose que les containers nodes_to_send, edges_to_send et face_to_send
-	// sont deja alloues
-	for(Integer c=0,cs=family.size();c<cs;c++) // c=0 est la maille topParent.
+	// We assume that the containers nodes_to_send, edges_to_send and face_to_send
+	// are already allocated
+	for(Integer c=0,cs=family.size();c<cs;c++) // c=0 is the topParent cell.
 		for( Integer zz=0, nb_new_owner = new_owners.size(); zz<nb_new_owner; ++zz ){
 			Cell cell2 = cells[family[c]];
 			for( Node node : cell2.nodes() )
@@ -856,7 +854,7 @@ _computeItemsToSend2()
     }
   }
  
-  // S'assure qu'on ne s'envoie pas les entités
+  // Ensures that entities are not sent
   for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 }
@@ -869,10 +867,10 @@ _computeItemsToSend2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette version propose une implémentation du calcul des items à échanger
- * utilisant le graphe de dépendances des familles (ItemFamilyNetwork)
- * NOTE: Pour l'instant les algos pour le graphe d'arcane IGraph et pour les familles
- * de particules sont inchangés.
+ * This version provides an implementation for calculating items to exchange
+ * using the item family dependency graph (ItemFamilyNetwork)
+ * NOTE: For now, the algorithms for the IGraph arcane graph and for particle
+ * families remain unchanged.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -894,7 +892,7 @@ _computeMeshConnectivityInfos3()
   // The propagation to the items owned (dependencies) has already been done in updateOwnersFromCell
   // Todo include also the owned item propagation (would avoid to call updateOwnersFromCell...)
   // What we do here is to build the number of ghost layers needed
-  //-For each ghost layer wanted :
+  //-For each ghost layer wanted:
   // 1- For all items add Item new owner and all its dest ranks to all child item connected (dependency or relation) dest ranks
   //    This is done for all family, parsing the family graph from head to leaves
   // 2- For all items add new dest ranks to its depending child (move with your downward dependencies)
@@ -984,7 +982,7 @@ _propagatesToChildDependencies(IItemFamily* family)
   // Here we only propagates dest_ranks, since owner propagation to children has already been done in updateOwnersFromCell
   // todo 1 use these new algo to propagates the owner
   // todo 2 when using the graph we do not need to access to all child connectivities, only the one of the immediately inferior level.
-  // => we should allow graph task to take the signature task(IItemFamily*,FirstRankChildren) where FirstRankChildren (better name ?)
+  // => we should allow graph task to take the signature task(IItemFamily*,FirstRankChildren) where FirstRankChildren (better name ??)
   //    would contain the immediate children (FirstRankChildren) would be an EdgeSet or smthg near
   //    => thus we would need to add to the DAG a method children(const Edge&) (see for the name firstRankChildren ??)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
@@ -1242,7 +1240,7 @@ _computeItemsToSend3()
     }
   }
 
-  // S'assure qu'on ne s'envoie pas les entités
+  // Ensures that the entities are not sent
   for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 
@@ -1363,9 +1361,9 @@ _markRemovableItems(bool with_cell_family)
 void MeshExchange::
 _markRemovableCells(Int32ConstArrayView cells_new_owner,bool  use_active_cells)
 {
-  // Ce test n'est plus représentatif avec le concept extraghost
-  // Faut il trouver une alternative ??
-  // // Vérifie que toutes les mailles ont eues leur voisines calculées
+  // This test is no longer representative with the extraghost concept
+  // Should we find an alternative ??
+  // // Checks that all cells have had their neighbors calculated
   // ENUMERATE_CELL(icell,m_cell_family->allItems()){
   //   const Cell& cell = *icell;
   //   Integer cell_local_id = cell.localId();
@@ -1376,16 +1374,16 @@ _markRemovableCells(Int32ConstArrayView cells_new_owner,bool  use_active_cells)
   //     fatal() << ItemPrinter(cell) << " has no neighbours! (no new owner index)";
   // }
 
-  // Détermine les mailles qui peuvent être supprimées.
-  // Une maille peut-être supprimée si la liste de ses nouveaux propriétaires ne
-  // contient pas ce sous-domaine.
+  // Determines which cells can be deleted.
+  // A cell can be deleted if the list of its new owners does not
+  // contain this subdomain.
 
   ItemGroup all_items = m_cell_family->allItems();
 
   auto itemfamily_network = m_mesh->itemFamilyNetwork() ;
   bool use_itemfamily_network = ( itemfamily_network!= nullptr && itemfamily_network->isActivated() );
 
-  // Avec l'AMR, on utilise les mailles actives et pas toutes les mailles.
+  // With AMR, we use active cells and not all cells.
   if (use_active_cells)
     all_items = m_cell_family->allItems().activeCellGroup();
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemRefinement.h                                            (C) 2000-2022 */
 /*                                                                           */
-/* méthodes de manipulation d'un Item du maillage par des techniques AMR.    */
+/* methods for manipulating a mesh Item using AMR techniques.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMREFINEMENT_H
 #define ARCANE_MESH_ITEMREFINEMENT_H
@@ -45,9 +45,9 @@ class ItemRefinement
 
  private:
 
-  // le ctor de copie et l'opérateur d'affectation sont
-	// déclarés privés mais non implémentés.  C'est la
-	// technique standard pour les empêcher d'être utilisés.
+  // the copy constructor and assignment operator are
+	// declared private but not implemented. This is the
+	// standard technique to prevent them from being used.
 	ItemRefinement (const ItemRefinement&);
 	ItemRefinement& operator=(const ItemRefinement&);
 
@@ -110,7 +110,7 @@ class ItemRefinement
 	Integer m_nb_face_to_add;
 	Integer m_nb_node_to_add;
 
-	// hmin*TOLERENCE= tolerence de recherche d'un nouveau point.
+	// hmin*TOLERENCE= tolerance for searching for a new point.
 	static const Real TOLERENCE;
 
   // Reel3 m_p[c,nc]  : coordinates of node nc of children c

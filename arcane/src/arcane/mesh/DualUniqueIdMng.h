@@ -17,80 +17,80 @@
 /*---------------------------------------------------------------------------*/
 
 /*
- * Stratégie de numérotation des UniqueId des item (DualNode, Link) d'un graphe
+ * Strategy for numbering UniqueIds of items (DualNode, Link) in a graph
  *
  * DualNode :
  * --------
  *
- * L'UniqueId est crée à partir de celui de l'item
- * Pour le moment, on suppose que l'UniqueId de l'item est codé sur 30 bits,
- * ce qui signifie qu'on autorise 2^30 items (environ 1 milliard)
+ * The UniqueId is created from that of the item
+ * For now, we assume that the item's UniqueId is encoded on 30 bits,
+ * which means we allow 2^30 items (about 1 billion)
  *
- * DualNode avec DualItem de type Node : 
+ * DualNode with DualItem of type Node : 
  *       [ 29 bit (Node UniqueId)   | 
  *         32 bit (0)               |
- *          2 bit (Code Node 0 0)   |
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Node Code 0 0)   |
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  *         
- * DualNode avec DualItem de type Face : 
+ * DualNode with DualItem of type Face : 
  *       [ 29 bit (Face UniqueId)   | 
  *         32 bit (0)               |
- *          2 bit (Code Face 0 1)   |
- *          1 bit (Signe positif 0 )] 
+ *          2 bit (Face Code 0 1)   |
+ *          1 bit (Positive Sign 0 )] 
  *       = 64 bit
  *
- * DualNode avec DualItem de type Cell : 
+ * DualNode with DualItem of type Cell : 
  *       [ 29 bit (Cell UniqueId)   | 
  *         32 bit (0)               | 
- *          2 bit (Code Cell 1 0)   | 
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Cell Code 1 0)   | 
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  * 
- * DualNode avec DualItem de type Edge :
+ * DualNode with DualItem of type Edge :
  *       [ 29 bit (Edge UniqueId)   |
  *         32 bit (0)               |
- *          2 bit (Code Edge 1 1)   |
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Edge Code 1 1)   |
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  *
- * On donne la possibilité de créer plusieurs DualNodes par item. Dans ce cas, les DualNodes sont
- * différentier par leur rang (sur 4 bits soit 2^4=16 dualnodes par items au maximum)
- * Dans ce cas d'utilisation on autorise seulement 2^25 items (=33 554 432 items)
+ * It is possible to create multiple DualNodes per item. In this case, the DualNodes are
+ * differentiated by their rank (on 4 bits, i.e., 2^4=16 dualnodes per item maximum)
+ * In this use case, we only allow 2^25 items (=33 554 432 items)
  *
- * DualNode avec DualItem de type Node|Face|Cell|Edge :
+ * DualNode with DualItem of type Node|Face|Cell|Edge :
  *       [ 25 bit (Item UniqueId)   |
  *       [  4 bit (DualItem rank)   |
  *         32 bit (0)               |
- *          2 bit (Code Edge 1 1)   |
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Edge Code 1 1)   |
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  *
  * Link :
  * ----
  *
- * On concatène les UniqueIds des items que joint le lien Link
+ * We concatenate the UniqueIds of the items joined by the Link
  *
- * Link liant Item_1 et Item_2 = 
+ * Link linking Item_1 and Item_2 = 
  *       [ 29 bit (Item_1 UniqueId) | 
  *         29 bit (Item_2 UniqueId) |
  *          1 bit (0)               |
- *          2 bit (Code Item_1)     | 
- *          2 bit (Code Item_2)     |
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Item_1 Code)     | 
+ *          2 bit (Item_2 Code)     |
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  *
- * Si plusieurs dualnodes par item, on précise les rangs des dualnodes des l'items liés.
+ * If there are multiple dualnodes per item, we specify the ranks of the dualnodes of the linked items.
  *
- * Link liant DualItem_1 rang_1 et DualItem_2 rang_2 =
+ * Link linking DualItem_1 rank_1 and DualItem_2 rank_2 =
  *       [ 25 bit (Item_1 UniqueId)   |
  *       [  4 bit (DualItem_1 rank)   |
  *       [ 25 bit (Item_2 UniqueId)   |
  *       [  4 bit (DualItem_2 rank)   |
  *          1 bit (0)               |
- *          2 bit (Code Item_1)     |
- *          2 bit (Code Item_2)     |
- *          1 bit (Signe positif 0 )]
+ *          2 bit (Item_1 Code)     |
+ *          2 bit (Item_2 Code)     |
+ *          1 bit (Positive Sign 0 )]
  *       = 64 bit
  *
  *
@@ -191,7 +191,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Code des DualNode en fonction des Item
+// Code for DualNodes based on Item
 template<>
 struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Node,Int64>
 {
@@ -219,22 +219,22 @@ struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Edge,Int64>
 template<>
 struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Particle,Int64>
 {
-  //! attention incompatible avec une utilisation silmutanée de dual node sur des arêtes et des particules
+  //! Warning: incompatible with simultaneous use of dual nodes on edges and particles
   static const Int64 code = (Int64(1) << 61) + (Int64(1) << 62);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Verifie que seuls les Nbit premiers bits sont utilisés
+// Checks that only the first Nbit bits are used
 //
-// Exemple:
-// bool onlyFirstBitUsed<4,Integer>(Integer id) avec sizeof(Integer) = 8 bits
-// la méthode renvoie vrai si l'entier id est codé sur les 4 premiers bits,
-// (ie si les 4 derniers bits sont à 0)
+// Example:
+// bool onlyFirstBitUsed<4,Integer>(Integer id) with sizeof(Integer) = 8 bits
+// the method returns true if the integer id is encoded on the first 4 bits,
+// (i.e., if the last 4 bits are 0)
 // 
-// Par cela, on cree un filtre valant 1 pour les 4 derniers bits et on
-// utilise la comparaison binaire &. Si le résultat est nul, on renvoie vrai
+// By doing this, we create a filter equal to 1 for the last 4 bits and we
+// use the binary comparison &. If the result is zero, we return true
 //
 template<Integer Nbit,typename Type>
 inline bool
@@ -247,10 +247,10 @@ _onlyFirstBitUsed(const Type id)
 
   ARCANE_ASSERT((Nbit < nb_bit_max),("Error 8*sizeof(Type) <= Nbit"));
 
-  // filtre sur les nb_bit_max - Nbit derniers bits
+  // filter on the nb_bit_max - Nbit last bits
   const Type Nbit_first_bits_nulls = ~ ( (1 << Nbit) - 1 );
 
-  // Si les nb_bit_max - Nbit derniers bits sont nuls, vrai
+  // If the nb_bit_max - Nbit last bits are zero, true
   return (Nbit_first_bits_nulls & id) == Type(0);
 }
 
@@ -406,10 +406,10 @@ uniqueIdOf(const ItemT_1& item_1, const ItemT_2& item_2)
   const Int64 item_1_unique_id = item_1.uniqueId();
   const Int64 item_2_unique_id = item_2.uniqueId();
 
-  return item_1_unique_id                          | // id de l'item 1 sur 29 bits
-         item_2_unique_id << 29                    | // id de l'item 2 sur 29 bits suivants
-         traits_item_code<ItemT_1,Int64>::code >> 2 | // code de l'item 1 sur 2 bits suivants
-         traits_item_code<ItemT_2,Int64>::code;       // code de l'item 2 sur 2 derniers bits
+  return item_1_unique_id                          | // id of item 1 on 29 bits
+         item_2_unique_id << 29                    | // id of item 2 on the next 29 bits
+         traits_item_code<ItemT_1,Int64>::code >> 2 | // code of item 1 on the next 2 bits
+         traits_item_code<ItemT_2,Int64>::code;       // code of item 2 on the last 2 bits
 }
 
 
@@ -457,12 +457,12 @@ uniqueIdOf(const ItemT_1& item_1, const Integer item_1_rank, const ItemT_2& item
   const Int64 item_1_unique_id = item_1.uniqueId();
   const Int64 item_2_unique_id = item_2.uniqueId();
 
-  return item_1_unique_id                           | // id de l'item 1 sur 25 bits
-         Int64(item_1_rank) << 25                   | // rang de l'item 1 sur 4 bits
-         item_2_unique_id << 29                     | // id de l'item 2 sur 25 bits suivants
-         Int64(item_2_rank) << 54                   | // rang de l'item 2 sur 4 bits suivants
-         traits_item_code<ItemT_1,Int64>::code >> 2 | // code de l'item 1 sur 2 bits suivants
-         traits_item_code<ItemT_2,Int64>::code;       // code de l'item 2 sur 2 derniers bits
+  return item_1_unique_id                           | // id of item 1 on 25 bits
+         Int64(item_1_rank) << 25                   | // rank of item 1 on 4 bits
+         item_2_unique_id << 29                     | // id of item 2 on the next 25 bits
+         Int64(item_2_rank) << 54                   | // rank of item 2 on the next 4 bits
+         traits_item_code<ItemT_1,Int64>::code >> 2 | // code of item 1 on the next 2 bits
+         traits_item_code<ItemT_2,Int64>::code;       // code of item 2 on the last 2 bits
 }
 
 /*---------------------------------------------------------------------------*/

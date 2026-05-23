@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* SubMeshTools.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Algorithmes spécifiques aux sous-maillages.                               */
+/* Algorithms specific to sub-meshing.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_SUBMESHTOOLS_H
 #define ARCANE_MESH_SUBMESHTOOLS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette section devrait contenir à terme l'ensemble de l'implémentation spécifique des sous-maillages
+ * This section should eventually contain the entire specific implementation of sub-meshing
  */
 
 #include "arcane/mesh/MeshGlobal.h"

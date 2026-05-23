@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostItemsManager.h                                    (C) 2000-2015 */
 /*                                                                           */
-/* Construction des items fantômes supplémentaires.                          */
+/* Construction of extra ghost items.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXTRAGHOSTITEMSMANAGER_H_ 
 #define ARCANE_EXTRAGHOSTITEMSMANAGER_H_ 
@@ -59,7 +59,7 @@ class ExtraGhostItemsManager
 {
 public:
 
-  /** Constructeur de la classe */
+  /** Constructor for the class */
   ExtraGhostItemsManager(IExtraGhostItemsAdder* extra_ghost_adder)
     : m_item_family(extra_ghost_adder->itemFamily())
     , m_trace_mng(m_item_family->traceMng())
@@ -69,7 +69,7 @@ public:
     : m_item_family(item_family)
     , m_trace_mng(item_family->traceMng()){}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~ExtraGhostItemsManager() {}
 
 public:

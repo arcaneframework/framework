@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndirectItemFamilySerializer.cc                             (C) 2000-2024 */
 /*                                                                           */
-/* Sérialisation/Désérialisation indirecte des familles d'entités.           */
+/* Indirect serialization/deserialization of entity families.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,8 +45,8 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    sbuf->reserveInt64(1); // Pour le nombre d'entités
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des entités.
+    sbuf->reserveInt64(1); // For the number of entities
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the uniqueId() of the entities.
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MapCoordToUid.cc                                            (C) 2000-2024 */
 /*                                                                           */
-/* Recherche d'entités à partir de ses coordonnées.                          */
+/* Searching for entities from their coordinates.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,7 +86,7 @@ init(IMesh* mesh)
     m_upper_bound[1] = std::max(m_upper_bound[1],nodes_coords[i_item].y);
     m_upper_bound[2] = std::max(m_upper_bound[2],nodes_coords[i_item].z);
   }
-  // la box du maillage entier
+  // the bounding box of the entire mesh
   if (mesh->parallelMng()->isParallel()){
     mesh->parallelMng()->reduce(Parallel::ReduceMin,m_lower_bound);
     mesh->parallelMng()->reduce(Parallel::ReduceMax,m_upper_bound);
@@ -119,7 +119,7 @@ init2(IMesh* mesh)
     m_upper_bound[1] = std::max(m_upper_bound[1],nodes_coords[node].y);
     m_upper_bound[2] = std::max(m_upper_bound[2],nodes_coords[node].z);
   });
-  // la box du maillage entier
+  // the bounding box of the entire mesh
   if (mesh->parallelMng()->isParallel())  {
     mesh->parallelMng()->reduce(Parallel::ReduceMin,m_lower_bound);
     mesh->parallelMng()->reduce(Parallel::ReduceMax,m_upper_bound);

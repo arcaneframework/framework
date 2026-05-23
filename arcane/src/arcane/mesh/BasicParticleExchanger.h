@@ -57,7 +57,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Echangeur de particules basique (utilise une réduction bloquante).
+ * \brief Basic particle exchanger (uses blocking reduction).
  */
 class BasicParticleExchanger
 : public ArcaneBasicParticleExchangerObject
@@ -115,13 +115,13 @@ class BasicParticleExchanger
   Real m_total_time_functor = 0.0;
   Real m_total_time_waiting = 0.0;
 
-  //! Liste des variables à échanger
+  //! List of variables to exchange
   VariableList m_variables_to_exchange;
   
-  //! Liste des message en attente d'envoie
+  //! List of messages pending sending
   UniqueArray<ISerializeMessage*> m_pending_messages;
 
-  //! Liste des message envoyés mais en cours de traitement
+  //! List of messages sent but currently being processed
   UniqueArray<ISerializeMessage*> m_waiting_messages;
 
   Ref<ISerializeMessageList> m_message_list;
@@ -138,12 +138,12 @@ class BasicParticleExchanger
 
   Int32 m_verbose_level = 1;
   Int32 m_debug_exchange_items_level = 0;
-  //! Numéro du message. Utile pour le débug
+  //! Message number. Useful for debugging
   Int64 m_serialize_id = 1;
 
   /*!
-   * Nombre maximum de messages à envoyer avant de faire la réduction
-   * sur le nombre de particules. Si (-1) alors pas de limite.
+   * Maximum number of messages to send before performing the reduction
+   * on the number of particles. If (-1) then no limit.
    */
   Int32 m_max_nb_message_without_reduce = 15;
 
@@ -183,5 +183,4 @@ class BasicParticleExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

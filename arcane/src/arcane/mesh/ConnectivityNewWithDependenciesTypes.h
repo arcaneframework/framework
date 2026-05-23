@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConnectivityNewWithDependenciesTypes.h                      (C) 2000-2022 */
 /*                                                                           */
-/* Types utilisés dans le mode connectivités avec dépendances des familles   */
+/* Types used in the connectivity mode with family dependencies              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
 #define ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
@@ -97,7 +97,7 @@ static String connectivityName(IItemFamily* source_family, IItemFamily* target_f
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Mutualisation pour les connectuvutés Face-Maille (Legacy ou New)
+ * \brief Mutualization for Face-Cell connectivities (Legacy or New)
  */
  class FaceToCellConnectivity
  {
@@ -109,7 +109,7 @@ static String connectivityName(IItemFamily* source_family, IItemFamily* target_f
        throw FatalErrorException("FaceToCellIncrementalConnectivity must be created with face family as source and cell family as target. Exiting.");
      m_face_family = dynamic_cast<FaceFamily*>(source_family);
      m_cell_family = dynamic_cast<CellFamily*>(target_family);
-     // todo supprimer le cast, le type concret n'est plus nécessaire
+     // todo remove the cast, the concrete type is no longer necessary
    }
 
  protected:
@@ -172,7 +172,7 @@ void _checkValidSourceTargetItems(ItemInternal* source,ItemInternal* target)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Surcharge du type IncrementalItemConnectivity pour gérer les connectivités Face -> BackCell et FrontCell.
+ * \brief Overriding the IncrementalItemConnectivity type to manage Face -> BackCell and FrontCell connectivities.
  */
 class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
 : public FaceToCellConnectivity
@@ -215,13 +215,12 @@ private:
 
     Integer nb_cell = nbConnectedItem(ItemLocalId(face));
 
-    // SDP: les tests suivants sont imcompatibles avec le raffinement
-    // par couches
-    // SDC: dans l'etat le check ne peut etre fait car les flags sont positionnes par la connectivite legacy.
-    //      On peut donc avoir une front_cell qui n'est pas dans cette connectivite. C'est donc legal et de plus
-    //      le check va planter puisque connectedItemLocalId(ItemLocalId(face),1) va retourner -1...
-    //      Dans le nouveau mode les check devront etre faits via des proprietes.
-    const bool check_orientation = false; // SDC cf. ci-dessus
+    // SDP: the following tests are incompatible with layer refinement
+    // SDC: in this state, the check cannot be performed because the flags are set by the legacy connectivity.
+    //      Therefore, it is possible to have a front_cell that is not in this connectivity. This is therefore legal and furthermore
+    //      the check will crash because connectedItemLocalId(ItemLocalId(face),1) will return -1...
+    //      In the new mode, checks must be done via properties.
+    const bool check_orientation = false; // SDC cf. above
     if (check_orientation){
       if (face->flags() & ItemFlags::II_HasFrontCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),1)]; // FrontCell is the second connected cell
@@ -236,7 +235,7 @@ private:
     if (nb_cell>=2)
       ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());// FullItemPrinter cannot be used here, the connectivities are not entirely set
 
-    // Si on a déjà une maille, il s'agit de la back cell.
+    // If we already have a mesh, it is the back cell.
     Int32 iback_cell_lid = (nb_cell==1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
     ItemLocalId back_cell_lid(iback_cell_lid);
     ItemLocalId front_cell_lid(cell->localId());
@@ -250,13 +249,12 @@ private:
 
     Integer nb_cell = nbConnectedItem(ItemLocalId(face));
 
-    // SDP: les tests suivants sont imcompatibles avec le raffinement
-    // par couches
-    // SDC: dans l'etat le check ne peut etre fait car les flags sont positionnes par la connectivite legacy.
-    //      On peut donc avoir une back_cell qui n'est pas dans cette connectivite. C'est donc legal et de plus
-    //      le check va planter puisque connectedItemLocalId(ItemLocalId(face),0) va retourner -1.
-    //      Dans le nouveau mode les check devront etre faits via des proprietes.
-    const bool check_orientation = false; // SDC cf. ci-dessus
+    // SDP: the following tests are incompatible with layer refinement
+    // SDC: in this state, the check cannot be performed because the flags are set by the legacy connectivity.
+    //      Therefore, it is possible to have a back_cell that is not in this connectivity. This is therefore legal and furthermore
+    //      the check will crash because connectedItemLocalId(ItemLocalId(face),0) will return -1.
+    //      In the new mode, checks must be done via properties.
+    const bool check_orientation = false; // SDC cf. above
     if (check_orientation){
       if (face->flags() & ItemFlags::II_HasBackCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),0)]; // BackCell is the first connected cell
@@ -270,7 +268,7 @@ private:
 
     if (nb_cell>=2)
       ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());// FullItemPrinter cannot be used here, the connectivities are not entirely set
-    // Si on a déjà une maille, il s'agit de la front cell.
+    // If we already have a mesh, it is the front cell.
     Int32 ifront_cell_lid = (nb_cell==1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
 
     ItemLocalId back_cell_lid(cell->localId());
@@ -283,29 +281,29 @@ private:
 
   void _setBackAndFrontCells(ItemInternal* face,ItemLocalId back_cell_lid,ItemLocalId front_cell_lid){
     ItemLocalId face_lid(face->localId());
-    // Supprime toutes les mailles connectées => la méthode est mutualisée pour les ajouts ou suppressions
-    // TODO: optimiser en ne supprimant pas s'il n'y a pas besoin pour éviter
-    // des réallocations.
+    // Remove all connected meshes => the method is mutualized for additions or deletions
+    // TODO: optimize by not deleting if not necessary to avoid
+    // reallocations.
     removeConnectedItems(face_lid);
     Int32 mod_flags = 0;
     if (front_cell_lid==NULL_ITEM_LOCAL_ID){
       if (back_cell_lid!=NULL_ITEM_LOCAL_ID){
-        // Reste uniquement la back_cell
+        // Only the back cell remains
         IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid); // add the class name for the case of Face to Cell connectivity. The class is overridden to handle family dependencies but the base method must be called here.
         // add flags
         mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst);
       }
-      // Ici reste aucune maille mais comme on a tout supprimé il n'y a rien
-      // à faire
+      // Here no mesh remains but since we deleted everything there is
+      // nothing to do
     }
     else if (back_cell_lid==NULL_ITEM_LOCAL_ID){
-      // Reste uniquement la front cell
+      // Only the front cell remains
       IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
       // add flags
       mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst);
     }
     else{
-      // Il y a deux mailles connectées. La back_cell est toujours la première.
+      // There are two connected meshes. The back cell is always the first.
       IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid);
       IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
       // add flags
@@ -343,14 +341,14 @@ private:
     if (nb_cell_after!=0){
       Int32 cell0 = face->cellId(0);
       Int32 cell1 = face->cellId(1);
-      // On avait obligatoirement deux mailles connectées avant,
-      // donc la back_cell est la maille 0, la front cell la maille 1
+      // We must have had two connected meshes before,
+      // so the back cell is mesh 0, the front cell is mesh 1
       if (cell0==cell_to_remove_lid){
-        // Reste la front cell
+        // The front cell remains
         _setBackAndFrontCells(face,ItemLocalId(null_cell_lid),ItemLocalId(cell1));
       }
       else{
-        // Reste la back cell
+        // The back cell remains
         _setBackAndFrontCells(face,ItemLocalId(cell0),ItemLocalId(null_cell_lid));
       }
     }

@@ -210,12 +210,12 @@ class ARCANE_MESH_EXPORT GraphDoFs
   inline Integer nbLink() const override { return linkFamily()->nbItem(); }
   inline Integer nbDualNode() const override { return dualNodeFamily()->nbItem(); }
 
-  //! Ajout de liaisons dans le graphe avec un nombre fixe de noeuds dual par liaison
+  //! Add links to the graph with a fixed number of dual nodes per link
   void addLinks(Integer nb_link,
                 Integer nb_dual_nodes_per_link,
                 Int64ConstArrayView links_infos) override;
 
-  //! Ajout de noeuds duaux dans le graphe avec un type fixe d'item dual par noeud
+  //! Add dual nodes to the graph with a fixed type of dual item per node
   void addDualNodes(Integer graph_nb_dual_node,
                     Integer dual_node_kind,
                     Int64ConstArrayView dual_nodes_infos) override;

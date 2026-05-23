@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MapCoordToUid.cc                                            (C) 2000-2024 */
 /*                                                                           */
-/* Recherche d'entités à partir de ses coordonnées.                          */
+/* Searching for entities based on their coordinates.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MAPCOORDTOUID_H
 #define ARCANE_MESH_MAPCOORDTOUID_H
@@ -39,9 +39,9 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /**
-   * \brief structure de recherche d'un noeud à partir de ses coords
-   * La clef de hashage est la position geometrique du noeud.
-   * \todo utiliser une hash multimap.
+   * \brief structure for searching for a node based on its coordinates
+   * The hashing key is the geometric position of the node.
+   * \todo use a hash multimap.
    */
 class MapCoordToUid
 {

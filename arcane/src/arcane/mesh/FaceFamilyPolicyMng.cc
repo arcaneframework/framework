@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceFamilyPolicyMng.cc                                      (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de faces.                       */
+/* Policy manager for a face family.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de faces.
+ * \brief Policy manager for a face family.
  */
 class ARCANE_MESH_EXPORT FaceFamilyPolicyMng
 : public ItemFamilyPolicyMng

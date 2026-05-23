@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleFamilyPolicyMng.cc                                  (C) 2000-2016 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de particules.                  */
+/* Manager for the policies of a particle family.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,12 +32,10 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Politique de compactage pour les particules.
+ * \brief Compaction policy for particles.
  *
- * Les particules ne sont compactées que si on a des particules fantômes
- * possibles.
- * NOTE GG: je pense qu'on pourrait compacter même pour les autres
- * familles de particule pour lesquelles getEnableGhostItems() est faux.
+ * Particles are only compacted if ghost particles are possible.
+ * NOTE GG: I think we could compact even for other particle families for which getEnableGhostItems() is false.
  */
 class ParticleFamilyCompactPolicy
 : public TraceAccessor
@@ -79,12 +77,12 @@ class ParticleFamilyCompactPolicy
  private:
   bool _checkWantCompact(const ItemFamilyCompactInfos& compact_infos)
   {
-    // Pour des raisons de compatibilité avec l'existant (version 2.4.1
-    // et antérieure on ne compacte pas la famille de particule si elle
-    // n'a pas de fantômes, sauf si c'est la seule famille en cours de compactage
-    // (ce qui correspond à un appel direct à ItemFamily::compactItems()).
-    // TODO: une fois qu'on sera sur que cela est OK il faudra toujours compacter
-    // quelle que soit la famille.
+    // For compatibility reasons with the existing code (version 2.4.1
+    // and earlier, we do not compact the particle family if it does not have ghosts,
+    // unless it is the only family being compacted
+    // (which corresponds to a direct call to ItemFamily::compactItems()).
+    // TODO: Once we are sure this is OK, we must always compact
+    // regardless of the family.
     if (m_family->getEnableGhostItems())
       return true;
     ItemFamilyCollection families = compact_infos.compacter()->families();
@@ -100,7 +98,7 @@ class ParticleFamilyCompactPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de particules.
+ * \brief Manager for the policies of a particle family.
  */
 class ARCANE_MESH_EXPORT ParticleFamilyPolicyMng
 : public ItemFamilyPolicyMng

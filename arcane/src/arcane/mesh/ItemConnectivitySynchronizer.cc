@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivitySynchronizer.cc                             (C) 2000-2024 */
 /*                                                                           */
-/* Synchronization des connectivités.                                        */
+/* Synchronization of connectivities.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -112,7 +112,7 @@ serializeGhostItems(ISerializer* buffer,Int32ConstArrayView ghost_item_info)
 void ItemConnectivitySynchronizer::
 addExtraGhostItems (ISerializer* buffer)
 {
-  // Deserialiser le buffer et faire un addGhost classique, puis faire la connexion grace a l'item property
+  // Deserialize the buffer and perform a classic addGhost, then establish the connection using the item property
   buffer->setMode(ISerializer::ModeGet);
 
   Int64 nb_shared_items = buffer->getInt64();

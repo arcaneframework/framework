@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SubMeshTools.cc                                             (C) 2000-2024 */
 /*                                                                           */
-/* Algorithmes spécifiques aux sous-maillages.                               */
+/* Specific algorithms for sub-meshing.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ScopedPtr.h"
 
-// Includes génériques non spécifiques à l'implémentation DynamicMesh
+// Generic includes not specific to the DynamicMesh implementation
 #include "arcane/core/Variable.h"
 #include "arcane/core/SharedVariable.h"
 #include "arcane/core/IParallelMng.h"
@@ -29,7 +29,7 @@
 #include "arcane/core/TemporaryVariableBuildInfo.h"
 #include "arcane/core/ParallelMngUtils.h"
 
-// Includes spécifiques à l'implémentation à base de DynamicMesh
+// Includes specific to the DynamicMesh implementation
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -72,20 +72,20 @@ SubMeshTools::
 void SubMeshTools::
 _updateGroups()
 {
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
+  // Adjust groups by removing entities that are no longer in the mesh
   for( IItemFamilyCollection::Enumerator i_family(m_mesh->itemFamilies()); ++i_family; ){
     IItemFamily* family = *i_family;
     for( ItemGroupCollection::Enumerator i_group((*i_family)->groups()); ++i_group; ){
       ItemGroup group = *i_group;
-      // GG: la méthode suivante est équivalente à ce qui est dans le define OLD.
+      // GG: the following method is equivalent to what is in the OLD define.
       family->partialEndUpdateGroup(group);
 #ifdef OLD
-      // GG: il ne faut pas modifier le groupe de toutes les entités car
-      // il sera modifié dans DynamicMeshKindInfos::finalizeMeshChanged()
-      // et donc si on le modifie ici, il le sera 2 fois.
+      // GG: one must not modify the group of all entities because
+      // it will be modified in DynamicMeshKindInfos::finalizeMeshChanged()
+      // and therefore if we modify it here, it will be done twice.
       if (group.isAllItems())
         continue;
-      // Anciennement: if (group.isLocalToSubDomain() || group.isOwn())
+      // Previously: if (group.isLocalToSubDomain() || group.isOwn())
       if (group.internal()->hasComputeFunctor())
         group.invalidate();
       else
@@ -97,7 +97,7 @@ _updateGroups()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Remplit \a items_Local_id avec les entités fantomes de la famille \a family
+//! Fills \a items_Local_id with the ghost entities of the family \a family
 void SubMeshTools::
 _fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id)
 {
@@ -160,14 +160,14 @@ removeDeadGhostCells()
   EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
   NodeFamily& node_family = m_mesh->trueNodeFamily();
 
-  // On cherche les items fantômes dont les parents sont supprimés
+  // We look for ghost items whose parents are deleted
   UniqueArray<Int32> items_to_remove;
   _fillGhostItems(&cell_family, items_to_remove);
   ENUMERATE_ (Cell, icell, cell_family.view(items_to_remove)) {
     impl::ItemBase item(icell->itemBase());
     ARCANE_ASSERT((!item.parentBase(0).isSuppressed()),("SubMesh cell not synchronized with its support group"));
 
-    // on met no_destroy=true => ce sont les sous-items qui s'occuperont de la destruction
+    // set no_destroy=true => the sub-items will handle the destruction
     if (item.parentBase(0).isSuppressed())
       _removeCell(item);
   }
@@ -215,21 +215,21 @@ removeGhostMesh()
   EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
   NodeFamily& node_family = m_mesh->trueNodeFamily();
 
-  // NOTE GG: normalement on devrait pouvoir remplacer tout le
-  // code de destruction par:
+  // NOTE GG: normally we should be able to replace the entire
+  // destruction code with:
   // for( ItemInternal* item : items_to_remove ){
   //   cell_family.removeCell(item);
   // }
-  // A priori cela marche sur les tests comme je n'ai pas tous les tests IFPEN
-  // je préfère laisser comme cela.
+  // For now, it works on the tests since I don't have all the IFPEN tests
+  // so I prefer to leave it as is.
 
   
-  // L'ordre est important pour correctement déconnecter les connectivités
-  // Les méthodes sont ici écrites directement avec les primitives des *Family 
-  // car les méthodes toutes prêtes (dont CellFamily::removeCell)
-  // ne tiennent pas compte du mécanisme fantome particulier des sous-maillages
-  // où un sous-item peuvent vivre sans sur-item rattaché à celui-ic
-  // (ex: Face 'own' sans Cell autour)
+  // The order is important to correctly disconnect the connectivities
+  // The methods are written directly with the primitives of the *Family 
+  // because the ready-made methods (like CellFamily::removeCell)
+  // do not take into account the particular ghost mechanism of sub-meshing
+  // where a sub-item can live without an over-item attached to it
+  // (e.g., 'own' Face without surrounding Cell)
   UniqueArray<Int32> items_to_remove;
 
   _fillGhostItems(&cell_family, items_to_remove);
@@ -269,12 +269,12 @@ removeFloatingItems()
   EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
   NodeFamily& node_family = m_mesh->trueNodeFamily();
 
-  // L'ordre est important pour correctement déconnecter les connectivités
-  // Les méthodes sont ici écrites directement avec les primitives des *Family 
-  // car les méthodes toutes prêtes (dont CellFamily::removeCell)
-  // ne tiennent pas compte du mécanisme fantome particulier des sous-maillages
-  // où un sous-item peuvent vivre sans sur-item rattaché à celui-ic
-  // (ex: Face 'own' sans Cell autour)
+  // The order is important to correctly disconnect the connectivities
+  // The methods are written here directly with the primitives of the *Family 
+  // because the ready-made methods (like CellFamily::removeCell)
+  // do not take into account the particular ghost mechanism of sub-meshes
+  // where a sub-item can live without a super-item attached to it
+  // (e.g.: 'own' Face without surrounding Cell)
   SharedArray<Int32> items_to_remove;
   _fillFloatingItems(&face_family, items_to_remove);
   ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
@@ -321,8 +321,8 @@ updateGhostMesh()
   _checkFloatingItems();
   _checkValidItemOwner();
 
-  // La finalisation des familles et la construction 
-  // de leurs synchronizers est délégué à l'extérieur
+  // The finalization of families and the construction 
+  // of their synchronizers is delegated externally
 }
 
 /*---------------------------------------------------------------------------*/
@@ -345,7 +345,7 @@ updateGhostFamily(IItemFamily * family)
     const Integer rank = ranks[i];
     debug(Trace::High) << "Has " << kind << " comm with " << rank << " : " << i << " / " << ranks.size() << " ranks";
 
-    // Les shared sont forcément own => consistence des requêtes
+    // The shared items must be owned => consistency of requests
     ItemVectorView shared_items(parent_family->view(synchronizer->sharedItems(i)));
     ItemVector shared_submesh_items = MeshToMeshTransposer::transpose(parent_family, family, shared_items);
     SharedArray<Int64> current_to_send_items;
@@ -362,8 +362,8 @@ updateGhostFamily(IItemFamily * family)
     debug(Trace::High) << "SubMesh ghost comm " << kind << " with " << rank << " : "
                        << shared_items.size() << " / " << current_to_send_items.size();
 
-    // Pour les cas de sous-maillages localisés, on ne considère réellement que les 
-    // destinataires où il y a quelque chose à envoyer
+    // For localized sub-meshes, we only consider the 
+    // recipients where there is something to send
     if (!current_to_send_items.empty()){
       exchanger->addSender(rank);
       to_send_items[rank] = current_to_send_items;
@@ -387,7 +387,7 @@ updateGhostFamily(IItemFamily * family)
     s->putArray(current_to_send_items);
   }
       
-  to_send_items.clear(); // destruction des données temporaires avant envoie
+  to_send_items.clear(); // destruction of temporary data before sending
   exchanger->processExchange();
 
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
@@ -478,7 +478,7 @@ _checkFloatingItems()
   Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
   for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
     IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
-    // Calcul des items orphelins de cellules
+    // Calculation of orphaned cell items
     ItemInfoListView items(family);
     for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
       Item item = items[z];

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Famille de faces.                                                         */
+/* Face family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_FACEFAMILY_H
 #define ARCANE_MESH_FACEFAMILY_H
@@ -36,16 +36,16 @@ class NodeFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille de faces.
+ * \brief Face family.
  *
- * Cette classe gère une famille de face du maillage. La face a comme
- * particularité d'être orientée, et par conséquent elle possède une
- * maille dite derrière (Face::backCell()) et une maille devant
+ * This class manages a face family of the mesh. The face has the
+ * characteristic of being oriented, and consequently, it possesses a
+ * so-called back cell (Face::backCell()) and a front cell
  * (Face::frontCell()).
  *
- * En général, une face n'est pas reliée à d'autres faces, sauf pour
- * les interfaces liées, où les faces esclaves ont une référence sur
- * la face maître correspondante.
+ * Generally, a face is not connected to other faces, except for
+ * tied interfaces, where the slave faces have a reference to
+ * the corresponding master face.
  */
 class ARCANE_MESH_EXPORT FaceFamily
 : public ItemFamily
@@ -62,7 +62,7 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   FaceFamily(IMesh* mesh,const String& name);
-  virtual ~FaceFamily(); //<! Libère les ressources
+  virtual ~FaceFamily(); //<! Frees resources
 
  public:
 
@@ -86,18 +86,18 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  public:
 
-  //! Ajoute une maille derrière la face
+  //! Adds a back cell to the face
   void addBackCellToFace(Face face,Cell new_cell);
-  //! Ajoute une maille devant la face
+  //! Adds a front edge to the face
   void addFrontCellToFace(Face face,Cell new_cell);
-  //! Supprime une maille de la face
+  //! Removes a cell from the face
   void removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid);
-  //! Ajoute une arête devant la face
+  //! Adds an edge to the face
   void addEdgeToFace(Face face,Edge new_edge);
-  //! Supprime une arête de la face
-  /*! Pas de notion de no_destroy car la consistence est orientée par les mailles et non les arêtes */
+  //! Removes an edge from the face
+  /*! No notion of no_destroy because the consistency is determined by the cells and not the edges */
   void removeEdgeFromFace(Face face,Edge edge_to_remove);
-  //! Supprime la face si elle n'est plus connectée
+  //! Removes the face if it is no longer connected
   void removeFaceIfNotConnected(Face face);
 
   void replaceNode(ItemLocalId face,Integer index,ItemLocalId node);
@@ -124,19 +124,19 @@ class ARCANE_MESH_EXPORT FaceFamily
   // OFF AMR
 
   /*!
-   * \brief Indique s'il faut vérifier l'orientation des mailles et des faces.
+   * \brief Indicates whether the orientation of the cells and faces must be checked.
    *
-   * Normalement, cette option doit être active. Cependant, il est possible
-   * dans certains cas, comme lors d'un raffinement, que l'orientation
-   * ne soit pas correcte. Par exemple, il est possible d'avoir deux mailles
-   * derrière une face. Dans ce cas, il faut désactiver cette option.
+   * Normally, this option must be active. However, it is possible
+   * in certain cases, such as during refinement, that the orientation
+   * is not correct. For example, it is possible to have two cells
+   * behind a face. In this case, this option must be deactivated.
    */
   void setCheckOrientation(bool is_check) { m_check_orientation = is_check; }
 
-  //! Renseigne les informations liées à l'interface liée \a interface
+  //! Sets the information related to the tied interface \a interface
   void applyTiedInterface(ITiedInterface* interface);
 
-  //! Supprime les informations liées à l'interface liée \a interface
+  //! Removes the information related to the tied interface \a interface
   void removeTiedInterface(ITiedInterface* interface);
 
   void setConnectivity(const Integer c);
@@ -154,13 +154,13 @@ class ARCANE_MESH_EXPORT FaceFamily
   Integer m_cell_prealloc = 0;
   Integer m_mesh_connectivity = 0;
 
-  //! Famille des noeuds associée à cette famille
+  //! Node family associated with this family
   NodeFamily* m_node_family = nullptr;
 
-  //! Famille d'arêtes associée à cette famille
+  //! Edge family associated with this family
   EdgeFamily* m_edge_family = nullptr;
 
-  //! Indique s'il faut vérifier l'orientation
+  //! Indicates whether to check the orientation
   bool m_check_orientation = true;
 
   NodeConnectivity* m_node_connectivity = nullptr;

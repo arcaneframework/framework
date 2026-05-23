@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshMerger.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Fusion de plusieurs maillages.                                            */
+/* Merging multiple meshes.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -139,20 +139,20 @@ class MergeMeshExchanger
 : public MeshExchanger
 {
  public:
-  // TODO: faire son propre timeStats()
+  // TODO: implement own timeStats()
   MergeMeshExchanger(DynamicMesh* mesh,Int32 local_rank)
   : MeshExchanger(mesh,mesh->subDomain()->timeStats()), m_local_rank(local_rank){}
  public:
   /*!
-   * \brief Détermine les entités à envoyer.
+   * \brief Determines the entities to send.
    *
-   * Tous les maillages dont \a m_local_rank est différent de
-   * 0 envoient leur entités au maillage de rang 0.
+   * All meshes whose \a m_local_rank is different from
+   * 0 send their entities to the rank 0 mesh.
    */
   bool computeExchangeInfos() override
   {
     mesh()->traceMng()->info() << "OVERRIDE COMPUTE EXCHANGE INFOS";
-    // Si je ne suis pas le rang local 0, je donne toutes mes entités.
+    // If I am not the local rank 0, I give all my entities.
     UniqueArray<std::set<Int32>> items_to_send;
     Int32 nb_rank = mesh()->parallelMng()->commSize();
     items_to_send.resize(nb_rank);
@@ -162,13 +162,13 @@ class MergeMeshExchanger
       if (m_local_rank!=0){
         items_to_send[0].clear();
         ItemGroup all_items = family->allItems();
-        // Change les propriétaires pour correspondre au nouveau découpage.
+        // Change the owners to match the new decomposition.
         ENUMERATE_ITEM(iitem,all_items){
           Item ii = *iitem;
           items_to_send[0].insert(iitem.itemLocalId());
-          // Les entités transférées seront supprimées.
-          // NOTE: il serait possible de rendre cela optionnel si on
-          // ne souhaite pas modifier le maillage qui est fusionné.
+          // The transferred entities will be deleted.
+          // NOTE: it would be possible to make this optional if we
+          // do not want to modify the mesh being merged.
           ii.mutableItemBase().addFlags(ItemFlags::II_NeedRemove);
         }
         family_exchanger->setExchangeItems(items_to_send);
@@ -209,22 +209,22 @@ class MergerExchangeMng
 void DynamicMeshMergerHelper::
 doMerge()
 {
-  // TODO: cette routine est similaire à DynamicMesh::_exchangeItemsNew()
-  // et il faudrait fusionner les deux. Cela sera plus facile lorsque les
-  // anciennes connectivités auront disparues.
+  // TODO: this routine is similar to DynamicMesh::_exchangeItemsNew()
+  // and the two should be merged. This will be easier when the
+  // old connectivities have disappeared.
 
-  // Surcharge temporairement le IParallelMng
-  // TODO: Vérifier que c'est bien remis à la bonne valeur en sortie en cas
-  // d'exception
+  // Temporarily override the IParallelMng
+  // TODO: Check that it is restored to the correct value in case
+  // of an exception
 
   IParallelMng* old_parallel_mng = m_mesh->m_parallel_mng;
   m_mesh->m_parallel_mng = this->m_parallel_mng;
 
-  // TODO: Vérifier que tout le monde a les mêmes familles et dans le même ordre.
+  // TODO: Check that everyone has the same families and in the same order.
   info() << "DOING MERGE pm_rank=" << m_mesh->parallelMng()->commRank()
          << " sd_part=" << m_mesh->meshPartInfo().partRank();
 
-  // Cascade tous les maillages associés à ce maillage
+  // Cascade all meshes associated with this mesh
   typedef Collection<DynamicMesh*> DynamicMeshCollection;
   DynamicMeshCollection all_cascade_meshes = List<DynamicMesh*>();
   all_cascade_meshes.add(m_mesh);
@@ -235,7 +235,7 @@ doMerge()
   IMeshExchanger* iexchanger = exchange_mng.beginExchange();
   IMeshExchanger* mesh_exchanger = iexchanger;
 
-  // S'il n'y a aucune entité à échanger, on arrête immédiatement l'échange.
+  // If there are no entities to exchange, stop the exchange immediately.
   if (mesh_exchanger->computeExchangeInfos()){
     pwarning() << "No load balance is performed";
     exchange_mng.endExchange();
@@ -243,15 +243,15 @@ doMerge()
     return;
   }
 
-  // Éffectue l'échange des infos
+  // Perform the info exchange
   mesh_exchanger->processExchange();
 
-  // Supprime les entités qui ne doivent plus être dans notre sous-domaine.
+  // Delete entities that should no longer be in our sub-domain.
   mesh_exchanger->removeNeededItems();
 
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage ou en
-  // invalidant les groupes calculés.
-  // TODO: faire une méthode de la famille qui fait cela.
+  // Readjust the groups by deleting entities that are no longer in the mesh or by
+  // invalidating calculated groups.
+  // TODO: make a family method that does this.
   {
     auto action = [](ItemGroup& group)
     {
@@ -265,36 +265,36 @@ doMerge()
     }
   }
 
-  // Créé les entités qu'on a recu des autres sous-domaines.
+  // Create the entities received from other sub-domains.
   mesh_exchanger->allocateReceivedItems();
 
-  // On reprend maintenant un cycle standard de endUpdate
-  // mais en entrelaçant les niveaux de sous-maillages
+  // Now we resume a standard endUpdate cycle
+  // but interleaving the sub-mesh levels
   for( DynamicMesh* mesh : all_cascade_meshes )
     mesh->_internalEndUpdateInit(true);
 
   mesh_exchanger->updateItemGroups();
 
-  // Recalcule des synchroniseurs sur groupes.
+  // Recalculate synchronizers on groups.
   for( DynamicMesh* mesh : all_cascade_meshes )
     mesh->_computeGroupSynchronizeInfos();
 
-  // Met à jour les valeurs des variables des entités receptionnées
+  // Update the values of the variables of the received entities
   mesh_exchanger->updateVariables();
 
-  // Finalise les modifications dont le triage et compactage
+  // Finalize the modifications whose sorting and compaction
   for( DynamicMesh* mesh : all_cascade_meshes ){
-    // Demande l'affichage des infos pour le maillage actuel
+    // Request info display for the current mesh
     bool print_info = (mesh==m_mesh);
     mesh->_internalEndUpdateFinal(print_info);
   }
 
-  // Finalize les échanges
-  // Pour l'instante cela n'est utile que pour les TiedInterface mais il
-  // faudrait supprimer cela.
+  // Finalize the exchanges
+  // For now, this is only useful for the TiedInterface but
+  // this should be removed.
   mesh_exchanger->finalizeExchange();
 
-  // TODO: garantir cet appel en cas d'exception.
+  // TODO: guarantee this call in case of an exception.
   exchange_mng.endExchange();
 
   m_mesh->endUpdate();
@@ -309,21 +309,21 @@ void DynamicMeshMerger::
 mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
 {
   UniqueArray<DynamicMesh*> all_meshes;
-  // Le premier maillage de \a all_meshes est celui qui contiendra
-  // à la fin la fusion des maillages de \a meshes.
+  // The first mesh in \a all_meshes is the one that will contain
+  // the merge of the meshes in \a meshes at the end.
   all_meshes.add(m_mesh);
   for( auto mesh : meshes )
     all_meshes.add(mesh);
 
-  // L'algorithme de fusion utilise le même mécanisme que pour les échanges
-  // d'entités (MeshExchanger). Pour pouvoir fonctionner, il faut créer
-  // un IParallelMng par maillage fusionné. On utilise donc un
-  // IParallelMng en mémoire partagé, et on lance un thread par
-  // maillage. Le maillage de rang 0 recevra toutes les entités.
+  // The merging algorithm uses the same mechanism as for entity exchanges
+  // (MeshExchanger). To function, it is necessary to create
+  // an IParallelMng per merged mesh. We therefore use a
+  // shared memory IParallelMng, and launch a thread per
+  // mesh. The rank 0 mesh will receive all entities.
 
   IArcaneMain* am = IArcaneMain::arcaneMain();
   Int32 nb_local_rank = all_meshes.size();
-  // Recherche le service utilisé pour le parallélisme
+  // Search for the service used for parallelism
   String message_passing_service = "SharedMemoryParallelMngContainerFactory";
   ServiceBuilder<IParallelMngContainerFactory> sf(am->application());
   auto pbf = sf.createReference(message_passing_service,SB_AllowNull);
@@ -361,7 +361,7 @@ mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
       has_error = true;
     delete gths[i];
   }
-  // TODO: propager l'exception via std::exception_ptr
+  // TODO: propagate the exception via std::exception_ptr
   if (has_error)
     ARCANE_FATAL("Error during mesh merge");
 }

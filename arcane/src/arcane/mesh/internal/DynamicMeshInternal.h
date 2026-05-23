@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de DynamicMesh.                                   */
+/* Internal Arcane part of DynamicMesh.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INTERNAL_DYNAMICMESHINTERNAL_H
 #define ARCANE_MESH_INTERNAL_DYNAMICMESHINTERNAL_H

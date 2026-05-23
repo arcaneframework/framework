@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2025 */
 /*                                                                           */
-/* Construction d'un maillage de manière incrémentale.                       */
+/* Incremental mesh construction.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -114,12 +114,12 @@ _printCellFaceInfos(ItemInternal* icell,const String& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute des mailles au maillage actuel.
+ * \brief Adds cells to the current mesh.
  *
- * \param mesh_nb_cell nombre de mailles à ajouter
- * \param cells_infos infos sur les maillage (voir IMesh::allocateMesh())
- * \param sub_domain_id sous-domaine auquel les mailles appartiendront
- * \param cells en retour, si non vide, contient les mailles créées.
+ * \param mesh_nb_cell number of cells to add
+ * \param cells_infos mesh information (see IMesh::allocateMesh())
+ * \param sub_domain_id sub-domain to which the cells will belong
+ * \param cells returns, if not empty, contains the created cells.
  */
 void DynamicMeshIncrementalBuilder::
 addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
@@ -154,12 +154,12 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute des mailles au maillage actuel. Utilise l'ajout d'item générique basé sur dépendances entre familles.
+ * \brief Adds cells to the current mesh. Uses generic item addition based on family dependencies.
  *
- * \param mesh_nb_cell nombre de mailles à ajouter
- * \param cells_infos infos sur les maillage (voir IMesh::allocateMesh())
- * \param sub_domain_id sous-domaine auquel les mailles appartiendront
- * \param cells en retour, si non vide, contient les mailles créées.
+ * \param mesh_nb_cell number of cells to add
+ * \param cells_infos mesh information (see IMesh::allocateMesh())
+ * \param sub_domain_id sub-domain to which the cells will belong
+ * \param cells returns, if not empty, contains the created cells.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -274,7 +274,14 @@ addCells2(Integer nb_cell,Int64ConstArrayView cells_infos,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Adds cells to the current mesh.
+ *
+ * \param mesh_nb_cell number of cells to add
+ * \param cells_infos mesh information (see IMesh::allocateMesh())
+ * \param sub_domain_id sub-domain to which the cells will belong
+ * \param cells returns, if not empty, contains the created cells.
+ */
 void DynamicMeshIncrementalBuilder::
 _fillFaceInfo(Integer& nb_face, Integer nb_cell,Int64Array& faces_infos, Int64ConstArrayView cells_infos, std::map<Int64,Int64SharedArray>& cell_to_face_connectivity_info)
 {
@@ -531,7 +538,15 @@ _fillCellInfo2(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& cell_
 }
 
 /*---------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Initializes face relation info.
+ *
+ * \param source_item_relation_data The destination ItemData for face relations.
+ * \param target_item_dependencies_data The source ItemData containing dependencies.
+ * \param faces_info The constant array view of face information.
+ * @param is_source_relation_data_empty Flag indicating if the source relation data is empty.
+ */
 void DynamicMeshIncrementalBuilder::
 _initFaceRelationInfo(ItemData& source_item_relation_data, const ItemData& target_item_dependencies_data, Int64ConstArrayView faces_info)
 {
@@ -1341,12 +1356,12 @@ _fillFaceInfo2(Integer nb_face,Int64ConstArrayView faces_infos,Int64ArrayView fa
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute des arêtes au maillage actuel.
+ * \brief Adds edges to the current mesh.
  *
- * \param nb_face nombre de faces à ajouter
- * \param edge_infos infos sur les arêtes (voir IMesh::allocateCells() sans identifiant de type)
- * \param sub_domain_id sous-domaine auquel les arêtes appartiendront
- * \param edges en retour, si non vide, contient les arêtes créées.
+ * \param nb_face number of faces to add
+ * \param edge_infos edge information (see IMesh::allocateCells() without type identifier)
+ * \param sub_domain_id sub-domain to which the edges will belong
+ * \param edges returns, if not empty, contains the created edges.
  */
 void DynamicMeshIncrementalBuilder::
 addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,
@@ -1376,12 +1391,12 @@ addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute des arêtes au maillage actuel. Utilise l'ajout d'item générique basé sur dépendances entre familles.
+ * \brief Adds edges to the current mesh. Uses generic item addition based on family dependencies.
  *
- * \param nb_face nombre de faces à ajouter
- * \param edge_infos infos sur les arêtes (voir IMesh::allocateCells() sans identifiant de type)
- * \param sub_domain_id sous-domaine auquel les arêtes appartiendront
- * \param edges en retour, si non vide, contient les arêtes créées.
+ * \param nb_face number of faces to add
+ * \param edge_infos edge information (see IMesh::allocateCells() without type identifier)
+ * \param sub_domain_id sub-domain to which the edges will belong
+ * \param edges returns, if not empty, contains the created edges.
  */
 void DynamicMeshIncrementalBuilder::
 addEdges2(Integer nb_edge,Int64ConstArrayView edge_infos,
@@ -1448,7 +1463,6 @@ addEdges3(Integer nb_edge,Int64ConstArrayView edges_infos,
 
   // Launch node and edges creation
   addItems(item_data_list, item_relation_data_list);
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1507,8 +1521,8 @@ _fillEdgeNewInfoNew(Integer nb_edge,Int64ConstArrayView edges_infos,Int64ArrayVi
 void DynamicMeshIncrementalBuilder::
 readFromDump()
 {
-  // Recalcul le max uniqueId() des faces pour savoir quelle valeur
-  // utiliser en cas de creation de face.
+  // Recalculate the max uniqueId() of faces to know what value
+  // to use in case of face creation.
   ItemInternalMap& faces_map = m_mesh->facesMap();
   Int64 max_uid = -1;
   faces_map.eachItem([&](Item face) {
@@ -1566,25 +1580,15 @@ printStats(Int32 level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque face.
+  \brief Calculates the unique IDs for each face.
 
-  L'algorithme doit fonctionner de manière à donner la même numérotation des
-  faces séquentiel et en parallèle quel que soit le découpage, afin
-  de faciliter le débogage.
+  The algorithm must work in a way that gives the same face numbering sequentially and in parallel regardless of the decomposition, to facilitate debugging.
 
-  Le principe de numérotation est le suivant: on parcours les mailles dans
-  l'ordre croissant de leur unique_id et pour chaque maille on parcourt
-  la liste des faces. Une face est numérotée si et seulement si elle a
-  pour backCell() la maille courante ou si elle a pour frontCell() la
-  maille courante mais qu'elle est frontière (nbCell()==1). Quand on
-  numérote les faces de la maille courante, on numérote d'abord les faces
-  dont elle est la backCell(), puis les faces dont elle est la frontCell().
+  The numbering principle is as follows: we traverse the meshes in increasing order of their unique_id, and for each mesh, we traverse the list of faces. A face is numbered if and only if its backCell() is the current mesh or if its frontCell() is the current mesh but it is a boundary face (nbCell()==1). When numbering the faces of the current mesh, we first number the faces for which it is the backCell(), then the faces for which it is the frontCell().
 
-  Ce petit détail s'explique pour simplifier la détermination de la
-  numérotation dans le cas parallèle (todo:expliquer pourquoi...)
+  This small detail is explained to simplify the determination of numbering in the parallel case (todo: explain why...)
 
-  \warning Cette méthode ne doit être appelée que lors de la création
-  du maillage initial.
+  \warning This method should only be called during the initial mesh creation.
 */
 void DynamicMeshIncrementalBuilder::
 computeFacesUniqueIds()
@@ -1631,7 +1635,7 @@ addGhostChildFromParent(Array<Int64>& ghost_cell_to_refine)
 void DynamicMeshIncrementalBuilder::
 _removeNeedRemoveMarkedItems(ItemInternalMap& map, UniqueArray<Int32>& items_local_id)
 {
-  // Suppression des liaisons
+  // Removal of links
   SharedArray<ItemInternal*> items_to_remove;
   items_to_remove.reserve(1000);
 
@@ -1650,12 +1654,12 @@ _removeNeedRemoveMarkedItems(ItemInternalMap& map, UniqueArray<Int32>& items_loc
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Supprime les items fantômes.
+ * \brief Removes ghost items.
  *
- Supprime tous les items dont le propriétaire n'est pas le sous-domaine actuel
- et dont aucun éléments internes n'appartient à ce sous-domaine.
- Les items internes qui ne sont plus connectés à des items sont
- eux aussi détruits
+ Suppresses all items whose owner is not the current sub-domain
+ and which do not belong to any internal elements of this sub-domain.
+ Internal items that are no longer connected to any items are
+ also destroyed
 */
 void DynamicMeshIncrementalBuilder::
 removeNeedRemoveMarkedItems()
@@ -1677,7 +1681,7 @@ removeNeedRemoveMarkedItems()
       info() << "Remove Items for family : "<<family->name() ;
       family->removeNeedRemoveMarkedItems() ;
     }
-    // Supression des particules de la famille Particle
+    // Suppression of particles from the Particle family
 
     for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
       IItemFamily* family = *i;
@@ -1706,7 +1710,7 @@ removeNeedRemoveMarkedItems()
       }
     }
 
-    // Suppression des mailles
+    // Suppression of meshes
     CellFamily& cell_family = m_mesh->trueCellFamily();
     UniqueArray<Int32> cells_to_remove;
     cells_to_remove.reserve(1000);

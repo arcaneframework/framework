@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemsExchangeInfo2.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Informations pour échanger des entités et leur caractéristiques.          */
+/* Information for exchanging entities and their characteristics.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMSEXCHANGEINFO2_H
 #define ARCANE_MESH_ITEMSEXCHANGEINFO2_H
@@ -49,27 +49,25 @@ class ItemFamilyVariableSerializer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour échanger des entités d'une famille donnée
- * et leur caractéristiques.
+ * \brief Information for exchanging entities of a given family
+ * and their characteristics.
  
- Une instance de cette classe contient toutes les informations pour
- échanger les entités du maillage \a m_mesh liées à la famille \a item_family.
+ An instance of this class contains all the information to
+ exchange the mesh entities \a m_mesh linked to the family \a item_family.
  
- L'échange des entités se comporte différemment suivant le genre (eItemKind)
- de l'entité. Pour les mailles, la description complète de la connectivité
- est envoyé au sous-domaine récepteur. Pour les noeuds (Node), arêtes (Edge)
- et faces (Face), la connectivité n'est pas envoyée car elle est donnée
- par les mailles. Il n'est donc pas possible de sérialiser ces trois
- types d'entités indépendamment des mailles (ce qui serait de toutes
- facons pas cohérents). Pour les particules, est envoyé en plus
- le numéro de la maille à laquelle chaque particule appartient.
+ The exchange of entities behaves differently depending on the kind (eItemKind)
+ of the entity. For meshes, the complete description of the connectivity
+ is sent to the receiving sub-domain. For nodes (Node), edges (Edge)
+ and faces (Face), the connectivity is not sent because it is given
+ by the meshes. It is therefore not possible to serialize these three
+ types of entities independently of the meshes (which would not be consistent anyway). For particles, the mesh number to which each particle belongs is also sent.
 
- Lorsque des mailles ou des particules sont envoyées, il faut
- appeler la méthode readAndAllocItems() pour les créér, avant
- d'appeler readGroups() puis readVariables().
+ When meshes or particles are sent, it is necessary
+ to call the readAndAllocItems() method to create them, before
+ calling readGroups() then readVariables().
 
- En plus des entités elles même, cette classe échange les valeurs des
- variables ainsi que les appartenances aux groupes.
+ In addition to the entities themselves, this class exchanges the values of
+ variables as well as the group memberships.
 */
 class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 : public TraceAccessor
@@ -87,57 +85,57 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
   void setExchangeItems(ConstArrayView< std::set<Int32> > items_to_send) override;
 
   /*!
-   * \brief Détermine les informations nécessaires pour les échanges.
-   * \retval true s'il n'y a rien à échanger
-   * \retval false sinon.
+   * \brief Determines the necessary information for the exchanges.
+   * \retval true if there is nothing to exchange
+   * \retval false otherwise.
    */
   bool computeExchangeInfos() override;
 
-  //! Prépare les structures d'envoie
+  //! Prepares the sending structures
   void prepareToSend() override;
   void releaseBuffer() override;
 
   /*!
-   * \brief Après réception des messages, lit et créé les entités transférées.
+   * \brief After receiving messages, reads and creates the transferred entities.
    *
-   * Cette méthode ne fait rien pour les entités autre
-   * que pour les mailles et les particules.
+   * This method does nothing for entities other
+   * than meshes and particles.
    *
-   * \warning Avant d'appeler cette méthode, il faut être certain
-   * que les entités n'appartenant plus à ce sous-domaine ont été
-   * détruites
+   * \warning Before calling this method, it must be certain
+   * that the entities no longer belonging to this sub-domain have been
+   * destroyed
    */
   void readAndAllocItems() override;
   void readAndAllocSubMeshItems() override;
   void readAndAllocItemRelations() override;
 
-  //! Après réception des messages, lit les groupes
+  //! After receiving messages, reads the groups
   void readGroups() override;
 
-  //! Après réception des messages, lit les valeurs des variables
+  //! After receiving messages, reads the variable values
   void readVariables() override;
 
   /*!
-   * \brief Supprime les entités envoyées.
+   * \brief Deletes the sent entities.
    *
-   * Cette opération ne doit se faire que pour les entités qui
-   * ne dépendent pas d'une autre entité. Par exemple, il est impossible
-   * de supprimer directement les noeuds, car certaines mailles qui
-   * ne sont pas envoyées peuvent reposer dessus.
+   * This operation must only be performed for entities which
+   * do not depend on another entity. For example, it is impossible
+   * to directly delete nodes, because some meshes which
+   * are not sent may rely on them.
    *
-   * En pratique, cette opération n'est utile que pour les particules.
+   * In practice, this operation is only useful for particles.
    */
   void removeSentItems() override;
 
-  //! Envoie les messages d'échange
+  //! Sends the exchange messages
   void processExchange() override;
 
   /*!
-   * \brief Termine l'échange.
+   * \brief Finalizes the exchange.
    *
-   * Effectue les dernières mises à jour suite à un échange. Cette
-   * méthode est appelée lorsque toutes les entités et les variables
-   * ont été échangées.
+   * Performs the last updates following an exchange. This
+   * method is called when all entities and variables
+   * have been exchanged.
    */
   void finalizeExchange() override;
 
@@ -153,24 +151,24 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
   IItemFamily* m_item_family;
 
-  //! Liste des entités à envoyer à chaque processeur
+  //! List of entities to send to each processor
   UniqueArray< SharedArray<Int32> > m_send_local_ids;
 
-  //! Sérialiseur des groupes
+  //! Serializer of groups
   UniqueArray<ItemGroupsSerializer2*> m_groups_serializers;
 
   /*!
-   * \brief Liste des familles intégrées à l'échange.
+   * \brief List of families included in the exchange.
    *
-   * Il s'agit de \a m_item_family et des ces familles filles
-   * (à un seul niveau).
+   * It consists of \a m_item_family and these child families
+   * (at a single level).
    */
   UniqueArray<IItemFamily*> m_families_to_exchange;
 
   Ref<IParallelExchanger> m_exchanger;
 
   /*!
-   * \brief Liste des numéros locaux des entités reçues.
+   * \brief List of local IDs of received entities.
    */
   UniqueArray< SharedArray<Int32> > m_receive_local_ids;
 
@@ -197,5 +195,4 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

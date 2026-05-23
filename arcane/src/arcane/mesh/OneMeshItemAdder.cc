@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OneMeshItemAdder.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Ajout des entités une par une.                                            */
+/* Adding entities one by one.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -113,22 +113,22 @@ addOneNode(Int64 node_uid,Int32 owner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie la cohérence des noeuds d'une entité ajouté déjà présente.
+ * \brief Checks the coherence of nodes for an already added item.
  *
- * Lorsqu'on tente d'ajouter une entité et qu'elle est déjà présente,
- * vérifie que les noeuds donnés pour l'ajout sont les même que ceux de
- * l'entité déjà présente.
+ * When attempting to add an item that already exists,
+ * checks that the nodes provided for the addition are the same as those of
+ * the already existing item.
  */
 void OneMeshItemAdder::
 _checkSameItemCoherency(ItemWithNodes item,ConstArrayView<Int64> nodes_uid)
 {
   Int32 nb_node = nodes_uid.size();
-  // Vérifie que le nombre de noeuds est le même
+  // Checks that the number of nodes is the same
   if (item.nbNode()!=nb_node)
     ARCANE_FATAL("Trying to add existing item (kind='{0}', uid={1}) with different number of node (existing={2} new={3})",
                  item.kind(), item.uniqueId(), item.nbNode(), nb_node);
 
-  // Vérifie que les noeuds correspondent bien à ceux existants
+  // Checks that the nodes correspond to the existing ones
   for( Int32 i=0; i<nb_node; ++i ){
     Int64 new_uid = nodes_uid[i];
     Int64 current_uid = item.node(i).uniqueId();
@@ -145,9 +145,9 @@ _checkSameItemCoherency(ItemWithNodes item,ConstArrayView<Int64> nodes_uid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Génère un uniqueId() pour la face si \a uid est nul.
+ * \brief Generates a uniqueId() for the face if \a uid is null.
  *
- * Si \a uid vaut NULL_ITEM_UNIQUE_ID, génère un uniqueId() pour la face.
+ * If \a uid equals NULL_ITEM_UNIQUE_ID, a uniqueId() is generated for the face.
  */
 Int64 OneMeshItemAdder::
 _checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid)
@@ -164,16 +164,16 @@ _checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une face.
+ * \brief Adds a face.
  *
- * Cette méthode est appelée lorsqu'on souhaite directement créer une face
- * qui ne sera pas forcément connectée à une maille. En général, les faces
- * sont créées automatiquement lorsqu'on ajoute des mailles.
+ * This method is called when one wishes to directly create a face
+ * that may not necessarily be connected to a mesh. Generally, faces
+ * are created automatically when meshes are added.
  *
- * Ajoute une face en fournissant l'unique_id de la face et les unique_ids
- * des noeuds à connecter.
+ * Adds a face by providing the face's unique_id and the unique_ids
+ * of the nodes to connect.
  *
- * Si \a face_uid est égal à NULL_ITEM_UNIQUE_ID, l'identifiant est généré.
+ * If \a face_uid is equal to NULL_ITEM_UNIQUE_ID, the identifier is generated.
  */
 ItemInternal* OneMeshItemAdder::
 addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArrayView nodes_uid)
@@ -186,14 +186,14 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
   //m_work_face_orig_nodes_uid[z] = nodes_uid[z];
   m_face_reorderer.reorder(type_id,nodes_uid);
   ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
-  // TODO: dans le cas où la face sera orpheline (non connectée à une maille),
-  // vérifier s'il faut réorienter la face car cela risque d'introduire
-  // une incohérence si par la suite on souhaite calculer une normale.
+  // TODO: in the case where the face will be orphaned (not connected to a mesh),
+  // check if the face needs reorientation because this risks introducing
+  // an inconsistency if one later wishes to calculate a normal.
   //MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
   face_uid = _checkGenerateFaceUniqueId(face_uid,face_sorted_nodes);
   bool is_add_face = false;
   Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
-  // La face n'existe pas
+  // The face does not exist
   if (is_add_face) { 
     ++m_mesh_info.nbFace();
     face.mutableItemBase().setOwner(owner_rank, m_mesh_info.rank());
@@ -222,13 +222,13 @@ addOneEdge(Int64 edge_uid, Int32 rank, Int64ConstArrayView nodes_uid)
   
   for( Integer z=0; z<2; ++z )
     m_work_edge_orig_nodes_uid[z] = nodes_uid[z];
-  // reorderNodesOfFace se comporte ici correctement pour des arêtes == face en 2D
+  // reorderNodesOfFace behaves correctly here for edges == faces in 2D
   MeshUtils::reorderNodesOfFace(m_work_edge_orig_nodes_uid,m_work_edge_sorted_nodes);
   
   bool is_add_edge = false;
   ItemInternal* edge = m_edge_family.findOrAllocOne(edge_uid,is_add_edge);
   
-  // L'arête n'existe pas
+  // The edge does not exist
   if (is_add_edge) {
     ++m_mesh_info.nbEdge();
     edge->setOwner(rank,m_mesh_info.rank());
@@ -269,24 +269,24 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   Int64 face_unique_id = NULL_ITEM_UNIQUE_ID;
   Face face_internal;
   const bool use_hash = m_use_hash_for_edge_and_face_unique_id;
-  // Si on calcule les uniqueId() des faces à partir des noeuds,
-  // on peut directement savoir la face existe déjà. Sinon, on
-  // appelle ItemTools::findFaceInNode2() mais cette fonction est plus
-  // couteuse car elle recherche la face en parcourant les faces connectées
-  // au premier noeud de la face.
+  // If calculating face uniqueIds from nodes,
+  // we can directly know if the face already exists. Otherwise, we
+  // call ItemTools::findFaceInNode2(), but this function is more
+  // costly because it searches for the face by traversing the faces connected
+  // to the first node of the face.
   if (use_hash){
     face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
     face_internal = m_face_family.itemsMap().tryFind(face_unique_id);
   }
   else{
-    // Récupère les noeuds orientés de la face
-    // (Il faut avoir appelé une des méthodes d'ajout de face avant)
+    // Retrieves the oriented nodes of the face
+    // (One must have called one of the face addition methods before)
     Node nbi = nodes_map.findItem(face_sorted_nodes[0]);
     face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),face_sorted_nodes);
   }
   if (face_internal.null()) {
-    // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
-    // Si cela est autorisé, on créée la nouvelle face.
+    // The face was not found. It therefore does not exist in our sub-domain.
+    // If this is allowed, the new face is created.
     if (!cell_info.allowBuildFace() && !m_use_hash_for_edge_and_face_unique_id){
       info() << "BadCell uid=" << cell_info.uniqueId();
       for( Int32 i=0; i<cell_info.nbNode(); ++i )
@@ -296,7 +296,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
                    " CellUid={0} LocalFace={1} FaceNodes={2}",
                    cell_info.uniqueId(),i_face,face_sorted_nodes);
     }
-    // Ne recalcule le hash que si ce n'est pas déjà fait.
+    // Only recalculate the hash if it hasn't been done already.
     if (!use_hash)
       face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
     is_add = true;
@@ -366,20 +366,20 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une maille.
+ * \brief Adds a cell.
+ *
+ * When adding a cell, the nodes and faces belonging to it are
+ * automatically added to the mesh if they are not already present.
+ *
+ * \param type type of the cell
+ * \param cell_uid unique ID of the cell. If a cell with this ID
+ * exists already, it means the cell is already present. In this case,
+ * this method performs no operation.
+ * \param sub_domain_id ID of the sub-domain to which the cell belongs
+ * \param nodes_uid list of unique IDs of the cell. The number
+ * of elements in this array must correspond to the cell type.
 
- Lorsqu'on ajoute une maille, les noeuds et les faces lui appartenant sont
- automatiquement ajoutés au maillage s'il ne sont pas déjà présent.
-
- \param type type de la maille
- \param cell_uid numéro unique de la maille. Si une maille avec ce numéro
- existe déjà, cela signifie que la maille est déjà présente. Dans ce cas,
- cette méthode ne fait aucune opération.
- \param sub_domain_id numéro du sous-domaine auquel la maille appartient
- \param nodes_uid liste des numéros uniques de la maille. Le nombre
- d'éléments de ce tableau doit correspondre avec le type de la maille.
-
- \retval true si la maille est effectivement ajoutée
+ * \retval true if the cell is actually added
 */
 ItemInternal* OneMeshItemAdder::
 addOneCell(ItemTypeId type_id,
@@ -396,9 +396,9 @@ addOneCell(ItemTypeId type_id,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une maille.
-
- \retval true si la maille est effectivement ajoutée
+ * \brief Adds a cell.
+ *
+ * \retval true if the cell was actually added
 */
 ItemInternal* OneMeshItemAdder::
 addOneCell(const FullCellInfo& cell_info)
@@ -626,9 +626,9 @@ _AMR_Patch(Cell cell, const CellInfoProxy& cell_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une maille.
-
- \retval true si la maille est effectivement ajoutée
+ * \brief Adds a cell.
+ *
+ * \retval true if the cell was actually added
 */
 template<typename CellInfo>
 ItemInternal* OneMeshItemAdder::
@@ -642,7 +642,7 @@ _addOneCell(const CellInfo& cell_info)
   if (is_verbose)
     info() << "AddNewCell type_id=" << cell_type_id << " nb_node=" << cell_info.nbNode()
            << " type=" << cell_type_info->typeName();
-  // Regarde si la maille existe déjà (auquel cas on ne fait rien)
+  // Checks if the cell already exists (in which case nothing is done).
   Cell inew_cell;
   {
     bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
@@ -650,7 +650,7 @@ _addOneCell(const CellInfo& cell_info)
     if (!is_add){
       if (is_check){
         Cell cell2(inew_cell);
-        // Vérifie que les noeuds correspondent bien à ceux existants
+        // Verifies that the nodes match those that exist.
         for( Integer i=0, is=cell_info.nbNode(); i<is; ++i )
           if (cell_info.nodeUniqueId(i)!=cell2.node(i).uniqueId())
             ARCANE_FATAL("trying to add existing cell (uid={0}) with different nodes",
@@ -689,14 +689,14 @@ _addOneCell(const CellInfo& cell_info)
     }
   }
 
-  //! Type la table de hashage uniqueId()->ItemInternal*
+  //! Maps the uniqueId() table to ItemInternal*
   ItemInternalMap& nodes_map = m_node_family.itemsMap();
 
   _addNodesToCell(inew_cell,cell_info);
   
   if (m_mesh_builder->hasEdge()) {
     const Int32 cell_nb_edge = cell_info.nbEdge();
-    // Ajoute les nouvelles arêtes ci-nécessaire
+    // Adds the necessary edges.
     for( Integer i_edge=0; i_edge<cell_nb_edge; ++i_edge ){
       const ItemTypeInfo::LocalEdge& le = cell_type_info->localEdge(i_edge);
       Int64 first_node = cell_info.nodeUniqueId( le.beginNode() );
@@ -729,7 +729,7 @@ _addOneCell(const CellInfo& cell_info)
     }
   }
 
-  // Ajoute les nouvelles faces ci-nécessaire
+  // Adds the necessary faces.
   for( Integer i_face=0; i_face<cell_nb_face; ++i_face ){
     const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
     const Integer face_nb_node = lf.nbNode();
@@ -739,8 +739,8 @@ _addOneCell(const CellInfo& cell_info)
     bool is_add = false;
     Face face = _findInternalFace(i_face, cell_info, is_add);
     if (is_add){
-      // Pour les éléments d'ordre supérieur à 1, on ajoute les faces qu'aux noeuds
-      // qui correspondent à l'élément d'ordre 1 (linéaire) associé.
+      // For elements of order greater than 1, faces are added to the nodes
+      // corresponding to the associated order 1 (linear) element.
       const ItemTypeInfo* face_type_info = m_item_type_mng->typeFromId(lf.typeId());
       const Int32 face_nb_linear_node = face_type_info->linearTypeInfo()->nbLocalNode();
       if (is_verbose){
@@ -804,20 +804,19 @@ _addOneCell(const CellInfo& cell_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute d'un item parent
+ * \brief Adds a parent item
  *
- * L'item fourni sert de description à l'item devant être ajouté au sous-maillage
- * (au niveau de sa décomposition en sous-items).
- * L'argument \a submesh_kind détermine quel est le genre attendu de \a item dans
- * le sous-maillage.
+ * The provided item serves as a description for the item to be added to the submesh
+ * (at the level of its decomposition into sub-items).
+ * The \a submesh_kind argument determines the expected kind of \a item in
+ * the submesh.
  * 
- * Cette méthode permet d'ajouter de manière consistence un item à un sous-maillage
- * à partir d'un item parent. L'item ajouté ne sera connecté qu'à des items de genre
- * inférieur.
+ * This method allows an item to be added consistently to a submesh
+ * from a parent item. The added item will only be connected to items of a lower kind.
  *
- * La relation item/parent item est matérialisée par le uid qui est conservé.
+ * The item/parent item relationship is materialized by the conserved uid.
  *
- * \retval l'item ajouté
+ * \retval the added item
  */
 ItemInternal* OneMeshItemAdder::
 addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fatal_on_existing_item)
@@ -836,8 +835,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   if (MeshToMeshTransposer::kindTranspose(submesh_kind, m_mesh, m_mesh->parentMesh()) != kind)
     ARCANE_FATAL("Incompatible kind/sub-kind");
 
-  // Regarde si la maille existe déjà
-  bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
+  // Checks if the mesh already exists
+  bool is_add; // this flag is always correctly set via findOrAllocOne
   Item new_item;
 
   switch (submesh_kind) {
@@ -873,8 +872,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   new_item.mutableItemBase().setParent(0,item.localId());
   new_item.mutableItemBase().setOwner(item.owner(),m_mesh_info.rank());
   
-  // Localise vis-à-vis de l'item à insérer ces sous-items
-  // Par défaut tout à 0, qui correspond aussi au cas submesh_kind==IK_Node
+  // Localizes these sub-items relative to the item to be inserted
+  // By default everything is 0, which also corresponds to the submesh_kind==IK_Node case
   Integer item_nb_node = 0;
   Integer item_nb_face = 0;
   Integer item_nb_edge = 0;
@@ -891,11 +890,11 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     break;
   case IK_Edge:
     item_nb_node = type->nbLocalNode();
-  default: // les autres sont déjà filtrés avant avec une exception
+  default: // les autres sont déjà filtrés avant
     break;
   }
 
-  // Traitement du cas de désactivation des arêtes
+  // Handling the case of edge deactivation
   if (!m_mesh_builder->hasEdge())
     item_nb_edge = 0;
 
@@ -916,9 +915,9 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   auto* parent_mesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh->parentMesh()));
   DynamicMeshKindInfos::ItemInternalMap& parent_nodes_map = parent_mesh->nodesMap();
 
-  // Traitement des nouveaux noeuds
+  // Processing new nodes
 
-  // Les sommets sont utilisés dans l'ordre de l'item sauf les cellules de sous-maillages surfacique.
+  // The vertices are used in the item order except for surface submeshes.
   const bool direct_node_order = 
     !(submesh_kind == IK_Cell 
       && kind == IK_Face 
@@ -945,7 +944,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       ++m_mesh_info.nbNode();
     }
 
-    // Connection de l'item aux sommets
+    // Connecting the item to the nodes
     ItemLocalId node_lid(node_internal);
     ItemLocalId new_item_lid(new_item);
     switch (submesh_kind) {
@@ -966,7 +965,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     }
   }
   
-  // Traitement des nouvelles arêtes (le filtrage has_edge est déjà pris en compte dans item_nb_edge)
+  // Processing new edges (the has_edge filter is already taken into account in item_nb_edge)
   for( Integer i_edge=0; i_edge<item_nb_edge; ++i_edge ) {
     const ItemTypeInfo::LocalEdge& le = type->localEdge(i_edge);
 
@@ -1004,7 +1003,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     }
 
 
-    // Connection de l'item aux sommets
+    // Connecting the item to the nodes
     switch (submesh_kind) {
     case IK_Cell: {
       m_cell_family.replaceEdge(ItemLocalId(new_item),i_edge,ItemLocalId(edge_internal));
@@ -1019,8 +1018,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     }
   }
 
-  // Traitement des nouvelles faces
-  // item_nb_face matérialise déjà que ce contexte ne se produit qu'avec submesh_kind==IK_Cell
+  // Processing new faces
+  // item_nb_face already materializes that this context only occurs with submesh_kind==IK_Cell
   for( Integer i_face=0; i_face<item_nb_face; ++i_face ) {
   const ItemTypeInfo::LocalFace& lf = type->localFace(i_face);
     Integer face_nb_node = lf.nbNode();
@@ -1100,7 +1099,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute les noeuds \a nodes_uid à la maille \a cell
+ * \brief Adds the nodes \a nodes_uid to the mesh \a cell
  */
 template<typename CellInfo>
 inline void OneMeshItemAdder::
@@ -1108,7 +1107,7 @@ _addNodesToCell(Cell cell, const CellInfo& cell_info)
 {
   Integer cell_nb_node = cell_info.nbNode();
   
-  // Ajoute les nouveaux noeuds si nécessaire
+  // Adds new nodes if necessary
   for( Integer i_node=0; i_node<cell_nb_node; ++i_node ){
     Int64 node_unique_id = cell_info.nodeUniqueId(i_node);
     bool is_add = false;
@@ -1147,7 +1146,7 @@ _isReorder(Integer i_face, const ItemTypeInfo::LocalFace& lf, const CellInfo& ce
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+//! Resets structures to allow for another allocation
 void OneMeshItemAdder::
 resetAfterDeallocate()
 {

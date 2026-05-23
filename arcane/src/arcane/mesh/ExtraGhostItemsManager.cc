@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostItemsManager.cc                                   (C) 2000-2021 */
 /*                                                                           */
-/* Construction des items fantômes supplémentaires.                          */
+/* Construction of extra ghost items.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,7 +37,7 @@ computeExtraGhostItems()
   m_trace_mng->info() << "Compute extra ghost cells";
 
   for(Integer i=0; i<nb_builder; ++i) {
-    // Calcul de mailles extraordinaires à envoyer
+    // Calculation of extraordinary meshes to send
     m_builders[i]->computeExtraItemsToSend();
   }
 
@@ -47,10 +47,10 @@ computeExtraGhostItems()
 
   const Integer nsd = m_extra_ghost_items_adder->subDomain()->nbSubDomain();
 
-  // Construction des items à envoyer // Voir comment rendre compatible avec le ExtraGhostBuilder
+  // Construction of items to send // See how to make it compatible with the ExtraGhostBuilder
   UniqueArray< Arcane::SharedArray<Int32> >  item_to_send(nsd);
 
-  // Initialisation de l'échangeur de données
+  // Initialization of the data exchanger
   for(Integer isd=0;isd<nsd;++isd)
     {
       for(Integer i=0; i<nb_builder; ++i)
@@ -63,7 +63,7 @@ computeExtraGhostItems()
 
   exchanger->initializeCommunicationsMessages();
 
-  // Envoi des item
+  // Sending items
   for(Integer i=0, ns=exchanger->nbSender(); i<ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     const Int32 rank = sm->destination().value();
@@ -73,7 +73,7 @@ computeExtraGhostItems()
   }
   exchanger->processExchange();
 
-  // Réception des mailles
+  // Receiving meshes
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
@@ -85,4 +85,3 @@ computeExtraGhostItems()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

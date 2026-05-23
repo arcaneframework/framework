@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /*  ParallelAMRConsistency.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Consistence parallèle des uid des noeuds/faces dans le cas AMR            */
+/* Parallel consistency of node/face UIDs in the AMR case                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,8 +86,8 @@ void ParallelAMRConsistency::
 init()
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::INIT) )
-  // Marque les noeuds sur la frontière
-  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% de faces shared (sur estimé)
+  // Marks nodes on the boundary
+  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% of shared faces (estimated)
   m_shared_face_uids.reserve(nb_active_face) ;
   m_shared_face_uids.clear() ;
   m_connected_shared_face_uids.reserve(nb_active_face) ;
@@ -159,18 +159,18 @@ _hasSharedNodes(Face face)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Détermine les faces à envoyer aux voisins.
+ * \brief Determines the faces to send to neighbors.
  *
- * Envoie à tous les sous-domaine les faces de numéros uniques
- * et réceptionne celles de tous les autres sous-domaines.
+ * Sends unique ID faces to all sub-domains
+ * and receives those from all other sub-domains.
  */
 void ParallelAMRConsistency::
 makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_finder)
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::COMPUTE) )
-  //Integer nb_sub_domain_boundary_face = 0;
-  // Marque les noeuds sur la frontière
-  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% de faces shared (sur estimé)
+  //UniqueArray<ItemInternal*> active_faces;
+  // Marks nodes on the boundary
+  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% of shared faces (estimated)
 
   m_nodes_info.resize((nb_active_face * 2) + 5);
   m_nodes_info.clear() ;
@@ -201,7 +201,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
   typedef std::set<ItemInternal*> Set;
   Set active_nodes_set;
   ItemMap active_nodes ;
-  // Parcours les faces et marque les noeuds frontieres actives
+  // Iterates over faces and marks active boundary nodes
   DynamicMesh* mesh = dynamic_cast<DynamicMesh*> (m_mesh);
   if (!mesh)
     throw FatalErrorException(A_FUNCINFO, "can not obtain DynamicMesh");
@@ -352,11 +352,11 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \warning Cette méthode ne doit pas être appelée en séquentiel.
+ * \warning This method should not be called sequentially.
  *
- * Envoie à tous les sous-domaine les faces de numéros uniques
- * \a faces_to_send de la liste \a face_map et réceptionne
- * celles de tous les autres sous-domaines.
+ * Sends unique ID faces to all sub-domains
+ * \a faces_to_send from the list \a face_map and receives
+ * those from all other sub-domains.
  */
 void ParallelAMRConsistency::
 _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
@@ -407,14 +407,14 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
       nodes_coords.add(c.y);
       nodes_coords.add(c.z);
   }
-  sbuf.reserveInteger(1); // pour le nombre de faces
-  sbuf.reserveInteger(1); // pour le numéro du sous-domaine
-  sbuf.reserveInteger(1); // pour le nombre de noeuds dans la liste
-  sbuf.reserveArray(unique_ids); // pour le unique id des faces
-  sbuf.reserveArray(cells_unique_ids); // pour le unique id des mailles des faces
-  sbuf.reserveArray(nodes_unique_id); // pour la liste des noeuds
-  sbuf.reserveArray(coords); // pour les coordonnées du centre
-  sbuf.reserveArray(nodes_coords); // pour les coordonnées des noeuds
+  sbuf.reserveInteger(1); // for the number of faces
+  sbuf.reserveInteger(1); // for the sub-domain number
+  sbuf.reserveInteger(1); // for the number of nodes in the list
+  sbuf.reserveArray(unique_ids); // for the unique id of the faces
+  sbuf.reserveArray(cells_unique_ids); // for the unique id of the face meshes
+  sbuf.reserveArray(nodes_unique_id); // for the list of nodes
+  sbuf.reserveArray(coords); // for the center coordinates
+  sbuf.reserveArray(nodes_coords); // for the node coordinates
 
   sbuf.allocateBuffer();
   sbuf.setMode(ISerializer::ModePut);
@@ -443,8 +443,8 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
     recv_buf.getArray(coords);
     recv_buf.getArray(nodes_coords);
 
-    // Parcours toutes les faces reçues si certaines sont absentes,
-    // on les ignore.
+    // Iterate through all received faces; if some are missing,
+    // they are ignored.
     for (Integer z = 0; z < nb_face; ++z){
       ItemUniqueId new_uid(unique_ids[z]);
       ItemUniqueId cell_uid(cells_unique_ids[z]);
@@ -568,16 +568,16 @@ _addFaceToList2(Face face, FaceInfoMap2& face_map)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Détermine les faces à envoyer aux voisins.
+ * \brief Determines the faces to send to neighbors.
  *
- * Envoie à tous les sous-domaine les faces de numéros uniques
- * et réceptionne celles de tous les autres sous-domaines.
+ * Sends unique ID faces to all sub-domains
+ * and receives those from all other sub-domains.
  */
 void ParallelAMRConsistency::
 makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
 {
-  // Marque les noeuds sur la frontière
-  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% de faces shared (sur estimé)
+  // Marks nodes on the boundary
+  Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% of shared faces (estimated)
   m_active_nodes.resize((nb_active_face * 2) + 5);
   m_active_faces.resize((nb_active_face * 2) + 5);
 
@@ -590,7 +590,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
 
   typedef std::set<Item> Set;
   Set active_nodes_set, active_faces_set;
-  // Parcours les faces et marque les noeuds frontieres actives
+  // Iterate through faces and mark active boundary nodes
   DynamicMesh* mesh = dynamic_cast<DynamicMesh*> (m_mesh);
   if (!mesh)
     throw FatalErrorException(A_FUNCINFO, "can not obtain DynamicMesh");
@@ -674,10 +674,10 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
     }
   }
 
-  // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
-  // faces ont été modifiés
+  // It is necessary to re-sort #m_faces_map because the uniqueId() of
+  // faces have been modified
   faces_map.notifyUniqueIdsChanged();
-  // idem pour les noeuds
+  // same for nodes
   mesh->nodesMap().notifyUniqueIdsChanged();
 }
 
@@ -687,11 +687,11 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \warning Cette méthode ne doit pas être appelée en séquentiel.
+ * \warning This method should not be called sequentially.
  *
- * Envoie à tous les sous-domaine les faces de numéros uniques
- * \a faces_to_send de la liste \a face_map et réceptionne
- * celles de tous les autres sous-domaines.
+ * Sends unique ID faces to all sub-domains
+ * \a faces_to_send from the \a face_map list and receives
+ * those from all other sub-domains.
  */
 void ParallelAMRConsistency::
 _gatherItems(ConstArrayView<ItemUniqueId> nodes_to_send,
@@ -733,13 +733,13 @@ _gatherItems(ConstArrayView<ItemUniqueId> nodes_to_send,
     coords.add(fi.center().z);
   }
 
-  sbuf.reserveInteger(1); // pour le nombre de faces
-  sbuf.reserveInteger(1); // pour le numéro du sous-domaine
-  sbuf.reserveInteger(1); // pour le nombre de noeuds dans la liste
-  sbuf.reserveArray(unique_ids); // pour le unique id des faces
-  sbuf.reserveArray(node_unique_ids); // pour la liste des noeuds
-  sbuf.reserveArray(coords); // pour les coordonnées du centre
-  sbuf.reserveArray(nodes_coords); // pour les coordonnées des noeuds
+  sbuf.reserveInteger(1); // for the number of faces
+  sbuf.reserveInteger(1); // for the sub-domain number
+  sbuf.reserveInteger(1); // for the number of nodes in the list
+  sbuf.reserveArray(unique_ids); // for the unique id of the faces
+  sbuf.reserveArray(node_unique_ids); // for the list of nodes
+  sbuf.reserveArray(coords); // for the center coordinates
+  sbuf.reserveArray(nodes_coords); // for the node coordinates
 
   sbuf.allocateBuffer();
   sbuf.setMode(ISerializer::ModePut);
@@ -767,8 +767,8 @@ _gatherItems(ConstArrayView<ItemUniqueId> nodes_to_send,
     recv_buf.getArray(coords);
     recv_buf.getArray(nodes_coords);
 
-    // Parcours toutes les faces reçues si certaines sont absentes,
-    // on les ignore.
+    // Iterate through all received faces; if some are missing,
+    // they are ignored.
     const Real tol = 10e-6;
     for (Integer z = 0; z < nb_face; ++z){
       ItemUniqueId new_uid(unique_ids[z]);

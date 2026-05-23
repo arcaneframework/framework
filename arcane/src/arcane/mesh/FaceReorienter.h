@@ -1,7 +1,7 @@
 ﻿#include "arcane/core/FaceReorienter.h"
 namespace Arcane::mesh
 {
-// Rendre obsolète fin 2025.
-// Il faut utiliser directement Arcane::FaceReorienter à la place
+// Deprecate end of 2025.
+// Use Arcane::FaceReorienter directly instead
 using Arcane::FaceReorienter;
 }

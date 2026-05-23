@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupsSerializer2.h                                     (C) 2000-2016 */
 /*                                                                           */
-/* Sérialisation des groupes d'entités.                                      */
+/* Serialization of entity groups.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMGROUPSSERIALIZER2_H
 #define ARCANE_MESH_ITEMGROUPSSERIALIZER2_H
@@ -46,7 +46,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialise les entités des groupes.
+ * \brief Serializes the entities of the groups.
  */
 class ItemGroupsSerializer2
 : public TraceAccessor
@@ -74,13 +74,13 @@ class ItemGroupsSerializer2
   IParallelExchanger* m_exchanger;
   IMesh* m_mesh;
   IItemFamily* m_item_family;
-  /*! \brief Liste des groupes à échanger.
+  /*! \brief List of groups to exchange.
     
-    IMPORTANT: Cette liste doit être identique pour tous les sous-domaines
-    sinon les désérialisations vont donner des résultats incorrects.
+    IMPORTANT: This list must be identical for all sub-domains
+    otherwise the deserializations will give incorrect results.
   */
   ItemGroupList m_groups_to_exchange;
-  //! Liste des entités à échanger par processeur
+  //! List of entities to exchange per processor
   UniqueArray< SharedArray<Int64> > m_items_to_send;
 
  private:
@@ -98,5 +98,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

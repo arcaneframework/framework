@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndirectItemFamilySerializer.h                              (C) 2000-2016 */
 /*                                                                           */
-/* Sérialisation/Désérialisation indirecte des familles d'entités.           */
+/* Indirect serialization/deserialization of entity families.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INDIRECTFAMILYSERIALIZER_H
 #define ARCANE_MESH_INDIRECTFAMILYSERIALIZER_H
@@ -36,19 +36,18 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialisation/Désérialisation indirecte des familles d'entités.
+ * \brief Indirect serialization/deserialization of entity families.
  *
- * Une sérialisation/désérialisation est indirecte si elle est faite
- * indirectement par une autre famille. C'est le cas par exemple pour les
- * noeuds, les arêtes et les faces car leur sérialisation/désérialisation
- * se fait via la famille de maille associée.
+ * Serialization/deserialization is indirect if it is done
+ * indirectly by another family. This is the case, for example, for nodes, edges, and faces because their serialization/deserialization
+ * is done via the associated mesh family.
  *
- * Le seul rôle de cette instance est alors de sérialiser les uniqueId()
- * des entités et associer lors de la désérialisation les localId() des
- * nouvelles entités ajoutées.
+ * The only role of this instance is then to serialize the uniqueId()
+ * of the entities and associate the localId() of the
+ * new added entities during deserialization.
  *
- * Cela signifie aussi qu'il faut sérialiser/désérialiser les entités dont
- * dépend cette famille avant.
+ * This also means that the entities that
+ * this family depends on must be serialized/deserialized first.
  */
 class ARCANE_MESH_EXPORT IndirectItemFamilySerializer
 : public TraceAccessor
@@ -76,4 +75,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 #endif
-

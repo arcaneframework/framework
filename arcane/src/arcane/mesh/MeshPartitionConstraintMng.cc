@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartitionConstraintMng.cc                               (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire de contraintes de partitionnement de maillage.               */
+/* Mesh partitioning constraint manager.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,10 +39,10 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Helper pour la gestion des contrainte.
+ * \brief Helper for constraint management.
  *
- * Il faut d'abord appeler merge(), puis changeOwners()
- * ou computeList().
+ * It is necessary to first call merge(), then changeOwners()
+ * or computeList().
  */
 class MeshPartitionConstraintMng::Helper
 : public TraceAccessor
@@ -195,10 +195,10 @@ computeWeakConstraintList(Int64MultiArray2 & tied_uids)
 void MeshPartitionConstraintMng::Helper::
 merge(Int64Array& linked_items,Int32Array& linked_owners)
 {
-  //TODO: ne pas faire un allGather mais plutot dispatcher la liste
-  // sur plusieurs processeurs, chaque processeur faisant
-  // le tri sur ses entités locales et ensuite faire
-  // plusieurs itérations pour fusionner.
+  //TODO: do not perform an allGather but rather dispatch the list
+  // across multiple processors, with each processor performing
+  // the sorting on its local entities and then performing
+  // several iterations to merge.
   IParallelMng* pm = m_mesh->parallelMng();
   Int64UniqueArray global_linked_items;
   pm->allGatherVariable(linked_items.view(),global_linked_items);

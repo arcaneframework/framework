@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyVariableSerializer.cc                             (C) 2000-2024 */
 /*                                                                           */
-/* Gère la sérialisation/désérialisation des variables d'une famille.        */
+/* Manages the serialization/deserialization of variables for a family.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,9 +35,8 @@
 
 /*
  * NOTE:
- * plutôt qu'une instance de cette classe gère la sérialisation des variables
- * de la famille mère et de toutes les familles filles, il faudrait une
- * instance par famille.
+ * Instead of one instance of this class managing the serialization of variables
+ * for the parent family and all child families, an instance per family would be necessary.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,17 +80,17 @@ ItemFamilyVariableSerializer::
 void ItemFamilyVariableSerializer::
 initialize()
 {
-  // Détermine la liste des variables a échanger
-  // On y intégre aussi les variables issues des familles enfants
-  // TODO: il faudrait récupérer directement les variables de chaque
-  // famille via IItemFamily::usedVariables() mais cette méthode ne garantit
-  // par l'ordre alphabétique des envois. En pensant par un std::map, on
-  // devrait pouvoir s'en sortir.
+  // Determines the list of variables to exchange
+  // It also includes variables from child families
+  // TODO: it would be necessary to retrieve the variables of each
+  // family via IItemFamily::usedVariables(), but this method does not guarantee
+  // alphabetical order of transmission. By thinking with an std::map, we
+  // should be able to manage it.
   IVariableMng* vm = m_item_family->mesh()->variableMng();
   VariableCollection used_vars(vm->usedVariables());
 
   UniqueArray<IItemFamily*> family_to_exchange;
-  family_to_exchange.add(m_item_family); // La famille courante
+  family_to_exchange.add(m_item_family); // The current family
   IItemFamilyCollection child_families = m_item_family->childFamilies();
   for( IItemFamily* child_family : child_families )
     family_to_exchange.add(child_family);
@@ -100,16 +99,16 @@ initialize()
     IItemFamily* current_family = family_to_exchange[i];
     info(4) << " Serializing family " << current_family->fullName();
 
-    // TODO: récupérer directement les variables utilisées de la famille
+    // TODO: retrieve the variables used by the family
     // via ItemFamily::usedVariables
     for( VariableCollection::Enumerator i_var(used_vars); ++i_var; ){
       IVariable* var = *i_var;
-      // TODO: vérifier s'il faut échanger toutes les variables.
-      // Faut-il envoyer les variables PNoDump ?
-      // TODO: appeler le writeObservable de IVariableMng ou en faire
-      // un spécifique pour l'équilibrage
-      // TODO: vérifier que tout les sous-domaines ont les mêmes valeurs
-      // pour m_variables_to_exchange avec les variables dans le même ordre.
+      // TODO: check if all variables need to be exchanged.
+      // Should PNoDump variables be sent?
+      // TODO: call the writeObservable of IVariableMng or make
+      // a specific one for balancing
+      // TODO: check that all sub-domains have the same values
+      // for m_variables_to_exchange with the variables in the same order.
       bool no_exchange = (var->property() & IVariable::PNoExchange);
       if (no_exchange)
         continue;
@@ -126,36 +125,36 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialize un nombre magique et le nombre d'entité afin de vérifier que
- * la désérialisation est correct.
+ * \brief Serializes a magic number and the number of entities to verify that
+ * deserialization is correct.
  */
 void ItemFamilyVariableSerializer::
 _checkSerialization(ISerializer* sbuf,Int32ConstArrayView local_ids)
 {
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    // Réserve pour la liste uniqueId() des entités transférées
-    sbuf->reserveInteger(1); // Nombre magique pour readVariables();
-    sbuf->reserveInteger(1); // Nombre d'entités sérialisées.
+    // Reserves for the uniqueId() list of transferred entities
+    sbuf->reserveInteger(1); // Magic number for readVariables();
+    sbuf->reserveInteger(1); // Number of serialized entities.
     break;
   case ISerializer::ModePut:
-    // Sérialise le nombre d'entités transférées
+    // Serializes the number of transferred entities
     sbuf->put(VARIABLE_MAGIC_NUMBER);
     sbuf->put(local_ids.size());
     break;
   case ISerializer::ModeGet:
-    // Vérifie pas d'erreurs de sérialisation.
+    // Checks for serialization errors.
     Integer magic_number = sbuf->getInteger();
     if (magic_number!=VARIABLE_MAGIC_NUMBER)
       ARCANE_FATAL("Internal error: bad magic number expected={0} found={1}",
                    VARIABLE_MAGIC_NUMBER,magic_number);
 
-    // Récupère le nombre d'entités transférées pour vérification
+    // Retrieves the number of transferred entities for verification
     Integer nb_item = sbuf->getInteger();
     if (local_ids.size()!=nb_item){
-      // Depuis la 2.4.0 de Arcane 'm_family_serializer' se charge de
-      // récupérer les localId() des entités envoyées. Le tableau
-      // m_receive_local_ids[i] doit donc toujours être correct.
+      // Since Arcane 2.4.0, 'm_family_serializer' is responsible for
+      // retrieving the localId() of the sent entities. The array
+      // m_receive_local_ids[i] must therefore always be correct.
       ARCANE_FATAL("Bad value for received_items family={0} n={1} expected={2}",
                    m_item_family->name(),local_ids,nb_item);
     }
@@ -166,8 +165,8 @@ _checkSerialization(ISerializer* sbuf,Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialise le nom de la variable pour vérifier que la désérialisation
- * est correcte.
+ * \brief Serializes the variable name to verify that deserialization
+ * is correct.
  */
 void ItemFamilyVariableSerializer::
 _checkSerializationVariable(ISerializer* sbuf,IVariable* var)
@@ -175,7 +174,7 @@ _checkSerializationVariable(ISerializer* sbuf,IVariable* var)
   String var_full_name = var->fullName();
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    // Réserve pour le nom de la variable
+    // Reserves for the variable name
     sbuf->reserve(var_full_name);
     break;
   case ISerializer::ModePut:
@@ -197,8 +196,8 @@ _checkSerializationVariable(ISerializer* sbuf,IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*!
  *
- * En sérialisation, \a rank est le rang de la cible.
- * En désérialisation, \a rank est le rang de celui qui envoie le message.
+ * During serialization, \a rank is the rank of the target.
+ * During deserialization, \a rank is the rank of the sender.
  */
 void ItemFamilyVariableSerializer::
 serialize(const ItemFamilySerializeArgs& args)
@@ -264,20 +263,20 @@ serialize(const ItemFamilySerializeArgs& args)
 /*!
  * \brief Serialise une variable partielle.
  *
- * Cette méthode n'est pas très performante et doit être optimisée.
- * En attendant, le fonctionnement est le suivant pour l'envoie
- * - détermine la liste des entités a envoyer en se basant sur le
- * nouveau propriétaire des entités.
- * - sérialise les uniqueId() de ces entités
- * - sérialise la variable.
- * Pour la réception:
- * - construit une table de hashage uniqueId() -> index dans la variable
- * - désérialise les uniqueId() et les convertie en index
- * - désérialise la variable.
+ * This method is not very performant and must be optimized.
+ * For now, the operation is as follows for sending
+ * - determines the list of entities to send based on the
+ * new owner of the entities.
+ * - serializes the uniqueId() of these entities
+ * - serializes the variable.
+ * For receiving:
+ * - builds a hash map uniqueId() -> index in the variable
+ * - deserializes the uniqueId() and converts them to indices
+ * - deserializes the variable.
  *
- * TODO: eviter d'envoyer tous les ids pour chaque variable
- * TODO: utiliser les infos de ItemGroupsSerializer2 si possible pour
- * connaitre la liste des entités à envoyer.
+ * TODO: avoid sending all IDs for every variable
+ * TODO: use the information from ItemGroupsSerializer2 if possible to
+ * know the list of entities to send.
  */
 void ItemFamilyVariableSerializer::
 _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView local_ids)
@@ -304,7 +303,7 @@ _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView l
       }
       Integer nb_item_to_send = indexes_to_send.size();
       if (mode==ISerializer::ModeReserve){
-        // Réserve pour le nombre d'élément et pour chaque élément
+        // Reserves for the number of elements and for each element
         sbuf->reserveInt64(1);
         sbuf->reserveSpan(eBasicDataType::Int64,nb_item_to_send);
       }
@@ -334,10 +333,10 @@ _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView l
       }
       indexes.resize(nb_item);
       for( Integer i=0; i<nb_item; ++i ){
-        // Vérifie que l'entité est bien présente. C'est normalement le cas sauf
-        // si \a group n'est pas cohérent entre les PE (c'est à dire par exemple une
-        // entité \a x présente sur 2 PE mais qui est dans \a group que pour un seul
-        // des deux PE).
+        // Checks that the entity is present. This is normally the case unless
+        // \a group is not consistent between the PE (that is, for example an
+        // entity \a x present on 2 PE but which is in \a group only for one
+        // of the two PE).
         HashTableMapT<Int64,Int32>::Data* data = unique_ids_to_index.lookup(unique_ids[i]);
         if (!data)
           ARCANE_FATAL("Can not find item with unique_id={0} index={1}",unique_ids[i],i);
@@ -357,4 +356,3 @@ _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView l
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

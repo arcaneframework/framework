@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PolyhedralMesh.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Polyhedral mesh impl using Neo data structure.                            */
+/* Polyhedral mesh implementation using Neo data structure.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -449,7 +449,7 @@ class PolyhedralFamily
   {
     return this;
   }
-  // todo bloquer toutes les methodes d'allocation de IItemFamily
+  // todo block all IItemFamily allocation methods
 
   void build() override
   {

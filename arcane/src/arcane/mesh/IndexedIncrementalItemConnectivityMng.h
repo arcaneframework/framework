@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndexedIncrementalItemConnectivityMng.h                     (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire de 'IIndexedIncrementalItemConnectivity'.                    */
+/* Manager for 'IIndexedIncrementalItemConnectivity'.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
 #define ARCANE_MESH_INDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
@@ -29,7 +29,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des connectivités incrémentales indexées sur les entités.
+ * \brief Interface for the manager of incremental connectivities indexed on entities.
  */
 class ARCANE_MESH_EXPORT IndexedIncrementalItemConnectivityMng
 : public TraceAccessor

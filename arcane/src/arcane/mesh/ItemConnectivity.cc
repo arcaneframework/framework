@@ -104,12 +104,12 @@ updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items)
   ARCANE_ASSERT((from_items.size() == to_items.size()),("from_items and to_items arrays must have the same size to update connectivity"))
   // Adapt to possible evolution of from family size
   m_item_property.resize(_sourceFamily(),m_nb_dof_per_item, NULL_ITEM_LOCAL_ID);
-  IntegerSharedArray to_items_index(_sourceFamily()->maxLocalId(),0);// index in the connexion : from 0 to nb_dof_per_item -1. Fill with 0
+  IntegerSharedArray to_items_index(_sourceFamily()->maxLocalId(),0);// index in the connection: from 0 to nb_dof_per_item -1. Fill with 0
   std::set<Int32> from_items_set;
   ItemVectorView from_items_view = _sourceFamily()->view(from_items);
   for (Integer i = 0; i < from_items.size(); ++i){
     if (! from_items_set.insert(from_items[i]).second)
-      ++to_items_index[from_items[i]]; // update the index in the connexion
+      ++to_items_index[from_items[i]]; // update the index in the connection
     m_item_property[from_items_view[i]][to_items_index[from_items[i]]] = to_items[i];
   }
 }
@@ -136,12 +136,12 @@ updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items)
   m_item_property.resize(_sourceFamily(),nb_connected_element_per_item,NULL_ITEM_LOCAL_ID);
 
   // Update item property
-  IntegerSharedArray to_items_index(_sourceFamily()->maxLocalId(),0);// index in the connexion : from 0 to nb_dof_per_item -1. Fill with 0
+  IntegerSharedArray to_items_index(_sourceFamily()->maxLocalId(),0);// index in the connection: from 0 to nb_dof_per_item -1. Fill with 0
   std::set<Int32> from_items_set;
   ItemVectorView from_items_view = _sourceFamily()->view(from_items);
   for (Integer i = 0; i < from_items.size(); ++i){
     if (! from_items_set.insert(from_items[i]).second)
-      ++to_items_index[from_items[i]]; // update the index in the connexion
+      ++to_items_index[from_items[i]]; // update the index in the connection
     m_item_property[from_items_view[i]][to_items_index[from_items[i]]] = to_items[i];
   }
 }

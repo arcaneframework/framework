@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternalConnectivityIndex.h                             (C) 2000-2021 */
 /*                                                                           */
-/* Indice d'une famille dans la connectivité accessible via ItemInternal.    */
+/* Index of a family in the connectivity accessible via ItemInternal.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMINTERNALCONNECTIVITYINDEX_H
 #define ARCANE_MESH_ITEMINTERNALCONNECTIVITYINDEX_H
@@ -27,7 +27,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalIndexT pour accéder aux noeuds
+//! Specialization of \a CompactItemItemInternalIndexT to access nodes
 class NodeInternalConnectivityIndex
 {
  public:
@@ -37,7 +37,7 @@ class NodeInternalConnectivityIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux arêtes
+//! Specialization of \a CompactItemItemInternalConnectivityIndexT to access edges
 class EdgeInternalConnectivityIndex
 {
  public:
@@ -47,7 +47,7 @@ class EdgeInternalConnectivityIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux faces
+//! Specialization of \a CompactItemItemInternalConnectivityIndexT to access faces
 class FaceInternalConnectivityIndex
 {
  public:
@@ -57,7 +57,7 @@ class FaceInternalConnectivityIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux mailles
+//! Specialization of \a CompactItemItemInternalConnectivityIndexT to access cells
 class CellInternalConnectivityIndex
 {
  public:
@@ -67,7 +67,7 @@ class CellInternalConnectivityIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux HParent
+//! Specialization of \a CompactItemItemInternalConnectivityIndexT to access HParents
 class HParentInternalConnectivityIndex
 {
  public:
@@ -77,7 +77,7 @@ class HParentInternalConnectivityIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux HParent
+//! Specialization of \a CompactItemItemInternalConnectivityIndexT to access HParents
 class HChildInternalConnectivityIndex
 {
  public:

@@ -21,24 +21,24 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: mettre dans Arcane::mesh
+// TODO: move to Arcane::mesh
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: renommer en DofMng
+//TODO: rename to DofMng
 class ARCANE_MESH_EXPORT DoFManager
 {
  public:
 
-  //! Constructeur de la classe
+  //! Class constructor
   explicit DoFManager(IMesh* mesh);
 
  public:
 
-  // TODO: a supprimer. Utiliser getFamily() à la place
+  // TODO: to be deleted. Use getFamily() instead
   ARCANE_DEPRECATED_REASON("Y2024: use getFamily instead")
   mesh::DoFFamily& family(const String& family_name, bool register_modifier_if_created = false)
   {

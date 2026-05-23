@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyVariableSerializer.h                              (C) 2000-2016 */
 /*                                                                           */
-/* Gère la sérialisation/désérialisation des variables d'une famille.        */
+/* Manages the serialization/deserialization of variables within a family.   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMFAMILYVARIABLESERIALIZER_H
 #define ARCANE_MESH_ITEMFAMILYVARIABLESERIALIZER_H
@@ -34,7 +34,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère la sérialisation/désérialisation des variables d'une famille.
+ * \brief Manages the serialization/deserialization of variables within a family.
  */
 class ARCANE_MESH_EXPORT ItemFamilyVariableSerializer
 : public TraceAccessor
@@ -55,10 +55,10 @@ class ARCANE_MESH_EXPORT ItemFamilyVariableSerializer
  private:
   IItemFamily* m_item_family;
   /*!
-   * \brief Liste des variables à échanger.
+   * \brief List of variables to exchange.
     
-   IMPORTANT: Cette liste doit être identique pour tous les sous-domaines
-   sinon les désérialisations vont donner des résultats incorrects.
+   IMPORTANT: This list must be identical for all sub-domains
+   otherwise the deserializations will give incorrect results.
   */
   UniqueArray<IVariable*> m_variables_to_exchange;
 

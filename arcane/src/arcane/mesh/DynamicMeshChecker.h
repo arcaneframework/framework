@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshChecker.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Classe fournissant des méthodes de vérification sur le maillage.          */
+/* Class providing mesh verification methods.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DYNAMICMESHCHECKER_H
 #define ARCANE_MESH_DYNAMICMESHCHECKER_H

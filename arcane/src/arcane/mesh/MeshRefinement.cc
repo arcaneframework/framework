@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshRefinement.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Manipulation d'un maillage AMR.                                           */
+/* Manipulation of an AMR mesh.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@
 #define AMRMAXCONSISTENCYITER 10
 #endif
 
-// \brief classe de méthodes de raffinement des maillages déstructurés
+// \brief class of methods for refining unstructured meshes
 //! AMR
 
 
@@ -118,7 +118,7 @@ MeshRefinement(DynamicMesh* mesh)
 , m_max_nb_hChildren(0)
 , m_node_owner_memory(VariableBuildInfo(mesh,"NodeOwnerMemoryVar"))
 {
-  // \todo créer un builder
+  // \todo create a builder
   m_item_refinement = new ItemRefinement(mesh);
   m_parallel_amr_consistency = new ParallelAMRConsistency(mesh);
   m_call_back_mng = new AMRCallBackMng();
@@ -162,7 +162,7 @@ void
 MeshRefinement::
 init()
 {
-  // Recalcul le max uniqueId() des nodes/cells/faces.
+  // Recalculate the max uniqueId() of nodes/cells/faces.
   CHECKPERF( m_perf_counter.start(PerfCounter::INIT) )
   IParallelMng* pm = m_mesh->parallelMng();
   {
@@ -239,7 +239,7 @@ init()
 void MeshRefinement::
 _updateMaxUid(ArrayView<ItemInternal*> cells)
 {
-  // Recalcul le max uniqueId() des nodes/cells/faces.
+  // Recalculate the max uniqueId() of nodes/cells/faces.
   CHECKPERF( m_perf_counter.start(PerfCounter::INIT) )
   IParallelMng* pm = m_mesh->parallelMng();
   ItemTypeMng* itm = m_mesh->itemTypeMng();
@@ -375,7 +375,7 @@ refineAndCoarsenItems(const bool maintain_level_one)
 
   bool _maintain_level_one = maintain_level_one;
 
-  // la règle de niveau-un est la seule condition implementée
+  // the level-one rule is the only implemented condition
   if (!maintain_level_one)
   {
     warning() << "Warning, level one rule is the only condition accepted for AMR!";
@@ -383,27 +383,27 @@ refineAndCoarsenItems(const bool maintain_level_one)
   else
     _maintain_level_one = m_face_level_mismatch_limit;
 
-  // Nous ne pouvons pas encore transformer un maillage de non-niveau-un en un maillage de niveau-un
+  // We cannot yet transform a non-level-one mesh into a level-one mesh
   if (_maintain_level_one){
     ARCANE_ASSERT((_checkLevelOne(true)), ("checkLevelOne failed"));
   }
 
-  // Nettoyage des flags de raffinement d'une étape précédente
+  // Clear refinement flags from a previous step
   this->_cleanRefinementFlags();
    CHECKPERF( m_perf_counter.stop(PerfCounter::INIT) )
 
-  // La consistence parallèle doit venir en premier, ou le déraffinement
-  // le long des interfaces entre processeurs pourrait de temps en temps être
-  // faussement empéché
+  // Parallel consistency must come first, otherwise
+  // coarsening along interfaces between processors could occasionally be
+  // falsely prevented
   if (m_mesh->parallelMng()->isParallel())
     this->_makeFlagParallelConsistent();
 
   CHECKPERF( m_perf_counter.start(PerfCounter::CONSIST) )
-  // Repete jusqu'au matching du changement de flags sur chaque processeur
+  // Repeat until flag matching is achieved on each processor
   Integer iter = 0 ;
   do
   {
-    // Repete jusqu'au matching des flags coarsen/refine localement
+    // Repeat until coarsening/refinement flags are locally satisfied
     bool satisfied = false;
     do
     {
@@ -423,28 +423,28 @@ refineAndCoarsenItems(const bool maintain_level_one)
   if(iter==AMRMAXCONSISTENCYITER) fatal()<<" MAX CONSISTENCY ITER REACHED";
   CHECKPERF( m_perf_counter.stop(PerfCounter::CONSIST) )
 
-  // D'abord déraffine les items flaggés.
+  // First, coarsen the flagged items.
   CHECKPERF( m_perf_counter.start(PerfCounter::COARSEN) )
   const bool coarsening_changed_mesh = this->_coarsenItems();
   CHECKPERF( m_perf_counter.stop(PerfCounter::COARSEN) )
 
-  // Maintenant, raffine les items flaggés.  Ceci prendra
-  // plus de mémoire, et peut être plus de ce qui est libre.
+  // Now, refine the flagged items. This will take
+  // more memory, and possibly more than is available.
   Int64UniqueArray cells_to_refine;
   const bool refining_changed_mesh = this->_refineItems(cells_to_refine);
 
-  // Finalement, préparation du nouveau maillage pour utilisation
+  // Finally, preparing the new mesh for use
   if (refining_changed_mesh || coarsening_changed_mesh) {
     bool do_compact  = m_mesh->properties()->getBool("compact");
     m_mesh->properties()->setBool("compact",true) ; // Forcing compaction prevents from bugs when using AMR
 
-    // Raffinement
+    // Refinement
     CHECKPERF( m_perf_counter.start(PerfCounter::ENDUPDATE) )
     m_mesh->modifier()->endUpdate();
     m_mesh->properties()->setBool("compact",do_compact) ;
     CHECKPERF( m_perf_counter.stop(PerfCounter::ENDUPDATE) )
 
-    // deraffinement
+    // Coarsening
     //bool remove_ghost_children = false;
     if (coarsening_changed_mesh)
     {
@@ -462,7 +462,7 @@ refineAndCoarsenItems(const bool maintain_level_one)
 
     }
 
-    // callback pour transporter les variables sur le nouveau maillage
+    // callback to transport variables onto the new mesh
     CHECKPERF( m_perf_counter.start(PerfCounter::INTERP) )
     this->_interpolateData(cells_to_refine);
     CHECKPERF( m_perf_counter.stop(PerfCounter::INTERP) )
@@ -508,7 +508,7 @@ refineAndCoarsenItems(const bool maintain_level_one)
 #endif
     return true;
   }
-  // Si il n'y avait aucun changement dans le maillage
+  // If there were no changes in the mesh
   return false;
 }
 
@@ -522,31 +522,31 @@ coarsenItems(const bool maintain_level_one)
 
   bool _maintain_level_one = maintain_level_one;
 
-  // la rêgle de niveau-un est la seule condition implementée
+  // the level-one rule is the only implemented condition
   if (!maintain_level_one){
     warning() << "Warning, level one rule is the only condition accepted for AMR!";
   }
   else
     _maintain_level_one = m_face_level_mismatch_limit;
 
-  // Nous ne pouvons pas encore transformer un maillage de non-niveau-un en un maillage de niveau-un
+  // We cannot yet transform a non-level-one mesh into a level-one mesh
   if (_maintain_level_one){
     ARCANE_ASSERT((_checkLevelOne(true)), ("check_level_one failed"));
   }
 
-  // Nettoyage des flags de raffinement de l'étape précédente
+  // Cleaning up refinement flags from the previous step
   this->_cleanRefinementFlags();
 
-  // La consistence parallêle doit venir en premier, ou le déraffinement
-  // le long des interfaces entre processeurs pourrait de temps en temps être
-  // faussement empéché
+  // Parallel consistency must come first, otherwise the coarsening
+  // along interfaces between processors could occasionally be
+  // falsely prevented
   if (m_mesh->parallelMng()->isParallel())
     this->_makeFlagParallelConsistent();
 
-  // Repete jusqu'au matching du changement de flags sur chaque processeur
+  // Repeat until the flag change matches on every processor
   do
   {
-    // Repete jusqu'au matching des flags localement.
+    // Repeat until the flags match locally.
     bool satisfied = false;
     do
     {
@@ -562,14 +562,14 @@ coarsenItems(const bool maintain_level_one)
     } while (!satisfied);
   } while (m_mesh->parallelMng()->isParallel() && !this->_makeFlagParallelConsistent());
 
-  // Déraffine les items flaggés.
+  // Coarsen the flagged items.
   const bool mesh_changed = this->_coarsenItems();
 
   //if (_maintain_level_one)
   //ARCANE_ASSERT( (checkLevelOne(true)),("checkLevelOne failed"));
   //ARCANE_ASSERT( (this->makeCoarseningCompatible(maintain_level_one)), ("make_coarsening_comptaible failed"));
 
-  // Finalement, préparation du nouveau maillage pour utilisation
+  // Finally, preparing the new mesh for use
   if (mesh_changed)
   {
     this->_contract();
@@ -588,7 +588,7 @@ coarsenItems(const bool maintain_level_one)
 bool MeshRefinement::
 coarsenItemsV2(bool update_parent_flag)
 {
-  // Nettoyage des flags de raffinement de l'étape précédente
+  // Cleaning up refinement flags from the previous step
   this->_cleanRefinementFlags();
 
   UniqueArray<Int32> to_coarse;
@@ -597,22 +597,22 @@ coarsenItemsV2(bool update_parent_flag)
   ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
     Cell cell = *icell;
     if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
-      // On ne peut pas dé-raffiner des mailles de niveau 0.
+      // We cannot coarsen level-0 cells.
       if (cell.level() == 0) {
         ARCANE_FATAL("Cannot coarse level-0 cell");
       }
       Cell parent = cell.hParent();
 
-      // TODO AH : Pour faire le dé-raffinement de plusieurs niveau en une fois,
-      // le flag II_Inactive doit être retiré (pour la méthode FaceFamily::removeCellFromFace()).
+      // TODO AH: To perform multi-level coarsening at once,
+      // the II_Inactive flag must be removed (for the FaceFamily::removeCellFromFace() method).
       if (update_parent_flag) {
         parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
         parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
         parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
       }
 
-      // Pour une maille de niveau n-1, si une de ses mailles filles doit être dé-raffinée,
-      // alors toutes ses mailles filles doivent être dé-raffinées.
+      // For a level n-1 cell, if one of its child cells must be coarsened,
+      // then all its child cells must be coarsened.
       for (Integer i = 0; i < parent.nbHChildren(); ++i) {
         Cell child = parent.hChild(i);
         if (!(child.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
@@ -620,9 +620,9 @@ coarsenItemsV2(bool update_parent_flag)
         }
       }
 
-      // Pour l'instant, il est impossible de dé-raffiner de plusieurs niveaux en une fois.
-      // TODO AH : La méthode FaceReorienter::checkAndChangeOrientationAMR() va vérifier une
-      // face sensée être supprimée, voir pourquoi.
+      // For now, it is impossible to coarsen multiple levels at once.
+      // TODO AH: The FaceReorienter::checkAndChangeOrientationAMR() method will check a
+      // face that should be deleted, see why.
       if (parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
         ARCANE_FATAL("Cannot coarse parent and child in same time");
       }
@@ -649,7 +649,7 @@ coarsenItemsV2(bool update_parent_flag)
         for (Face face : cell.faces()) {
           Cell other_cell = face.oppositeCell(cell);
           // debug() << "Check face uid : " << face.uniqueId();
-          // Si la face est au bord, elle sera supprimée.
+          // If the face is on the boundary, it will be deleted.
           if (other_cell.null()) { // && !has_ghost_layer) {
             continue;
             //needed_cell.add(face.uniqueId());
@@ -658,15 +658,15 @@ coarsenItemsV2(bool update_parent_flag)
             //warning() << "Bad connectivity";
             continue;
           }
-          // Si les deux mailles vont être supprimées, la face sera supprimée.
+          // If both cells are going to be deleted, the face will be deleted.
           if (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
             continue;
           }
-          // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
-          if (other_cell.nbHChildren() != 0) { // && !(other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) { // Impossible de dé-raffiner plusieurs niveaux.
+          // If the adjacent cell is refined, we will have more than one level difference.
+          if (other_cell.nbHChildren() != 0) { // && !(other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) { // Impossible to coarsen multiple levels.
             ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell.uniqueId(), other_cell.uniqueId());
           }
-          // Si la maille d'à côté n'est pas à nous, elle prend la propriété de la maille d'à côté.
+          // If the adjacent cell is not ours, it takes the ownership of the adjacent cell.
           if (other_cell.owner() != cell.owner()) {
             // debug() << "Face uid : " << face.uniqueId()
             //         << " -- old owner: " << face.owner()
@@ -678,7 +678,7 @@ coarsenItemsV2(bool update_parent_flag)
         for (Node node : cell.nodes()) {
           // debug() << "Check node uid : " << node.uniqueId();
 
-          // Noeud sera supprimé ?
+          // Will the node be deleted?
           {
             bool will_deleted = true;
             for (Cell cell2 : node.cells()) {
@@ -692,7 +692,7 @@ coarsenItemsV2(bool update_parent_flag)
             }
           }
 
-          // Noeud devra changer de proprio ?
+          // Will the node need to change owner?
           {
             Integer node_owner = node.owner();
             Integer new_owner = -1;
@@ -740,8 +740,8 @@ coarsenItemsV2(bool update_parent_flag)
   UniqueArray<Int64> ghost_cell_to_coarsen;
 
   if (!update_parent_flag) {
-    // Si les matériaux sont actifs, il faut forcer un recalcul des matériaux car les groupes
-    // de mailles ont été modifiés et donc la liste des constituants aussi
+    // If materials are active, material recalculation must be forced because the cell groups
+    // have been modified and thus the list of constituents as well
     Materials::IMeshMaterialMng* mm = Materials::IMeshMaterialMng::getReference(m_mesh, false);
     if (mm)
       mm->forceRecompute();
@@ -762,7 +762,7 @@ refineItems(const bool maintain_level_one)
 
   bool _maintain_level_one = maintain_level_one;
 
-  // la règle de niveau-un est la seule condition implementé
+  // the level-one rule is the only implemented condition
   if (!maintain_level_one)
   {
     warning() << "Warning, level one rule is the only condition accepted for AMR!";
@@ -773,19 +773,19 @@ refineItems(const bool maintain_level_one)
   if (_maintain_level_one){
     ARCANE_ASSERT((_checkLevelOne(true)), ("check_level_one failed"));
   }
-  // Nettoyage des flags de raffinement de l'étape précédente
+  // Cleaning up refinement flags from the previous step
   this->_cleanRefinementFlags();
 
-  // La consistence parallêle doit venir en premier, ou le déraffinement
-  // le long des interfaces entre processeurs pourrait de temps en temps être
-  // faussement empêché
+  // Parallel consistency must come first, otherwise the coarsening
+  // along interfaces between processors could occasionally be
+  // falsely prevented
   if (m_mesh->parallelMng()->isParallel())
     this->_makeFlagParallelConsistent();
 
-  // Repete jusqu'au matching du changement de flags sur chaque processeur
+  // Repeat until the flag change matches on every processor
   do
   {
-    // Repete jusqu'au matching des flags localement.
+    // Repeat until the flags match locally.
     bool satisfied = false;
     do
     {
@@ -801,23 +801,23 @@ refineItems(const bool maintain_level_one)
     } while (!satisfied);
   } while (m_mesh->parallelMng()->isParallel() && !this->_makeFlagParallelConsistent());
 
-  // Maintenant, raffine les items flaggés.  Ceci prendra
-  // plus de mémoire, et peut être plus de ce qui est libre.
+  // Now, refine the flagged items. This will take
+  // more memory, and possibly more than is available.
   Int64UniqueArray cells_to_refine;
   const bool mesh_changed = this->_refineItems(cells_to_refine);
 
-  // Finalement, préparation du nouveau maillage pour utilisation
+  // Finally, preparing the new mesh for use
   if (mesh_changed){
-    // mise a jour
+    // update
     bool do_compact  = m_mesh->properties()->getBool("compact");
     m_mesh->properties()->setBool("compact",true) ; // Forcing compaction prevents from bugs when using AMR
     m_mesh->modifier()->endUpdate();
     m_mesh->properties()->setBool("compact",do_compact) ;
 
-    // callback pour transporter les variables sur le nouveau maillage
+    // callback to transport variables onto the new mesh
     this->_interpolateData(cells_to_refine);
 
-    // mise a jour des ghosts
+    // ghost update
     m_mesh->modifier()->setDynamic(true);
     UniqueArray<Int64> ghost_cell_to_refine ;
     UniqueArray<Int64> ghost_cell_to_coarsen ;
@@ -838,20 +838,20 @@ refineItems(const bool maintain_level_one)
 void MeshRefinement::
 uniformlyRefine(Integer n)
 {
-  // Raffine n fois
-  // FIXME - ceci ne doit pas marcher si n>1 et le maillage
-  // est déjà attaché au système d'équations à résoudre
+  // Refine n times
+  // FIXME - this should not work if n>1 and the mesh
+  // is already attached to the system of equations to be solved
   for (Integer rstep = 0; rstep < n; rstep++){
-    // Nettoyage des flags de raffinement
+    // Cleaning up refinement flags
     this->_cleanRefinementFlags();
 
-    // itérer seulement sur les mailles actives
-    // Flag tous les items actifs pour raffinement
+    // iterate only over active cells
+    // Flag all active items for refinement
     ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
       Cell cell = *icell;
       _setRefineFlags(cell);
     }
-    // Raffine tous les items que nous avons flaggés.
+    // Refine all the items we have flagged.
     Int64UniqueArray cells_to_refine;
     this->_refineItems(cells_to_refine);
     warning() << "ATTENTION: No Data Projection with this method!";
@@ -870,13 +870,13 @@ void
 MeshRefinement::
 uniformlyCoarsen(Integer n)
 {
-  // Déraffine n fois
+  // Coarsen n times
   for (Integer rstep = 0; rstep < n; rstep++){
-    // Nettoyage des flags de raffinement
+    // Cleaning refinement flags
     this->_cleanRefinementFlags();
 
-    // itérer seulement sur les mailles actives
-    // Flag tous les items actifs pour déraffinement
+    // Iterate only over active cells
+    // Flag all active items for coarsening
     ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
       Cell cell = *icell;
       _setCoarseFlags(cell);
@@ -884,12 +884,12 @@ uniformlyCoarsen(Integer n)
         cell.hParent().mutableItemBase().addFlags(ItemFlags::II_CoarsenInactive);
       }
     }
-    // Déraffine tous les items que nous venons de flagger.
+    // Coarsen all items we just flagged.
     this->_coarsenItems();
     warning() << "ATTENTION: No Data Restriction with this method!";
   }
 
-  // Finalement, préparation du nouveau maillage pour utilisation
+  // Finally, preparation of the new mesh for use
   bool do_compact  = m_mesh->properties()->getBool("compact");
   m_mesh->properties()->setBool("compact",true) ;
   m_mesh->modifier()->endUpdate();
@@ -968,7 +968,7 @@ void
 MeshRefinement::
 _updateLocalityMap()
 {
-  //jmg this->init(); // \todo pas necessaire de l'appeler a chaque m-a-j
+  //jmg this->init(); // \todo not necessary to call on every update
   //m_node_finder.init();
   m_node_finder.check() ;
   //m_face_finder.init();
@@ -982,7 +982,7 @@ void
 MeshRefinement::
 _updateLocalityMap2()
 {
-  //this->init(); // \todo pas necessaire de l'appeler a chaque m-a-j
+  //this->init(); // \todo not necessary to call on every update
   //this->m_node_finder.init2();
   //m_node_finder.check2() ;
   //m_face_finder.init2();
@@ -998,7 +998,7 @@ _checkLevelOne(bool arcane_assert_pass)
   bool failure = false;
 
   Integer sid = m_mesh->parallelMng()->commRank();
-  // itérer seulement sur les mailles actives
+  // Iterate only over active cells
   ENUMERATE_CELL(icell,m_mesh->allActiveCells())
   {
     Cell cell = *icell;
@@ -1008,7 +1008,7 @@ _checkLevelOne(bool arcane_assert_pass)
       Cell back_cell = face.backCell();
       Cell front_cell = face.frontCell();
 
-      // On choisit l'autre cellule du cote de la face
+      // We choose the other cell on the face side
       Cell neighbor = (back_cell==cell)?front_cell:back_cell;
       if (neighbor.null() || !neighbor.isActive() || !(neighbor.owner()==sid))
         continue;
@@ -1020,12 +1020,12 @@ _checkLevelOne(bool arcane_assert_pass)
     }
   }
 
-  // Si un processeur échoue, on échoue globalement
+  // If one processor fails, we fail globally
   failure = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, failure);
 
   if (failure){
-    // Nous n'avons pas passé le test level-one, donc arcane_assert
-    // en fonction du booléen d'entré.
+    // We did not pass the level-one test, so arcane_assert
+    // based on the input boolean.
     if (arcane_assert_pass)
       throw FatalErrorException(A_FUNCINFO,"checkLevelOne failed");
     return false;
@@ -1041,8 +1041,8 @@ _checkUnflagged(bool arcane_assert_pass)
 {
   bool found_flag = false;
 
-  // recherche pour les flags locaux
-  // itérer seulement sur les mailles actives
+  // Search for local flags
+  // Iterate only over active cells
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
     const Cell cell = *icell;
     const Integer f = cell.itemBase().flags();
@@ -1052,11 +1052,11 @@ _checkUnflagged(bool arcane_assert_pass)
       break;
     }
   }
-  // Si nous trouvions un flag sur n'importe quel processeur, il compte
+  // If we find a flag on any processor, it counts
   found_flag = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, found_flag);
   if (found_flag){
-    //nous n'avons pas passé le test "items are unflagged",
-    //ainsi arcane_assert la non valeur de arcane_assert_pass
+    // We did not pass the "items are unflagged" test,
+    // thus arcane_assert the non-value of arcane_assert_pass
     if (arcane_assert_pass)
       throw FatalErrorException(A_FUNCINFO,"checkUnflagged failed");
     return false;
@@ -1096,9 +1096,9 @@ _makeFlagParallelConsistent()
 
     //if(iitem->owner() != sid)
     {
-      // il est possible que les flags des ghosts soient (temporairement) plus
-      // conservatifs que nos propres flags , comme quand un raffinement d'une
-      // des mailles du processeur distant est dicté par un raffinement d'une de nos mailles
+      // it is possible that the ghost flags are (temporarily) more
+      // conservative than our own flags, such as when a refinement of one of our
+      // cells on the remote processor is dictated by a refinement of one of our cells
       const Integer g = flag_cells_consistent[Cell(iitem)];
       if((g & ItemFlags::II_Refine) && !(f & ItemFlags::II_Refine))
       {
@@ -1146,8 +1146,8 @@ _makeFlagParallelConsistent()
        }*/
     }
   }
-  // Si nous ne sommes pas consistent sur chaque processeur alors
-  // nous ne le sommes pas globalement
+  // If we are not consistent on every processor then
+  // we are not globally consistent
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
   debug() << "makeFlagsParallelConsistent() end -- parallel_consistent : " << parallel_consistent;
 
@@ -1216,8 +1216,8 @@ _makeFlagParallelConsistent2()
        }*/
     }
   }
-  // Si nous ne sommes pas consistent sur chaque processeur alors
-  // nous ne le sommes pas globalement
+  // If we are not consistent on every processor then
+  // we are not globally consistent
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
   debug() << "makeFlagsParallelConsistent2() end";
 
@@ -1236,28 +1236,28 @@ _makeCoarseningCompatible(const bool maintain_level_one)
 
   bool _maintain_level_one = maintain_level_one;
 
-  // la règle de niveau-un est la seule condition implementée
+  // the level-one rule is the only implemented condition
   if (!maintain_level_one){
     warning() << "Warning, level one rule is the only condition accepted for AMR!";
   }
   else
     _maintain_level_one = m_face_level_mismatch_limit;
 
-  // à moins que nous rencontrions une situation spécifique, la règle niveau-un
-  // sera satisfaite aprês avoir exécuté cette boucle juste une fois
+  // unless we encounter a specific situation, the level-one rule
+  // will be satisfied after executing this loop just once
   bool level_one_satisfied = true;
 
-  // à moins que nous rencontrions une situation spéccifique, nous serons compatible
-  // avec tous flags de raffinement choisis
+  // unless we encounter a specific situation, we will be compatible
+  // with all chosen refinement flags
   bool compatible_with_refinement = true;
 
-  // Trouver le niveau maximum dans le maillage
+  // Find the maximum level in the mesh
   Integer max_level = 0;
 
-  // d'abord nous regardons tous les items actifs de niveau 0.  Puisque ca n'a pas de sens de
-  // les déraffiner nous devons donc supprimer leur flags de déraffinement si
-  // ils sont déjà positionnés.
-  // itérer seulement sur les mailles actives
+  // first we look at all active level 0 items. Since it makes no sense to
+  // coarsen them, we must therefore remove their coarsening flags if
+  // they are already positioned.
+  // Iterate only over active cells
   ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
     const Cell cell = *icell;
     max_level = std::max(max_level, cell.level());
@@ -1269,23 +1269,22 @@ _makeCoarseningCompatible(const bool maintain_level_one)
       cell.mutableItemBase().setFlags(f);
     }
   }
-  // Si il n'y a pas d'items à raffiner sur ce processeur alors
-  // il n'y a pas de travail à faire pour nous
+  // If there are no items to refine on this processor then
+  // there is no work for us
   if (max_level == 0){
     debug() << "makeCoarseningCompatible() done";
 
-    // par contre il reste à vérifier avec les autres processeurs
+    // however, it remains to check with the other processors
     compatible_with_refinement = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, compatible_with_refinement);
 
     return compatible_with_refinement;
   }
-
-  // Boucle sur tous les items actifs.  Si un item est marqué
-  // pour déraffinement on check ses voisins.  Si un de ses voisins
-  // est marqué pour raffinement et est de même niveau alors il y a un
-  // conflit.  Par convention raffinement gagne, alors on démarque l'item pour
-  // déraffinement.  Le niveau-un serait violé dans ce cas-ci ainsi nous devons réexécuter
-  // la boucle.
+  // Loop over all active items. If an item is marked
+  // for coarsening, we check its neighbors. If one of its neighbors
+  // is marked for refinement and is at the same level, then there is a
+  // conflict. By convention, refinement wins, so we unmark the item for
+  // coarsening. Level-one would be violated in this case, so we must re-execute
+  // the loop.
   const Integer sid = m_mesh->parallelMng()->commRank();
   if (_maintain_level_one)
   {
@@ -1295,13 +1294,13 @@ _makeCoarseningCompatible(const bool maintain_level_one)
     do
     {
       level_one_satisfied = true;
-      // itérer seulement sur les mailles actives
+      // iterate only over active cells
       ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
         Cell cell = *icell;
         //ItemInternal* iitem = cell.internal();
         bool my_flag_changed = false;
         Integer f = cell.itemBase().flags();
-        if (f & ItemFlags::II_Coarsen){ // Si l'item est actif et le flag de déraffinement est placé
+        if (f & ItemFlags::II_Coarsen){ // If the item is active and the coarsening flag is set
           const Int32 my_level = cell.level();
           for( Face face : cell.faces() ) {
             if (face.nbCell()!=2)
@@ -1309,16 +1308,16 @@ _makeCoarseningCompatible(const bool maintain_level_one)
             Cell back_cell = face.backCell();
             Cell front_cell = face.frontCell();
 
-            // On choisit l'autre cellule du cote de la face
+            // We choose the other cell on the side of the face
             Cell neighbor = (back_cell==cell)?front_cell:back_cell;
             //const ItemInternal* ineighbor = neighbor.internal();
-            //if (ineighbor->owner() == sub_domain_id)   // J'ai un voisin ici
+            //if (ineighbor->owner() == sub_domain_id)   // I have a neighbor here
 
             {
-              if (neighbor.isActive()) // et est actif
+              if (neighbor.isActive()) // and is active
               {
                 if ((neighbor.level() == my_level) &&
-                    (neighbor.itemBase().flags() & ItemFlags::II_Refine)){ // le voisin est à mon niveau et veut être raffiné
+                    (neighbor.itemBase().flags() & ItemFlags::II_Refine)){ // the neighbor is at my level and wants to be refined
                   f &= ~ItemFlags::II_Coarsen;
                   f |= ItemFlags::II_DoNothing;
                   cell.mutableItemBase().setFlags(f);
@@ -1327,10 +1326,10 @@ _makeCoarseningCompatible(const bool maintain_level_one)
                 }
               }
               else{
-                // J'ai un voisin et n'est pas actif. Cela signifie qu'il a des enfants.
-                // tandis qu'il peut être possible de me déraffiner si tous les enfants
-                // de cet item veulent être déraffinés, il est impossible de savoir à ce stade.
-                // On l'oublie pour le moment. Ceci peut être réalisé dans deux étapes.
+                // I have a neighbor and it is not active. This means it has children.
+                // while it may be possible to coarsen me if all children
+                // of this item want to be coarsened, it is impossible to know at this stage.
+                // We forget it for now. This can be achieved in two steps.
                 f &= ~ItemFlags::II_Coarsen;
                 f |= ItemFlags::II_DoNothing;
                 cell.mutableItemBase().setFlags(f);
@@ -1341,15 +1340,15 @@ _makeCoarseningCompatible(const bool maintain_level_one)
           }
         }
 
-        //si le flag de la cellule courante a changé, nous n'avons pas
-        //satisfait la rêgle du niveau un.
+        // if the flag of the current cell has changed, we have not
+        // satisfied the level one rule.
         if (my_flag_changed)
           level_one_satisfied = false;
 
-        //En plus, s'il a des voisins non-locaux, et
-        //nous ne sommes pas en séquentiel, alors nous devons par la suite
-        // retourner compatible_with_refinement= false, parce que
-        //notre changement doit être propager aux processeurs voisins
+        // Furthermore, if it has non-local neighbors, and
+        // we are not in sequential mode, then we must subsequently
+        // return compatible_with_refinement= false, because
+        // our change must be propagated to neighboring processors
         if (my_flag_changed && m_mesh->parallelMng()->isParallel())
           for( Face face : cell.faces() ){
             if (face.nbCell()!=2)
@@ -1357,15 +1356,15 @@ _makeCoarseningCompatible(const bool maintain_level_one)
             Cell back_cell = face.backCell();
             Cell front_cell = face.frontCell();
 
-            // On choisit l'autre cellule du cote de la face
+            // We choose the other cell on the side of the face
             Cell neighbor = (back_cell==cell)?front_cell:back_cell;
             //ItemInternal* ineighbor = neighbor.internal();
-            if (neighbor.owner() != sid){ // J'ai un voisin ici
+            if (neighbor.owner() != sid){ // I have a neighbor here
               compatible_with_refinement = false;
               break;
             }
-            // TODO FIXME - pour les maillages non niveau-1 nous devons
-            // tester tous les descendants
+            // TODO FIXME - for non level-1 meshes we must
+            // test all descendants
             if (neighbor.hasHChildren())
               for (Integer c=0; c != neighbor.nbHChildren(); ++c)
                 if (neighbor.hChild(c).owner() != sid){
@@ -1380,20 +1379,20 @@ _makeCoarseningCompatible(const bool maintain_level_one)
 
   } // end if (_maintain_level_one)
 
-  //après, nous regardons tous les items ancêtres.
-  //s'il y a un item parent avec tous ses enfants
-  //voulant être déraffiné alors l'item est un candidat
-  //pour le déraffinement.  Si tous les enfants ne
-  //veulent pas être déraffiné alors tous ont besoin d'avoir leur
-  // flag de déraffinement dégagés.
+  // afterwards, we look at all ancestor items.
+  // if there is a parent item with all its children
+  // wanting to be coarsened, then the item is a candidate
+  // for coarsening. If all children do not
+  // want to be coarsened, then all need to have their
+  // coarsening flag cleared.
   for (int level=(max_level); level >= 0; level--){
-    // itérer sur les mailles niveau par niveau
+    // iterate over cells level by level
     ENUMERATE_CELL(icell,m_mesh->ownLevelCells(level)){
       const Cell cell = *icell;
       //ItemInternal* iitem = cell.internal();
       if(cell.isAncestor()){
-        // à ce moment là l'item n'a pas été éliminé
-        // en tant que candidat pour le déraffinement
+        // at this point the item has not been eliminated
+        // as a candidate for coarsening
         bool is_a_candidate = true;
         bool found_remote_child = false;
 
@@ -1425,14 +1424,14 @@ _makeCoarseningCompatible(const bool maintain_level_one)
   }
   if (!level_one_satisfied && _maintain_level_one) goto repeat;
 
-  // Si tous les enfants d'un parent sont marqués pour déraffinement
-  // Alors marque le parent à ce qu'il puisse tuer ses enfants.
+  // If all children of a parent are marked for coarsening
+  // Then mark the parent so it can kill its children.
   ENUMERATE_CELL(icell,m_mesh->ownCells()){
     const Cell cell = *icell;
     //ItemInternal* iitem = cell.internal();
     if(cell.isAncestor()){
-      // Supposons que tous les enfants sont locaux et marqués pour
-      // déraffinement et donc cherche pour une contradiction
+      // Assume that all children are local and marked for
+      // coarsening and thus look for a contradiction
       bool all_children_flagged_for_coarsening = true;
       bool found_remote_child = false;
 
@@ -1460,7 +1459,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
 
   debug() << "makeCoarseningCompatible() done";
 
-  // Si nous sommes pas compatible sur un processeur, nous ne le sommes pas globalement
+  // If we are not compatible on one processor, we are not compatible globally
   compatible_with_refinement = m_mesh->parallelMng()->reduce(Parallel::ReduceMin,compatible_with_refinement);
 
   return compatible_with_refinement;
@@ -1478,33 +1477,32 @@ _makeRefinementCompatible(const bool maintain_level_one)
 
   bool _maintain_level_one = maintain_level_one;
 
-  // la règle de niveau-un est la seule condition implementée
+  // the level-one rule is the only condition implemented
   if (!maintain_level_one){
     warning() << "Warning, level one rule is the only condition accepted now for AMR!";
   }
   else
     _maintain_level_one = m_face_level_mismatch_limit;
 
-  // à moins que nous rencontrions une situation spécifique, la règle niveau-un
-  // sera satisfaite après avoir exécuté cette boucle juste une fois
+  // unless we encounter a specific situation, the level-one rule
+  // will be satisfied after running this loop just once
   bool level_one_satisfied = true;
 
-  // à moins que nous rencontrions une situation spécifique, nous serons compatible
-  // avec tous flags de déraffinement choisis
+  // unless we encounter a specific situation, we will be compatible
+  // with all chosen coarsening flags
   bool compatible_with_coarsening = true;
 
-  // cette boucle impose la règle niveau-1.  Nous devrions seulement
-  // l'exécuter si l'utilisateur veut en effet que la niveau-1 soit satisfaite !
+  // this loop enforces the level-1 rule. We should only
+  // execute it if the user actually wants level-1 to be satisfied!
   Integer sid = m_mesh->parallelMng()->commRank();
   if (_maintain_level_one){
     do {
       level_one_satisfied = true;
-      // itérer seulement sur les mailles actives
+      // iterate only over active cells
       ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
         const Cell cell = *icell;
         //ItemInternal* iitem = cell.internal();
-        if (cell.itemBase().flags() & ItemFlags::II_Refine){ // Si l'item est actif et le flag de
-          // raffinement est placé
+        if (cell.itemBase().flags() & ItemFlags::II_Refine){ // If the item is active and the refinement flag is set
           const Int32 my_level = cell.level();
           bool refinable = true;
           //check if refinable
@@ -1514,17 +1512,17 @@ _makeRefinementCompatible(const bool maintain_level_one)
             Cell back_cell = face.backCell();
             Cell front_cell = face.frontCell();
 
-            // On choisit l'autre cellule du cote de la face
+            // We choose the other cell on the side of the face
             Cell neighbor = (back_cell==cell)?front_cell:back_cell;
             //ItemInternal* ineighbor = neighbor.internal();
-            //if (ineighbor->isActive() && ineighbor->owner() == sid)// J'ai un voisin ici et est actif
-            if (neighbor.isActive() ){// J'ai un voisin ici et est actif
-              // Cas 2: Le voisin est inférieur de un niveau que le mien.
-              //         Le voisin doit être raffiné pour satisfaire
-              //         la règle de niveau-1, indépendamment de s'il
-              //         a été à l'origine marqué pour raffinement. S'il
-              //         n'était pas flaggé déjà nous devons répéter
-              //         ce processus.
+            //if (ineighbor->isActive() && ineighbor->owner() == sid)// I have a neighbor here and it is active
+            if (neighbor.isActive() ){// I have a neighbor here and it is active
+              // Case 2: The neighbor is one level below mine.
+              // The neighbor must be refined to satisfy
+              // the level-1 rule, regardless of whether it
+              // was originally marked for refinement. If it
+              // was not already flagged, we must repeat
+              // this process.
               Integer f = neighbor.itemBase().flags();
               if ( ( (neighbor.level()+1) == my_level) &&
                   ( f & ItemFlags::II_UserMark1) ){
@@ -1543,15 +1541,15 @@ _makeRefinementCompatible(const bool maintain_level_one)
               Cell back_cell = face.backCell();
               Cell front_cell = face.frontCell();
 
-              // On choisit l'autre cellule du cote de la face
+              // We choose the other cell on the side of the face
               Cell neighbor = (back_cell==cell)?front_cell:back_cell;
               //ItemInternal* ineighbor = neighbor.internal();
-              if (neighbor.isActive() && neighbor.owner() == sid){ // J'ai un voisin ici et est actif
+              if (neighbor.isActive() && neighbor.owner() == sid){ // I have a neighbor here and it is active
 
-                // Cas 1:  Le voisin est au même niveau que moi.
-                //        1a: Le voisin  sera raffiné           -> NO PROBLEM
-                //        1b: Le voisin ne va pas être raffiné  -> NO PROBLEM
-                //        1c: Le voisin veut être déjà raffiné     -> PROBLEM
+                // Case 1: The neighbor is at the same level as me.
+                // 1a: The neighbor will be refined -> NO PROBLEM
+                // 1b: The neighbor will not be refined -> NO PROBLEM
+                // 1c: The neighbor already wants to be refined -> PROBLEM
                 if (neighbor.level() == my_level){
                   Integer f = neighbor.itemBase().flags();
                   if (f & ItemFlags::II_Coarsen) {
@@ -1566,12 +1564,12 @@ _makeRefinementCompatible(const bool maintain_level_one)
                   }
                 }
 
-                // Cas 2: Le voisin est inférieur de un niveau que le mien.
-                //         Le voisin doit être raffiné pour satisfaire
-                //         la rêgle de niveau-1, indépendamment de s'il
-                //         a été à l'origine marqué pour raffinement. S'il
-                //         n'était pas flaggé déjà nous devons répéter
-                //         ce processus.
+                // Case 2: The neighbor is one level below mine.
+                // The neighbor must be refined to satisfy
+                // the level-1 rule, regardless of whether it
+                // was originally marked for refinement. If it
+                // was not already flagged, we must repeat
+                // this process.
 
                 else if ((neighbor.level()+1) == my_level) {
                   Integer f = neighbor.itemBase().flags();
@@ -1587,17 +1585,17 @@ _makeRefinementCompatible(const bool maintain_level_one)
                   }
                 }
 #ifdef ARCANE_DEBUG
-                // Contrôle. Nous ne devrions jamais entrer dans un
-                // cas ou notre voisin est distancé de plus d'un niveau.
+                // Check. We should never enter a
+                // case where our neighbor is more than one level away.
 
                 else if ((neighbor.level()+1) < my_level)
                 {
                   fatal() << "a neighbor is more than one level away";
                 }
 
-                // On note que la seule autre possibilité est que
-                // le voisin ait déjà été raffiné, dans ce cas il n'est pas
-                //actif et nous ne devrions jamais tomber ici.
+                // Note that the only other possibility is that
+                // the neighbor has already been refined, in this case it is not
+                // active and we should never fall here.
 
                 else
                 {
@@ -1612,7 +1610,7 @@ _makeRefinementCompatible(const bool maintain_level_one)
     while (!level_one_satisfied);
   } // end if (_maintain_level_one)
 
-  // Si nous sommes pas compatible sur un processeur, nous ne le sommes pas globalement
+  // If we are not compatible on one processor, we are not compatible globally
   compatible_with_coarsening = m_mesh->parallelMng()->reduce(Parallel::ReduceMin,compatible_with_coarsening);
 
   debug() << "makeRefinementCompatible() done";
@@ -1628,37 +1626,37 @@ MeshRefinement::
 _coarsenItems()
 {
   debug() << "[MeshRefinement::_coarsenItems] begin"<<m_mesh->allNodes().size();
-  // Flag indiquant si cet appel change réellement le maillage
+  // Flag indicating if this call actually changes the mesh
   bool mesh_changed = false;
 
-  // itérer sur toutes les mailles
+  // iterate over all cells
   // Int32UniqueArray cell_to_detach;
   ENUMERATE_CELL(icell,m_mesh->ownCells()){
     Cell cell = *icell;
     Cell iitem = cell;
-    // items actifs flaggés prour déraffinement ne seront
-    // pas supprimés jusqu'à contraction via MeshRefinement::contract()
+    // active items flagged for coarsening will not be
+    // removed until contraction via MeshRefinement::contract()
 
     if (cell.itemBase().flags() & ItemFlags::II_Coarsen){
-      // Houups?  aucun item de niveau-0 ne doit être a la fois actif
-      // et flaggé pour déraffinement.
+      // Whoops? no level-0 item should be both active
+      // and flagged for coarsening.
       ARCANE_ASSERT ( (cell.level() != 0), ("no level-0 element should be active and flagged for coarsening"));
 
-      // TODO Supprimer cet item de toute liste de voisinage
-      // pointant vers lui.
-      // FIXME à l'IFP, on utilise par défaut la macro REMOVE_UID_ON_DETACH suprimant le UID de CELL
-      // dans la map des cell_uid donc on ne peut utiliser detachCell par défaut. En attendant
-      // on utilise la méthode MeshRefinement::contract() après mise à jour des variables
+      // TODO Remove this item from any neighborhood list
+      // pointing to it.
+      // FIXME at IFP, we use the REMOVE_UID_ON_DETACH macro by default which deletes the CELL UID
+      // in the cell_uid map, so we cannot use detachCell by default. For now
+      // we use the MeshRefinement::contract() method after updating the variables
       // cell_to_detach.add(iitem->localId());
 
       //cells_to_remove.add(cell);
-      // TODO optimisation  des uids non utilisé.
+      // TODO optimization of unused uids.
       // m_unused_items.push_back (uid);
 
-      // Ne pas détruire l'item jusqu'à MeshRefinement::contract()
+      // Do not destroy the item until MeshRefinement::contract()
       // m_mesh->modifier()->removeCells(iitem->localId());
 
-      // Le maillage a certainement changé
+      // The mesh has certainly changed
       mesh_changed = true;
     }
     else if (cell.itemBase().flags() & ItemFlags::II_CoarsenInactive)
@@ -1703,21 +1701,21 @@ _coarsenItems()
       }
       ARCANE_ASSERT(cell.isActive(), ("cell_active failed"));
 
-      // le maillage a certainement changé
+      // The mesh has certainly changed
       mesh_changed = true;
     }
   }
   // TODO
   // m_mesh->modifier->detachCells(cell_to_detach);
 
-  // Si le maillage a changé sur un processeur, alors il a changé globalement
+  // If the mesh changed on one processor, then it changed globally
   mesh_changed = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, mesh_changed);
-  // Et peut être nous avons besoin de mettre à jour les entités refletant le changement
+  // And maybe we need to update the entities reflecting the change
   //if (mesh_changed)
-  // \todo compacte et update max_uids en parallel
+  // \todo compact and update max_uids in parallel
 
-  // si une maille est deraffinee ailleurs, les noeuds attaches a cette maille
-  // doivent etre mis a jour. Cela est traite dans endUpdate()
+  // if a cell is derefined elsewhere, the nodes attached to this cell
+  // must be updated. This is handled in endUpdate()
 
   debug() << "[MeshRefinement::_coarsenItems()] done "<<m_mesh->allNodes().size();
 
@@ -1731,8 +1729,8 @@ bool
 MeshRefinement::
 _refineItems(Int64Array& cell_to_refine_uids)
 {
-  // Mise à jour de m_node_finder, m_face_finder permettra au maillage
-  // d'etre consistent globalement (uids consistency).
+  // Updating m_node_finder, m_face_finder will allow the mesh
+  // to be globally consistent (uids consistency).
   debug() << "[MeshRefinement::_refineItems]"<<m_mesh->allNodes().size();
 #ifdef ARCANE_DEBUG
   m_node_finder.check() ;
@@ -1740,8 +1738,8 @@ _refineItems(Int64Array& cell_to_refine_uids)
 #endif
   CHECKPERF( m_perf_counter.start(PerfCounter::REFINE) )
   m_face_finder.clearNewUids() ;
-  // Iterer sur les items, compter les items
-  // flaggés pour le raffinement.
+  // Iterate over the items, count the items
+  // flagged for refinement.
   //Integer nb_cell_flagged = 0;
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_CELL(icell,m_mesh->ownCells()) {
@@ -1753,8 +1751,8 @@ _refineItems(Int64Array& cell_to_refine_uids)
   }
   debug() << "[MeshRefinement::_refineItems] " << cell_to_refine_uids.size() << " flagged cells for refinement";
 
-  // Construire un vecteur local des items marqués
-  // pour raffinement.
+  // Build a local vector of the marked items
+  // for refinement.
   /*
    local_copy_of_cells.reserve(nb_cell_flagged);
 
@@ -1765,7 +1763,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
    local_copy_of_cells.add(iitem);
    }
    */
-  // Maintenant, itere sur les copies locales et raffine chaque item.
+  // Now, iterate over the local copies and refine each item.
   const Int32 i_size = cell_to_refine_internals.size();
   for (Integer e = 0; e != i_size; ++e) {
     Cell iitem = cell_to_refine_internals[e];
@@ -1810,13 +1808,13 @@ _refineItems(Int64Array& cell_to_refine_uids)
     }
   }
 
-  // Le maillage change si des items sont raffinés
+  // The mesh changes if items are refined
   bool mesh_changed = !(i_size == 0);
 
-  // Si le maillage change sur un processeur, il change globalement
+  // If the mesh changes on one processor, it changes globally
   mesh_changed = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, mesh_changed);
 
-  // Et nous avons besoin de mettre à jour le nombre des ids
+  // And we need to update the number of ids
   if (mesh_changed){
     for (Integer e = 0; e != i_size; ++e){
       Cell i_hParent_cell = cell_to_refine_internals[e];
@@ -1848,7 +1846,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
 void MeshRefinement::
 _cleanRefinementFlags()
 {
-  //Nettoyage des flags de raffinement d'une étape précédente
+  // Cleanup of refinement flags from a previous step
   ENUMERATE_CELL(icell,m_mesh->allCells()){
     Cell cell = *icell;
     auto mutable_cell = cell.mutableItemBase();
@@ -1861,7 +1859,7 @@ _cleanRefinementFlags()
       f |= ItemFlags::II_Inactive;
       mutable_cell.setFlags(f);
     }
-    // Ceci pourrait être laissé de la derniè étape
+    // This could be left from the last step
     if (f & ItemFlags::II_JustRefined){
       f &= ~ItemFlags::II_JustRefined;
       f |= ItemFlags::II_DoNothing;
@@ -1900,7 +1898,7 @@ _contract()
   if (arcaneIsDebug()){
     cells_map.eachItem([&](impl::ItemBase item) {
       if (item.isOwn())
-        // une maille est soit active, subactive ou ancestor
+        // a cell is either active, subactive, or ancestor
         ARCANE_ASSERT((item.isActive() || item.isSubactive() || item.isAncestor()), (" "));
     });
   }
@@ -1913,16 +1911,16 @@ _contract()
     if (!iitem.isOwn())
       return;
 
-    // suppression des subactives
+    // suppression of subactive cells
     if (iitem.isSubactive()) {
-      // aucune maille de niveau 0 ne doit être subactive.
+      // no level 0 cell should be subactive.
       ARCANE_ASSERT((iitem.nbHParent() != 0), (""));
       cells_to_remove_set.insert(iitem.localId());
-      // informe le client du changement de maillage
+      // inform the client of the mesh change
       mesh_changed = true;
     }
     else{
-      // Compression des mailles actives
+      // Compression of active cells
       if (iitem.isActive()) {
         bool active_parent = false;
         for (Integer c = 0; c < iitem.nbHChildren(); c++) {
@@ -1939,7 +1937,7 @@ _contract()
           parent_cells.add(iitem._itemInternal());
           ARCANE_ASSERT((iitem.flags() & ItemFlags::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
         }
-        // informe le client du changement de maillage
+        // inform the client of the mesh change
         mesh_changed = true;
       }
       else{
@@ -2151,7 +2149,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 
   node_owner_changed = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, node_owner_changed);
   if (node_owner_changed){
-    // nodes_owner.synchronize(); // SDC Surtout pas la synchro est KO à ce moment là (fantômes non raffinés/déraffinés)
+    // nodes_owner.synchronize(); // SDC Especially not the sync is KO at this moment (unrefined/de-refined ghosts)
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
     m_mesh->nodeFamily()->endUpdate();
   }
@@ -2169,7 +2167,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 void MeshRefinement::
 _updateItemOwner2()
 {
-  // il faut que tout sub-item est une cellule voisine de même propriétaire
+  // It is necessary that every sub-item is a neighboring cell with the same owner
   VariableItemInt32& nodes_owner(m_mesh->nodeFamily()->itemsNewOwner());
 
   NodeGroup own_nodes = m_mesh->ownNodes();
@@ -2202,7 +2200,7 @@ _updateItemOwner2()
     m_mesh->nodeFamily()->endUpdate();
   }
 
-  // il faut que tout sub-item est une cellule voisine de même propriétaire
+  // It is necessary that every sub-item is a neighboring cell with the same owner
   VariableItemInt32& faces_owner(m_mesh->faceFamily()->itemsNewOwner());
 
   FaceGroup own_faces = m_mesh->ownFaces();
@@ -2242,7 +2240,7 @@ _removeGhostChildren()
   DynamicMesh* mesh = m_mesh;
   ItemInternalMap& cells_map = mesh->cellsMap();
 
-  // Suppression des mailles
+  // Removal of meshes
   Int32UniqueArray cells_to_remove ;
   cells_to_remove.reserve(1000);
   UniqueArray<ItemInternal*> parent_cells;
@@ -2262,7 +2260,7 @@ _removeGhostChildren()
 
   _invalidate(parent_cells) ;
 
-  // Avant suppression, mettre a jour les owner de Node/Face isoles
+  // Before removal, update the owners of isolated Nodes/Faces
   _updateItemOwner(cells_to_remove);
   //info() << "Number of cells to remove: " << cells_to_remove.size();
   m_mesh->modifier()->removeCells(cells_to_remove,false);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractItemFamilyTopologyModifier.h                        (C) 2000-2020 */
 /*                                                                           */
-/* Modification de la topologie des entités d'une famille.                   */
+/* Modification of the topology of a family's entities.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ABSTRACTITEMFAMILYTOPOLOGYMODIFIER_H
 #define ARCANE_MESH_ABSTRACTITEMFAMILYTOPOLOGYMODIFIER_H
@@ -30,7 +30,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
- * \brief Modification de la topologie des entités d'une famille.
+ * \brief Modification of the topology of a family's entities.
  */
 class ARCANE_MESH_EXPORT AbstractItemFamilyTopologyModifier
 : public TraceAccessor
@@ -39,11 +39,11 @@ class ARCANE_MESH_EXPORT AbstractItemFamilyTopologyModifier
  public:
 
   AbstractItemFamilyTopologyModifier(IItemFamily* afamily);
-  virtual ~AbstractItemFamilyTopologyModifier() {} //<! Libère les ressources
+  virtual ~AbstractItemFamilyTopologyModifier() {} //<! Releases resources
 
  public:
 
-  //! Famille associée
+  //! Associated family
   IItemFamily* family() const override;
 
  public:
@@ -81,4 +81,4 @@ class ARCANE_MESH_EXPORT AbstractItemFamilyTopologyModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

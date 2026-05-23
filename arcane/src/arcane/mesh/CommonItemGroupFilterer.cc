@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonItemGroupFilterer.cc                                  (C) 2000-2021 */
 /*                                                                           */
-/* Filtrage des groupes communs à toutes les parties d'un maillage.          */
+/* Filtering of groups common to all parts of a mesh.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ applyFiltering()
   Integer nb_group = groups_to_check.size();
   tm->info(4) << "CHECK: nb_group_to_compare=" << nb_group;
 
-  // Créé un buffer pour sérialiser les noms des groupes
+  // Create a buffer to serialize the group names
   SerializeBuffer send_buf;
   send_buf.setMode(ISerializer::ModeReserve);
   send_buf.reserveInteger(1);
@@ -76,7 +76,7 @@ applyFiltering()
     send_buf.put(groups_to_check[i].fullName());
   }
 
-  // Récupère les infos des autres PE.
+  // Retrieves info from other PEs.
   SerializeBuffer recv_buf;
   pm->allGather(&send_buf,&recv_buf);
 
@@ -97,9 +97,9 @@ applyFiltering()
     }
   }
 
-  // Parcours la liste des groupes et range dans \a common_groups
-  // ceux qui sont disponibles sur tous les rangs de \a pm.
-  // Cette liste sera triée par ordre alphabétique.
+  // Iterates through the list of groups and stores in \a common_groups
+  // those that are available on all ranks of \a pm.
+  // This list will be sorted alphabetically.
   std::map<String,ItemGroup> common_groups;
   UniqueArray<String> bad_groups;
   {
@@ -109,7 +109,7 @@ applyFiltering()
       String group_name = group.fullName();
       auto i_group = group_occurences.find(group_name);
       if (i_group ==end_var)
-        // Ne devrait pas arriver
+        // Should not happen
         continue;
       if (i_group->second!=nb_rank){
         bad_groups.add(group_name);
@@ -134,4 +134,3 @@ applyFiltering()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

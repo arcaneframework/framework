@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Famille d'arêtes.                                                         */
+/* Edge family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EDGEFAMILY_H
 #define ARCANE_MESH_EDGEFAMILY_H
@@ -28,7 +28,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille d'arêtes.
+ * \brief Edge family.
  */
 class ARCANE_MESH_EXPORT EdgeFamily
 : public ItemFamily
@@ -42,7 +42,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
  public:
 
   EdgeFamily(IMesh* mesh,const String& name);
-  virtual ~EdgeFamily(); //<! Libère les ressources
+  virtual ~EdgeFamily(); //<! Releases resources
 
  public:
 
@@ -52,7 +52,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
  public:
 
-  //! Version appelées dans l'ajout générique d'item
+  //! Version called in generic item addition
   // IItemFamilyModifier interface
   Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
   Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override;
@@ -63,19 +63,19 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
   void replaceNode(ItemLocalId edge,Integer index,ItemLocalId node);
 
-  //! Ajoute une maille voisine à une arête
+  //! Adds a neighboring cell to an edge
   void addCellToEdge(Edge edge,Cell new_cell);
-  //! Ajoute une maille voisine à une arête
+  //! Adds a neighboring face to an edge
   void addFaceToEdge(Edge edge,Face new_face);
-  //! Supprime une maille d'une arête
+  //! Removes a cell from an edge
   void removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid);
-  //! Supprime une maille d'une arête
+  //! Removes a face from an edge
   void removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove);
-  //! Supprime l'arête si elle n'est plus connectée
+  //! Removes the edge if it is no longer connected
   void removeEdgeIfNotConnected(Edge edge);
 
-  //! Définit la connectivité active pour le maillage associé
-  /*! Ceci conditionne les connectivités à la charge de cette famille */
+  //! Sets the active connectivity for the associated mesh
+  /*! This conditions the connectivities handled by this family */
   void setConnectivity(const Integer c);
 
   void reorientEdgesIfNeeded();
@@ -94,7 +94,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
  private:
 
-  //! Famille des noeuds associée à cette famille
+  //! Node family associated with this family
   NodeFamily* m_node_family = nullptr;
 
   inline void _removeEdge(Edge edge);
@@ -109,4 +109,4 @@ class ARCANE_MESH_EXPORT EdgeFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

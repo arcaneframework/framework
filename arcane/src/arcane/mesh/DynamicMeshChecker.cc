@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshChecker.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Classe fournissant des méthodes de vérification sur le maillage.          */
+/* Class providing methods for mesh checking.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,12 +64,11 @@ DynamicMeshChecker::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérification sommaire de la validité du maillage.
- * Les vérifications portent sur les points suivants:
- * - pas d'entités du maillage ayant un indice nul.
- * - pour les faces, vérifie qu'il existe au moins une frontCell ou une
- * backCell.
- * Une erreur fatale est générée en cas de non respect de ces règles.
+ * \brief Performs a preliminary check of mesh validity.
+ * The checks cover the following points:
+ * - no mesh entities having a null index.
+ * - for faces, checks that at least one frontCell or backCell exists.
+ * A fatal error is generated if these rules are not respected.
  */
 void DynamicMeshChecker::
 checkValidMesh()
@@ -79,18 +78,18 @@ checkValidMesh()
 
   for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
     IItemFamily* family = *i;
-    //GG: regarder pourquoi il y a ce test.
+    //GG: check why this test exists.
     if (family->itemKind()>=NB_ITEM_KIND)
       continue;
     family->checkValid();
   }
   mesh_utils::checkMeshProperties(m_mesh,false,false,true);
 
-  // Sauve dans une variable aux mailles la liste des faces et
-  // noeuds qui la composent.
-  // Ceci n'est utile que pour des vérifications
-  // NOTE: pour l'instant mis a false car fait planter si utilise
-  // partitionnement initial dans Arcane
+  // Store in a mesh variable the list of faces and
+  // nodes that compose it.
+  // This is only useful for checks
+  // NOTE: currently set to false because it crashes if
+  // initial partitioning is used in Arcane
   const bool global_check = false;
   if (m_check_level>=1 && global_check){
     if (!m_var_cells_faces)
@@ -199,16 +198,13 @@ checkValidMeshFull()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Vérifie que la connectivité est valide.
+ * \brief Checks that connectivity is valid.
  *
- * Les vérifications portent sur les points suivants:
- * - pas d'entités du maillage ayant un indice nul.
- * - pour les faces, vérifie qu'il existe au moins une frontCell ou une
- * backCell. De plus, si elle a deux mailles, la backCell doit
- * toujours être la première.
- * - les noeuds et les faces doivent avoir le même propriétaire
- * qu'une des mailles attenante.
- * - vérifie que les faces sont bien ordonnées et orientées
+ * The checks cover the following points:
+ * - no mesh entities having a null index.
+ * - for faces, checks that at least one frontCell or backCell exists. Furthermore, if it has two meshes, the backCell must always be the first.
+ * - nodes and faces must have the same owner as one of the adjacent meshes.
+ * - checks that faces are correctly ordered and oriented
  */
 void DynamicMeshChecker::
 checkValidConnectivity()
@@ -216,7 +212,7 @@ checkValidConnectivity()
   String func_name = "MeshChecker::checkValidConnectivity";
   debug() << func_name << " check";
 
-  // Appelle la méthode de vérification de chaque famille.
+  // Calls the checkValidConnectivity method for each family.
   IItemFamilyCollection item_families = m_mesh->itemFamilies();
   for( auto x = item_families.enumerator(); ++x; ){
     IItemFamily* f = *x;
@@ -235,8 +231,8 @@ checkValidConnectivity()
     }
   }
 
-  // Vérifie que la connective maille<->noeud
-  // est réciproque
+  // Checks that the mesh<->node connectivity
+  // is reciprocal
   ENUMERATE_NODE(inode,m_mesh->allNodes()){
     Node node = *inode;
     for( Cell cell : node.cells() ){
@@ -254,12 +250,12 @@ checkValidConnectivity()
     }
   }
 
-  // ATT: les verifications suivantes ne sont pas compatible avec l'AMR
-  // TODO : etendre les verifs au cas AMR
+  // ATT: the following checks are not compatible with AMR
+  // TODO : extend checks for AMR
   //! AMR
   if(!m_mesh->isAmrActivated()){
-    // Vérifie que la connective maille<->arêtes
-    // est réciproque
+    // Checks that the mesh<->edge connectivity
+    // is reciprocal
     ENUMERATE_EDGE(iedge,m_mesh->allEdges()){
       Edge edge = *iedge;
       for( Cell cell : edge.cells() ){
@@ -277,8 +273,8 @@ checkValidConnectivity()
       }
     }
   }
-  // Vérifie que la connective maille<->face
-  // est réciproque
+  // Checks that the mesh<->face connectivity
+  // is reciprocal
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
 	  Face face = *iface;
 	  if(!m_mesh->isAmrActivated()){
@@ -317,7 +313,7 @@ checkValidConnectivity()
 	  Cell front_cell = face.frontCell();
 	  if ((back_cell.null() || front_cell.null()) && nb_cell==2)
 		  ARCANE_FATAL("Face uid='{0}' bad number of cells face",ItemPrinter(face));
-	  // Si on a deux mailles connectées, alors la back cell doit être la première
+	  // If we have two connected meshes, then the back cell must be the first
 	  if (nb_cell==2 && back_cell!=face.cell(0))
 		  ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
                    ItemPrinter(face),ItemPrinter(back_cell),ItemPrinter(front_cell),ItemPrinter(face.cell(0)));
@@ -357,7 +353,7 @@ checkValidConnectivity()
     if (nerror > 0)
       ARCANE_FATAL("Mesh name={0} has {1} (see above)",m_mesh->name(),String::plural(nerror, "error"));
 
-    // Vérifie la consistence parallèle du groupe parent
+    // Checks the parallel consistency of the parent group
     nerror = 0;
     {
       ItemGroup parent_group = m_mesh->parentGroup();
@@ -399,12 +395,12 @@ updateAMRFaceOrientation()
     Cell front_cell = face.frontCell();
     if ((back_cell.null() || front_cell.null()) && nb_cell==2)
       ARCANE_FATAL("Bad number of cells for face={0}",ItemPrinter(face));
-    // Si on a deux mailles connectées, alors la back cell doit être la première
+    // If we have two connected meshes, then the back cell must be the first
     if (nb_cell==2 && back_cell!=face.cell(0))
 		  ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
                    ItemPrinter(face),ItemPrinter(back_cell),ItemPrinter(front_cell),ItemPrinter(face.cell(0)));
 
-    // Ceci pourrait sans doutes etre optimise
+    // This could undoubtedly be optimized
     fr.checkAndChangeOrientationAMR(face);
   }
 }
@@ -438,13 +434,13 @@ updateAMRFaceOrientation(ArrayView<Int64> ghost_cell_to_refine)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que les faces sont correctement orientées et connectées.
+ * \brief Checks that faces are correctly oriented and connected.
  */
 void DynamicMeshChecker::
 _checkFacesOrientation()
 {
   bool is_1d = (m_mesh->dimension()==1);
-  //Temporaire: pour l'instant, ne teste pas l'orientation en 1D.
+  //Temporary: for now, does not test orientation in 1D.
   if (is_1d)
     return;
 
@@ -516,13 +512,13 @@ _checkFacesOrientation()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que les arêtes sont correctement numérotées.
+ * \brief Checks that edges are correctly numbered.
  */
 void DynamicMeshChecker::
 _checkEdgesOrientation()
 {
-  // Pour les arêtes, vérifie que le uniqueId() du premier noeud est
-  // inférieur à celui du deuxième.
+  // For edges, checks that the uniqueId() of the first node is
+  // less than that of the second.
   Int32 nb_error = 0;
   ENUMERATE_ (Edge, iedge, m_mesh->allEdges()) {
     Edge edge = *iedge;
@@ -547,19 +543,19 @@ _checkEdgesOrientation()
 void DynamicMeshChecker::
 _checkValidItemOwner(IItemFamily* family)
 {
-  // Pour les maillages non sous-maillages, il faut que tout sub-item
-  // (Node, Edge ou Face) ait une cellule voisine de même propriétaire,
-  // sauf si on autorise les entités orphelines et que l'entité n'est
-  // connectée à aucune maille.
-  // Pour les sous-maillages, il faut, en plus, que tout item soit de
-  // même propriétaire que son parent.
+  // For non-sub-meshes, every sub-item
+  // (Node, Edge or Face) must have an adjacent cell with the same owner,
+  // unless orphan entities are allowed and the entity is not
+  // connected to any mesh.
+  // For sub-meshes, furthermore, every item must have the same owner
+  // as its parent.
   bool allow_orphan_items = m_mesh->meshKind().isNonManifold();
 
   Integer nerror = 0;
   if (!m_mesh->parentMesh()){
     
     if (family->itemKind() == IK_Cell)
-      return; // implicitement valide pour les cellules
+      return; // implicitly valid for cells
     
     ItemGroup own_items = family->allItems().own();
     ENUMERATE_ITEM(iitem,own_items){
@@ -641,7 +637,7 @@ void DynamicMeshChecker::
 checkItemGroupsSynchronization()
 {
   Int64 nb_diff = 0;
-  // TODO: parcourir toutes les familles (sauf particules)
+  // TODO: iterate over all families (except particles)
   ItemGroupsSynchronize node_sync(m_mesh->nodeFamily());
   nb_diff += node_sync.checkSynchronize();
   ItemGroupsSynchronize edge_sync(m_mesh->edgeFamily());
@@ -657,13 +653,12 @@ checkItemGroupsSynchronization()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que la couche de mailles fantômes est correcte.
+ * \brief Checks that the ghost cell layer is correct.
  *
- * Vérifie que toutes les mailles fantômes sont bien connectés à
- * une maille de ce sous-domaine (cas où il n'y a qu'une couche de mailles
- * fantômes).
- * \todo Vérifier qu'aucune maille du bord n'appartient à ce sous-domaine
- * \todo Supporter plusieurs couches de mailles fantômes.
+ * Checks that all ghost cells are properly connected to
+ * a mesh of this sub-domain (case where there is only one layer of ghost cells).
+ * \todo Check that no boundary mesh belongs to this sub-domain
+ * \todo Support multiple layers of ghost cells.
  */
 void DynamicMeshChecker::
 checkGhostCells()
@@ -699,12 +694,12 @@ checkMeshFromReferenceFile()
   IParallelMng* pm = m_mesh->parallelMng();
 
   if (!pm->isParallel())
-    return; // uniquement en parallèle
+    return; // only in parallel
 
   debug() << "Testing the mesh against the initial mesh";
   String base_file_name("meshconnectivity");
-  // En parallèle, compare le maillage actuel avec le fichier
-  // contenant la connectivité complète (cas séquentiel)
+  // In parallel, compare the current mesh with the file
+  // containing the full connectivity (sequential case)
   IIOMng* io_mng = pm->ioMng();
   ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlFile(base_file_name));
   if (xml_doc.get()){
@@ -732,7 +727,7 @@ checkValidReplication()
 
   IParallelMng* pm = pr->replicaParallelMng();
 
-  // Vérifie que toutes les familles (sauf les particules) sont les mêmes
+  // Checks that all families (except particles) are the same
   UniqueArray<IItemFamily*> wanted_same_family;
 
   for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
@@ -742,13 +737,13 @@ checkValidReplication()
   }
   ValueChecker vc(A_FUNCINFO);
 
-  // Vérifie que tout le monde à le même nombre de famille.
+  // Checks that everyone has the same number of families.
   Integer nb_family = wanted_same_family.size();
   Integer max_nb_family = pm->reduce(Parallel::ReduceMax,nb_family);
   vc.areEqual(nb_family,max_nb_family,"Bad number of family");
 
-  // Vérifie que toutes les familles ont le même nombre d'éléments.
-  //TODO: il faudrait vérifier aussi que les noms des familles correspondent.
+  // Checks that all families have the same number of elements.
+  //TODO: it should also check that the family names match.
   {
     UniqueArray<Int32> families_size(nb_family);
     for( Integer i=0; i<nb_family; ++i )
@@ -758,7 +753,7 @@ checkValidReplication()
     vc.areEqualArray(global_families_size,families_size,"Bad family");
   }
 
-  // Vérifie que toutes les familles ont les mêmes entités (même uniqueId())
+  // Checks that all families have the same entities (same uniqueId())
   {
     UniqueArray<Int64> unique_ids;
     UniqueArray<Int64> global_unique_ids;

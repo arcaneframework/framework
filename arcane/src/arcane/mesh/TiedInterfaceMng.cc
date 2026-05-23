@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire des interfaces liées.                                        */
+/* Tied interface manager.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ TiedInterfaceMng(DynamicMesh* mesh)
 TiedInterfaceMng::
 ~TiedInterfaceMng()
 {
-  // Le m_tied_constraint est détruit par le gestionnaire de contraintes du maillage
+  // m_tied_constraint is destroyed by the mesh constraint manager
   m_tied_constraint = 0;
 
   _deleteTiedInterfaces();
@@ -118,15 +118,15 @@ computeTiedInterfaces(const XmlNode& mesh_node)
   if (has_error)
     fatal() << "Can't determine the tied interfaces";
 
-  // S'il n'y a pas d'interface liée spécifié dans le jeu de données,
-  // recherche si un groupe de face de nom SOUDURE ou SOUDURES
-  // existe et dans ce cas le considère comme une interface de soudure
+  // If no tied interface is specified in the dataset,
+  // search for a face group named SOUDURE or SOUDURES
+  // and consider it a weld interface in that case
   {
     FaceGroup g1 = face_family.findGroup("SOUDURE");
     if (g1.null())
       g1 = face_family.findGroup("SOUDURES");
     if (!g1.null()){
-      // N'ajoute le groupe que s'il n'est pas déjà dans la liste
+      // Only add the group if it is not already in the list
       if (!interfaces_group.contains(g1)){
         info() << "Add automatically the group '" << g1.name() << "' to the list of tied interfaces";
         interfaces_group.add(g1);
@@ -141,10 +141,10 @@ computeTiedInterfaces(const XmlNode& mesh_node)
   Integer nb_interface = interfaces_group.size();
   IItemFamily* cell_family = m_mesh->cellFamily();
   if (nb_interface!=0){
-    // En parallèle, il faudra migrer des mailles pour que les mailles
-    // de part et d'autre d'une face de l'interface soient dans le même sous-domaine.
-    // En parallèle, il faut d'abord recalculer les propriétaire, faire
-    // l'échange puis enfin calculer les projections
+    // In parallel, meshes must be migrated so that the meshes
+    // on both sides of an interface face are in the same subdomain.
+    // In parallel, first recalculate the owners, perform
+    // the exchange, and finally calculate the projections
     if (is_parallel){
       VariableItemInt32& cells_owner = cell_family->itemsNewOwner();
       ENUMERATE_ITEM(iitem,cell_family->allItems()){
@@ -162,7 +162,7 @@ computeTiedInterfaces(const XmlNode& mesh_node)
       m_mesh->utilities()->changeOwnersFromCells();
       m_mesh->setDynamic(true);
       m_mesh->exchangeItems();
-      // Indique que le partitionnement initial a été effectué
+      // Indicates that the initial partitioning has been performed
       c->setInitialRepartition(false);
     }
     for( Integer i=0, is=interfaces_group.size(); i<is; ++i ){
@@ -358,7 +358,7 @@ readTiedInterfacesFromDump()
     info() << "Read interface nb_face=" << nb_face << " nb_node=" << nb_node;
   }
 
-  // Reconstruit les contraintes si necessaire
+  // Rebuild constraints if necessary
   if (!m_tied_constraint){
     info() << "Rebuilding tied interface constraints";
     UniqueArray<FaceGroup> interface_groups;
@@ -371,7 +371,7 @@ readTiedInterfacesFromDump()
       m_tied_constraint = c;
       IMeshPartitionConstraintMng* pcmng = m_mesh->partitionConstraintMng();
       pcmng->addConstraint(c);
-      // Indique que le partitionnement initial a été effectué
+      // Indicates that the initial partitioning has been performed
       c->setInitialRepartition(false);
     }
   }
@@ -383,13 +383,13 @@ readTiedInterfacesFromDump()
 void TiedInterfaceMng::
 _applyTiedInterfaceStructuration(TiedInterface* tied_interface)
 {
-  // Suppose que l'interface est structurée MxN.
-  // Pour chercher M, parcours la liste des noeuds liées et détecte
-  // quand un noeud à une coordonnées iso.y inférieure à celle du
-  // noeud précédent. Cela signifie qu'on change de ligne dans
-  // la structuration.
-  // Une fois MxN connu, normalise les coordonnées iso pour
-  // qu'elles correspondent à cette structuration
+  // Assumes the interface is structured MxN.
+  // To find M, iterate through the list of tied nodes and detect
+  // when a node has an iso.y coordinate lower than that of the
+  // previous node. This means we are changing lines in
+  // the structure.
+  // Once MxN is known, normalize the iso coordinates so that
+  // they correspond to this structure
 
   TiedInterfaceNodeList nodes = tied_interface->tiedNodes();
   for( Integer zz=0, zs=nodes.dim1Size(); zz<zs; ++zz ){

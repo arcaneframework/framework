@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonItemGroupFilterer.h                                   (C) 2000-2021 */
 /*                                                                           */
-/* Filtrage des groupes communs à toutes les parties d'un maillage.          */
+/* Filtering of common groups across all parts of a mesh.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_COMMONITEMGROUPFILTERINFO_H
 #define ARCANE_COMMONITEMGROUPFILTERINFO_H
@@ -29,12 +29,11 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe utilitaire des groupes communs à toutes les parties
- * d'un maillage.
+ * \brief Utility class for common groups across all parts
+ * of a mesh.
  *
- * Pour utiliser cette classe, il faut ajouter via addGroupToFilter()
- * les groupes qu'on souhaite filtrer. Il faut ensuite appeler la
- * méthode applyFiltering() pour effectuer le filtrage.
+ * To use this class, you must add the groups you wish to filter via addGroupToFilter().
+ * You must then call the applyFiltering() method to perform the filtering.
  */
 class ARCANE_MESH_EXPORT CommonItemGroupFilterer
 {
@@ -51,14 +50,14 @@ class ARCANE_MESH_EXPORT CommonItemGroupFilterer
 
   void addGroupToFilter(const ItemGroup& group);
   /*!
-   * \brief Filtre les groupes communs.
+   * \brief Filters the common groups.
    *
-   * S'il existe des groupes qui ne sont pas communs à tous les rangs, une
-   * exception est levée.
+   * If there are groups that are not common to all ranks, an
+   * exception is raised.
    */
   void applyFiltering();
 
-  //! Liste triée par ordre alphabétique des groupes communs.
+  //! List of common groups sorted alphabetically.
   ItemGroupCollection sortedCommonGroups() { return m_sorted_common_groups; }
 
  private:

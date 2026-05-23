@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleFamily.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Famille de particules.                                                    */
+/* Particle family.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_PARTICLEFAMILY_H
 #define ARCANE_MESH_PARTICLEFAMILY_H
@@ -34,7 +34,7 @@ class ItemSharedInfoWithType;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille de particules.
+ * \brief Particle family.
  */
 class ARCANE_MESH_EXPORT ParticleFamily
 : public ItemFamily
@@ -52,7 +52,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
   }
 
   ParticleFamily(IMesh* mesh,const String& name);
-  virtual ~ParticleFamily(); //<! Libère les ressources
+  virtual ~ParticleFamily(); //<! Releases resources
 
  public:
 
@@ -65,7 +65,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
     return m_enable_ghost_items ;
   }
 
-  //! Nom de la famille
+  //! Family name
   String name() const override { return BaseClass::name(); }
   String fullName() const override { return BaseClass::fullName(); }
   Integer nbItem() const override { return BaseClass::nbItem(); }

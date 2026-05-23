@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupsSerializer2.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Sérialisation des groupes d'entités.                                      */
+/* Serialization of entity groups.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,10 +46,9 @@ ItemGroupsSerializer2(IItemFamily* item_family,IParallelExchanger* exchanger)
 , m_mesh(item_family->mesh())
 , m_item_family(item_family)
 {
-  // La liste des groupes dans itemFamily()->groups() n'est pas forcément la
-  // même pour tous les sous-domaines. On utilise donc une std::map pour les
-  // trier par ordre alphabétique afin que dans m_groups_to_exchange tout
-  // soit dans le même ordre.
+  // The list of groups in itemFamily()->groups() is not necessarily the
+  // same for all subdomains. We therefore use a std::map to sort them
+  // alphabetically so that everything in m_groups_to_exchange is in the same order.
   std::map<String,ItemGroup> group_set;
 
   for( ItemGroupCollection::Enumerator i_group(itemFamily()->groups()); ++i_group; ){
@@ -81,7 +80,7 @@ serialize(const ItemFamilySerializeArgs& args)
 {
   ISerializer* sbuf = args.serializer();
   Int32 rank = args.rank();
-  // NOTE: pour l' instant args.localIds() n'est pas utilisé.
+  // NOTE: for the moment args.localIds() is not used.
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
     sbuf->reserveInt64(1);
@@ -102,7 +101,7 @@ serialize(const ItemFamilySerializeArgs& args)
 void ItemGroupsSerializer2::
 get(ISerializer* sbuf,Int64Array& items_in_groups_uid)
 {
-  // Récupère la liste des uniqueId() des entités des groupes
+  // Retrieves the list of uniqueId() of the group entities
   Int64 nb_item_in_groups = sbuf->getInt64();
   items_in_groups_uid.resize(nb_item_in_groups);
   sbuf->getSpan(items_in_groups_uid);
@@ -115,7 +114,7 @@ get(ISerializer* sbuf,Int64Array& items_in_groups_uid)
   [[maybe_unused]] Int32 group_index = 0;
   for( ItemGroupList::Enumerator i_group(m_groups_to_exchange); ++i_group; ++group_index ){
     ItemGroup group = *i_group;
-    // Le premier élément du tableau contient le nombre d'éléments
+    // The first element of the array contains the number of items
     Integer nb_item_in_group = CheckedConvert::toInteger(items_in_groups_uid[local_index]);
     ++local_index;
     if (nb_item_in_group!=0){
@@ -143,9 +142,9 @@ prepareData(ConstArrayView< SharedArray<Int32> > items_exchange)
   IParallelMng* pm = m_mesh->parallelMng();
 
   {
-    // Vérifie que tout le monde a bien le même nombre de groupes
-    // TODO: il faudrait aussi vérifier que ce sont les mêmes.
-    // TODO: pouvoir supprimer ce test si on est sur que tout est OK.
+    // Checks that everyone has the same number of groups
+    // TODO: it should also check that they are the same.
+    // TODO: this test can be removed if we are sure everything is OK.
     Integer nb_group = m_groups_to_exchange.count();
     Integer total_nb_group = pm->reduce(Parallel::ReduceMax,nb_group);
     if (nb_group!=total_nb_group){
@@ -161,8 +160,8 @@ prepareData(ConstArrayView< SharedArray<Int32> > items_exchange)
   }
   
   Integer nb_sub_domain = pm->commSize();
-  // Contient pour chaque processeur la liste des uniqueId() des entités
-  // des groupes à transférer
+  // Contains for each processor the list of uniqueId() of the group entities
+  // to be transferred
   m_items_to_send.resize(nb_sub_domain);
   UniqueArray<Integer> first_items_to_send(m_items_to_send.size());
   first_items_to_send.fill(0);
@@ -208,4 +207,3 @@ prepareData(ConstArrayView< SharedArray<Int32> > items_exchange)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -44,9 +44,9 @@ class ARCANE_MESH_EXPORT ItemData
 public:
 
   /*!
-   * \brief Structure de données nécessaire à l'ajout générique d'item.
+   * \brief Data structure necessary for generic item addition.
    *
-   * et où ItemData aggrège les informations id/connectivités des items Le tableau item_infos (ItemData::itemInfos()) à la structure suivante :
+   * and where ItemData aggregates the item id/connectivity information. The item_infos array (ItemData::itemInfos()) follows this structure:
    * item_infos[0]   = nb_connected_families // Only constitutive (owning) connections.
    * item_infos[i]   = first_item_type
    * item_infos[i+1] = first_item_uid
@@ -57,18 +57,18 @@ public:
    * item_infos[i+n+1...i+m] = second_family connected items uids
    * item_infos[i+m+1] = second_item_type
    * item_infos[i+m+2] = second_item_uid
-   * ...idem first item
+   * ...same as first item
    */
 
   /** Build empty data */
   ItemData() : m_nb_items(0), m_item_family(nullptr), m_item_family_modifier(nullptr), m_subdomain_id(-1){}
 
-  //! Constructeur de recopie.
+  //! Copy constructor.
   ItemData(const ItemData& rhs) = default;
 
-  /*! L'argument item_lids est un argument de sortie. Il doit être taillé à nb_items.
-   * Il est rempli avec les lids des items créés lorsque ItemData est utilisée pour de l'ajout d'item.
-   * Ce constructeur est utilisé lorsque ces lids sont déjà dans un tableau externe qui doit être rempli.
+  /*! The item_lids argument is an output argument. It must be sized to nb_items.
+   * It is filled with the lids of the items created when ItemData is used for item addition.
+   * This constructor is used when these lids are already in an external array that needs to be filled.
    */
   ItemData(Integer nb_items, Integer info_size, Int32ArrayView item_lids, IItemFamily* item_family,
            IItemFamilyModifier* item_family_modifier, Int32 subdomain_id)
@@ -82,7 +82,7 @@ public:
     _ownerDefaultInit();
   }
 
-  /*! Ici on ne fournit pas les item_lids qui sont donc créés en internes.
+  /*! Here, item_lids are not provided and are therefore created internally.
    *
    */
   ItemData(Integer nb_items, Integer info_size, IItemFamily* item_family,
@@ -98,7 +98,7 @@ public:
     _ownerDefaultInit();
   }
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~ItemData() {}
 
 public:
@@ -145,16 +145,16 @@ class ARCANE_MESH_EXPORT ItemDataList
 public:
 
   /*!
-   * \brief Collection de structure de données nécessaire à l'ajout générique d'item (ItemData).
+   * \brief Collection of data structures necessary for generic item addition (ItemData).
    *
-   * L'objet \a ItemDataList est une map <family_index,ItemData> où family_index est pris égal à l'item_kind de la famille.
+   * The \a ItemDataList object is a map <family_index,ItemData> where family_index is taken equal to the family's item_kind.
    *
    * */
 
-  /** Constructeur de la classe */
+  /** Class constructor */
   ItemDataList() {}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~ItemDataList() {}
 
 public:

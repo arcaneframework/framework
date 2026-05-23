@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerBuilder.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Construction des couches fantômes.                                        */
+/* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GHOSTLAYERBUILDER_H
 #define ARCANE_MESH_GHOSTLAYERBUILDER_H
@@ -33,7 +33,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des couches fantômes.
+ * \brief Construction of ghost layers.
  */
 class GhostLayerBuilder
 : public TraceAccessor
@@ -47,7 +47,7 @@ class GhostLayerBuilder
   
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the \a mesh.
   explicit GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
   virtual ~GhostLayerBuilder();
 
@@ -74,7 +74,7 @@ class GhostLayerBuilder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//TOTO A definir ailleurs
+//TBD to be defined elsewhere
 class NodeUidToSubDomain
 {
  public:
@@ -105,4 +105,4 @@ class NodeUidToSubDomain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

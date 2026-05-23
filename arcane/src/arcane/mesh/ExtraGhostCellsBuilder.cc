@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostCellsBuilder.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Construction des mailles fantômes supplémentaires.                        */
+/* Construction of extra ghost cells.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -85,7 +85,7 @@ computeExtraGhostCells()
   info() << "Compute extra ghost cells";
   
   for( IExtraGhostCellsBuilder* v : m_builders ){
-    // Calcul de mailles extraordinaires à envoyer
+    // Calculate extra cells to send
     v->computeExtraCellsToSend();
   }
   
@@ -95,15 +95,15 @@ computeExtraGhostCells()
   
   const Int32 nsd = pm->commSize();
   
-  // Construction des items à envoyer
+  // Construction of items to send
   UniqueArray<std::set<Integer> > to_sends(nsd);
   
-  // Initialisation de l'échangeur de données
+  // Initialisation of the data exchanger
   for(Integer isd=0;isd<nsd;++isd) {
     std::set<Integer>& cell_set = to_sends[isd];
     for( IExtraGhostCellsBuilder* builder : m_builders ){
       Int32ConstArrayView extra_cells = builder->extraCellsToSend(isd);
-      // On trie les lids à envoyer pour éviter les doublons
+      // We sort the IDs to send to avoid duplicates
       for(Integer j=0, size=extra_cells.size(); j<size; ++j)
         cell_set.insert(extra_cells[j]);
     }
@@ -112,7 +112,7 @@ computeExtraGhostCells()
   }
   exchanger->initializeCommunicationsMessages();
   
-  // Envoi des mailles
+  // Sending the cells
   for (Integer i=0, ns=exchanger->nbSender(); i<ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     const Int32 rank = sm->destination().value();
@@ -124,7 +124,7 @@ computeExtraGhostCells()
   }
   exchanger->processExchange();
   
-  // Réception des mailles
+  // Receiving the cells
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();

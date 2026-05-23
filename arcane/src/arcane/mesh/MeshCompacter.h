@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshCompacter.h                                             (C) 2000-2016 */
 /*                                                                           */
-/* Gestion d'un compactage de familles du maillage.                          */
+/* Management of mesh family compaction.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHCOMPACTER_H
 #define ARCANE_MESH_MESHCOMPACTER_H
@@ -38,9 +38,9 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Gestion d'un compactage de familles du maillage..
+ * \brief Management of mesh family compaction.
  *
- * Les instances de cette classe sont créée par l'appel à
+ * Instances of this class are created by calling
  * MeshCompactMng::beginCompact().
  */
 class ARCANE_MESH_EXPORT MeshCompacter
@@ -107,4 +107,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

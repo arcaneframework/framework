@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostCellsBuilder.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Construction des mailles fantômes supplémentaires.                        */
+/* Construction of additional ghost cells.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EXTRAGHOSTCELLSBUILDER_H
 #define ARCANE_MESH_EXTRAGHOSTCELLSBUILDER_H
@@ -37,7 +37,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des mailles fantômes supplémentaires.
+ * \brief Construction of additional ghost cells.
  */
 class ExtraGhostCellsBuilder
 : public TraceAccessor
@@ -67,4 +67,4 @@ class ExtraGhostCellsBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

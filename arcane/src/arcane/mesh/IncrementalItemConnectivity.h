@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IncrementalItemConnectivity.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
+/* Incremental connectivity of entities.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INCREMENTALITEMCONNECTIVITY_H
 #define ARCANE_MESH_INCREMENTALITEMCONNECTIVITY_H
@@ -45,10 +45,10 @@ class IndexedItemConnectivityAccessor;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe abstraite de gestion des connectivités.
+ * \brief Abstract class for managing connectivities.
  *
- * Cette classe gère les informations communes à tous les types de
- * connectivité comme son nom, les familles sources et cible, ...
+ * This class manages common information for all types of
+ * connectivity such as its name, source and target families, ...
  */
 class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 : public TraceAccessor
@@ -93,7 +93,7 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base pour les connectivités incrémentales item->item[].
+ * \brief Base class for incremental item->item[] connectivities.
  */
 class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 : public AbstractIncrementalItemConnectivity
@@ -113,7 +113,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 
  public:
 
-  // On interdit la copie à cause de \a m_p
+  // Copying is forbidden because of \a m_p
   IncrementalItemConnectivityBase(const IncrementalItemConnectivityBase&) = delete;
   IncrementalItemConnectivityBase(IncrementalItemConnectivityBase&&) = delete;
   IncrementalItemConnectivityBase& operator=(const IncrementalItemConnectivityBase&) = delete;
@@ -150,7 +150,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
     return { nb, &m_connectivity_list[index] };
   }
   
-  // TODO: voir si on garde cette méthode. A utiliser le moins possible.
+  // TODO: see if we should keep this method. Use as little as possible.
   Int32ArrayView _connectedItemsLocalId(ItemLocalId lid)
   {
      Int32 nb = m_connectivity_nb_item[lid];
@@ -204,14 +204,14 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Connectivité incrémentale item->item[]
+ * \brief Incremental item->item[] connectivity
  */
 class ARCANE_MESH_EXPORT IncrementalItemConnectivity
 : public IncrementalItemConnectivityBase
 {
  private:
 
-  //! Pour accès à _internalNotifySourceItemsAdded().
+  //! For access to _internalNotifySourceItemsAdded().
   friend class IndexedIncrementalItemConnectivityMng;
 
  public:
@@ -266,15 +266,15 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Connectivité incrémentale item->item.
+ * \brief Incremental item->item connectivity.
  *
- * Il s'agit d'une spécialisation de IncrementalItemConnectivity
- * pour le cas où il n'y a qu'une entité connectée.
+ * This is a specialization of IncrementalItemConnectivity
+ * for the case where there is only one connected entity.
  *
- * Dans ce cas simple, on a toujours pour une entité de localId() \a lid:
+ * In this simple case, for an entity with localId() \a lid:
  * - m_connectivity_index[lid] = lid
- * - m_connectivity_nb_item[lid] = 1 (ou 0 si pas encore d'entité ajoutée)
- * - m_connectivity_list[lid] = localId() de l'entité connectée.
+ * - m_connectivity_nb_item[lid] = 1 (or 0 if no entity has been added yet)
+ * - m_connectivity_list[lid] = localId() of the connected entity.
  */
 class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
 : public IncrementalItemConnectivityBase

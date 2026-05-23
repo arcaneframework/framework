@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicParticleExchanger.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Echangeur de particules.                                                  */
+/* Particle Exchanger.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,13 +17,13 @@
 
 /*
  * NOTE :
- * Dans exchangeItems(), le tableau new_particle_local_ids
- * n'est valide que si le compactage n'est pas actif pour la famille de
- * particules (c'est toujours le cas avec l'implémentation actuelle).
- * Pour qu'il soit valide dans tous les cas, il faudrait lors
- * de la dé-sérialisation des messages, créer toutes les entités
- * en une fois, mettre à jour ce tableau \a new_particle_local_ids
- * et ensuite mettre à jour les variables.
+ * In exchangeItems(), the array new_particle_local_ids
+ * is only valid if compaction is not active for the particle family
+ * (which is always the case with the current implementation).
+ * For it to be valid in all cases, it would be necessary during message
+ * deserialization to create all entities
+ * at once, update this array \a new_particle_local_ids
+ * and then update the variables.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ BasicParticleExchanger(const ServiceBuildInfo& sbi)
 BasicParticleExchanger::
 ~BasicParticleExchanger()
 {
-  // TODO: ne pas lancer d'exception dans le destructeur.
+  // TODO: do not throw an exception in the destructor.
   if (!m_pending_messages.empty() || !m_waiting_messages.empty())
     pwarning() << String::format("Pending or waiting messages nb_pending={0} nb_waiting={1}",
                                  m_pending_messages.size(),m_waiting_messages.size());
@@ -110,7 +110,7 @@ beginNewExchange(Integer i_nb_particle)
   m_current_nb_reduce = 0;
   m_nb_particle_send = 0;
 
-  //TODO: utiliser un tag spécifique pour cet échange.
+  //TODO: use a specific tag for this exchange.
   Int64 nb_particle = i_nb_particle;
   Int64 min_nb_particle = 0;
   Int64 max_nb_particle = 0;
@@ -128,10 +128,10 @@ beginNewExchange(Integer i_nb_particle)
 
   m_nb_total_particle_finish_exchange = 0;
 
-  // Récupère la liste des variables à transférer.
-  // Il s'agit des variables qui ont la même famille que celle passée
-  // en paramètre.
-  // IMPORTANT: tous les sous-domaines doivent avoir ces mêmes variables
+  // Retrieves the list of variables to transfer.
+  // It is the variables that have the same family as the one passed
+  // as a parameter.
+  // IMPORTANT: all subdomains must have these same variables
   m_variables_to_exchange.clear();
   m_item_family->usedVariables(m_variables_to_exchange);
   m_variables_to_exchange.sortByName(true);
@@ -214,7 +214,7 @@ _generateSendItems(Int32ConstArrayView local_ids,
   Integer nb_connected_sub_domain = communicating_sub_domains.size();
   //Integer max_sub_domain_id = 0;
   UniqueArray< SharedArray<Int32> > ids_to_send(nb_connected_sub_domain);
-  // Infos pour chaque sous-domaine connecté
+  // Info for each connected subdomain
   //_clearMessages();
   m_accumulate_infos.clear();
   m_accumulate_infos.resize(nb_connected_sub_domain);
@@ -222,7 +222,7 @@ _generateSendItems(Int32ConstArrayView local_ids,
     m_accumulate_infos[i] = new SerializeMessage(m_rank,communicating_sub_domains[i],
                                                  ISerializeMessage::MT_Send);
 #if 0
-    // Utile uniquement pour tester le timeout avec blocage
+    // Useful only for testing the timeout with blocking
     if (m_rank==0 && i==0){
       warning() << " WRONG MESSAGE";
       ISerializeMessage* sm = new SerializeMessage(m_rank,communicating_sub_domains[i],
@@ -245,26 +245,26 @@ _generateSendItems(Int32ConstArrayView local_ids,
   }
 
   Int64UniqueArray items_to_send_uid;
-  Int64UniqueArray items_to_send_cells_uid; // Uniquement pour les particules;
+  Int64UniqueArray items_to_send_cells_uid; // Only for particles;
 
   for( Integer j=0; j<nb_connected_sub_domain; ++j ){
     ISerializeMessage* sm = m_accumulate_infos[j];
-    // En mode bloquant, envoie toujours le message car le destinataire a posté
-    // un message de réception. Sinon, le message n'a besoin d'être envoyé que
-    // s'il contient des particules.
+    // In blocking mode, always send the message because the recipient has posted
+    // a receive message. Otherwise, the message only needs to be sent if it
+    // contains particles.
     _serializeMessage(sm,ids_to_send[j],items_to_send_uid,
                       items_to_send_cells_uid);
 
     m_pending_messages.add(sm);
 
-    // En mode bloquant, il faut un message de réception par envoie
+    // In blocking mode, we need a receive message for every send
     auto* recv_sm = new SerializeMessage(m_rank,sm->destination().value(),
                                          ISerializeMessage::MT_Recv);
     m_pending_messages.add(recv_sm);
   }
 
   m_accumulate_infos.clear();
-  // Détruit les entités qui viennent d'être envoyées
+  // Destroys the entities that were just sent
   m_item_family->toParticleFamily()->removeParticles(local_ids);
   m_item_family->endUpdate();
 }
@@ -280,19 +280,19 @@ _addItemsToSend(Int32ConstArrayView local_ids,
 {
   const Int32 debug_exchange_items_level = m_debug_exchange_items_level;
   Int32 nb_connected_sub_domain = ids_to_send.size();
-  // Cherche pour chaque élément à quel sous-domaine il doit être transféré.
-  // Cette recherche se fait en se basant sur les \a local_ids
+  // Searches for which subdomain each element must be transferred to.
+  // This search is based on the \a local_ids
   Int32 id_size = local_ids.size();
   for( Integer i=0; i<id_size; ++i ){
     Int32 item_local_id = local_ids[i];
     Int32 sd_to_send = sub_domains_to_send[i];
     if (sd_to_send==m_rank)
-      // Il s'agit d'une entité propre à ce sous-domaine
+      // This is an entity belonging to this subdomain
       ARCANE_FATAL("The entity with local index {0} should not be sent to its own subdomain",
                    item_local_id);
-    // Recherche l'index du sous-domaine auquel l'entité appartient
-    // dans la liste \a sync_list
-    // TODO: utiliser une table indirect (tableau alloué au nombre de sous-domaines)
+    // Searches for the index of the subdomain to which the entity belongs
+    // in the list \a sync_list
+    // TODO: use an indirect table (array allocated for the number of subdomains)
     Integer sd_index = nb_connected_sub_domain;
     for( Integer i_sd=0; i_sd<nb_connected_sub_domain; ++i_sd )
       if (sd_to_send==communicating_sub_domains[i_sd]){
@@ -405,8 +405,8 @@ _waitMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,IFunctor* 
     info() << "TimeWaiting: current=" << m_timer->lastActivationTime()
            << " total=" << m_total_time_waiting;
 
-  // Sauve les communications actuellements traitées car le traitement
-  // peut en ajouter de nouvelles
+  // Saves the currently processed communications because the processing
+  // might add new ones
   UniqueArray<ISerializeMessage*> current_messages(m_waiting_messages);
   m_waiting_messages.clear();
 
@@ -453,7 +453,7 @@ _sendPendingMessages()
 
   {
     Timer::Sentry ts(m_timer);
-    // Ajoute les messages en attente de traitement
+    // Adds the messages waiting for processing
     Integer nb_message = m_pending_messages.size();
     for( Integer i=0; i<nb_message; ++i ){
       m_message_list->addMessage(m_pending_messages[i]);
@@ -481,14 +481,14 @@ _serializeMessage(ISerializeMessage* sm,
   //for( Integer j=0; j<nb_connected_sub_domain; ++j ){
   //ConstArrayView<Integer> acc_ids = m_ids_to_send[j];
   Integer nb_item = acc_ids.size();
-  // Réserve pour le type de message
+  // Reserves for the message type
   //sbuf->reserveInteger(1);
-  // Réserve pour l'id du message
+  // Reserves for the message ID
   sbuf->reserveInt64(1);
-  // Réserve pour le nombre de uniqueId()
+  // Reserves for the number of uniqueId()
   sbuf->reserveInt64(1);
   sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
-  // Réserve pour les uniqueId() des mailles dans lesquelles se trouvent les particules
+  // Reserves for the uniqueIds() of the meshes where the particles are located
   //sbuf->reserve(DT_Size,1);
   sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
 
@@ -497,7 +497,7 @@ _serializeMessage(ISerializeMessage* sm,
     var->serialize(sbuf,acc_ids);
   }
 
-  // Sérialise les données en écriture
+  // Serializes the data for writing
   sbuf->allocateBuffer();
 
   if (m_debug_exchange_items_level>=1)
@@ -553,7 +553,7 @@ _deserializeMessage(ISerializeMessage* message,
   ISerializer* sbuf = message->serializer();
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Indique qu'on souhaite sérialiser les données en lecture
+  // Indicates that we want to serialize the data for reading
   sbuf->setMode(ISerializer::ModeGet);
   sbuf->setReadMode(ISerializer::ReadReplace);
 
@@ -585,18 +585,18 @@ _deserializeMessage(ISerializeMessage* message,
                                                     items_to_create_cells_local_id,
                                                     items_to_create_local_id);
 
-    // Notifie la famille qu'on a fini nos modifs.
-    // Après appel à cette méthode, les variables sont à nouveau utilisables
+    // Notifies the family that we have finished our modifications.
+    // After calling this method, the variables are usable again
     m_item_family->endUpdate();
     
-    // Converti les uniqueId() récupérée en localId() et pour les particules
-    // renseigne la maille correspondante
+    // Converts the retrieved uniqueId() to localId() and for particles
+    // populates the corresponding mesh
     ParticleInfoListView internal_items(m_item_family);
       
     for( Integer z=0; z<nb_item; ++z ){
       Particle item = internal_items[items_to_create_local_id[z]];
       //item.setCell( internal_cells[items_to_create_cells_local_id[z]] );
-      // Je suis le nouveau propriétaire (TODO: ne pas faire ici)
+      // I am the new owner (TODO: do not do this here)
       item.mutableItemBase().setOwner(m_rank,m_rank);
     }
     if (!item_group.null())

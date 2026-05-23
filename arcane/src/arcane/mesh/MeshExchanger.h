@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshExchanger.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Gestion d'un échange de maillage entre sous-domaines.                     */
+/* Handling of a mesh exchange between sub-domains.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHEXCHANGER_H
 #define ARCANE_MESH_MESHEXCHANGER_H
@@ -36,7 +36,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour un échange de maillage entre sous-domaines.
+ * \brief Information for a mesh exchange between sub-domains.
  */
 class ARCANE_MESH_EXPORT MeshExchanger
 : public TraceAccessor
@@ -91,4 +91,4 @@ class ARCANE_MESH_EXPORT MeshExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

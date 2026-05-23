@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerMng.h                                             (C) 2000-2013 */
 /*                                                                           */
-/* Gestionnaire de couche fantômes d'un maillage.                            */
+/* Mesh ghost layer manager.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GHOSTLAYERMNG_H
 #define ARCANE_MESH_GHOSTLAYERMNG_H
@@ -31,7 +31,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Gestionnaire de couche fantômes d'un maillage.
+ * Mesh ghost layer manager.
  */
 class GhostLayerMng
 : public TraceAccessor

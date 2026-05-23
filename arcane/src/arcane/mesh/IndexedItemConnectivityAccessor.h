@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndexedItemConnectivityAccessor.h                           (C) 2000-2023 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
+/* Incremental connectivity of entities.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
 #define ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H

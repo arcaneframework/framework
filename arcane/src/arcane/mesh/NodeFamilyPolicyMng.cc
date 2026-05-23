@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodeFamilyPolicyMng.cc                                      (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de noeuds.                      */
+/* Node family policy manager.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de noeuds.
+ * \brief Node family policy manager.
  */
 class ARCANE_MESH_EXPORT NodeFamilyPolicyMng
 : public ItemFamilyPolicyMng

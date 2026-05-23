@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshIncrementalBuilder.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Construction d'un maillage de manière incrémentale.                       */
+/* Construction of a mesh incrementally.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DYNAMICMESHINCREMENTALBUILDER_H
 #define ARCANE_MESH_DYNAMICMESHINCREMENTALBUILDER_H
@@ -50,20 +50,20 @@ class EdgeUniqueIdBuilder;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction d'un maillage de manière incrémentale.
+ * \brief Construction of a mesh incrementally.
  */
 class DynamicMeshIncrementalBuilder
 : public TraceAccessor
 {
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the mesh \a mesh
   explicit DynamicMeshIncrementalBuilder(DynamicMesh* mesh);
   ~DynamicMeshIncrementalBuilder();
 
  public:
 
-  // Ajout de liste d'items du maillage et graphe
+  // Add list of mesh and graph items
   
   void addCells(Integer nb_cell,Int64ConstArrayView cell_infos,
                 Integer sub_domain_id,Int32ArrayView cells,
@@ -97,12 +97,12 @@ class DynamicMeshIncrementalBuilder
 
   void addFamilyItems(ItemData& item_info);
 
-  //! Ajout au maillage courant d'item venant d'un maillage parent
+  //! Add to the current mesh items coming from a parent mesh
   void addParentCells(const ItemVectorView & items);
-  //! Ajout au maillage courant d'item venant d'un maillage parent
+  //! Add to the current mesh items coming from a parent mesh
   void addParentItems(const ItemVectorView & items, const eItemKind submesh_kind);
   //! AMR
-  //! Ajout au maillage courant des mailles enfants de la maille mère \p hParent_cell
+  //! Add to the current mesh the child meshes of the parent mesh \p hParent_cell
   void addHChildrenCells(Cell hParent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,
            Int32 sub_domain_id,Int32ArrayView cells,
            bool allow_build_face);
@@ -120,11 +120,11 @@ class DynamicMeshIncrementalBuilder
 
   void readFromDump();
 
-  //! Définit la connectivité active pour le maillage associé
-  /*! Ceci conditionne les connectivités à la charge de cette famille */
+  //! Sets the active connectivity for the associated mesh
+  /*! This conditions the connectivities to the responsibility of this family */
   void setConnectivity(Integer c);
 
-  //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+  //! Resets the structures to allow for a new allocation
   void resetAfterDeallocate();
 
  public:
@@ -247,25 +247,25 @@ class DynamicMeshIncrementalBuilder
 
  private:
   
-  DynamicMesh* m_mesh; //!< Maillage associé
+  DynamicMesh* m_mesh; //!< Associated mesh
   ItemTypeMng* m_item_type_mng = nullptr;
   
-  Integer m_connectivity = 0; //!< Info de connectivité du maillage courant
-  bool m_has_edge = false; //!< Info sur la présence d'arête (accèlere l'accès à la connectivité générale)
+  Integer m_connectivity = 0; //!< Connectivity info of the current mesh
+  bool m_has_edge = false; //!< Info on the presence of an edge (accelerates access to general connectivity)
   
   //! AMR
   bool m_has_amr;
 
-  bool m_verbose = false; //!< Vrai si affiche messages
+  bool m_verbose = false; //!< True if messages are displayed
 
-  //! Outils de construction du maillage
-  OneMeshItemAdder* m_one_mesh_item_adder = nullptr;   //!< Outil pour ajouter un élément au maillage
-  GhostLayerBuilder* m_ghost_layer_builder = nullptr;  //!< Outil pour construire les éléments fantômes
+  //! Mesh building utilities
+  OneMeshItemAdder* m_one_mesh_item_adder = nullptr;   //!< Utility to add an item to the mesh
+  GhostLayerBuilder* m_ghost_layer_builder = nullptr;  //!< Utility to build ghost elements
   FaceUniqueIdBuilder* m_face_unique_id_builder = nullptr;
   EdgeUniqueIdBuilder* m_edge_unique_id_builder = nullptr;
 
-  Int64 m_face_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les faces
-  Int64 m_edge_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les edges
+  Int64 m_face_uid_pool = 0; //!< uniqueId() number used for generating faces
+  Int64 m_edge_uid_pool = 0; //!< uniqueId() number used for generating edges
 };
 
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfoList.cc                                       (C) 2000-2022 */
 /*                                                                           */
-/* Liste de 'ItemSharedInfo'.                                                */
+/* List of 'ItemSharedInfo'.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,23 +45,23 @@ ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32
 : m_shared_info(shared_info)
 , m_type_id(item_type->typeId())
 {
-  // La taille du buffer dépend des versions de Arcane.
-  // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
-  // Entre la 3.2 et la 3.6 (Mai 2022), la taille vaut toujours 13
-  // A partir de la 3.6, la taille vaut 6.
+  // The buffer size depends on the versions of Arcane.
+  // Before 3.2 (October 2021), the buffer size is 9 (non-AMR) or 13 (AMR)
+  // Between 3.2 and 3.6 (May 2022), the size is always 13
+  // Starting from 3.6, the size is 6.
   //
-  // On ne cherche pas à faire de reprise avec des versions
-  // de Arcane antérieures à 3.2 donc on peut supposer que la taille
-  // du buffer vaut 13. Ces versions utilisent la nouvelle connectivité
-  // et donc le nombre des éléments est toujours 0 (ainsi que les *allocated)
-  // sauf pour m_nb_node.
+  // We are not trying to recover with versions
+  // of Arcane prior to 3.2, so we can assume that the size
+  // of the buffer is 13. These versions use the new connectivity
+  // and therefore the number of elements is always 0 (as well as the *allocated)
+  // except for m_nb_node.
   //
-  // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
-  // plus et vaut toujours 0. On pourra donc pour les versions de fin
-  // 2022 supprimer ces champs de ItemSharedInfo.
+  // Starting from 3.6, the number of nodes is no longer used
+  // and is always 0. We can therefore delete these fields from ItemSharedInfo
+  // for the end of 2022 versions.
 
-  // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
-  // que buf_size==6 avec le numéro de version 0x0307
+  // TODO: Indicate that starting from version 3.7 we only support
+  // buf_size==6 with version number 0x0307
   Int32 buf_size = buffer.size();
   if (buf_size!=6)
     ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your checkpoint is from a version of Arcane which is too old (before 3.6)",
@@ -76,15 +76,15 @@ ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32
 void ItemSharedInfoWithType::
 serializeWrite(Int32ArrayView buffer)
 {
-  buffer[0] = m_type_id; // Doit toujours être le premier
+  buffer[0] = m_type_id; // Must always be the first
 
-  buffer[1] = 0x0307; // Numéro de version (3.7).
+  buffer[1] = 0x0307; // Version number (3.7).
 
   buffer[2] = m_index;
   buffer[3] = m_nb_reference;
 
-  buffer[4] = 0; // Réservé
-  buffer[5] = 0; // Réservé
+  buffer[4] = 0; // Reserved
+  buffer[5] = 0; // Reserved
 }
 
 /*---------------------------------------------------------------------------*/
@@ -230,15 +230,15 @@ readFromDump()
   info() << "ItemSharedInfoList: read: " << m_family->name() << " count=" << n;
 
   if (n>0){
-    // Le nombre d'éléments sauvés dépend de la version de Arcane et du fait
-    // qu'on utilise ou pas l'AMR.
+    // The number of saved elements depends on the Arcane version and whether
+    // AMR is used.
     Integer stored_size = m_variables->m_infos_values[0].size();
     if (stored_size==ItemSharedInfoWithType::serializeSize()){
     }
     else if (stored_size!=element_size){
-      // On ne peut relire que les anciennes versions (avant la 3.6)
-      // dont la taille vaut 13 (avec AMR) ou 9 (sans AMR) ce qui correspond
-      // aux versions de Arcane de 2021.
+      // We can only read older versions (before 3.6)
+      // whose size is 13 (with AMR) or 9 (without AMR), which corresponds
+      // to Arcane versions from 2021.
       if (stored_size!=13 && stored_size!=9)
         ARCANE_FATAL("Incoherence of saved data (most probably due to a"
                      " difference of versions between the protection and the executable."
@@ -247,7 +247,7 @@ readFromDump()
     }
   }
 
-  // Tous les types vont a nouveau être ajoutés à la liste
+  // All types will be added back to the list
   m_item_shared_infos.clear();
   m_infos_map->clear();
 
@@ -260,7 +260,7 @@ readFromDump()
   ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
   for( Integer i=0; i<n; ++i ){
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
-    // Le premier élément du tampon contient toujours le type de l'entité
+    // The first element of the buffer always contains the entity type
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
     ItemSharedInfoWithType* isi = m_item_shared_infos[i];
     *isi = ItemSharedInfoWithType(m_common_item_shared_info,it,buffer);
@@ -268,8 +268,8 @@ readFromDump()
     ItemNumElements ine(it->typeId());
     std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
     if (!old.second){
-      // Vérifie que l'instance ajoutée ne remplace pas une instance déjà présente,
-      // auquel il s'agit d'une erreur interne (opérateur de comparaison foireux)
+      // Check that the added instance does not replace an already present instance,
+      // which is an internal error (faulty comparison operator)
       dumpSharedInfos();
       ItemNumElements::m_debug = true;
       bool compare = m_infos_map->find(ine)!=m_infos_map->end();
@@ -299,8 +299,8 @@ checkValid()
          << " free=" << m_free_item_shared_infos.size()
          << " changed=" << m_list_changed;
 
-  // Premièrement, le item->localId() doit correspondre à l'indice
-  // dans le tableau m_internal
+  // Firstly, item->localId() must correspond to the index
+  // in the m_internal array
   for( Integer i=0, n=m_item_shared_infos.size(); i<n; ++i ){
     ItemSharedInfoWithType* item = m_item_shared_infos[i];
     if (item->index()!=i){
@@ -324,7 +324,7 @@ findSharedInfo(ItemTypeInfo* type)
   ItemSharedInfoMap::const_iterator i = m_infos_map->find(ine);
   if (i!=m_infos_map->end())
     return i->second;
-  // Infos pas trouvé. On en construit une nouvelle
+  // Info not found. We build a new one
   ItemSharedInfoWithType* isi = allocOne();
   Integer old_index = isi->index();
   *isi = ItemSharedInfoWithType(m_common_item_shared_info,type);
@@ -333,12 +333,12 @@ findSharedInfo(ItemTypeInfo* type)
 
   //#ifdef ARCANE_CHECK
   if (!old.second){
-    // Vérifie que l'instance ajoutée ne remplace pas une instance déjà présente,
-    // auquel il s'agit d'une erreur interne (opérateur de comparaison foireux)
+    // Check that the added instance does not replace an already present instance,
+    // which is an internal error (faulty comparison operator)
     dumpSharedInfos();
     ItemNumElements::m_debug = true;
     bool compare = m_infos_map->find(ine)!=m_infos_map->end();
-    fatal() << "INTERNE: ItemSharedInfoList::findSharedInfo() SharedInfo déjà présent\n"
+    fatal() << "INTERNAL: ItemSharedInfoList::findSharedInfo() SharedInfo already present\n"
             << "\nWanted:"
             << " type=" << type->typeId()
             << " compare=" << compare

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerBuilder2.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Construction des couches fantômes.                                        */
+/* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,7 +44,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des couches fantômes.
+ * \brief Construction of ghost layers.
  */
 class GhostLayerBuilder2
 : public TraceAccessor
@@ -60,7 +60,7 @@ class GhostLayerBuilder2
 
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the mesh \a mesh
   GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version);
 
  public:
@@ -126,12 +126,12 @@ _printItem(ItemInternal* ii,std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Structure contenant les informations des noeuds frontières.
+ * \brief Structure containing boundary node information.
  *
- * Cette structure est utilisée pour communiquer avec les autres rangs.
- * Il faut donc qu'elle soit de type POD. Pour la communication avec les autres
- * rang on la converti en un type de base qui est un Int64. Il faut donc aussi
- * que sa taille soit un multiple de celle d'un Int64..
+ * This structure is used to communicate with other ranks.
+ * Therefore, it must be a POD type. For communication with other
+ * ranks, it must be converted into a base type which is an Int64.
+ * Therefore, its size must also be a multiple of that of an Int64.
  */
 class GhostLayerBuilder2::BoundaryNodeInfo
 {
@@ -202,7 +202,7 @@ class GhostLayerBuilder2::BoundaryNodeInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctor pour trier les BoundaryNodeInfo via le tri bitonic.
+ * \brief Functor for sorting BoundaryNodeInfo via bitonic sort.
  */
 class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 {
@@ -271,25 +271,24 @@ class GhostLayerBuilder2::BoundaryNodeToSendInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute les couches de mailles fantomes.
+ * \brief Adds ghost mesh layers.
  *
- * Cette version utilise un tri pour déterminer les infos 
+ * This version uses sorting to determine the info
  *
- * Avant appel à cette fonction, il ne faut plus qu'il y ait de mailles
- * fantômes: toutes les mailles du maillages doivent appartenir à ce sous-domaine.
- * (TODO: ajouter test pour cela).
+ * Before calling this function, there should be no ghost meshes: all meshes
+ * in the mesh must belong to this sub-domain.
+ * (TODO: add test for this).
  *
- * Si on demande plusieurs couches de mailles fantômes, on procède en plusieurs
- * étapes pour le même algo. D'abord on envoie la première couche, puis la première
- * et la seconde, puis trois couches et ainsi de suite. Cela n'est probablement
- * pas optimum en terme de communication mais permet de traiter tous les cas,
- * notamment le cas ou il faut traverser plusieurs sous-domaines pour
- * ajouter des couches de mailles fantômes.
+ * If multiple ghost mesh layers are requested, we proceed in multiple
+ * steps for the same algorithm. First, we send the first layer, then the first
+ * and the second, then three layers, and so on. This is probably not
+ * optimal in terms of communication but allows processing all cases,
+ * especially the case where multiple sub-domains must be crossed to
+ * add ghost mesh layers.
  * 
- * \todo: faire les optimisations spécifiées dans les commentaires
- * dans cette fonction.
- * \todo: faire en sorte qu'on ne travaille que avec la connectivité
- * maille/noeud.
+ * \todo: implement the optimizations specified in the comments
+ * in this function.
+ * \todo: ensure that we only work with the mesh/node connectivity.
  * 
  */
 void GhostLayerBuilder2::
@@ -301,11 +300,11 @@ addGhostLayers()
   Integer nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
   info() << "** GHOST LAYER BUILDER V" << m_version << " with sort (nb_ghost_layer=" << nb_ghost_layer << ")";
 
-  // Couche fantôme à laquelle appartient le noeud.
+  // Ghost layer to which the node belongs.
   UniqueArray<Integer> node_layer(m_mesh->nodeFamily()->maxLocalId(), -1);
 
-  // Marque les noeuds frontières
-  // On le fait toujours même si on ne veut pas de couche de mailles fantômes
+  // Mark boundary items
+  // We do this even if we do not want ghost mesh layers
   _markBoundaryItems(node_layer);
 
   if (nb_ghost_layer == 0)
@@ -321,8 +320,8 @@ addGhostLayers()
 
   Integer boundary_nodes_uid_count = 0;
 
-  // Vérifie qu'il n'y a pas de mailles fantômes avec la version 3.
-  // Si c'est le cas, affiche un avertissement et indique de passer à la version 4.
+  // Check that there are no ghost meshes with version 3.
+  // If so, display a warning and indicate to use version 4.
   if (m_version == 3) {
     Integer nb_ghost = 0;
     cells_map.eachItem([&](Item cell) {
@@ -335,7 +334,7 @@ addGhostLayers()
                 << " may be wrong. Use version 4 of ghost layer builder if you want to handle this case";
   }
 
-  // Couche fantôme à laquelle appartient la maille.
+  // Ghost layer to which the mesh belongs.
   UniqueArray<Integer> cell_layer(m_mesh->cellFamily()->maxLocalId(), -1);
 
   if (m_version >= 4) {
@@ -346,8 +345,8 @@ addGhostLayers()
     });
   }
   else {
-    // Parcours les nœuds et calcule le nombre de nœuds frontières
-    // et marque la première couche
+    // Iterate over nodes and calculate the number of boundary nodes
+    // and marks the first layer
     nodes_map.eachItem([&](Item node) {
       Int32 f = node.itemBase().flags();
       if (f & ItemFlags::II_Shared) {
@@ -363,7 +362,7 @@ addGhostLayers()
     //Integer current_layer = 1;
     info() << "Processing layer " << current_layer;
     cells_map.eachItem([&](Cell cell) {
-      // Ne traite pas les mailles qui ne m'appartiennent pas
+      // Do not process cells that do not belong to me
       if (m_version >= 4 && cell.owner() != my_rank)
         return;
       //Int64 cell_uid = cell->uniqueId();
@@ -382,11 +381,11 @@ addGhostLayers()
       if (is_current_layer) {
         cell_layer[cell_lid] = current_layer;
         //info() << "Current layer celluid=" << cell_uid;
-        // Si non marqué, initialise à la couche courante + 1.
+        // If not marked, initialize to the current layer + 1.
         for (Int32 inode_local_id : cell.nodeIds()) {
           Integer layer = node_layer[inode_local_id];
           if (layer == (-1)) {
-            //info() << "Marque node uid=" << i_node->uniqueId();
+            //info() << "Marks node uid=" << i_node->uniqueId();
             node_layer[inode_local_id] = current_layer + 1;
           }
         }
@@ -394,11 +393,11 @@ addGhostLayers()
     });
   }
 
-  // Marque les nœuds pour lesquels on n'a pas encore assigné la couche fantôme.
-  // Pour eux, on indique qu'on est sur la couche 'nb_ghost_layer+1'.
-  // Le but est de ne jamais transférer ces noeuds.
-  // NOTE: Ce mécanisme a été ajouté en juillet 2024 pour la version 3.14.
-  //       S'il fonctionne bien on pourra ne conserver que cette méthode.
+  // Marks the nodes for which the ghost layer has not yet been assigned.
+  // For them, we indicate that we are on layer 'nb_ghost_layer+1'.
+  // The goal is never to transfer these nodes.
+  // NOTE: This mechanism was added in July 2024 for version 3.14.
+  //       If it works well, we might only keep this method.
   if (m_use_optimized_node_layer) {
     Integer nb_no_layer = 0;
     nodes_map.eachItem([&](Node node) {
@@ -419,16 +418,16 @@ addGhostLayers()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Détermine les noeuds frontières.
+ * \brief Determines the boundary nodes.
  *
- * Cet algorithme fonctionne même s'il y a déjà des mailles fantômes.
- * Pour déterminer les noeuds frontières il faut déjà déterminer les
- * faces frontières. Une face est frontière si elle est dans l'un des deux cas:
- * - elle n'a qu'une maille connectée qui appartient à ce sous-domaine.
- * - elle est connectée à deux mailles dont une exactement appartient à ce
- *   domaine.
- * Une fois les faces frontières trouvées, on considère que les noeuds frontières
- * sont ceux qui appartiennent à une face frontière.
+ * This algorithm works even if there are already ghost cells.
+ * To determine the boundary nodes, you must first determine the
+ * boundary faces. A face is boundary if it falls into one of two cases:
+ * - it has only one connected cell belonging to this subdomain.
+ * - it is connected to two cells, exactly one of which belongs to this
+ *   domain.
+ * Once the boundary faces are found, we consider that the boundary nodes
+ * are those that belong to a boundary face.
  */
 void GhostLayerBuilder2::
 _markBoundaryNodes(ArrayView<Int32> node_layer)
@@ -436,9 +435,9 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 my_rank = pm->commRank();
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  // TODO: regarder s'il est correcte de modifier ItemFlags::II_SubDomainBoundary
+  // TODO: check if it is correct to modify ItemFlags::II_SubDomainBoundary
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
-  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  // Iterates over faces and marks boundary nodes, edges and faces
   faces_map.eachItem([&](Face face) {
     Int32 nb_own = 0;
     for (Integer i = 0, n = face.nbCell(); i < n; ++i)
@@ -483,15 +482,15 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 
   const Int32 max_local_id = m_mesh->nodeFamily()->maxLocalId();
 
-  // Tableaux contenant pour chaque nœud le uid de la plus petite maille connectée
-  // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce nœud.
+  // Arrays containing for each node the uid of the smallest connected cell
+  // and the associated rank. If the uid is A_NULL_UNIQUE_ID, this node should not be added.
   UniqueArray<Int64> node_cell_uids(max_local_id, NULL_ITEM_UNIQUE_ID);
 
   const bool do_only_minimal_uid = m_use_only_minimal_cell_uid;
-  // On doit envoyer tous les nœuds dont le numéro de couche est différent de (-1).
-  // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
+  // We must send all nodes whose layer number is different from (-1).
+  // NOTE: for the layer above 1, only one value must be sent.
   cells_map.eachItem([&](Cell cell) {
-    // Ne traite pas les mailles qui ne m'appartiennent pas
+    // Do not process cells that do not belong to me
     if (m_version >= 4 && cell.owner() != my_rank)
       return;
     Int64 cell_uid = cell.uniqueId();
@@ -563,8 +562,8 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
     Integer bi_n = all_bni.size();
     for (Integer i = 0; i < bi_n; ++i) {
       const BoundaryNodeInfo& bni = all_bni[i];
-      // Recherche tous les éléments de all_bni qui ont le même noeud.
-      // Cela représente toutes les mailles connectées à ce noeud.
+      // Searches all elements of all_bni that have the same node.
+      // This represents all cells connected to this node.
       Int64 node_uid = bni.node_uid;
       Integer last_i = i;
       for (; last_i < bi_n; ++last_i)
@@ -573,9 +572,9 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
       Integer nb_same_node = (last_i - i);
       if (is_verbose)
         info() << "NB_SAME_NODE uid=" << node_uid << " n=" << nb_same_node << " last_i=" << last_i;
-      // Maintenant, regarde si les mailles connectées à ce noeud ont le même propriétaire.
-      // Si c'est le cas, il s'agit d'un vrai noeud frontière et il n'y a donc rien à faire.
-      // Sinon, il faudra envoyer la liste des mailles à tous les PE dont les rangs apparaissent dans cette liste
+      // Now, check if the cells connected to this node have the same owner.
+      // If this is the case, it is a true boundary node and nothing needs to be done.
+      // Otherwise, the list of cells must be sent to all PEs whose ranks appear in this list
       Int32 owner = bni.cell_owner;
       bool has_ghost = false;
       for (Integer z = 0; z < nb_same_node; ++z)
@@ -610,11 +609,11 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
         Int32 krank = all_bni[index + kz].cell_owner;
         if (ranks_done.find(krank) == ranks_done.end()) {
           ranks_done.insert(krank);
-          // Pour chacun, il faudra envoyer
-          // - le nombre de mailles (1*Int64)
-          // - le uid du noeud (1*Int64)
-          // - le uid et le rank de chaque maille (2*Int64*nb_cell)
-          //TODO: il est possible de stocker les rangs sur Int32
+          // For each one, it will be necessary to send
+          // - the number of cells (1*Int64)
+          // - the node uid (1*Int64)
+          // - the uid and rank of each cell (2*Int64*nb_cell)
+          //TODO: it is possible to store the ranks as Int32
           nb_info_to_send[krank] += (nb_cell * 2) + 2;
         }
       }
@@ -684,11 +683,11 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
   for (Integer i = 0; i < nb_rank; ++i)
     total_nb_to_recv += nb_info_to_recv[i];
 
-  // Il y a de fortes chances que cela ne marche pas si le tableau est trop grand,
-  // il faut proceder avec des tableaux qui ne depassent pas 2Go a cause des
-  // Int32 de MPI.
-  // TODO: Faire le AllToAll en plusieurs fois si besoin.
-  // TOOD: Fusionner ce code avec celui de FaceUniqueIdBuilder2.
+  // There is a high chance that this will not work if the array is too large,
+  // one must proceed with arrays that do not exceed 2Go because of the
+  // MPI Int32.
+  // TODO: Perform the AllToAll in several stages if necessary.
+  // TODO: Merge this code with that of FaceUniqueIdBuilder2.
   UniqueArray<Int64> recv_infos;
   {
     Int32 vsize = sizeof(Int64) / sizeof(Int64);
@@ -720,10 +719,10 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 
   SubDomainItemMap cells_to_send(50, true);
 
-  // TODO: il n'y a a priori pas besoin d'avoir les mailles ici mais
-  // seulement la liste des procs a qui il faut envoyer. Ensuite,
-  // si le proc connait a qui il doit envoyer, il peut envoyer les mailles
-  // à ce moment la. Cela permet d'envoyer moins d'infos dans le AllToAll précédent
+  // TODO: we don't necessarily need the cells here, but
+  // only the list of procs to whom it must be sent. Then,
+  // if the proc knows to whom it must send, it can send the cells
+  // at that time. This allows sending less information in the previous AllToAll.
 
   {
     Integer index = 0;
@@ -747,9 +746,9 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
         Int32 cell_owner = CheckedConvert::toInt32(recv_infos[index]);
         ++index;
         if (kk == 0 && current_layer == 1 && m_is_allocate)
-          // Je suis la maille de plus petit uid et donc je
-          // positionne le propriétaire du noeud.
-          // TODO: ne pas faire cela ici, mais le faire dans une routine à part.
+          // I am the cell with the smallest uid and therefore I
+          // position the node owner.
+          // TODO: do not do this here, but do it in a separate routine.
           nodes_map.findItem(node_uid).toMutable().setOwner(cell_owner, my_rank);
         if (is_verbose)
           info() << " CELL=" << cell_uid << " owner=" << cell_owner;
@@ -758,7 +757,7 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
           if (dcell.null())
             ARCANE_FATAL("Internal error: cell uid={0} is not in our mesh", cell_uid);
           if (do_only_minimal_uid) {
-            // Ajoute toutes les mailles autour de mon noeud
+            // Add all cells around my node
             for (CellLocalId c : current_node.cellIds())
               my_cells.add(c);
           }
@@ -787,7 +786,7 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
         SubDomainItemMap::Data* d = cells_to_send.lookupAdd(send_rank);
         Int32Array& c = d->value();
         for (Integer zid = 0, zid_size = my_cells.size(); zid < zid_size; ++zid) {
-          // TODO: regarder si maille pas déjà présente et ne pas l'ajouter si ce n'est pas nécessaire.
+          // TODO: check if cell is already present and do not add it if it is not necessary.
           c.add(my_cells[zid]);
         }
       }
@@ -801,11 +800,11 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Trie parallèle de la liste des infos sur les noeuds frontières.
+ * \brief Parallel sorting of the list of boundary node information.
  *
- * Récupère en entrée une liste de noeuds frontières et la trie en parallèle
- * en s'assurant qu'après le tri les infos d'un même noeud sont sur le
- * même proc.
+ * Takes as input a list of boundary nodes and sorts it in parallel
+ * ensuring that after sorting the information for the same node is on the
+ * same process.
  */
 void GhostLayerBuilder2::
 _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
@@ -835,19 +834,19 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     }
   }
 
-  // TODO: il n'y a pas besoin d'envoyer toutes les mailles.
-  // pour déterminer le propriétaire d'un noeud, il suffit
-  // que chaque PE envoie sa maille de plus petit UID.
-  // Ensuite, chaque noeud a besoin de savoir la liste
-  // des sous-domaines connectés pour renvoyer l'info. Chaque
-  // sous-domaine en sachant cela saura a qui il doit envoyer
-  // les mailles fantomes.
+  // TODO: it is not necessary to send all the cells.
+  // to determine the owner of a node, it is sufficient
+  // for each PE to send its cell with the smallest UID.
+  // Then, each node needs to know the list
+  // of connected sub-domains to send the info. Each
+  // sub-domain, knowing this, will know to whom it must send
+  // the ghost cells.
 
   {
     ConstArrayView<BoundaryNodeInfo> all_bni = boundary_node_sorter.keys();
     Integer n = all_bni.size();
-    // Comme un même noeud peut être présent dans la liste du proc précédent, chaque PE
-    // (sauf le 0) envoie au proc précédent le début sa liste qui contient les même noeuds.
+    // Since the same node may be present in the list of the previous proc, each PE
+    // (except 0) sends to the previous proc the beginning of its list which contains the same nodes.
 
     UniqueArray<BoundaryNodeInfo> end_node_list;
     Integer begin_own_list_index = 0;
@@ -877,7 +876,7 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     Integer recv_message_size = 0;
     Integer send_message_size = BoundaryNodeBitonicSortTraits::messageSize(end_node_list);
 
-    // Envoie et réceptionne d'abord les tailles.
+    // Send and receive sizes first.
     if (my_rank != (nb_rank - 1)) {
       requests.add(pm->recv(IntegerArrayView(1, &recv_message_size), my_rank + 1, false));
     }
@@ -952,11 +951,11 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Marque les entitées au bord du sous-domaine.
+ * \brief Marks the entities at the edge of the sub-domain.
  *
- * Cela suppose que les faces aient déja été marquées avec le flag II_Boundary
- * et que leur propriétaire soit correctement positionné (i.e: le même pour
- * tous les sous-domaines).
+ * This assumes that the faces have already been marked with the II_Boundary flag
+ * and that their owner is correctly positioned (i.e.: the same for
+ * all sub-domains).
  */
 void GhostLayerBuilder2::
 _markBoundaryItems(ArrayView<Int32> node_layer)
@@ -967,7 +966,7 @@ _markBoundaryItems(ArrayView<Int32> node_layer)
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
 
-  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  // Iterates over all faces and marks boundary nodes, edges and faces
   faces_map.eachItem([&](Face face) {
     bool is_sub_domain_boundary_face = false;
     if (face.itemBase().flags() & ItemFlags::II_Boundary) {
@@ -1001,10 +1000,10 @@ _markBoundaryNodesFromEdges(ArrayView<Int32> node_layer)
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
 
   info() << "Mark boundary nodes from edges for non-manifold mesh";
-  // Parcours l'ensemble des arêtes.
-  // Si une arête est connectée à une seule maille de dimension 2
-  // dont on est le propriétaire, alors il s'agit d'une arête de bord
-  // et on marque les noeuds correspondants.
+  // Iterates over all edges.
+  // If an edge is connected to only one 2D cell
+  // whose owner we are, then it is a boundary edge
+  // and we mark the corresponding nodes.
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 my_rank = pm->commRank();
   ItemInternalMap& edges_map = m_mesh->edgesMap();
@@ -1032,7 +1031,7 @@ _markBoundaryNodesFromEdges(ArrayView<Int32> node_layer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Cette fonction gère les versions 3 et 4 de calcul des entités fantômes.
+// This function handles versions 3 and 4 of ghost entity calculation.
 extern "C++" void
 _buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version)
 {

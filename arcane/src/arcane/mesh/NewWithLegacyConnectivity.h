@@ -38,8 +38,8 @@ namespace Arcane::mesh
 // todo rename the file in NewWithLegacyConnectivity
 
 /*---------------------------------------------------------------------------*/
-/*! \brief class holding a new connectivity but filling also the legacy one
- *  Both custom and legacy connectivities of ItemConnectivitySelector are build.
+/*! \brief class holding a new connectivity but also filling the legacy one
+ *  Both custom and legacy connectivities of ItemConnectivitySelector are built.
  *
  */
 
@@ -69,65 +69,65 @@ public:
     return false ;
   }
 
-  //! Liste des familles (sourceFamily() + targetFamily())
+  //! List of families (sourceFamily() + targetFamily())
   ConstArrayView<IItemFamily*> families() const override {return Base::trueCustomConnectivity()->families();}
 
-  //! Famille source
+  //! Source family
   IItemFamily* sourceFamily() const override {return Base::trueCustomConnectivity()->sourceFamily();}
 
-  //! Famille cible
+  //! Target family
   IItemFamily* targetFamily() const override {return Base::trueCustomConnectivity()->targetFamily();}
 
-  //! Ajoute l'entité de localId() \a target_local_id à la connectivité de \a source_item
+  //! Adds the entity with localId() \a target_local_id to the connectivity of \a source_item
   void addConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) override {Base::addConnectedItem(source_item,target_local_id);}
 
-  //! Supprime l'entité de localId() \a target_local_id à la connectivité de \a source_item
+  //! Removes the entity with localId() \a target_local_id from the connectivity of \a source_item
   void removeConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) override {Base::removeConnectedItem(source_item,target_local_id);}
 
-  //! Supprime toute les entités connectées à \a source_item
+  //! Removes all entities connected to \a source_item
   void removeConnectedItems(ItemLocalId source_item) override {Base::removeConnectedItems(source_item);}
 
-  //! Remplace l'entité d'index \a index de \a source_item par l'entité de localId() \a target_local_id
-  // Pourquoi cette différence de nom dans ItemConnectivitySelector ?
+  //! Replaces the entity at index \a index of \a source_item with the entity with localId() \a target_local_id
+  // Why this name difference in ItemConnectivitySelector?
   void replaceConnectedItem(ItemLocalId source_item,Integer index,ItemLocalId target_local_id) override {Base::replaceItem(source_item,index,target_local_id);}
 
-  //! Remplace les entités de \a source_item par les entités de localId() \a target_local_ids
-  // Pourquoi cette différence de nom dans ItemConnectivitySelector ?
+  //! Replaces the entities of \a source_item with the entities with localId() \a target_local_ids
+  // Why this name difference in ItemConnectivitySelector?
   void replaceConnectedItems(ItemLocalId source_item,Int32ConstArrayView target_local_ids) override {Base::replaceItems(source_item,target_local_ids);}
 
-  //! Test l'existence d'un connectivité entre \a source_item et l'entité de localId() \a target_local_id
+  //! Tests the existence of a connectivity between \a source_item and the entity with localId() \a target_local_id
   bool hasConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) const override { return Base::hasConnectedItem(source_item,target_local_id);};
 
-  //TODO: utiliser un mécanisme par évènement.
-  //! Notifie la connectivité que la famille source est compactée.
+  //TODO: use an event mechanism.
+  //! Notifies the connectivity that the source family has been compacted.
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override {Base::trueCustomConnectivity()->notifySourceFamilyLocalIdChanged(new_to_old_ids);}
 
-  //TODO: utiliser un mécanisme par évènement.
-  //! Notifie la connectivité que la famille cible est compactée.
+  //TODO: use an event mechanism.
+  //! Notifies the connectivity that the target family has been compacted.
   void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) override {Base::trueCustomConnectivity()->notifyTargetFamilyLocalIdChanged(old_to_new_ids);}
 
-  //! Notifie la connectivité qu'une entité a été ajoutée à la famille source.
+  //! Notifies the connectivity that an entity has been added to the source family.
   void notifySourceItemAdded(ItemLocalId item) override {Base::trueCustomConnectivity()->notifySourceItemAdded(item);}
 
-  //! Notifie la connectivité qu'on a effectué une relecture à partir d'une protection
+  //! Notifies the connectivity that a read from a dump has been performed
   void notifyReadFromDump() override {Base::trueCustomConnectivity()->notifyReadFromDump();}
 
-  //! Nombre d'entités préalloués pour la connectivité de chaque entité
+  //! Number of pre-allocated entities for the connectivity of each entity
   Integer preAllocatedSize() const override {return Base::preAllocatedSize();}
 
-  //! Positionne le nombre d'entités à préallouer pour la connectivité de chaque entité
+  //! Sets the number of entities to pre-allocate for the connectivity of each entity
   void setPreAllocatedSize(Integer value) override {Base::setPreAllocatedSize(value);}
 
-  //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
+  //! Dumps statistics on usage and memory used to the stream \a out
   void dumpStats(std::ostream& out) const override { Base::trueCustomConnectivity()->dumpStats(out); }
 
-  //! Nombre d'entité connectées à l'entité source de numéro local \a lid
+  //! Number of entities connected to the source entity with local number \a lid
   Integer nbConnectedItem(ItemLocalId lid) const override {return Base::trueCustomConnectivity()->nbConnectedItem(lid);}
 
-  //! localId() de la \a index-ième entitée connectées à l'entité source de numéro local \a lid
+  //! localId() of the \a index-th entity connected to the source entity with local number \a lid
   Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const override  {return Base::trueCustomConnectivity()->connectedItemLocalId(lid,index);}
 
-  //! Nombre maximum d'entités connectées à une entité source.
+  //! Maximum number of entities connected to a source entity.
   Int32 maxNbConnectedItem() const override { return Base::trueCustomConnectivity()->maxNbConnectedItem(); }
 
   Ref<IIncrementalItemSourceConnectivity> toSourceReference() override
@@ -145,10 +145,10 @@ public:
 
  protected:
 
-  //! Implémente l'initialisation de \a civ pour cette connectivitée.
+  //! Implements the initialization of \a civ for this connectivity.
   void _initializeStorage(ConnectivityItemVector* civ) override {Base::trueCustomConnectivity()->_initializeStorage(civ);};
 
-  //! Remplit \a con_items avec les entités connectées à \a item.
+  //! Fills \a con_items with the entities connected to \a item.
   ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const override {return Base::trueCustomConnectivity()->_connectedItems(item,con_items);}
 
 };

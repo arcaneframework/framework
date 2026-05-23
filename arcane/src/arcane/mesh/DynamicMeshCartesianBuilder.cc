@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshCartesianBuilder.cc                              (C) 2000-2023 */
 /*                                                                           */
-/* Génération des maillages cartésiens pour DynamicMesh.                     */
+/* Generation of Cartesian meshes for DynamicMesh.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,9 +30,9 @@ namespace Arcane::mesh
 
 /*!
  * \internal
- * \brief Informations pour un échange de maillage entre sous-domaines.
+ * \brief Information for mesh exchange between sub-domains.
  *
- * L'utilisation de cette classe est réservée à DynamicMesh.
+ * The use of this class is reserved for DynamicMesh.
  */
 class ARCANE_MESH_EXPORT DynamicMeshCartesianBuilder
 : public TraceAccessor

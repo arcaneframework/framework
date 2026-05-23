@@ -73,8 +73,8 @@ class AsyncParticleExchanger
   BasicParticleExchanger m_bpe;
   Integer m_nb_particle_send_before_reduction = 0;
   Integer m_nb_particle_send_before_reduction_tmp = 0;
-  Integer m_sum_of_nb_particle_sent = 0; //Somme des particules envoyé calculé dans la condition d'arrêt du mode asynchrone
-  UniqueArray<Parallel::Request> m_reduce_requests; //Ce tableau doit avoir qu'une seule requête à la fois
+  Integer m_sum_of_nb_particle_sent = 0; //Sum of particles sent calculated in the stopping condition of asynchronous mode
+  UniqueArray<Parallel::Request> m_reduce_requests; //This array should only have one request at a time
 
   //Private functions used by internal implementation of AsyncParticleExchanger
  private:

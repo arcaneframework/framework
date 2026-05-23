@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivitySelector.h                                  (C) 2000-2021 */
 /*                                                                           */
-/* Sélection entre les connectivités historiques et à la demande.            */
+/* Selection between historical and on-demand connectivities.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMCONNECTIVITYSELECTOR_H
 #define ARCANE_MESH_ITEMCONNECTIVITYSELECTOR_H
@@ -49,7 +49,7 @@ class ItemFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sélection entre les connectivités historiques et à la demande.
+ * \brief Selection between historical and on-demand connectivities.
  */
 class ARCANE_MESH_EXPORT ItemConnectivitySelector
 : public TraceAccessor
@@ -89,7 +89,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelector
   IItemFamily* m_target_family;
   String m_connectivity_name;
   Integer m_pre_allocated_size;
-  // Numéro dans ItemInternalConnectivityList. (-1) si aucun.
+  // Index in ItemInternalConnectivityList. (-1) if none.
   Int32 m_item_connectivity_index;
   ItemInternalConnectivityList* m_item_connectivity_list;
   bool m_is_built;
@@ -98,7 +98,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sélection entre les connectivités historiques et à la demande.
+ * \brief Selection between historical and on-demand connectivities.
  */
 template<typename ConnectivityIndexType,typename CustomType>
 class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
@@ -114,7 +114,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
   }
   ~ItemConnectivitySelectorT()
   {
-    // NOTE: les connectivités sont détuites par les familles.
+    // NOTE: connectivities are deleted by the families.
   }
 
  public:
@@ -198,8 +198,8 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
 
   void _buildCustomConnectivity() override
   {
-    // Indique à l'IncrementalItemConnectivity qu'elle doit mettre à jour
-    // les accesseurs de ItemInternal.
+    // Instruct the IncrementalItemConnectivity that it must update
+    // the ItemInternal accessors.
     if (m_custom_connectivity)
       m_custom_connectivity->setItemConnectivityList(m_item_connectivity_list,
                                                      m_item_connectivity_index);

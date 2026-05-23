@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartitionConstraintMng.h                                (C) 2000-2009 */
 /*                                                                           */
-/* Gestionnaire de contraintes de partitionnement de maillage.               */
+/* Mesh partitioning constraint manager.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHPARTITIONCONSTRAINTMNG_H
 #define ARCANE_MESH_MESHPARTITIONCONSTRAINTMNG_H
@@ -37,7 +37,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire de contraintes de partitionnement de maillage.
+ * \brief Mesh partitioning constraint manager.
  */
 class MeshPartitionConstraintMng
 : public TraceAccessor

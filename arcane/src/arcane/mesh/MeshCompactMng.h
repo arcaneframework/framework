@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshCompactMng.h                                            (C) 2000-2016 */
 /*                                                                           */
-/* Gestionnaire des compactages de familles d'un maillage.                   */
+/* Mesh compacting manager for families of a mesh.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHCOMPACTMNG_H
 #define ARCANE_MESH_MESHCOMPACTMNG_H
@@ -32,7 +32,7 @@ class MeshCompacter;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des compactages de familles d'un maillage.
+ * \brief Manager for compacting families of a mesh.
  */
 class ARCANE_MESH_EXPORT MeshCompactMng
 : public TraceAccessor

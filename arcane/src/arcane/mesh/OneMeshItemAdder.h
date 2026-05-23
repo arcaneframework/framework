@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OneMeshItemAdder.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Outil de création d'une maille                                            */
+/* Mesh creation utility                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ONEITEMADDER_H
 #define ARCANE_MESH_ONEITEMADDER_H
@@ -47,8 +47,8 @@ class OneMeshItemAdder
 {
  private:
   
-  // Classe servant à rendre compatible les données FullCellInfo
-  // et les données fragmentées de description d'une maille
+  // Class used to make FullCellInfo data
+  // and fragmented mesh description data compatible
   class CellInfoProxy;
   
  public:
@@ -81,7 +81,7 @@ class OneMeshItemAdder
  
   ItemInternal* addOneCell(const FullCellInfo& cell_info);
 
-  // NOTE GG: A priori plus utilisé
+  // NOTE GG: Previously more used
   ARCANE_DEPRECATED_REASON("Y2022: Use addOneItem2() instead")
   ItemInternal* addOneItem(IItemFamily* family,
                            IItemFamilyModifier* family_modifier,
@@ -112,13 +112,13 @@ class OneMeshItemAdder
   Int64 nextFaceUid() const { return m_next_face_uid; }
   Int64 nextEdgeUid() const { return m_next_edge_uid; }
 
-  //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+  //! Resets the structures to allow for re-allocation
   void resetAfterDeallocate();
 
   /*!
-   * \brief Positionne le mécanisme de numérotation des uniqueId().
+   * \brief Positions the uniqueId() numbering mechanism.
    *
-   * \warning Cette méthode doit être appelée avant toute création d'entité.
+   * \warning This method must be called before any entity creation.
    */
   void setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v);
 
@@ -167,19 +167,19 @@ class OneMeshItemAdder
   
   ItemTypeMng* m_item_type_mng = nullptr;
  
-  MeshInfos m_mesh_info;//!<  Info générale sur le maillage (numéro de sous-domaine, nombre d'items...)
+  MeshInfos m_mesh_info;//!< General information about the mesh (sub-domain number, number of items...)
   
-  Int64 m_next_face_uid = 0; //!< Numéro du uniqueId() suivant utilisé pour générer les faces
-  Int64 m_next_edge_uid = 0; //!< Numéro du uniqueId() suivant utilisé pour générer les arêtes
+  Int64 m_next_face_uid = 0; //!< Next uniqueId() number used for generating faces
+  Int64 m_next_edge_uid = 0; //!< Next uniqueId() number used for generating edges
   
-  //! Tableaux de travail
+  //! Work arrays
   NodesOfItemReorderer m_face_reorderer;
   //UniqueArray<Int64> m_work_face_sorted_nodes;
   UniqueArray<Int64> m_work_face_orig_nodes_uid;
   UniqueArray<Int64> m_work_edge_sorted_nodes;
   UniqueArray<Int64> m_work_edge_orig_nodes_uid;
 
-  //! Si vrai, génère les uniqueId() des faces à partir de ceux des noeuds.
+  //! If true, generates face uniqueIds from node uniqueIds.
   bool m_use_hash_for_edge_and_face_unique_id = false;
 };
 

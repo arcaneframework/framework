@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires sur un maillage.                                    */
+/* Utility functions on a mesh.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_BASICITEMPAIRGROUPCOMPUTEFUNCTOR_H
 #define ARCANE_MESH_BASICITEMPAIRGROUPCOMPUTEFUNCTOR_H
@@ -37,7 +37,7 @@ class ItemPairGroupImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctions utilitaires sur un maillage.
+ * \brief Utility functions on a mesh.
  */
 class BasicItemPairGroupComputeFunctor
 : public TraceAccessor
@@ -130,4 +130,4 @@ class BasicItemPairGroupComputeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

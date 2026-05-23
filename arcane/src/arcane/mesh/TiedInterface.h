@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterface.h                                             (C) 2000-2014 */
 /*                                                                           */
-/* Informations sur les semi-conformitées du maillage.                       */
+/* Information on mesh semi-conformities.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_TIEDINTERFACE_H
 #define ARCANE_MESH_TIEDINTERFACE_H
@@ -61,7 +61,7 @@ class ITiedInterfaceRebuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur les semi-conformitées du maillage.
+ * \brief Information on mesh semi-conformities.
  */
 class TiedInterface
 : public TraceAccessor
@@ -78,7 +78,7 @@ class TiedInterface
  public:
 
   TiedInterface(IMesh* mesh);
-  virtual ~TiedInterface(); //<! Libère les ressources
+  virtual ~TiedInterface(); //<! Releases resources
 
  public:
 
@@ -93,13 +93,11 @@ class TiedInterface
 
   static PartitionConstraintBase* createConstraint(IMesh* mesh,ConstArrayView<FaceGroup> slave_interfaces);
 
-  //! Construit l'interface liée sur le group \a interface
+  //! Builds the tied interface on the group \a interface
   virtual void build(const FaceGroup& interface,bool is_structured);
   
-  //! Definit le seuil relative d'acceptation d'un point projete a une face candidate
-  /*! La valeur 0 (ou <0) décrit une acceptation inconditonnelle, une valeur positive
-   *  définit la borme sup relative à la distance euclidienne séparant deux sommets
-   *  consécutifs.
+  //! Defines the relative acceptance threshold for a point projected onto a candidate face
+  /*! The value 0 (or <0) describes unconditional acceptance, a positive value defines the relative bound based on the Euclidean distance separating two consecutive vertices.
    */
   virtual void setPlanarTolerance(Real tol);
 
@@ -153,4 +151,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

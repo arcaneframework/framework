@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMesh.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Classe de gestion d'un maillage non structuré évolutif.                   */
+/* Class for managing an evolving unstructured mesh.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -107,14 +107,14 @@
 
 namespace
 {
-// Propritétés publiques que l'utilisateur peut positionner
+// Public properties that the user can set
 const char* PROPERTY_SORT = "sort";
 const char* PROPERTY_COMPACT = "compact";
 const char* PROPERTY_COMPACT_AFTER_ALLOCATE = "compact-after-allocate";
 const char* PROPERTY_DUMP = "dump";
 const char* PROPERTY_DISPLAY_STATS = "display-stats";
 
-// Propritétés internes à Arcane
+// Internal Arcane properties
 const char* PROPERTY_MESH_VERSION = "mesh-version";
 }
 
@@ -297,18 +297,18 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
   m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
 
-  // Pour garder la compatibilité avec l'existant, autorise de ne pas
-  // sauvegarder l'attribut 'need-compact'. Cela a été ajouté pour la version 3.10
-  // de Arcane (juin 2023). A supprimer avant fin 2023.
+  // To keep compatibility with the existing code, allows not to
+  // save the 'need-compact' attribute. This was added for version 3.10
+  // of Arcane (June 2023). To be removed before end of 2023.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NO_SAVE_NEED_COMPACT", true))
     m_do_not_save_need_compact = v.value();
 
-  // Surcharge la valeur par défaut pour le mécanisme de numérotation
-  // des uniqueId() des arêtes et des faces.
+  // Overrides the default value for the numbering mechanism
+  // of uniqueId() for edges and faces.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
     bool is_generate = (v.value() != 0);
-    // L'utilisation des entités libres implique d'utiliser la génération des uniqueId()
-    // à partir des noeuds.
+    // Using free entities implies using uniqueId() generation
+    // from nodes.
     if (!is_generate && meshKind().isNonManifold())
       is_generate = true;
     m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(is_generate);
@@ -321,8 +321,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 DynamicMesh::
 ~DynamicMesh()
 {
-  // Il serait peut-être préférable de lancer une exception mais dans un
-  // destructeur ce n'est pas forcément conseillé
+  // It might be better to throw an exception but in a
+  // destructor this is not necessarily advisable
   if (m_extra_ghost_cells_builder->hasBuilder())
     info() << "WARNING: pending ExtraGhostCellsBuilder reference";
   if (m_extra_ghost_particles_builder->hasBuilder())
@@ -345,12 +345,12 @@ DynamicMesh::
   delete m_submesh_tools;
   delete m_new_item_owner_builder;
 
-  // Détruit les familles allouées dynamiquement.
+  // Destroys dynamically allocated families.
   for( IItemFamily* family : m_item_families ){
     eItemKind kind = family->itemKind();
-    // Seules les familles de particules ou de DoF sont allouées dynamiquement.
-    // TODO: maintenant elles le sont toute donc il faudrait toute
-    // les désallouées par cette boucle
+    // Only particle or DoF families are dynamically allocated.
+    // TODO: now they are all so they should all be
+    // deallocated by this loop
     if (kind==IK_Particle || kind==IK_DoF)
       delete family;
   }
@@ -380,21 +380,21 @@ build()
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
-  // IMPORTANT: les premiers éléments de m_item_families doivent
-  // correspondre aux familles associées aux valeurs de eItemKind
+  // IMPORTANT: the first elements of m_item_families must
+  // correspond to the families associated with eItemKind values
   // (IK_Node, IK_Edge, IK_Face, IK_Cell)
   for( IItemFamily* family : m_item_families ){
     _buildAndInitFamily(family);
   }
 
-  // Permet d'appeler la fonction '_prepareDump' lorsqu'une
-  // protection va être effectuée
+  // Allows calling the '_prepareDump' function when a
+  // dump is performed
   IVariableMng* vm = subDomain()->variableMng();
   m_observer_pool.addObserver(this,
                               &DynamicMesh::_prepareForDump,
                               vm->writeObservable());
-  // Permet d'appeler la fonction '_reloadFromDump' lorsqu'une
-  // protection est relue
+  // Allows calling the '_readFromDump' function when a
+  // dump is read
   m_observer_pool.addObserver(this,
                               &DynamicMesh::_readFromDump,
                               vm->readObservable());
@@ -404,7 +404,7 @@ build()
   m_partition_constraint_mng = new MeshPartitionConstraintMng(this);
        
   if (parentMesh()) {
-    // Cela peut induire des segfaults si le DynamicMesh n'est pas correctement utilisé
+    // This can induce segfaults if the DynamicMesh is not used correctly
     m_submesh_tools = new SubMeshTools(this, m_mesh_builder);
     //! AMR
     m_mesh_refinement = 0;
@@ -425,14 +425,14 @@ build()
     m_submesh_tools = 0;
     //! AMR
 
-    // GG: ne construit m_mesh_refinement qui si l'AMR est actif
-    // Cela évite de creer des variables inutile lorsque l'AMR n'est pas
-    // demandé. La création de m_mesh_refinement se fait maintenant
-    // dans readAmrActivator(). Ce n'est peut-être pas le bon endroit
-    // pour le faire et on peut éventuellement le déplacer. Il faut
-    // juste que m_mesh_refinement ne soit créé que si l'AMR est actif.
-    // SDC : OK. Remis car maintenant l'info AMR (in)actif est connue a
-    // la construction. Suppression de readAmrActivator.
+    // GG: does not build m_mesh_refinement if AMR is active
+    // This avoids creating unnecessary variables when AMR is not
+    // requested. The creation of m_mesh_refinement is now
+    // done in readAmrActivator(). This might not be the right place
+    // to do it and it can potentially be moved. It just needs
+    // m_mesh_refinement to be created only if AMR is active.
+    // SDC: OK. Restored because now the AMR (in)active info is known at
+    // construction. Removal of readAmrActivator.
 
     if (m_is_amr_activated) {
      if(m_amr_type == eMeshAMRKind::None || m_amr_type == eMeshAMRKind::Cell){
@@ -442,10 +442,10 @@ build()
        ARCANE_FATAL("Patch AMR type is not implemented.");
      }
      else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-       // L'AMR PatchCartesianMeshOnly n'est pas géré par MeshRefinement().
-       // Voir dans CartesianMesh.cc.
-       // TODO : CartesianMeshAMRPatchMng en a besoin pour les mailles fantômes.
-       //        Voir pour retirer ou remplacer l'appel à la methode
+       // The AMR PatchCartesianMeshOnly is not handled by MeshRefinement().
+       // See in CartesianMesh.cc.
+       // TODO: CartesianMeshAMRPatchMng needs it for ghost meshes.
+       //        See to remove or replace the call to the method
        //        updateGhostLayerFromParent().
        m_mesh_refinement = new MeshRefinement(this);
      }
@@ -632,7 +632,7 @@ _computeFamilySynchronizeInfos()
     family->computeSynchronizeInfos();
   }
 
-  // Ecrit la topologie pour la synchronisation des mailles
+  // Writes the topology for mesh synchronization
   if (!platform::getEnvironmentVariable("ARCANE_DUMP_VARIABLE_SYNCHRONIZER_TOPOLOGY").null()){
     auto* var_syncer = cellFamily()->allItemsSynchronizer();
     Int32 iteration = subDomain()->commonVariables().globalIteration();
@@ -674,13 +674,13 @@ groups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \todo: Ne pas faire ici.
+ * \todo: Do not do this here.
  */
 void DynamicMesh::
 initializeVariables(const XmlNode& init_node)
 {
-  // TEMPORAIRE: recopie pour chaque famille le champ owner() dans
-  // la variable correspondante.
+  // TEMPORARY: copies the owner() field for each family into
+  // the corresponding variable.
   for( IItemFamily* family : m_item_families ){
     VariableItemInt32& items_owner(family->itemsNewOwner());
     ENUMERATE_ITEM(iitem,family->allItems()){
@@ -706,12 +706,12 @@ initializeVariables(const XmlNode& init_node)
       has_error = true;
       continue;
     }
-    // N'initialise pas les variables non utilisées.
+    // Does not initialize unused variables.
     if (!var->isUsed())
       continue;
 
-    // Teste si la variable a une famille. Normalement c'est toujours
-    // le cas car on a utilisé findMeshVariable() pour trouver la variable.
+    // Tests if the variable has a family. Normally this is always
+    // the case because we used findMeshVariable() to find the variable.
     IItemFamily* family = var->itemFamily();
     if (!family) {
       error() << "Variable '" << var->name() << "' has no family";
@@ -745,9 +745,9 @@ initializeVariables(const XmlNode& init_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: a priori cette méthode ne fonctionne s'il existe des variables
-// partielles car les groupes sur lesquelles elles reposent vont être détruit
-// (A vérifier)
+// NOTE: This method probably does not work if there are variables
+// partial because the groups they rely on will be destroyed
+// (To be checked)
 
 void DynamicMesh::
 deallocate()
@@ -844,10 +844,10 @@ endAllocate()
   computeSynchronizeInfos();
   m_mesh_checker->checkMeshFromReferenceFile();
 
-  // Positionne les proprietaires pour que cela soit comme apres
-  // un echange. Ce n'est a priori pas indispensable
-  // mais cela permet d'assurer la coherence avec
-  // d'autres appels a setOwnersFromCells()
+  // Positions the owners so that it is like after
+  // an exchange. This is not strictly necessary
+  // but it ensures consistency with
+  // other calls to setOwnersFromCells()
   if (parallelMng()->isParallel()){
     String s = platform::getEnvironmentVariable("ARCANE_CHANGE_OWNER_ON_INIT");
     if (!s.null()){
@@ -856,8 +856,8 @@ endAllocate()
     }
   }
 
-  // Indique aux familles qu'on vient de mettre à jour le maillage
-  // Pour qu'elles puissent recalculer les informations qu'elles souhaitent.
+  // Notifies the families that the mesh has just been updated
+  // So that they can recalculate the information they want.
   _notifyEndUpdateForFamilies();
 
   _prepareForDump();
@@ -866,7 +866,7 @@ endAllocate()
   if (arcaneIsCheck())
     checkValidMesh();
 
-  // Affiche les statistiques du nouveau maillage
+  // Displays the statistics of the new mesh
   {
     MeshStats ms(traceMng(),this,m_parallel_mng);
     ms.dumpStats();
@@ -911,9 +911,9 @@ void DynamicMesh::
 addCells(const MeshModifierAddCellsArgs& args)
 {
   bool allow_build_face = args.isAllowBuildFaces();
-  // En parallèle, on ne peut pas construire à la volée les faces
-  // (car il faut générer un uniqueId() et ce dernier ne serait pas cohérent
-  // entre les sous-domaines)
+  // In parallel, we cannot build faces on the fly
+  // (because it is necessary to generate a uniqueId(), and this ID would not be consistent
+  // between the sub-domains)
   if (m_parallel_mng->commSize() > 1)
     allow_build_face = false;
   _allocateCells(args.nbCell(),args.cellInfos(),args.cellLocalIds(),allow_build_face);
@@ -975,8 +975,8 @@ allocate(UnstructuredMeshAllocateBuildInfo& build_info)
 void DynamicMesh::
 allocate(CartesianMeshAllocateBuildInfo& build_info)
 {
-  // L'allocation des entités du maillage est effectuée par la
-  // classe DynamicMeshCartesianBuilder.
+  // The allocation of mesh entities is performed by the
+  // DynamicMeshCartesianBuilder class.
   allocateCartesianMesh(this,build_info);
 }
 
@@ -1454,7 +1454,7 @@ _writeMesh(const String& base_name)
     file_name += rank;
   }
   mesh_utils::writeMeshConnectivity(this,file_name.toString());
-  //TODO pouvoir changer le nom du service
+  //TODO ability to change the service name
   auto writer(ServiceBuilder<IMeshWriter>::createReference(subDomain(),"Lima"));
   if (writer.get()){
     String mesh_file_name = file_name.toString() + ".mli";
@@ -1482,7 +1482,7 @@ _printMesh(std::ostream& ostr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sauve les propriétés avant une protection.
+ * \brief Saves properties before a dump.
  */
 void DynamicMesh::
 _saveProperties()
@@ -1506,7 +1506,7 @@ _saveProperties()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Relit les propriétés depuis une protection.
+ * \brief Reloads properties from a dump.
  */
 void DynamicMesh::
 _loadProperties()
@@ -1517,7 +1517,7 @@ _loadProperties()
           << " mesh-version=" << p->getInt32WithDefault(PROPERTY_MESH_VERSION,-1);
 
   {
-    // Relit les infos sur le gestionnaire de mailles fantômes.
+    // Reloads info on the ghost layer manager.
     Int32 x = 0;
     if (p->get("nb-ghostlayer",x))
       ghostLayerMng()->setNbGhostLayer(x);
@@ -1545,7 +1545,7 @@ _loadProperties()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Prépare les variables pour une protection.
+ * \brief Prepares variables for a dump.
  */
 void DynamicMesh::
 _prepareForDump()
@@ -1561,14 +1561,14 @@ _prepareForDump()
     m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
   }
 
-  // Si le maillage n'est pas sauvé, ne fait rien. Cela évite de compacter
-  // et trier le maillage ce qui n'est pas souhaitable si les propriétés
-  // 'sort' et 'compact' sont à 'false'.
+  // If the mesh is not saved, do nothing. This prevents compacting
+  // and sorting the mesh, which is undesirable if the properties
+  // 'sort' and 'compact' are set to 'false'.
   if (want_dump)
     _prepareForDumpReal();
 
-  // Sauve les propriétés. Il faut le faire à la fin car l'appel à
-  // prepareForDumpReal() peut modifier ces propriétés
+  // Save properties. This must be done at the end because the call to
+  // prepareForDumpReal() might modify these properties
   _saveProperties();
 
   {
@@ -1580,18 +1580,18 @@ _prepareForDump()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Prépare les variables pour une protection.
+ * \brief Prepares variables for a dump.
  */
 void DynamicMesh::
 _prepareForDumpReal()
 {
   if (m_need_compact){
-    // Pour l'instant, il faut trier et compacter les entites
-    // avant une sauvegarde
+    // For now, the entities must be sorted and compacted
+    // before a save
     _compactItems(true,true);
   }
 
-  // Préparation des connexions maillage/sous-maillage
+  // Preparation of mesh/sub-mesh connections
   {
     if (m_parent_mesh) {
       ARCANE_ASSERT((m_parent_group != NULL),("Unexpected NULL parent group"));
@@ -1608,7 +1608,7 @@ _prepareForDumpReal()
         m_child_meshes_name[i] = m_child_meshes[i]->name();
   }
 
-  // Sauve les infos sur les familles d'entités
+  // Save info on entity families
   {
     Integer nb_item_family = m_item_families.count();
     m_item_families_name.resize(nb_item_family);
@@ -1783,11 +1783,10 @@ void DynamicMesh::
 _exchangeItems(bool do_compact)
 {
   String nb_exchange_str = platform::getEnvironmentVariable("ARCANE_NB_EXCHANGE");
-  // Il faudrait calculer la valeur par defaut en tenant compte du nombre
-  // de maille échangées et du nombre de variables et de leur utilisation
-  // mémoire. Faire bien attention à ce que tous les procs utilisent la meme valeur.
-  // Dans la pratique mieux vaut ne pas dépasser 3 ou 4 échanges car cela
-  // augmente le temps consommé à et ne réduit pas trop la mémoire.
+  // It would be necessary to calculate the default value taking into account the number
+  // of exchanged meshes and the number of variables and their memory usage. Be careful that all procs use the same value.
+  // In practice, it is better not to exceed 3 or 4 exchanges because this
+  // increases the time consumed and does not reduce memory enough.
   Integer nb_exchange = 1;
   if (!nb_exchange_str.null()){
     bool is_bad = builtInGetValue(nb_exchange,nb_exchange_str);
@@ -1808,10 +1807,10 @@ _exchangeItems(bool do_compact)
   }
   else
     _exchangeItemsNew();
-  // Actuellement, la méthode exchangeItemsNew() ne prend en compte
-  // qu'une couche de maille fantômes. Si on en demande plus, il faut
-  // les ajouter maintenant. Cet appel n'est pas optimum mais permet
-  // de traiter correctement tous les cas (enfin j'espère).
+  // Currently, the exchangeItemsNew() method only takes into account
+  // one layer of ghost meshes. If we request more, we must
+  // add them now. This call is not optimal but allows
+  // for correctly processing all cases (I hope).
   if (ghostLayerMng()->nbGhostLayer()>1 && !m_use_mesh_item_family_dependencies) // many ghost already handled in MeshExchange with ItemFamilyNetwork
     updateGhostLayers(true);
   String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
@@ -1830,34 +1829,33 @@ _exchangeItems(bool do_compact)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Echange les entités en plusieurs fois.
+ * \brief Exchanges entities in multiple stages.
  *
- * Il existe deux versions pour ce mécanisme:
- * 1. La version 1 qui est la version historique. Pour cet algorithme,
- *    on découpe le nombre de mailles à envoyer en \a nb_exchange parties,
- *    chaque partie ayant (nb_cell / nb_exchange) mailles. Cet algorithme
- *    permet de limiter la taille des messages mais pas le nombre de messages
- *    en vol.
- * 2. La version 2 qui sépare la liste des mailles à envoyer en se basant sur
- *    le rang de chaque partie. Cela est utile pour limiter le nombres de
- *    messages envoyés simultanément mais ne diminuera pas la taille du message
- *    envoyé à un rang donné. En partant du principe que les rangs consécutifs
- *    sont sur le même noeud d'un calculateur, on sépare l'échange en
- *    \a nb_exchange avec l'algorithme suivant:
- *    - on note 'i' le i-ème échange (numéroté de 0 à (nb_exchange-1)),
- *    - on ne traite pour l'échange 'i' que les mailles dont le nouveau
- *      propriètaire modulo (nb_exchange) vaut 'i'.
+ * There are two versions for this mechanism:
+ * 1. Version 1, which is the historical version. For this algorithm,
+ *    we divide the number of meshes to send into \a nb_exchange parts,
+ *    each part having (nb_cell / nb_exchange) meshes. This algorithm
+ *    allows limiting the size of messages but not the number of messages
+ *    in flight.
+ * 2. Version 2, which separates the list of meshes to send based on
+ *    the rank of each part. This is useful for limiting the number of
+ *    messages sent simultaneously but will not decrease the size of the message
+ *    sent to a given rank. Assuming that consecutive ranks
+ *    are on the same node of a computer, we separate the exchange into
+ *    \a nb_exchange using the following algorithm:
+ *    - we denote 'i' as the i-th exchange (numbered from 0 to (nb_exchange-1)),
+ *    - for exchange 'i', we only process the meshes whose new
+ *      owner modulo (nb_exchange) equals 'i'.
  *
- * On optimise légèrement en ne faisant le compactage eventuel
- * qu'une seule fois.
+ * We optimize slightly by only performing the optional compaction
+ * once.
  *
- * TODO: optimiser encore mieux avec une fonction speciale
- * au lieu d'appeler _exchangeItems();
- * TODO: au lieu de diviser la liste des mailles en \a nb_exchange
- * parties quelconques, il faudrait le faire en prenant
- * des mailles adjacentes pour eviter d'avoir trop d'échanges
- * de mailles fantômes à faire si les mailles sont réparties n'importe
- * comment.
+ * TODO: optimize even better with a special function
+ * instead of calling _exchangeItems();
+ * TODO: instead of dividing the list of meshes into \a nb_exchange
+ * arbitrary parts, it would be necessary to do it by taking
+ * adjacent meshes to avoid having too many exchanges
+ * of ghost meshes if the meshes are distributed randomly.
  */
 void DynamicMesh::
 _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
@@ -1867,7 +1865,7 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
 
   info() << "** ** MULTIPLE EXCHANGE ITEM version=" << version << " nb_exchange=" << nb_exchange;
   UniqueArray<UniqueArray<Int32>> cells_to_exchange_new_owner(nb_exchange);
-  // Il faut stocker le uid car suite a un equilibrage les localId vont changer
+  // We must store the uid because after load balancing the localIds will change
   UniqueArray<UniqueArray<Int64>> cells_to_exchange_uid(nb_exchange);
 
   IItemFamily* cell_family = cellFamily();
@@ -1889,15 +1887,14 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
     cells_to_exchange_uid[phase].add(cell.uniqueId().asInt64());
   }
 
-  // Remet comme si la maille ne changeait pas de propriétaire pour
-  // éviter de l'envoyer.
+  // Sets it as if the mesh did not change owner to
   ENUMERATE_CELL(icell,ownCells()){
     Cell cell = *icell;
     cells_new_owner[icell] = cell.owner();
   }
 
-  // A partir d'ici, le cells_new_owner est identique au cell.owner()
-  // pour chaque maille.
+  // From here, cells_new_owner is identical to cell.owner()
+  // for each mesh.
   Int32UniqueArray uids_to_lids;
   for( Integer i=0; i<nb_exchange; ++i ){
     Int32ConstArrayView new_owners = cells_to_exchange_new_owner[i];
@@ -1907,8 +1904,8 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
     uids_to_lids.resize(nb_cell);
     cell_family->itemsUniqueIdToLocalId(uids_to_lids,new_uids);
     ItemInternalList cells = cell_family->itemsInternal();
-    // Pour chaque maille de la partie en cours d'echange, positionne le new_owner
-    // a la bonne valeurs
+    // For each mesh in the current exchange part, sets the new_owner
+    // to the correct value
     for( Integer z=0; z<nb_cell; ++z )
       cells_new_owner[cells[uids_to_lids[z]]] = new_owners[z];
     cells_new_owner.synchronize();
@@ -1967,10 +1964,10 @@ public:
 void DynamicMesh::
 _exchangeItemsNew()
 {
-  // L'algo ici employé n'est pas récursif avec les sous-maillages.
-  // Toutes les comms sont regroupées et les différents niveaux de modifs
-  // seront dépilés ici même. Cette implémentation ne permet pas d'avoir
-  // plus d'un niveau de sous-maillage par maillage.
+  // The algorithm used here is not recursive with submeshes.
+  // All communications are grouped and the different levels of modifications
+  // will be popped here. This implementation does not allow having
+  // more than one submesh level per mesh.
 
   Trace::Setter mci(traceMng(),_className());
 
@@ -1980,16 +1977,16 @@ _exchangeItemsNew()
   m_need_compact = true;
   
   if (arcane_debug_load_balancing){
-    // TODO: faire cela dans le MeshExchanger et par famille.
-    // Vérifie que les variables sont bien synchronisées
+    // TODO: do this in the MeshExchanger and by family.
+    // Checks that the variables are properly synchronized
     m_node_family->itemsNewOwner().checkIfSync(10);
     m_edge_family->itemsNewOwner().checkIfSync(10);
     m_face_family->itemsNewOwner().checkIfSync(10);
     m_cell_family->itemsNewOwner().checkIfSync(10);
   }
-  // TODO: Vérifier que tout le monde a les mêmes familles et dans le même ordre.
+  // TODO: Check that everyone has the same families and in the same order.
 
-  // Cascade tous les maillages associés à ce maillage
+  // Cascades all meshes associated with this mesh
   typedef Collection<DynamicMesh*> DynamicMeshCollection;
   DynamicMeshCollection all_cascade_meshes = List<DynamicMesh*>();
   all_cascade_meshes.add(this);
@@ -1999,28 +1996,28 @@ _exchangeItemsNew()
   IMeshExchanger* iexchanger = m_mesh_exchange_mng->beginExchange();
   MeshExchanger* mesh_exchanger = ARCANE_CHECK_POINTER(dynamic_cast<MeshExchanger*>(iexchanger));
 
-  // S'il n'y a aucune entité à échanger, on arrête immédiatement l'échange.
+  // If there are no entities to exchange, the exchange stops immediately.
   if (mesh_exchanger->computeExchangeInfos()){
     info() << "No load balance is performed";
     m_mesh_exchange_mng->endExchange();
     return;
   }
 
-  // Éffectue l'échange des infos
+  // Performs the info exchange
   mesh_exchanger->processExchange();
 
-  // Supprime les entités qui ne doivent plus être dans notre sous-domaine.
+  // Removes entities that should no longer be in our sub-domain.
   mesh_exchanger->removeNeededItems();
 
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage ou en
-  // invalidant les groupes calculés.
-  // TODO: faire une méthode de la famille qui fait cela.
+  // Readjusts the groups by removing entities that are no longer in the mesh or by
+  // invalidating the calculated groups.
+  // TODO: make a method in the family that does this.
   {
     auto action = [](ItemGroup& group)
     {
-      // (HP) TODO: 'if (group.internal()->hasComputeFunctor())' ne fonctionne pas simplement, why ?
-      // Anciennement: if (group.isLocalToSubDomain() || group.isOwn())
-      // Redondant avec des calculs de ItemFamily::notifyItemsOwnerChanged
+      // (HP) TODO: 'if (group.internal()->hasComputeFunctor())' does not work simply, why ?
+      // Formerly: if (group.isLocalToSubDomain() || group.isOwn())
+      // Redundant with ItemFamily::notifyItemsOwnerChanged calculations
       if (group.internal()->hasComputeFunctor() || group.isLocalToSubDomain())
         group.invalidate();
       else
@@ -2031,13 +2028,13 @@ _exchangeItemsNew()
     }
   }
  
-  // Supprime les potentiels items fantômes restant après la mise à jour du groupe support
-  // qui ont été marqués par NeedRemove (ce qui nettoie un éventuel état inconsistent du 
-  // sous-maillage vis-à-vis de son parent)
-  // Cette partie est importante car il est possible que la mise à jour des groupes 
-  // support ne suffise pas à mettre à jour les parties fantômes des sous-maillages
-  // (à moins de mettre une contrainte plus forte sur le groupe d'intégrer aussi tous 
-  // les fantômes du sous-maillage)
+  // Removes potential ghost items remaining after updating the support group
+  // which were marked by NeedRemove (which cleans up a potential inconsistent state of the 
+  // submesh relative to its parent)
+  // This part is important because it is possible that updating the groups
+  // is not enough to update the ghost parts of the submeshes
+  // (unless a stronger constraint is placed on the group to also include all
+  // ghost meshes of the submesh)
 #if HEAD
   for( DynamicMesh* child_mesh : m_child_meshes )
     child_mesh->m_submesh_tools->removeDeadGhostCells();
@@ -2046,44 +2043,44 @@ _exchangeItemsNew()
     m_child_meshes[i_child_mesh]->m_submesh_tools->removeDeadGhostCells();
 #endif
 
-  // Créé les entités qu'on a recu des autres sous-domaines.
+  // Allocates the entities we received from other sub-domains.
   mesh_exchanger->allocateReceivedItems();
 
-  // On reprend maintenant un cycle standard de endUpdate
-  // mais en entrelaçant les niveaux de sous-maillages
+  // We now resume a standard endUpdate cycle
+  // but interleaving the submesh levels
   for( DynamicMesh* mesh : all_cascade_meshes )
     mesh->_internalEndUpdateInit(true);
 
   mesh_exchanger->updateItemGroups();
 
-  // Recalcule des synchroniseurs sur groupes.
+  // Recalculates synchronizers on groups.
   for( DynamicMesh* mesh : all_cascade_meshes )
     mesh->_computeGroupSynchronizeInfos();
 
-  // Met à jour les valeurs des variables des entités receptionnées
+  // Updates the variable values of the received entities
   mesh_exchanger->updateVariables();
 
-  // Finalise les modifications dont le triage et compactage
+  // Finalizes the modifications whose sorting and compaction
   for( DynamicMesh* mesh : all_cascade_meshes ){
-    // Demande l'affichage des infos pour le maillage actuel
+    // Requests the display of info for the current mesh
     bool print_info = (mesh==this);
     mesh->_internalEndUpdateFinal(print_info);
   }
 
-  // Finalize les échanges
-  // Pour l'instante cela n'est utile que pour les TiedInterface mais il
-  // faudrait supprimer cela.
+  // Finalizes the exchanges
+  // For now, this is only useful for TiedInterface but it
+  // should be removed.
   mesh_exchanger->finalizeExchange();
 
-  // TODO: garantir cet appel en cas d'exception.
+  // TODO: ensure this call in case of an exception.
   m_mesh_exchange_mng->endExchange();
 
-  // Maintenant, le maillage est à jour mais les mailles fantômes extraordinaires 
-  // ont été potentiellement retirées. On les replace dans le maillage.
-  // Version non optimisée. L'idéal est de gérer les mailles extraordinaires
-  // dans MeshExchange.
-  // endUpdate() doit être appelé dans tous les cas pour s'assurer
-  // que les variables et les groupes sont bien dimensionnées.
+  // Now, the mesh is updated but the extraordinary ghost meshes 
+  // have been potentially removed. We replace them in the mesh.
+  // Non-optimized version. Ideally, extraordinary meshes
+  // should be managed in MeshExchange.
+  // endUpdate() must be called in all cases to ensure
+  // that the variables and groups are properly sized.
   if (m_extra_ghost_cells_builder->hasBuilder() || m_extra_ghost_particles_builder->hasBuilder())
     this->endUpdate(true,false);
   else
@@ -2152,9 +2149,9 @@ _removeGhostItems()
 {
   const Int32 sid = meshRank();
 
-  // Suppression des mailles fantômes.
-  // Il faut passer par un tableau intermédiaire, car supprimer
-  // des mailles invalide les itérateurs sur 'cells_map'.
+  // Removal of ghost meshes.
+  // We must use an intermediate array, because deleting
+  // meshes invalidates the iterators on 'cells_map'.
   UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
@@ -2167,14 +2164,14 @@ _removeGhostItems()
   info() << "Number of cells to remove: " << cells_to_remove.size();
   m_cell_family->removeCells(cells_to_remove);
 
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
+  // Readjusts the groups by removing entities that are no longer in the mesh
   _updateGroupsAfterRemove();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Met à jour les groupes suite à des suppressions d'entités.
+ * \brief Updates groups following entity deletions.
  */
 void DynamicMesh::
 _updateGroupsAfterRemove()
@@ -2213,7 +2210,7 @@ updateGhostLayers(bool remove_old_ghost)
   _synchronizeVariables();
   _internalEndUpdateFinal(true);
 
-  // Finalisation des sous-maillages récursives
+  // Finalization of recursive submeshes
   for(Integer i=0;i<m_child_meshes.size();++i) {
     m_child_meshes[i]->endUpdate(true, remove_old_ghost);
   }
@@ -2226,7 +2223,7 @@ _removeGhostChildItems()
 {
   const Int32 sid = meshRank();
 
-  // Suppression des mailles
+  // Removal of meshes
   UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
@@ -2249,7 +2246,7 @@ _removeGhostChildItems()
   info() << "Number of cells to remove: " << cells_to_remove.size();
   m_cell_family->removeCells(cells_to_remove);
 
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
+  // Readjusts the groups by removing entities that are no longer in the mesh
   _updateGroupsAfterRemove();
 }
 
@@ -2263,7 +2260,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
 
   cells_to_coarsen.reserve(1000);
 
-  // Suppression des mailles
+  // Removal of cells
   UniqueArray<Cell> cells_to_remove;
   cells_to_remove.reserve(1000);
 
@@ -2288,7 +2285,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
   for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
     m_cell_family->removeCell(cells_to_remove[i]);
 
-  // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
+  // Readjust groups by removing entities that are no longer in the mesh
   _updateGroupsAfterRemove();
 }
 
@@ -2311,14 +2308,14 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
     _removeGhostChildItems2(ghost_cell_to_coarsen_uid) ;
   }
 
-  // En cas de raffinement/déraffinement, il est possible que l'orientation soit invalide à un moment.
+  // In case of refinement/coarsening, the orientation might be invalid at a point.
   m_face_family->setCheckOrientation(false);
 
   m_mesh_builder->addGhostChildFromParent(ghost_cell_to_refine_uid);
   m_face_family->setCheckOrientation(true);
 
-  // A partir d'ici, les entités du maillages sont toutes connues. Il
-  // est donc possible de les compacter si nécessaire
+  // From here, all mesh entities are known. It
+  // is therefore possible to compact them if necessary
   m_mesh_builder->printStats();
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER1) )
 
@@ -2333,8 +2330,8 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER2) )
 
 
-  // Réalloue les variables du maillage car leur groupe a évolué
-  // TODO: ce devrait être à chaque famille de le faire
+  // Reallocate mesh variables because their group has changed
+  // TODO: this should be done for every family
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER3) )
   {
     IVariableMng* vm = m_sub_domain->variableMng();
@@ -2344,8 +2341,9 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER3) )
 
 
-  // Recalcule les informations nécessaires pour la synchronisation
-  // des entités
+  // Recalculate the necessary information for the synchronization
+  // of
+  // entities
   //pm->computeSynchronizeInfos();
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER4) )
   computeSynchronizeInfos();
@@ -2385,14 +2383,14 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER5) )
 
 
-  // Vérifie que le maillage est conforme avec la référence
+  // Verify that the mesh conforms to the reference
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER6) )
   m_mesh_checker->checkMeshFromReferenceFile();
 
-  // Compacte les références pour ne pas laisser de trou et profiter
-  // au mieux des effets de cache.
-  // NOTE: ce n'est en théorie pas indispensable mais actuellement si
-  // car on ne sauve pas le #m_data_index des ItemInternal.
+  // Compact references to avoid gaps and take
+  // advantage of cache effects.
+  // NOTE: this is not theoretically necessary but currently is
+  // because we do not save the #m_data_index of the ItemInternal.
   //_compactItemInternalReferences();
   bool do_compact = m_properties->getBool(PROPERTY_COMPACT);
   if (do_compact){
@@ -2405,7 +2403,7 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
     _writeMesh("update-ghost-layer-after");
   }
 
-  // Affiche les statistiques du nouveau maillage
+  // Display the statistics of the new mesh
   {
     MeshStats ms(traceMng(),this,m_parallel_mng);
     ms.dumpStats();
@@ -2436,7 +2434,7 @@ _internalUpdateGhost(bool update_ghost_layer,bool remove_old_ghost)
 {
   m_need_compact = true;
 
-  // Surcharge le comportement pour les sous-maillages
+  // Overrides behavior for submeshes
   if (parentMesh()){
     if (update_ghost_layer)
       m_submesh_tools->updateGhostMesh();
@@ -2446,7 +2444,7 @@ _internalUpdateGhost(bool update_ghost_layer,bool remove_old_ghost)
       if(remove_old_ghost){
         _removeGhostItems();
       }
-      // En cas de raffinement/déraffinement, il est possible que l'orientation soit invalide à un moment.
+      // In case of refinement/coarsening, the orientation might be invalid at a point.
       m_face_family->setCheckOrientation(false);
       m_mesh_builder->addGhostLayers(false);
       m_face_family->setCheckOrientation(true);
@@ -2462,15 +2460,16 @@ _internalUpdateGhost(bool update_ghost_layer,bool remove_old_ghost)
 void DynamicMesh::
 _internalEndUpdateInit(bool update_ghost_layer)
 {
-  // A partir d'ici, les entités du maillages sont toutes connues. Il
-  // est donc possible de les compacter si nécessaire
+  // From here, all mesh entities are known. It
+  // is therefore possible to compact them if necessary
   //m_mesh_builder->printStats();
 
   //info() << "Finalize date=" << platform::getCurrentDateTime();
   _finalizeMeshChanged();
 
-  // Recalcule les informations nécessaires pour la synchronisation
-  // des entités
+  // Recalculate the necessary information for the synchronization
+  // of
+  // entities
   if (update_ghost_layer){
     info() << "ComputeSyncInfos date=" << platform::getCurrentDateTime();
     _computeFamilySynchronizeInfos();
@@ -2483,7 +2482,7 @@ _internalEndUpdateInit(bool update_ghost_layer)
 void DynamicMesh::
 _internalEndUpdateResizeVariables()
 {
-  // Réalloue les variables du maillage car leur groupe a évolué
+  // Reallocate mesh variables because their group has changed
   for( IItemFamily* family : m_item_families )
     family->_internalApi()->resizeVariables(true);
 }
@@ -2495,16 +2494,16 @@ void
 DynamicMesh::
 _internalEndUpdateFinal(bool print_stat)
 {
-  // Vérifie que le maillage est conforme avec la référence
+  // Verify that the mesh conforms to the reference
   m_mesh_checker->checkMeshFromReferenceFile();
 
-  // Compacte les références pour ne pas laisser de trou et profiter
-  // au mieux des effets de cache.
-  // NOTE: ce n'est en théorie pas indispensable mais actuellement si
-  // car on ne sauve pas le #m_data_index des ItemInternal.
+  // Compact references to avoid gaps and take
+  // advantage of cache effects.
+  // NOTE: this is not theoretically necessary but currently is
+  // because we do not save the #m_data_index of the ItemInternal.
   {
     //Timer::Action ts_action1(m_sub_domain,"CompactReferences",true);
-    _compactItemInternalReferences(); // Utilité à confirmer
+    _compactItemInternalReferences(); // Utility to confirm
     
     {
       bool do_compact = m_properties->getBool(PROPERTY_COMPACT);
@@ -2518,7 +2517,7 @@ _internalEndUpdateFinal(bool print_stat)
 
   _notifyEndUpdateForFamilies();
 
-  // Affiche les statistiques du nouveau maillage
+  // Display the statistics of the new mesh
   if (print_stat){
     if (m_properties->getBool(PROPERTY_DISPLAY_STATS)){
       MeshStats ms(traceMng(),this,m_parallel_mng);
@@ -2559,16 +2558,16 @@ endUpdate()
 void DynamicMesh::
 endUpdate(bool update_ghost_layer,bool remove_old_ghost)
 {
-  // L'ordre d'action est le suivant:
-  // 1- Mise à jour des fantomes
-  // 2- Finalization du maillage (fige les items)
-  //    Calcul si demandé (update_ghost_layer) les synchroniseurs sur les familles
-  // 3- Synchronize les groupes (requiert des synchroniseurs de familles à jour)
-  // 4- Calcul si demandé (update_ghost_layer) les synchroniseurs sur les groupes
-  // 5- Retaille les variables (familles et groupes)
-  // 6- Synchronize si demandé (update_ghost_layer) les variables (familles et groupes)
-  // 7- Finalisation comprenant: compactage, triage (si activés), statistiques et contrôle de validé
-  // 8- Appels récursifs aux sous-maillages
+  // The order of operations is as follows:
+  // 1- Ghost layer update
+  // 2- Mesh finalization (freezes items)
+  //    Calculate if requested (update_ghost_layer) the synchronizers on the families
+  // 3- Synchronize groups (requires updated family synchronizers)
+  // 4- Calculate if requested (update_ghost_layer) the synchronizers on the groups
+  // 5- Resize variables (families and groups)
+  // 6- Synchronize if requested (update_ghost_layer) the variables (families and groups)
+  // 7- Finalization including: compaction, sorting (if enabled), statistics, and validity check
+  // 8- Recursive calls to submeshes
   
   Trace::Setter mci(traceMng(),_className());
   _internalUpdateGhost(update_ghost_layer, remove_old_ghost);
@@ -2584,7 +2583,7 @@ endUpdate(bool update_ghost_layer,bool remove_old_ghost)
   }
   _internalEndUpdateFinal(false);
 
-  // Finalisation des sous-maillages recursives
+  // Recursive finalization of submeshes
   for( DynamicMesh* child_mesh : m_child_meshes )
     child_mesh->endUpdate(update_ghost_layer, remove_old_ghost);
 }
@@ -2596,9 +2595,9 @@ void DynamicMesh::
 synchronizeGroupsAndVariables()
 {
   _synchronizeGroupsAndVariables();
-  // Peu tester dans le cas où le groupe parent d'un sous-maillage 
-  // avant l'appel aux maillages enfants.
-  // Cela pourrait peut-être nécessité une mise à jour des synchronisers enfants
+  // Can be tested in the case where the parent group of a submesh 
+  // before calling the child meshes.
+  // This might require an update of the child synchronizers
   for( DynamicMesh* child_mesh : m_child_meshes )
     child_mesh->synchronizeGroupsAndVariables();
 }
@@ -2654,16 +2653,16 @@ _synchronizeGroups()
 void DynamicMesh::
 _synchronizeVariables()
 {
-  // On ne synchronise que les variables sur les items du maillage courant
-  // - Les items de graphe ne sont pas traités ici (était déjà retiré de
-  //   la version précédente du code)
-  // - Les particules et ceux sans genre (Unknown) ne pas sujet à synchronisation
-  // La synchronisation est ici factorisée par collection de variables de même
-  // synchroniser (même pour les synchronisers sur groupes != famille)
-  // Pour préserver un ordre consistent de synchronisation une structure
-  // auxiliaire OrderedSyncList est utilisée.
+  // We only synchronize variables on the items of the current mesh
+  // - Graph items are not handled here (it was already removed from
+  //   the previous version of the code)
+  // - Particles and those without kind (Unknown) are not subject to synchronization
+  // Synchronization is factored here by a collection of variables with the same
+  // synchronizer (even for synchronizers on groups != family)
+  // To preserve a consistent synchronization order, an
+  // auxiliary OrderedSyncList structure is used.
   
- // Peut on le faire avec une structure plus compacte ?
+ // Can we do this with a more compact structure?
   typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList;
   typedef std::map<IVariableSynchronizer*, VariableCollection> SyncList;
   OrderedSyncList ordered_sync_list;
@@ -2684,9 +2683,9 @@ _synchronizeVariables()
       else
         synchronizer = var->itemFamily()->allItemsSynchronizer();
       IMesh * sync_mesh = synchronizer->itemGroup().mesh();
-      if (sync_mesh != this) continue; // on ne synchronise que sur le maillage courant
+      if (sync_mesh != this) continue; // we only synchronize on the current mesh
       std::pair<SyncList::iterator,bool> inserter = sync_list.insert(std::make_pair(synchronizer,VariableCollection()));
-      if (inserter.second) { // nouveau synchronizer
+      if (inserter.second) { // new synchronizer
         ordered_sync_list.add(synchronizer);
       }
       VariableCollection & collection = inserter.first->second;
@@ -2711,7 +2710,7 @@ _synchronizeVariables()
  void DynamicMesh::
 _sortInternalReferences()
 {
-  // TODO: cet appel spécifique doit être gérée par NodeFamily.
+  // TODO: this specific call must be handled by NodeFamily.
   m_node_family->sortInternalReferences();
 }
 
@@ -2785,15 +2784,15 @@ _compactItems(bool do_sort,bool compact_variables_and_groups)
 
   if (do_sort){
     Timer::Action ts_action(m_sub_domain,"CompactItemSortReferences");
-    // TODO: mettre cela dans la politique de la famille (a priori ne sert
-    // que pour les familles de noeud)
+    // TODO: put this in the family policy (apparently only useful
+    // for node families)
     _sortInternalReferences();
   }
 
   m_need_compact = false;
 
-  // Considère le compactage comme une évolution du maillage car cela
-  // change les structures associées aux entités et leurs connectivités
+  // Consider compaction as a mesh evolution because this
+  // changes the structures associated with the entities and their connectivities
   ++m_timestamp;
 }
 
@@ -2805,8 +2804,8 @@ setEstimatedCells(Integer nb_cell0)
 {
   Real factor = 1.0;
   if (m_parallel_mng->isParallel())
-    factor = 1.2; // Considère 20% d'entités fantômes.
-  // Les estimations suivantes correspondantes à une évaluation pour un cube de côté N=16
+    factor = 1.2; // Considers 20% ghost entities.
+  // The following estimations corresponding to an evaluation for a cube of side N=16
   Integer nb_node = Convert::toInteger(nb_cell0 * 1.2 * factor); //     (N+1)^3/N^3 => 1.2
   Integer nb_edge = Convert::toInteger(nb_cell0 * 6.8 * factor); // 6*(N+1)^2*N/N^3 => 6.8
   Integer nb_face = Convert::toInteger(nb_cell0 * 3.4 * factor); // 3*N^2*(N+1)/N^3 => 3.19
@@ -2825,18 +2824,18 @@ setEstimatedCells(Integer nb_cell0)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recharge le maillage à partir des variables protégés.
+ * \brief Reloads the mesh from protected variables.
  */
 void DynamicMesh::
 _readFromDump()
 {
   _loadProperties();
 
-  // Ne fais rien sur un maillage pas encore alloué.
+  // Do nothing on a mesh that has not yet been allocated.
   if (m_mesh_dimension()<0)
     return;
 
-  // Connexion maillage/sous-maillage
+  // Mesh/sub-mesh connection
   {
     IMeshMng* mm = meshMng();
     if (!m_parent_mesh_name.value().null()) {
@@ -2875,9 +2874,9 @@ _readFromDump()
     }
   }
 
-  // GG: Remise à jour des choix de connectivité
-  // Il faut le faire ici car les familles peuvent être créées au début de cette
-  // méthode et du coup ne pas tenir compte de la connectivité.
+  // GG: Update of connectivity choices
+  // This must be done here because the families might be created at the beginning of this
+  // method and thus not account for connectivity.
   if (!m_is_sub_connectivity_set)
     _setSubConnectivity();
 
@@ -2885,11 +2884,11 @@ _readFromDump()
   for( IItemFamily* family : m_item_families )
     family->readFromDump();
 
-  // Après relecture, il faut notifier les familles du changement potentiel
-  // des entités.
+  // After reading, the families must be notified of the potential
+  // change in entities.
   _notifyEndUpdateForFamilies();
 
-  //TODO: ne devrait pas etre fait ici.
+  //TODO: should not be done here.
   m_item_internal_list.nodes = m_node_family->itemsInternal();
   m_item_internal_list.edges = m_edge_family->itemsInternal();
   m_item_internal_list.faces = m_face_family->itemsInternal();
@@ -2959,19 +2958,19 @@ _setDimension(Integer dim)
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
   const bool is_non_manifold = meshKind().isNonManifold();
-  // Force le fait de ne pas re-numéroter les faces et les arêtes
-  // dans le cas d'un maillage non-manifold
+  // Force the fact of not re-numbering faces and edges
+  // in the case of a non-manifold mesh
   if (is_non_manifold){
     info() << "Force no-renumbering of edge and face uid because we are using non manifold mesh";
     m_mesh_unique_id_mng->setFaceBuilderVersion(0);
     m_mesh_unique_id_mng->setEdgeBuilderVersion(0);
   }
   bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
-  // Si le maillage est non-manifold, alors il faut obligatoirement utiliser
-  // la génération à partir des uniqueId() à partir des noeuds pour garantir
-  // la cohérence des entités créées.
-  // Cette contrainte pourra être éventuellement être supprimée lorsque ce type
-  // de maillage ne sera plus expérimental.
+  // If the mesh is non-manifold, then it is mandatory to use
+  // generation from uniqueId() from nodes to guarantee
+  // the consistency of the created entities.
+  // This constraint may eventually be removed when this type
+  // of mesh is no longer experimental.
   if (!v && is_non_manifold) {
     v = true;
     info() << "Force using edge and face uid generation from nodes because we are using non manifold mesh";
@@ -2981,8 +2980,8 @@ _setDimension(Integer dim)
     if (adder)
       adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
   }
-  // En 3D, avec les maillages non manifold, il faut obligatoirement créer les arêtes.
-  // Elles seront utilisées à la place des faces pour les mailles 2D.
+  // In 3D, with non-manifold meshes, it is mandatory to create edges.
+  // They will be used instead of faces for 2D meshes.
   if (dim == 3 && is_non_manifold) {
     Connectivity c(m_mesh_connectivity);
     if (!c.hasConnectivity(Connectivity::CT_HasEdge)) {
@@ -3084,23 +3083,20 @@ sharedNodesCoordinates()
 void DynamicMesh::
 _setOwnersFromCells()
 {
-  // On suppose qu'on connait les nouveaux propriétaires des mailles, qui
-  // se trouvent dans cells_owner. Il faut
-  // maintenant déterminer les nouveaux propriétaires des noeuds et
-  // des faces. En attendant d'avoir un algorithme qui équilibre mieux
-  // les messages, on applique le suivant:
-  // - chaque sous-domaine est responsable pour déterminer le nouveau
-  // propriétaire des noeuds et des faces qui lui appartiennent.
-  // - pour les noeuds et les arêtes, le nouveau propriétaire est le nouveau 
-  // propriétaire de la maille connectée à ce noeud dont le uniqueId() est le plus petit.
-  // - pour les faces, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille qui est derrière cette face s'il s'agit d'une face
-  // interne et de la maille connectée s'il s'agit d'une face frontière.
-  // - pour les noeuds duaux, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille connectée à l'élément dual
-  // - pour les liaisons, le nouveau propriétaire est le nouveau propriétaire
-  // de la maille connectée au premier noeud dual, c'est-à-dire le propriétaire
-  // du premier noeud dual de la liaison
+  // We assume we know the new owners of the meshes, which
+  // are found in cells_owner. We must now determine the new owners of the nodes and
+  // faces. Until we have an algorithm that better balances
+  // the messages, we apply the following:
+  // - each sub-domain is responsible for determining the new
+  // owner of the nodes and faces belonging to it.
+  // - for nodes and edges, the new owner is the new owner of the mesh connected to this node whose uniqueId() is the smallest.
+  // - for faces, the new owner is the new owner
+  // of the mesh behind this face if it is an internal face, and of the connected mesh if it is a boundary face.
+  // - for dual nodes, the new owner is the new owner
+  // of the mesh connected to the dual element
+  // - for links, the new owner is the new owner
+  // of the mesh connected to the first dual node, i.e., the owner
+  // of the first dual node of the link
 
   VariableItemInt32& nodes_owner(nodeFamily()->itemsNewOwner());
   VariableItemInt32& edges_owner(edgeFamily()->itemsNewOwner());
@@ -3108,11 +3104,11 @@ _setOwnersFromCells()
 
   const Integer sid = subDomain()->subDomainId();
 
-  // Outil d'affectation des owners pour les items
+  // Owner assignment tool for items
   if(m_new_item_owner_builder == NULL)
     m_new_item_owner_builder = new NewItemOwnerBuilder();
 
-  // Détermine les nouveaux propriétaires des noeuds
+  // Determines the new owners of the nodes
   {
     ENUMERATE_NODE(i_node,ownNodes()){
       Node node = *i_node;
@@ -3126,7 +3122,7 @@ _setOwnersFromCells()
     node.mutableItemBase().setOwner(nodes_owner[node],sid);
   }
 
-  // Détermine les nouveaux propriétaires des arêtes
+  // Determines the new owners of the edges
   {
     ENUMERATE_EDGE(i_edge,ownEdges()){
       Edge edge = *i_edge;
@@ -3140,7 +3136,7 @@ _setOwnersFromCells()
     edge.mutableItemBase().setOwner(edges_owner[edge],sid);
   }
 
-  // Détermine les nouveaux propriétaires des faces
+  // Determines the new owners of the faces
   {
     ENUMERATE_FACE(i_face,ownFaces()){
       Face face = *i_face;
@@ -3183,7 +3179,8 @@ outerFaces()
 //! AMR
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les mailles actives
+
+  //! Group of all active meshes
 CellGroup DynamicMesh::
 allActiveCells()
 {
@@ -3191,7 +3188,7 @@ allActiveCells()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les mailles actives et propres au domaine
+  //! Group of all active and domain-specific meshes
 CellGroup  DynamicMesh::
 ownActiveCells()
 {
@@ -3199,7 +3196,7 @@ ownActiveCells()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les mailles de niveau \p level
+  //! Group of all meshes of level \p level
 CellGroup DynamicMesh::
 allLevelCells(const Integer& level)
 {
@@ -3207,7 +3204,7 @@ allLevelCells(const Integer& level)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les mailles propres de niveau \p level
+  //! Group of all own meshes of level \p level
 CellGroup DynamicMesh::
 ownLevelCells(const Integer& level)
 {
@@ -3215,7 +3212,7 @@ ownLevelCells(const Integer& level)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les faces actives
+  //! Group of all active faces
 FaceGroup DynamicMesh::
 allActiveFaces()
 {
@@ -3223,7 +3220,7 @@ allActiveFaces()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les faces actives propres au sous-domaine.
+  //! Group of all active faces specific to the sub-domain.
 FaceGroup DynamicMesh::
 ownActiveFaces()
 {
@@ -3234,7 +3231,7 @@ ownActiveFaces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les faces actives internes
+  //! Group of all internal active faces
 FaceGroup DynamicMesh::
 innerActiveFaces()
 {
@@ -3242,7 +3239,7 @@ innerActiveFaces()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  //! Groupe de toutes les faces actives sur la frontière.
+  //! Group of all active faces on the boundary.
 FaceGroup DynamicMesh::
 outerActiveFaces()
 {
@@ -3493,7 +3490,7 @@ void DynamicMesh::
 setMeshPartInfo(const MeshPartInfo& mpi)
 {
   m_mesh_part_info = mpi;
-  // TODO: notifier les familles
+  // TODO: notify the families
 }
 
 /*---------------------------------------------------------------------------*/
@@ -3558,8 +3555,8 @@ class ARCANE_MESH_EXPORT DynamicMeshFactoryBase
   {
     MeshBuildInfo mbi(build_info);
     MeshKind mk(mbi.meshKind());
-    // Si on demande l'AMR mais que cela n'est pas indiqué dans MeshPart,
-    // on l'ajoute.
+    // If AMR is requested but not indicated in MeshPart,
+    // we add it.
     if (m_is_amr && mk.meshAMRKind()==eMeshAMRKind::None)
       mk.setMeshAMRKind(eMeshAMRKind::Cell);
     mbi.addMeshKind(mk);

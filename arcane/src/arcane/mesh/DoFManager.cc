@@ -23,7 +23,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Constructeur de la classe
+//! Constructor of the class
 DoFManager::
 DoFManager(IMesh* mesh)
 : m_mesh(mesh)

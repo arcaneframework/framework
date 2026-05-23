@@ -36,10 +36,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe abstraite de gestion des connectivités.
+ * \brief Abstract connectivity management class.
  *
- * Cette classe gère les informations communes à tous les types de
- * connectivité comme son nom, les familles sources et cible, ...
+ * This class manages common information for all types of
+ * connectivity such as its name, source and target families, etc.
  */
 class ARCANE_MESH_EXPORT AbstractConnectivity
 : public IItemConnectivity
@@ -68,9 +68,9 @@ class ARCANE_MESH_EXPORT AbstractConnectivity
   virtual IItemFamily* targetFamily() const { return m_target_family;}
   virtual void _initializeStorage(ConnectivityItemVector*)
   {
-    // Pour l'instant ne fait rien. A terme, cela pourra servir par exemple
-    // pour dimensionner au nombre max d'entités connectées afin de ne pas
-    // faire de réallocations lors de la récupération des entités via _connectedItems().
+    // For now does nothing. Eventually, this can be used, for example,
+    // to dimension the storage based on the maximum number of connected entities
+    // to avoid reallocations when retrieving entities via _connectedItems().
   }
 
  protected:
@@ -90,7 +90,7 @@ class ARCANE_MESH_EXPORT AbstractConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Connectivite item->item, exactement 1 item connecté par item (0 non admis).
+ * \brief Item->item connectivity, exactly 1 item connected per item (0 not allowed).
  */
 class ARCANE_MESH_EXPORT ItemConnectivity
 : public AbstractConnectivity
@@ -106,7 +106,7 @@ public:
   }
 
   ItemConnectivity(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& aname)
-    : AbstractConnectivity(source_family,target_family,aname) // IFPEN : voir le paramètre own de GE...
+    : AbstractConnectivity(source_family,target_family,aname) // IFPEN: see the own parameter of GE...
   {
     m_item_property.copy(item_property);
   }
@@ -135,7 +135,7 @@ public:
     /*
     ARCANE_ASSERT((m_item_property[item] != NULL_ITEM_LOCAL_ID),
                   ("Item must be connected to one item in ItemConnectivity."));
-    //TODO: conserver ItemInternalList pour des raisons de performance.
+    //TODO: keep ItemInternalList for performance reasons.
     return Item(_targetFamily()->itemsInternal()[m_item_property[item]]);
     */
     // Needed for IFPEN applicative test: eventually returns a null item (reasonable for perf ?)
@@ -160,13 +160,13 @@ public:
     return m_item_property[lid];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:
@@ -195,7 +195,7 @@ class ItemConnectivityT
   ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const String& connectivity_name)
   : ItemConnectivity(source_family,target_family,connectivity_name){}
 
-  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property,const String& connectivity_name)
+  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& connectivity_name)
   : ItemConnectivity(source_family,target_family,item_property, connectivity_name){}
 
  public:
@@ -274,13 +274,13 @@ public:
     return m_item_property[lid][index];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:
@@ -389,13 +389,13 @@ public:
     return m_item_property[lid][index];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndexedIncrementalItemConnectivityMng.cc                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire de 'IIndexedIncrementalItemConnectivity'.                    */
+/* Manager for 'IIndexedIncrementalItemConnectivity'.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -79,12 +79,12 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
                    name, old_target->name(), target->name());
   }
   else {
-    // Les connectivités créées sont désallouées automatiquement par les familles
+    // The created connectivities are automatically deallocated by the families
     auto* true_connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
     connectivity = makeRef<IIndexedIncrementalItemConnectivity>(new IndexedIncrementalItemConnectivity(true_connectivity));
     m_connectivity_map.insert(std::make_pair(name, connectivity));
 
-    // Ajoute les entités existantes dans la connectivité.
+    // Adds existing entities to the connectivity.
     true_connectivity->_internalNotifySourceItemsAdded(source->allItems().view().localIds());
   }
   return connectivity;

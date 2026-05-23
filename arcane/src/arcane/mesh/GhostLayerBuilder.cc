@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Construction des couches fantômes.                                        */
+/* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -156,7 +156,7 @@ _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_
       Int64ConstArrayView infos  = boundary_infos_to_send[rank];
 
       s->setMode(ISerializer::ModeReserve);
-      s->reserveArray(infos); // Pour les elements
+      s->reserveArray(infos); // For the elements
 
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
@@ -197,14 +197,14 @@ _addOneGhostLayerV2()
     ostr() << "** FACES LIST\n";
 
   Integer nb_sub_domain_boundary_face = 0;
-  // Marque les noeuds sur la frontière
-  ItemInternalMap& cells_map = m_mesh->cellsMap(); // Supporte les transferts du maillage
-  ItemInternalMap& faces_map = m_mesh->facesMap(); // Détermine les frontières avant transfert
-  // ItemInternalMap& edges_map = m_mesh->edgesMap(); // N'est pas utilisé directement par l'algo
-  ItemInternalMap& nodes_map = m_mesh->nodesMap(); // Localise les modifications
+  // Marks nodes on the boundary
+  ItemInternalMap& cells_map = m_mesh->cellsMap(); // Supports mesh transfers
+  ItemInternalMap& faces_map = m_mesh->facesMap(); // Determines boundaries before transfer
+  // ItemInternalMap& edges_map = m_mesh->edgesMap(); // Not directly used by the algorithm
+  ItemInternalMap& nodes_map = m_mesh->nodesMap(); // Locates modifications
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
-  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  // Iterates over faces and marks boundary nodes, edges, and faces
   faces_map.eachItem([&](Face face) {
     impl::ItemBase face_base = face.itemBase();
     if (is_verbose){
@@ -231,7 +231,7 @@ _addOneGhostLayerV2()
 
   Integer boundary_nodes_uid_count = 0;
 
-  // Parcours les nœuds et ajoute les nœuds frontières
+  // Iterates over nodes and adds boundary nodes
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
   nodes_map.eachItem([&](Node node) {
     Int32 f = node.itemBase().flags();
@@ -254,7 +254,7 @@ _addOneGhostLayerV2()
   }
 
 
-  //TODO: choisir bonne valeur pour initialiser la table
+  //TODO: choose a good value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(200,true);
   NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid,nb_rank);
 
@@ -274,7 +274,7 @@ _addOneGhostLayerV2()
         v.add(node_uid);
         v.add(cell.owner());
         v.add(cell.uniqueId());
-        //TODO: supprimer les doublons ?
+        //TODO: delete duplicates?
         //add_cell = true;
         //break;
       }
@@ -336,13 +336,13 @@ _addOneGhostLayerV2()
       //info() << "NODE UID=" << node_uid;
       ranks.clear();
       cells.clear();
-      // Comme on connait la liste des mailles connectées à ce noeud ainsi que leur
-      // propriétaire, en profite pour calculer le propriètaire du noeud en considérant
-      // qu'il s'agit du même propriétaire que celui de la maille de plus petit uniqueId()
-      // connecté à ce noeud.
+      // Since we know the list of meshes connected to this node, as well as their
+      // owner, we take the opportunity to calculate the node's owner by considering
+      // that it is the same owner as the mesh with the smallest uniqueId()
+      // connected to this node.
       Int32 node_new_owner = NULL_SUB_DOMAIN_ID;
       Int64 smallest_cell_uid = NULL_ITEM_UNIQUE_ID;
-      //TODO ajouter securite en calculant le nombre max de valeurs
+      //TODO add safety by calculating the max number of values
       while(index!=(-1)){
         Int64 cell_uid = cell_indexes[index];
         Int32 cell_owner = CheckedConvert::toInt32(cell_indexes[index+1]);
@@ -355,7 +355,7 @@ _addOneGhostLayerV2()
           node_new_owner = cell_owner;
         }
       }
-      // Tri les rangs puis supprime les doublons
+      // Sort the ranks then remove duplicates
       std::sort(std::begin(ranks),std::end(ranks));
       Integer new_size = CheckedConvert::toInteger(std::unique(std::begin(ranks),std::end(ranks)) - std::begin(ranks));
       ranks.resize(new_size);
@@ -363,8 +363,8 @@ _addOneGhostLayerV2()
       //for( Integer z=0; z<new_size; ++z )
       //info() << "NEW_RANK=" << ranks[z];
 
-      // Si le nombre de rang vaut 1, cela signifie que le noeud n'appartient qu'à un seul sous-domaine
-      // et donc il s'agit d'un vrai noeud frontière. Il n'y a pas besoin de transférer ses mailles.
+      // If the number of ranks equals 1, it means that the node belongs to only one subdomain
+      // and therefore it is a true boundary node. There is no need to transfer its cells.
       if (new_size==1)
         continue;
       Integer nb_cell = cells.size();
@@ -439,7 +439,7 @@ _addOneGhostLayerV2()
     }
   }
 
-  // Envoie et réceptionne les mailles fantômes
+  // Sends and receives ghost cells
   _exchangeCells(cells_to_send,false);
   m_mesh_builder->printStats();
 }
@@ -450,14 +450,14 @@ _addOneGhostLayerV2()
 void GhostLayerBuilder::
 _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags)
 {
-  //TODO: fusionner avec GhostLayerBuilder2::_exchangeCells().
+  //TODO: merge with GhostLayerBuilder2::_exchangeCells().
   typedef HashTableMapT<Int32,SharedArray<Int32>> SubDomainItemMap;
   IParallelMng* pm = m_mesh->parallelMng();
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
     Int32 sd = i_map.data()->key();
-    // TODO: items peut contenir des doublons et donc il faudrait les supprimer
-    // pour éviter d'envoyer inutilement plusieurs fois la même maille.
+    // TODO: items may contain duplicates and therefore they should be removed
+    // to avoid unnecessarily sending the same cell multiple times.
     Int32ConstArrayView items = i_map.data()->value();
     info(4) << "CELLS TO SEND SD=" << sd << " NB=" << items.size();
     exchanger->addSender(sd);
@@ -504,12 +504,12 @@ addGhostChildFromParent()
   }
   Integer sid = pm->commRank();
 
-  // Marque les noeuds sur la frontière
+  // Mark the nodes on the boundary
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
   FaceFamily& true_face_family = m_mesh->trueFaceFamily();
 
-  //TODO: choisir bonne valeur pour initialiser la table
+  //TODO: choose correct value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(200,true);
 
   cells_map.eachItem([&](Item cell) {
@@ -522,7 +522,7 @@ addGhostChildFromParent()
     }
   });
 
-  // Positionne la liste des envois
+  // Position the send list
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
@@ -576,7 +576,7 @@ addGhostChildFromParent()
       debug() << "nb_recv_child= " << nb_recv_child;
     }
   }
-  // Envoie et réceptionne les mailles fantômes
+  // Sends and receives ghost cells
   _exchangeCells(cells_to_send,true);
   m_mesh_builder->printStats();
 }
@@ -585,6 +585,7 @@ addGhostChildFromParent()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 void GhostLayerBuilder::
 addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
 {
@@ -598,19 +599,19 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   }
   Integer sid = pm->commRank();
 
-  // Marque les noeuds sur la frontière
+  // Mark the nodes on the boundary
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  //TODO: choisir bonne valeur pour initialiser la table
+  //TODO: choose correct value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(200,true);
-  // mailles de niveau 0 ne sont pas concernée
-  // que les mailles actives de niveau supérieur a 0 sont concernees
-  // que les mailles qui viennent d'être raffinées ou dé-raffinées sont concernées
+  // level 0 cells are not concerned
+  // only active cells with level greater than 0 are concerned
+  // that cells that have just been refined or def-refined are concerned
   cells_map.eachItem([&](Item cell) {
     ARCANE_ASSERT((cell.owner() != -1), (""));
     if (cell.owner() == sid)
       return;
-    // cela suppose que les flags sont deja synchronises
+    // this assumes that the flags are already synchronized
     if (cell.hasFlags(ItemFlags::II_JustRefined)) {
       // cell to add
       ghost_cell_to_refine.add(cell.uniqueId());
@@ -620,7 +621,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
     }
   });
 
-  // Positionne la liste des envois
+  // Position the send list
   auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(), boundary_infos_to_send);
 
@@ -670,7 +671,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
     }
   }
 
-  // Envoie et réceptionne les mailles fantômes
+  // Sends and receives ghost cells
   _exchangeCells(cells_to_send,true);
   m_mesh_builder->printStats();
 }
@@ -709,6 +710,3 @@ NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

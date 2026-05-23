@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DoFFamilyPolicyMng.cc                                       (C) 2000-2016 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de DoF.                         */
+/* Manager of policies for a DoF family.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,8 +41,8 @@ class DoFFamilyCompactPolicy
  public:
   void updateInternalReferences(IMeshCompacter* compacter) override
   {
-    // Pour l'instant ne fait rien car c'est la famille source qui gère la
-    // mise à jour dans ItemFamily::beginCompactItems().
+    // Does nothing for now because the source family handles the
+    // update in ItemFamily::beginCompactItems().
     ARCANE_UNUSED(compacter);
   }
 };
@@ -50,7 +50,7 @@ class DoFFamilyCompactPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de DoF.
+ * \brief Manager of policies for a DoF family.
  */
 class ARCANE_MESH_EXPORT DoFFamilyPolicyMng
 : public ItemFamilyPolicyMng

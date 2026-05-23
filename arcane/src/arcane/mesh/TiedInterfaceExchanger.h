@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceExchanger.h                                    (C) 2000-2016 */
 /*                                                                           */
-/* Echangeur entre sous-domaines des interfaces liées.                       */
+/* Exchanger between sub-domains of linked interfaces.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_TIEDINTERFACEEXCHANGER_H
 #define ARCANE_MESH_TIEDINTERFACEEXCHANGER_H
@@ -47,21 +47,21 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Echangeur entre sous-domaines les interfaces liées.
+ * \brief Exchanger between sub-domains of linked interfaces.
 
- Une instance de cette classe gère l'échange des informations sur
- les interfaces liées (ITiedInterface) lors d'un échange d'entités
- entre sous-domaines.
+ An instance of this class manages the exchange of information about
+ linked interfaces (ITiedInterface) during an exchange of entities
+ between sub-domains.
 
- Cette classe est utilisée via ItemsExchangeInfo2.
+ This class is used via ItemsExchangeInfo2.
  
- Une instance n'est valide que pour un échange et est ensuite détruite.
+ An instance is only valid for one exchange and is then destroyed.
 
- L'ordre d'appel est le suivant:
- 1. computeExchangeInfos() qui calcule les infos à sérialiser.
- 2. serialize() en écriture pour chaque rang à envoyer
- 3. serialize() en lecture pour chaque rang reçu
- 4. rebuildTiedInterfaces() pour reconstruire les interfaces.
+ The order of calls is as follows:
+ 1. computeExchangeInfos() which calculates the info to be serialized.
+ 2. serialize() in writing mode for each rank to be sent
+ 3. serialize() in reading mode for each rank received
+ 4. rebuildTiedInterfaces() to reconstruct the interfaces.
 */
 class TiedInterfaceExchanger
 : public TraceAccessor
@@ -113,5 +113,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

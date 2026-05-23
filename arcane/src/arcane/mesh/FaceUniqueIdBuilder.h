@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceUniqueIdBuilder.h                                       (C) 2000-2024 */
 /*                                                                           */
-/* Construction des identifiants uniques des faces.                          */
+/* Construction of unique face IDs.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_FACEUNIQUEIDBUILDER_H
 #define ARCANE_MESH_FACEUNIQUEIDBUILDER_H
@@ -32,7 +32,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des couches fantômes.
+ * \brief Construction of ghost layers.
  */
 class FaceUniqueIdBuilder
 : public TraceAccessor
@@ -44,7 +44,7 @@ class FaceUniqueIdBuilder
 
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the \a mesh
   explicit FaceUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
 
  public:
@@ -73,4 +73,4 @@ class FaceUniqueIdBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

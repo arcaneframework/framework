@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerMng.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire de couche fantômes d'un maillage.                            */
+/* Mesh ghost layer manager.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -79,13 +79,13 @@ setBuilderVersion(Integer n)
 void GhostLayerMng::
 _initBuilderVersion()
 {
-  // La version par défaut est la 2.
-  // La version 1 n'existe plus.
-  // La version 3 est opérationnelle et plus extensible que la 2.
-  // La version 4 est comme la version 3 mais permet d'être appelée
-  // alors qu'il y a déjà des couches de mailles fantômes.
-  // Si OK pour IFP, il faudra passer la version par défaut à la 3 ou 4. Il
-  // reste cependant à traiter le cas des maillages AMR
+  // The default version is 2.
+  // Version 1 no longer exists.
+  // Version 3 is operational and more extensible than 2.
+  // Version 4 is like version 3 but allows being called
+  // even if there are already ghost mesh layers.
+  // If OK for IFP, the default version should be set to 3 or 4. However,
+  // the case of AMR meshes still needs to be handled
   Integer default_version = 2;
   Integer version = default_version;
   String version_str = platform::getEnvironmentVariable("ARCANE_GHOSTLAYER_VERSION");

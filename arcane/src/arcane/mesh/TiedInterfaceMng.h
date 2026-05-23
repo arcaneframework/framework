@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceMng.h                                          (C) 2000-2010 */
 /*                                                                           */
-/* Gestionnaire des interfaces liées.                                        */
+/* Tied interface manager.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_TIEDINTERFACEMNG_H
 #define ARCANE_MESH_TIEDINTERFACEMNG_H
@@ -47,7 +47,7 @@ class TiedInterface;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation du gestionnaire d'interfaces liées.
+ * \brief Implementation of the tied interface manager.
  */
 class TiedInterfaceMng
 : public TraceAccessor
@@ -107,4 +107,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

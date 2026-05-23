@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemRefinement.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* liste de méthodes de manipulation d'un maillage AMR.                      */
+/* list of methods for manipulating an AMR mesh.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,10 +51,10 @@ const Real ItemRefinement::TOLERENCE = 10.0e-6;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Il semble que le calcul de 'cell_hmin' soit légèrement différent (au niveau
-// de l'epsilon machine) en fonction du découpage et du nombre de sous-domaines.
-// On indique donc que la variable 'AMRCellHMin' est dépendente du nombre
-// de sous-domaine pour éviter des faux positifs dans les comparaisons bit à bit.
+// It seems that the calculation of 'cell_hmin' is slightly different (at the level
+// of the epsilon machine) depending on the decomposition and the number of sub-domains.
+// We therefore indicate that the variable 'AMRCellHMin' is dependent on the number
+// of sub-domains to avoid false positives in bit-by-bit comparisons.
 
 // Mesh refinement methods
 ItemRefinement::
@@ -171,12 +171,12 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
   m_nb_node_to_add = 0;
 
   if (!has_hChildren){
-    // Creation des enfants
+    // Creation of children
     computeHChildren<typeID>(item, mesh_refinement);
     debug()<<"[ItemRefinement::refineOneCell] "<<m_nb_cell_to_add<<" new cells, "
            <<m_nb_node_to_add<<" new nodes & "<<m_nb_face_to_add<<" faces";
 
-    // Créé les noeuds et positionne leur coordonnées
+    // Created the nodes and set their coordinates
     {
       m_nodes_lid.resize(m_nb_node_to_add);
       m_mesh->modifier()->addNodes(m_nodes_unique_id, m_nodes_lid);
@@ -187,17 +187,17 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       }
     }
 
-    // Créé les faces
+    // Created the faces
     {
       m_faces_lid.resize(m_nb_face_to_add);
       m_mesh->modifier()->addFaces(m_nb_face_to_add, m_faces_infos, m_faces_lid);
     }
 
-    // Créé les mailles
+    // Created the meshes
     {
       m_cells_lid.resize(m_nb_cell_to_add);
       m_mesh->modifier()->addHChildrenCells(item, m_nb_cell_to_add, m_cells_infos, m_cells_lid);
-      //! \todo vérfier l'ordre des enfants après leurs création
+      //! \todo check the order of children after their creation
       ItemInfoListView cells(m_mesh->cellFamily());
       for (Integer i = 0; i < m_nb_cell_to_add; ++i){
         Item child = cells[m_cells_lid[i]];
@@ -217,8 +217,8 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
     }
   }
 
-  // Maintenant, Unset le flag de raffinement de l'item
-  //debug(Trace::High) << "[refineOneCell] et on flush le flag";
+  // Now, unset the refinement flag of the item
+  //debug(Trace::High) << "[refineOneCell] and we flush the flag";
   Integer f = item.itemBase().flags();
   f &= ~ItemFlags::II_Refine;
   f |= ItemFlags::II_Inactive;
@@ -247,9 +247,8 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
   ARCANE_ASSERT ( (item.itemBase().flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
   ARCANE_ASSERT ( (!item.isActive()), ("Item is active!"));
   //debug(Trace::High) << "[coarsenOneCell] "<<item_internal->uniqueId();
-  // ATT: Nous ne supprimons pas les enfants jusqu'à contraction via MeshRefinement::contract()
-
-  // re-calcul des noeuds hanging
+  // ATT: We do not delete the children until contraction via MeshRefinement::contract()
+  // re-calculating hanging nodes
   IParallelMng* pm = m_mesh->parallelMng();
   const Integer sid = pm->commRank();
   computeOrigNodesCoords<typeID>(item,rp,sid);
@@ -264,7 +263,7 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
     ARCANE_ASSERT ((f & ItemFlags::II_Coarsen),("Item is not flagged for coarsening"));
     f &= ~ItemFlags::II_Coarsen;
     f |= ItemFlags::II_Inactive;
-    //      f |= ItemFlags::II_NeedRemove; // TODO activer le flag de suppression
+    //      f |= ItemFlags::II_NeedRemove; // TODO activate the removal flag
     mychild.mutableItemBase().setFlags(f);
   }
   Integer f = item.itemBase().flags();
@@ -325,19 +324,19 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
     m_nodes_uid[c].resize(nb_cnodes);
 
     for (Integer nc = 0; nc < nb_cnodes; nc++){
-      // initialisation
+      // initialization
       m_p[c][nc] = Real3::null();
       m_nodes_uid[c][nc] = NULL_ITEM_ID;
 
       for (Integer n = 0; n < nb_nodes; n++){
-        // La valeur à partir de la matrice de raffinement
+        // The value from the refinement matrix
         const Real em_val = rp.refine_matrix(c, nc, n);
 
         if (em_val != 0.){
           m_p[c][nc] += m_coord[n] * em_val;
 
-          //nous avons pu trouver le noeud, dans ce cas nous
-          //n'aurons pas besoin de le chercher plus tard ni de le creer.
+          //we were able to find the node, in this case we
+          //will not need to search for it or create it later.
           if (em_val == 1.){
             m_nodes_uid[c][nc] = item.node(n).uniqueId().asInt64();
             nodes_set.insert(m_nodes_uid[c][nc]);
@@ -345,7 +344,7 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
         }
       }
 
-      // assignation des noeuds aux enfants
+      // assignment of nodes to children
       if (m_nodes_uid[c][nc] == NULL_ITEM_ID){
         m_nodes_uid[c][nc] = mesh_refinement.findOrAddNodeUid(m_p[c][nc], tol);
         debug(Trace::Highest) << "\t[refineOneCell] assigning node " << nc << " to l'uid:" << m_nodes_uid[c][nc];
@@ -353,12 +352,12 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
       m_nb_node_to_add = m_nb_node_to_add + 1;
     }
 
-    // Création des mailles
+    // Creating cells
 
-    // Infos pour la création des mailles
-    // par maille: 1 pour son unique id,
-    //             1 pour son type,
-    //             nb_nodes pour les uid de ses noeuds
+    // Info for creating cells
+    // per cell: 1 for its unique id,
+    //             1 for its type,
+    //             nb_nodes for the uids of its nodes
 
     Int64 cell_unique_id = first_cell_uid + c;
     debug(Trace::Highest) << "[refineOneCell] CELL TYPE:" << c_type_id << ", uid=" << cell_unique_id;
@@ -369,12 +368,12 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
       m_cells_infos.add(m_nodes_uid[c][nc]);
     m_nb_cell_to_add = m_nb_cell_to_add + 1;
 
-    // Création des faces
+    // Creating faces
 
-    // Infos pour la création des faces
-    // par face: 1 pour son unique id,
-    //           1 pour son type,
-    //           nb_nodes pour ses noeuds
+    // Info for creating faces
+    // per face: 1 for its unique id,
+    //           1 for its type,
+    //           nb_nodes for its nodes
 
     const Integer nb_cface = c_type->nbLocalFace();
     debug(Trace::High) << "[refineOneCell] nb faces à créer:" << nb_cface;
@@ -453,10 +452,10 @@ computeOrigNodesCoords(Cell item, const ItemRefinementPatternT<typeID>& rp, cons
 
       for (Integer n = 0; n < nb_nodes; n++){
         //debug() << "\t\t[coarsenOneCell] pos #"<<n;
-        // La valeur à partir de la matrice de raffinement
+        // The value from the refinement matrix
         const Real em_val = rp.refine_matrix(c, nc, n);
 
-        // La position du noeud est quelque part entre les sommets existants
+        // The node position is somewhere between the existing vertices
         if ((em_val != 0.) && (em_val != 1.)){
           new_pos += em_val * m_coord[n];
           calculated_new_pos = true;
@@ -464,7 +463,7 @@ computeOrigNodesCoords(Cell item, const ItemRefinementPatternT<typeID>& rp, cons
       }
 
       if (calculated_new_pos)
-        //Déplacement du noeud existant de nouveau dans sa position d'origine
+        //Move the existing node back to its original position
         m_orig_nodes_coords[mychild.node(nc)] = new_pos;
     }
   }
@@ -498,4 +497,3 @@ ARCANE_INSTANTIATE(IT_DiTetra5);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

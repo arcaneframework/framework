@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CompactIncrementalItemConnectivity.h                        (C) 2000-2021 */
 /*                                                                           */
-/* Gestion des connectivités utilisant la méthode compacte.                  */
+/* Management of connectivities using the compact method.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_COMPACTINCREMENTALITEMCONNECTIVITY_H
 #define ARCANE_MESH_COMPACTINCREMENTALITEMCONNECTIVITY_H

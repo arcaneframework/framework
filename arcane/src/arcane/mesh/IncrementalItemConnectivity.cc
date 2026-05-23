@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IncrementalItemConnectivity.cc                              (C) 2000-2024 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
+/* Incremental connectivity of entities.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,7 +72,7 @@ AbstractIncrementalItemConnectivity(IItemFamily* source_family,
   m_families.add(m_source_family);
   m_families.add(m_target_family);
 
-  //TODO: il faudra supprimer ces références lors de la destruction.
+  //TODO: these references must be removed upon destruction.
   source_family->_internalApi()->addSourceConnectivity(this);
   target_family->_internalApi()->addTargetConnectivity(this);
 }
@@ -114,8 +114,8 @@ class IncrementalItemConnectivityContainer
     m_connectivity_index_array(m_connectivity_index_variable._internalTrueData()->_internalDeprecatedValue()),
     m_connectivity_list_array(m_connectivity_list_variable._internalTrueData()->_internalDeprecatedValue())
   {
-    // Ajoute un tag pour indiquer que ce sont des variables associées à la connectivité.
-    // Pour l'instant cela n'est utilisé que pour les statistiques d'affichage.
+    // Adds a tag to indicate that these variables are associated with connectivity.
+    // For now, this is only used for display statistics.
 
     String tag_name = "ArcaneConnectivity";
     m_connectivity_nb_item_variable.addTag(tag_name,"1");
@@ -136,11 +136,11 @@ class IncrementalItemConnectivityContainer
   ObserverPool m_observers;
 
   /*!
-   * \brief Nombre maximum d'entités connectées.
+   * \brief Maximum number of connected items.
    *
-   * Il s'agit d'un majorant du nombre maximum d'entité connectées.
-   * Pour des raisons de performance, cette valeur n'est pas mise à jour
-   * si des entités sont retirées.
+   * This is an upper bound of the maximum number of connected items.
+   * For performance reasons, this value is not updated
+   * if items are removed.
    */
   Int32 m_max_nb_item = 0;
 
@@ -152,14 +152,14 @@ class IncrementalItemConnectivityContainer
 
   void _checkResize(Int32 lid)
   {
-    //TODO: réutiliser le code de ItemFamily::_setUniqueId().
+    //TODO: reuse the code from ItemFamily::_setUniqueId().
     Integer size = m_connectivity_nb_item_array.size();
     Integer wanted_size = lid + 1;
     if (wanted_size<size)
       return;
     Integer capacity = m_connectivity_nb_item_array.capacity();
     if (wanted_size<capacity){
-      // Pas besoin d'augmenter la capacité.
+      // No need to increase capacity.
     }
     else{
       Integer reserve_size = 1000;
@@ -226,8 +226,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   m_p = new IncrementalItemConnectivityContainer(mesh,var_name);
 
   using ThatClass = IncrementalItemConnectivityBase;
-  // Récupère les évènements de lecture pour indiquer qu'il faut mettre
-  // à jour les vues.
+  // Get read events to indicate that the views must be updated.
   m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChangedFromObservable,
                                m_p->m_connectivity_nb_item_variable.variable()->readObservable());
 
@@ -237,9 +236,9 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityListChanged,
                                m_p->m_connectivity_list_variable.variable()->readObservable());
 
-  // Met à jour les vues à partir des tableaux associées.
-  // Il faut le faire dès que la taille d'un tableau change car alors
-  // il peut être réalloué et donc la vue associée devenir invalide.
+  // Update the views from the associated arrays.
+  // This must be done whenever the size of an array changes because then
+  // the array might be reallocated and thus the associated view might become invalid.
   _notifyConnectivityListChanged();
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChangedFromObservable();
@@ -322,8 +321,8 @@ _setMaxNbConnectedItemsInConnectivityList()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Méthode appelée lorsque la le nombre d'entité est modifié de manière externe,
- * par exemple en reprise ou après un retour-arrière.
+ * Method called when the number of entities is modified externally,
+ * for example during recovery or after a rollback.
  */
 void IncrementalItemConnectivityBase::
 _notifyConnectivityNbItemChangedFromObservable()
@@ -350,7 +349,7 @@ _setNewMaxNbConnectedItems(Int32 new_max)
 void IncrementalItemConnectivityBase::
 _computeMaxNbConnectedItem()
 {
-  // Force la remise à zéro pour être sur qu'il sera mis à jour
+  // Force reset to ensure it is updated
   m_p->m_max_nb_item = -1;
   Int32 max_nb_item = 0;
   for( Int32 x : m_connectivity_nb_item )
@@ -371,11 +370,11 @@ maxNbConnectedItem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Indique que cette connectivité est associée à une des connectivités
- * de ItemInternal.
+ * \brief Indicates that this connectivity is associated with one of the connectivities
+ * of ItemInternal.
  *
- * Cela permet de mettre à jour directement la structure \a ilist dès que
- * cette connectivité est modifiée.
+ * This allows direct updating of the \a ilist structure whenever
+ * this connectivity is modified.
  */
 void IncrementalItemConnectivityBase::
 setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
@@ -490,7 +489,7 @@ IncrementalItemConnectivity(IItemFamily* source_family,IItemFamily* target_famil
   m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name()+"PreallocSize",0);
   info(4) << "PreallocSize1 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
-  // Vérifie s'il faut ajouter l'entité nulle en début de liste.
+  // Checks if the null entity needs to be added at the beginning of the list.
   _checkAddNullItem();
 }
 
@@ -555,8 +554,8 @@ _increaseIndexList(Int32 lid,Integer size,Int32 target_lid)
   ArrayView<Int32> current_list(size,&(m_connectivity_list[pos_in_index]));
   ArrayView<Int32> new_list(size+1,&(m_connectivity_list[new_pos_in_list]));
   new_list.copy(current_list);
-  // Ajoute la nouvelle entité à la fin de la liste des connectivités
-  // TODO: regarder pour le tri dans l'ordre des uid() croissant.
+  // Adds the new entity to the end of the connectivity list
+  // TODO: look into sorting by increasing uid().
   new_list[size] = target_lid;
   m_connectivity_index[lid] = new_pos_in_list;
 }
@@ -571,18 +570,18 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   const Int32 lid = source_item.localId();
   const Int32 target_lid = target_item.localId();
   Integer size = m_connectivity_nb_item[lid];
-  // Ajoute une entité connectée.
-  // Pour l'instant, le fonctionnement est basique.
-  // On ajoute toujours les entités à la fin de m_p->m_connectivity_list.
-  // S'il n'y en a pas, il suffit d'ajouter à la fin.
-  // S'il y en a déjà, il faut allouer à la fin de
-  // m_p->m_connectivity_list assez \a size+1 éléments et
-  // on recopie la précédente connectivité dans le nouvel emplacement.
-  // Forcément, avec le temps la liste va toujours grossir
-  // car les trous ne sont pas réutilisés.
+  // Adds a connected item.
+  // For now, the functionality is basic.
+  // The items are always added to the end of m_p->m_connectivity_list.
+  // If there are none, it is enough to add to the end.
+  // If there are already some, it is necessary to allocate at the end of
+  // m_p->m_connectivity_list enough \a size+1 elements and
+  // we copy the previous connectivity to the new location.
+  // Naturally, over time the list will always grow
+  // because the gaps are not reused.
   if (m_pre_allocated_size!=0){
-    // En cas de préallocation, on alloue par bloc de taille 'm_pre_allocated_size'.
-    // Il faut donc réallouer si la taille est un multiple de m_pre_allocated_size
+    // In case of preallocation, we allocate in blocks of size 'm_pre_allocated_size'.
+    // We must therefore reallocate if the size is a multiple of m_pre_allocated_size
     if (size==0){
       Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
       m_connectivity_index[lid] = new_pos_in_list;
@@ -618,7 +617,7 @@ Integer IncrementalItemConnectivity::
 _computeAllocSize(Integer nb_item)
 {
   if (m_pre_allocated_size!=0){
-    // Alloue un multiple de \a m_pre_allocated_size
+    // Allocates a multiple of \a m_pre_allocated_size
     Integer alloc_size = nb_item / m_pre_allocated_size;
     if (alloc_size==0)
       return m_pre_allocated_size;
@@ -745,7 +744,7 @@ notifySourceItemAdded(ItemLocalId item)
 void IncrementalItemConnectivity::
 _internalNotifySourceItemsAdded(ConstArrayView<Int32> local_ids)
 {
-  // Pré-calcule le maximum des local_ids pour le redimensionnement.
+  // Pre-calculates the maximum of the local_ids for resizing.
   Int32 nb_item = local_ids.size();
   if (nb_item <= 0)
     return;
@@ -772,8 +771,7 @@ notifyReadFromDump()
   m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name()+"PreallocSize",0);
   info(4) << "PreallocSize2 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
-  // Il n'y a priori rien à faire pour les variables car via les observables sur les
-  // variables les vues sont correctement mises à jour.
+  // There is practically nothing to do for the variables because the views are correctly updated via the observables on the variables.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -787,20 +785,20 @@ setPreAllocatedSize(Integer prealloc_size)
                             String::format("Invalid prealloc_size v={0}",
                                            prealloc_size));
 
-  // Ne fait rien si on a déjà alloué des entités sinon cela rendrait
-  // incohérent les allocations.
-  // NOTE: on pourrait l'autoriser, mais cela nécessiterait de reconstruire
-  // les indices des connectivités. A priori un appel à compactConnectivityList()
-  // suffirait.
+  // Does nothing if we have already allocated entities, otherwise it would make
+  // the allocations inconsistent.
+  // NOTE: we could allow it, but that would require rebuilding
+  // the connectivity indices. A call to compactConnectivityList()
+  // would suffice.
   if (m_connectivity_nb_item.size()!=0)
     return;
 
   m_pre_allocated_size = prealloc_size;
   _sourceFamily()->properties()->setInteger(name()+"PreallocSize",prealloc_size);
 
-  // Même s'il n'y a pas d'entités, m_p->m_connectivity_list_array n'est pas
-  // vide car on appelé _checkkAddNulItem() dans le constructeur. Il faut
-  // maintenant le réallouer avec la nouvelle valeur de pré-allocation.
+  // Even if there are no entities, m_p->m_connectivity_list_array is not
+  // empty because we called _checkkAddNulItem() in the constructor. We must
+  // now reallocate it with the new pre-allocation value.
   _resetConnectivityList();
 }
 
@@ -867,10 +865,10 @@ _addMemoryInfos(ItemConnectivityMemoryInfo& mem_info)
 void IncrementalItemConnectivity::
 _checkAddNullItem()
 {
-  // Si la liste des connectivités est vide, créé un élément
-  // (ou plusieurs si m_pre_allocated_size>0) pour contenir l'entité nulle.
-  // Cela permet de récupérer pour une entité la liste des connectivités même si
-  // elle est vide.
+  // If the connectivity list is empty, create an element
+  // (or several if m_pre_allocated_size>0) to contain the null entity.
+  // This allows retrieving the list of connectivities for an entity even if
+  // it is empty.
   if (m_connectivity_list.size()==0){
     if (m_pre_allocated_size>0){
       _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
@@ -884,15 +882,14 @@ _checkAddNullItem()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte la liste des connectivités.
+ * \brief Compresses the connectivity list.
  *
- * L'implémentation actuelle est assez simple:
- * - Copie la liste actuelle dans un tableau temporaire.
- * - Vide la liste actuelle.
- * - Recopie dans la liste les valeurs utiles du tableau temporaire.
+ * The current implementation is quite simple:
+ * - Copies the current list into a temporary array.
+ * - Clears the current list.
+ * - Recopies the useful values from the temporary array into the list.
  *
- * \note L'appel à cette méthode suppose que les entités de la famille
- * source soient compactées.
+ * \note Calling this method assumes that the source family entities are compacted.
  */
 void IncrementalItemConnectivity::
 compactConnectivityList()
@@ -900,9 +897,9 @@ compactConnectivityList()
   info(4) << "Begin Compacting IncrementalItemConnectivity name=" << name()
           << " new_size=" << m_connectivity_list.size()
           << " prealloc_size=" << m_pre_allocated_size;
-  // TODO: essayer de trouver un moyen de ne faire le compactage que si
-  // cela est nécessaire. Une facon serait de compter le nombre d'appel à
-  // _increaseIndexList() depuis le dernier compactage.
+  // TODO: try to find a way to only compact if
+  // it is necessary. One way would be to count the number of calls to
+  // _increaseIndexList() since the last compaction.
   UniqueArray<Int32> old_connectivity_list(m_connectivity_list);
   Integer old_size = old_connectivity_list.size();
   Integer nb_item = m_connectivity_nb_item.size();
@@ -924,7 +921,7 @@ compactConnectivityList()
     m_connectivity_index[lid] = new_pos_in_list;
     new_pos_in_list += alloc_size;
     //info() << "NEW_POS_IN_LIST=" << new_pos_in_list << " nb=" << nb << " alloc_size=" << alloc_size;
-    // Vérifie que la position est bien un multiple de pre_allocated_size.
+    // Checks that the position is indeed a multiple of pre_allocated_size.
     if (pre_allocated_size!=0){
       Int32 pos_modulo = new_pos_in_list % pre_allocated_size;
       if (pos_modulo!=0)
@@ -932,7 +929,7 @@ compactConnectivityList()
                      i,new_pos_in_list,pre_allocated_size,pos_modulo);
     }
     m_p->m_connectivity_list_array.addRange(con_list);
-    // Si préallocation, complète le reste des éléments avec l'entité nulle..
+    // If pre-allocation, fill the remaining elements with the null entity..
     if (alloc_size!=nb)
       m_p->m_connectivity_list_array.addRange(NULL_ITEM_LOCAL_ID,alloc_size-nb);
     if (m_pre_allocated_size==0 && nb==0)
@@ -1063,8 +1060,8 @@ hasConnectedItem(ItemLocalId source_item,
 void OneItemIncrementalItemConnectivity::
 _checkResizeConnectivityList()
 {
-  // Redimensionne la liste des connectivités avec le même nombre d'éléments
-  // que le nombre d'entités.
+  // Resizes the connectivity list with the same number of elements
+  // as the number of entities.
   Integer wanted_size = m_connectivity_nb_item.size();
   Integer list_size = m_connectivity_list.size();
   if (list_size==wanted_size)
@@ -1100,24 +1097,24 @@ notifySourceItemAdded(ItemLocalId item)
 void OneItemIncrementalItemConnectivity::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
-  // Pour cette implémentation, il ne faut pas mettre à jour
-  // les index car sinon on n'aura plus m_connectivity_index[lid] = lid.
-  // TODO: comme à priori m_connectivity_nb_item vaut 1 partout, cela
-  // n'est pas utile non plus de le faire sur cette variable mais
-  // comme il peut y avoir des entités pour lesquelles nb_item vaut 0 si
-  // on n'a pas ajouté d'entité connecté, il vaut mieux faire le compactage.
+  // For this implementation, the indices should not be updated
+  // because otherwise we won't have m_connectivity_index[lid] = lid.
+  // TODO: since m_connectivity_nb_item is originally 1 everywhere, it's
+  // not useful to do it on this variable either, but
+  // since there might be entities for which nb_item is 0 if
+  // no connected entity was added, it is better to perform the compaction.
 
   m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
   _notifyConnectivityNbItemChanged();
 
-  // Comme avec cette implémentation la liste des connectivités est indexée
-  // par le localId() de l'entité source, il faut la compacter
+  // Since with this implementation the connectivity list is indexed
+  // by the localId() of the source entity, it must be compacted
   // m_p->m_connectivity_list_variable.
   m_p->m_connectivity_list_variable.variable()->compact(new_to_old_ids);
   _notifyConnectivityListChanged();
 
-  // Ne compacte pas les index mais mets tout de même à jour la taille
-  // du tableau.
+  // Does not compact the indices but still updates the size
+  // of the array.
   m_p->m_connectivity_index_array.resize(m_connectivity_nb_item.size());
   _notifyConnectivityIndexChanged();
 }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivityInfo.h                                      (C) 2000-2022 */
 /*                                                                           */
-/* Informations sur la connectivité par type d'entité.                       */
+/* Information on connectivity by entity type.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMCONNECTIVITYINFO_H
 #define ARCANE_MESH_ITEMCONNECTIVITYINFO_H
@@ -36,7 +36,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur la connectivité par type d'entité.
+ * \brief Information on connectivity by entity type.
  */
 class ARCANE_MESH_EXPORT ItemConnectivityInfo
 : public IItemConnectivityInfo

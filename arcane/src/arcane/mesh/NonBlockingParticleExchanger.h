@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NonBlockingParticleExchanger.h                              (C) 2000-2020 */
 /*                                                                           */
-/* Echangeur de particules.                                                  */
+/* Particle Exchanger.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_NONBLOCKINGPARTICLEEXCHANGER_H
 #define ARCANE_NONBLOCKINGPARTICLEEXCHANGER_H
@@ -41,7 +41,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Echangeur de particules.
+ * \brief Particle Exchanger.
  */
 class NonBlockingParticleExchanger
 : public BasicService
@@ -105,13 +105,13 @@ class NonBlockingParticleExchanger
   Real m_total_time_functor;
   Real m_total_time_waiting;
 
-  //! Liste des variables à échanger
+  //! List of variables to exchange
   VariableList m_variables_to_exchange;
   
-  //! Liste des message en attente d'envoie
+  //! List of messages pending sending
   UniqueArray<ISerializeMessage*> m_pending_messages;
 
-  //! Liste des message envoyés mais en cours de traitement
+  //! List of messages sent but currently being processed
   UniqueArray<ISerializeMessage*> m_waiting_messages;
 
   Ref<ISerializeMessageList> m_message_list;
@@ -120,7 +120,7 @@ class NonBlockingParticleExchanger
   Int64 m_nb_total_particle;
 
   Integer m_nb_original_blocking_size;
-  //! Nombre de particules restantes avant de passer en mode bloquant.
+  //! Number of remaining particles before switching to blocking mode.
   Integer m_nb_blocking_size;
 
   bool m_exchange_finished;
@@ -183,4 +183,4 @@ class NonBlockingParticleExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

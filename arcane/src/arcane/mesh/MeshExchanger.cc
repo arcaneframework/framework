@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshExchanger.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'un échange de maillage entre sous-domaines.                     */
+/* Management of a mesh exchange between sub-domains.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,8 +45,8 @@ MeshExchanger(IMesh* mesh,ITimeStats* stats)
 , m_time_stats(stats)
 , m_phase(ePhase::Init)
 {
-  // Temporairement utilise une variable d'environnement pour spécifier le
-  // nombre maximum de messages en vol ou si on souhaite utiliser les collectives
+  // Temporarily uses an environment variable to specify the
+  // maximum number of pending messages or if collective operations should be used
   String max_pending_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE");
   if (!max_pending_str.null()){
     Int32 max_pending = 0;
@@ -82,10 +82,10 @@ build()
 {
   if ( !m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer )
   { // handle family order by hand
-    // Liste ordonnée des familles triée spécifiquement pour garantir un certain ordre
-    // dans les échanges. Pour l'instant l'ordre est déterminé comme suit:
-    // - d'abord Cell, puis Face, Edge et Node
-    // - ensuite, les Particles doivent être gérées avant les familles de DualNode.
+    // Sorted list of families specifically ordered to guarantee a certain order
+    // during exchanges. For now, the order is determined as follows:
+    // - first Cell, then Face, Edge, and Node
+    // - then, Particle families must be handled before DualNode families.
     UniqueArray<IItemFamily*> sorted_families;
     IItemFamilyCollection families(m_mesh->itemFamilies());
     sorted_families.reserve(families.count());
@@ -100,11 +100,11 @@ build()
         sorted_families.add(family);
     }
 
-    // Liste des instances gérant les échanges d'une famille.
-    // ATTENTION: il faut garantir la libération des pointeurs associés.
+    // List of instances managing the exchange of a family.
+    // WARNING: It is necessary to ensure the associated pointers are released.
     //m_family_exchangers.reserve(families.count());
 
-    // Création de chaque échangeur associé à une famille.
+    // Creation of each exchanger associated with a family.
     std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
     for( IItemFamily* family : sorted_families ){
       _addItemFamilyExchanger(family);
@@ -149,11 +149,11 @@ build()
         }
       }
 
-      // Liste des instances gérant les échanges d'une famille.
-      // ATTENTION: il faut garantir la libération des pointeurs associés.
+      // List of instances managing the exchange of a family.
+      // WARNING: It is necessary to ensure the associated pointers are released.
       //m_family_exchangers.reserve(families.count());
 
-      // Création de chaque échangeur associé à une famille.
+      // Creation of each exchanger associated with a family.
       std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
       for( IItemFamily* family : sorted_families ){
         _addItemFamilyExchanger(family);
@@ -211,41 +211,41 @@ computeExchangeInfos()
 {
   _checkPhase(ePhase::ComputeInfos);
 
-  // TODO: faire en sorte de pouvoir customiser le calcul de l'échange
-  // et faire cela par famille si possible.
+  // TODO: make it possible to customize the exchange calculation
+  // and do it by family if possible.
   MeshExchange mesh_exchange(m_mesh);
   info() << "MeshExchange begin date=" << platform::getCurrentDateTime();
   {
     Timer::Action ts_action1(m_time_stats,"MeshExchangeComputeInfos",true);
     mesh_exchange.computeInfos();
-    // MeshExchange a mise une marque NeedRemove sur les cellules partant complètement de ce proc
+    // MeshExchange has set a NeedRemove mark on cells leaving this proc completely
   }
 
   IItemFamily* cell_family = m_mesh->cellFamily();
   IItemFamilyExchanger* cell_exchanger = findExchanger(cell_family);
 
-  // Détermine d'abord les infos à échanger sur les mailles car s'il n'y a aucune maille
-  // à échanger le partitionnement s'arête.
-  // NOTE GG: il faut voir si cela reste le cas avec les liens et les noeuds duaux.
+  // First determine the info to exchange on the meshes because if there are no meshes
+  // to exchange, the partitioning stops.
+  // NOTE GG: we need to see if this remains true with links and dual nodes.
   cell_exchanger->setExchangeItems(mesh_exchange.getItemsToSend(cell_family));
   if (cell_exchanger->computeExchangeInfos()){
     pwarning() << "No load balance is performed";
     return true;
   }
 
-  // Détermine pour chaque famille la liste des informations à échanger.
+  // Determine the list of information to exchange for each family.
   for( IItemFamilyExchanger* exchanger : m_family_exchangers ){
-    // L'échange des mailles a déjà été fait.
+    // The mesh exchange has already been done.
     if (exchanger==cell_exchanger)
       continue;
     IItemFamily* family = exchanger->itemFamily();
     info() << "ComputeExchange family=" << family->name()
            << " date=" << platform::getCurrentDateTime();
-    // Pour les familles de particules qui ne supportent pas la notion
-    // de fantôme, il faut déterminer explicitement la liste des entités à échanger
-    // via l'appel à computeExchangeItems().
-    // Pour les autres familles où les familles de particules qui on la notion
-    // de fantôme, cette liste à déjà été déterminée lors de l'appel à
+    // For particle families that do not support the notion
+    // of ghost items, it is necessary to explicitly determine the list of entities to exchange
+    // via the call to computeExchangeItems().
+    // For other families where particle families do have the notion
+    // of ghost items, this list has already been determined during the call to
     // mesh_exchange.computeInfos().
     IParticleFamily* particle_family = family->toParticleFamily() ;
     if (particle_family && particle_family->getEnableGhostItems()==false)
@@ -255,16 +255,16 @@ computeExchangeInfos()
     exchanger->computeExchangeInfos();
   }
 
-  // Recopie le champ owner() dans les ItemInternal pour qu'il
-  // soit cohérent avec la variable correspondante
+  // Copy the owner() field into the ItemInternal so that it
+  // is consistent with the corresponding variable
 
-  // ATTENTION: Il faut absolument que les owner() des ItemInternal
-  // soient corrects avant qu'on envoie les mailles qui nous appartenaient
-  // aux sous-domaines à qui elles vont ensuite appartenir.
+  // WARNING: It is absolutely necessary that the owner() of the ItemInternal
+  // are correct before sending the meshes that belonged to us
+  // to the sub-domains to which they will then belong.
 
-  // A noter qu'on ne peut pas fusionner cette boucle avec la précédente car
-  // les familles ont besoin des infos des autres familles pour déterminer
-  // la liste des entités à envoyer.
+  // Note that we cannot merge this loop with the previous one because
+  // the families need the info from other families to determine
+  // the list of entities to send.
   Int32 rank = m_mesh->meshPartInfo().partRank();
   for( IItemFamilyExchanger* exchanger : m_family_exchangers ){
     IItemFamily* family = exchanger->itemFamily();
@@ -295,10 +295,10 @@ processExchange()
 
   Timer::Action ts_action1(m_time_stats,"MessagesExchange",true);
   for( IItemFamilyExchanger* e : m_family_exchangers ){
-    // NOTE: Pour pouvoir envoyer tous les messages en même temps et les réceptions
-    // aussi, il faudra peut être prévoir d'utiliser des tags MPI.
-    e->prepareToSend();   // Préparation de toutes les données à envoyer puis sérialisation
-    e->processExchange(); // Envoi effectif
+    // NOTE: To be able to send all messages at once and receive
+    // them as well, it might be necessary to plan using MPI tags.
+    e->prepareToSend();   // Preparation of all data to send then serialization
+    e->processExchange(); // Actual sending
     e->releaseBuffer();
   }
   m_phase = ePhase::RemoveItems;
@@ -312,26 +312,26 @@ removeNeededItems()
 {
   _checkPhase(ePhase::RemoveItems);
 
-  // Maintenant que tous les messages avec le maillage avant modification
-  // sont envoyés et réceptionnés, on peut modifier ce maillage en lui
-  // supprimant les éléments qui ne lui appartiennent plus et en ajoutant
-  // les nouveaux.
+  // Now that all messages with the mesh before modification
+  // have been sent and received, we can modify this mesh by
+  // removing the elements that no longer belong to it and adding
+  // the new ones.
 
-  // TODO: faire la méthode de supression par famille.
+  // TODO: implement removal by family method.
 
-  // Pour les familles autres que les particules sans fantômes, cela
-  // se fait dans le DynamicMeshIncrementalBuilder.
-  // Pour les particules sans fantôme, cela se fait ici.
+  // For families other than particle families without ghosts, this
+  // is done in the DynamicMeshIncrementalBuilder.
+  // For particle families without ghosts, this is done here.
   info() << "RemoveItems date=" << platform::getCurrentDateTime();
   Timer::Action ts_action1(m_time_stats,"RemoveSendedItems",true);
 
   for( IItemFamilyExchanger* exchanger : m_family_exchangers ){
     IParticleFamily* particle_family = exchanger->itemFamily()->toParticleFamily() ;
     if (particle_family && particle_family->getEnableGhostItems()==false)
-      exchanger->removeSentItems(); // integre le traitemaint des sous-maillages (pour les particules)
+      exchanger->removeSentItems(); // integrates the treatment of sub-meshes (for particles)
   }
 
-  // Supprime les entités qui ne sont plus liées au sous-domaine
+  // Remove entities that are no longer linked to the sub-domain
   m_mesh->modifier()->_modifierInternalApi()->removeNeedRemoveMarkedItems();
 
   m_phase = ePhase::AllocateItems;
@@ -347,17 +347,17 @@ allocateReceivedItems()
   {
     info() << "AllocItems date=" << platform::getCurrentDateTime();
     Timer::Action ts_action1(m_time_stats,"ReadAndAllocItems",true);
-    // Il faut faire en premier l'échange de mailles
-    // Cela est garanti par le fait que le premier élément de family_exchangers
-    // est celui de la famille de maille.
+    // We must first perform the mesh exchange
+    // This is guaranteed by the fact that the first element of family_exchangers
+    // is the mesh family.
     for( IItemFamilyExchanger* e : m_family_exchangers ){
-      e->readAndAllocItems(); // Attention, ne procède plus sur les différents sous-maillages
+      e->readAndAllocItems(); // Caution, no longer proceeds on different sub-meshes
     }
     // If needed, finalize item allocations (for polyhedral meshes)
     auto* family_serializer_mng = m_mesh->_internalApi()->familySerializerMng();
     if (family_serializer_mng) family_serializer_mng->finalizeItemAllocation();
 
-    // Build item relations (only dependencies are build in readAndAllocItems)
+    // Build item relations (only dependencies are built in readAndAllocItems)
     // only for families registered in the graph
     if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
     {
@@ -369,15 +369,15 @@ allocateReceivedItems()
 
     // Separate mesh and submesh
     for( IItemFamilyExchanger* e : m_family_exchangers ){
-      e->readAndAllocSubMeshItems(); // Procède sur les différents sous-maillages
+      e->readAndAllocSubMeshItems(); // Proceeds on different sub-meshes
     }
   }
 
-  // Il est possible que les propriétaires des entités aient changés
-  // suite a readAndAllocItems() même si aucune entité n'a été ajoutée.
-  // Il faut donc l'indiquer aux familles.
+  // It is possible that the owners of the entities have changed
+  // following readAndAllocItems() even if no entity was added.
+  // Therefore, it must be indicated to the families.
   for( IItemFamilyExchanger* e : m_family_exchangers ){
-    e->itemFamily()->notifyItemsOwnerChanged(); // appliqué jusqu'à un niveau de sous-maillage
+    e->itemFamily()->notifyItemsOwnerChanged(); // applied up to a sub-mesh level
   }
 
   m_phase = ePhase::UpdateItemGroups;
@@ -392,7 +392,7 @@ updateItemGroups()
   _checkPhase(ePhase::UpdateItemGroups);
 
   info() << "ReadGroups date=" << platform::getCurrentDateTime();
-  // Maintenant que le nouveau maillage est créé on lit les groupes
+  // Now that the new mesh is created, we read the groups
   for( IItemFamilyExchanger* e : m_family_exchangers )
     e->readGroups();
 
@@ -409,8 +409,8 @@ updateVariables()
 
   info() << "ReadVariables date=" << platform::getCurrentDateTime();
   Timer::Action ts(m_time_stats,"ReadVariables",true);
-  // Maintenant que les entités sont créées et les groupes mis à jour,
-  // on peut mettre à jour les variables.
+  // Now that the entities are created and the groups updated,
+  // we can update the variables.
   for( IItemFamilyExchanger* e : m_family_exchangers )
     e->readVariables();
 
@@ -425,13 +425,13 @@ finalizeExchange()
 {
   _checkPhase(ePhase::Finalize);
 
-  // Finalize les échanges
-  // Cela doit etre fait apres le compactage car dans le cas des interfaces liees,
-  // il ne faut plus changer la numérotation des localId() une fois les
-  // structures TiedInterface mises à jour.
-  // TODO: il faudra supprimer cela en faisant ce traitement avant mais
-  // pour cela il faut que TiedInterfaceMng soit notifié du compactage pour
-  // mettre à jour les localId() de ses faces et de ses noeuds
+  // Finalize the exchanges
+  // This must be done after compaction because in the case of linked interfaces,
+  // the localId() numbering must not be changed once the
+  // TiedInterface structures are updated.
+  // TODO: this will need to be removed by doing this treatment before, but
+  // for that, TiedInterfaceMng must be notified of the compaction to
+  // update the localId() of its faces and nodes
   for( IItemFamilyExchanger* e : m_family_exchangers )
     e->finalizeExchange();
 

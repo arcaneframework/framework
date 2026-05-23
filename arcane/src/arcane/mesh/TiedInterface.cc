@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterface.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur les semi-conformitées du maillage.                       */
+/* Information on mesh semi-conformities.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,17 +68,17 @@ class TiedInterfaceBuilderInfos
       << "\n";
   };
  public:
-  //! Liste des uniqueId() des faces maitres
+  //! List of uniqueId() of master faces
   UniqueArray<ItemUniqueId> m_master_faces_uid;
-  //! Liste des uniqueId() des noeuds esclaves
+  //! List of uniqueId() of slave nodes
   UniqueArray<ItemUniqueId> m_slave_nodes_uid;
-  //! Liste des uniqueId() des faces esclaves
+  //! List of uniqueId() of slave faces
   UniqueArray<ItemUniqueId> m_slave_faces_uid;
-  //! Nombre de noeuds esclaves pour chaque face maitre
+  //! Number of slave nodes for each master face
   IntegerUniqueArray m_master_faces_nb_slave_node;
-  //! Nombre de faces esclaves pour chaque face maitre
+  //! Number of slave faces for each master face
   IntegerUniqueArray m_master_faces_nb_slave_face;
-  //! Liste des coordonnées iso-barycentriques des noeuds esclaves
+  //! List of iso-barycentric coordinates of slave nodes
   Real2UniqueArray m_slave_nodes_iso;
 
   IntegerUniqueArray m_master_faces_slave_face_index;
@@ -124,25 +124,25 @@ class TiedInterfaceNodeInfo
   }
 
  private:
-  //! Numéro de ce noeud
+  //! ID of this node
   ItemUniqueId m_unique_id;
  public:
 
  public:
-  //! Coordonnées de ce noeud
+  //! Coordinates of this node
   Real3 m_coord;
 
-  //! Liste des uniqueId() des faces maîtres auquel ce noeud peut être connecté
+  //! List of uniqueId() of master faces to which this node can be connected
   SharedArray<ItemUniqueId> m_connected_master_faces;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Face maitre ou esclave d'une interface.
+ * \brief Master or slave face of an interface.
  *
- * Cet objet peut être copié mais ne doit pas être conservé une
- * fois le gestionnnaire \a m_mng associé détruit.
+ * This object can be copied but must not be kept after the associated
+ * manager \a m_mng is destroyed.
  */
 class TiedInterfaceFace
 {
@@ -298,30 +298,30 @@ class TiedInterfaceStructurationInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des informations d'une interface semi-conforme.
+ * \brief Construction of semi-conformal interface information.
  *
- * L'algorithme actuel présente les limitations suivantes:
- * - il ne s'applique qu'aux surfaces composées uniquement de quadrangles en 3D
- * et aux arêtes en 2D.
+ * The current algorithm has the following limitations:
+ * - it only applies to surfaces composed solely of quadrangles in 3D
+ * and edges in 2D.
  *
- * - une interface semi-conforme est composée de deux surfaces, l'une
- * appelée esclave et l'autre maitre. La surface esclave contient
- * l'ensemble des faces qui sont le plus maillées. Cette surface
- * est spécifiée par l'utilisateur. La surface maitre est celle
- * contenant les faces les plus grossièrement maillées.
+ * - a semi-conformal interface is composed of two surfaces, one
+ * called slave and the other master. The slave surface contains
+ * the set of faces that are most meshed. This surface
+ * is specified by the user. The master surface is the one
+ * containing the most coarsely meshed faces.
  *
- * Le but est de calculer l'ensemble des faces maitres et esclaves, pour
- * chaque face maitre la liste de ses faces esclaves et pour chaque
- * noeud de face esclave ses coordonnées iso-barycentrique dans
- * la face maitre correspondante.
+ * The goal is to calculate the set of master and slave faces, for
+ * each master face the list of its slave faces and for each
+ * slave face node its iso-barycentric coordinates in
+ * the corresponding master face.
  *
- * Le fonctionnement de l'algorithme est le suivant:
- * - on connait l'ensemble des faces esclaves. Il faut déterminer l'ensemble
- * des faces maitres. Pour cela, on parcours toutes les faces esclaves
- * et on marque leurs noeuds. Il suffit ensuite de parcourir toutes les
- * faces externes du maillage et si une face a tous ses noeuds marqués
- * et qu'elle n'est pas esclave, il s'agit d'une face maitre.
- * - TODO CONTINUER.
+ * The algorithm works as follows:
+ * - we know the set of slave faces. We must determine the set
+ * of master faces. To do this, we iterate over all slave faces
+ * and mark their nodes. We then just need to iterate over all
+ * external faces of the mesh and if a face has all its nodes marked
+ * and is not slave, it is a master face.
+ * - TODO CONTINUE.
  */
 class TiedInterfaceBuilder
 : public TraceAccessor
@@ -355,7 +355,7 @@ class TiedInterfaceBuilder
   String m_slave_interface_name;
   FaceGroup m_slave_interface;
   FaceGroup m_master_interface;
-  //! Table indiquant pour chaque face esclave, le uid de la face maitre correspondante.
+  //! Table indicating for each slave face, the uid of the corresponding master face.
   HashTableMapT<ItemUniqueId,ItemUniqueId> m_slave_faces_master_face_uid;
   Real m_planar_tolerance;
 
@@ -457,8 +457,8 @@ _searchMasterFaces(Array<ItemUniqueId>& slave_faces_to_process,
                                  + face.center() ) / 3.;
     }
 
-    // Parcours la liste des faces maitres possibles, et regarde si l'un des barycentres
-    // de la decomposition en triangle de la face esclave est à l'intérieur d'une de ces faces.
+    // Iterates through the list of possible master faces, and checks if one of the barycenters
+    // of the triangular decomposition of the slave face is inside one of these faces.
     for( std::set<ItemUniqueId>::const_iterator i_master_face(master_faces_to_test.begin());
          i_master_face!=master_faces_to_test.end(); ++i_master_face ){
       TiedInterfaceFaceMap::Data* data = m_master_faces.lookup(*i_master_face);
@@ -503,20 +503,20 @@ _searchMasterFaces(Array<ItemUniqueId>& slave_faces_to_process,
       }
       break;
     case 0:
-      // Pas trouvé, ajoute dans la liste pour le test suivant.
+      // Not found, add to the list for the next test.
       //info() << "** BAD: SlaveFace " << face.uniqueId();
       remaining_slave_faces.add(face.uniqueId());
       break;
     default:
       {
-        // Ce cas peut se présenter si en 2D ou en 3D une maille possède une soudure sur
-        // deux faces connectées. Dans ce cas, il y a souvent plusieurs
-        // faces maitres possibles. Pour les discréminer, on choisit
-        // la face maitre dont l'orientation (la normale) est la plus colineaire
-        // avec la maille esclave. Pour cela, il suffit de calculer
-        // le produit scalaire entre la face esclave et chaque face maitre
-        // potentielle et de prendre le plus grand en valeur absolue (pour eviter
-        // les problemes d'orientation).
+        // This case can occur if in 2D or 3D a mesh has a weld on
+        // two connected faces. In this case, there are often several
+        // possible master faces. To distinguish them, we choose
+        // the master face whose orientation (the normal) is most collinear
+        // with the slave mesh. To do this, it is enough to calculate
+        // the dot product between the slave face and each master face
+        // potential and take the largest in absolute value (to avoid
+        // orientation problems).
         Real3 face_normale = _computeNormale(face);
         OStringStream ostr;
         ostr() << "Too many master faces for a slave face (max=1) "
@@ -562,23 +562,23 @@ _searchMasterFaces(Array<ItemUniqueId>& slave_faces_to_process,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule la projection d'un point sur une face.
+ * \brief Calculates the projection of a point onto a face.
  *
- * En 2D, la face est une arête et la projection est simple.
+ * In 2D, the face is an edge and the projection is simple.
  *
- * En 3D, si la face est un triangle, la projection est aussi simple
- * puisqu'il s'agit de la projection sur un plan.
- * Pour une face comportant plus de 3 noeuds, ses noeuds ne sont
- * pas nécessairement coplanaires. On décompose alors la face en
- * triangles dont un des sommets est le barycentre de la face et on
- * calcule la projection du point \a point sur chacun de ces triangles.
- * On a donc autant de projetés que de triangles. On conserve
- * celui qui est à l'intérieur d'un de ces triangles.
- * Il peut arriver pour des raisons liées au calcul numérique que
- * le point soit bien à l'intérieur de la face mais dans aucun
- * de ses triangles (par exemple s'il est sur une diagonale).
- * Dans ce cas, on prend comme projeté celui qui est le plus
- * proche du point \a point.
+ * In 3D, if the face is a triangle, the projection is also simple
+ * since it is the projection onto a plane.
+ * For a face having more than 3 nodes, its nodes are not
+ * necessarily coplanar. The face is then decomposed into
+ * triangles whose vertex is the barycenter of the face and we
+ * calculate the projection of the point \a point onto each of these triangles.
+ * We therefore have as many projections as triangles. We keep
+ * which is inside one of these triangles.
+ * It may happen for reasons related to numerical calculation that
+ * the point is actually inside the face but in none
+ * of its triangles (for example, if it is on a diagonal).
+ * In this case, we take the one that is closest
+ * to the point \a point.
  */
 GeometricUtilities::ProjectionInfo TiedInterfaceBuilder::
 _findProjection(const TiedInterfaceFace& face,Real3 point)
@@ -694,25 +694,25 @@ _isInsideFace(const TiedInterfaceFace& face,Real3 point)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Détermine la surface maitre de l'interface.
+ * \brief Determines the master surface of the interface.
  *
- * En considérant que le maillage est semi-conforme, cela signifie que
- * tous les noeuds des faces maîtres de l'interface appartiennent à une
- * face esclave. Il suffit donc pour déterminer ces faces maîtres de
- * parcourir la liste des faces esclaves, de marquer les noeuds les
- * noeuds de ces faces. Une face est alors considérée comme maître si
- * l'ensemble de ses noeuds est marqué.
+ * Considering that the mesh is semi-conforming, this means that
+ * all nodes of the master faces of the interface belong to a
+ * slave face. It is therefore enough to determine these master faces by
+ * iterating through the list of slave faces, marking the nodes of these
+ * faces. A face is then considered master if
+ * all of its nodes are marked.
  *
- * \note Cet algorithme peut potentiellement retourner plus de faces
- * maîtres qu'il y en a réellement dans le cas où une maille à des soudures
- * sur plusieurs côtés. Cela n'est pas très grave car aucune face
- * esclave ne sera trouvé pour ces faces maîtres et on les supprimera
- * du groupe de faces maitres.
+ * \note This algorithm can potentially return more master faces
+ * than there actually are in the case where a mesh has welds
+ * on several sides. This is not very serious because no slave face
+ * will be found for these master faces and they will be removed
+ * from the group of master faces.
  */
 void TiedInterfaceBuilder::
 _computeMasterInterface()
 {
-  // Marqueur faces esclaves
+  // Slave face marker
   std::set<ItemUniqueId> slave_faces_flag;
   
   Integer nb_slave_face = m_slave_interface.size();
@@ -720,8 +720,8 @@ _computeMasterInterface()
   m_master_faces.resize(nb_slave_face+5);
   m_slave_faces.resize((nb_slave_face*2)+5);
 
-  // Construit les informations nécessaires concernant les
-  // faces esclaves et marque l'ensemble des noeuds.
+  // Builds the necessary information concerning the
+  // slave faces and marks all the nodes.
   ENUMERATE_FACE(iface,m_slave_interface){
     const Face& face = *iface;
     slave_faces_flag.insert(face.uniqueId());
@@ -729,17 +729,17 @@ _computeMasterInterface()
   }
 
   info() << "SLAVE_INTERFACE: nb_face=" << m_slave_interface.size();
-  // A partir des noeuds marqués, détermine les faces maîtres
+  // From the marked nodes, determines the master faces
   Int32UniqueArray master_faces_lid;
   bool has_not_handled_face = false;
   ENUMERATE_FACE(iface,m_mesh->outerFaces()){
     const Face& face = *iface;
-    // Vérifie qu'il ne s'agit pas d'une face esclave
+    // Checks that it is not a slave face
     if (slave_faces_flag.find(face.uniqueId())!=slave_faces_flag.end())
       continue;
     Integer nb_node = face.nbNode();
     bool is_master_face = true;
-    // Une face est maître si chacun de ses noeuds est dans la liste des noeuds esclaves
+    // A face is master if each of its nodes is in the list of slave nodes
     for( Node node : face.nodes() ){
       ItemUniqueId uid = node.uniqueId();
       if (!m_nodes_info.lookup(uid)){
@@ -748,7 +748,7 @@ _computeMasterInterface()
       }
     }
     if (is_master_face){
-      // Pour l'instant, supporte uniquement les faces à 2 et 4 noeuds.
+      // For now, only supports faces with 2 and 4 nodes.
       if (nb_node!=4 && nb_node!=2)
         has_not_handled_face = true;
       master_faces_lid.add(face.localId());
@@ -800,8 +800,8 @@ _addFaceToList(const Face& face,TiedInterfaceFaceMap& face_map)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Supprime du groupe des faces maîtres les faces qui ne sont
- * connectées à aucune face esclave.
+ * \brief Removes from the group of master faces those that are
+ * connected to any slave face.
  */
 void TiedInterfaceBuilder::
 _removeMasterFacesWithNoSlave()
@@ -1271,11 +1271,11 @@ _gatherAllNodesInfo()
 
   SerializeBuffer sbuf;
   sbuf.setMode(ISerializer::ModeReserve);
-  sbuf.reserveInteger(1); // pour le nombre de noeuds
-  sbuf.reserveInteger(1); // pour le nombre de faces connectées
-  sbuf.reserve(DT_Int64,unique_ids.size()); // pour les uniqueId() des noeuds
-  sbuf.reserveInteger(nb_connected_master_faces.size()); // pour le nombre de faces connectées
-  sbuf.reserve(DT_Int64,connected_master_faces.size()); // pour les uniqueId() des faces
+  sbuf.reserveInteger(1); // for the number of nodes
+  sbuf.reserveInteger(1); // for the number of connected faces
+  sbuf.reserve(DT_Int64,unique_ids.size()); // for the uniqueId() of the nodes
+  sbuf.reserveInteger(nb_connected_master_faces.size()); // for the number of connected faces
+  sbuf.reserve(DT_Int64,connected_master_faces.size()); // for the uniqueId() of the faces
   sbuf.reserve(DT_Real,coords.size());
 
   sbuf.allocateBuffer();
@@ -1304,8 +1304,8 @@ _gatherAllNodesInfo()
     recv_buf.get(connected_master_faces);
     recv_buf.get(coords);
 
-    // Parcours toutes les faces reçues si certaines sont absentes,
-    // les ajoute.
+    // Iterates through all received faces and adds those that are missing,
+    // adds them.
     Integer face_index = 0;
     for( Integer z=0; z<nb_node; ++z ){
       Integer nb_face = nb_connected_master_faces[z];
@@ -1331,11 +1331,11 @@ _gatherAllNodesInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \warning Cette méthode ne doit pas être appelée en séquentiel.
+ * \warning This method should not be called sequentially.
  *
- * Envoie à tous les sous-domaine les faces de numéros uniques
- * \a faces_to_send de la liste \a face_map et réceptionne
- * celles de tous les autres sous-domaines.
+ * Sends to all subdomains the unique ID faces
+ * \a faces_to_send from the list \a face_map and receives
+ * those from all other subdomains.
  */
 void TiedInterfaceBuilder::
 _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
@@ -1376,15 +1376,15 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
     coords.add(mf.center().y);
     coords.add(mf.center().z);
   }
-  sbuf.reserveInteger(1); // pour le nombre de faces
-  sbuf.reserveInteger(1); // pour le numéro du sous-domaine
-  sbuf.reserveInteger(1); // pour le nombre de noeuds dans la liste
-  sbuf.reserve(DT_Int64,unique_ids.size()); // pour le unique id des faces 
-  sbuf.reserve(DT_Int64,cells_unique_ids.size()); // pour le unique id des mailles des faces
-  sbuf.reserveInteger(nb_nodes.size()); // pour le nombre de noeuds
-  sbuf.reserve(DT_Int64,nodes_unique_id.size()); // pour la liste des noeuds
-  sbuf.reserve(DT_Real,coords.size()); // pour les coordonnées du centre
-  sbuf.reserve(DT_Real,nodes_coords.size()); // pour les coordonnées des noeuds
+  sbuf.reserveInteger(1); // for the number of faces
+  sbuf.reserveInteger(1); // for the subdomain number
+  sbuf.reserveInteger(1); // for the number of nodes in the list
+  sbuf.reserve(DT_Int64,unique_ids.size()); // for the unique id of the faces 
+  sbuf.reserve(DT_Int64,cells_unique_ids.size()); // for the unique id of the face meshes
+  sbuf.reserveInteger(nb_nodes.size()); // for the number of nodes
+  sbuf.reserve(DT_Int64,nodes_unique_id.size()); // for the list of nodes
+  sbuf.reserve(DT_Real,coords.size()); // for the center coordinates
+  sbuf.reserve(DT_Real,nodes_coords.size()); // for the node coordinates
   sbuf.allocateBuffer();
   sbuf.setMode(ISerializer::ModePut);
   sbuf.putInteger(nb_to_send);
@@ -1420,8 +1420,8 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
     recv_buf.get(coords);
     recv_buf.get(nodes_coords);
 
-    // Parcours toutes les faces reçues si certaines sont absentes,
-    // les ajoute.
+    // Iterates through all received faces and adds those that are missing,
+    // adds them.
     Integer node_index = 0;
     for( Integer z=0; z<nb_face; ++z ){
       Integer nb_node = nb_nodes[z];
@@ -1438,7 +1438,7 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
         for( Integer zz=0; zz<nb_node; ++zz ){
           ItemUniqueId nuid(nodes_unique_id[node_index+zz]);
           m_face_info_mng.add(nuid);
-          // Ajoute le noeud à la liste.
+          // Adds the node to the list.
           TiedInterfaceNodeInfo ni(nuid);
           ni.m_coord.x = nodes_coords[(node_index+zz)*3];
           ni.m_coord.y = nodes_coords[(node_index+zz)*3 + 1];
@@ -1459,16 +1459,16 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Migre les mailles sur les liaisons.
+ * \brief Migrates the meshes on the links.
  *
- * Change le propriétaire de chaque maille liée à une face esclave
- * pour qu'il soit le même que celui de la maille maître associée.
+ * Changes the owner of each mesh linked to a slave face
+ * so that it is the same as that of the associated master mesh.
  *
- * NOTE: que faire si une maille a plusieurs faces esclaves
- * connectées à des maîtres qui ne sont pas dans le même sous-domaine ?
+ * NOTE: what to do if a mesh has several slave faces
+ * connected to masters that are not in the same subdomain?
  *
- * NOTE: version obsolete, car ne fonctionnant pas si une
- * maillage a plusieurs soudures
+ * NOTE: obsolete version, because it does not work if a
+ * meshing has multiple welds
  */
 void TiedInterfaceBuilder::
 changeOwnersOld()
@@ -1498,15 +1498,15 @@ changeOwnersOld()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne les liaisons entre mailles
+ * \brief Positions the links between meshes
  *
- * Change le propriétaire de chaque maille liée à une face esclave
- * pour qu'il soit le même que celui de la maille maître associée.
+ * Changes the owner of each mesh linked to a slave face
+ * so that it is the same as that of the associated master mesh.
  *
- * Si une maille a plusieurs faces esclaves connectées à des maîtres,
- * s'assure que toutes ces maitres sont dans le meme sous-domaine.
- * Ajoute à \a linked_cells la liste des mailles liées et à
- * \a linked_owners le propriétaire associé.
+ * If a mesh has several slave faces connected to masters,
+ * ensures that all these masters are in the same subdomain.
+ * Adds to \a linked_cells the list of linked meshes and to
+ * \a linked_owners the associated owner.
  */
 void TiedInterfaceBuilder::
 changeOwners(Int64Array& linked_cells,Int32Array& linked_owners)
@@ -1526,7 +1526,7 @@ changeOwners(Int64Array& linked_cells,Int32Array& linked_owners)
       ItemUniqueId last_master_uid = cells_last_master_uid[cell_lid];
       ItemUniqueId slave_face_cell_uid = face.cell(0).uniqueId();
       ItemUniqueId master_face_cell_uid = m_master_faces[master_face].cellUniqueId();
-      // Le premier élément doit être le uid le plus petit
+      // The first element must be the smallest uid
       if (slave_face_cell_uid<master_face_cell_uid){
         linked_cells.add(slave_face_cell_uid);
         linked_cells.add(master_face_cell_uid);
@@ -1538,8 +1538,8 @@ changeOwners(Int64Array& linked_cells,Int32Array& linked_owners)
         linked_owners.add(master_owner);
       }
       if (last_master_uid!=NULL_ITEM_UNIQUE_ID){
-        // Maille connectée à plusieurs faces maîtres.
-        // Vérifie qu'elles sont toutes dans le même sous-domaine.
+        // Mesh connected to several master faces.
+        // Checks that they are all in the same subdomain.
         Int32 last_master_owner = m_master_faces[last_master_uid].owner();
         if (last_master_owner!=master_owner)
           ARCANE_FATAL("Cell {0} is connected to more than one master face:"
@@ -1554,11 +1554,11 @@ changeOwners(Int64Array& linked_cells,Int32Array& linked_owners)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construit les infos sur une interface liée.
+ * \brief Builds the info for a linked interface.
  *
- * Cette opération est collective si \a allow_communication est vrai.
- * Si \a allow_communication est faux, cela signifie que toutes
- * les faces esclaves d'une face maitre sont dans ce sous-domaine.
+ * This operation is collective if \a allow_communication is true.
+ * If \a allow_communication is false, it means that all
+ * slave faces of a master face are in this subdomain.
  */
 void TiedInterfaceBuilder::
 computeInterfaceConnections(bool allow_communication)
@@ -1568,7 +1568,7 @@ computeInterfaceConnections(bool allow_communication)
 
   _computeMasterInterface();
 
-  // En parallèle, il faut envoyer à tous le monde les infos sur la surface maître.
+  // In parallel, it is necessary to send the master surface info to everyone.
   if (allow_communication){
     UniqueArray<ItemUniqueId> master_faces_to_send;
     for( TiedInterfaceFaceMapEnumerator i(m_master_faces); ++i; ){
@@ -1599,7 +1599,7 @@ computeInterfaceConnections(bool allow_communication)
     }
 
     UniqueArray<ItemUniqueId> remaining_slave_faces;
-    //TODO supprimer le 10000
+    //TODO delete the 10000
     for( Integer zz=0; zz<10000; ++zz ){
       if (allow_communication){
         info() << " SEND RECV NODES INFO n=" << zz;
@@ -1631,7 +1631,15 @@ computeInterfaceConnections(bool allow_communication)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Migrates the meshes on the links.
+ *
+ * Changes the owner of each mesh linked to a slave face
+ * so that it is the same as that of the associated master mesh.
+ *
+ * NOTE: what to do if a mesh has several slave faces
+ * connected to masters that are not in the same subdomain?
+ */
 void TiedInterfaceBuilder::
 computeInterfaceInfos(TiedInterfaceBuilderInfos& infos,bool is_structured)
 {
@@ -1674,14 +1682,14 @@ TiedInterface::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Groupe contenant les faces maîtres
+//! Group containing the master faces
 FaceGroup TiedInterface::
 masterInterface() const
 {
   return m_master_interface;
 }
 
-//! Groupe contenant les faces esclaves
+//! Group containing the slave faces
 FaceGroup TiedInterface::
 slaveInterface() const
 {
@@ -1757,8 +1765,8 @@ class TiedInterfacePartitionConstraint
   {
     IParallelMng* pm = m_mesh->parallelMng();
     ITraceMng* tm = pm->traceMng();
-    // Il faut faire les comms que pour le partitionnement initial car par la suite
-    // les faces de part et d'autre d'une liaison sont dans le même sous-domaine.
+    // It is necessary to perform the communications only for the initial partitioning because subsequently
+    // the faces on both sides of a connection are in the same subdomain.
     if (m_is_initial){
       Integer nb_interface = m_slave_interfaces.size();
       for( Integer i=0; i<nb_interface; ++i ){
@@ -1818,7 +1826,7 @@ class TiedInterfacePartitionConstraint
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Créé les informations pour l'interface soudée \a slave_interface/
+ * \brief Creates information for the tied interface \a slave_interface/
  */
 TiedInterface::PartitionConstraintBase* TiedInterface::
 createConstraint(IMesh* mesh,ConstArrayView<FaceGroup> slave_interfaces)
@@ -1829,7 +1837,7 @@ createConstraint(IMesh* mesh,ConstArrayView<FaceGroup> slave_interfaces)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Créé les informations pour l'interface soudée \a slave_interface.
+ * \brief Creates information for the tied interface \a slave_interface.
  */
 void TiedInterface::
 build(const FaceGroup& slave_interface,bool is_structured)

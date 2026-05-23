@@ -46,7 +46,7 @@ class EmptyMeshModifier
 
  public:
 
-  //! Maillage associé
+  //! Associated mesh
   IMesh* mesh() override { _error(); }
 
  public:

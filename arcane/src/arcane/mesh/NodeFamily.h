@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodeFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Famille de noeuds.                                                        */
+/* Node family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_NODEFAMILY_H
 #define ARCANE_MESH_NODEFAMILY_H
@@ -29,7 +29,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille de noeuds.
+ * \brief Node family.
  */
 class ARCANE_MESH_EXPORT NodeFamily
 : public ItemFamily
@@ -48,7 +48,7 @@ class ARCANE_MESH_EXPORT NodeFamily
  public:
 
   NodeFamily(IMesh* mesh,const String& name);
-  virtual ~NodeFamily(); //<! Libère les ressources
+  virtual ~NodeFamily(); //<! Releases resources
 
  public:
 
@@ -65,11 +65,11 @@ class ARCANE_MESH_EXPORT NodeFamily
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
   /*!
-   * \brief Alloue une face de numéro unique \a uid et de type \a type.
+   * \brief Allocates a face with a unique number \a uid and type \a type.
    *
-   * Cette version est faite pour être appelée dans un bloc générique ignorant le type
-   * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
-   * et non dans le bloc appelant.
+   * This version is designed to be called in a generic block that ignores the type
+   * of the item. The update of the mesh's item count is therefore done in this method,
+   * and not in the calling block.
    */
 
   // IItemFamilyModifier interface
@@ -123,7 +123,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   void removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove);
   void removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove);
   void removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid);
-  //! Supprime le noeud siln'est plus connecté
+  //! Removes the node if it is no longer connected
   void removeNodeIfNotConnected(Node node);
 
   VariableNodeReal3& nodesCoordinates()
@@ -132,8 +132,8 @@ class ARCANE_MESH_EXPORT NodeFamily
     return *m_nodes_coords;
   }
 
-  //! Définit la connectivité active pour le maillage associé
-  /*! Ceci conditionne les connectivités à la charge de cette famille */
+  //! Sets the active connectivity for the associated mesh
+  /*! This conditions the connectivities to the charge of this family */
   void setConnectivity(const Integer c);
 
   void sortInternalReferences();
@@ -145,7 +145,7 @@ class ARCANE_MESH_EXPORT NodeFamily
 
  private:
   
-  ItemTypeInfo* m_node_type = nullptr; //!< Instance contenant le type des noeuds
+  ItemTypeInfo* m_node_type = nullptr; //!< Instance containing the node type
   Integer m_edge_prealloc = 0;
   Integer m_face_prealloc = 0;
   Integer m_cell_prealloc = 0;
@@ -160,7 +160,7 @@ class ARCANE_MESH_EXPORT NodeFamily
 
   FaceFamily* m_face_family = nullptr;
   EdgeFamily* m_edge_family = nullptr;
-  //! Indique si on trie les faces et arêtes connectées aux noeuds
+  //! Indicates if connected faces and edges are sorted by nodes
   bool m_is_sort_connected_faces_and_edges = false;
 
  private:
@@ -177,5 +177,4 @@ class ARCANE_MESH_EXPORT NodeFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

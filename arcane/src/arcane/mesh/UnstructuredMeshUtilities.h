@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnstructuredMeshUtilities.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires sur un maillage.                                    */
+/* Utility functions for a mesh.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_UNSTRUCTUREDMESHUTILITIES_H
 #define ARCANE_MESH_UNSTRUCTUREDMESHUTILITIES_H
@@ -35,18 +35,18 @@ class BasicItemPairGroupComputeFunctor;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctions utilitaires sur un maillage.
+ * \brief Utility functions for a mesh.
  */
 class UnstructuredMeshUtilities
 : public TraceAccessor
-, public IMeshUtilities
+  , public IMeshUtilities
 {
- public:
+public:
 
   explicit UnstructuredMeshUtilities(IMesh* mesh);
-  ~UnstructuredMeshUtilities() override; //!< Libère les ressources.
+  ~UnstructuredMeshUtilities() override; //!< Frees resources.
 
- public:
+public:
 
   void changeOwnersFromCells() override;
 
@@ -61,23 +61,23 @@ class UnstructuredMeshUtilities
                                        bool allow_null) override;
 
   /*!
-   * \brief Calcule la normale d'un groupe de face.
+   * \brief Calculates the normal of a face group.
    *
-   * Cette méthode calcule la normale à un groupe de face en considérant que
-   * cette surface est un plan. Pour le calcul, l'algorithme essaie de
-   * déterminer les noeuds aux extrémités de cette surface, et calcule une
-   * normale à partir de ces noeuds. L'orientation de la normale est indéfinie.
+   * This method calculates the normal of a face group assuming that
+   * this surface is a plane. For the calculation, the algorithm tries to
+   * determine the nodes at the ends of this surface, and calculates a
+   * normal from these nodes. The orientation of the normal is undefined.
    *
-   * Si la surface n'est pas plane, le résultat est indéfini.
+   * If the surface is not planar, the result is undefined.
    *
-   * L'algorithme actuel ne fonctionne pas toujours sur une surface composée
-   * uniquement de triangles.
+   * The current algorithm does not always work on a surface composed
+   * solely of triangles.
    *
-   * Cette méthode est collective. L'algorithme utilisé garantit les
-   * mêmes résultats en séquentiel et en parallèle.
+   * This method is collective. The algorithm used guarantees the
+   * same results in sequential and parallel modes.
    *
-   * La variable \a nodes_coord est utilisée comme coordonnées pour les noeuds.
-   * En général, il s'agit de IMesh::nodesCoordinates().
+   * The variable \a nodes_coord is used as coordinates for the nodes.
+   * Generally, it is IMesh::nodesCoordinates().
    */
   Real3 computeNormal(const FaceGroup& face_group,
                       const VariableNodeReal3& nodes_coord) override;
@@ -104,12 +104,12 @@ class UnstructuredMeshUtilities
 
   void recomputeItemsUniqueIdFromNodesUniqueId() override;
 
- private:
+private:
 
   IMesh* m_mesh = nullptr;
   BasicItemPairGroupComputeFunctor* m_compute_adjacency_functor = nullptr;
 
- private:
+private:
 
   Real3 _round(Real3 value);
   Real3 _broadcastFarthestNode(Real distance, const Node& node,
@@ -124,5 +124,4 @@ class UnstructuredMeshUtilities
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*                                                                           */
-/* Outil d'observation du maillage                                           */
+/* Mesh observation tool                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMGROUPDYNAMICMESHOBSERVER_H
 #define ARCANE_MESH_ITEMGROUPDYNAMICMESHOBSERVER_H

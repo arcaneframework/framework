@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions basiques de calcul des valeurs des ItemPairGroup.               */
+/* Basic functions for computing ItemPairGroup values.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,11 +30,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * TODO: Regarder pourquoi les méthodes de calcul suivantes:
+ * TODO: Investigate why the following computation methods:
  * _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
  * _computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
  * _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
- * sont spéciales et les fusionner avec les autres.
+ * are special and merge them with the others.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -114,10 +114,10 @@ _computeAdjacency(ItemPairGroupImpl* array,
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
   const Integer undef_value = max_id+1;
@@ -131,7 +131,7 @@ _computeAdjacency(ItemPairGroupImpl* array,
   ENUMERATE_ITEM(iitem,group){
     Item item = *iitem;
     Integer local_id = iitem.itemLocalId();
-    // Pour ne pas s'ajouter à sa propre liste
+    // To avoid adding to its own list
     if (items_list[local_id] != forbidden_value)
       items_list[local_id] = local_id;
     for( Item linkitem : get_link_item_enumerator(item) ){
@@ -162,10 +162,10 @@ _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
   const Integer undef_value = max_id+1; 
@@ -185,7 +185,7 @@ _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
       Cell back_cell = face.backCell();
       Cell front_cell = face.frontCell();
       
-      // On choisit l'autre cellule du cote de la face
+      // We choose the other cell side of the face
       const Integer sub_local_id = (back_cell==cell)?front_cell.localId():back_cell.localId();
       if (items_list[sub_local_id] == forbidden_value)
         continue;
@@ -210,10 +210,10 @@ _computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
   const Integer undef_value = max_id+1; 
@@ -255,10 +255,10 @@ _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
   const Integer undef_value = max_id+1;
@@ -273,7 +273,7 @@ _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
     Cell cell = *icell;
     for( FaceLocalId iface : cell.faceIds() ){
       Int32 sub_local_id = iface.localId();
-      // Les controles sur les faces sont inutiles car on ne peut pas retomber dessus par l'énumération actuelle.
+      // The checks on faces are useless because we cannot fall back to them via the current enumeration.
       if (items_list[sub_local_id]==forbidden_value /* or items_list[sub_local_id]==local_id */)
         continue;
       // items_list[sub_local_id] = local_id;

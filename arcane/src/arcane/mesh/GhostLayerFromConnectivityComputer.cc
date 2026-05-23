@@ -7,7 +7,7 @@
 /*------------------------------------------------------------------------------*/
 /* ReplicatedGhostDoFBuilder.cc                                   (C) 2000-2017 */
 /*                                                                              */
-/* Implémentation d'une politique de création de fantômes pour une connectivité */
+/* Implementation of a ghost creation policy for connectivity                   */
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
@@ -41,8 +41,8 @@ _computeSharedItems()
 {
   m_shared_items.clear();
   m_shared_items_connected_items.clear();
-  // Politique : les shared items de la famille To sont ceux qui sont connectés aux shared de la famille from
-  // Attention ici le tableau shared items contient des items de la famille To family
+  // Policy: the shared items of the To family are those connected to the shared items of the from family
+  // Note here that the shared items array contains items from the To family
   Arcane::IItemFamily* item_family = m_connectivity->sourceFamily();
   Arcane::IVariableSynchronizer* synchronizer = item_family->allItemsSynchronizer();
   Arcane::Int32ConstArrayView ranks = synchronizer->communicatingRanks();

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PolyhedralMesh.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Polyhedral mesh impl using Neo data structure                             */
+/* Polyhedral mesh implementation using Neo data structure                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_POLYHEDRALMESH_H

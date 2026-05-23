@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NonBlockingParticleExchanger.cc                             (C) 2000-2025 */
 /*                                                                           */
-/* Echangeur de particules.                                                  */
-/*---------------------------------------------------------------------------*/
+/* Particle Exchanger.                                                       */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/NonBlockingParticleExchanger.h"
@@ -70,9 +69,8 @@ NonBlockingParticleExchanger(const ServiceBuildInfo& sbi)
 , m_verbose_level(1)
 , m_is_debug(false)
 {
-  // m_want_fast_send_particles permet d'envoyer en même temps que
-  // les particules le nombre qui ont finie la poursuite. Cela permet
-  // d'éviter des messages supplémentaires.
+// m_want_fast_send_particles allows sending the number of particles that have finished tracking
+// at the same time, avoiding additional messages.
 #if ARCANE_DEBUG_EXCHANGE_ITEMS
   m_is_debug = true;
 #endif
@@ -84,9 +82,8 @@ NonBlockingParticleExchanger(const ServiceBuildInfo& sbi)
 NonBlockingParticleExchanger::
 ~NonBlockingParticleExchanger()
 {
-  // On ne peut pas faire de throw dans le destructeur donc on affiche
-  // des avertissements de compilation
-  if (!m_pending_messages.empty() || !m_waiting_messages.empty()){
+  // No throws are allowed in the destructor, so compilation warnings are generated
+  if (!m_pending_messages.empty() || !m_waiting_messages.empty()) {
     String s = String::format("pending or waiting messages: nb_pending={0} nb_waiting=",
                               m_pending_messages.size(),m_waiting_messages.size());
     warning() << s;
@@ -136,7 +133,7 @@ beginNewExchange(Integer i_nb_particle)
   m_nb_receive_message = 0;
   m_nb_particle_finished_exchange = 0;
 
-  //TODO: utiliser un tag spécifique pour cet échange.
+  // TODO: Use a specific tag for this exchange.
   Int64 nb_particle = i_nb_particle;
   m_nb_total_particle = pm->reduce(Parallel::ReduceSum,nb_particle);
   info() << "BEGIN TRACKING TOTAL FLYING = " << m_nb_total_particle
@@ -147,10 +144,9 @@ beginNewExchange(Integer i_nb_particle)
 
   m_need_general_receive = true;
 
-  // Récupère la liste des variables à transferer.
-  // Il s'agit des variables qui ont la même famille que celle passée
-  // en paramètre.
-  // IMPORTANT: tous les sous-domaines doivent avoir ces mêmes variables
+  // Retrieve the list of variables to transfer.
+  // These are variables from the same family as the ones passed as parameters.
+  // IMPORTANT: All sub-domains must have these same variables.
   m_variables_to_exchange.clear();
   m_item_family->usedVariables(m_variables_to_exchange);
   m_variables_to_exchange.sortByName(true);
@@ -165,7 +161,7 @@ exchangeItems(Integer nb_particle_finish_exchange,
               Int32ConstArrayView sub_domains_to_send,ItemGroup item_group,
               IFunctor* functor)
 {
-  //TODO a supprimer si passe par sendItems()
+  // TODO: Remove this if it's already handled by sendItems()
   m_nb_particle_finished_exchange += nb_particle_finish_exchange;
   return _exchangeItems(local_ids,sub_domains_to_send,item_group,0,functor);
 }
@@ -180,7 +176,7 @@ exchangeItems(Integer nb_particle_finish_exchange,
               Int32Array* new_particle_local_ids,
               IFunctor* functor)
 {
-  //TODO a supprimer si passe par sendItems()
+  // TODO: Remove this if it's already handled by sendItems()
   m_nb_particle_finished_exchange += nb_particle_finish_exchange;
   return _exchangeItems(local_ids,sub_domains_to_send,ItemGroup(),new_particle_local_ids,functor);
 }
@@ -220,8 +216,8 @@ _checkSendItems(Int32ConstArrayView local_ids,
   if ((nb_particle+nb_waiting_local_ids)>=m_nb_blocking_size){
     _generateSendItemsMessages(local_ids,sub_domains_to_send);
   }
-  else{
-    // Met les particules dans un tampon avant de les envoyer
+  else {
+    // Place the particles in a buffer before sending them
     m_waiting_local_ids.resize(nb_waiting_local_ids+nb_particle);
     m_waiting_sub_domains_to_send.resize(nb_waiting_sub_domains_to_send+nb_particle);
     for( Integer i=0; i<nb_particle; ++i ){
@@ -279,8 +275,7 @@ _waitMessages(Integer nb_pending_particle,ItemGroup item_group,
 
   if (m_exchange_finished){
     info(5) << " ** EXCHANGE finished: ";
-    // Cela est nécessaire pour être certain que les messages
-    // de fin sont bien tous réceptionnés
+    // This ensures that all completion messages are received
     _processMessages(item_group,new_particle_local_ids,true,0);
     info(5) << " ** EXCHANGE finished END: ";
   }
@@ -315,18 +310,18 @@ _generateSendItemsMessages(Int32ConstArrayView local_ids,
 
   Int32UniqueArray communicating_sub_domains;
   mesh->cellFamily()->getCommunicatingSubDomains(communicating_sub_domains);
-  
+
   Integer nb_connected_sub_domain = communicating_sub_domains.size();
   //Integer max_sub_domain_id = 0;
   UniqueArray< SharedArray<Int32> > ids_to_send(nb_connected_sub_domain);
-  // Infos pour chaque sous-domaine connecté
+  // Information for each connected sub-domain
   //_clearMessages();
   m_accumulate_infos.clear();
   m_accumulate_infos.resize(nb_connected_sub_domain);
   for( Integer i=0; i<nb_connected_sub_domain; ++i )
     m_accumulate_infos[i] = new SerializeMessage(m_rank,communicating_sub_domains[i],
                                                  ISerializeMessage::MT_Send);
- 
+
   _addItemsToSend(local_ids,sub_domains_to_send,communicating_sub_domains,ids_to_send);
   _addItemsToSend(m_waiting_local_ids,m_waiting_sub_domains_to_send,
                   communicating_sub_domains,ids_to_send);
@@ -344,24 +339,23 @@ _generateSendItemsMessages(Int32ConstArrayView local_ids,
   }
 
   Int64UniqueArray items_to_send_uid;
-  Int64UniqueArray items_to_send_cells_uid; // Uniquement pour les particules;
+  Int64UniqueArray items_to_send_cells_uid; // Only for particles;
 
-  for( Integer j=0; j<nb_connected_sub_domain; ++j ){
+  for (Integer j = 0; j < nb_connected_sub_domain; ++j) {
     ISerializeMessage* sm = m_accumulate_infos[j];
-    // En mode bloquant, envoie toujours le message car le destinataire a posté
-    // un message de réception. Sinon, le message n'a besoin d'être envoyé que
-    // s'il contient des particules.
+    // In blocking mode, always send the message because the recipient has already sent
+    // a reception message. Otherwise, send it only if it contains particles.
     if (!ids_to_send[j].empty())
       _serializeMessage(sm,ids_to_send[j],items_to_send_uid,
                         items_to_send_cells_uid);
     else
-      // Le message n'est pas utile car vide.
+      // The message is useless since it's empty.
       delete sm;
   }
 
   m_accumulate_infos.clear();
 
-  // Détruit les entités qui viennent d'être envoyées
+  // Destroy the entities that have just been sent
   info(5)<<"NonBlockingParticleExchanger:: sendItems " << "local_ids           "<<local_ids.size();
   info(5)<<"NonBlockingParticleExchanger:: sendItems " << "m_waiting_local_ids "<<m_waiting_local_ids.size();
 
@@ -371,7 +365,7 @@ _generateSendItemsMessages(Int32ConstArrayView local_ids,
   m_waiting_local_ids.clear();
   m_waiting_sub_domains_to_send.clear();
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -383,21 +377,21 @@ _addItemsToSend(Int32ConstArrayView local_ids,
 {
   String func_name("NonBlockingParticleExchanger::_addItemsToSend()");
   Integer nb_connected_sub_domain = ids_to_send.size();
-  // Cherche pour chaque élément à quel sous-domaine il doit être transféré.
-  // Cette recherche se fait en se basant sur les \a local_ids
+  // Determine to which sub-domain each item should be sent.
+  // This is done based on the local_ids parameter.
   Integer id_size = local_ids.size();
   for( Integer i=0; i<id_size; ++i ){
     Int32 item_local_id = local_ids[i];
     Integer sd_to_send = sub_domains_to_send[i];
 #ifdef ARCANE_CHECK
-    if (sd_to_send==m_rank)
-      // Il s'agit d'une entité propre à ce sous-domaine
+    if (sd_to_send == m_rank)
+      // This item belongs to this sub-domain.
       fatal() << func_name << "The entity with local id " << item_local_id
               << " should not be sent to its own subdomain";
 #endif
-    // Recherche l'index du sous-domaine auquel l'entité appartient
-    // dans la liste \a sync_list
-    // TODO: utiliser une table indirect (tableau alloué au nombre de sous-domaines)
+    // Find the index of the sub-domain to which the item belongs
+    // in the list of connected sub-domains.
+    // TODO: Use an indirect method (e.g., a table based on the number of sub-domains).
     Integer sd_index = nb_connected_sub_domain;
     for( Integer i_sd=0; i_sd<nb_connected_sub_domain; ++i_sd )
       if (sd_to_send==communicating_sub_domains[i_sd]){
@@ -454,8 +448,7 @@ _processMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,
   info(5) << "TimeWaiting: current=" << m_timer->lastActivationTime()
           << " total=" << m_total_time_waiting;
 
-  // Sauve les communications actuellement traitées car le traitement
-  // peut en ajouter de nouvelles
+  // Save the messages that are currently being processed, as new messages may be added during processing
   UniqueArray<ISerializeMessage*> current_messages(m_waiting_messages);
   m_waiting_messages.clear();
 
@@ -490,7 +483,7 @@ _sendPendingMessages()
 
   {
     Timer::Sentry ts(m_timer);
-    // Ajoute les messages en attente de traitement
+    // Add the messages that are waiting to be processed
     Integer nb_message = m_pending_messages.size();
     for( Integer i=0; i<nb_message; ++i ){
       m_message_list->addMessage(m_pending_messages[i]);
@@ -520,19 +513,19 @@ _serializeMessage(ISerializeMessage* sm,
   //for( Integer j=0; j<nb_connected_sub_domain; ++j ){
   //ConstArrayView<Integer> acc_ids = m_ids_to_send[j];
   Integer nb_item = acc_ids.size();
-  // Réserve pour le type de message
+  // Reserve space for the message type
   sbuf->reserveInteger(1);
-  if (m_want_fast_send_particles){
-    // Réserve pour le nombre de particules traitées
+  if (m_want_fast_send_particles) {
+    // Reserve space for the number of particles to be sent
     sbuf->reserveInt64(1);
   }
-  // Réserve pour le rang de l'expéditeur
+  // Reserve space for the sender's rank
   sbuf->reserveInt32(1);
-  // Réserve pour le nombre de uniqueId()
+  // Reserve space for the number of uniqueId()
   sbuf->reserveInt64(1);
-  // Réserve pour les uniqueId() des particules
-  sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
-  // Réserve pour les uniqueId() des mailles dans lesquelles se trouvent les particules
+  // Reserve space for the uniqueId() of the particles
+  sbuf->reserveSpan(eBasicDataType::Int64, nb_item);
+  // Reserve space for the uniqueId() of the cells containing the particles
   sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
   
   for( VariableList::Enumerator i_var(m_variables_to_exchange); ++i_var; ){
@@ -540,10 +533,10 @@ _serializeMessage(ISerializeMessage* sm,
     var->serialize(sbuf,acc_ids);
   }
 
-  // Sérialise les données en écriture
+  // Serialize the data for writing
   sbuf->allocateBuffer();
   sbuf->setMode(ISerializer::ModePut);
-  
+
   sbuf->putInteger(MESSAGE_EXCHANGE);
   if (m_want_fast_send_particles){
     sbuf->putInt64(m_nb_particle_finished_exchange);
@@ -594,7 +587,7 @@ _deserializeMessage(ISerializeMessage* message,
   IMesh* mesh = m_item_family->mesh();
   ISerializer* sbuf = message->serializer();
 
-  // Indique qu'on souhaite sérialiser les données en lecture
+  // Set the mode to read the serialized data
   sbuf->setMode(ISerializer::ModeGet);
   sbuf->setReadMode(ISerializer::ReadReplace);
   Int32UniqueArray items_to_create_local_id;
@@ -641,20 +634,20 @@ _deserializeMessage(ISerializeMessage* message,
                                                                                           items_to_create_local_id);
       info(5) << "Nb create=" << particles_view.size();
 
-      // Notifie la famille qu'on a fini nos modifs.
-      // Après appel à cette méthode, les variables sont à nouveau utilisables
+      // Notify the family that the modifications have been completed.
+      // After this method is called, the variables can be used again.
       m_item_family->endUpdate();
-    
-      // Converti les uniqueId() récupérée en localId() et pour les particules
-      // renseigne la maille correspondante
+
+      // Convert the uniqueId() values obtained into localId() values for the particles,
+      // and assign the corresponding cells.
       ParticleInfoListView internal_items(m_item_family);
       //ItemInternalList internal_cells(mesh->itemsInternal(IK_Cell));
-      //m_item_family->itemsUniqueIdToLocalId(items_to_create_local_id,items_to_create_unique_id);
+      //m_item_family->itemsUniqueIdToLocalId(items_to_create_unique_id, items_to_create_unique_id);
 
-      for( Integer z=0; z<nb_item; ++z ){
+      for (Integer z = 0; z < nb_item; ++z) {
         Particle item = internal_items[items_to_create_local_id[z]];
         //item.setCell( internal_cells[cells_lid[z]] );
-        // Je suis le nouveau propriétaire (TODO: ne pas faire ici)
+        // I am the new owner of these particles (TODO: Do not perform this here).
         item.mutableItemBase().setOwner(m_rank,m_rank);
       }
       if (!item_group.null())
@@ -671,10 +664,10 @@ _deserializeMessage(ISerializeMessage* message,
   case MESSAGE_NB_FINISH_EXCHANGE:
     {
       m_need_general_receive = true;
-      // Indique qu'on peut continuer à recevoir des messages, celui-ci n'étant pas
-      // significatif
-      m_can_process_messages = true;
-      Int64 nb_particle = sbuf->getInt64();
+    // Indicate that it is possible to continue receiving messages, as this message
+    // does not indicate the completion of any process.
+    m_can_process_messages = true;
+    Int64 nb_particle = sbuf->getInt64();
       Int32 orig_rank = sbuf->getInt32();
       if (m_is_debug)
         info() << "MESSAGE_NB_FINISH_EXCHANGE nb=" << nb_particle << " (from rank=" << orig_rank << ")";
@@ -699,15 +692,13 @@ _deserializeMessage(ISerializeMessage* message,
       m_need_general_receive = true;
 
       Integer nb_blocking_size = sbuf->getInteger();
-      // Il faut être certain que le nouveau \a blocking_size
-      // est inférieur au courant, ce qui peut arriver lorsqu'on
-      // recoit plusieurs messages de ce type en même temps.
+      // It is necessary to ensure that the new blocking_size is less than the current value,
+      // which may happen when multiple messages of this type are received simultaneously.
       if (nb_blocking_size<m_nb_blocking_size)
         m_nb_blocking_size = nb_blocking_size;
       info(4) << "** RECEIVING CHANGE BLOCKING"
               << " new_blocking_size=" << m_nb_blocking_size;
-      // Comme il peut y avoir des particules en attente, il faut
-      // maintenant les envoyer
+      // Since there may still be particles waiting to be sent, they need to be sent now.
       if (m_waiting_local_ids.size()>0)
         _generateSendItemsMessages(Int32ConstArrayView(),Int32ConstArrayView());
     }
@@ -732,18 +723,18 @@ reset()
 void NonBlockingParticleExchanger::
 _processFinishTrackingMessage()
 {
-  // Si processeur == m_master_proc,
-  // - réceptionne des autres leur nombre fini.
-  // - fait le total
-  // - le renvoi à tout le monde
-  // Si processeur != m_master_proc
-  // - envoie à m_master_proc la valeur \a nb_finish_tracking_particle
-  // - réceptionne de m_master_proc le nombre total ayant terminé
+  // If the processor is m_master_proc:
+  // - Receive the number of messages that have been completed from other processors.
+  // - Calculate the total number of completed messages.
+  // - Send this information to all processors.
+  // If the processor is not m_master_proc:
+  // - Send the value of nb_finish_tracking_particle to m_master_proc.
+  // - Receive the total number of messages that have been completed from m_master_proc.
   if (m_rank==m_master_proc){
     _addFinishExchangeParticle(m_nb_particle_finished_exchange);
   }
-  else{
-    // Envoie le nombre de particules au processeur \a master_proc
+  else {
+    // Send the number of particles to m_master_proc.
     if (m_nb_particle_finished_exchange!=0) {
       info(4) << "Send to master proc (" << m_master_proc << ") nb_finish=" << m_nb_particle_finished_exchange;
       SerializeMessage* sm = new SerializeMessage(m_rank,m_master_proc,ISerializeMessage::MT_Send);
@@ -820,8 +811,7 @@ _addFinishExchangeParticle(Int64 nb_particle_finish_exchange)
               << " REMAING_PARTICLE " << remaining_particle
               << " (Date=" << platform::getCurrentDateTime() << ")";
 
-    // Comme il peut y avoir des particules en attente, il faut
-    // maintenant les envoyer
+    // Since there may still be particles waiting to be sent, they need to be sent now.
     if (m_waiting_local_ids.size()>0)
       _generateSendItemsMessages(Int32ConstArrayView(),Int32ConstArrayView());
     for( Int32 i=0; i<nb_rank; ++i ){

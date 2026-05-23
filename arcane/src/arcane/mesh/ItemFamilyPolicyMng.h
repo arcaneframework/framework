@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyPolicyMng.h                                       (C) 2000-2017 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de noeuds.                      */
+/* Manager for the policies of a family of nodes.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMFAMILYPOLICYMNG_H
 #define ARCANE_MESH_ITEMFAMILYPOLICYMNG_H
@@ -44,7 +44,7 @@ class ItemsExchangeInfo2;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille d'entités.
+ * \brief Manager for the policies of a family of entities.
  */
 class ARCANE_MESH_EXPORT ItemFamilyPolicyMng
 : public IItemFamilyPolicyMng

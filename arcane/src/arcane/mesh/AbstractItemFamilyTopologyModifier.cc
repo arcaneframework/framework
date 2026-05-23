@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractItemFamilyTopologyModifier.cc                       (C) 2000-2023 */
 /*                                                                           */
-/* Modification de la topologie des entités d'une famille.                   */
+/* Modification of the topology of entities in a family.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,8 +48,8 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recherche l'index de l'entité de localid() \a local_id dans
- * la liste \a items
+ * \brief Searches for the index of the entity with localid() \a local_id in
+ * the list \a items
  */
 inline Integer AbstractItemFamilyTopologyModifier::
 _getItemIndex(const Int32* items,Integer nb_item,Int32 local_id)

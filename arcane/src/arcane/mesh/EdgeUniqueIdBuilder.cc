@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeUniqueIdBuilder.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Construction des identifiants uniques des arêtes.                         */
+/* Construction of unique edge identifiers.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -87,8 +87,8 @@ computeEdgesUniqueIds()
 
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
-  // Il faut ranger à nouveau #m_edges_map si les uniqueId() des
-  // arêtes ont été modifiés.
+  // The #m_edges_map must be re-indexed if the uniqueId() of the
+  // edges have been modified.
   if (has_renumbering)
     edges_map.notifyUniqueIdsChanged();
 
@@ -99,9 +99,9 @@ computeEdgesUniqueIds()
     });
   }
 
-  // S'il n'y a pas de renumérotation, il n'y a pas non de
-  // calcul des propriétaires. Il faut donc le faire maintenant
-  // si on est en parallèle.
+  // If there is no renumbering, there is no
+  // owner calculation. It must therefore be done now
+  // if we are in parallel.
   if (need_compute_owner && m_mesh->parallelMng()->isParallel()) {
     ItemsOwnerBuilder owner_builder(m_mesh);
     owner_builder.computeEdgesOwner();
@@ -112,11 +112,11 @@ computeEdgesUniqueIds()
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe d'aide pour la détermination en parallèle
- * des unique_id des edges.
+ * \brief Helper class for parallel determination
+ * of edge unique IDs.
  *
- * \note Tous les champs de cette classe doivent être de type Int64
- * car elle est sérialisée par cast en Int64*.
+ * \note All fields of this class must be of type Int64
+ * because it is serialized by casting to Int64*.
  */
 class T_CellEdgeInfo
 {
@@ -253,8 +253,8 @@ Parallel3EdgeUniqueIdBuilder(ITraceMng* tm, DynamicMeshIncrementalBuilder* mesh_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * //COPIE DEPUIS GhostLayerBuilder.
- * Faire une classe unique.
+ * //COPY FROM GhostLayerBuilder.
+ * Make a unique class.
  */
 void Parallel3EdgeUniqueIdBuilder::
 _exchangeData(IParallelExchanger* exchanger)
@@ -271,8 +271,8 @@ _exchangeData(IParallelExchanger* exchanger)
       ConstArrayView<Int64> infos = m_boundary_infos_to_send[rank];
       Integer nb_info = infos.size();
       s->setMode(ISerializer::ModeReserve);
-      s->reserveInt64(1); // Pour le nombre d'éléments
-      s->reserveSpan(eBasicDataType::Int64, nb_info); // Pour les elements
+      s->reserveInt64(1); // For the number of elements
+      s->reserveSpan(eBasicDataType::Int64, nb_info); // For the elements
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       //info() << " SEND1 rank=" << rank << " nb_info=" << nb_info;
@@ -317,18 +317,18 @@ _addEdgeBoundaryInfo(Edge edge)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcule les numéros uniques de chaque edge en parallèle.
+  \brief Calculates the unique IDs for every edge in parallel.
   
   NEW VERSION.
 
-  NOTE: GG Juin 2022
-  Il semble que cette version ne fonctionne pas toujours lorsqu'elle est
-  appelée est que le maillage est déjà découpé. Cela est du au fait que
-  l'algorithme si-dessus est recopié sur celui qui calcule les uniqueId() des
-  faces (dans FaceUniqueIdBuilder). Cependant, l'algorithme de calcul des faces
-  suppose qu'une face frontière n'existe que dans une seule partie (un seul rang)
-  ce qui n'est pas le cas pour les arêtes. On se retrouve alors avec des sous-domaines
-  qui n'ont pas leurs arêtes renumérotées.
+  NOTE: June 22, 2022
+  It seems that this version does not always work when it is
+  called when the mesh is already cut. This is due to the fact that
+  the algorithm above is copied onto the one that calculates the uniqueId() of
+  faces (in FaceUniqueIdBuilder). However, the face calculation algorithm
+  assumes that a boundary face exists in only one part (one rank)
+  which is not the case for edges. We then end up with sub-domains
+  that do not have their edges renumbered.
 */
 void Parallel3EdgeUniqueIdBuilder::
 compute()
@@ -343,40 +343,40 @@ compute()
   UniqueArray<Int32> edges_opposite_cell_index(nb_local_edge);
   UniqueArray<Int32> edges_opposite_cell_owner(nb_local_edge);
 
-  // Pour vérification, s'assure que tous les éléments de ce tableau
-  // sont valides, ce qui signifie que toutes les edges ont bien été
-  // renumérotés.
+  // For verification, ensures that all elements of this array
+  // are valid, which means that all edges have been
+  // renumbered.
   UniqueArray<Int64> edges_new_uid(nb_local_edge);
   edges_new_uid.fill(NULL_ITEM_UNIQUE_ID);
 
   UniqueArray<Int64> edges_infos;
   edges_infos.reserve(10000);
   ItemInternalMap& edges_map = m_mesh->edgesMap();
-  ItemInternalMap& faces_map = m_mesh->facesMap(); // utilisé pour détecter le bord
+  ItemInternalMap& faces_map = m_mesh->facesMap(); // used to detect the boundary
 
-  // NOTE : ce tableau n'est pas utile sur toutes les mailles. Il
-  // suffit qu'il contienne les mailles dont on a besoin, c'est-à-dire
-  // les nôtres + celles connectées à une de nos edges.
+  // NOTE: this array is not useful on all meshes. It
+  // is enough that it contains the meshes we need, that is
+  // ours + those connected to one of our edges.
   HashTableMapT<Int32, Int32> cell_first_edge_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
 
-  // Rassemble les données des autres processeurs dans recv_cells;
-  // Pour éviter que les tableaux ne soient trop gros, on procède en plusieurs
-  // étapes.
-  // Chaque sous-domaine construit sa liste des arêtes frontières, avec pour
-  // chaque arête :
-  //  - son type,
-  //  - la liste de ses noeuds,
-  //  - le numéro unique de sa maille,
-  //  - le propriétaire de sa maille,
-  //  - son indice dans sa maille,
-  // Cette liste sera ensuite envoyée à tous les sous-domaines.
+  // Gather data from other processors into recv_cells;
+  // To prevent the arrays from being too large, we proceed in several
+  // steps.
+  // Each sub-domain builds its list of boundary edges, for each
+  // edge:
+  //  - its type,
+  //  - the list of its nodes,
+  //  - the unique number of its mesh,
+  //  - the owner of its mesh,
+  //  - its index in its mesh,
+  // This list will then be sent to all sub-domains.
 
   IItemFamily* node_family = m_mesh->nodeFamily();
   m_is_boundary_nodes.resize(node_family->maxLocalId(), false);
 
-  // Marque tous les noeuds frontières, car ce sont ceux qu'il faudra envoyer
-  // Un noeud est considéré comme frontière s'il appartient à une face qui n'a qu'une
-  // maille connectée.
+  // Marks all boundary nodes, because these are the ones that need to be sent
+  // A node is considered boundary if it belongs to a face that has only one
+  // connected mesh.
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell == 1) {
@@ -385,15 +385,15 @@ compute()
     }
   });
 
-  // Détermine la liste des arêtes frontières.
-  // L'ordre de cette liste dépend de l'implémentation de la table de hashage.
-  // Afin d'avoir la même numérotation que la version historique (qui utilise HashTableMapT),
-  // on utilise une instance temporaire de cette classe pour ce calcul si
-  // l'implémentation utilisée est différente. C'est le cas à partir d'octobre 2024.
-  // A terme, il faudrait utiliser une autre version du calcul des uniqueId() des
-  // arêtes.
-  // TODO: Ce mécanisme est en test. A vérifier que cela donne ensuite
-  // la même numérotation.
+  // Determines the list of boundary edges.
+  // The order of this list depends on the hash table implementation.
+  // To have the same numbering as the historical version (which uses HashTableMapT),
+  // we use a temporary instance of this class for this calculation if
+  // the implementation used is different. This is the case starting from October 2024.
+  // Eventually, another version of the uniqueId() calculation for
+  // edges should be used.
+  // TODO: This mechanism is under test. Verify that this subsequently
+  // gives the same numbering.
   const bool is_new_item_map_impl = ItemInternalMap::UseNewImpl;
   if (is_new_item_map_impl) {
     info() << "Edge: ItemInternalMap is using new implementation";
@@ -526,7 +526,7 @@ _computeEdgesUniqueId()
       }
       Int64 edge_new_uid = (node_uid * global_max_edge_node) + edge_index;
       Int64Array& v = m_boundary_infos_to_send[sender_rank];
-      // Indique au propriétaire de cette arête son nouvel uid
+      // Indicates to the owner of this edge its new uid
       v.add(edge_uid);
       v.add(edge_new_uid);
       v.add(edge_new_owner);
@@ -594,7 +594,7 @@ _sendInfosToOtherRanks()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque edge en séquentiel.
+  \brief Calculates the unique IDs for every edge sequentially.
   
   \sa computeEdgesUniqueIds()
 */  
@@ -606,8 +606,8 @@ _computeEdgesUniqueIdsSequential()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  // En séquentiel, les uniqueId() des mailles ne peuvent dépasser la
-  // taille des Integers même en 32bits.
+  // In sequential mode, the uniqueId() of the meshes cannot exceed
+  // the size of Integers even in 32 bits.
   Int32 max_uid = 0;
   cells_map.eachItem([&](Item cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
@@ -716,13 +716,13 @@ _computeEdgesUniqueIdsSequential()
 void EdgeUniqueIdBuilder::
 _computeEdgesUniqueIdsParallelV2()
 {
-  // Positionne les uniqueId() des arêtes de manière très simple.
-  // Si le maximum des uniqueId() des noeuds est MAX_NODE_UID, alors
-  // le uniqueId() d'une arête est :
+  // Positions the uniqueId() of the edges very simply.
+  // If the maximum uniqueId() of the nodes is MAX_NODE_UID, then
+  // the uniqueId() of an edge is:
   //
   // node(0).uniqueId() * MAX_NODE_UID + node(1).uniqueId()
   //
-  // Cela ne fonctionne que si MAX_NODE_UID est inférieur à 2^31.
+  // This only works if MAX_NODE_UID is less than 2^31.
 
   IParallelMng* pm = m_mesh->parallelMng();
 
@@ -755,7 +755,7 @@ _computeEdgesUniqueIdsParallel3()
   IParallelMng* pm = m_mesh->parallelMng();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
-  // Détermine le maximum des uniqueId() des noeuds
+  // Determines the maximum uniqueId() of the nodes
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
   nodes_map.eachItem([&](Item item) {
     Int64 node_uid = item.uniqueId();
@@ -776,8 +776,8 @@ _computeEdgesUniqueIdsParallel3()
 void EdgeUniqueIdBuilder::
 _computeEdgesUniqueIdsParallel64bit()
 {
-  // Positionne les uniqueId() des arêtes
-  // en utilisant un hash des deux nœuds de l'arête.
+  // Positions the uniqueId() of the edges
+  // using a hash of the two nodes of the edge.
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
   std::hash<Int64> hasher;

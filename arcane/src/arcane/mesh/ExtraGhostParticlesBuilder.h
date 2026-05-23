@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostParticlesBuilder.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Construction des mailles fantômes supplémentaires.                        */
+/* Construction of extra ghost meshes.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EXTRAGHOSTPARTICLESBUILDER_H
 #define ARCANE_MESH_EXTRAGHOSTPARTICLESBUILDER_H
@@ -42,7 +42,7 @@ class ParticleFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des mailles fantômes supplémentaires.
+ * \brief Construction of extra ghost meshes.
  */
 class ExtraGhostParticlesBuilder
 : public TraceAccessor
@@ -76,4 +76,4 @@ class ExtraGhostParticlesBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

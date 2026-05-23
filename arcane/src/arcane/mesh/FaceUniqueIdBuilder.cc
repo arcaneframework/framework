@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceUniqueIdBuilder.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Construction des identifiants uniques des faces.                          */
+/* Construction of unique face identifiers.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,15 +86,15 @@ computeFacesUniqueIds()
     info() << "No face renumbering";
   }
   else {
-    // Version 1 ou 2
+    // Version 1 or 2
     if (is_parallel) {
       if (face_version == 2) {
-        //PAS ENCORE PAR DEFAUT
+        //NOT YET BY DEFAULT
         info() << "Use new mesh init in FaceUniqueIdBuilder";
         _computeFacesUniqueIdsParallelV2();
       }
       else {
-        // Version par défaut.
+        // Default version.
         _computeFacesUniqueIdsParallelV1();
       }
     }
@@ -112,8 +112,8 @@ computeFacesUniqueIds()
 
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
-  // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
-  // faces ont été modifiés
+  // We must re-index #m_faces_map because the uniqueId() of the
+  // faces have been modified
   if (face_version != 0)
     m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
 
@@ -124,8 +124,8 @@ computeFacesUniqueIds()
       info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
     });
   }
-  // Avec la version 0 ou 5, les propriétaires ne sont pas positionnées
-  // Il faut le faire maintenant
+  // With version 0 or 5, the owners are not positioned
+  // We must do it now
   if (face_version == 0 || face_version == 5) {
     ItemsOwnerBuilder owner_builder(m_mesh);
     owner_builder.computeFacesOwner();
@@ -135,7 +135,7 @@ computeFacesUniqueIds()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
+ * \brief Checks that there are no duplicate uniqueIds.
  */
 void FaceUniqueIdBuilder::
 _checkNoDuplicate()
@@ -158,11 +158,10 @@ _checkNoDuplicate()
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe d'aide pour la détermination en parallèle
- * des unique_id des faces.
+ * \brief Helper class for parallel determination of face unique_ids.
  *
- * \note Tous les champs de cette classe doivent être de type Int64
- * car elle est sérialisée par cast en Int64*.
+ * \note All fields in this class must be of type Int64
+ * because it is serialized by cast to Int64*.
  */
 class T_CellFaceInfo
 {
@@ -195,19 +194,19 @@ class T_CellFaceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque face en parallèle.
+  \brief Calculates the unique numbers for each face in parallel.
 
-  En plus de la numérotation, détermine le sous-domaine propriétaire de
-  chaque face, en considérant qu'une face appartient au même sous-domaine
-  que sa maille qui est derrière (ou au sous-domaine courant pour une
-  maille frontière).
+  In addition to numbering, it determines the owning sub-domain of
+  each face, considering that a face belongs to the same sub-domain
+  as the cell behind it (or to the current sub-domain for a
+  boundary cell).
   
-  \todo optimiser l'algorithme pour ne pas avoir à créer un tableau
-  dimensionné au nombre total de mailles du maillage (en procédent en
-  plusieurs étapes)
+  \todo optimize the algorithm so as not to have to create an array
+  sized to the total number of cells in the mesh (by proceeding in
+  several steps)
 
-  \todo trouver un algorithme plus optimum la recherche du propriétaire de
-  chaque face et ce pour équilibrer les coms.
+  \todo find a more optimal algorithm for searching for the owner of
+  each face to balance communications.
 */  
 void FaceUniqueIdBuilder::
 _computeFacesUniqueIdsParallelV1()
@@ -225,9 +224,9 @@ _computeFacesUniqueIdsParallelV1()
   UniqueArray<Integer> faces_opposite_cell_index(nb_local_face);
   UniqueArray<Integer> faces_opposite_cell_owner(nb_local_face);
 
-  // Pour vérification, s'assure que tous les éléments de ce tableau
-  // sont valides, ce qui signifie que toutes les faces ont bien été
-  // renumérotés
+  // For verification, ensures that all elements of this array
+  // are valid, which means that all faces have been
+  // renumbered
   UniqueArray<Int64> faces_new_uid(nb_local_face);
   faces_new_uid.fill(NULL_ITEM_ID);
   
@@ -240,23 +239,22 @@ _computeFacesUniqueIdsParallelV1()
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
 
-  // NOTE: ce tableau n'est pas utile sur toutes les mailles. Il
-  // suffit qu'il contienne les mailles dont on a besoin, c'est à dire
-  // les notres + celles connectées à une de nos faces. Une table
-  // de hashage sera plus appropriée.
+  // NOTE: this array is not useful on all meshes. It
+  // is enough that it contains the meshes that we need, that is to say
+  // ours + those connected to one of our faces. A hash table
+  // would be more appropriate.
   HashTableMapT<Int64,Int64> cells_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell()*2,true);
   
-  // Rassemble les données des autres processeurs dans recv_cells;
-  // Pour éviter que les tableaux ne soient trop gros, on procède en plusieurs
-  // étapes.
-  // Chaque sous-domaine construit sa liste de faces frontières, avec pour
-  // chaque face:
-  // - son type
-  // - la liste de ses noeuds,
-  // - le numéro unique de sa maille
-  // - le propriétaire de sa maille
-  // - son indice dans sa maille
-  // Cette liste sera ensuite envoyée à tous les sous-domaines.
+  // Gather data from other processors into recv_cells;
+  // To prevent the arrays from being too large, we proceed in several
+  // steps.
+  // Each sub-domain builds its list of boundary faces, with for each face:
+  // - its type
+  // - the list of its nodes,
+  // - the unique number of its cell
+  // - the owner of its cell
+  // - its index in its cell
+  // This list will then be sent to all sub-domains.
   {
     ItemTypeMng* itm = m_mesh->itemTypeMng();
 
@@ -278,14 +276,14 @@ _computeFacesUniqueIdsParallelV1()
     Int64UniqueArray faces_infos2;
     Int64UniqueArray recv_faces_infos;
 
-    // Calcule la taille d'un bloc d'envoi
-    // La mémoire nécessaire pour une face est égale à nb_node + 4.
-    // Si on suppose qu'on a des quadrangles en général, cela
-    // fait 8 Int64 par face, soit 64 octets par face.
-    // La mémoire nécessaire pour tout envoyer est donc 64 * global_nb_boundary_face.
-    // step_size * nb_proc * 64 octets.
-    // Le step_size par défaut est calculé pour que la mémoire nécessaire
-    // soit de l'ordre de 100 Mo pour chaque message.
+    // Calculate the size of a send block
+    // The memory required for a face is equal to nb_node + 4.
+    // If we assume we have quadrangles in general, this
+    // makes 8 Int64 per face, or 64 bytes per face.
+    // The memory required to send everything is therefore 64 * global_nb_boundary_face.
+    // step_size * nb_proc * 64 bytes.
+    // The default step_size is calculated so that the required memory
+    // is on the order of 100 Mo for each message.
     Int64 step_size = 1500000;
     Integer nb_phase = CheckedConvert::toInteger((global_nb_boundary_face / step_size) + 1);
     FaceLocalIdToFaceConverter faces(m_mesh->faceFamily());
@@ -325,7 +323,7 @@ _computeFacesUniqueIdsParallelV1()
           face_index_in_cell = NULL_ITEM_ID;
         faces_infos2.add(face_index_in_cell);
       }
-      faces_infos2.add(IT_NullType); // Pour dire que la liste s'arête
+      faces_infos2.add(IT_NullType); // To indicate that the list ends
 
       pm->allGatherVariable(faces_infos2,recv_faces_infos);
 
@@ -339,12 +337,12 @@ _computeFacesUniqueIdsParallelV1()
 
       for( Integer i_sub_domain=0; i_sub_domain<nb_rank; ++i_sub_domain ){
         bool is_end = false;
-        // Il ne faut pas lire les infos qui viennent de moi
+        // We must not read the info that comes from me
         if (i_sub_domain==my_rank){
           recv_faces_infos_index += faces_infos2.size();
           continue;
         }
-        // Désérialise les infos de chaque sous-domaine
+        // Deserializes the info for each subdomain
         while (!is_end){
           Integer face_type = CheckedConvert::toInteger(recv_faces_infos[recv_faces_infos_index]);
           ++recv_faces_infos_index;
@@ -365,7 +363,7 @@ _computeFacesUniqueIdsParallelV1()
           ++recv_faces_infos_index;
 
           Node node = nodes_map.tryFind(faces_nodes_uid[0]);
-          // Si la face n'existe pas dans mon sous-domaine, elle ne m'intéresse pas
+          // If the face does not exist in my subdomain, it is not of interest to me
           if (node.null())
             continue;
           Face face = ItemTools::findFaceInNode2(node, face_type, faces_nodes_uid);
@@ -383,7 +381,7 @@ _computeFacesUniqueIdsParallelV1()
            << nb_sub_domain_boundary_face << ' ' << nb_recv_sub_domain_boundary_face;
   }
 
-  // Cherche le uniqueId max des mailles sur tous les sous-domaines.
+  // Finds the max uniqueId of the meshes across all subdomains.
   Int64 max_cell_uid = 0;
   Int32 max_cell_local_id = 0;
   cells_map.eachItem([&](Item cell) {
@@ -459,10 +457,9 @@ _computeFacesUniqueIdsParallelV1()
       info() << "Infos faces (received) nb_int64=" << recv_cells_faces_infos.size();
       Integer recv_nb_cell = recv_cells_faces_infos.size() / 3;
 
-      // NOTE: comme on connait le uid min et max possible, on peut optimiser en
-      // creant un tableau dimensionne avec comme borne ce min et ce max et
-      // remplir directement les elements de ce tableau. Comme cela, on
-      // n'a pas besoin de tri.
+      // NOTE: since we know the possible min and max uid, we can optimize by
+      // creating an array dimensioned with this min and max as bounds and
+      // filling the elements of this array directly. This way, we
       UniqueArray<T_CellFaceInfo> global_cells_faces_info(recv_nb_cell);
       for( Integer i=0; i<recv_nb_cell; ++i ){
         Int64 cell_uid = recv_cells_faces_infos[i*3];
@@ -499,7 +496,7 @@ _computeFacesUniqueIdsParallelV1()
       }
       else if (face.nbCell()==1){
         if (opposite_cell_uid==NULL_ITEM_UNIQUE_ID){
-          // Il s'agit d'une face frontière du domaine initial
+          // This is a boundary face of the initial domain
           if (!cells_first_face_uid.hasKey(cell_uid))
             fatal() << "NO KEY 1 for cell_uid=" << cell_uid;
           face_new_uid = cells_first_face_uid[cell_uid] + my_cells_nb_back_face[cell_local_id] + num_true_boundary_face;
@@ -520,7 +517,7 @@ _computeFacesUniqueIdsParallelV1()
     }
   });
 
-  // Vérifie que toutes les faces ont été réindéxées
+  // Verifies that all faces have been re-indexed
   {
     Integer nb_error = 0;
     for( Integer i=0, is=nb_local_face; i<is; ++i ){
@@ -589,8 +586,8 @@ _computeFacesUniqueIdsParallelV1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * //COPIE DEPUIS GhostLayerBuilder.
- * Faire une classe unique.
+ * //COPY FROM GhostLayerBuilder.
+ * Make a unique class.
  */
 void FaceUniqueIdBuilder::
 _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send)
@@ -615,8 +612,8 @@ _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_
       Int64ConstArrayView infos  = boundary_infos_to_send[rank];
       Integer nb_info = infos.size();
       s->setMode(ISerializer::ModeReserve);
-      s->reserveInt64(1); // Pour le nombre d'elements
-      s->reserveSpan(eBasicDataType::Int64,nb_info); // Pour les elements
+      s->reserveInt64(1); // For the number of elements
+      s->reserveSpan(eBasicDataType::Int64,nb_info); // For the elements
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       s->putInt64(nb_info);
@@ -666,11 +663,11 @@ class ItemInfoMultiList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque face en parallèle V2.
+  \brief Calculates the unique IDs for each face in parallel V2.
   
 
-  \note Cette version est utilisée pour test mais n'a jamais
-  été mise en service et est maintenant remplacée par ...
+  \note This version is used for testing but has never
+  been put into service and is now replaced by ...
 */ 
 void FaceUniqueIdBuilder::
 _computeFacesUniqueIdsParallelV2()
@@ -688,9 +685,8 @@ _computeFacesUniqueIdsParallelV2()
   IntegerUniqueArray faces_opposite_cell_index(nb_local_face);
   IntegerUniqueArray faces_opposite_cell_owner(nb_local_face);
 
-  // Pour vérification, s'assure que tous les éléments de ce tableau
-  // sont valides, ce qui signifie que toutes les faces ont bien été
-  // renumérotés
+  // For verification, ensures that all elements of this array
+  // are valid, which means that all faces have been renumbered.
   Int64UniqueArray faces_new_uid(nb_local_face);
   faces_new_uid.fill(NULL_ITEM_ID);
 
@@ -700,25 +696,24 @@ _computeFacesUniqueIdsParallelV2()
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
 
-  // NOTE: ce tableau n'est pas utile sur toutes les mailles. Il
-  // suffit qu'il contienne les mailles dont on a besoin, c'est à dire
-  // les notres + celles connectées à une de nos faces.
+  // NOTE: this array is not useful on all meshes. It
+  // is enough that it contains the meshes we need, that is,
+  // ours + those connected to one of our faces.
   HashTableMapT<Int32,Int32> cell_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell()*2,true);
   
-  // Rassemble les données des autres processeurs dans recv_cells;
-  // Pour éviter que les tableaux ne soient trop gros, on procède en plusieurs
-  // étapes.
-  // Chaque sous-domaine construit sa liste de faces frontières, avec pour
-  // chaque face:
-  // - son type
-  // - la liste de ses noeuds,
-  // - le numéro unique de sa maille
-  // - le propriétaire de sa maille
-  // - son indice dans sa maille
-  // Cette liste sera ensuite envoyée à tous les sous-domaines.
+  // Collects data from other processors into recv_cells;
+  // To prevent the arrays from being too large, we proceed in several
+  // steps.
+  // Each subdomain builds its list of boundary faces, for each face:
+  // - its type
+  // - the list of its nodes,
+  // - the unique ID of its mesh
+  // - the owner of its mesh
+  // - its index in its mesh
+  // This list will then be sent to all subdomains.
   ItemTypeMng* itm = m_mesh->itemTypeMng();
 
-  // Détermine le unique id max des noeuds
+  // Determines the max unique id of the nodes
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
   nodes_map.eachItem([&](Item node) {
     Int64 node_uid = node.uniqueId();
@@ -729,7 +724,7 @@ _computeFacesUniqueIdsParallelV2()
   debug() << "NODE_UID_INFO: MY_MAX_UID=" << my_max_node_uid
          << " GLOBAL=" << global_max_node_uid;
  
-  //TODO: choisir bonne valeur pour initialiser la table
+  //TODO: choose a good value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(nb_rank,true);
   NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid,nb_rank);
   info() << "NB_CORE modulo=" << uid_to_subdomain_converter.modulo();
@@ -737,7 +732,7 @@ _computeFacesUniqueIdsParallelV2()
   IItemFamily* node_family = m_mesh->nodeFamily();
   UniqueArray<bool> is_boundary_nodes(node_family->maxLocalId(),false);
 
-  // Marque tous les noeuds frontieres car ce sont ceux qu'il faudra envoyer
+  // Marks all boundary nodes because these are the ones that need to be sent
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
@@ -746,7 +741,7 @@ _computeFacesUniqueIdsParallelV2()
     }
   });
 
-  // Détermine la liste des faces frontières
+  // Determines the list of boundary faces
   faces_map.eachItem([&](Face face) {
     Node first_node = face.node(0);
     Int64 first_node_uid = first_node.uniqueId();
@@ -777,7 +772,7 @@ _computeFacesUniqueIdsParallelV2()
       v.add(face.node(z).uniqueId());
   });
 
-  // Positionne la liste des envoies
+  // Positions the list of sends
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
@@ -844,7 +839,7 @@ _computeFacesUniqueIdsParallelV2()
         ItemTypeInfo* itt = itm->typeFromId(face_type);
         Integer face_nb_node = itt->nbLocalNode();
 
-        // Regarde si la face est déjà dans la liste:
+        // Checks if the face is already in the list:
         Integer face_index = node_nb_face;
         Int32 face_new_owner = sender_rank;
         for( Integer y=0; y<node_nb_face; ++y ){
@@ -855,7 +850,7 @@ _computeFacesUniqueIdsParallelV2()
         }
         Int64 face_new_uid = (node_uid * global_max_face_node) + face_index;
         Int64Array& v = boundary_infos_to_send.lookupAdd(sender_rank)->value();
-        // Indique au propriétaire de cette face son nouvel uid
+        // Indicates to the owner of this face its new uid
         v.add(face_uid);
         v.add(face_new_uid);
         v.add(face_new_owner);
@@ -906,7 +901,7 @@ _computeFacesUniqueIdsParallelV2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque face en séquentiel.
+  \brief Calculates the unique IDs for each face sequentially.
   
   \sa computeFacesUniqueIds()
 */  
@@ -917,8 +912,8 @@ _computeFacesUniqueIdsSequential()
   
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  // En séquentiel, les uniqueId() des mailles ne peuvent dépasser la
-  // taille des Integers même en 32bits.
+  // In sequential mode, the uniqueIds() of the meshes cannot exceed the
+  // size of Integers even in 32 bits.
   Int32 max_uid = 0;
   cells_map.eachItem([&](Item cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();

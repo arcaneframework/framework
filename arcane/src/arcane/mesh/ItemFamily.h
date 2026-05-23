@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamily.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Famille d'entités.                                                        */
+/* Entity Family.                                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMFAMILY_H
 #define ARCANE_MESH_ITEMFAMILY_H
@@ -60,15 +60,15 @@ class ItemConnectivitySelector;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille d'entités.
+ * \brief Entity Family.
  *
- * Cette classe est la classe de base des classes qui gèrent tout ce qui
- * est relatif à un ensemble d'entité de même genre, par exemple des noeuds.
+ * This class is the base class for classes that manage everything
+ * related to a set of entities of the same type, for example, nodes.
  *
- * Pour chaque famille, on gère:
- * - la liste des entités, l'ajout (addItems()) ou la suppression (removeItems()).
- * - les groupes, leur création (createGroup()), leur recherche (findGroup()).
- * - la synchronisation des entités (synchronize()).
+ * For each family, it manages:
+ * - the list of entities, adding (addItems()) or removing (removeItems()).
+ * - groups, their creation (createGroup()), and searching (findGroup()).
+ * - entity synchronization (synchronize()).
  */
 class ARCANE_MESH_EXPORT ItemFamily
 : public TraceAccessor
@@ -108,13 +108,13 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   };
   using AdjacencyGroupMap = std::map<AdjacencyInfo, ItemPairGroup>;
-  // Garde la version avec faute d'ortographe pour des raisons de compatibilité
-  // TODO: à enlever mi 2025
+  // Keeps the misspelled version for compatibility reasons
+  // TODO: to be removed by mid 2025
   using AdjencyGroupMap = AdjacencyGroupMap;
 
   /*!
-   * \brief Fonction permettant de comparer deux noms de variable (strcmp).
-   * \return True si le nom de a est lexicographiquement inférieur au nom de b.
+   * \brief Function to compare two variable names (strcmp).
+   * \return True if the name of a is lexicographically less than the name of b.
    */
   static bool _cmpIVariablePtr(const IVariable* a, const IVariable* b);
 
@@ -125,7 +125,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  public:
 
   ItemFamily(IMesh* mesh,eItemKind ik,const String& name);
-  ~ItemFamily() override; //<! Libère les ressources
+  ~ItemFamily() override; //<! Frees resources
 
  public:
 
@@ -283,21 +283,21 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  //NOTE: Cette méthode doit être virtuelle pour que PolyhedralMesh puisse positionner la politique.
+  //NOTE: This method must be virtual for PolyhedralMesh to set the policy.
   virtual void setPolicyMng(IItemFamilyPolicyMng* policy_mng);
 
  public:
 
   void beginCompactItems(ItemFamilyCompactInfos& compact_infos);
-  /*! Compactage effectif des variables, groupes et familles enfant
-   *  à partir des données du DynamicMeshKindInfos */
+  /*! Effective compaction of variables, groups, and child families
+   *  from the data of DynamicMeshKindInfos */
   void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos);
   void finishCompactItems(ItemFamilyCompactInfos& compact_infos);
   void removeItem(Item item)
   {
     _removeOne(item);
   }
-  //! Accesseur pour les connectivités via Item et ItemInternal
+  //! Accessor for connectivities via Item and ItemInternal
   ItemInternalConnectivityList* itemInternalConnectivityList()
   {
     return &m_item_connectivity_list;
@@ -409,7 +409,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Int32Array* m_items_flags = nullptr;
   Int16Array* m_items_type_id = nullptr;
   Int32Array* m_items_nb_parent = nullptr;
-  // TODO: a supprimer car redondant avec le champ correspondant de ItemSharedInfo
+  // TODO: to be deleted because it is redundant with the corresponding field in ItemSharedInfo
   Int64ArrayView m_items_unique_id_view;
   Variables* m_internal_variables = nullptr;
   Int32 m_default_sub_domain_owner = A_NULL_RANK;
@@ -423,14 +423,14 @@ class ARCANE_MESH_EXPORT ItemFamily
   bool m_is_parallel = false;
 
   /*!
-   * \brief Identifiant de la famille.
+   * \brief Family identifier.
    *
-   * Cet identifiant est incrémenté à chaque fois que la famille change.
-   * Il est sauvegardé lors d'une protection et en cas de relecture, par
-   * exemple suite à un retour-arrière. Si cet identifiant est le même
-   * que celui sauvegardé, cela signifie que la famille n'a pas changée
-   * depuis la dernière sauvegarde et donc qu'il n'y a aucune recréation
-   * d'entité à faire.
+   * This identifier is incremented every time the family changes.
+   * It is saved during a protection and in case of reloading, for
+   * example following a rollback. If this identifier is the same
+   * as the saved one, it means that the family has not changed
+   * since the last save and therefore there is no entity recreation
+   * to perform.
    */
   Integer m_current_id  = 0;
 
@@ -445,7 +445,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   AdjacencyGroupMap m_adjacency_groups;
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list;
   IItemFamilyTopologyModifier* m_topology_modifier = nullptr;
-  //! Accesseur pour les connectivités via Item et ItemInternal
+  //! Accessor for connectivities via Item and ItemInternal
   ItemInternalConnectivityList m_item_connectivity_list;
 
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;
@@ -545,5 +545,4 @@ class ARCANE_MESH_EXPORT ItemFamily
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 #endif

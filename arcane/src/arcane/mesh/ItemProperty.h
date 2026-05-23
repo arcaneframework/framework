@@ -35,13 +35,13 @@ class ItemScalarProperty
 {
  public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemScalarProperty() : m_default_value(DataType()) {}
 
  public:
 
   template <class AbstractFamily>
-  void resize(AbstractFamily* item_family, const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
+  void resize(AbstractFamily* item_family, const DataType default_value) // SDC Template AbstractFamily necessary for IFPEN applications
   {
     m_data.resize(item_family->maxLocalId(),default_value);
     m_default_value = default_value;
@@ -105,13 +105,13 @@ class ItemArrayProperty
 {
  public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemArrayProperty() {}
 
  public:
 
   template <class AbstractFamily>
-  void resize(AbstractFamily* item_family, const Integer nb_element_per_item, const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
+  void resize(AbstractFamily* item_family, const Integer nb_element_per_item, const DataType default_value) // SDC Template AbstractFamily necessary for IFPEN applications
   {
     Integer dim1_old_size = m_data.dim1Size();
     Integer dim2_old_size = m_data.dim2Size();
@@ -179,7 +179,7 @@ class ItemMultiArrayProperty
 {
  public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemMultiArrayProperty() {}
 
  public:
@@ -190,7 +190,7 @@ class ItemMultiArrayProperty
   template <class AbstractFamily>
   void resize([[maybe_unused]] AbstractFamily* item_family,
               const Arcane::IntegerConstArrayView nb_element_per_item,
-              const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
+              const DataType default_value) // SDC Template AbstractFamily necessary for IFPEN applications
   {
     ARCANE_ASSERT((nb_element_per_item.size() == item_family->maxLocalId()),
                   ("In item property resize : nb_element_per_item must have size IItemFamilyy::maxLocalId"))

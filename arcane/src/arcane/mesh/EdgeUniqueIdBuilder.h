@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeUniqueIdBuilder.h                                       (C) 2000-2024 */
 /*                                                                           */
-/* Construction des identifiants uniques des edges.                          */
+/* Construction of unique edge IDs.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EDGEUNIQUEIDBUILDER_H
 #define ARCANE_MESH_EDGEUNIQUEIDBUILDER_H
@@ -38,7 +38,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des couches fantômes.
+ * \brief Construction of ghost layers.
  */
 class EdgeUniqueIdBuilder
 : public TraceAccessor
@@ -50,7 +50,7 @@ class EdgeUniqueIdBuilder
   
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the mesh \a mesh
   explicit EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
 
  public:
@@ -78,4 +78,4 @@ class EdgeUniqueIdBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

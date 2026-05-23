@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshMerger.h                                         (C) 2000-2018 */
 /*                                                                           */
-/* Fusion de plusieurs maillages.                                            */
+/* Merging multiple meshes.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DYNAMICMESHMERGER_H
 #define ARCANE_MESH_DYNAMICMESHMERGER_H
@@ -31,7 +31,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour un échange de maillage entre sous-domaines.
+ * \brief Information for mesh exchange between subdomains.
  */
 class ARCANE_MESH_EXPORT DynamicMeshMerger
 : public TraceAccessor
@@ -59,4 +59,4 @@ class ARCANE_MESH_EXPORT DynamicMeshMerger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

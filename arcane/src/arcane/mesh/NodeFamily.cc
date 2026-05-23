@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodeFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Famille de noeuds.                                                        */
+/* Node family.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -253,17 +253,17 @@ inline void NodeFamily::
 _removeNode(Node node)
 {
   _removeOne(node);
-  // On ne supprime pas ici les autres relations (edge->node, face->node)
-  // Car l'ordre de suppression doit toujours être cell, face, edge, node
-  // donc node est en dernier et tout est déjà fait
-  // Par ailleurs, cela évite des problèmes de récursivité
+  // Do not remove other relationships here (edge->node, face->node)
+  // Because the order of deletion must always be cell, face, edge, node
+  // so node is last and everything is already done
+  // Furthermore, this avoids recursion problems
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace la maille d'index \a index du noeud \a node avec
- * celle de localId() \a node_lid.
+ * \brief Replaces the mesh index \a index of the node \a node with
+ * that of localId() \a node_lid.
  */
 void NodeFamily::
 replaceCell(ItemLocalId node,Integer index,ItemLocalId cell)
@@ -274,8 +274,8 @@ replaceCell(ItemLocalId node,Integer index,ItemLocalId cell)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace l'arête d'index \a index du noeud \a node avec
- * celle de localId() \a face_lid.
+ * \brief Replaces the edge index \a index of the node \a node with
+ * that of localId() \a face_lid.
  */
 void NodeFamily::
 replaceEdge(ItemLocalId node,Integer index,ItemLocalId edge)
@@ -286,8 +286,8 @@ replaceEdge(ItemLocalId node,Integer index,ItemLocalId edge)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace la face d'index \a index du noeud \a node avec
- * celle de localId() \a face_lid.
+ * \brief Replaces the face index \a index of the node \a node with
+ * that of localId() \a face_lid.
  */
 void NodeFamily::
 replaceFace(ItemLocalId node,Integer index,ItemLocalId face)
@@ -370,10 +370,10 @@ _sortConnectedItems(IItemFamily* family, IncrementalItemConnectivity* connectivi
   if (!connectivity)
     return;
 
-  // Trie les entités connectées aux noeuds par uniqueId() croissant.
-  // Cela est utile pour garantir un ordre de parcours de ces entités
-  // identique quel que soit le découpage et ainsi améliorer
-  // la reproductibilité.
+  // Sort the entities connected to nodes by increasing uniqueId().
+  // This is useful to guarantee a traversal order of these entities
+  // that is identical regardless of the decomposition and thus improves
+  // reproducibility.
   ItemInfoListView items_infos(family->itemInfoListView());
   ItemCompare2 ic_items(items_infos);
   ENUMERATE_ITEM(iitem,allItems()){
@@ -389,11 +389,11 @@ _sortConnectedItems(IItemFamily* family, IncrementalItemConnectivity* connectivi
 void NodeFamily::
 sortInternalReferences()
 {
-  // Trie les mailles connectées aux noeuds par uniqueId() croissant.
+  // Sort the cells connected to nodes by increasing uniqueId().
   _sortConnectedItems(mesh()->cellFamily(),m_cell_connectivity->trueCustomConnectivity());
 
-  // Fait de même pour les faces et les arêtes.
-  // Pour des raisons historiques, cela n'est pas actif par défaut.
+  // Do the same for faces and edges.
+  // For historical reasons, this is not active by default.
   bool do_sort = properties()->getBoolWithDefault("sort-connected-faces-edges",m_is_sort_connected_faces_and_edges);
   if (do_sort){
     info(4) << "Sorting connected faces and edges family=" << fullName();
@@ -410,8 +410,8 @@ void NodeFamily::
 notifyItemsUniqueIdChanged()
 {
   ItemFamily::notifyItemsUniqueIdChanged();
-  // Si les uniqueId() des noeuds changent, cela peut avoir une influence sur
-  // l'orientation des faces et des arêtes. Il faut donc renuméroter ces dernières
+  // If the uniqueId() of nodes change, this can influence
+  // the orientation of faces and edges. These must therefore be reoriented
   m_face_family->reorientFacesIfNeeded();
   m_edge_family->reorientEdgesIfNeeded();
 }

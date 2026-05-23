@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshGlobal.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Déclarations générales de la composante Maillage de Arcane.               */
+/* General declarations for the Arcane Mesh component.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHGLOBAL_H
 #define ARCANE_MESH_MESHGLOBAL_H

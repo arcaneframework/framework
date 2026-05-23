@@ -32,7 +32,7 @@ executeExtend(const Int32ConstArrayView * new_items_info)
 {
   IItemFamily * parent_family = m_mesh->parentGroup().itemFamily();
 
-  // Les familles parents ont déjà été branchées.
+  // Parent families have already been attached.
   ARCANE_ASSERT((m_mesh->cellFamily()->parentFamily()->itemKind() == parent_family->itemKind()),
                 ("Bad Face parent family %s",m_mesh->cellFamily()->parentFamily()->name().localstr()));
 
@@ -50,10 +50,10 @@ executeReduce(const Int32ConstArrayView * info)
   IItemFamily * parent_family = m_mesh->parentGroup().itemFamily();
   ItemInfoListView parent_internals(parent_family);
 
-  // info contient les localIds supprimés de l'ancien groupe,
+  // info contains the localIds deleted from the old group,
   const Int32ConstArrayView & parent_deleted_lids = *info;
     
-  // Les uniqueIds des Cell est identique au parent donc on cherche dans la famille locale
+  // The uniqueIds of the Cell are identical to the parent, so we search in the local family
   Int64UniqueArray parent_uids; 
   parent_uids.reserve(parent_deleted_lids.size());
   for(Integer i=0;i<parent_deleted_lids.size();++i)
@@ -69,7 +69,7 @@ executeReduce(const Int32ConstArrayView * info)
   Int32UniqueArray to_delete_lids(parent_uids.size(),NULL_ITEM_LOCAL_ID);
   family->itemsUniqueIdToLocalId(to_delete_lids,
                                  parent_uids,
-                                 true); // Fatal si non trouvé
+                                 true); // Fatal if not found
 
 #ifdef ARCANE_DEBUG
   ITraceMng * traceMng = m_mesh->traceMng();
@@ -92,8 +92,8 @@ executeCompact(const Int32ConstArrayView * pinfo)
   if (!pinfo)
     throw ArgumentException(A_FUNCINFO,"Compact info required");
 
-  // Le compactage est traité dans ItemFamily::_compactFromParentFamily
-  // afin de procéder de manière consistante famille par famille
+  // Compaction is handled in ItemFamily::_compactFromParentFamily
+  // in order to proceed consistently family by family
   if (arcaneIsDebug()){
     ITraceMng* trace_mng = m_mesh->traceMng();
     const Int32ConstArrayView& old_to_new_ids = *pinfo;

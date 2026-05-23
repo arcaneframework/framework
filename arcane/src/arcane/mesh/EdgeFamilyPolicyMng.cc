@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeFamilyPolicyMng.cc                                      (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille d'arêtes.                       */
+/* Edge family policy manager.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille d'arêtes.
+ * \brief Edge family policy manager.
  */
 class ARCANE_MESH_EXPORT EdgeFamilyPolicyMng
 : public ItemFamilyPolicyMng

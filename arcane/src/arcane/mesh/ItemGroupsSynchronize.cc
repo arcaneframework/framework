@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupsSynchronize.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Synchronisations des groupes.                                             */
+/* Group synchronizations.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,6 +72,7 @@ ItemGroupsSynchronize::
 void ItemGroupsSynchronize::
 _setGroups()
 {
+  // Constructing the list of groups
   m_groups.clear();
   for( const ItemGroup& group : m_item_family->groups() ){
     if (!group.internal()->needSynchronization())
@@ -88,7 +89,7 @@ synchronize()
 {
   ItemGroup all_items = m_item_family->allItems();
 
-  // Construction de la liste des groupes
+  // Constructing the list of groups
   UniqueArray<ItemGroup> groups;
   CommonItemGroupFilterer group_filterer(m_item_family);
   for( ItemGroup group : m_groups ){
@@ -96,16 +97,16 @@ synchronize()
     groups.add(group);
     group_filterer.addGroupToFilter(group);
   }
-  // TODO: regarder s'il ne faudrait pas le faire à chaque fois
-  // Comme cela on serait certains que les groupes sont bien triés
+  // TODO: check if it shouldn't be done every time
+  // This way we are sure that the groups are properly sorted
   if (arcaneIsCheck())
     group_filterer.applyFiltering();
 
-  Int32UniqueArray group_items; // Tableau stockant les listes d'items en évolution
+  Int32UniqueArray group_items; // Array storing the list of evolving items
   group_items.reserve(m_item_family->maxLocalId());
 
   const Integer max_aggregate_size = 
-    sizeof(IntAggregator)*8-1; // Pour rester dans l'espace des entiers positifs
+    sizeof(IntAggregator)*8-1; // To stay within the positive integer space
   const Integer aggregate_count = 
     (groups.size() / max_aggregate_size) +
     ((groups.size() % max_aggregate_size)?1:0);
@@ -114,7 +115,7 @@ synchronize()
     const Integer first_group = i_aggregate * max_aggregate_size;
     const Integer current_aggregate_size = math::min(max_aggregate_size, 
                                                      groups.size()-first_group);
-    m_var.fill(0); // Initialisation du tableau parallèle
+    m_var.fill(0); // Initialization of the parallel array
     for(Integer i_group=0;i_group<current_aggregate_size;++i_group) {
       const IntAggregator current_mask = static_cast<IntAggregator>(1)<<i_group;
       ItemGroup group = groups[first_group+i_group];
@@ -123,7 +124,7 @@ synchronize()
       }
     }
 
-    // Partage des infos de contenu des groupes sur l'aggrégat
+    // Sharing group content info on the aggregate
     m_var.synchronize();
 
     for(Integer i_group=0;i_group<current_aggregate_size;++i_group) {
@@ -131,19 +132,19 @@ synchronize()
       ItemGroup group = groups[first_group+i_group];
       const Integer current_size = group.size();
       if (group.internal()->hasInfoObserver()) {
-        // Passage en mode incrémental
-        // Recherche des items disparus
+        // Switching to incremental mode
+        // Searching for missing items
         group_items.clear();
         ENUMERATE_ITEM(iitem, group) {
           if ((m_var[iitem] & current_mask) == 0) {
             group_items.add(iitem.itemLocalId());
           } else {
-            m_var[iitem] &= ~current_mask; // marque comme déjà existant dans le groupe
+            m_var[iitem] &= ~current_mask; // marks as already existing in the group
           }
         }
         Integer removed_size = group_items.size();
         group.removeItems(group_items);
-        // Recherche des nouveaux items
+        // Searching for new items
         group_items.clear();
         ENUMERATE_ITEM(iitem, all_items) {
           if ((m_var[iitem] & current_mask) != 0) {
@@ -156,14 +157,14 @@ synchronize()
                 << " added=" << group_items.size() << " removed=" << removed_size;
       }
       else {
-        // On utilise le mode d'affectation direct des groupes
+        // We use the direct assignment mode for groups
         group_items.clear();
         ENUMERATE_ITEM(iitem,all_items){
           if ((m_var[iitem] & current_mask) != 0) {
             group_items.add(iitem.itemLocalId());
           }
         }
-        // Préservation du précédent comportement : utilise createGroup et non findGroup + setItems
+        // Preserving previous behavior: uses createGroup and not findGroup + setItems
         group.setItems(group_items);
         debug() << "Direct synchronization for the group <" << group.name() << ">"
                 << " old=" << current_size << " new=" << group.size();
@@ -178,7 +179,7 @@ synchronize()
 Integer ItemGroupsSynchronize::
 checkSynchronize()
 {
-  // TODO: vérifier que tous les sous-domaines ont les mêmes groupes.
+  // TODO: check that all sub-domains have the same groups.
   Integer nb_diff = 0;
   for( const ItemGroup& group : m_item_family->groups() ){
     if (group.isOwn()) continue;

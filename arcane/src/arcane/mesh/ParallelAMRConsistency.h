@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelAMRConsistency.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestion de la consistance de l'AMR en parallèle.                          */
+/* Management of AMR consistency in parallel.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_PARALLELAMRCONSISTENCY_H
 #define ARCANE_MESH_PARALLELAMRCONSISTENCY_H
@@ -97,26 +97,26 @@ class NodeInfo
     return m_owner;
   }
 private:
-  //! Numéro de ce noeud
+  //! Node unique ID
   ItemUniqueId m_unique_id;
-  //! propriétaire du noeud
+  //! owner of the node
   Integer m_owner;
-  //! Coordonnées de ce noeud
+  //! Coordinates of the node
   Real3 m_coord;
 
 public:
 
-  //! Liste des uniqueId() des faces actives auquel ce noeud peut être connecté
+  //! List of uniqueId() of active faces to which this node can be connected
   SharedArray<ItemUniqueId> m_connected_active_faces;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos sur une Face active.
+ * \brief Info on an active Face.
  *
- * Cet objet peut être copié mais ne doit pas être conservé une
- * fois le gestionnnaire \a m_mng associé détruit.
+ * This object can be copied but must not be kept after the associated
+ * manager \a m_mng is destroyed.
  */
 class FaceInfo
 {
@@ -187,10 +187,10 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos sur une Face active.
+ * \brief Info on an active Face.
  *
- * Cet objet peut être copié mais ne doit pas être conservé une
- * fois le gestionnnaire \a m_mng associé détruit.
+ * This object can be copied but must not be kept after the associated
+ * manager \a m_mng is destroyed.
  */
 class FaceInfo2
 {

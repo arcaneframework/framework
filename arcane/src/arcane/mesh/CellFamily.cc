@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Famille de mailles.                                                       */
+/* Cell Family.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -249,7 +249,7 @@ preAllocate(Integer nb_item)
 void CellFamily::
 computeSynchronizeInfos()
 {
-  debug() << "Creating the list of ghosts cells";
+  debug() << "Creating the list of ghost cells";
   ItemFamily::computeSynchronizeInfos();
 }
 
@@ -261,11 +261,11 @@ _removeSubItems(Cell cell)
 {
   ItemLocalId cell_lid(cell.localId());
 
-  // Il faut d'abord supprimer les faces, les arêtes puis ensuite les noeuds
-  // voir les remarques sur _removeOne dans les familles.
-  // NOTE GG: ce n'est normalement plus obligatoire de le faire dans un ordre
-  // fixe car ces méthodes ne suppriment pas les entités. La destruction
-  // est faire lors de l'appel à removeNotConnectedSubItems().
+  // Must first remove faces, then edges, then nodes
+  // see notes on _removeOne in the families.
+  // NOTE GG: it is normally no longer necessary to do this in a fixed order
+  // because these methods do not delete the entities. Destruction
+  // happens when calling removeNotConnectedSubItems().
   for( Face face : cell.faces() )
     m_face_family->removeCellFromFace(face,cell_lid);
   for( Edge edge : cell.edges() )
@@ -285,7 +285,7 @@ removeCell(Cell icell)
   if (icell.itemBase().isSuppressed())
     ARCANE_FATAL("Cell '{0}' is already removed",icell.uniqueId());
 #endif
-  // TODO: supprimer les faces et arêtes connectées.
+  // TODO: remove connected faces and edges.
   _removeSubItems(icell);
   _removeNotConnectedSubItems(icell);
   //! AMR
@@ -344,24 +344,24 @@ detachCells2(Int32ConstArrayView cells_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Supprime les sous-entités de la maille qui ne sont connectées
- * à aucune maille.
+ * \brief Removes mesh sub-entities that are not connected
+ * to any mesh.
  */
 void CellFamily::
 _removeNotConnectedSubItems(Cell cell)
 {
-  // L'ordre (faces, puis arêtes puis noeuds) est important.
-  // Ne pas changer.
+  // The order (faces, then edges then nodes) is important.
+  // Do not change.
 
-  // Supprime les faces de la maille qui ne sont plus connectées
+  // Remove faces from the mesh that are no longer connected
   for( Face face : cell.faces() )
     m_face_family->removeFaceIfNotConnected(face);
 
-  // Supprime les arêtes de la maille qui ne sont plus connectées
+  // Remove edges from the mesh that are no longer connected
   for( Edge edge : cell.edges() )
     m_edge_family->removeEdgeIfNotConnected(edge);
 
-  // on supprime les noeuds de la maille qui ne sont plus connectés
+  // remove nodes from the mesh that are no longer connected
   for( Node node : cell.nodes() )
     m_node_family->removeNodeIfNotConnected(node);
 }
@@ -374,7 +374,7 @@ removeDetachedCell(Cell cell)
 {
   _removeNotConnectedSubItems(cell);
 
-  // on supprime la maille
+  // remove the cell
   _removeDetachedOne(cell);
 }
 
@@ -393,8 +393,8 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace le noeud d'index \a index de la maille \a cell avec
- * celui de localId() \a node.
+ * \brief Replaces the node at index \a index of the mesh \a cell with
+ * that of localId() \a node.
  */
 void CellFamily::
 replaceNode(ItemLocalId cell,Integer index,ItemLocalId node)
@@ -405,8 +405,8 @@ replaceNode(ItemLocalId cell,Integer index,ItemLocalId node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace l'arête d'index \a index de la maille \a cell avec
- * celle de localId() \a edge.
+ * \brief Replaces the edge at index \a index of the mesh \a cell with
+ * that of localId() \a edge.
  */
 void CellFamily::
 replaceEdge(ItemLocalId cell,Integer index,ItemLocalId edge)
@@ -417,8 +417,8 @@ replaceEdge(ItemLocalId cell,Integer index,ItemLocalId edge)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplace la face d'index \a index de la maille \a cell avec
- * celle de localId() \a face.
+ * \brief Replaces the face at index \a index of the mesh \a cell with
+ * that of localId() \a face.
  */
 void CellFamily::
 replaceFace(ItemLocalId cell,Integer index,ItemLocalId face)
@@ -453,7 +453,7 @@ setConnectivity(const Integer c)
   m_mesh_connectivity = c;
   m_node_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Cell,IK_Node);
   m_node_connectivity->setPreAllocatedSize(m_node_prealloc);
-  // Les arêtes n'existent que en dimension 3.
+  // Edges only exist in dimension 3.
   if (mesh()->dimension()==3){
     Integer edge_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Cell,IK_Edge);
     m_edge_connectivity->setPreAllocatedSize(edge_prealloc);
@@ -493,9 +493,9 @@ void CellFamily::
 _addChildCellToCell(Cell iparent_cell,Integer position,Cell child_cell)
 {
   Cell parent_cell(iparent_cell);
-  // NOTE GG: L'ancienne méthode ci-dessous en commentaire ne semble
-  // fonctionner que si \a position correspond parent_cell->nbHChildren().
-  // Et dans ce cas il n'est pas nécessaire de faire 2 appels.
+  // NOTE GG: The old method below in comment seems
+  // to only work if \a position corresponds to parent_cell->nbHChildren().
+  // And in this case, it is not necessary to make 2 calls.
   // m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
   Int32 nb_connected = m_hchild_connectivity->trueCustomConnectivity()->nbConnectedItem(parent_cell);
   for( Int32 i=nb_connected; i<(position+1); ++i )

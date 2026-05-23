@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceExchanger.cc                                   (C) 2000-2016 */
 /*                                                                           */
-/* Echangeur entre sous-domaines des interfaces liées.                       */
+/* Exchanger between sub-domains of tied interfaces.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -106,9 +106,9 @@ class TiedInterfaceExchanger::OneSubDomainInfo
   Int64UniqueArray slaves_face_uid;
   IntegerUniqueArray nb_items;
   RealUniqueArray isos;
-  //! Uniquement après désérialisation, contient le localId() de chaque entité de \a slaves_node_uid.
+  //! Only after deserialization, contains the localId() of each entity in \a slaves_node_uid.
   Int32UniqueArray slaves_node_local_id;
-  //! Uniquement après désérialisation, contient le localId() de chaque entité de \a slaves_face_uid.
+  //! Only after deserialization, contains the localId() of each entity in \a slaves_face_uid.
   Int32UniqueArray slaves_face_local_id;
 };
 
@@ -128,13 +128,13 @@ class TiedInterfaceExchanger::DeserializedInfo
  public:
   struct FaceInfo
   {
-    //! Instance contenant l'info
+    //! Instance containing the info
     OneSubDomainInfo* sd_info;
-    //! Indice de la face dans le tableau \a uid.
+    //! Index of the face in the \a uid array.
     Integer face_index;
-    //! Indice dans \a slaves_face_uid de la première face esclave.
+    //! Index in \a slaves_face_uid of the first slave face.
     Integer slave_face_index;
-    //! Indice dans \a isos et \a slaves_node_uid du première noeud esclave.
+    //! Index in \a isos and \a slaves_node_uid of the first slave node.
     Integer slave_node_index;
 
     FaceInfo(OneSubDomainInfo* _sd_info,
@@ -150,7 +150,7 @@ class TiedInterfaceExchanger::DeserializedInfo
   };
 
   /*!
-   * \brief Construit les infos après déserialisation.
+   * \brief Constructs the info after deserialization.
    */
   void buildAfterDeserializeInfo(OneSubDomainInfo* sdi)
   {
@@ -280,20 +280,20 @@ void TiedInterfaceExchanger::
 initialize()
 {
   // precond:
-  // - cet appel doit se faire avant face.owner() new contiennent
-  // les nouveaux propriétaires car dans ce cas le ENUMERATE_FACE
-  // ne fonctionnera pas correctement puisqu'il s'agit d'une groupe
-  // de mailles propres et il est remis à jour lorsque les propriétaires
-  // changent.
-  // - les faces esclaves et leur face maitre doivent avoir le même propriétaire
+  // - this call must be made before face.owner() new contains
+  // the new owners because in this case ENUMERATE_FACE
+  // will not work correctly since it is a group
+  // of own meshes and it is updated when owners
+  // change.
+  // - slave faces and their master face must have the same owner
 
-  // Parcours l'ensemble des interfaces liées et:
-  // 1- sauve les infos sur les faces liées qui seront conservées
-  // 2- prépare les infos pour chaque sous-domaine.
-  // Chaque face liée contient soit la face maître associée (s'il s'agit
-  // d'une face esclave), soit la liste des faces esclaves (s'il s'agit
-  // d'une face maître).
-  // 3- Supprime les infos de connectivité de chaque face.
+  // Iterates through all tied interfaces and:
+  // 1- saves the information about the tied faces that will be kept
+  // 2- prepares the information for each sub-domain.
+  // Each tied face contains either the associated master face (if it is
+  // a slave face), or the list of slave faces (if it is
+  // a master face).
+  // 3- Deletes the connectivity information for each face.
 
   ConstArrayView<TiedInterface*> tied_interfaces(m_mesh->trueTiedInterfaces());
   FaceFamily& face_family = m_mesh->trueFaceFamily();
@@ -321,13 +321,13 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialise les faces dans le tampon \a buf.
+ * \brief Serializes the faces into the buffer \a buf.
  *
- * Les faces sont créés en même temps que les mailles.
- * Cette sérialisation n'a donc pas besoin de les créer. On se contente
- * donc de gérer uniquement les données concernant les interfaces liées. 
- * Il faut faire bien attention de n'envoyer que les faces qui vont
- * appartenir au sous-domaine de destination et pas les faces fantômes
+ * The faces are created at the same time as the meshes.
+ * This serialization therefore does not need to create them. We only manage
+ * the data concerning the tied interfaces. 
+ * It is important to be careful to only send the faces that will
+ * belong to the destination sub-domain and not the ghost faces.
  */
 void TiedInterfaceExchanger::
 serialize(const ItemFamilySerializeArgs& args)
@@ -355,24 +355,24 @@ serialize(const ItemFamilySerializeArgs& args)
 void TiedInterfaceExchanger::
 finalize()
 {
-  // NOTE: il faut être certain que cette méthode soit appelée
-  // une fois que les localId() des entités n'évoluent plus
-  // (c.a.d après un compactage et un tri)
+  // NOTE: it must be certain that this method is called
+  // once the localId() of the entities no longer changes
+  // (i.e., after compaction and sorting)
   
-  // Il faut éventuellement reconstruire les infos après désérialisation
-  // de notre propre sous-domaine car celui-ci n'a pas été désérialisé.
+  // It may be necessary to rebuild the info after deserialization
+  // of our own sub-domain because it was not deserialized.
   OneSubDomainInfo* sdi = _getInfo(m_my_rank);
   m_deserialized_info->buildAfterDeserializeInfo(sdi);
 
-  // Il faut convertir les uniqueId en localId.
-  // Il ne faut surtout pas le faire avant d'être ici car les
-  // localId() peuvent changer durant un repartitonnement.
+  // It is necessary to convert the uniqueId to localId.
+  // It must absolutely not be done before reaching here because the
+  // localId() can change during a partitioning.
   m_deserialized_info->convertUniqueIds();
   
-  // Toutes les nouvelles entités et les groupes
-  // ont été mis à jour. Il reste maintenant à récupérer les
-  // informations de chaque face liée, à savoir la liste des noeuds
-  // et face esclave ainsi que les coordonnées iso.
+  // All new entities and groups
+  // have been updated. Now it remains to retrieve the
+  // information for each tied face, namely the list of nodes
+  // and slave faces as well as the iso coordinates.
   ConstArrayView<TiedInterface*> tied_interfaces(m_mesh->trueTiedInterfaces());
   IntegerUniqueArray nb_slave_nodes;
   IntegerUniqueArray nb_slave_faces;

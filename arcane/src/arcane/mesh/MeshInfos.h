@@ -26,17 +26,17 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
- * \brief Classe factorisant des informations sur le maillage
+ * \brief Class containing mesh information
  *
- * Attention cette classe ne donne pas d'information sur la maillage construit (utiliser IMesh).
- * Il s'agit simplement d'un conteneur utilisé pendant la phase de construction du maillage
+ * Warning: This class does not provide information about the constructed mesh (use IMesh).
+ * It is simply a container used during the mesh construction phase.
  */
 
 class ARCANE_MESH_EXPORT MeshInfos
 {
  public:
 
-  /** Constructeur de la classe */
+  /** Class constructor */
   MeshInfos(const Integer rank)
   : m_mesh_rank(rank)
   , m_mesh_nb_node(0)
@@ -44,32 +44,32 @@ class ARCANE_MESH_EXPORT MeshInfos
   , m_mesh_nb_face(0)
   , m_mesh_nb_cell(0){}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~MeshInfos() {}
 
  public:
 
-  //! Numéro de ce sous-domaine
+  //! Number of this subdomain
   Int32 rank() const {return m_mesh_rank;}
 
-  //! Nombre de noeuds dans le maillage
+  //! Number of nodes in the mesh
   Integer& nbNode() {return m_mesh_nb_node;}
   Integer getNbNode() const {return m_mesh_nb_node;}
 
-  //! Nombre d'arêtes dans le maillage
+  //! Number of edges in the mesh
   Integer& nbEdge() {return m_mesh_nb_edge;}
   Integer getNbEdge() const {return m_mesh_nb_edge;}
 
-  //! Nombre de faces dans le maillage
+  //! Number of faces in the mesh
   Integer& nbFace() {return m_mesh_nb_face;}
   Integer getNbFace() const {return m_mesh_nb_face;}
 
 
-  //! Nombre de mailles dans le maillage
+  //! Number of cells in the mesh
   Integer& nbCell() {return m_mesh_nb_cell;}
   Integer getNbCell() const {return m_mesh_nb_cell;}
 
-  //! Remet à zéro la numérotation
+  //! Resets the numbering
   void reset()
   {
     m_mesh_nb_node = 0;
@@ -80,11 +80,11 @@ class ARCANE_MESH_EXPORT MeshInfos
 
  private:
 
-  Int32 m_mesh_rank;           //!< Numéro de ce sous-domaine
-  Integer m_mesh_nb_node;      //!< Nombre de noeuds dans le maillage
-  Integer m_mesh_nb_edge;      //!< Nombre d'arêtes dans le maillage
-  Integer m_mesh_nb_face;      //!< Nombre de faces dans le maillage
-  Integer m_mesh_nb_cell;      //!< Nombre de mailles dans le maillage
+  Int32 m_mesh_rank;           //!< Number of this subdomain
+  Integer m_mesh_nb_node;      //!< Number of nodes in the mesh
+  Integer m_mesh_nb_edge;      //!< Number of edges in the mesh
+  Integer m_mesh_nb_face;      //!< Number of faces in the mesh
+  Integer m_mesh_nb_cell;      //!< Number of cells in the mesh
 };
 
 /*---------------------------------------------------------------------------*/

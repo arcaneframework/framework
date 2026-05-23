@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellMerger.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Fusionne deux mailles.                                                    */
+/* Merges two meshes.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,88 +40,90 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe utilitaire pour échanger des entités entre deux entités
+//! Utility class for swapping entities between two entities
 class ItemSwapperUtils
 : public TraceAccessor
 {
  public:
 
   explicit ItemSwapperUtils(IMesh* mesh)
-  : TraceAccessor(mesh->traceMng()),
-    m_face_reorienter(mesh),
-    m_cell_tm(mesh->cellFamily()->_internalApi()->topologyModifier()),
-    m_face_tm(mesh->faceFamily()->_internalApi()->topologyModifier()),
-    m_node_tm(mesh->nodeFamily()->_internalApi()->topologyModifier())
+  : TraceAccessor(mesh->traceMng())
+  , m_face_reorienter(mesh)
+  , m_cell_tm(mesh->cellFamily()->_internalApi()->topologyModifier())
+  , m_face_tm(mesh->faceFamily()->_internalApi()->topologyModifier())
+  , m_node_tm(mesh->nodeFamily()->_internalApi()->topologyModifier())
   {
   }
+
  public:
 
   /*!
-   * \brief Échange deux noeuds entre deux faces.
+   * \brief Swaps two nodes between two faces.
    *
-   * Échange le noeud d'index \a face1_node_idx de la face \a face1 avec le
-   * noeuds d'index \a face2_node_idx de la face \a face2.
+   * Swaps the node at index \a face1_node_idx of face \a face1 with the
+   * node at index \a face2_node_idx of face \a face2.
    */
-  void swapFaceNodes(Face face_1,Face face_2,
-                     Integer face1_node_idx,Integer face2_node_idx)
+  void swapFaceNodes(Face face_1, Face face_2,
+                     Integer face1_node_idx, Integer face2_node_idx)
   {
     NodeLocalId face1_node = face_1.node(face1_node_idx);
     NodeLocalId face2_node = face_2.node(face2_node_idx);
 
-    m_face_tm->replaceNode(face_1,face1_node_idx,face2_node);
-    m_face_tm->replaceNode(face_2,face2_node_idx,face1_node);
+    m_face_tm->replaceNode(face_1, face1_node_idx, face2_node);
+    m_face_tm->replaceNode(face_2, face2_node_idx, face1_node);
 
-    m_node_tm->findAndReplaceFace(face1_node,face_1,face_2);
-    m_node_tm->findAndReplaceFace(face2_node,face_2,face_1);
+    m_node_tm->findAndReplaceFace(face1_node, face_1, face_2);
+    m_node_tm->findAndReplaceFace(face2_node, face_2, face_1);
   }
 
   /*!
-   * \brief Échange deux noeuds entre deux mailles.
+   * \brief Swaps two nodes between two cells.
    *
-   * Échange le noeud d'index \a cell1_node_idx de la maille \a cell1 avec le
-   * noeuds d'index \a cell2_node_idx de la maille \a cell2.
+   * Swaps the node at index \a cell1_node_idx of cell \a cell1 with the
+   * node at index \a cell2_node_idx of cell \a cell2.
    */
-  void swapCellNodes(Cell cell1,Cell cell2,
-                     Integer cell1_node_idx,Integer cell2_node_idx)
+  void swapCellNodes(Cell cell1, Cell cell2,
+                     Integer cell1_node_idx, Integer cell2_node_idx)
   {
     NodeLocalId cell1_node = cell1.node(cell1_node_idx);
     NodeLocalId cell2_node = cell2.node(cell2_node_idx);
 
-    m_cell_tm->replaceNode(cell1,cell1_node_idx,cell2_node);
-    m_cell_tm->replaceNode(cell2,cell2_node_idx,cell1_node);
+    m_cell_tm->replaceNode(cell1, cell1_node_idx, cell2_node);
+    m_cell_tm->replaceNode(cell2, cell2_node_idx, cell1_node);
 
-    m_node_tm->findAndReplaceCell(cell1_node,cell1,cell2);
-    m_node_tm->findAndReplaceCell(cell2_node,cell2,cell1);
+    m_node_tm->findAndReplaceCell(cell1_node, cell1, cell2);
+    m_node_tm->findAndReplaceCell(cell2_node, cell2, cell1);
   }
 
   /*!
-   * \brief Échange deux faces entre deux mailles.
+   * \brief Swaps two faces between two cells.
    *
-   * Échange la face d'index \a cell1_face_idx de la maille \a cell1 avec la
-   * face d'index \a cell2_face_idx de la maille \a cell2.
+   * Swaps the face at index \a cell1_face_idx of cell \a cell1 with the
+   * face at index \a cell2_face_idx of cell \a cell2.
    */
-  void swapCellFaces(Cell cell1,Cell cell2,
-                     Integer cell1_face_idx,Integer cell2_face_idx)
+  void swapCellFaces(Cell cell1, Cell cell2,
+                     Integer cell1_face_idx, Integer cell2_face_idx)
   {
     FaceLocalId cell1_face = cell1.face(cell1_face_idx);
     FaceLocalId cell2_face = cell2.face(cell2_face_idx);
 
-    m_cell_tm->replaceFace(cell1,cell1_face_idx,cell2_face);
-    m_cell_tm->replaceFace(cell2,cell2_face_idx,cell1_face);
+    m_cell_tm->replaceFace(cell1, cell1_face_idx, cell2_face);
+    m_cell_tm->replaceFace(cell2, cell2_face_idx, cell1_face);
 
-    m_face_tm->findAndReplaceCell(cell1_face,cell1,cell2);
-    m_face_tm->findAndReplaceCell(cell2_face,cell2,cell1);
+    m_face_tm->findAndReplaceCell(cell1_face, cell1, cell2);
+    m_face_tm->findAndReplaceCell(cell2_face, cell2, cell1);
   }
 
   void checkAndChangeFaceOrientation(Cell cell)
   {
-    // Ceci pourrait sans doutes etre optimise
-    for( Integer i=0, n=cell.nbFace(); i<n; ++i) {
+    // This could undoubtedly be optimized
+    for (Integer i = 0, n = cell.nbFace(); i < n; ++i) {
       m_face_reorienter.checkAndChangeOrientation(cell.face(i));
     }
   }
 
  private:
+
   FaceReorienter m_face_reorienter;
   IItemFamilyTopologyModifier* m_cell_tm;
   IItemFamilyTopologyModifier* m_face_tm;
@@ -131,26 +133,29 @@ class ItemSwapperUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief  Recherche la face commune à deux mailles.
+ * \brief Finds the common face between two cells.
  *
- * Cet fonction-classe a pour but de déterminer la face commune à deux
- * mailles. Si les deux mailles ne sont pas jointes par une face, on
- * génère une erreur.
+ * This utility class aims to determine the common face between two
+ * cells. If the two cells are not joined by a face, an error is
+ * generated.
  */
 class CommonFaceFinder
 {
  public:
+
   typedef std::set<Integer> NodesLIDSet;
 
  private:
-  Integer m_cell_1_local_number; //!< Numéro de la face commune dans la maille 1
-  Integer m_cell_2_local_number; //!< Numéro de la face commune dans la maille 2
 
-  NodesLIDSet m_nodes_lid_set;	//! Ensemble des localId des sommets en communs
+  Integer m_cell_1_local_number; //!< Number of the common face in cell 1
+  Integer m_cell_2_local_number; //!< Number of the common face in cell 2
+
+  NodesLIDSet m_nodes_lid_set; //! Set of localIds of common nodes
 
  public:
-  /*! 
-   * Access en lecture à la liste des localId des sommets en communs
+
+  /*!
+   * Read access to the list of common node localIds
    *
    * @return m_nodes_lid_set
    */
@@ -160,9 +165,9 @@ class CommonFaceFinder
   }
 
   /*!
-   * Access en lecture seule au numéro local de la face commune dans
-   * la maille 1
-   * 
+   * Read access to the local number of the common face in
+   * cell 1
+   *
    * @return m_cell_1_local_number
    */
   Integer cell1LocalNumber() const
@@ -170,87 +175,87 @@ class CommonFaceFinder
     return m_cell_1_local_number;
   }
 
-  /*! 
-   * Access en lecture seule au numéro local de la face commune dans
-   * la maille 2
-   * 
-   * @return m_cell_1_local_number
+  /*!
+   * Read access to the local number of the common face in
+   * cell 2
+   *
+   * @return m_cell_2_local_number
    */
   Integer cell2LocalNumber() const
   {
     return m_cell_2_local_number;
   }
 
-  /*! 
-   * Constructeur. C'est à l'appel du constructeur que toutes les
-   * structures de données sont générées
-   * 
-   * @param i_cell_1 la 1ère maille
-   * @param i_cell_2 la 2ème maille
+  /*!
+   * Constructor. All data structures are generated upon calling the constructor
+   *
+   * @param i_cell_1 the 1st cell
+   * @param i_cell_2 the 2nd cell
    */
-  CommonFaceFinder(Cell i_cell_1,Cell i_cell_2);
-  ~CommonFaceFinder(){}
+  CommonFaceFinder(Cell i_cell_1, Cell i_cell_2);
+  ~CommonFaceFinder() {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 CommonFaceFinder::
-CommonFaceFinder(Cell i_cell_1,Cell i_cell_2)
+CommonFaceFinder(Cell i_cell_1, Cell i_cell_2)
 : m_cell_1_local_number(-1)
 , m_cell_2_local_number(-1)
 {
   typedef std::map<Integer, Integer> LIDCellMapping;
-  LIDCellMapping faces1; // numero des faces de la maille 1
-  LIDCellMapping faces2; // numero des faces de la maille 2
+  LIDCellMapping faces1; // number of faces in cell 1
+  LIDCellMapping faces2; // number of faces in cell 2
 
-  { // création des correspondances localId numero dans la maille pour la maille 1
+  { // creation of localId to number mappings in the cell for cell 1
     Integer n = 0;
-    for( ItemEnumerator i_face(i_cell_1.faces()); i_face(); ++i_face ) {
+    for (ItemEnumerator i_face(i_cell_1.faces()); i_face(); ++i_face) {
       faces1[i_face->localId()] = n;
       n++;
     }
   }
-  { // création des correspondances localId numero dans la maille pour la maille 2
+  { // creation of localId to number mappings in the cell for cell 2
     Integer n = 0;
-    for( ItemEnumerator i_face(i_cell_2.faces()); i_face(); ++i_face ) {
+    for (ItemEnumerator i_face(i_cell_2.faces()); i_face(); ++i_face) {
       faces2[i_face->localId()] = n;
       n++;
     }
   }
 
-  // On parcours maintenant les deux tables créé précédemment, comme
-  // elles sont triées par localId croissant, on en déduit
-  // simplement la face commune.
+  // We now iterate through the two tables created previously. Since
+  // they are sorted by increasing localId, we simply deduce
+  // the common face.
   LIDCellMapping::const_iterator i_face1 = faces1.begin();
   LIDCellMapping::const_iterator i_face2 = faces2.begin();
 
   do {
-    const Integer& lid1 = i_face1->first; // localId de la face dans la liste 1
-    const Integer& lid2 = i_face2->first; // localId de la face dans la liste 2
+    const Integer& lid1 = i_face1->first; // localId of the face in list 1
+    const Integer& lid2 = i_face2->first; // localId of the face in list 2
 
-    if (lid1 == lid2) { // on a trouvé la face commune
+    if (lid1 == lid2) { // we found the common face
       m_cell_1_local_number = i_face1->second;
       m_cell_2_local_number = i_face2->second;
 
-      // Enregistrement des localId des noeuds de la face commune
+      // Recording the localIds of the nodes of the common face
       Face common_face = i_cell_1.face(m_cell_1_local_number);
 
-      for( NodeEnumerator i_node(common_face.nodes()); i_node(); ++i_node) {
+      for (NodeEnumerator i_node(common_face.nodes()); i_node(); ++i_node) {
         m_nodes_lid_set.insert(i_node->localId());
       }
       return;
     }
     else {
-      if (lid1<lid2) {
+      if (lid1 < lid2) {
         ++i_face1;
-      } else {
+      }
+      else {
         ++i_face2;
       }
     }
   } while (i_face1 != faces1.end() && i_face2 != faces2.end());
 
-  ARCANE_FATAL("Face commune non trouvée !");
+  ARCANE_FATAL("Common face not found!");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,39 +264,41 @@ CommonFaceFinder(Cell i_cell_1,Cell i_cell_2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief  Fusionne deux faces en 2D (en fait deux arêtes).
+ * \brief Merges two faces in 2D (in fact, two edges).
  */
 class Faces2DMerger
 {
  private:
-  Integer m_face_1_common_node_numbers; /**< Numéros dans la face 1 des sommets communs avec la face 2 */
-  Integer m_face_2_common_node_numbers; /**< Numéros dans la face 2 des sommets communs avec la face 1 */
-  Integer m_face_2_exchanged_node_numbers; /**< Numéros dans la face 2 des sommets qui définiront la face fusionnée */
 
-  /** 
-   * Initialisation des quantité m_face_1_common_node_numbers m_face_2_common_node_numbers et 
+  Integer m_face_1_common_node_numbers; /**< Numbers in face 1 of nodes common with face 2 */
+  Integer m_face_2_common_node_numbers; /**< Numbers in face 2 of nodes common with face 1 */
+  Integer m_face_2_exchanged_node_numbers; /**< Numbers in face 2 of nodes that will define the merged face */
+
+  /**
+   * Initialization of m_face_1_common_node_numbers, m_face_2_common_node_numbers, and
    * m_face_2_exchanged_node_numbers
-   * 
-   * @param i_face_1 la face 1
-   * @param i_face_2 la face 2
+   *
+   * @param i_face_1 face 1
+   * @param i_face_2 face 2
    */
-  void _setFacesNodeNumbers(Face i_face_1,Face i_face_2);
+  void _setFacesNodeNumbers(Face i_face_1, Face i_face_2);
 
  public:
-  /** 
-   * Constructeur
-   * 
-   * @param i_face_1 la face conservé
-   * @param i_face_2 la face abandonnée
+
+  /**
+   * Constructor
+   *
+   * @param i_face_1 the face to keep
+   * @param i_face_2 the abandoned face
    */
-  Faces2DMerger(ItemSwapperUtils* swap_utils,Face i_face_1,Face i_face_2);
+  Faces2DMerger(ItemSwapperUtils* swap_utils, Face i_face_1, Face i_face_2);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void  Faces2DMerger::
-_setFacesNodeNumbers(Face i_face_1,Face i_face_2)
+void Faces2DMerger::
+_setFacesNodeNumbers(Face i_face_1, Face i_face_2)
 {
   typedef std::map<Integer, Integer> LocalIDToLocalNumber;
   LocalIDToLocalNumber face1_node_localId;
@@ -300,13 +307,13 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
   {
     Integer n = 0;
     for (ItemEnumerator i_node(i_face_1.nodes()); i_node(); ++i_node) {
-      face1_node_localId[i_node->localId()]=n++;
+      face1_node_localId[i_node->localId()] = n++;
     }
   }
   {
     Integer n = 0;
     for (ItemEnumerator i_node(i_face_2.nodes()); i_node(); ++i_node) {
-      face2_node_localId[i_node->localId()]=n++;
+      face2_node_localId[i_node->localId()] = n++;
     }
   }
 
@@ -322,40 +329,42 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
       m_face_1_common_node_numbers = i->second;
       m_face_2_common_node_numbers = j->second;
       break;
-    } else {
+    }
+    else {
       if (node1_localId < node2_localId) {
         ++i;
-      } else {
+      }
+      else {
         ++j;
       }
     }
   }
 
-  m_face_2_exchanged_node_numbers = (m_face_2_common_node_numbers+1)%2;
+  m_face_2_exchanged_node_numbers = (m_face_2_common_node_numbers + 1) % 2;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Faces2DMerger::
-Faces2DMerger(ItemSwapperUtils* swap_utils,Face face1,Face face2)
+Faces2DMerger(ItemSwapperUtils* swap_utils, Face face1, Face face2)
 : m_face_1_common_node_numbers(std::numeric_limits<Integer>::max())
 , m_face_2_common_node_numbers(std::numeric_limits<Integer>::max())
 , m_face_2_exchanged_node_numbers(std::numeric_limits<Integer>::max())
 {
-  ARCANE_ASSERT(face2.type()==IT_Line2,("The cell is not a line"));
+  ARCANE_ASSERT(face2.type() == IT_Line2, ("The cell is not a line"));
 
-  _setFacesNodeNumbers(face1,face2);
+  _setFacesNodeNumbers(face1, face2);
 
-  swap_utils->swapFaceNodes(face1,face2,m_face_1_common_node_numbers,
+  swap_utils->swapFaceNodes(face1, face2, m_face_1_common_node_numbers,
                             m_face_2_exchanged_node_numbers);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief En dimension 2, recherche des faces communes à deux mailles
- * (Les faces sont en fait des arêtes).
+ * \brief In dimension 2, finds common faces between two cells
+ * (The faces are actually edges).
  */
 class Faces2DToMergeFinder
 {
@@ -363,24 +372,24 @@ class Faces2DToMergeFinder
 
   //@{
   /**
-   * Ces listes contenant les numéros des faces communes des deux
-   * mailles, sont construites de sorte à ce que la face
-   * m_cell1_edge_face_list[i] soit a fusionner avec la face
+   * These lists containing the numbers of the common faces of the two
+   * cells are constructed so that the face
+   * m_cell1_edge_face_list[i] is to be merged with the face
    * m_cell2_edge_face_list[i]
    */
   IntegerUniqueArray m_cell1_edge_face_list;
   IntegerUniqueArray m_cell2_edge_face_list;
   //@}
 
-  /** 
-   * On détermine les faces à fusionner en considérant les arêtes qui
-   * sont portées par les sommets communs entre les mailles. Pour cela
-   * on trie les faces selon les arêtes portées par des sommets communs.
-   * 
-   * @param i_cell la maille étudiée
-   * @param edge_face_list la liste des faces numéros des faces
-   * @param common_face_number le numéro de la face commune dans la maille @a i_cell
-   * @param common_face_nodes les localIds des noeuds de la face commune
+  /**
+   * Determines the faces to be merged by considering the edges that
+   * are supported by the common nodes between the cells. For this,
+   * the faces are sorted according to the edges supported by common nodes.
+   *
+   * @param i_cell the cell studied
+   * @param edge_face_list the list of face numbers
+   * @param common_face_number the number of the common face in cell @a i_cell
+   * @param common_face_nodes the localIds of the nodes of the common face
    */
   void _setEdgeFaceList(Cell i_cell,
                         IntegerArray& edge_face_list,
@@ -392,15 +401,15 @@ class Faces2DToMergeFinder
 
     _EdgeFaceList temp_edge_face_list;
     Integer face_number = 0;
-    // Pour chaque face de la maille
-    for ( FaceEnumerator i_face(i_cell.faces()); i_face(); ++i_face, ++face_number) {
+    // For each face in the cell
+    for (FaceEnumerator i_face(i_cell.faces()); i_face(); ++i_face, ++face_number) {
       if (face_number == common_face_number) {
-        continue; // si la face est la face commune, on ne fait rien
+        continue; // if the face is the common face, do nothing
       }
 
-      // On crée la liste des noeuds de cette face qui sont communs
+      // Create the list of nodes of this face that are common
       std::multiset<Integer> node_list;
-      for( NodeEnumerator i_node(i_face->nodes()); i_node(); ++i_node) {
+      for (NodeEnumerator i_node(i_face->nodes()); i_node(); ++i_node) {
         const Integer& node_lid = i_node->localId();
         if (common_face_nodes.find(node_lid) != common_face_nodes.end()) {
           node_list.insert(node_lid);
@@ -408,9 +417,10 @@ class Faces2DToMergeFinder
       }
 
       switch (node_list.size()) {
-      case 0:  // la face n'est pas à retailler [déjà traitée]
-      case 2:continue;
-      case 1: { // Si la liste ne contient qu'un élément, c'est que la face est à fusionner
+      case 0: // the face is not to be retriangled [already processed]
+      case 2:
+        continue;
+      case 1: { // If the list contains only one element, it means the face is to be merged
         std::multiset<Integer>::const_iterator i = node_list.begin();
         const Integer node_lid = *i;
         temp_edge_face_list[node_lid] = face_number;
@@ -422,17 +432,18 @@ class Faces2DToMergeFinder
       }
     }
 
-    // On recopie les donnée : on n'a plus besoin des arêtes
+    // We copy the data: we no longer need the edges
     edge_face_list.reserve((Integer)temp_edge_face_list.size());
     for (_EdgeFaceList::const_iterator i = temp_edge_face_list.begin();
          i != temp_edge_face_list.end(); ++i) {
-      edge_face_list.add(i->second); // on stocke les numéros des faces à fusionner
+      edge_face_list.add(i->second); // we store the numbers of the faces to be merged
     }
   }
 
  public:
+
   /**
-   * Access en lecture seule au nombre d'arêtes communes
+   * Read-only access to the number of common edges
    *
    * @return m_cell1_edge_face_list.size()
    */
@@ -442,37 +453,37 @@ class Faces2DToMergeFinder
   }
 
   /**
-   * Accède au numéro dans la maille 1 de la @a i ème face à fusionner.
+   * Access the number in mesh 1 of the @a i-th face to be merged.
    *
-   * @param i numéro dans la liste des mailles à fusionner 
+   * @param i number in the list of faces to be merged
    *
-   * @return le numéro de la @a i ème face à fusionner
+   * @return the number of the @a i-th face to be merged
    */
   Integer cell1FaceNumber(Integer i) const
   {
     return m_cell1_edge_face_list[i];
   }
 
-  /** 
-   * Accède au numéro dans la maille 2 de la @a i ème face à fusionner.
-   * 
-   * @param i numéro dans la liste des mailles à fusionner 
-   * 
-   * @return le numéro de la @a i ème face à fusionner
+  /**
+   * Access the number in mesh 2 of the @a i-th face to be merged.
+   *
+   * @param i number in the list of faces to be merged
+   *
+   * @return the number of the @a i-th face to be merged
    */
   Integer cell2FaceNumber(Integer i) const
   {
     return m_cell2_edge_face_list[i];
   }
 
-  /** 
-   * Construit les différentes structures de données.
-   * 
-   * @param i_cell_1 la première maille
-   * @param i_cell_2 la seconde maille
-   * @param common_face les informations sur la face commune
+  /**
+   * Constructs the different data structures.
+   *
+   * @param i_cell_1 the first mesh
+   * @param i_cell_2 the second mesh
+   * @param common_face the information on the common face
    */
-  Faces2DToMergeFinder(Cell cell1,Cell cell2,
+  Faces2DToMergeFinder(Cell cell1, Cell cell2,
                        const CommonFaceFinder& common_face)
   {
     this->_setEdgeFaceList(cell1,
@@ -485,7 +496,7 @@ class Faces2DToMergeFinder
                            common_face.nodesLID());
 
     ARCANE_ASSERT(m_cell1_edge_face_list.size() == m_cell2_edge_face_list.size(),
-		  ("Incompatible number of 2D faces to merge !"));
+                  ("Incompatible number of 2D faces to merge !"));
   }
 };
 
@@ -495,16 +506,16 @@ class Faces2DToMergeFinder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Cette fonction-classe recherche les faces à fusionner lors
- * de la fusion de deux mailles
+ * \brief This function-class searches for faces to merge when
+ * merging two meshes
  */
 class FacesToMergeFinder
 {
  public:
 
-  /** 
-   * Accès au nombre de faces communes entre les deux mailles
-   * 
+  /**
+   * Access the number of common faces between the two meshes
+   *
    * @return m_cell1_edge_face_list.size()
    */
   Integer getNumber() const
@@ -512,56 +523,56 @@ class FacesToMergeFinder
     return m_cell1_edge_face_list.size();
   }
 
-  /** 
-   * Accès au @a i ème numéro des faces dans la maille 1
-   * 
-   * @param i le numéro dans la liste des faces communes
-   * 
-   * @return le numéro dans la maille 1 de @a i ème face commune
+  /**
+   * Access the @a i-th face number in mesh 1
+   *
+   * @param i the number in the list of common faces
+   *
+   * @return the number in mesh 1 of the @a i-th common face
    */
   Integer cell1FaceNumber(Integer i) const
   {
     return m_cell1_edge_face_list[i];
   }
 
-  /** 
-   * Accès au @a i ème numéro des faces dans la maille 2
-   * 
-   * @param i le numéro dans la liste des faces communes
-   * 
-   * @return le numéro dans la maille 2 de @a i ème face commune
+  /**
+   * Access the @a i-th face number in mesh 2
+   *
+   * @param i the number in the list of common faces
+   *
+   * @return the number in mesh 2 of the @a i-th common face
    */
   Integer cell2FaceNumber(Integer i) const
   {
     return m_cell2_edge_face_list[i];
   }
 
-  /** 
-   * Construit les différentes structures de données
-   * 
-   * @param cell1 la première maille
-   * @param cell2 la seconde maille
-   * @param common_face les informations de la face commune
+  /**
+   * Constructs the different data structures
+   *
+   * @param cell1 the first mesh
+   * @param cell2 the second mesh
+   * @param common_face the information of the common face
    */
-  FacesToMergeFinder(Cell cell1,Cell cell2,
+  FacesToMergeFinder(Cell cell1, Cell cell2,
                      const CommonFaceFinder& common_face)
   {
-    _setEdgeFaceList(cell1,m_cell1_edge_face_list,
-                     common_face.cell1LocalNumber(),common_face.nodesLID());
-    _setEdgeFaceList(cell2,m_cell2_edge_face_list,
-                     common_face.cell2LocalNumber(),common_face.nodesLID());
+    _setEdgeFaceList(cell1, m_cell1_edge_face_list,
+                     common_face.cell1LocalNumber(), common_face.nodesLID());
+    _setEdgeFaceList(cell2, m_cell2_edge_face_list,
+                     common_face.cell2LocalNumber(), common_face.nodesLID());
 
     ARCANE_ASSERT(m_cell1_edge_face_list.size() == m_cell2_edge_face_list.size(),
-		  ("Incompatible number of faces to merge !"));
+                  ("Incompatible number of faces to merge !"));
   }
 
  private:
 
   //@{
   /**
-   * Ces listes contenant les numéros des faces communes des deux
-   * mailles, sont construites de sorte à ce que la face
-   * m_cell1_edge_face_list[i] soit a fusionner avec la face
+   * These lists containing the numbers of the common faces of the two
+   * meshes are constructed such that the face
+   * m_cell1_edge_face_list[i] is to be merged with the face
    * m_cell2_edge_face_list[i]
    */
   IntegerUniqueArray m_cell1_edge_face_list;
@@ -576,15 +587,15 @@ class FacesToMergeFinder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/** 
- * On détermine les faces à fusionner en considérant les arêtes qui
- * sont portées par les sommets communs entre les mailles. Pour cela
- * on trie les faces selon les arêtes portées par des sommets communs.
- * 
- * @param i_cell la maille étudiée
- * @param edge_face_list la liste des faces numéros des faces
- * @param common_face_number le numéro de la face commune dans la maille @a i_cell
- * @param common_face_nodes les localIds des noeuds de la face commune
+/**
+ * Determines the faces to merge by considering the edges that
+ * are supported by the common vertices between the meshes. For this,
+ * the faces are sorted according to the edges supported by common vertices.
+ *
+ * @param i_cell the mesh studied
+ * @param edge_face_list the list of face numbers
+ * @param common_face_number the number of the common face in mesh @a i_cell
+ * @param common_face_nodes the localIds of the nodes of the common face
  */
 void FacesToMergeFinder::
 _setEdgeFaceList(Cell i_cell,
@@ -592,34 +603,35 @@ _setEdgeFaceList(Cell i_cell,
                  Integer common_face_number,
                  const CommonFaceFinder::NodesLIDSet& common_face_nodes)
 {
-  typedef std::pair<Integer,Integer> _EdgeDescriptor;
+  typedef std::pair<Integer, Integer> _EdgeDescriptor;
   typedef std::map<_EdgeDescriptor, Integer> _EdgeFaceList;
 
-  _EdgeFaceList temp_edge_face_list; // liste tries des numéros de faces par arêtes
+  _EdgeFaceList temp_edge_face_list; // sorted list of face numbers by edges
   Integer face_number = 0;
   for (FaceEnumerator i_face(i_cell.faces()); i_face(); ++i_face, ++face_number) {
-    if (face_number == common_face_number) { // si la face est la face commune elle n'est pas traitée
+    if (face_number == common_face_number) { // if the face is the common face, it is not processed
       continue;
     }
 
-    std::multiset<Integer> node_list; // liste des localIds des noeuds de la face qui sont communs
+    std::multiset<Integer> node_list; // list of localIds of the nodes of the face that are common
     for (NodeEnumerator i_node(i_face->nodes()); i_node(); ++i_node) {
       Int32 node_lid = i_node->localId();
-      // si le noeud est commun on l'ajoute à la liste des noeuds communs
+      // if the node is common, add it to the list of common nodes
       if (common_face_nodes.find(node_lid) != common_face_nodes.end()) {
         node_list.insert(node_lid);
       }
     }
 
     switch (node_list.size()) {
-    case 0:  // la face n'est pas à retailler [déjà traitée]
-    case 4:continue;
+    case 0: // the face is not to be retriangled [already processed]
+    case 4:
+      continue;
     case 2: {
       std::multiset<Integer>::const_iterator i = node_list.begin();
       const Integer first_node_lid = *i;
       ++i;
       const Integer second_node_lid = *i;
-      // On crée la correspondance arête/face (les noeuds de l'arête étant triés)
+      // We create the edge/face correspondence (the nodes of the edge being sorted)
       temp_edge_face_list[std::make_pair(first_node_lid, second_node_lid)] = face_number;
       break;
     }
@@ -628,8 +640,8 @@ _setEdgeFaceList(Cell i_cell,
     }
   }
 
-  // On recopie les donnée : on n'a plus besoin des arêtes. Les
-  // faces numéros des faces sont orientés comme on le souhaite.
+  // We copy the data: we no longer need the edges. The
+  // face numbers are oriented as desired.
   edge_face_list.reserve(CheckedConvert::toInteger(temp_edge_face_list.size()));
   for (_EdgeFaceList::const_iterator i = temp_edge_face_list.begin();
        i != temp_edge_face_list.end(); ++i) {
@@ -640,42 +652,44 @@ _setEdgeFaceList(Cell i_cell,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Cett fonction-classe a pour but de fusionner deux faces dont
- * la deuxième est forcément un quadrangle.
+ * \brief This function-class aims to merge two faces, where
+ * the second is necessarily a quadrangle.
  */
 class FaceToQuadrilateralMerger
 {
  private:
-  IntegerUniqueArray m_face_1_common_node_numbers; /**< Numéros dans la face 1 des sommets communs avec la face 2 */
-  IntegerUniqueArray m_face_2_common_node_numbers; /**< Numéros dans la face 1 des sommets communs avec la face 2 */
-  IntegerUniqueArray m_face_2_exchanged_node_numbers; /**< Numéros dans la face 2 des sommets qui définiront la maille fusionnée */
 
-  static const Integer m_quad_node_neighbors[4][2]; /**< Liste des noeuds voisins par arête dans un quadrangle */
+  IntegerUniqueArray m_face_1_common_node_numbers; /**< Numbers in face 1 of the common vertices with face 2 */
+  IntegerUniqueArray m_face_2_common_node_numbers; /**< Numbers in face 1 of the common vertices with face 2 */
+  IntegerUniqueArray m_face_2_exchanged_node_numbers; /**< Numbers in face 2 of the vertices that will define the merged mesh */
 
-  /** 
-   * Initialisation des quantité m_face_1_common_node_numbers m_face_2_common_node_numbers et 
+  static const Integer m_quad_node_neighbors[4][2]; /**< List of neighboring nodes by edge in a quadrangle */
+
+  /**
+   * Initializes the quantities m_face_1_common_node_numbers m_face_2_common_node_numbers and
    * m_face_2_exchanged_node_numbers
-   * 
-   * @param i_face_1 la face 1
-   * @param i_face_2 la face 2
+   *
+   * @param i_face_1 the first face
+   * @param i_face_2 the second face
    */
-  bool _setFacesNodeNumbers(Face i_face_1,Face i_face_2);
+  bool _setFacesNodeNumbers(Face i_face_1, Face i_face_2);
 
  public:
-  /** 
-   * Constructeur
-   * 
-   * @param face1 la face consevée
-   * @param face2 la face abandonnée [OBLIGATOIREMENT UN QUADRANGLE]
+
+  /**
+   * Constructor
+   *
+   * @param face1 the receiving face
+   * @param face2 the abandoned face [MUST BE A QUADANGLE]
    */
-  FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Face face1,Face face2);
+  FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Face face1, Face face2);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool FaceToQuadrilateralMerger::
-_setFacesNodeNumbers(Face i_face_1,Face i_face_2)
+_setFacesNodeNumbers(Face i_face_1, Face i_face_2)
 {
   typedef std::map<Integer, Integer> LocalIDToLocalNumber;
   LocalIDToLocalNumber face1_node_localId;
@@ -684,13 +698,13 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
   {
     Integer n = 0;
     for (NodeEnumerator i_node(i_face_1.nodes()); i_node(); ++i_node) {
-      face1_node_localId[i_node->localId()]=n++;
+      face1_node_localId[i_node->localId()] = n++;
     }
   }
   {
     Integer n = 0;
     for (NodeEnumerator i_node(i_face_2.nodes()); i_node(); ++i_node) {
-      face2_node_localId[i_node->localId()]=n++;
+      face2_node_localId[i_node->localId()] = n++;
     }
   }
 
@@ -700,8 +714,8 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
   std::set<Integer> face2_common_edge_node_number;
 
   for (LocalIDToLocalNumber::const_iterator
-	 i = face1_node_localId.begin(),
-	 j = face2_node_localId.begin();
+       i = face1_node_localId.begin(),
+       j = face2_node_localId.begin();
        i != face1_node_localId.end() && j != face2_node_localId.end();) {
     const Integer& node1_localId = i->first;
     const Integer& node2_localId = j->first;
@@ -709,26 +723,29 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
       m_face_1_common_node_numbers.add(i->second);
       m_face_2_common_node_numbers.add(j->second);
       face2_common_edge_node_number.insert(j->second);
-      ++i;++j;
-    } else {
+      ++i;
+      ++j;
+    }
+    else {
       if (node1_localId < node2_localId) {
         ++i;
-      } else {
+      }
+      else {
         ++j;
       }
     }
   }
 
-  if (m_face_1_common_node_numbers.size() == 0) return false;
+  if (m_face_1_common_node_numbers.size() == 0)
+    return false;
 
-  ARCANE_ASSERT((m_face_2_common_node_numbers.size() == 2)
-		&& (m_face_1_common_node_numbers.size() == 2),
-		("Incorrect number of shared vertices"));
+  ARCANE_ASSERT((m_face_2_common_node_numbers.size() == 2) && (m_face_1_common_node_numbers.size() == 2),
+                ("Incorrect number of shared vertices"));
 
   m_face_2_exchanged_node_numbers.reserve(2);
-  for (Integer i = 0; i<m_face_2_common_node_numbers.size(); ++i) {
+  for (Integer i = 0; i < m_face_2_common_node_numbers.size(); ++i) {
     const Integer& node_number = m_face_2_common_node_numbers[i];
-    for (Integer j=0; j<2; ++j) {
+    for (Integer j = 0; j < 2; ++j) {
       const Integer& edge_node = m_quad_node_neighbors[node_number][j];
       if (face2_common_edge_node_number.find(edge_node) == face2_common_edge_node_number.end()) {
         m_face_2_exchanged_node_numbers.add(edge_node);
@@ -739,22 +756,21 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
   return true;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 FaceToQuadrilateralMerger::
-FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Face face1,Face face2)
+FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Face face1, Face face2)
 {
-  ARCANE_ASSERT(face2.type()==IT_Quad4,("The cell is not a quadrangle"));
+  ARCANE_ASSERT(face2.type() == IT_Quad4, ("The cell is not a quadrangle"));
 
-  if (_setFacesNodeNumbers(face1,face2)) {
+  if (_setFacesNodeNumbers(face1, face2)) {
     ARCANE_ASSERT(m_face_2_exchanged_node_numbers.size() == 2,
                   ("Incorrect number of exchange vertices"));
 
-    // Echange des sommets des faces
-    for (Integer i = 0; i<2; ++i) {
-      swap_utils->swapFaceNodes(face1,face2,m_face_1_common_node_numbers[i],
+    // Exchange of face nodes
+    for (Integer i = 0; i < 2; ++i) {
+      swap_utils->swapFaceNodes(face1, face2, m_face_1_common_node_numbers[i],
                                 m_face_2_exchanged_node_numbers[i]);
     }
   }
@@ -765,7 +781,7 @@ FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Face face1,Face face2)
 
 const Integer
 FaceToQuadrilateralMerger::
-m_quad_node_neighbors[4][2] = { {1,3},{0,2},{1,3},{0,2} };
+m_quad_node_neighbors[4][2] = { { 1, 3 }, { 0, 2 }, { 1, 3 }, { 0, 2 } };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -776,32 +792,33 @@ m_quad_node_neighbors[4][2] = { {1,3},{0,2},{1,3},{0,2} };
 class CellToQuadrilateralMerger
 {
  private:
-  //! Numéros dans la maille 1 des sommets communs avec la maille 2
+
+  //! Numbers in mesh 1 of the common vertices with mesh 2
   IntegerUniqueArray m_cell_1_common_node_numbers;
-  //! Numéros dans la maille 2 des sommets communs avec la maille 1
+  //! Numbers in mesh 2 of the common vertices with mesh 1
   IntegerUniqueArray m_cell_2_common_node_numbers;
-  //! Numéros dans la maille 2 des sommets qui définiront la maille fusionnée
+  //! Numbers in mesh 2 of the vertices that will define the merged mesh
   IntegerUniqueArray m_cell_2_exchanged_node_numbers;
 
-  //! Liste des noeuds voisins par arête dans un quadrangle
+  //! List of neighboring nodes by edge in a quadrangle
   static const Integer m_quad_node_neighbors[4][2];
-  
-  /** 
-   * Initialisation des quantité m_cell_1_common_node_numbers m_cell_2_common_node_numbers et 
+
+  /**
+   * Initializes the quantities m_cell_1_common_node_numbers m_cell_2_common_node_numbers and
    * m_cell_2_exchanged_node_numbers
-   * 
-   * @param i_cell_1 la maille 1
-   * @param i_cell_2 la maille 2
+   *
+   * @param i_cell_1 the first mesh
+   * @param i_cell_2 the second mesh
    */
-  void _setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2);
+  void _setCellsNodeNumbers(Cell i_cell_1, Cell i_cell_2);
 
  public:
 
-  /** 
-   * Constructeur
-   * 
-   * @param cell1 la maille conservé
-   * @param cell2 la maille abandonnée [OBLIGATOIREMENT UN QUADRANGLE]
+  /**
+   * Constructor
+   *
+   * @param cell1 the retained mesh
+   * @param cell2 the abandoned mesh [MUST BE A QUADANGLE]
    */
   CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2);
 };
@@ -810,7 +827,7 @@ class CellToQuadrilateralMerger
 /*---------------------------------------------------------------------------*/
 
 void CellToQuadrilateralMerger::
-_setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2)
+_setCellsNodeNumbers(Cell i_cell_1, Cell i_cell_2)
 {
   typedef std::map<Integer, Integer> LocalIDToLocalNumber;
   LocalIDToLocalNumber cell1_node_localId;
@@ -840,7 +857,8 @@ _setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2)
       m_cell_1_common_node_numbers.add(i->second);
       m_cell_2_common_node_numbers.add(j->second);
       cell2_common_edge_node_number.insert(j->second);
-      ++i;++j;
+      ++i;
+      ++j;
     }
     else {
       if (node1_localId < node2_localId) {
@@ -853,12 +871,12 @@ _setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2)
   }
 
   ARCANE_ASSERT(m_cell_1_common_node_numbers.size() == 2,
-		("Bad number of shared vertices"));
+                ("Bad number of shared vertices"));
 
   m_cell_2_exchanged_node_numbers.reserve(2);
-  for (Integer i = 0; i<m_cell_2_common_node_numbers.size(); ++i) {
+  for (Integer i = 0; i < m_cell_2_common_node_numbers.size(); ++i) {
     const Integer& node_number = m_cell_2_common_node_numbers[i];
-    for (Integer j=0; j<2; ++j) {
+    for (Integer j = 0; j < 2; ++j) {
       const Integer& edge_node = m_quad_node_neighbors[node_number][j];
       if (cell2_common_edge_node_number.find(edge_node) == cell2_common_edge_node_number.end()) {
         m_cell_2_exchanged_node_numbers.add(edge_node);
@@ -872,30 +890,30 @@ _setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2)
 /*---------------------------------------------------------------------------*/
 
 CellToQuadrilateralMerger::
-CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2)
+CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
 {
-  ARCANE_ASSERT(cell2.type()==IT_Quad4,("Cell2 is not a IT_Quad4"));
+  ARCANE_ASSERT(cell2.type() == IT_Quad4, ("Cell2 is not a IT_Quad4"));
 
-  CommonFaceFinder common_face(cell1,cell2);
+  CommonFaceFinder common_face(cell1, cell2);
 
-  this->_setCellsNodeNumbers(cell1,cell2);
+  this->_setCellsNodeNumbers(cell1, cell2);
 
-  // Fusion des mailles de côté
-  Faces2DToMergeFinder faces_to_merge(cell1,cell2,common_face);
-  for (Integer i = 0; i<faces_to_merge.getNumber(); ++i) {
+  // Fusion of side meshes
+  Faces2DToMergeFinder faces_to_merge(cell1, cell2, common_face);
+  for (Integer i = 0; i < faces_to_merge.getNumber(); ++i) {
     Faces2DMerger(swap_utils,
                   cell1.face(faces_to_merge.cell1FaceNumber(i)),
                   cell2.face(faces_to_merge.cell2FaceNumber(i)));
   }
 
-  // Echange des faces.
-  swap_utils->swapCellFaces(cell1,cell2,
+  // Face exchange.
+  swap_utils->swapCellFaces(cell1, cell2,
                             common_face.cell1LocalNumber(),
-                            (common_face.cell2LocalNumber()+2)%4); // face opposée
+                            (common_face.cell2LocalNumber() + 2) % 4); // opposite face
 
-  // Echange des sommets des mailles
-  for (Integer i=0, n=m_cell_1_common_node_numbers.size(); i<n; ++i) {
-    swap_utils->swapCellNodes(cell1,cell2,
+  // Mesh vertex exchange
+  for (Integer i = 0, n = m_cell_1_common_node_numbers.size(); i < n; ++i) {
+    swap_utils->swapCellNodes(cell1, cell2,
                               m_cell_1_common_node_numbers[i],
                               m_cell_2_exchanged_node_numbers[i]);
   }
@@ -906,108 +924,112 @@ CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const Integer CellToQuadrilateralMerger::m_quad_node_neighbors[4][2]
-=  { {1,3},{0,2},{1,3},{0,2} };
+const Integer CellToQuadrilateralMerger::m_quad_node_neighbors[4][2] = { { 1, 3 }, { 0, 2 }, { 1, 3 }, { 0, 2 } };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Cette fonction-classe a pour but de fusionner deux mailles
- * dont la deuxième est forcément un hexahèdre
+ * \brief This function-class aims to merge two meshes
+ * where the second one is necessarily a hexahedron
  */
 class CellToHexahedronMerger
 {
  private:
-  IntegerUniqueArray m_cell_1_common_node_numbers; /**< Numéros dans la maille 1 des sommets communs avec la maille 2 */
-  IntegerUniqueArray m_cell_2_common_node_numbers; /**< Numéros dans la maille 2 des sommets communs avec la maille 1 */
-  IntegerUniqueArray m_cell_2_exchanged_node_numbers; /**< Numéros dans la maille 2 des sommets qui définiront la maille fusionnée */
 
-  static const Integer m_hexa_node_neighbors[8][3]; /**< Liste des noeuds voisins par arête dans un hexahèdre */
+  IntegerUniqueArray m_cell_1_common_node_numbers; /**< Numbers in mesh 1 of vertices common with mesh 2 */
+  IntegerUniqueArray m_cell_2_common_node_numbers; /**< Numbers in mesh 2 of vertices common with mesh 1 */
+  IntegerUniqueArray m_cell_2_exchanged_node_numbers; /**< Numbers in mesh 2 of vertices that will define the merged mesh */
 
-  /** 
-   * Initialisation des quantité m_cell_1_common_node_numbers m_cell_2_common_node_numbers et 
+  static const Integer m_hexa_node_neighbors[8][3]; /**< List of neighboring nodes by edge in a hexahedron */
+
+  /**
+   * Initialization of m_cell_1_common_node_numbers m_cell_2_common_node_numbers and
    * m_cell_2_exchanged_node_numbers
-   * 
-   * @param cell1 la maille 1
-   * @param cell2 la maille 2
+   *
+   * @param cell1 mesh 1
+   * @param cell2 mesh 2
    */
-  void _setCellsNodeNumbers(Cell cell1,Cell cell2);
+  void _setCellsNodeNumbers(Cell cell1, Cell cell2);
 
  public:
-  /** 
-   * Constructeur
-   * 
-   * @param cell1 la maille conservé
-   * @param cell2 la maille abandonnée [OBLIGATOIREMENT UN HEXAEDRE]
+
+  /**
+   * Constructor
+   *
+   * @param cell1 the mesh to keep
+   * @param cell2 the discarded mesh [MUST BE A HEXAEDRON]
    */
-  CellToHexahedronMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2);
+  CellToHexahedronMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellToHexahedronMerger::
-_setCellsNodeNumbers(Cell cell1,Cell cell2)
+_setCellsNodeNumbers(Cell cell1, Cell cell2)
 {
   typedef std::map<Integer, Integer> LocalIDToLocalNumber;
   LocalIDToLocalNumber cell1_node_localId;
   LocalIDToLocalNumber cell2_node_localId;
 
-  // On associe les numéros (dans la maille) des noeuds à leur
-  // localId. Ces listes sont triées par localId !
+  // We associate the numbers (in the mesh) of the nodes with their
+  // localId. These lists are sorted by localId!
   {
-    // d'abord pour la maille 1
+    // first for mesh 1
     Integer n = 0;
     for (NodeEnumerator i_node(cell1.nodes()); i_node(); ++i_node) {
       cell1_node_localId[i_node->localId()] = n++;
     }
   }
   {
-    // puis pour la maille 2
+    // then for mesh 2
     Integer n = 0;
     for (NodeEnumerator i_node(cell2.nodes()); i_node(); ++i_node) {
       cell2_node_localId[i_node->localId()] = n++;
     }
   }
 
-  // On determine ensuite l'ensemble des noeuds communs aux deux
-  // mailles
+  // We then determine the set of common nodes between the two
+  // meshes
   std::set<Integer> cell2_common_edge_node_number;
   for (LocalIDToLocalNumber::const_iterator
-	 i = cell1_node_localId.begin(),
-	 j = cell2_node_localId.begin();
+       i = cell1_node_localId.begin(),
+       j = cell2_node_localId.begin();
        i != cell1_node_localId.end() && j != cell2_node_localId.end();) {
     Integer node1_localId = i->first;
     Integer node2_localId = j->first;
-    if (node1_localId == node2_localId) { // si les noeuds sont les mêmes
-      // on stockes les numéros dans la mailles de ces sommets
-      m_cell_1_common_node_numbers.add(i->second); // pour la maille 1
-      m_cell_2_common_node_numbers.add(j->second); // pour la maille 2
+    if (node1_localId == node2_localId) { // if the nodes are the same
+      // we store the numbers in the meshes of these vertices
+      m_cell_1_common_node_numbers.add(i->second); // for mesh 1
+      m_cell_2_common_node_numbers.add(j->second); // for mesh 2
 
-      // et on crée l'ensemble ordonné des noeuds communs dans la
-      // seconde maille
+      // and we create the ordered set of common nodes in the
+      // second mesh
       cell2_common_edge_node_number.insert(j->second);
-      ++i;++j;
-    } else {
+      ++i;
+      ++j;
+    }
+    else {
       if (node1_localId < node2_localId) {
         ++i;
-      } else {
+      }
+      else {
         ++j;
       }
     }
   }
 
   ARCANE_ASSERT(m_cell_1_common_node_numbers.size() == 4,
-		("Bad number of shared vertices"));
+                ("Bad number of shared vertices"));
 
-  // On cherche maintenant les sommets voisins des noeuds commun
-  // appartenant à la seconde maille et qui ne sont pas des sommets
-  // échangés. Ce sont les sommets qui formeront la nouvelle maille
-  // par substitution avec les sommets communs de la première maille.
+  // We are now looking for the neighbors of the common nodes
+  // belonging to the second mesh and which are not exchanged vertices.
+  // These are the vertices that will form the new mesh
+  // by substitution with the common vertices of the first mesh.
   m_cell_2_exchanged_node_numbers.reserve(4);
-  for (Integer i = 0; i<m_cell_2_common_node_numbers.size(); ++i) {
+  for (Integer i = 0; i < m_cell_2_common_node_numbers.size(); ++i) {
     const Integer& node_number = m_cell_2_common_node_numbers[i];
-    for (Integer j=0; j<3; ++j) {
+    for (Integer j = 0; j < 3; ++j) {
       const Integer& edge_node = m_hexa_node_neighbors[node_number][j];
       if (cell2_common_edge_node_number.find(edge_node) == cell2_common_edge_node_number.end()) {
         m_cell_2_exchanged_node_numbers.add(edge_node);
@@ -1021,32 +1043,32 @@ _setCellsNodeNumbers(Cell cell1,Cell cell2)
 /*---------------------------------------------------------------------------*/
 
 CellToHexahedronMerger::
-CellToHexahedronMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2)
+CellToHexahedronMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
 {
-  // TODO: fusionner ce code avec CellToQuadrilateralMerger.
+  // TODO: merge this code with CellToQuadrilateralMerger.
 
-  ARCANE_ASSERT(cell2.type() == IT_Hexaedron8,("Cell2 is not a IT_Hexaedron8"));
+  ARCANE_ASSERT(cell2.type() == IT_Hexaedron8, ("Cell2 is not a IT_Hexaedron8"));
 
-  CommonFaceFinder common_face(cell1,cell2);
+  CommonFaceFinder common_face(cell1, cell2);
 
-  this->_setCellsNodeNumbers(cell1,cell2);
+  this->_setCellsNodeNumbers(cell1, cell2);
 
-  // Fusion des mailles de côté
-  FacesToMergeFinder faces_to_merge(cell1,cell2,common_face);
-  for (Integer i = 0; i<faces_to_merge.getNumber(); ++i) {
+  // Fusion of side meshes
+  FacesToMergeFinder faces_to_merge(cell1, cell2, common_face);
+  for (Integer i = 0; i < faces_to_merge.getNumber(); ++i) {
     FaceToQuadrilateralMerger(swap_utils,
                               cell1.face(faces_to_merge.cell1FaceNumber(i)),
                               cell2.face(faces_to_merge.cell2FaceNumber(i)));
   }
 
-  // Echange des faces.
-  swap_utils->swapCellFaces(cell1,cell2,
+  // Face exchange.
+  swap_utils->swapCellFaces(cell1, cell2,
                             common_face.cell1LocalNumber(),
-                            (common_face.cell2LocalNumber()+3)%6); // face opposée
+                            (common_face.cell2LocalNumber() + 3) % 6); // opposite face
 
-  // Echange des sommets des mailles
-  for (Integer i=0, n=m_cell_1_common_node_numbers.size(); i<n; ++i) {
-    swap_utils->swapCellNodes(cell1,cell2,
+  // Mesh vertex exchange
+  for (Integer i = 0, n = m_cell_1_common_node_numbers.size(); i < n; ++i) {
+    swap_utils->swapCellNodes(cell1, cell2,
                               m_cell_1_common_node_numbers[i],
                               m_cell_2_exchanged_node_numbers[i]);
   }
@@ -1059,7 +1081,7 @@ CellToHexahedronMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2)
 
 const Integer
 CellToHexahedronMerger::
-m_hexa_node_neighbors[8][3] = { {1,3,4},{0,2,5},{1,3,6},{0,2,7},{0,5,7},{1,4,6},{2,5,7},{3,4,6} };
+m_hexa_node_neighbors[8][3] = { { 1, 3, 4 }, { 0, 2, 5 }, { 1, 3, 6 }, { 0, 2, 7 }, { 0, 5, 7 }, { 1, 4, 6 }, { 2, 5, 7 }, { 3, 4, 6 } };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1068,12 +1090,18 @@ String CellMerger::
 _typeName(const CellMerger::_Type& t) const
 {
   switch (t) {
-  case Hexahedron:    return "hexahèdre";
-  case Pyramid:       return "pyramide";
-  case Pentahedron:   return "pentahèdre";
-  case Quadrilateral: return "quadrangle";
-  case Triangle:      return "triangle";
-  default:            return "inconnu";
+  case Hexahedron:
+    return "hexahedron";
+  case Pyramid:
+    return "pyramid";
+  case Pentahedron:
+    return "pentahedron";
+  case Quadrilateral:
+    return "quadrangle";
+  case Triangle:
+    return "triangle";
+  default:
+    return "unknown";
   }
 }
 
@@ -1083,7 +1111,7 @@ _typeName(const CellMerger::_Type& t) const
 CellMerger::_Type CellMerger::
 _getCellType(const Integer& internal_cell_type) const
 {
-  switch(internal_cell_type) {
+  switch (internal_cell_type) {
   case IT_Hexaedron8: {
     return Hexahedron;
   }
@@ -1109,16 +1137,21 @@ _getCellType(const Integer& internal_cell_type) const
 /*---------------------------------------------------------------------------*/
 
 CellMerger::_Type CellMerger::
-_promoteType(const _Type& t1,const _Type& t2) const
+_promoteType(const _Type& t1, const _Type& t2) const
 {
-  switch(t1*t2) {
-  case 1:   return Hexahedron;
-  case 2:   return Pyramid;
-  case 3:   return Pentahedron;
-  case 100: return Quadrilateral;
-  case 110: return Triangle;
+  switch (t1 * t2) {
+  case 1:
+    return Hexahedron;
+  case 2:
+    return Pyramid;
+  case 3:
+    return Pentahedron;
+  case 100:
+    return Quadrilateral;
+  case 110:
+    return Triangle;
   default:
-    ARCANE_FATAL("Can not merge cells of type {0} and {1}",_typeName(t1),_typeName(t2));
+    ARCANE_FATAL("Can not merge cells of type {0} and {1}", _typeName(t1), _typeName(t2));
   }
 }
 
@@ -1126,7 +1159,7 @@ _promoteType(const _Type& t1,const _Type& t2) const
 /*---------------------------------------------------------------------------*/
 
 void CellMerger::
-merge(Cell i_cell_1,Cell i_cell_2)
+merge(Cell i_cell_1, Cell i_cell_2)
 {
   _Type cell_1_type = _getCellType(i_cell_1.type());
   IMesh* mesh = i_cell_1.itemFamily()->mesh();
@@ -1135,15 +1168,14 @@ merge(Cell i_cell_1,Cell i_cell_2)
   switch (cell_1_type) {
   case Hexahedron:
   case Pyramid:
-  case Pentahedron:
-    {
-      CellToHexahedronMerger(&swap_utils,i_cell_1, i_cell_2);
-      return;
-    }
+  case Pentahedron: {
+    CellToHexahedronMerger(&swap_utils, i_cell_1, i_cell_2);
+    return;
+  }
   case Quadrilateral:
-  case Triangle:{
+  case Triangle: {
     {
-      CellToQuadrilateralMerger(&swap_utils,i_cell_1,i_cell_2);
+      CellToQuadrilateralMerger(&swap_utils, i_cell_1, i_cell_2);
       return;
     }
   }
@@ -1158,13 +1190,13 @@ merge(Cell i_cell_1,Cell i_cell_2)
 /*---------------------------------------------------------------------------*/
 
 Cell CellMerger::
-getCell(Cell i_cell_1,Cell i_cell_2)
+getCell(Cell i_cell_1, Cell i_cell_2)
 {
   _Type cell_1_type = _getCellType(i_cell_1.type());
   _Type cell_2_type = _getCellType(i_cell_2.type());
 
   _Type merged_cell_type = _promoteType(cell_1_type, cell_2_type);
-    
+
   switch (merged_cell_type) {
   case Hexahedron: {
     return i_cell_1;
@@ -1173,7 +1205,8 @@ getCell(Cell i_cell_1,Cell i_cell_2)
   case Pentahedron: {
     if (cell_2_type == Hexahedron) {
       return i_cell_1;
-    } else {
+    }
+    else {
       return i_cell_2;
     }
   }
@@ -1183,7 +1216,8 @@ getCell(Cell i_cell_1,Cell i_cell_2)
   case Triangle: {
     if (cell_2_type == Quadrilateral) {
       return i_cell_1;
-    } else {
+    }
+    else {
       return i_cell_2;
     }
   }
@@ -1202,7 +1236,7 @@ getCell(Cell i_cell_1,Cell i_cell_2)
 ItemInternal* CellMerger::
 getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2)
 {
-  return ItemCompatibility::_itemInternal(getCell(i_cell_1,i_cell_2));
+  return ItemCompatibility::_itemInternal(getCell(i_cell_1, i_cell_2));
 }
 
 /*---------------------------------------------------------------------------*/

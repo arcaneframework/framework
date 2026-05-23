@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*                                                                           */
-/* Outil de gestion des propriétaires des nouveaux items                     */
+/* Owner management tool for new items                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_NEWITEMOWNERBUILDER_H
 #define ARCANE_MESH_NEWITEMOWNERBUILDER_H
@@ -30,20 +30,14 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En attendant d'avoir un algorithme qui équilibre mieux
-// les messages, on applique le suivant:
-// - chaque sous-domaine est responsable pour déterminer le nouveau
-// propriétaire des noeuds, faces, arêtes, noeuds duaux et liaisons qui lui appartiennent.
-// - pour les noeuds et les arêtes, le nouveau propriétaire est le nouveau 
-// propriétaire de la maille connectée à ce noeud dont le uniqueId() est le plus petit.
-// - pour les faces, le nouveau propriétaire est le nouveau propriétaire
-// de la maille qui est derrière cette face s'il s'agit d'une face
-// interne et de la maille connectée s'il s'agit d'une face frontière.
-// - pour les noeuds duaux, le nouveau propriétaire est le nouveau propriétaire
-// de la maille connectée à l'élément dual
-// - pour les liaisons, le nouveau propriétaire est le nouveau propriétaire
-// de la maille connectée au premier noeud dual, c'est-à-dire le propriétaire
-// du premier noeud dual de la liaison
+// While waiting for an algorithm that better balances
+// messages, we apply the following:
+// - each sub-domain is responsible for determining the new
+// owner of nodes, faces, edges, dual nodes, and links belonging to it.
+// - for nodes and edges, the new owner is the new owner of the mesh connected to this node whose uniqueId() is the smallest.
+// - for faces, the new owner is the new owner of the mesh behind this face if it is an internal face, and the connected mesh if it is a boundary face.
+// - for dual nodes, the new owner is the new owner of the mesh connected to the dual element
+// - for links, the new owner is the new owner of the mesh connected to the first dual node, that is, the owner of the link's first dual node.
 
 class NewItemOwnerBuilder
 {
@@ -51,12 +45,12 @@ public:
 
   NewItemOwnerBuilder() {}
  
-  // Détermine la maille connectée à l'item
+  // Determines the mesh connected to the item
   template<typename T>
   inline Cell connectedCellOfItem(const T& item) const;
 
-  // Détermine le propriétaire de l'item, c'est-à-dire
-  // le propriétaire de la maille connectée à l'item
+  // Determines the owner of the item, that is,
+  // the owner of the mesh connected to the item
   template<typename T>
   inline Integer ownerOfItem(const T& item) const 
   {
@@ -65,9 +59,9 @@ public:
 
 private:
   
-  // Trouve la maille de plus petit uniqueId() d'un item
-  // Polymorphisme statique : seul les types d'items avec une
-  // méthode cell() sont accéptés
+  // Finds the mesh with the smallest uniqueId() of an item
+  // Static polymorphism: only item types with a
+  // cell() method are accepted
   template<typename T>
   inline Cell _minimumUniqueIdCellOfItem(const T& item) const 
   {
@@ -80,21 +74,21 @@ private:
   }
 };
 
-// Pour les noeuds, la maille connectée est celle le uniqueId() est le plus petit.
+// For nodes, the connected mesh is the one with the smallest uniqueId().
 template<>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Node>(const Node& node) const 
 {
   return _minimumUniqueIdCellOfItem(node);
 }
 
-// Pour les arêtes, la maille connectée est celle le uniqueId() est le plus petit.
+// For edges, the connected mesh is the one with the smallest uniqueId().
 template<>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Edge>(const Edge& edge) const 
 {
   return _minimumUniqueIdCellOfItem(edge);
 }
 
-// Pour les faces, la maille connectée est backCell() si elle existe sinon la frontCell()
+// For faces, the connected mesh is backCell() if it exists, otherwise frontCell()
 template<>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Face>(const Face& face) const 
 {

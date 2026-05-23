@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshCompacter.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Gestion d'un échange de maillage entre sous-domaines.                     */
+/* Management of a mesh exchange between subdomains.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,7 +77,7 @@ MeshCompacter::
 void MeshCompacter::
 _addFamily(IItemFamily* family)
 {
-  // N'ajoute la famille que si elle a une politique de compactage.
+  // Only adds the family if it has a compaction policy.
   IItemFamilyCompactPolicy* c = family->policyMng()->compactPolicy();
   if (c)
     m_item_families.add(family);
@@ -111,8 +111,8 @@ beginCompact()
 {
   _checkPhase(ePhase::BeginCompact);
 
-  // Débute un compactage et calcule les correspondances entre les
-  // nouveaux et les anciens localId().
+  // Starts a compaction and calculates the correspondences between the
+  // new and old localIds().
   {
     Timer::Action ts_action(m_time_stats,"CompactItemsBegin");
     for( IItemFamily* family : m_item_families ){
@@ -139,8 +139,8 @@ compactVariablesAndGroups()
 {
   _checkPhase(ePhase::CompactVariableAndGroups);
 
-  // Met à jour les groupes et les variables une fois les parents à jour.
-  // Il ne faut le faire que sur les familles qui sont compactées.
+  // Updates groups and variables once the parents are updated.
+  // This must only be done on the families that are compacted.
   if (m_is_compact_variables_and_groups){
     Timer::Action ts_action(m_time_stats,"CompactVariables");
     for( const auto& iter : m_family_compact_infos_map ){
@@ -161,7 +161,7 @@ updateInternalReferences()
 {
   _checkPhase(ePhase::UpdateInternalReferences);
 
-  // Met à jour les références de chaque entité.
+  // Updates the references of each entity.
   {
     Timer::Action ts_action(m_time_stats,"CompactUpdateInternalReferences");
     for( IItemFamily* family : m_mesh->itemFamilies() ){
@@ -182,7 +182,7 @@ endCompact()
 {
   _checkPhase(ePhase::EndCompact);
 
-  // Termine le compactage.
+  // Ends the compaction.
   {
     Timer::Action ts_action(m_time_stats,"CompactItemFinish");
 
@@ -204,7 +204,7 @@ finalizeCompact()
 {
   _checkPhase(ePhase::Finalize);
 
-  // Notifie que le compactage est terminé.
+  // Notifies that the compaction is finished.
   {
     Timer::Action ts_action(m_time_stats,"CompactItemFinish");
 

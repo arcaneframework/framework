@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshUniqueIdMng.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de couche fantômes d'un maillage.                            */
+/* Mesh ghost layer manager.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,10 +72,10 @@ _initFaceVersion()
     return;
   }
 
-  // Pour des raisons de compatibilité avec l'existant, on positionne les
-  // valeurs par défaut en fonction de certaines variables d'environnement.
-  // Il faudra supprimer ce comportement à terme (car de plus il s'applique
-  // à tous les maillages même ceux créés dynamiquement)
+  // For compatibility with existing implementations, default values are set
+  // based on certain environment variables.
+  // This behavior must be removed eventually (as it applies to all meshes,
+  // even those created dynamically).
 
   if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null()){
     m_face_builder_version = 3;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivityMng.h                                       (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire des connectivités                                            */
+/* Connectivity Manager                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CONNECTIVITYMANAGER_H
 #define ARCANE_CONNECTIVITYMANAGER_H
@@ -101,10 +101,10 @@ class ARCANE_MESH_EXPORT ItemConnectivityMng
 {
 public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemConnectivityMng(ITraceMng* trace_mng) : m_trace_mng(trace_mng) {}
 
-  /** Destructeur de la classe */
+  /** Destructor of the class */
   ~ItemConnectivityMng() override
   {
     for (const auto& map_element : m_synchronizers) {
@@ -147,9 +147,9 @@ public:
   }
 
 
-  /*! \brief Création d'un objet de synchronisation pour une connectivité.
+  /*! \brief Creation of a synchronization object for a connectivity.
    *
-   *  Si la méthode a déjà été appelée pour cette connectivité, un nouveau synchroniseur est créé et le précedent est détruit.
+   *  If the method has already been called for this connectivity, a new synchronizer is created and the previous one is destroyed.
    *
    */
   IItemConnectivitySynchronizer* createSynchronizer(IItemConnectivity* connectivity,
@@ -160,13 +160,13 @@ public:
     return m_synchronizers[connectivity];
   }
 
-  //! Enregistrement de modifications d'une famille d'items
+  //! Registering modifications of an item family
   void setModifiedItems(IItemFamily* family, Int32ConstArrayView added_items,Int32ConstArrayView removed_items) override;
 
-  //! Mise à jour des items modifiés éventuellement compactés
+  //! Update of modified items, possibly compacted
   void notifyLocalIdChanged(IItemFamily* family, Int32ConstArrayView old_to_new_ids,Integer nb_item) override;
 
-  //! Test si la connectivité est à jour par rapport à la famille source et à la famille target
+  //! Test if the connectivity is up to date compared to the source family and the target family
   bool isUpToDate(IItemConnectivity* connectivity) override
   {
     return (isUpToDateWithSourceFamily(connectivity) && isUpToDateWithTargetFamily(connectivity));
@@ -180,10 +180,10 @@ public:
     return (_lastUpdateTargetFamilyState(connectivity->name()) == _familyState(connectivity->targetFamily()->fullName()));
   }
 
-  //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
+  //! Register the connectivity as up to date compared to the two families (source and target)
   void setUpToDate(IItemConnectivity* connectivity) override;
 
-  //! Test si la connectivité est à jour par rapport à la famille source et à la famille target
+  //! Test if the connectivity is up to date compared to the source family and the target family
     bool isUpToDate(IIncrementalItemConnectivity* connectivity) override
     {
       return (isUpToDateWithSourceFamily(connectivity) && isUpToDateWithTargetFamily(connectivity));
@@ -197,10 +197,10 @@ public:
       return (_lastUpdateTargetFamilyState(connectivity->name()) == _familyState(connectivity->targetFamily()->fullName()));
     }
 
-    //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
+    //! Register the connectivity as up to date compared to the two families (source and target)
     void setUpToDate(IIncrementalItemConnectivity* connectivity) override;
 
-  //! Récupération des items modifiés pour mettre à jour une connectivité
+  //! Retrieval of modified items to update a connectivity
   void getSourceFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,
                                     Int32ArrayView& removed_items) override;
   void getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,

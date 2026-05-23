@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshExchange.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Echange des entités de maillages entre sous-domaines.                     */
+/* Exchange of mesh entities between subdomains.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHEXCHANGE_H
 #define ARCANE_MESH_MESHEXCHANGE_H
@@ -42,7 +42,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Echange des entités de maillages entre entre sous-domaines.
+ * \brief Exchange of mesh entities between subdomains.
  */
 class MeshExchange
 : public TraceAccessor
@@ -62,7 +62,7 @@ class MeshExchange
 
  public:
 
-  //! Calcule les infos
+  //! Compute the info
   void computeInfos();
 
  public:
@@ -72,12 +72,12 @@ class MeshExchange
 
   IMesh* mesh() const { return m_mesh; }
 
-  //! Liste par sous-domaine des entités à envoyer pour la famille \a family.
+  //! List of entities to send by subdomain for the family \a family.
   ConstArrayView<std::set<Int32>> getItemsToSend(IItemFamily* family) const;
 
  private:
   
-  IMesh* m_mesh; //!< Maillage
+  IMesh* m_mesh; //!< Mesh
   IParallelMng* m_parallel_mng;
   Int32 m_nb_rank;
   Int32 m_rank;
@@ -126,9 +126,9 @@ class MeshExchange
   DynamicMultiArray<Int32>* m_neighbour_extra_cells_owner;
   DynamicMultiArray<Int32>* m_neighbour_extra_cells_new_owner;
 
-  //! Liste par sous-domaine des entités à envoyer pour la famille \a family.
+  //! List of entities to send by subdomain for the family \a family.
   ArrayView<std::set<Int32>> _getItemsToSend(IItemFamily* family);
-  void _setItemsToSend(IItemFamily* family);//! Utilisant ItemFamilyNetwork
+  void _setItemsToSend(IItemFamily* family);//! Using ItemFamilyNetwork
   void _printItemToSend(IItemFamily* family);// Debug print SDC
   void _printItemToRemove(IItemFamily* family);// Debug print SDC
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamilySerializer.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Sérialisation/Désérialisation des familles de mailles.                    */
+/* Serialization/Deserialization of mesh families.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,7 +66,7 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
   switch(buf->mode()){
   case ISerializer::ModeReserve:
     {
-      buf->reserveInt64(2); // 1 pour le rang du sous-domaine et 1 pour le nombre de mailles
+      buf->reserveInt64(2); // 1 for the subdomain rank and 1 for the number of cells
       UniqueArray<Int64> tmp_buf;
       tmp_buf.reserve(200);
       for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
@@ -81,8 +81,8 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
     break;
   case ISerializer::ModePut:
     {
-      buf->putInt64(my_rank); // Stocke le numéro du sous-domaine
-      buf->putInt64(nb_cell); // Stocke le nombre de mailles
+      buf->putInt64(my_rank); // Stores the subdomain number
+      buf->putInt64(nb_cell); // Stores the number of cells
       info(4) <<  "Serialize: Put: nb_cell=" << nb_cell;
       UniqueArray<Int64> tmp_buf;
       tmp_buf.reserve(200);
@@ -113,7 +113,7 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
   IMesh* mesh = m_family->mesh();
   ItemTypeMng* itm = mesh->itemTypeMng();
   Int32 my_rank = mesh->meshPartInfo().partRank();
-  Int32 orig_rank = CheckedConvert::toInt32(buf->getInt64()); // Numéro du sous-domaine source
+  Int32 orig_rank = CheckedConvert::toInt32(buf->getInt64()); // Source subdomain number
   Int64 nb_cell = buf->getInt64();
   const Integer parent_info = FullCellInfo::parentInfo(mesh);
 
@@ -142,16 +142,16 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
     if (use_array)
       locals_id_view[i_cell] = icell->localId();
     {
-      // Attention dans le flag IT_Own n'est pas correct, il est forcé apres
+      // Note that the IT_Own flag is not correct; it is forced later
       if (use_flags)
         icell->setFlags(current_cell.flags()) ;
-      // Force les owners à la valeur de sérialisation, car ils ne seront
-      // pas corrects dans le cas ou la maille ou un de ses éléments
-      // existait déjà
+      // Force the owners to the serialization value, because they will not be
+      // correct in the case where the mesh or one of its elements
+      // already existed
       icell->setOwner(current_cell.owner(),my_rank);
       if (is_check){
-        // Vérifie que les unique_ids des éléments actuels de la maille
-        // sont les même que ceux qu'on désérialise.
+        // Checks that the unique IDs of the current elements of the mesh
+        // are the same as those being deserialized.
         bool has_error = false;
         Integer node_index = 0;
         for( Node node : cell.nodes() ){
@@ -191,8 +191,8 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
         }
       }
 
-      // TODO: vérifier si cela est utile. A priori non car le travail
-      // est fait lors de la désérialisation des mailles.
+      // TODO: check if this is useful. Probably not because the work
+      // is done during mesh deserialization.
       Integer node_index = 0;
       for( Node node : cell.nodes() ){
         node.mutableItemBase().setOwner(current_cell.nodeOwner(node_index),my_rank);

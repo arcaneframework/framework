@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleFamilySerializer.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Sérialisation/Désérialisation des familles de particules.                 */
+/* Serialization/Deserialization of particle families.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,9 +46,9 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    sbuf->reserveInt64(1); // Pour le nombre de particules
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des particules.
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des mailles dans lesquelles se trouve les particules
+    sbuf->reserveInt64(1); // For the number of particles
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the particles' uniqueId()s.
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the uniqueId()s of the cells in which the particles are located
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);
@@ -81,7 +81,7 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 void ParticleFamilySerializer::
 deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
 {
-  // NOTE: les mailles doivent avoir été désérialisées avant.
+  // NOTE: cells must have been deserialized beforehand.
   Int64UniqueArray particles_uid;
   Int64UniqueArray cells_unique_id;
   Int32UniqueArray cells_local_id;
@@ -102,13 +102,13 @@ deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
   Int32ArrayView local_ids_view = particles_local_id->view();
   cell_family->itemsUniqueIdToLocalId(cells_local_id,cells_unique_id,true);
 
-  // Si on gère les particules fantômes, alors les particules ont un propriétaire
-  // et dans ce cas il faut créér les particules avec cette information.
-  // On suppose alors que le propriétaire d'une particule est la maille dans laquelle
-  // elle se trouve.
-  // NOTE: dans la version actuelle, le support des particules fantômes implique
-  // que ces dernières aient une table de hashage pour les uniqueId()
-  // (c'est à dire particle_family->hasUniqueIdMap() == true).
+  // If ghost particles are handled, then particles have an owner
+  // and in this case, particles must be created with this information.
+  // It is then assumed that the owner of a particle is the cell in which
+  // it is located.
+  // NOTE: in the current version, support for ghost particles implies
+  // that the latter have a hash table for uniqueId()
+  // (that is to say particle_family->hasUniqueIdMap() == true).
   if (!m_family->getEnableGhostItems()){
     m_family->addParticles(particles_uid,local_ids_view);
   }
@@ -127,7 +127,7 @@ deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
     m_family->addParticles2(particles_uid,particles_owner,local_ids_view);
   }
 
-  // IMPORTANT: il faut le faire ici car cela peut changer via le endUpdate()
+  // IMPORTANT: this must be done here because it can change via endUpdate()
   ItemInternalList internal_particles(m_family->itemsInternal());
   for( Integer zz=0; zz<nb_item; ++zz ){
     Particle p = internal_particles[ local_ids_view[zz] ];

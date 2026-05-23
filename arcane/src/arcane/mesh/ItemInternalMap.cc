@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternalMap.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Tableau associatif de ItemInternal.                                       */
+/* Associative map of ItemInternal.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ void ItemInternalMap::
 notifyUniqueIdsChanged()
 {
   if (arcaneIsCheck()) {
-    // Vérifie qu'on n'a pas deux fois la même clé.
+    // Checks that there are no two instances of the same key.
     std::unordered_set<Int64> uids;
     this->eachItem([&](Item item) {
       Int64 uid = item.uniqueId().asInt64();

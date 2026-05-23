@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FullItemInfo.h                                              (C) 2000-2022 */
 /*                                                                           */
-/* Information de sérialisation d'une maille.                                */
+/* Serialization information for a mesh.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_FULLCELLINFO_H
 #define ARCANE_MESH_FULLCELLINFO_H
@@ -30,8 +30,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour créer/sérialiser une maille connaissant
- * les uniqueId() et owner() de toutes ces sous-entités (mailles, arêtes et faces).
+ * \brief Info to create/serialize a mesh knowing
+ * the uniqueId() and owner() of all these sub-entities (cells, edges, and faces).
  */
 class FullCellInfo
 {
@@ -46,9 +46,9 @@ class FullCellInfo
   
  public:
   /*!
-   * \brief Référence les infos d'une maille.
+   * \brief References the info of a mesh.
    *
-   * Le tableau cells_infos doit rester valide tant que l'instance existe.
+   * The cells_infos array must remain valid as long as the instance exists.
    */
   FullCellInfo(Int64ConstArrayView cells_infos, Integer cell_index,
                ItemTypeMng* itm, Integer parent_info, 
@@ -99,8 +99,8 @@ class FullCellInfo
 
  public:
 
-  //! Taille memoire en Int64 pour représenter une cellule de type it
-  /*! \a parent_info décrit quelle relation de parenté doit y être comptée */
+  //! Memory size in Int64 to represent a cell of type it
+  /*! \a parent_info describes which parent relationship must be counted */
   ARCCORE_DEPRECATED_2020("Use dump() overload with buffer")
   static Integer memoryUsed(ItemTypeInfo* it, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
   ARCCORE_DEPRECATED_2020("Use dump() overload with buffer")

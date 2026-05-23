@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfoList.h                                        (C) 2000-2022 */
 /*                                                                           */
-/* Liste de 'ItemSharedInfo'.                                                */
+/* List of 'ItemSharedInfo'.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMSHAREDINFOLIST_H
 #define ARCANE_MESH_ITEMSHAREDINFOLIST_H
@@ -41,11 +41,11 @@ class ItemFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe temporaire pour conserver un ItemSharedInfo et un type d'entité.
+ * \brief Temporary class to hold an ItemSharedInfo and an entity type.
  *
- * Cette classe permet de faire la transition entre la version de Arcane où
- * le ItemSharedInfo contient aussi le type de l'entité et les futures versions
- * où cela ne sera pas le cas.
+ * This class allows for the transition between the version of Arcane where
+ * ItemSharedInfo also contains the entity type and future versions
+ * where this will not be the case.
  */
 class ItemSharedInfoWithType
 {
@@ -92,10 +92,10 @@ class ItemSharedInfoWithType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos de maillage pour un genre donné d'entité.
+ * \brief Mesh info for a given entity type.
 
- Une instance de cette classe gère toutes les structures de maillage
- pour une entité d'un genre donné.
+ An instance of this class manages all mesh structures
+ for an entity of a given type.
 */
 class ItemSharedInfoList
 : public TraceAccessor
@@ -109,7 +109,7 @@ class ItemSharedInfoList
  public:
 
   ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info);
-  //! Libère les ressources
+  //! Frees resources
   ~ItemSharedInfoList();
 
  public:
@@ -141,7 +141,7 @@ class ItemSharedInfoList
 
  public:
 
-  //! Vérifie si les structures internes de l'instance sont valides
+  //! Checks if the internal structures of the instance are valid
   void checkValid();
 
   Integer nbItemSharedInfo() const { return m_nb_item_shared_info; }
@@ -151,7 +151,7 @@ class ItemSharedInfoList
 
   void dumpSharedInfos();
 
-  //! Indique si la liste a changée depuis le dernier appel à prepareForDump()
+  //! Indicates if the list has changed since the last call to prepareForDump()
   bool hasChanged() { return m_list_changed; }
 
  public:
@@ -201,7 +201,7 @@ class ItemSharedInfoList
 
   ItemFamily* m_family = nullptr;
   ItemSharedInfo* m_common_item_shared_info = nullptr;
-  Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
+  Integer m_nb_item_shared_info = 0; //!< Number of allocated objects
   eItemKind m_item_kind = IK_Unknown;
   UniqueArray<ItemSharedInfoWithType*> m_item_shared_infos;
   UniqueArray<ItemSharedInfoWithType*> m_free_item_shared_infos;
