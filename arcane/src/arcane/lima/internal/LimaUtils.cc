@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LimaUtils.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour Lima.                                          */
+/* Utility functions for Lima.                                               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/lima/internal/LimaUtils.h"
@@ -47,7 +47,7 @@ createGroup(IItemFamily* family,const String& name,Int32ArrayView local_ids)
     std::sort(std::begin(local_ids),std::end(local_ids));
   Integer nb_item = local_ids.size();
   Integer nb_duplicated = 0;
-  // Détecte les doublons
+  // Detects duplicates
   for( Integer i=1; i<nb_item; ++i )
     if (local_ids[i]==local_ids[i-1]){
       ++nb_duplicated;

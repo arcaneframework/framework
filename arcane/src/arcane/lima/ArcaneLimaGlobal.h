@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneLimaGlobal.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations pour la composante Arcane gérant Lima.                       */
+/* Declarations for the Arcane component managing Lima.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LIMA_ARCANELIMAGLOBAL_H
 #define ARCANE_LIMA_ARCANELIMAGLOBAL_H

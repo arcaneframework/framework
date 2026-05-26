@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LimaCutInfosReader.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Lecteur des informations de découpages avec les fichiers Lima.            */
+/* Reader of cut information using Lima files.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LIMA_LIMACUTINFOSREADER_H
 #define ARCANE_LIMA_LIMACUTINFOSREADER_H
@@ -32,7 +32,7 @@ class IParallelMng;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction d'un maillage 3D.
+ * \brief Construction of a 3D mesh.
  */
 class ARCANE_LIMA_EXPORT LimaCutInfosReader
 : public TraceAccessor
