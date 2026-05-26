@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshUtils.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires associées à 'ICartesianMesh'.                       */
+/* Utility functions associated with 'ICartesianMesh'.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Créé une instance pour gérer le déraffinement du maillage (V2).
+ * \brief Creates an instance to manage mesh coarsening (V2).
  * \warning Experimental method !
  */
 Ref<CartesianMeshCoarsening2> CartesianMeshUtils::

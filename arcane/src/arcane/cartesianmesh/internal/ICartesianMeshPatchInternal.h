@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICartesianMeshPatchInternal.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Information about an AMR patch of a Cartesian mesh.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H
 #define ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H

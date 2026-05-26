@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshCoarsening.h                                   (C) 2000-2024 */
 /*                                                                           */
-/* Déraffinement d'un maillage cartésien.                                    */
+/* Coarsening of a Cartesian mesh.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESHCOARSENING_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESHCOARSENING_H
@@ -33,32 +33,29 @@ namespace Arcane
 /*!
  * \ingroup ArcaneCartesianMesh
  *
- * \brief Déraffine un maillage cartésien par 2.
+ * \brief Coarsens a Cartesian mesh by 2.
  *
- * \deprecated Cette classe est obsolète. Il faut utiliser la version 2
- * de l'implémentation (CartesianMeshCoarsening2).
+ * \deprecated This class is obsolete. The version 2 implementation (CartesianMeshCoarsening2) must be used.
  *
- * Cette classe permet de déraffiner un maillage cartésien. Les instances
- * de cette classe sont créées via ICartesianMesh::createCartesianMeshCoarsening().
+ * This class allows coarsening a Cartesian mesh. Instances
+ * of this class are created via ICartesianMesh::createCartesianMeshCoarsening().
  *
- * Le maillage initial doit être cartésien et ne doit pas avoir de patchs.
+ * The initial mesh must be Cartesian and must not have patches.
  *
- * Le maillage doit être un maillage AMR (IMesh::isAmrActivated()==true).
+ * The mesh must be an AMR mesh (IMesh::isAmrActivated()==true).
  *
- * Le nombre de mailles dans chaque dimension doit être un multiple de 2
- * ainsi que le nombre de mailles locales à chaque sous-domaine.
+ * The number of cells in each dimension must be a multiple of 2
+ * as well as the number of local cells in each subdomain.
  *
- * Le dé-raffinement se fait en deux phases:
+ * The coarsening is done in two phases:
  *
- * - createCoarseCells() qui créé les mailles grossières. Après appel à
- *   cette méthode il est possible d'utiliser coarseCells() pour avoir
- *   la liste des mailles grossières et refinedCells() pour avoir pour
- *   chaque maille grossière la liste des mailles raffinées correspondantes.
- * - removeRefinedCells() qui supprime les mailles autres que les mailles
- *   grossière. Après cet appel, il n'y a plus qu'un maillage cartésien
- *   avec 2 fois moins de mailles dans chaque direction. Il sera ensuite
- *   possible d'appeler les méthodes de raffinement pour créer des niveaux
- *   supplémentaires.
+ * - createCoarseCells(), which creates the coarse cells. After calling
+ *   this method, it is possible to use coarseCells() to get
+ *   the list of coarse cells and refinedCells() to get for
+ *   each coarse cell the list of corresponding refined cells.
+ * - removeRefinedCells(), which removes cells other than the coarse cells. After this call, there is only a Cartesian mesh
+ *   with half the number of cells in each direction. It will then
+ *   be possible to call the refinement methods to create additional levels.
  *
  * \code
  * ICartesianMesh* cartesian_mesh = ...;
@@ -91,34 +88,34 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
  public:
 
   /*!
-   * \brief Déraffine le maillage initial par 2.
+   * \brief Coarsens the initial mesh by 2.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   void createCoarseCells();
 
   /*!
-   * \brief Liste des localIds() des mailles raffinées pour la maille parente \a d'indice \a index.
+   * \brief List of localIds() of refined cells for the parent cell at index \a index.
    *
-   * Cette méthode n'est valide qu'après appel à createCoarseCells().
+   * This method is only valid after calling createCoarseCells().
    *
-   * En 2D, il y a 4 mailles raffinées par maille grossière. En 3D il y en a 8.
+   * In 2D, there are 4 refined cells per coarse cell. In 3D, there are 8.
    */
   ConstArrayView<Int32> refinedCells(Int32 index) const
   {
     return m_refined_cells[index];
   }
   /*!
-   * \brief Liste des localIds() des mailles grossières.
+   * \brief List of localIds() of coarse cells.
    *
-   * Cette méthode n'est valide qu'après appel à createCoarseCells().
+   * This method is only valid after calling createCoarseCells().
    */
   ConstArrayView<Int32> coarseCells() const { return m_coarse_cells; }
 
   /*!
-   * \brief Supprime les mailles raffinées.
+   * \brief Removes refined cells.
    *
-   * Il faut avoir appeler createCoarseCells() avant.
+   * createCoarseCells() must be called beforehand.
    */
   void removeRefinedCells();
 
@@ -146,5 +143,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

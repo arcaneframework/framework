@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRZonePosition.cc                                          (C) 2000-2026 */
 /*                                                                           */
-/* Definition d'une zone 2D ou 3D d'un maillage.                             */
+/* Definition of a 2D or 3D zone of a mesh.                                  */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/AMRZonePosition.h"
@@ -37,8 +37,8 @@ void AMRZonePosition::
 cellsInPatch(IMesh* mesh, UniqueArray<Int32>& cells_local_id) const
 {
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans la boîte englobante.
+  // Iterates over active cells and adds to the list of cells
+  // to refine those contained in the bounding box.
   Real3 min_pos = m_position;
   Real3 max_pos = min_pos + m_length;
   //Int32 level = -10;
@@ -84,16 +84,15 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   Int64 nb_cells = 0;
 
   VariableNodeReal3& nodes_coord = mesh->mesh()->nodesCoordinates();
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans la boîte englobante.
+  // Iterates over active cells and adds to the list of cells
+  // to refine those contained in the bounding box.
   Real3 min_pos = m_position;
   Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
   cells_local_id.clear();
 
-  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
-  // les mailles sous les mailles de recouvrement (et non les mailles de
-  // recouvrement).
+  // We cannot use allActiveCells() because we must take into account
+  // the cells under the overlap cells (and not the overlap cells themselves).
   ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
     if (!cell.hasFlags(ItemFlags::II_InPatch)) {
@@ -187,16 +186,15 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   Int64 nb_cells = 0;
 
   VariableNodeReal3& nodes_coord = mesh->mesh()->nodesCoordinates();
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans la boîte englobante.
+  // Iterates over active cells and adds to the list of cells
+  // to refine those contained in the bounding box.
   const Real3 min_pos = m_position;
   const Real3 max_pos = min_pos + m_length;
   Int32 level = -1;
   Int64 d_cell_level = -1;
 
-  // On ne peut pas utiliser allActiveCells() car on doit prendre en compte
-  // les mailles sous les mailles de recouvrement (et non les mailles de
-  // recouvrement).
+  // We cannot use allActiveCells() because we must take into account
+  // the cells under the overlap cells (and not the overlap cells themselves).
   ENUMERATE_ (Cell, icell, mesh->mesh()->allCells()) {
     Cell cell = *icell;
     if (!cell.hasFlags(ItemFlags::II_InPatch)) {
@@ -251,7 +249,7 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
     ARCANE_FATAL("Bad level reduced");
   }
 
-  // Min inclus / Max exclu
+  // Min inclusive / Max exclusive
   max[MD_DirX] += 1;
   max[MD_DirY] += 1;
   max[MD_DirZ] += 1;
@@ -266,7 +264,7 @@ toAMRPatchPosition(ICartesianMesh* mesh) const
   position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
   position.setLevel(level_r);
 
-  // Attention : Pas assez d'infos pour mettre le bon overlapSize !
+  // Warning: Not enough information to set the correct overlapSize!
 
   //mesh->traceMng()->info() << "Position test -- Min : " << position.minPoint() << " -- Max : " << position.maxPoint() << " -- Level : " << position.level();
 

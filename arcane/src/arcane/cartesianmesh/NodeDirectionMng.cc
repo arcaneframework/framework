@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* NodeDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
+/* Information about the meshes in an X, Y, or Z direction of a structured   */
+/* mesh.                                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -286,13 +287,12 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_node
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Filtre les noeuds devant/derrière pour ne garder que les
- * noeuds de notre patch.
+ * \brief Filters the front/back nodes to keep only the nodes of our patch.
  */
 void NodeDirectionMng::
 _filterNodes()
 {
-  // Ensemble contenant uniquement les noeuds de notre patch
+  // Set containing only the nodes of our patch
   std::set<NodeLocalId> nodes_set;
   ENUMERATE_NODE(inode,allNodes()){
     nodes_set.insert(NodeLocalId(inode.itemLocalId()));
@@ -318,12 +318,12 @@ _filterNodes()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calcul des connectivités noeuds/mailles par direction.
+ * \brief Brief calculation of node/cell connectivities by direction.
  */
 void NodeDirectionMng::
 _computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center)
 {
-  // TODO: ne traiter que les mailles de notre patch.
+  // TODO: only process the cells of our patch.
   IndexType indexes_ptr[8];
   ArrayView<IndexType> indexes(8,indexes_ptr);
 
@@ -336,8 +336,8 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   if (mesh_dim!=2 && mesh_dim!=3)
     ARCANE_FATAL("Invalid mesh dimension '{0}'. Valid dimensions are 2 or 3",mesh_dim);
 
-  // Ensemble contenant uniquement les mailles de notre patch
-  // Cela sert à filtrer pour ne garder que ces mailles là dans la connectivité
+  // Set containing only the cells of our patch
+  // This is used to filter to keep only these cells in the connectivity
   std::set<CellLocalId> inside_cells;
   ENUMERATE_CELL(icell,cell_dm.allCells()){
     inside_cells.insert(CellLocalId(icell.itemLocalId()));
@@ -364,7 +364,7 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
         wanted_cell_pos = Real3(center.y, -center.x, center.z);
         wanted_node_pos = Real3(node_pos.y, -node_pos.x, node_pos.z);
       } else if (dir==MD_DirZ){
-        // TODO: à vérifier pour Y et Z
+        // TODO: to check for Y and Z
         wanted_cell_pos = Real3(center.z, -center.y, center.x);
         wanted_node_pos = Real3(node_pos.z, -node_pos.y, node_pos.x);
       }
@@ -427,7 +427,7 @@ _computeNodeCellInfos() const
     // DirX (Previous->X=0 / Next->X=1 / Right->Y=0 / Left->Y=1)
     // DirY (Previous->Y=0 / Next->Y=1 / Right->X=1 / Left->X=0)
 
-    // Le CartesianMeshNumberingMng nous donne toujours les mailles autour du noeud dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the cells around the node in the same order:
     //
     // |2|3|
     //   .
@@ -437,9 +437,9 @@ _computeNodeCellInfos() const
     // ^
     // |->x
     //
-    // Lire : le UID de la maille dans le tableau av_uids à la position 0 rempli par
-    // "numbering->cellUniqueIdsAroundNode(av_uids, node)" correspond, dans la direction X,
-    // à la position CNP_PreviousRight.
+    // Read: the cell UID in the av_uids array at position 0 filled by
+    // "numbering->cellUniqueIdsAroundNode(av_uids, node)" corresponds, in the X direction,
+    // to the CNP_PreviousRight position.
     constexpr Int32 dir_x_pos_2d[nb_cells_max] = { CNP_PreviousRight, CNP_NextRight, CNP_PreviousLeft, CNP_NextLeft };
     constexpr Int32 dir_y_pos_2d[nb_cells_max] = { CNP_PreviousLeft, CNP_PreviousRight, CNP_NextLeft, CNP_NextRight };
 
@@ -481,7 +481,7 @@ _computeNodeCellInfos() const
     // DirY (Top->Z=1 / Previous->Y=0 / Next->Y=1 / Right->X=1 / Left->X=0)
     // DirZ (Top->Y=1 / Previous->Z=0 / Next->Z=1 / Right->X=1 / Left->X=0)
 
-    // Le CartesianMeshNumberingMng nous donne toujours les mailles autour du noeud dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the cells around the node in the same order:
     //
     // z = 0 | z = 1
     // |2|3| | |6|7|
@@ -492,9 +492,9 @@ _computeNodeCellInfos() const
     // ^
     // |->x
     //
-    // Lire : le UID de la maille dans le tableau av_uids à la position 2 rempli par
-    // "numbering->cellUniqueIdsAroundNode(av_uids, node)" correspond, dans la direction Z,
-    // à la position CNP_TopPreviousLeft.
+    // Read: the cell UID in the av_uids array at position 2 filled by
+    // "numbering->cellUniqueIdsAroundNode(av_uids, node)" corresponds, in the Z direction,
+    // to the CNP_TopPreviousLeft position.
     constexpr Int32 dir_x_pos_3d[nb_cells_max] = { CNP_PreviousRight, CNP_NextRight, CNP_PreviousLeft, CNP_NextLeft, CNP_TopPreviousRight, CNP_TopNextRight, CNP_TopPreviousLeft, CNP_TopNextLeft };
     constexpr Int32 dir_y_pos_3d[nb_cells_max] = { CNP_PreviousLeft, CNP_PreviousRight, CNP_NextLeft, CNP_NextRight, CNP_TopPreviousLeft, CNP_TopPreviousRight, CNP_TopNextLeft, CNP_TopNextRight };
     constexpr Int32 dir_z_pos_3d[nb_cells_max] = { CNP_PreviousLeft, CNP_PreviousRight, CNP_TopPreviousLeft, CNP_TopPreviousRight, CNP_NextLeft, CNP_NextRight, CNP_TopNextLeft, CNP_TopNextRight };

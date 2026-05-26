@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshCoarsening2.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Déraffinement d'un maillage cartésien.                                    */
+/* Coarsening of a Cartesian mesh.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESHCOARSENING2_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESHCOARSENING2_H
@@ -33,41 +33,39 @@ namespace Arcane
 /*!
  * \ingroup ArcaneCartesianMesh
  *
- * \brief Déraffine un maillage cartésien par 2.
+ * \brief Coarsens a Cartesian mesh by 2.
  *
- * \warning Cette méthode est expérimentale.
+ * \warning This method is experimental.
  *
- * Cette classe permet de déraffiner un maillage cartésien. Les instances
- * de cette classe sont créées via ICartesianMesh::createCartesianMeshCoarsening().
+ * This class allows coarsening a Cartesian mesh. Instances
+ * of this class are created via ICartesianMesh::createCartesianMeshCoarsening().
  *
- * Le maillage initial doit être cartésien et ne doit pas avoir de patchs.
+ * The initial mesh must be Cartesian and must not have patches.
  *
- * Le maillage doit être un maillage AMR (IMesh::isAmrActivated()==true).
+ * The mesh must be an AMR mesh (IMesh::isAmrActivated()==true).
  *
- * Le nombre de mailles dans chaque dimension doit être un multiple de 2
- * ainsi que le nombre de mailles locales à chaque sous-domaine.
+ * The number of cells in each dimension must be a multiple of 2
+ * as must the number of local cells in each subdomain.
  *
- * Le dé-raffinement se lors de l'appel à createCoarseCell(). Après cet
- * appel on a la structure suivante pour le maillage :
- * - des mailles grossières sont créées pour chaque quadruplet de mailles
- *   existantes qui deviennent donc des mailles raffinées.
- * - chaque maille grossière est de niveau 0 (Cell::level()) et chaque maille
- *   initiale est de niveau 1.
- * - on peut accéder à ces mailles filles via les méthodes Cell::nbHChildren() et
- *   Cell::hChild().
- * - il y aura deux patchs dans le maillage. Le premier contiendra les mailles
- *   de niveau zéro et le second contiendra les mailles de niveau 1 qui sont les
- *   anciennes mailles avant dé-raffinement.
+ * The coarsening occurs upon calling createCoarseCell(). After this
+ * call, the mesh has the following structure:
+ * - coarse cells are created for every quadruplet of existing cells
+ *   which thus become refined cells.
+ * - each coarse cell is at level 0 (Cell::level()) and each initial cell
+ *   is at level 1.
+ * - these child cells can be accessed via the Cell::nbHChildren() and
+ *   Cell::hChild() methods.
+ * - there will be two patches in the mesh. The first will contain the level zero cells
+ *   and the second will contain the level 1 cells, which are the
+ *   original cells before coarsening.
  *
- * Il est ensuite possible de ne conserver que les mailles grossières et de
- * supprimer les mailles raffinées par la'appel à la méthode.
+ * It is then possible to keep only the coarse cells and
+ * remove the refined cells by calling the method.
  *
- * - removeRefinedCells() qui supprime les mailles autres que les mailles
- *   grossière. Après cet appel, il n'y a plus qu'un maillage cartésien
- *   avec 2 fois moins de mailles dans chaque direction. Il sera ensuite
- *   possible d'appeler les méthodes de raffinement pour créer des niveaux
- *   supplémentaires.
- * Voici un exemple de code utilisateur:
+ * - removeRefinedCells() which deletes cells other than the coarse cells. After this call, there is only a Cartesian mesh
+ *   with half the number of cells in each direction. It will then
+ *   be possible to call the refinement methods to create additional levels.
+ * Here is an example of user code:
  *
  * \code
  * ICartesianMesh* cartesian_mesh = ...;
@@ -87,9 +85,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening2
  public:
 
   /*!
-   * \brief Déraffine le maillage initial par 2.
+   * \brief Coarsens the initial mesh by 2.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   void createCoarseCells();
 
@@ -99,7 +97,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening2
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Int32 m_verbosity_level = false;
-  //! uniqueId() des mailles grossières
+  //! uniqueId() of the coarse cells
   UniqueArray<Int64> m_coarse_cells_uid;
   bool m_is_create_coarse_called = false;
   bool m_is_remove_refined_called = false;
@@ -123,5 +121,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

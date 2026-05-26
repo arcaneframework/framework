@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshGlobal.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations de la composante 'arcane_cartesianmesh'.                     */
+/* Declarations for the 'arcane_cartesianmesh' component.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
@@ -60,8 +60,7 @@ class SimpleHTMLMeshAMRPatchExporter;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Position des noeuds de la maille par direction pour les maillages
- * cartésiens.
+ * \brief Mesh node position by direction for Cartesian meshes.
  */
 enum eCellNodePosition
 {
@@ -79,13 +78,13 @@ enum eCellNodePosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Représente une coordonnée d'un élément dans la grille cartésienne (en X ou en Y ou en Z).
+//! Represents a coordinate of an element in the Cartesian grid (in X or Y or Z).
 typedef Int32 CartCoord;
 
-//! Représente les coordonnées 2D d'un élément dans la grille cartésienne {x, y}.
+//! Represents the 2D coordinates of an element in the Cartesian grid {x, y}.
 typedef Int32x2 CartCoord2;
 
-//! Représente les coordonnées 3D d'un élément dans la grille cartésienne {x, y, z}.
+//! Represents the 3D coordinates of an element in the Cartesian grid {x, y, z}.
 typedef Int32x3 CartCoord3;
 
 } // End namespace Arcane
@@ -93,4 +92,4 @@ typedef Int32x3 CartCoord3;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

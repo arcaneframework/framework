@@ -7,11 +7,11 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleHTMLMeshAMRPatchExporter.cc                           (C) 2000-2026 */
 /*                                                                           */
-/* Écrivain d'un maillage au format HTML, avec un SVG.                       */
+/* HTML mesh writer, with SVG.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Il faut mettre cela en premier pour MSVC sinon on n'a pas 'M_PI'
+// This must be put first for MSVC otherwise we won't have 'M_PI'
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -174,10 +174,10 @@ _writeHeaderSvg(const CartesianPatch& ground_patch)
   if (mesh_dim != 2)
     ARCANE_FATAL("Invalid dimension ({0}) for mesh. Only 2D mesh is allowed", mesh_dim);
 
-  // Note: comme par défaut en SVG l'origin est en haut à gauche, on prend pour chaque
-  // valeur de 'Y' son opposé pour l'affichage.
-  // NOTE: on pourrait utiliser les transformations de SVG mais c'est plus compliqué à
-  // traiter pour l'affichage du texte
+  // Note: since by default in SVG the origin is top left, we take for each
+  // 'Y' value its opposite for display.
+  // NOTE: we could use SVG transformations but it is more complicated to
+  // handle for text display
 
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Real mul_value = 1000.0;
@@ -185,7 +185,7 @@ _writeHeaderSvg(const CartesianPatch& ground_patch)
   const Real max_val = std::numeric_limits<Real>::max();
   Real2 min_bbox(max_val, max_val);
   Real2 max_bbox(min_val, min_val);
-  // Calcul le centre des mailles et la bounding box du groupe de maille.
+  // Calculate the center of the meshes and the bounding box of the mesh group.
   std::map<Int32, Real2> cells_center;
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
@@ -210,8 +210,8 @@ _writeHeaderSvg(const CartesianPatch& ground_patch)
   Real max_dim = math::max(bbox_width, bbox_height);
   m_font_size = max_dim / 80.0;
 
-  // Ajoute 10% des dimensions de part et d'autre de la viewBox pour être sur
-  // que le texte est bien écrit (car il peut déborder de la bounding box)
+  // Add 10% of the patch dimensions on both sides of the viewBox to ensure
+  // that the text is properly written (as it might overflow the bounding box)
   m_header_svg += "<?xml version=\"1.0\"?>\n";
   m_header_svg += String::format("<svg viewBox='{0},{1},{2},{3}' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n",
                                  (min_bbox.x - bbox_width * 0.1),
@@ -238,7 +238,7 @@ _writeHeaderSvg(const CartesianPatch& ground_patch)
 void SimpleHTMLMeshAMRPatchExporter::Impl::
 _writeText(Real x, Real y, StringView color, StringView text, Real rotation, bool do_background)
 {
-  // Affiche un fond blanc en dessous du texte.
+  // Displays a white background below the text.
   if (do_background) {
     m_patches += String::format("<text class='uid-text' x='{0}' y='{1}' dominant-baseline='central' text-anchor='middle' style='stroke:white; stroke-width:0.6em'", x, y);
     if (rotation != 0.0) {
@@ -269,10 +269,10 @@ _writePatch(const CartesianPatch& patch)
   if (mesh_dim != 2)
     ARCANE_FATAL("Invalid dimension ({0}) for mesh. Only 2D mesh is allowed", mesh_dim);
 
-  // Note: comme par défaut en SVG l'origin est en haut à gauche, on prend pour chaque
-  // valeur de 'Y' son opposé pour l'affichage.
-  // NOTE: on pourrait utiliser les transformations de SVG mais c'est plus compliqué à
-  // traiter pour l'affichage du texte
+  // Note: since by default in SVG the origin is top left, we take for each
+  // 'Y' value its opposite for display.
+  // NOTE: we could use SVG transformations but it is more complicated to
+  // handle for text display
 
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Real mul_value = 1000.0;
@@ -281,7 +281,7 @@ _writePatch(const CartesianPatch& patch)
   Real2 min_bbox(max_val, max_val);
   Real2 max_bbox(min_val, min_val);
 
-  // Calcul le centre des mailles et la bounding box du groupe de maille.
+  // Calculate the center of the meshes and the bounding box of the mesh group.
   std::map<Int32, Real2> cells_center;
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
@@ -301,7 +301,7 @@ _writePatch(const CartesianPatch& patch)
     cells_center[cell.localId()] = center_2d;
   }
 
-  // Affiche pour chaque maille son contour et son uniqueId().
+  // Display the contour and uniqueId() for each mesh.
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
     Real2 cell_pos = cells_center[cell.localId()];
@@ -316,7 +316,7 @@ _writePatch(const CartesianPatch& patch)
         m_patches += "M ";
       else
         m_patches += "L ";
-      // fait une homothétie pour bien voir les faces en cas de soudure.
+      // performs a homothety to clearly see the faces in case of welding.
       Real2 coord = cell_pos + (node_coord - cell_pos) * 0.98;
       m_patches += String::format("{0} {1} ", coord.x, coord.y);
     }
@@ -344,9 +344,9 @@ _writePatch(const CartesianPatch& patch)
     _writeText(cell_pos.x, cell_pos.y, "blue", String::fromNumber(cell.uniqueId().asInt64()), 0.0, false);
   }
 
-  // Affiche pour chaque noeud son uniqueId().
+  // Display the uniqueId() for each node.
   {
-    // Ensemble des noeuds déjà traités pour ne les afficher qu'une fois.
+    // Set of nodes already processed to display them only once.
     std::set<Int32> nodes_done;
     ENUMERATE_CELL (icell, cells) {
       Cell cell = *icell;
@@ -365,11 +365,11 @@ _writePatch(const CartesianPatch& patch)
     }
   }
 
-  // Affiche pour chaque face son uniqueId().
-  // Fait une éventuelle rotation pour que l'affichage du numéro de la face soit aligné
-  // avec son segment.
+  // Display the uniqueId() for each face.
+  // Performs a possible rotation so that the display of the face number is aligned
+  // with its segment.
   {
-    // Ensemble des faces déjà traitées pour ne les afficher qu'une fois.
+    // Set of faces already processed to display them only once.
     std::set<Int32> faces_done;
     ENUMERATE_CELL (icell, cells) {
       Cell cell = *icell;
@@ -380,8 +380,8 @@ _writePatch(const CartesianPatch& patch)
         if (faces_done.find(lid) != faces_done.end())
           continue;
         faces_done.insert(lid);
-        // En cas de maillage multi-dim, il est possible
-        // d'avoir des faces réduites à un point.
+        // In case of multi-dimensional mesh, it is possible
+        // to have faces reduced to a point.
         if (face.nbNode() < 2)
           continue;
         Real3 node0_coord = nodes_coord[face.node(0)];
@@ -392,9 +392,9 @@ _writePatch(const CartesianPatch& patch)
         face_coord *= mul_value;
         Real3 direction = node1_coord - node0_coord;
         direction = math::mutableNormalize(direction);
-        // TODO: vérifier entre -1.0 et 1.0
-        // Calcule l'angle de la rotation pour que l'affichage numéro de la face soit aligné avec
-        // le trait du bord de la face.
+        // TODO: check between -1.0 and 1.0
+        // Calculates the rotation angle so that the display of the face number is aligned with
+        // the edge line of the face.
         double angle = math::abs(std::asin(direction.y)) / M_PI * 180.0;
         Real2 cell_center = cells_center[cell.localId()];
         Real2 coord = cell_center + (face_coord - cell_center) * 0.92;

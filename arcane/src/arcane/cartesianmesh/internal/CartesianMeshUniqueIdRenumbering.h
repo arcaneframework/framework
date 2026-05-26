@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshUniqueIdRenumbering.h                          (C) 2000-2023 */
 /*                                                                           */
-/* Renumérotation des uniqueId() pour les maillages cartésiens.              */
+/* Renumbering of uniqueId() for Cartesian meshes.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHUNIQUEIDRENUMBERING_H
 #define ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHUNIQUEIDRENUMBERING_H
@@ -32,10 +32,10 @@ class ICartesianMeshGenerationInfo;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Renumérotation des uniqueId() pour les maillages cartésiens.
+ * \brief Renumbering of uniqueId() for Cartesian meshes.
  *
- * Renumérote les uniqueId() des noeuds, faces et mailles pour avoir la même
- * numérotation en séquentiel et parallèle.
+ * Renumbers the uniqueIds of nodes, faces, and cells to have the same
+ * sequential and parallel numbering.
  */
 class CartesianMeshUniqueIdRenumbering
 : public TraceAccessor

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Infos sur les faces d'une direction X Y ou Z d'un maillage structuré.     */
+/* Information about the faces of a direction X Y or Z of a structured mesh. */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -111,22 +111,22 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   if (m_p->m_patch_index>=0)
     base_group_name = base_group_name + String("AMRPatch")+m_p->m_patch_index;
 
-  // Calcule la liste des faces dans une direction donnée.
-  // Il faut pour chaque maille ajouter dans la liste des faces
-  // les deux faces de la direction souhaitées en prenant bien soin
-  // de ne pas ajouter deux fois la même face.
+  // Calculates the list of faces in a given direction.
+  // For each cell, it is necessary to add to the list of faces
+  // the two faces in the desired direction, taking care
+  // not to add the same face twice.
   UniqueArray<Int32> faces_lid;
   {
     CellGroup all_cells = cell_dm.allCells();
     faces_lid.reserve(all_cells.size());
-    // Ensemble des faces déjà ajoutées
+    // Set of faces already added
     std::set<Int32> done_faces;
     ENUMERATE_CELL(icell,all_cells){
       DirCellFace dcf(cell_dm.cellFace(*icell));
       Face next_face = dcf.next();
       Face prev_face = dcf.previous();
 
-      //! Ajoute la face d'avant à la liste des faces de cette direction
+      //! Adds the previous face to the list of faces in this direction
       Int32 prev_lid = prev_face.localId();
       if (done_faces.find(prev_lid)==done_faces.end()){
         faces_lid.add(prev_lid);
@@ -148,7 +148,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   ENUMERATE_FACE (iitem, all_faces) {
     Int32 lid = iitem.itemLocalId();
     Face face = *iitem;
-    // TODO: ne pas utiser nbCell() mais faire cela via le std::set utilisé précédemment
+    // TODO: do not use nbCell() but do this via the std::set used previously
     if (face.nbCell() == 1)
       outer_lids.add(lid);
     else
@@ -176,22 +176,22 @@ _internalComputeInfos(const CellDirectionMng& cell_dm)
   if (m_p->m_patch_index >= 0)
     base_group_name = base_group_name + String("AMRPatch") + m_p->m_patch_index;
 
-  // Calcule la liste des faces dans une direction donnée.
-  // Il faut pour chaque maille ajouter dans la liste des faces
-  // les deux faces de la direction souhaitées en prenant bien soin
-  // de ne pas ajouter deux fois la même face.
+  // Calculates the list of faces in a given direction.
+  // For each cell, it is necessary to add to the list of faces
+  // the two faces in the desired direction, taking care
+  // not to add the same face twice.
   UniqueArray<Int32> faces_lid;
   {
     CellGroup all_cells = cell_dm.allCells();
     faces_lid.reserve(all_cells.size());
-    // Ensemble des faces déjà ajoutées
+    // Set of faces already added
     std::set<Int32> done_faces;
     ENUMERATE_ (Cell, icell, all_cells) {
       DirCellFace dcf(cell_dm.cellFace(*icell));
       Face next_face = dcf.next();
       Face prev_face = dcf.previous();
 
-      //! Ajoute la face d'avant à la liste des faces de cette direction
+      //! Adds the previous face to the list of faces in this direction
       Int32 prev_lid = prev_face.localId();
       if (done_faces.find(prev_lid) == done_faces.end()) {
         faces_lid.add(prev_lid);
@@ -279,10 +279,10 @@ _hasFace(Cell cell,Int32 face_local_id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule des mailles avant et après une face, dans une direction donnée.
+ * \brief Calculates the cells before and after a face, in a given direction.
  *
- * Pour être indépendant de la façon dont est créé le maillage, on utilise les coordonnées
- * des centres des faces et des centres des mailles.
+ * To be independent of how the mesh is created, we use the coordinates
+ * of the face centers and the cell centers.
  */
 void FaceDirectionMng::
 _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center,
@@ -290,9 +290,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
 {
   eMeshDirection dir = m_direction;
 
-  // Créé l'ensemble des mailles du patch et s'en sert
-  // pour être sur que chaque maille devant/derrière est dans
-  // cet ensemble
+  // Create the set of cells in the patch and use it
+  // to ensure that every front/back cell is in
+  // this set
   std::set<Int32> patch_cells_set;
   ENUMERATE_CELL(icell,cell_dm.allCells()){
     patch_cells_set.insert(icell.itemLocalId());
@@ -305,7 +305,7 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
     Cell front_cell = face.frontCell();
     Cell back_cell = face.backCell();
 
-    // Vérifie que les mailles sont dans notre patch.
+    // Checks that the cells are in our patch.
     if (!front_cell.null())
       if (patch_cells_set.find(front_cell.localId()) == patch_cells_set.end())
         front_cell = Cell();
@@ -344,16 +344,16 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
           is_inverse = true;
       }
     }
-    // Si la face a deux mailles connectées, regarde le niveau AMR de ces
-    // deux mailles et s'il est différent, ne conserve que la maille
-    // dont le niveau AMR est celui de la face.
+    // If the face has two connected cells, look at the AMR level of these
+    // two cells and if they are different, only keep the cell
+    // whose AMR level is that of the face.
     if (!back_cell.null() && !front_cell.null()){
       Int32 back_level = back_cell.level();
       Int32 front_level = front_cell.level();
       if (back_level!=front_level){
-        // La face n'a pas l'information de son niveau mais si les deux
-        // mailles ne sont pas de même niveau la face n'appartient qu'à une
-        // seule des deux mailles. On ne garde donc que cette dernière.
+        // The face does not have its level information, but if the two
+        // cells are not of the same level, the face belongs only to one
+        // of the two cells. We therefore only keep that one.
         if (!_hasFace(back_cell,face_lid))
           back_cell = Cell();
         if (!_hasFace(front_cell,face_lid))
@@ -390,9 +390,9 @@ _computeCellInfos() const
     bool is_inverse = false;
     if (!front_cell.null() && !back_cell.null()) {
 
-      // Si la face a deux mailles connectées, regarde le niveau AMR de ces
-      // deux mailles et s'il est différent, ne conserve que la maille
-      // dont le niveau AMR est celui de la face.
+      // If the face has two connected cells, look at the AMR level of these
+      // two cells and if they are different, only keep the cell
+      // whose AMR level is that of the face.
       Int32 front_cell_level = front_cell.level();
       Int32 back_cell_level = back_cell.level();
       if (front_cell_level != back_cell_level) {
@@ -409,7 +409,7 @@ _computeCellInfos() const
         is_inverse = true;
       }
     }
-    // L'ordre de la numérotation est décrit dans le fichier
+    // The order of numbering is described in the file
     // CartesianMeshAMRPatchMng.cc (tag #priority_owner_2d).
     if (back_cell.null()) {
       Int64 uids[6];

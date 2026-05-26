@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPosition.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Position d'un patch AMR d'un maillage cartésien.                          */
+/* Position of an AMR patch in a Cartesian mesh.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -390,20 +390,20 @@ haveIntersection(const AMRPatchPosition& other) const
 /*---------------------------------------------------------------------------*/
 
 /*!
- * Suite :
- * Soit m le plus haut niveau de raffinement (higher_level),
- * Soit C(m) le nombre de couches au niveau m (overlap_layer_size_top_level),
- * Pour tout C(m) entier pair positif :
+ * Formula:
+ * Let m be the highest refinement level (higher_level),
+ * Let C(m) be the number of layers at level m (overlap_layer_size_top_level),
+ * For any positive even integer C(m):
  * C(m-1) = (int(C(m)/4)+1)*2
  */
 Int32 AMRPatchPosition::
 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
 {
-  // Si le top level est à -1, les mailles de recouvrement sont désactivées.
+  // If the top level is -1, overlap meshes are disabled.
   if (overlap_layer_size_top_level == -1) {
     return 0;
   }
-  // Le niveau 0 n'a jamais de couches.
+  // Level 0 never has layers.
   if (level == 0) {
     return 0;
   }
@@ -416,7 +416,7 @@ computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_siz
 
   Int32 nb_overlap_cells = overlap_layer_size_top_level;
 
-  // Pour éviter des tours de boucle inutiles.
+  // To avoid unnecessary loops.
   if (nb_overlap_cells == 0) {
     return 2;
   }

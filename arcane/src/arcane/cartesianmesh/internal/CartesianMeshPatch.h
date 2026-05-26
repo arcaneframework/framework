@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshPatch.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Information about an AMR patch of a Cartesian mesh.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESHPATCH_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESHPATCH_H
@@ -35,11 +35,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Informations par direction pour chaque genre d'entité du maillage.
+ * \brief Information by direction for each type of mesh entity.
  *
- * En cas de maillage AMR par patch, un numéro de patch est associé à chaque
- * direction. Ce numéro vaut (-1) pour les entités de niveau 0 ou dans le
- * cas où il n'y a pas d'AMR.
+ * In the case of AMR mesh by patch, a patch number is associated with each
+ * direction. This number is -1 for level 0 entities or in the
+ * case where there is no AMR.
  */
 class CartesianMeshPatch
 : public TraceAccessor
@@ -148,5 +148,4 @@ class CartesianMeshPatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

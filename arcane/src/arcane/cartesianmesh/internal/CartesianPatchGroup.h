@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianPatchGroup.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Gestion du groupe de patchs du maillage cartésien.                        */
+/* Cartesian mesh patch group management.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANPATCHGROUP_H
 #define ARCANE_CARTESIANMESH_CARTESIANPATCHGROUP_H
@@ -53,28 +53,25 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   void recreateFromDump();
 
   /*!
-   * \brief Méthode permettant de récupérer le patch de niveau 0.
+   * \brief Method to retrieve the level 0 patch.
    *
-   * Création si non existant.
+   * Created if it does not exist.
    */
   Ref<CartesianMeshPatch> groundPatch();
 
   /*!
-   * \brief Méthode permettant de créer un patch contenant les mailles données
-   * en paramètre.
+   * \brief Method to create a patch containing the given cells as a parameter.
    *
-   * Cette méthode est compatible uniquement avec l'AMR type 1 (historique).
+   * This method is only compatible with AMR type 1 (historical).
    */
   void addPatch(ConstArrayView<Int32> cells_local_id);
 
   /*!
-   * \brief Méthode permettant de créer un patch à partir de la zone passée en
-   * paramètre.
+   * \brief Method to create a patch from the zone passed as a parameter.
    *
-   * Cette méthode utilisant les mêmes méthodes que l'adaptation de maillage,
-   * elle peut être utilisée en cours de calcul.
+   * This method uses the same methods as mesh adaptation and can be used during calculation.
    *
-   * Cette méthode est compatible uniquement avec l'AMR type 3
+   * This method is only compatible with AMR type 3
    * (AMR PatchCartesianMeshOnly).
    */
   void addPatch(const AMRZonePosition& zone_position);
@@ -84,82 +81,71 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   CartesianMeshPatchListView patchListView() const;
 
   /*!
-   * \brief Méthode permettant de récupérer le groupe de toutes les mailles du
-   * patch demandé.
+   * \brief Method to retrieve the group of all cells in the requested patch.
    *
-   * \param index Index (tableau) du patch.
+   * \param index Index (array) of the patch.
    */
   CellGroup allCells(Integer index);
 
   /*!
-   * \brief Méthode permettant de récupérer le groupe des mailles du
-   * patch demandé.
+   * \brief Method to retrieve the group of cells in the requested patch.
    *
-   * \param index Index (tableau) du patch.
+   * \param index Index (array) of the patch.
    */
   CellGroup inPatchCells(Integer index);
 
   /*!
-   * \brief Méthode permettant de récupérer le groupe des mailles de
-   * recouvrement du patch demandé.
+   * \brief Method to retrieve the group of overlap cells for the requested patch.
    *
-   * \param index Index (tableau) du patch.
+   * \param index Index (array) of the patch.
    */
   CellGroup overlapCells(Integer index);
 
   /*!
-   * \brief Méthode permettant de supprimer tous les patchs. Attention, les
-   * mailles des patchs ne seront pas supprimées.
+   * \brief Method to delete all patches. Note that the cells of the patches will not be deleted.
    */
   void clear();
 
   /*!
-   * \brief Méthode permettant de supprimer un patch.
+   * \brief Method to delete a patch.
    *
-   * \note Cette méthode est en deux temps. Pour déclencher la suppression du
-   * ou des patchs, il est nécessaire d'appeler la méthode \a applyPatchEdit().
+   * \note This method is a two-step process. To trigger the deletion of the patch or patches, it is necessary to call the \a applyPatchEdit() method.
    *
-   * \param index Index (tableau) du patch.
+   * \param index Index (array) of the patch.
    */
   void removePatch(Integer index);
 
   /*!
-   * \brief Méthode permettant de supprimer des mailles de tous les patchs.
+   * \brief Method to delete cells from all patches.
    *
-   * Les patchs vides seront supprimés.
+   * Empty patches will be deleted.
    *
-   * Cette méthode est compatible uniquement avec l'AMR type 1 (historique).
+   * This method is only compatible with AMR type 1 (historical).
    */
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
   /*!
-   * \brief Méthode permettant de supprimer une zone de mailles.
+   * \brief Method to delete a zone of cells.
    *
-   * Cette zone peut être sur plusieurs patchs à la fois, mais doit désigner
-   * des mailles d'un même niveau.
+   * This zone can be on multiple patches at once, but it must designate cells of the same level.
    *
-   * Une reconstruction des patchs sera réalisée afin qu'ils restent conforme.
-   * Les patchs devenus vides seront supprimés.
+   * A reconstruction of the patches will be performed so that they remain consistent.
+   * Patches that become empty will be deleted.
    */
   void removeCellsInZone(const AMRZonePosition& zone_to_delete);
 
   /*!
-   * \brief Méthode permettant de supprimer les patchs en attente de suppression.
+   * \brief Method to delete patches pending deletion.
    *
-   * \param remove_empty_patches (AMR-Type=1 uniquement) Suppression des
-   * patchs vides.
-   * \param update_higher_level (AMR-Type=3 uniquement) Après une suppression,
-   * le niveau le plus haut peut devenir vide. Il est alors nécessaire de
-   * mettre ce paramètre à true pour mettre à jour les couches de mailles de
-   * recouvrement. Les mailles devenues inutiles seront supprimées.
+   * \param remove_empty_patches (AMR-Type=1 only) Deletion of empty patches.
+   * \param update_higher_level (AMR-Type=3 only) After a deletion, the highest level may become empty. It is then necessary to set this parameter to true to update the overlap cell layers. Unnecessary cells will be deleted.
    */
   void applyPatchEdit(bool remove_empty_patches, bool update_higher_level);
 
   /*!
-   * \brief Méthode permettant de remonter tous les patchs d'un niveau, de
-   * mettre à jour le niveau ground et de créer le nouveau niveau 1.
+   * \brief Method to promote all patches by one level, update the ground level, and create the new level 1.
    *
-   * À appeler une fois les mailles de niveau 0 créées.
+   * Must be called once the level 0 cells have been created.
    */
   void updateLevelsAndAddGroundPatch();
 

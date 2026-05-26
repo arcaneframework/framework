@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianGrid.h                                             (C) 2000-2021 */
 /*                                                                           */
-/* Grille cartésienne avec noeuds, faces et mailles.                         */
+/* Cartesian grid with nodes, faces, and cells.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANGRID_H
 #define ARCANE_CARTESIANMESH_CARTESIANGRID_H
@@ -26,25 +26,25 @@ namespace Arcane::CartesianMesh::V2
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Encapsulation d'une grille cartesienne avec les mailles, noeuds, faces
- * d'une dimension au plus 3
+ * Encapsulation of a Cartesian grid with cells, nodes, and faces,
+ * up to 3 dimensions.
  */
 template <typename IdType>
 class CartesianGrid
 {
  public:
-  //! Type pour les triplets cartésiens (i,j,k) et les triplets des dimensions (ni,nj,nk)
+  //! Type for Cartesian triplets (i,j,k) and dimension triplets (ni,nj,nk).
   using IdType3 = IdType[3];
 
-  //! Type de la numérotation cartésienne associé à IdType
+  //! Type of the Cartesian numbering associated with IdType.
   using CartesianNumberingType = CartesianNumbering<IdType>;
 
-  //! Type tableau numérotations cartésiennes sur les 3 dimensions
+  //! Array type of Cartesian numberings across 3 dimensions.
   using CartesianNumberingType3 = CartesianNumberingType[3];
 
  public:
-  //! param[in] ncells_dir Nombre de mailles dans chaque direction
-  //  param[in] dimension  Dimension de la grille cartésienne (au plus 3)
+  //! param[in] ncells_dir Number of cells in each direction.
+  //  param[in] dimension  Dimension of the Cartesian grid (up to 3).
   CartesianGrid(const IdType3& ncells_dir, Integer dimension)
   : m_dimension(dimension)
   {
@@ -61,17 +61,17 @@ class CartesianGrid
     }
     m_cart_num_node.initNumbering(m_nnodes_dir, dimension);
 
-    // Pour les faces, on va numéroter les faces selon X, puis selon Y et selon Z
-    // On distingue les faces par leurs orientations (dnorm)
-    IdType nfaces_norm_first = 0; // Premier numero de face selon la normale dnorm
+    // For faces, we will number them according to X, then according to Y and according to Z.
+    // Faces are distinguished by their orientations (dnorm).
+    IdType nfaces_norm_first = 0; // First face number according to the dnorm normal.
     for (Integer dnorm(0); dnorm < m_dimension; ++dnorm) {
 
-      // Les directions orthogonales à la normale
+      // Directions orthogonal to the normal.
       Integer d1 = (dnorm + 1) % 3;
       Integer d2 = (dnorm + 2) % 3;
 
-      // Dans la direction de la normale, on a m_ncells_dir[dnorm]+1 faces
-      // et dans les directions m_ncells_dir[d] faces
+      // In the direction of the normal, we have m_ncells_dir[dnorm]+1 faces
+      // and in the directions m_ncells_dir[d] faces
       m_nfaces_norm_dir[dnorm][dnorm] = m_ncells_dir[dnorm] + 1;
       m_nfaces_norm_dir[dnorm][d1] = m_ncells_dir[d1];
       m_nfaces_norm_dir[dnorm][d2] = m_ncells_dir[d2];
@@ -87,66 +87,66 @@ class CartesianGrid
     }
   }
 
-  //! Référence en lecture sur la numérotation cartésienne aux mailles
+  //! Read-only reference to the Cartesian numbering for cells.
   const CartesianNumberingType& cartNumCell() const
   {
     return m_cart_num_cell;
   }
 
-  //! Référence en lecture sur la numérotation cartésienne aux noeuds
+  //! Read-only reference to the Cartesian numbering for nodes.
   const CartesianNumberingType& cartNumNode() const
   {
     return m_cart_num_node;
   }
 
-  //! Référence en lecture sur la numérotation cartésienne aux faces dans la direction \a dir
+  //! Read-only reference to the Cartesian numbering for faces in direction \a dir.
   const CartesianNumberingType& cartNumFace(Integer dir) const
   {
-    ARCANE_ASSERT(dir < m_dimension, ("La direction doit être strictement inférieure à la dimension"));
+    ARCANE_ASSERT(dir < m_dimension, ("The direction must be strictly less than the dimension"));
     return m_cart_num_face[dir];
   }
 
-  //! Référence en lecture sur les 3 numérotations cartésiennes aux faces
+  //! Read-only reference to the 3 Cartesian numberings for faces.
   const CartesianNumberingType3& cartNumFace3() const
   {
     return m_cart_num_face;
   }
 
-  //! Pointeur sur la numérotation cartésienne aux mailles
+  //! Pointer to the Cartesian numbering for cells.
   CartesianNumberingType* cartNumCellPtr()
   {
     return &m_cart_num_cell;
   }
 
-  //! Pointeur sur la numérotation cartésienne aux noeuds
+  //! Pointer to the Cartesian numbering for nodes.
   CartesianNumberingType* cartNumNodePtr()
   {
     return &m_cart_num_node;
   }
 
-  //! Pointeur sur la numérotation cartésienne aux faces dans la direction \a dir
+  //! Pointer to the Cartesian numbering for faces in direction \a dir.
   CartesianNumberingType* cartNumFacePtr(Integer dir)
   {
-    ARCANE_ASSERT(dir < m_dimension, ("La direction doit être strictement inférieure à la dimension"));
+    ARCANE_ASSERT(dir < m_dimension, ("The direction must be strictly less than the dimension"));
     return &(m_cart_num_face[dir]);
   }
 
-  //! Pointeur sur les 3 numérotations cartésiennes aux faces
+  //! Pointer to the 3 Cartesian numberings for faces.
   CartesianNumberingType3* cartNumFace3Ptr()
   {
     return &m_cart_num_face;
   }
 
-  //! Dimension du maillage cartésien
+  //! Dimension of the Cartesian mesh.
   Integer dimension() const
   {
     return m_dimension;
   }
 
  protected:
-  IdType3 m_ncells_dir = { 1, 1, 1 }; // Nb de mailles par direction
-  IdType3 m_nnodes_dir = { 1, 1, 1 }; // Nb de noeuds par direction
-  IdType3 m_nfaces_norm_dir[3]; //! m_nfaces_norm_dir[dnorm] = dimension de la grille de faces normales à dnorm
+  IdType3 m_ncells_dir = { 1, 1, 1 }; // Number of cells per direction.
+  IdType3 m_nnodes_dir = { 1, 1, 1 }; // Number of nodes per direction.
+  IdType3 m_nfaces_norm_dir[3]; //! m_nfaces_norm_dir[dnorm] = dimension of the face grid normal to dnorm.
 
   Integer m_dimension = 0;
 

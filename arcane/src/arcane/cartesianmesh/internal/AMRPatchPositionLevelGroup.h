@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionLevelGroup.h                                (C) 2000-2026 */
 /*                                                                           */
-/* Groupe de position de patch AMR réparti par niveau.                       */
+/* Group of AMR patch positions distributed by level.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
 #define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONLEVELGROUP_H
@@ -28,10 +28,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de stocker les patchs par niveau.
+ * \brief Class allowing storage of patches by level.
  *
- * Attention : cette classe est utilisé lors de la construction des patchs,
- * un patch de niveau 0 désigne en faite un futur patch de niveau 1.
+ * Note: this class is used during patch construction,
+ * a level 0 patch actually designates a future level 1 patch.
  */
 class AMRPatchPositionLevelGroup
 {
@@ -47,17 +47,17 @@ class AMRPatchPositionLevelGroup
   void addPatch(const AMRPatchPosition& patch);
 
   /*!
-  * \brief Méthode permettant de fusionner tous les patchs d'un certain niveau
-  * qui peuvent l'être.
-  * \param level Le niveau à fusionner.
+  * \brief Method allowing the merging of all patches of a certain level
+  * that can be merged.
+  * \param level The level to merge.
   */
   void fusionPatches(Int32 level);
 
   /*!
-  * \brief Méthode permettant de fusionner un maximum de patch du tableau
-  * passé en paramètre.
-  * \param patch_position [IN/OUT] Le tableau des patchs.
-  * \param remove_null Doit-on supprimer les patchs devenus null ?
+  * \brief Method allowing the merging of a maximum number of patches from the array
+  * passed as a parameter.
+  * \param patch_position [IN/OUT] The array of patches.
+  * \param remove_null Should null patches be removed?
   */
   static void fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null);
 

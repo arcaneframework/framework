@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianTypes.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Types pour les maillage cartésiens.                                       */
+/* Types for Cartesian meshes.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANTYPES_H
 #define ARCANE_CARTESIANMESH_CARTESIANTYPES_H
@@ -28,7 +28,7 @@ namespace Arcane::CartesianMesh::V2
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Type pour les triplets cartésiens (i,j,k) et les triplets des dimensions (ni,nj,nk)
+ * Type for Cartesian triplets (i,j,k) and dimension triplets (ni,nj,nk)
  */
 using LocalIdType3 = Arcane::LocalIdType[3];
 
@@ -42,17 +42,17 @@ using IdxType = std::array<Arcane::Int64, 3>;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Type de cote (previous ou next) pour une direction donnee
+ * Side type (previous or next) for a given direction
  */
 enum eMeshSide
 {
-  //! Côté précédent
+  //! Previous side
   MS_previous = 0,
-  //! Côté suivant
+  //! Next side
   MS_next = 1,
-  //! Nb maximal de côtés valides
+  //! Max number of valid sides
   MS_max = 2,
-  //! Côté invalide ou non initialisé
+  //! Invalid or uninitialized side
   MS_invalid = (-1)
 };
 

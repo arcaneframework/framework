@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPosition.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Position d'un patch AMR d'un maillage cartésien.                          */
+/* Position of an AMR patch in a Cartesian mesh.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
 #define ARCANE_CARTESIANMESH_AMRPATCHPOSITION_H
@@ -28,40 +28,39 @@ namespace Arcane
 
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Classe permettant de définir la position d'un patch dans le maillage
- * cartésien.
+ * \brief Class allowing the definition of a patch position in the Cartesian
+ * mesh.
  *
- * La position d'un patch est désigné par la position de deux mailles dans la
- * grille. La position "min" et la position "max" forment une boite englobante.
+ * The position of a patch is designated by the position of two cells in the
+ * grid. The "min" position and the "max" position form an enclosing box.
  *
- * \warning La maille à la position "min" est incluse dans la boite, mais la
- * maille à la position "max" est exclue.
+ * \warning The cell at the "min" position is included in the box, but the
+ * cell at the "max" position is excluded.
  *
- * \note La position du patch est globale pour le maillage cartesien. Le
- * découpage en sous-domaine n'est pas pris en compte (exemple avec la méthode
- * \a nbCells() de cette classe qui donne le nombre de mailles du patch sans
- * tenir compte des sous-domaines).
+ * \note The patch position is global for the Cartesian mesh. The decomposition
+ * into subdomains is not taken into account (example with the \a nbCells()
+ * method of this class, which gives the number of cells in the patch without
+ * considering subdomains).
  *
- * Les positions des mailles peuvent être obtenues par le
- * CartesianMeshNumberingMng.
+ * Cell positions can be obtained via the CartesianMeshNumberingMng.
  *
- * \warning Cette classe est valide uniquement pour un pattern de raffinement de
- * 2 (modifier ça ne devrait pas être complexe, si besoin).
+ * \warning This class is only valid for a refinement pattern of 2 (modifying
+ * this should not be complex, if needed).
  */
 class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 {
  public:
 
   /*!
-   * \brief Constructeur pour une position nulle.
-   * Une position nulle est définie par un level = -2.
+   * \brief Constructor for a null position.
+   * A null position is defined by a level = -2.
    */
   AMRPatchPosition();
   AMRPatchPosition(Int32 level, CartCoord3 min_point, CartCoord3 max_point, Int32 overlap_layer_size);
 
   /*!
-   * \brief Constructeur de copie.
-   * \param src La position à copier.
+   * \brief Copy constructor.
+   * \param src The position to copy.
    */
   AMRPatchPosition(const AMRPatchPosition& src);
   AMRPatchPosition& operator=(const AMRPatchPosition&) = default;
@@ -75,280 +74,242 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
  public:
 
   /*!
-   * \brief Méthode permettant de récupérer le niveau du patch.
-   * \return Le niveau du patch.
+   * \brief Method to retrieve the patch level.
+   * \return The patch level.
    */
   Int32 level() const;
 
   /*!
-   * \brief Méthode permettant de définir le niveau du patch.
-   * \param level Le niveau du patch.
+   * \brief Method to set the patch level.
+   * \param level The patch level.
    */
   void setLevel(Int32 level);
 
   /*!
-   * \brief Méthode permettant de récupérer la position min de la boite
-   * englobante.
+   * \brief Method to retrieve the min position of the enclosing box.
    *
-   * \return La position min.
+   * \return The min position.
    */
   CartCoord3 minPoint() const;
 
   /*!
-   * \brief Méthode permettant de définir la position min de la boite
-   * englobante.
-   * \param min_point la position min.
+   * \brief Method to set the min position of the enclosing box.
+   * \param min_point the min position.
    */
   void setMinPoint(CartCoord3 min_point);
 
   /*!
-   * \brief Méthode permettant de récupérer la position max de la boite
-   * englobante.
+   * \brief Method to retrieve the max position of the enclosing box.
    *
-   * \return La position max.
+   * \return The max position.
    */
   CartCoord3 maxPoint() const;
 
   /*!
-   * \brief Méthode permettant de définir la position max de la boite
-   * englobante.
-   * \param max_point la position max.
+   * \brief Method to set the max position of the enclosing box.
+   * \param max_point the max position.
    */
   void setMaxPoint(CartCoord3 max_point);
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de couches de mailles de
-   * recouvrement du patch.
+   * \brief Method to retrieve the number of overlap cell layers of the patch.
    *
-   * \return le nombre de couches de mailles de recouvrement
+   * \return the number of overlap cell layers
    */
   Int32 overlapLayerSize() const;
 
   /*!
-   * \brief Méthode permettant de définir le nombre de couches de mailles de
-   * recouvrement du patch.
-   * \param layer_size le nombre de couches de mailles de recouvrement
+   * \brief Method to set the number of overlap cell layers of the patch.
+   * \param layer_size the number of overlap cell layers
    */
   void setOverlapLayerSize(Int32 layer_size);
 
   /*!
-   * \brief Méthode permettant de récupérer la position min de la boite
-   * englobante en incluant la couche de mailles de recouvrement.
-   * \return La position min avec la couche de mailles de recouvrement.
+   * \brief Method to retrieve the min position of the enclosing box including the overlap cell layer.
+   * \return The min position with the overlap cell layer.
    */
   CartCoord3 minPointWithOverlap() const;
 
   /*!
-   * \brief Méthode permettant de récupérer la position max de la boite
-   * englobante en incluant la couche de mailles de recouvrement.
-   * \return La position max avec la couche de mailles de recouvrement.
+   * \brief Method to retrieve the max position of the enclosing box including the overlap cell layer.
+   * \return The max position with the overlap cell layer.
    */
   CartCoord3 maxPointWithOverlap() const;
 
   /*!
-   * \brief Méthode permettant de connaitre le nombre de mailles du patch
-   * selon sa position.
+   * \brief Method to know the number of cells in the patch according to its position.
    *
-   * \warning Le nombre de mailles est calculé avec les positions min et max
-   * (sans la couche de recouvrement). Ce nombre est donc le même pour tous
-   * les sous-domaines. Attention à ne pas comparer ce nombre avec le nombre
-   * de mailles du groupe de mailles qui peut être associé à cette classe et
-   * qui peut être différent pour chaque sous-domaine.
+   * \warning The number of cells is calculated using the min and max positions
+   * (without the overlap layer). This number is therefore the same for all
+   * subdomains. Be careful not to compare this number with the number of cells
+   * in the cell group that may be associated with this class, which may be
+   * different for each subdomain.
    *
-   * \return Le nombre de maille du patch.
+   * \return The number of cells in the patch.
    */
   Int64 nbCells() const;
 
   /*!
-   * \brief Méthode permettant de découper le patch en deux patchs selon un
-   * point de découpe.
+   * \brief Method to cut the patch into two patches according to a cut point.
    *
-   * \param cut_point Le point de découpe.
-   * \param dim La dimension qui doit être découpée.
-   * \return Les deux positions de patch résultant de la découpe.
+   * \param cut_point The cut point.
+   * \param dim The dimension that must be cut.
+   * \return The two patch positions resulting from the cut.
    */
   std::pair<AMRPatchPosition, AMRPatchPosition> cut(CartCoord cut_point, Integer dim) const;
 
   /*!
-   * \brief Méthode permettant de savoir si notre patch peut être fusionné
-   * avec \a other_patch.
+   * \brief Method to know if our patch can be merged with \a other_patch.
    *
-   * \param other_patch Le patch à verifier.
-   * \return True si la fusion est possible.
+   * \param other_patch The patch to check.
+   * \return True if merging is possible.
    */
   bool canBeFusion(const AMRPatchPosition& other_patch) const;
 
   /*!
-   * \brief Méthode permettant de fusionner \a other_patch avec le nôtre.
+   * \brief Method to merge \a other_patch with ours.
    *
-   * Une vérification de possibilité de fusion (via \a canBeFusion()) est
-   * réalisée avant de fusionner. Si la fusion est impossible, on retourne
-   * false. Sinon, on fusionne et on retourne true.
-   * Si fusion, \a other_patch devient null.
+   * A check for possible merging (via \a canBeFusion()) is performed before
+   * merging. If merging is impossible, false is returned. Otherwise, we merge
+   * and return true. If merged, \a other_patch becomes null.
    *
-   * \param other_patch Le patch avec lequel fusionner.
-   * \return true si la fusion à été réalisé, false si la fusion est
-   * impossible.
+   * \param other_patch The patch to merge with.
+   * \return true if the merge was successful, false if the merge is impossible.
    */
   bool fusion(AMRPatchPosition& other_patch);
 
   /*!
-   * \brief Méthode permettant de savoir si la position du patch est nulle.
+   * \brief Method to know if the patch is null.
    *
-   * \warning On ne vérifie pas la validité de la position.
+   * \warning The validity of the position is not checked.
    *
-   * \return True si le patch est nulle.
+   * \return True if the patch is null.
    */
   bool isNull() const;
 
   /*!
-   * \brief Méthode permettant de créer un \a AMRPatchPosition pour le niveau
-   * supérieur.
+   * \brief Method to create an \a AMRPatchPosition for the higher level.
    *
-   * \param dim La dimension du maillage.
-   * \param higher_level Le plus haut niveau de raffinement du maillage.
-   * \param overlap_layer_size_top_level Le nombre de couches de mailles de
-   * recouvrement pour les patchs du plus haut niveau de raffinement.
-   * \return Un \a AMRPatchPosition de niveau supérieur.
+   * \param dim The dimension of the mesh.
+   * \param higher_level The highest refinement level of the mesh.
+   * \param overlap_layer_size_top_level The number of overlap cell layers for patches at the highest refinement level.
+   * \return A higher-level \a AMRPatchPosition.
    */
   AMRPatchPosition patchUp(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const;
 
   /*!
-   * \brief Méthode permettant de créer un \a AMRPatchPosition pour le niveau
-   * inférieur.
+   * \brief Method to create an \a AMRPatchPosition for the lower level.
    *
-   * Si la position min n'est pas divisible par deux, on arrondit à l'entier
-   * inférieur.
+   * If the min position is not divisible by two, it is rounded down to the lower integer.
+   * If the max position is not divisible by two, it is rounded up to the higher integer.
    *
-   * Si la position max n'est pas divisible par deux, on arrondit à l'entier
-   * supérieur.
+   * For the overlap layer, this method ensures that there will never be more than one level difference between two cells of different levels.
    *
-   * Pour la couche de recouvrement, cette méthode s'assure que l'on n'aura
-   * jamais plus d'un niveau de différence entre deux mailles de niveaux
-   * différents.
+   * \warning patch.patchDown(patch.patchUp(X)) != patch and patch.patchUp(patch.patchDown(X)) != patch.
    *
-   * \warning patch.patchDown(patch.patchUp(X)) != patch et
-   * patch.patchUp(patch.patchDown(X)) != patch.
-   *
-   * \param dim La dimension du maillage.
-   * \param higher_level Le plus haut niveau de raffinement du maillage.
-   * \param overlap_layer_size_top_level Le nombre de couches de mailles de
-   * recouvrement pour les patchs du plus haut niveau de raffinement.
-   * \return Un \a AMRPatchPosition de niveau inférieur.
+   * \param dim The dimension of the mesh.
+   * \param higher_level The highest refinement level of the mesh.
+   * \param overlap_layer_size_top_level The number of overlap cell layers for patches at the highest refinement level.
+   * \return A lower-level \a AMRPatchPosition.
    */
   AMRPatchPosition patchDown(Integer dim, Int32 higher_level, Int32 overlap_layer_size_top_level) const;
 
   /*!
-   * \brief Méthode permettant de connaitre la taille du patch (en nombre de
-   * mailles par direction).
+   * \brief Method to know the size of the patch (in number of cells per direction).
    *
-   * \return La taille du patch.
+   * \return The size of the patch.
    */
   CartCoord3 length() const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille de position x,y,z est
-   * incluse dans ce patch.
+   * \brief Method to know if a cell at position x,y,z is included in this patch.
    *
-   * Pour inclure la couche de recouvrement, utiliser la méthode
-   * \a isInWithOverlap().
+   * To include the overlap layer, use the \a isInWithOverlap() method.
    *
-   * \param x Position X de la maille.
-   * \param y Position Y de la maille.
-   * \param z Position Z de la maille.
+   * \param x X position of the cell.
+   * \param y Y position of the cell.
+   * \param z Z position of the cell.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isIn(CartCoord x, CartCoord y, CartCoord z) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille est incluse dans ce
-   * patch.
+   * \brief Method to know if a cell is included in this patch.
    *
-   * Pour inclure la couche de recouvrement, utiliser la méthode
-   * \a isInWithOverlap().
+   * To include the overlap layer, use the \a isInWithOverlap() method.
    *
-   * \param coord Position de la maille.
+   * \param coord Position of the cell.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isIn(CartCoord3 coord) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille de position x,y,z est
-   * incluse dans ce patch avec couche de recouvrement.
+   * \brief Method to know if a cell at position x,y,z is included in this patch with overlap layer.
    *
-   * \param x Position X de la maille.
-   * \param y Position Y de la maille.
-   * \param z Position Z de la maille.
+   * \param x X position of the cell.
+   * \param y Y position of the cell.
+   * \param z Z position of the cell.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isInWithOverlap(CartCoord x, CartCoord y, CartCoord z) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille est incluse dans ce
-   * patch avec couche de recouvrement.
+   * \brief Method to know if a cell is included in this patch with overlap layer.
    *
-   * \param coord Position de la maille.
+   * \param coord Position of the cell.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isInWithOverlap(CartCoord3 coord) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille de position x,y,z est
-   * incluse dans ce patch avec couche de recouvrement fourni en paramètre.
+   * \brief Method to know if a cell at position x,y,z is included in this patch with a specified overlap layer.
    *
-   * \param x Position X de la maille.
-   * \param y Position Y de la maille.
-   * \param z Position Z de la maille.
-   * \param overlap Le nombre de mailles de recouvrement de la couche.
+   * \param x X position of the cell.
+   * \param y Y position of the cell.
+   * \param z Z position of the cell.
+   * \param overlap The number of overlap cells in the layer.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isInWithOverlap(CartCoord x, CartCoord y, CartCoord z, Integer overlap) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une maille est incluse dans ce
-   * patch avec couche de recouvrement fourni en paramètre.
+   * \brief Method to know if a cell is included in this patch with a specified overlap layer.
    *
-   * \param coord Position de la maille.
-   * \param overlap Le nombre de mailles de recouvrement de la couche.
+   * \param coord Position of the cell.
+   * \param overlap The number of overlap cells in the layer.
    *
-   * \return True si la maille est dans le patch.
+   * \return True if the cell is in the patch.
    */
   bool isInWithOverlap(CartCoord3 coord, Integer overlap) const;
 
   /*!
-   * \brief Méthode permettant de savoir si notre patch est en contact avec le
-   * patch \a other.
+   * \brief Method to know if our patch is in contact with \a other.
    *
-   * \param other Le patch à verifier.
-   * \return True si les patchs sont en contact.
+   * \param other The patch to check.
+   * \return True if the patches are in contact.
    */
   bool haveIntersection(const AMRPatchPosition& other) const;
 
   /*!
-   * \brief Méthode permettant de calculer le nombre de couches de mailles de
-   * recouvrement pour un niveau donné.
+   * \brief Method to calculate the number of overlap cell layers for a given level.
    *
-   * \param level Le niveau demandé.
-   * \param higher_level Le plus haut niveau de raffinement.
-   * \param overlap_layer_size_top_level Le nombre de couches pour le plus
-   * haut niveau de raffinement.
-   * \return Le nombre de couches de mailles de recouvrement pour le niveau
-   * demandé.
+   * \param level The requested level.
+   * \param higher_level The highest refinement level.
+   * \param overlap_layer_size_top_level The number of layers for the highest refinement level.
+   * \return The number of overlap cell layers for the requested level.
    */
   static Int32 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level);
 
   /*!
-   * \brief Méthode permettant de calculer le nombre de couches de mailles de
-   * recouvrement pour notre patch.
+   * \brief Method to calculate the number of overlap cell layers for our patch.
    *
-   * \param higher_level Le plus haut niveau de raffinement.
-   * \param overlap_layer_size_top_level Le nombre de couches pour le plus
-   * haut niveau de raffinement.
+   * \param higher_level The highest refinement level.
+   * \param overlap_layer_size_top_level The number of layers for the highest refinement level.
    */
   void computeOverlapLayerSize(Int32 higher_level, Int32 overlap_layer_size_top_level);
 
@@ -368,5 +329,4 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

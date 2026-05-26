@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshRenumberingInfo.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Informations pour la renumérotation.                                      */
+/* Information for renumbering.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESHRENUMBERINGINFO_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESHRENUMBERINGINFO_H
@@ -23,67 +23,67 @@
 namespace Arcane
 {
 /*!
- * \brief Informations pour la renumérotation.
+ * \brief Information for renumbering.
  *
- * Si on renumérote à la fois les uniqueId() des faces et des entités des
- * patchs, la renumérotation des faces a lieu en premier.
+ * If both the uniqueId() of the faces and the entities of the
+ * patches are renumbered, the face renumbering happens first.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
 {
  public:
 
   /*!
-   * \brief Méthode pour renuméroter les patchs.
+   * \brief Method to renumber patches.
    *
-   * Les valeurs possibles sont les suivantes:
-   * - 0 pas de renumérotation.
-   * - 1 renumérotation par défaut.
-   * - 2 version expérimentale de la renumérotation
-   * - 3 comme la version 1 mais avec une implémentation différente
-   *   pour les maillages 2D.
-   * - 4 comme 1, mais utilise la même numérotation avec ou sans dé-raffinement
-   *   du maillage initial.
+   * The possible values are as follows:
+   * - 0 no renumbering.
+   * - 1 default renumbering.
+   * - 2 experimental version of renumbering
+   * - 3 like version 1 but with a different implementation
+   *   for 2D meshes.
+   * - 4 like 1, but uses the same numbering with or without de-refinement
+   *   of the initial mesh.
    *
-   * En cas de renumérotation, les uniqueId() des entités (Node,Face,Cell)
-   * des patches sont renumérotées pour avoir la même numérotation quel
-   * que soit le découpage.
-   * La numérotation n'est pas contigue. Seules les entités filles
-   * des entités du patch parentPatch() sont renumérotées.
+   * If renumbering occurs, the uniqueId() of the entities (Node,Face,Cell)
+   * of the patches are renumbered to have the same numbering regardless
+   * of the subdivision.
+   * The numbering is not contiguous. Only the child entities
+   * of the parentPatch() entities are renumbered.
    */
   void setRenumberPatchMethod(Int32 v) { m_renumber_patch_method = v; }
   Int32 renumberPatchMethod() const { return m_renumber_patch_method; }
 
   /*!
-   * \brief Méthode pour renuméroter les faces.
+   * \brief Method to renumber faces.
    *
-   * Si 0, il n'y a pas de renumérotation. La seule autre valeur valide est 1.
-   * Dans ce cas la renumérotation se base sur une numérotation cartésienne.
+   * If 0, there is no renumbering. The only other valid value is 1.
+   * In this case, the renumbering is based on a Cartesian numbering.
    */
   void setRenumberFaceMethod(Int32 v) { m_renumber_faces_method = v; }
   Int32 renumberFaceMethod() const { return m_renumber_faces_method; }
 
   /*!
-   * \brief Indique si on retrie les entités après renumérotation.
+   * \brief Indicates whether to retrieve the entities after renumbering.
    *
-   * Le tri appelle IItemFamily::compactItems(true) pour chaque famille.
-   * Cela provoque aussi un appel à ICartesianMesh::computeDirections()
-   * pour recalculer les directions qui sont invalidées suite au tri.
+   * The sort calls IItemFamily::compactItems(true) for each family.
+   * This also causes a call to ICartesianMesh::computeDirections()
+   * to recalculate the directions that are invalidated following the sort.
    */
   void setSortAfterRenumbering(bool v) { m_is_sort = v; }
   bool isSortAfterRenumbering() const { return m_is_sort; }
 
   /*!
-   * \brief Numéro du patch parent pour la renumérotation.
+   * \brief Parent patch number for renumbering.
    *
-   * Patch parent pour la renumérotation. Pour la renumérotation, on parcourt
-   * récursivement les mailles filles de ce patch et on les renumérote ainsi
-   * que les entités liées à ces mailles (noeuds et faces).
+   * Parent patch for renumbering. For renumbering, the child meshes of this patch
+   * are recursively traversed and renumbered, as well as the entities
+   * associated with these meshes (nodes and faces).
    *
-   * Les entités de ce patch (mailles, noeuds et faces) ne sont pas renumérotées.
+   * The entities of this patch (meshes, nodes, and faces) are not renumbered.
    *
-   * Si non spécifié, l'implémentation utilisera le patch 0 comme patch parent.
+   * If not specified, the implementation will use patch 0 as the parent patch.
    *
-   * \note Cette propriété n'est prise en compte que si renumberPatchMethod()==1.
+   * \note This property is only considered if renumberPatchMethod()==1.
    */
   void setParentPatch(CartesianPatch patch) { m_parent_patch = patch; }
   CartesianPatch parentPatch() const { return m_parent_patch; }
@@ -104,5 +104,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

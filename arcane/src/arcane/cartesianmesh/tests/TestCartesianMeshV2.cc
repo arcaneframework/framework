@@ -288,7 +288,7 @@ TEST(CartesianMeshV2, TestCartesianGrid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Effecttue des instantiations explicites pour tester la compilation.
+// Perform explicit instantiations to test compilation.
 template class Arcane::CartesianMesh::V2::CartesianGrid<Arcane::Int32>;
 template class Arcane::CartesianMesh::V2::CartesianGrid<Arcane::Int64>;
 

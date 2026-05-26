@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshPatch.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Information about an AMR patch of a Cartesian mesh.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -78,7 +78,7 @@ CartesianMeshPatch::
 CellGroup CartesianMeshPatch::
 cells()
 {
-  // Le groupe de mailles du patch est le même dans toutes les directions.
+  // The mesh group of the patch is the same in all directions.
   return cellDirection(MD_DirX).allCells();
 }
 
@@ -104,8 +104,8 @@ overlapCells()
 /*---------------------------------------------------------------------------*/
 
 /*
- * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
- * pour chaque direction.
+ * \brief Calculates the information about the before/after and left/right nodes of a cell
+ * for each direction.
  */
 void CartesianMeshPatch::
 _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
@@ -166,8 +166,8 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
- * pour chaque direction.
+ * \brief Calculates the information about the before/after and left/right nodes of a cell
+ * for each direction.
  */
 void CartesianMeshPatch::
 _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
@@ -365,8 +365,7 @@ _internalComputeNodeCellInformations()
 void CartesianMeshPatch::
 checkValid() const
 {
-  // Vérifie que toutes les mailles avant/après appartiennent au groupe de
-  // mailles de la direction
+  // Checks that all before/after cells belong to the direction cell group
   Integer nb_dir = m_mesh->mesh()->dimension();
   for( Integer i=0; i<nb_dir; ++i ){
     CellDirectionMng dm = m_cell_directions[i];
@@ -391,7 +390,7 @@ checkValid() const
         if (cells_ids.find(previous_cell.localId())==cells_ids.end())
           ARCANE_FATAL("Bad previous cell dir={0} cell={1} previous={2}",i,ItemPrinter(cell),ItemPrinter(previous_cell));
       }
-      // Regarde si les infos des faces sont valides
+      // Check if face infos are valid
 
       DirCellFace cell_face(dm.cellFace(cell));
       Face prev_face = cell_face.previous();

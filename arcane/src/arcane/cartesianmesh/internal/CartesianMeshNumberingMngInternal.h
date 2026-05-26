@@ -7,10 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshNumberingMngInternal.h                         (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
-/* des mailles et des noeuds est assez classique, la numérotation des faces  */
-/* est expliquée (entre autres) dans les méthodes 'faceUniqueId()' et        */
-/* 'cellFaceUniqueIds()'.                                                    */
+/* Cartesian mesh numbering manager. The numbering of cells and nodes is     */
+/* quite classical, the numbering of faces is explained (among others) in    */
+/* the methods 'faceUniqueId()' and 'cellFaceUniqueIds()'.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,13 +182,13 @@ class CartesianMeshNumberingMngInternal
  private:
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces des trois parties de la numérotation.
+   * \brief Method to retrieve the number of faces for the three parts of the numbering.
    *
-   * En effet, pour numéroter en 3D, on numérote d'abord les faces xy, puis les faces yz et enfin
-   * les faces zx. Cette méthode permet de récupérer le nombre de faces {xy, yz, zx}.
+   * Indeed, to number in 3D, we first number the xy faces, then the yz faces, and finally
+   * the zx faces. This method allows retrieving the number of faces {xy, yz, zx}.
    *
-   * \param level Le niveau de la numérotation.
-   * \return Le nombre de faces {xy, yz, zx}.
+   * \param level The numbering level.
+   * \return The number of faces {xy, yz, zx}.
    */
   Int64x3 _face3DNumberingThreeParts(Int32 level) const;
 
@@ -219,7 +218,7 @@ class CartesianMeshNumberingMngInternal
 
   CartCoord3 m_nb_cell_ground;
 
-  // Partie conversion numérotation d'origine <-> nouvelle numérotation (face).
+  // Part for converting original numbering <-> new numbering (face).
   bool m_converting_numbering_face;
   Int32 m_ori_level;
   std::unordered_map<Int64, Int64> m_face_ori_numbering_to_new;

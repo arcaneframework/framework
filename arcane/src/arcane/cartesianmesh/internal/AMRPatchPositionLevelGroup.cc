@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionLevelGroup.cc                               (C) 2000-2026 */
 /*                                                                           */
-/* Groupe de position de patch AMR réparti par niveau.                       */
+/* AMR patch position group distributed by level.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,17 +81,16 @@ fusionPatches(Int32 level)
 void AMRPatchPositionLevelGroup::
 fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null)
 {
-  // Algo de fusion.
-  // D'abord, on trie les patchs du plus petit nb de mailles au plus grand nb de mailles (optionnel).
-  // Ensuite, pour chaque patch, on regarde si l'on peut le fusionner avec un autre.
-  // Si on arrive à faire une fusion, on recommence l'algo jusqu'à ne plus pouvoir fusionner.
+  // Fusion algorithm.
+  // First, we sort the patches from the smallest number of cells to the largest number of cells (optional).
+  // Then, for each patch, we check if it can be merged with another.
+  // If a fusion is achieved, we restart the algorithm until no more fusions can be performed.
   bool fusion = true;
   while (fusion) {
     fusion = false;
 
-    // Le sort permet de fusionner les patchs les plus petits d'abord, ce qui
-    // permet d'équilibrer (un peu) la taille des patchs.
-    // Attention : retirer le sort change les hashs des tests.
+    // The sort allows merging the smallest patches first, which helps to balance (a little) the patch sizes.
+    // Warning: removing the sort changes the test hashes.
     std::stable_sort(patch_position.begin(), patch_position.end(),
                      [](const AMRPatchPosition& a, const AMRPatchPosition& b) {
                        return a.nbCells() < b.nbCells();
@@ -119,7 +118,7 @@ fusionPatches(UniqueArray<AMRPatchPosition>& patch_position, bool remove_null)
         //              << " -- NbCells : " << patch_fusion_1.nbCells();
         // }
 
-        // Si la fusion est possible, le patch 0 est agrandi et le patch 1 devient null.
+        // If fusion is possible, patch 0 is enlarged and patch 1 becomes null.
         if (patch_fusion_0.fusion(patch_fusion_1)) {
           // if (tm)
           //   tm->info() << "Fusion OK";

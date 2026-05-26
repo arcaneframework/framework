@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICartesianMesh.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'un maillage cartésien.                                        */
+/* Interface of a Cartesian mesh.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_ICARTESIANMESH_H
 #define ARCANE_CARTESIANMESH_ICARTESIANMESH_H
@@ -30,22 +30,22 @@ namespace Arcane
 
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Interface d'un maillage cartésien.
+ * \brief Interface of a Cartesian mesh.
  */
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 {
  public:
 
-  virtual ~ICartesianMesh() {} //<! Libère les ressources
+  virtual ~ICartesianMesh() {} //<! Frees resources
 
   /*!
-   * \brief Récupère ou créé la référence associée à \a mesh.
+   * \brief Retrieves or creates the reference associated with \a mesh.
    *
-   * Si aucun gestionnaire de matériau n'est associé à \a mesh, il
-   * sera créé lors de l'appel à cette méthode si \a create vaut \a true.
-   * Si \a create vaut \a false est qu'aucune gestionnaire n'est associé
-   * au maillage, un pointeur nul est retourné.
-   * L'instance retournée reste valide tant que le maillage \a mesh existe.
+   * If no material manager is associated with \a mesh, it
+   * will be created when this method is called if \a create is \a true.
+   * If \a create is \a false, no manager is associated
+   * to the mesh, a null pointer is returned.
+   * The returned instance remains valid as long as the mesh \a mesh exists.
    */
   static ICartesianMesh* getReference(const MeshHandleOrMesh& mesh, bool create = true);
 
@@ -55,237 +55,237 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 
  public:
 
-  //! Maillage associé à ce maillage cartésien
+  //! Mesh associated with this Cartesian mesh
   virtual IMesh* mesh() const = 0;
 
-  //! Gestionnaire de trace associé.
+  //! Associated trace manager.
   virtual ITraceMng* traceMng() const = 0;
 
-  //! Liste des mailles dans la direction \a dir
+  //! List of cells in direction \a dir
   virtual CellDirectionMng cellDirection(eMeshDirection dir) = 0;
 
-  //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
+  //! List of cells in direction \a dir (0, 1 or 2)
   virtual CellDirectionMng cellDirection(Integer idir) = 0;
 
-  //! Liste des faces dans la direction \a dir
+  //! List of faces in direction \a dir
   virtual FaceDirectionMng faceDirection(eMeshDirection dir) = 0;
 
-  //! Liste des faces dans la direction \a dir (0, 1 ou 2)
+  //! List of faces in direction \a dir (0, 1 or 2)
   virtual FaceDirectionMng faceDirection(Integer idir) = 0;
 
-  //! Liste des noeuds dans la direction \a dir
+  //! List of nodes in direction \a dir
   virtual NodeDirectionMng nodeDirection(eMeshDirection dir) = 0;
 
-  //! Liste des noeuds dans la direction \a dir (0, 1 ou 2)
+  //! List of nodes in direction \a dir (0, 1 or 2)
   virtual NodeDirectionMng nodeDirection(Integer idir) = 0;
 
   /*!
-   * \brief Calcule les infos pour les accès par direction.
+   * \brief Calculates information for directional access.
    *
-   * Actuellement, les restrictions suivantes existent:
-   * - calcule uniquement les infos sur les entités mailles.
-   * - suppose que la maille 0 est dans un coin (ne fonctionne que
-   * pour le meshgenerator).
-   * - les informations de direction sont invalidées si le maillage évolue.
+   * Currently, the following restrictions exist:
+   * - only calculates information on cell entities.
+   * - assumes that cell 0 is in a corner (only works
+   * for the meshgenerator).
+   * - directional information is invalidated if the mesh changes.
    */
   virtual void computeDirections() = 0;
 
   /*!
-   * \brief Recalcule les informations de cartésiennes après une reprise.
+   * \brief Recalculates Cartesian information after a restart.
    *
-   * Cette méthode doit être appelée à la place de computeDirections()
-   * lors d'une reprise.
+   * This method must be called instead of computeDirections()
+   * during a restart.
    */
   virtual void recreateFromDump() = 0;
 
-  //! Informations sur la connectivité
+  //! Connectivity information
   virtual CartesianConnectivity connectivity() = 0;
 
   /*!
-   * \brief Nombre de patchs du maillage.
+   * \brief Number of patches in the mesh.
    *
-   * Il y a toujours au moins un patch qui représente la maillage cartésien
+   * There is always at least one patch that represents the Cartesian mesh
    *
-   * \deprecated Utiliser CartesianMeshAMRMng à la place.
+   * \deprecated Use CartesianMeshAMRMng instead.
    */
   virtual Int32 nbPatch() const = 0;
 
   /*!
-   * \brief Retourne le \a index-ième patch du maillage.
+   * \brief Returns the \a index-th patch of the mesh.
    *
-   * Si le maillage est cartésien, il n'y a qu'un seul patch.
+   * If the mesh is Cartesian, there is only one patch.
    *
-   * L'instance retournée reste valide tant que cette instance n'est pas détruite.
+   * The returned instance remains valid as long as this instance is not destroyed.
    */
   virtual ICartesianMeshPatch* patch(Int32 index) const = 0;
 
   /*!
-   * \brief Retourne le \a index-ième patch du maillage.
+   * \brief Returns the \a index-th patch of the mesh.
    *
-   * Si le maillage est cartésien, il n'y a qu'un seul patch.
+   * If the mesh is Cartesian, there is only one patch.
    *
-   * L'instance retournée reste valide tant que cette instance n'est pas détruite.
+   * The returned instance remains valid as long as this instance is not destroyed.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::amrPatch() à la place.
+   * \deprecated Use CartesianMeshAMRMng::amrPatch() instead.
    */
   virtual CartesianPatch amrPatch(Int32 index) const = 0;
 
   /*!
-   * \brief Vue sur la liste des patchs.
+   * \brief View of the list of patches.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::amrPatch() à la place.
+   * \deprecated Use CartesianMeshAMRMng::amrPatch() instead.
    */
   virtual CartesianMeshPatchListView patches() const = 0;
 
   /*!
-   * \brief Raffine en 2D un bloc du maillage cartésien.
+   * \brief Refines a block of the Cartesian mesh in 2D.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are refined and the corresponding
+   * connectivity information is updated.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
+   * \deprecated Use CartesianMeshAMRMng::refineZone() instead.
    */
   virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
   /*!
-   * \brief Raffine en 3D un bloc du maillage cartésien.
+   * \brief Refines a block of the Cartesian mesh in 3D.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are refined and the corresponding
+   * connectivity information is updated.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
+   * \deprecated Use CartesianMeshAMRMng::refineZone() instead.
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
   /*!
-   * \brief Raffine un bloc du maillage cartésien.
+   * \brief Refines a block of the Cartesian mesh.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are refined and the corresponding
+   * connectivity information is updated.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::refineZone() à la place.
+   * \deprecated Use CartesianMeshAMRMng::refineZone() instead.
    */
   virtual void refinePatch(const AMRZonePosition& position) = 0;
 
   /*!
-   * \brief Dé-raffine en 2D un bloc du maillage cartésien.
+   * \brief Coarsens a block of the Cartesian mesh in 2D.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont dé-raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are coarsened and the corresponding
+   * connectivity information is updated.
    *
-   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
-   * niveau.
+   * All cells in the coarsening zone must be of the same
+   * level.
    *
-   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
-   * seront supprimés.
+   * Patches that no longer contain cells after calling this method
+   * will be deleted.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
+   * \deprecated Use CartesianMeshAMRMng::coarseZone2D() instead.
    */
   virtual void coarseZone2D(Real2 position, Real2 length) = 0;
 
   /*!
-   * \brief Dé-raffine en 3D un bloc du maillage cartésien.
+   * \brief Coarsens a block of the Cartesian mesh in 3D.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont dé-raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are coarsened and the corresponding
+   * connectivity information is updated.
    *
-   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
-   * niveau.
+   * All cells in the coarsening zone must be of the same
+   * level.
    *
-   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
-   * seront supprimés.
+   * Patches that no longer contain cells after calling this method
+   * will be deleted.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
+   * \deprecated Use CartesianMeshAMRMng::coarseZone2D() instead.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
 
   /*!
-   * \brief Dé-raffine un bloc du maillage cartésien.
+   * \brief Coarsens a block of the Cartesian mesh.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont dé-raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are coarsened and the corresponding
+   * connectivity information is updated.
    *
-   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
-   * niveau.
+   * All cells in the coarsening zone must be of the same
+   * level.
    *
-   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
-   * seront supprimés.
+   * Patches that no longer contain cells after calling this method
+   * will be deleted.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::coarseZone2D() à la place.
+   * \deprecated Use CartesianMeshAMRMng::coarseZone2D() instead.
    */
   virtual void coarseZone(const AMRZonePosition& position) = 0;
 
   /*!
-   * \brief Méthode permettant de supprimer une ou plusieurs couches
-   * de mailles fantômes sur un niveau de raffinement défini.
+   * \brief Method for deleting one or more layers
+   * of ghost cells at a defined refinement level.
    *
-   * Le nombre de couches de mailles fantômes souhaité peut être augmenté
-   * par la méthode. Il est nécessaire de récupérer la valeur retournée
-   * pour avoir le nombre de couches de mailles fantômes final.
+   * The desired number of ghost cell layers may be increased
+   * by the method. It is necessary to retrieve the returned value
+   * to get the final number of ghost cell layers.
    *
-   * \param level Le niveau de raffinement concerné par la suppression
-   * des mailles fantômes.
+   * \param level The refinement level concerned by the deletion
+   * of ghost cells.
    *
-   * \param target_nb_ghost_layers Le nombre de couches souhaité après
-   * appel à cette méthode. ATTENTION : Il peut être ajusté par la méthode.
+   * \param target_nb_ghost_layers The desired number of layers after
+   * calling this method. ATTENTION: It may be adjusted by the method.
    *
-   * \return Le nombre de couches de mailles fantômes final.
+   * \return The final number of ghost cell layers.
    *
-   * \deprecated Utiliser CartesianMeshAMRMng::reduceNbGhostLayers() à la place.
+   * \deprecated Use CartesianMeshAMRMng::reduceNbGhostLayers() instead.
    */
   virtual Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) = 0;
 
   /*!
-   * \brief Renumérote les uniqueId() des entités.
+   * \brief Renumbers the uniqueId() of entities.
    *
-   * Suivant les valeurs de \a v, on renumérote les uniqueId() des faces et/ou 
-   * des entités des patches pour avoir la même numérotation
-   * quel que soit le découpage.
+   * Based on the values of \a v, the uniqueId() of faces and/or
+   * entities of the patches is renumbered to have the same numbering
+   * regardless of the decomposition.
    */
   virtual void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) = 0;
 
-  //! Effectue des vérifications sur la validité de l'instance.
+  //! Performs checks on the validity of the instance.
   virtual void checkValid() const = 0;
 
   /*!
-   * \brief Créé une instance pour gérer le déraffinement du maillage.
-   * \deprecated Utiliser Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() à la place.
+   * \brief Creates an instance to manage mesh coarsening.
+   * \deprecated Use Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() instead.
    */
   ARCANE_DEPRECATED_REASON("Y2024: Use Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() instead")
   virtual Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() = 0;
@@ -294,7 +294,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 
  public:
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual ICartesianMeshInternal* _internalApi() = 0;
 };
 
@@ -302,8 +302,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal.
- * Cette méthode est reservée à Arcane.
- * Utiliser ICartesianMesh::getReference() pour créer une instance.
+ * This method is reserved for Arcane.
+ * Use ICartesianMesh::getReference() to create an instance.
  */
 extern "C++" ARCANE_CARTESIANMESH_EXPORT ICartesianMesh*
 arcaneCreateCartesianMesh(IMesh* mesh);
@@ -316,5 +316,4 @@ arcaneCreateCartesianMesh(IMesh* mesh);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

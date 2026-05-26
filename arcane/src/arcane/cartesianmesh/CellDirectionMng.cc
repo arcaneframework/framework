@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
+/* Info on the meshes of an X, Y, or Z direction of a structured mesh.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

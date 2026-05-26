@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshCoarsening.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Déraffinement d'un maillage cartésien.                                    */
+/* Coarsening of a Cartesian mesh.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +51,7 @@ CartesianMeshCoarsening(ICartesianMesh* m)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Retourne le max des uniqueId() des entités de \a group
+//! Returns the max of uniqueId() of entities in a group
 Int64 CartesianMeshCoarsening::
 _getMaxUniqueId(const ItemGroup& group)
 {
@@ -83,9 +83,9 @@ createCoarseCells()
   if (!mesh->isAmrActivated())
     ARCANE_FATAL("AMR is not activated for this case");
 
-  // TODO: Supprimer les mailles fantômes puis les reconstruire
-  // TODO: Mettre à jour les informations dans CellDirectionMng
-  // de ownNbCell(), globalNbCell(), ...
+  // TODO: Delete the ghost cells then reconstruct them
+  // TODO: Update the information in CellDirectionMng
+  // of ownNbCell(), globalNbCell(), ...
 
   Integer nb_dir = mesh->dimension();
   if (nb_dir != 2)
@@ -104,10 +104,10 @@ createCoarseCells()
                    nb_own_cell, idir);
   }
 
-  // Calcule l'offset pour la création des uniqueId().
-  // On prend comme offset le max des uniqueId() des faces et des mailles.
-  // A terme avec la numérotation cartésienne partout, on pourra déterminer
-  // directement cette valeur
+  // Calculates the offset for creating uniqueIds.
+  // We take the max of the uniqueIds of faces and cells as the offset.
+  // Eventually, with Cartesian numbering everywhere, we will be able to determine
+  // this value directly.
   Int64 max_cell_uid = _getMaxUniqueId(mesh->allCells());
   Int64 max_face_uid = _getMaxUniqueId(mesh->allFaces());
   const Int64 coarse_grid_cell_offset = 1 + pm->reduce(Parallel::ReduceMax, math::max(max_cell_uid, max_face_uid));
@@ -125,17 +125,17 @@ createCoarseCells()
   CartesianGridDimension::CellUniqueIdComputer2D coarse_cell_uid_computer(coarse_grid_dim.getCellComputer2D(coarse_grid_cell_offset));
   CartesianGridDimension::FaceUniqueIdComputer2D coarse_face_uid_computer(coarse_grid_dim.getFaceComputer2D(coarse_grid_cell_offset));
 
-  // Pour les mailles et faces grossières, les noeuds existent déjà
-  // On ne peut donc pas utiliser la connectivité cartésienne de la grille grossière
-  // pour eux (on pourra le faire lorsque l'AMR par patch avec duplication sera active)
-  // En attendant on utilise la numérotation de la grille raffinée.
+  // For the coarse cells and faces, the nodes already exist
+  // Therefore, we cannot use the Cartesian connectivity of the coarse grid
+  // for them (we can do this when patch AMR with duplication is active)
+  // For now, we use the numbering of the refined grid.
 
-  // TODO: Calculer le nombre de faces et de mailles et allouer en conséquence.
+  // TODO: Calculate the number of faces and cells and allocate accordingly.
   UniqueArray<Int64> faces_infos;
   UniqueArray<Int64> cells_infos;
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
-  //! Liste de la première fille de chaque maille grossière
+  //! List of the first child of each coarse cell
   UniqueArray<Int64> first_child_cell_unique_ids;
   ENUMERATE_ (Cell, icell, mesh->ownCells()) {
     Cell cell = *icell;
@@ -143,8 +143,8 @@ createCoarseCells()
     Int64x3 cell_xy = refined_cell_uid_computer.compute(cell_uid);
     const Int64 cell_x = cell_xy.x;
     const Int64 cell_y = cell_xy.y;
-    // Comme on déraffine par 2, ne prend que les mailles dont les coordoonnées
-    // topologiques sont paires
+    // Since we are coarsening by 2, only take cells whose coordinates
+    // are topologically even
     if ((cell_x % 2) != 0 || (cell_y % 2) != 0)
       continue;
     if (is_verbose)
@@ -161,7 +161,7 @@ createCoarseCells()
       info() << "CELLNodes uid=" << node_uids;
     std::array<Int64, 4> coarse_face_uids = coarse_face_uid_computer.computeForCell(coarse_cell_x, coarse_cell_y);
     const ItemTypeInfo* cell_type = cell.typeInfo();
-    // Ajoute les 4 faces
+    // Adds the 4 faces
     for (Int32 z = 0; z < 4; ++z) {
       ItemTypeInfo::LocalFace lface = cell_type->localFace(z);
       faces_infos.add(IT_Line2);
@@ -170,7 +170,7 @@ createCoarseCells()
       faces_infos.add(node_uids[lface.node(1)]);
       ++nb_coarse_face;
     }
-    // Ajoute la maille
+    // Adds the cell
     {
       cells_infos.add(IT_Quad4);
       cells_infos.add(coarse_cell_uid_computer.compute(coarse_cell_x, coarse_cell_y));
@@ -188,13 +188,13 @@ createCoarseCells()
   mesh->modifier()->addFaces(MeshModifierAddFacesArgs(nb_coarse_face, faces_infos, faces_local_ids));
   mesh->modifier()->addCells(MeshModifierAddCellsArgs(nb_coarse_cell, cells_infos, cells_local_ids));
 
-  // Maintenant que les mailles grossières sont créées, il faut indiquer
-  // qu'elles sont parentes.
+  // Now that the coarse cells are created, we must indicate
+  // that they are parents.
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Positionne les propriétaires des nouvelles mailles
-  // et ajoute un flag (ItemFlags::II_UserMark1) pour les marquer.
-  // Cela sera utilisé pour détruire les mailles raffinées par la suite.
+  // Positions the owners of the new cells
+  // and adds a flag (ItemFlags::II_UserMark1) to mark them.
+  // This will be used to destroy the refined cells later.
   {
     ENUMERATE_ (Cell, icell, cell_family->view(cells_local_ids)) {
       Cell cell = *icell;
@@ -204,9 +204,9 @@ createCoarseCells()
     cell_family->notifyItemsOwnerChanged();
   }
 
-  // Il faut donner un propriétaire aux faces.
-  // Comme les nouvelles faces utilisent un noeud déjà existant, on prend comme propriétaire
-  // celui du premier noeud de la face
+  // We must assign an owner to the faces.
+  // Since the new faces use an already existing node, we take the owner
+  // of the first node of the face
   {
     IItemFamily* face_family = mesh->faceFamily();
     ENUMERATE_ (Face, iface, face_family->view(faces_local_ids)) {
@@ -217,12 +217,11 @@ createCoarseCells()
     face_family->notifyItemsOwnerChanged();
   }
 
-  // Met à jour le maillage
+  // Updates the mesh
   mesh->modifier()->endUpdate();
 
-  // Après l'appel à endUpdate() les numéros locaux ne changent plus.
-  // On peut s'en servir pour conserver pour chaque maille grossière la liste des mailles
-  // raffinées
+  // After calling endUpdate(), the local IDs no longer change.
+  // We can use this to keep the list of refined cells for each coarse cell
   m_coarse_cells.resize(nb_coarse_cell);
   m_refined_cells.resize(nb_coarse_cell, 4);
 
@@ -238,12 +237,12 @@ createCoarseCells()
       Cell coarse_cell = *icell;
       if (!(coarse_cell.itemBase().flags() & ItemFlags::II_UserMark1))
         continue;
-      // Supprime le flag
+      // Removes the flag
       coarse_cell.mutableItemBase().removeFlags(ItemFlags::II_UserMark1);
       m_coarse_cells[coarse_index] = coarse_cell.itemLocalId();
       Cell first_child_cell = cells[first_child_cell_local_ids[coarse_index]];
-      // A partir de la première sous-maille, on peut connaître les 3 autres
-      // car elles sont respectivement à droite, en haut à droite et en haut.
+      // Starting from the first sub-cell, we can know the other 3
+      // because they are respectively to the right, top-right, and top.
       sub_cell_lids[0] = first_child_cell.localId();
       sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
       sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
@@ -292,7 +291,7 @@ removeRefinedCells()
   IMesh* mesh = m_cartesian_mesh->mesh();
   IMeshModifier* mesh_modifier = mesh->modifier();
 
-  // Supprime toutes les mailles raffinées ainsi que toutes les mailles fantômes
+  // Deletes all refined cells as well as all ghost cells
   {
     std::unordered_set<Int32> coarse_cells_set;
     for (Int32 cell_lid : m_coarse_cells)
@@ -309,11 +308,11 @@ removeRefinedCells()
     mesh_modifier->endUpdate();
   }
 
-  // Reconstruit les mailles fantômes
+  // Reconstructs the ghost cells
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
-  // Affiche les statistiques du nouveau maillage
+  // Displays the statistics of the new mesh
   {
     MeshStats ms(traceMng(), mesh, mesh->parallelMng());
     ms.dumpStats();
@@ -321,14 +320,14 @@ removeRefinedCells()
 
   _recomputeMeshGenerationInfo();
 
-  // Il faut recalculer les nouvelles directions
+  // We must recalculate the new directions
   m_cartesian_mesh->computeDirections();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recalcule les informations sur le nombre de mailles par direction.
+ * \brief Recalculates the information on the number of cells per direction.
  */
 void CartesianMeshCoarsening::
 _recomputeMeshGenerationInfo()
@@ -338,7 +337,7 @@ _recomputeMeshGenerationInfo()
   if (!cmgi)
     return;
 
-  // Coefficient de dé-raffinement
+  // Coarsening factor
   const Int32 cf = 2;
 
   {

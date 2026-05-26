@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshAMRMng.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de l'AMR pour un maillage cartésien.                         */
+/* AMR Manager for a Cartesian Mesh.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,239 +32,222 @@ namespace Arcane
 
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Classe permettant d'accéder aux méthodes spécifiques AMR du maillage
- * cartesien.
+ * \brief Class allowing access to the specific AMR methods of the Cartesian mesh.
  *
- * Une instance de cette classe est valide tant que le ICartesianMesh passé en
- * paramètre du constructeur est valide.
+ * An instance of this class is valid as long as the ICartesianMesh passed in
+ * the constructor is valid.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
 {
  public:
 
   /*!
-   * \brief Constructeur.
+   * \brief Constructor.
    */
   explicit CartesianMeshAMRMng(ICartesianMesh* cmesh);
 
  public:
 
   /*!
-   * \brief Nombre de patchs du maillage.
+   * \brief Number of mesh patches.
    *
-   * Il y a toujours au moins un patch qui représente le maillage cartésien.
+   * There is always at least one patch representing the Cartesian mesh.
    */
   Int32 nbPatch() const;
 
   /*!
-   * \brief Retourne le \a index-ième patch du maillage.
+   * \brief Returns the \a index-th patch of the mesh.
    *
-   * Si le maillage est cartésien, il n'y a qu'un seul patch.
+   * If the mesh is Cartesian, there is only one patch.
    *
-   * L'instance retournée reste valide tant que cette instance n'est pas détruite.
+   * The returned instance remains valid as long as this instance is not destroyed.
    */
   CartesianPatch amrPatch(Int32 index) const;
 
   /*!
-   * \brief Vue sur la liste des patchs.
+   * \brief View of the list of patches.
    */
   CartesianMeshPatchListView patches() const;
 
   /*!
-   * \brief Raffine un bloc du maillage cartésien.
+   * \brief Refines a block of the Cartesian mesh.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are refined, and the corresponding
+   * connectivity information is updated.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   void refineZone(const AMRZonePosition& position) const;
 
   /*!
-   * \brief Dé-raffine un bloc du maillage cartésien.
+   * \brief Coarsens a block of the Cartesian mesh.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Les mailles dont les positions des centres sont comprises entre
-   * \a position et \a (position+length) sont dé-raffinées et les informations
-   * de connectivité correspondantes sont mises à jour.
+   * The cells whose center positions are between
+   * \a position and \a (position+length) are coarsened, and the corresponding
+   * connectivity information is updated.
    *
-   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
-   * niveau.
+   * All cells in the coarsening zone must be of the same
+   * level.
    *
-   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
-   * seront supprimés.
+   * Patches that no longer contain cells after calling this method
+   * will be deleted.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   void coarseZone(const AMRZonePosition& position) const;
 
   /*!
-   * \brief Méthode permettant de commencer le raffinement du maillage.
+   * \brief Method to start mesh refinement.
    *
-   * \warning Méthode expérimentale.
+   * \warning Experimental method.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true) and the AMR type is 3
    * (PatchCartesianMeshOnly).
    *
-   * Cette méthode est la première d'un trio de méthodes nécessaires pour
-   * raffiner le maillage :
+   * This method is the first of a trio of methods necessary to
+   * refine the mesh:
    * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
    * - \a void adaptLevel(Int32 level_to_adapt)
    * - \a void endAdaptMesh()
    *
-   * Cette première méthode va permettre de préparer le maillage au
-   * raffinement.
+   * This first method will prepare the mesh for
+   * refinement.
    *
-   * Il est nécessaire de passer en paramètre de la méthode le nombre de
-   * niveaux de raffinements qui va y avoir pendant cette phase de
-   * raffinement (\a max_nb_levels).
+   * It is necessary to pass the number of
+   * refinement levels that will occur during this refinement phase (\a max_nb_levels).
    *
-   * Il est recommandé de mettre le nombre exact de niveaux pour éviter un
-   * ajustement du nombre de couches de mailles de recouvrements lors de
-   * l'appel à la troisième méthode qui est couteux en calcul.
+   * It is recommended to specify the exact number of levels to avoid
+   * adjustment of the number of overlap layers during
+   * the call to the third method, which is computationally expensive.
    *
    *
-   * Il est aussi nécessaire de passer en paramètre le premier niveau à être
-   * raffiné.
-   * Si deux niveaux sont déjà présent sur le maillage (0 et 1) et que vous
-   * souhaitez uniquement créer un troisième niveau (niveau 2) à partir du
-   * second niveau (niveau 1), vous pouvez mettre 1 au paramètre
+   * It is also necessary to pass the first level to be
+   * refined.
+   * If two levels are already present on the mesh (0 and 1) and you
+   * only want to create a third level (level 2) from
+   * the second level (level 1), you can set 1 for the parameter
    * \a level_to_refine_first.
    *
    *
-   * Si deux niveaux sont déjà présent sur le maillage (0 et 1) et que vous
-   * souhaitez repartir de zéro, vous pouvez mettre 0 au paramètre
+   * If two levels are already present on the mesh (0 and 1) and you
+   * want to start from scratch, you can set 0 for the parameter
    * \a level_to_refine_first.
-   * Dans ce cas, les patchs du niveau 1 seront supprimés, mais pas les
-   * mailles/faces/noeuds. Une fois les nouveaux patchs de niveau 1 créés à
-   * l'aide de la deuxième méthode, la troisième méthode s'occupera de
-   * supprimer les items en trop.
-   * Cela permet de conserver les valeurs des variables pour les
-   * mailles/faces/noeuds qui étaient dans un patch avant et qui sont
-   * conservés dans un nouveau patch.
+   * In this case, the level 1 patches will be deleted, but not the
+   * cells/faces/nodes. Once the new level 1 patches are created using the second method, the third method will handle
+   * deleting the excess items.
+   * This allows the variable values for the
+   * cells/faces/nodes that were in a patch before and are
+   * preserved in a new patch.
    *
    *
-   * Exemple d'exécution :
-   * ```
-   * CartesianMeshAMRMng amr_mng(cmesh());
+   * Execution example:
+   *    * CartesianMeshAMRMng amr_mng(cmesh());
    * amr_mng.clearRefineRelatedFlags();
    *
    * amr_mng.beginAdaptMesh(2, 0);
    * for (Integer level = 0; level < 2; ++level){
-   *   // Va faire ses calculs et mettre des flags II_Refine sur les mailles
-   *   // du niveau level.
+   *   // Will perform its calculations and set II_Refine flags on the cells
+   *   // of level level.
    *   computeInLevel(level);
    *   amr_mng.adaptLevel(level);
    * }
    * amr_mng.endAdaptMesh();
-   * ```
+   *    *
+   * This operation is collective.
    *
-   * Cette opération est collective.
-   *
-   * \param max_nb_levels Le nombre de niveaux de raffinement désiré.
-   * \param level_to_refine_first Le niveau qui sera raffiné en premier.
+   * \param max_nb_levels The desired number of refinement levels.
+   * \param level_to_refine_first The level that will be refined first.
    */
   void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first);
 
   /*!
-   * \brief Méthode permettant de créer un niveau de raffinement du maillage.
+   * \brief Method to create a level of mesh refinement.
    *
-   * \warning Méthode expérimentale.
+   * \warning Experimental method.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true) and the AMR type is 3
    * (PatchCartesianMeshOnly).
    *
-   * Cette méthode est la seconde d'un trio de méthodes nécessaires pour
-   * raffiner le maillage :
-   * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
-   * - \a void adaptLevel(Int32 level_to_adapt)
-   * - \a void endAdaptMesh()
+   * This second method will allow the mesh to be refined level by
+   * level.
    *
-   * Cette seconde méthode va permettre de raffiner le maillage niveau par
-   * niveau.
+   * Note that the parameter \a level_to_adapt designates the level to
+   * refine, meaning the creation of level \a level_to_adapt +1 (if we want
+   * to refine level 0, then level 1 will be created).
    *
-   * Attention, le paramètre \a level_to_adapt désigne bien le niveau à
-   * raffiner, donc la création du niveau \a level_to_adapt +1 (si on veut
-   * raffiner le niveau 0, alors il y aura création du niveau 1).
+   * Before calling this method, you must add the "II_Refine" flag to the
+   * cells that must be refined, only on level \a level_to_adapt.
+   * To ensure no flags are already present on the mesh, it is
+   * possible to call the method \a clearRefineRelatedFlags().
    *
-   * Avant d'appeler cette méthode, il faut ajouter le flag "II_Refine" sur les
-   * mailles qui doivent être raffinées, sur le niveau \a level_to_adapt uniquement.
-   * Pour être sûr de n'avoir aucun flag déjà présent sur le maillage, il est
-   * possible d'appeler la méthode \a clearRefineRelatedFlags().
+   * For the refinement of cells outside of level 0 (this "ground" level having
+   * a special status), the cells that can be refined must
+   * possess the "II_InPatch" flag. Cells without the "II_InPatch" flag
+   * cannot be refined.
+   * \todo Add the "II_InPatch" flag to all level 0 cells?
    *
-   * Pour le raffinement des mailles hors niveau 0 (ce niveau "ground" ayant
-   * un statut particulier), les mailles pouvant être raffinées doivent
-   * posséder le flag "II_InPatch". Les mailles n'ayant pas le flag
-   * "II_InPatch" ne peuvent pas être raffinés.
-   * \todo Ajouter le flag "II_InPatch" à toutes les mailles de niveau 0 ?
+   * Cells on level \a level_to_adapt that are already refined, but do not have
+   * the "II_Refine" flag, may be deleted when calling the
+   * third method.
+   * This method redraws the patches and creates the new child cells
+   * if necessary, but does not delete any cells. The third method will
+   * handle the deletion of all cells that do not belong to any patch.
    *
-   * Les mailles du niveau \a level_to_adapt déjà raffinées, mais n'ayant pas
-   * de flag "II_Refine" pourront être supprimées lors de l'appel à la
-   * troisième méthode.
-   * Cette méthode redessine les patchs et créée les nouvelles mailles enfant
-   * si nécessaire, mais ne supprime pas de mailles. La troisième méthode se
-   * chargera de supprimer toutes les mailles n'appartenant à aucun patch.
+   * Once this method is called, level \a level_to_adapt +1 is ready to
+   * be used, notably to mark cells "II_Refine", and call
+   * this method again to create another level, etc.
    *
-   * Une fois cette méthode appelée, le niveau \a level_to_adapt +1 est prêt à
-   * être utilisé, notamment pour marquer les mailles "II_Refine", et rappeler
-   * cette méthode pour créer un autre niveau, &c.
+   * This method is intended to be called iteratively, level by level
+   * (from the lowest level to the highest level). If patches of levels
+   * higher than \a level_to_adapt are detected, they will be deleted.
+   * It is therefore possible to call this method for level n, and then call it
+   * again for level n-1, for example (however, pay attention to the number of
+   * new cells created).
    *
-   * Cette méthode est faite pour être appelé itérativement, niveau par niveau
-   * (du niveau le plus bas au niveau le plus haut). Si des patchs de niveaux
-   * supérieurs à \a level_to_adapt sont détectés, ils seront supprimés.
-   * Il est donc possible d'appeler cette méthode pour un niveau n, puis de la
-   * rappeler pour un niveau n-1 par exemple (attention néanmoins au nombre de
-   * nouvelles mailles créées).
+   * This operation is collective.
    *
-   * Cette opération est collective.
-   *
-   * \param level_to_adapt Le niveau à adapter.
-   * \param do_fatal_if_useless Déclenche une exception si aucune maille n'est
-   *                            à raffiner ou si level_to_adapt désigne un
-   *                            niveau trop élevé par rapport au précedent
-   *                            appel.
+   * \param level_to_adapt The level to adapt.
+   * \param do_fatal_if_useless Triggers an exception if no cells are
+   *                            to refine or if level_to_adapt designates a
+   *                            level too high compared to the previous
+   *                            call.
    */
   void adaptLevel(Int32 level_to_adapt, bool do_fatal_if_useless = false) const;
 
   /*!
-   * \brief Méthode permettant de terminer le raffinement du maillage.
+   * \brief Method to finish mesh refinement.
    *
-   * \warning Méthode expérimentale.
+   * \warning Experimental method.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true) et que le type de l'AMR est 3
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true) and the AMR type is 3
    * (PatchCartesianMeshOnly).
    *
-   * Cette méthode est la troisième d'un trio de méthodes nécessaires pour
-   * raffiner le maillage :
-   * - \a void beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
-   * - \a void adaptLevel(Int32 level_to_adapt)
-   * - \a void endAdaptMesh()
+   * This third method will allow the mesh refinement to finish, specifically
+   * by deleting cells that no longer belong to any patch.
    *
-   * Cette troisième méthode va permettre de terminer le raffinement du
-   * maillage, notamment de supprimer les mailles n'appartenant plus à aucun patch.
+   * If the highest level refined with the second method does not correspond
+   * to the \a max_nb_levels parameter of the first method, there will be
+   * an adjustment of the number of overlap layers.
    *
-   * Si le plus haut niveau raffiné avec la seconde méthode ne correspond pas
-   * au paramètre \a max_nb_levels de la première méthode, il y aura
-   * ajustement du nombre de couches de mailles de recouvrement.
-   *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   void endAdaptMesh();
 
   /*!
-   * \brief Méthode permettant de supprimer les flags liés au raffinement de
-   * toutes les mailles.
+   * \brief Method to delete flags related to mesh refinement
+   * for all cells.
    *
-   * Les flags concernés sont :
+   * The flags concerned are:
    * - ItemFlags::II_Coarsen
    * - ItemFlags::II_Refine
    * - ItemFlags::II_JustCoarsened
@@ -275,76 +258,71 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
   void clearRefineRelatedFlags() const;
 
   /*!
-   * \brief Méthode permettant de modifier le nombre de couches de mailles de
-   * recouvrement sur le niveau de raffinement le plus haut.
+   * \brief Method to modify the number of overlap layers on the highest refinement level.
    *
-   * Un appel à cette méthode va déclencher l'ajustement du nombre de couches
-   * pour tous les patchs déjà présent.
+   * A call to this method will trigger the adjustment of the number of layers
+   * for all existing patches.
    *
-   * Le paramètre \a new_size doit être un nombre pair (sinon, il sera modifié
-   * au nombre pair supérieur).
+   * The parameter \a new_size must be an even number (otherwise, it will be modified
+   * to the next highest even number).
    *
-   * \param new_size Le nouveau nombre de couches de mailles de recouvrement.
+   * \param new_size The new number of overlap layers.
    */
   void setOverlapLayerSizeTopLevel(Int32 new_size) const;
 
   /*!
-   * \brief Méthode permettant de désactiver les couches de mailles de
-   * recouvrement (et de les détruire si présentes).
+   * \brief Method to disable overlap layers (and destroy them if present).
    *
-   * \warning Sans cette couche, il peut y avoir plus d'un niveau de
-   * raffinement entre deux mailles. C'est à l'utilisateur de gérer lui-même
-   * cette contrainte.
+   * \warning Without this layer, there may be more than one level of
+   * refinement between two cells. It is up to the user to manage
+   * this constraint.
    *
-   * \note Pour réactiver ces couches, un appel à
-   * \a setOverlapLayerSizeTopLevel() est suffisant.
+   * \note To reactivate these layers, a call to
+   * \a setOverlapLayerSizeTopLevel() is sufficient.
    */
   void disableOverlapLayer();
 
   /*!
-   * \brief Méthode permettant de supprimer une ou plusieurs couches
-   * de mailles fantômes sur un niveau de raffinement défini.
+   * \brief Method to delete one or more layers
+   * of ghost cells on a defined refinement level.
    *
-   * Le nombre de couches de mailles fantômes souhaité peut être augmenté
-   * par la méthode. Il est nécessaire de récupérer la valeur retournée
-   * pour avoir le nombre de couches de mailles fantômes final.
+   * The desired number of ghost cell layers may be increased
+   * by the method. It is necessary to retrieve the returned value
+   * to get the final number of ghost cell layers.
    *
-   * \param level Le niveau de raffinement concerné par la suppression
-   * des mailles fantômes.
+   * \param level The refinement level concerned by the deletion
+   * of ghost cells.
    *
-   * \param target_nb_ghost_layers Le nombre de couches souhaité après
-   * appel à cette méthode. ATTENTION : Il peut être ajusté par la méthode.
+   * \param target_nb_ghost_layers The desired number of layers after
+   * calling this method. ATTENTION: It may be adjusted by the method.
    *
-   * \return Le nombre de couches de mailles fantômes final.
+   * \return The final number of ghost cell layers.
    */
   Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) const;
 
   /*!
-   * \brief Méthode permettant de fusionner les patchs qui peuvent l'être.
+   * \brief Method to merge patches that can be merged.
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
-   * Si le type de l'AMR n'est pas 3 (PatchCartesianMeshOnly), la méthode ne
-   * fait rien.
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
+   * If the AMR type is not 3 (PatchCartesianMeshOnly), the method does nothing.
    *
-   * Cette méthode peut être utile après plusieurs appels à \a refineZone() et à
-   * \a coarseZone(). En revanche, un appel à cette méthode est inutile après
-   * un appel à \a adaptLevel() car \a adaptLevel() s'en occupe.
+   * This method can be useful after several calls to \a refineZone() and \a coarseZone(). However, calling this method is useless after a call to \a adaptLevel() because \a adaptLevel() handles it.
    */
   void mergePatches() const;
 
   /*!
-   * \brief Méthode permettant de créer un sous-niveau ("niveau -1").
+   * \brief Method to create a sub-level ("level -1").
    *
-   * Cette méthode ne peut être appelée que si le maillage est un maillage
-   * AMR (IMesh::isAmrActivated()==true).
+   * This method can only be called if the mesh is an
+   * AMR mesh (IMesh::isAmrActivated()==true).
    *
-   * Dans le cas d'utilisation de l'AMR type 3 (PatchCartesianMeshOnly), il est
-   * possible d'appeler cette méthode en cours de calcul et autant de fois que
-   * nécessaire (tant qu'il est possible de diviser la taille du niveau 0 par
+   * In the case of using AMR type 3 (PatchCartesianMeshOnly), it is
+   * possible to call this method during calculation and as many times as
+   * necessary (as long as it is possible to divide the size of level 0 by
    * 2).
-   * Une fois le niveau -1 créé, tous les niveaux sont "remontés" (donc le
-   * niveau -1 devient le niveau 0 "ground").
+   * Once level -1 is created, all levels are "upgraded" (meaning level -1 becomes the
+   * level 0 "ground").
    */
   void createSubLevel() const;
 

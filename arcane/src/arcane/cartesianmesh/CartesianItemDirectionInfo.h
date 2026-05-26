@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
-/* Infos sur les entités devant et derrière une entité.                      */
+/* Information about the entities in front of and behind an entity.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANITEMDIRECTIONINFO_H
 #define ARCANE_CARTESIANMESH_CARTESIANITEMDIRECTIONINFO_H
@@ -24,8 +24,7 @@
 namespace Arcane::impl
 {
 /*!
- * \brief Structure interne contenant l'entité devant et derriére dans une
- * direction.
+ * \brief Internal structure containing the entity in front and behind in a direction.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
 {
@@ -49,9 +48,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
 
  private:
 
-  //! entité après l'entité courante dans la direction
+  //! entity after the current entity in the direction
   ItemLocalId m_next_lid;
-  //! entité avant l'entité courante dans la direction
+  //! entity before the current entity in the direction
   ItemLocalId m_previous_lid;
 };
 
@@ -63,4 +62,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianPatch.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Patch AMR d'un maillage cartésien.                                        */
+/* AMR Patch of a Cartesian mesh.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANPATCH_H
 #define ARCANE_CARTESIANMESH_CARTESIANPATCH_H
@@ -28,16 +28,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Patch AMR d'un maillage cartésien.
+ * \brief AMR Patch of a Cartesian mesh.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 {
  public:
 
-  //! Patch nul.
+  //! Null patch.
   CartesianPatch() = default;
 
-  //! Patch nul.
+  //! Null patch.
   explicit CartesianPatch(ICartesianMeshPatch* patch_interface)
   : m_patch(patch_interface)
   {
@@ -51,30 +51,30 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 
  public:
 
-  //! Groupe de mailles du patch (incluant les mailles de recouvrement).
+  //! Cell group of the patch (including overlap cells).
   CellGroup cells() const;
 
   /*!
-   * \brief Groupe de mailles du patch (sans les mailles de recouvrement).
+   * \brief Cell group of the patch (excluding overlap cells).
    *
-   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   * Valid only with AMR type 3 (PatchCartesianMeshOnly).
    */
   CellGroup inPatchCells() const;
 
   /*!
-   * \brief Groupe de mailles de recouvrement du patch.
+   * \brief Overlap cell group of the patch.
    *
-   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   * Valid only with AMR type 3 (PatchCartesianMeshOnly).
    */
   CellGroup overlapCells() const;
 
-  //! Index du patch dans le tableau des patchs.
+  //! Index of the patch in the patch array.
   Integer index() const;
 
   /*!
-   * \brief Niveau du patch.
+   * \brief Patch level.
    *
-   * Valide uniquement avec l'AMR type 3 (PatchCartesianMeshOnly).
+   * Valid only with AMR type 3 (PatchCartesianMeshOnly).
    */
   Integer level() const
   {
@@ -82,49 +82,49 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
     return m_patch->position().level();
   }
 
-  //! Liste des mailles dans la direction \a dir
+  //! List of cells in direction \a dir
   CellDirectionMng& cellDirection(eMeshDirection dir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->cellDirection(dir);
   }
 
-  //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
+  //! List of cells in direction \a dir (0, 1 or 2)
   CellDirectionMng& cellDirection(Integer idir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->cellDirection(idir);
   }
 
-  //! Liste des faces dans la direction \a dir
+  //! List of faces in direction \a dir
   FaceDirectionMng& faceDirection(eMeshDirection dir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->faceDirection(dir);
   }
 
-  //! Liste des faces dans la direction \a dir (0, 1 ou 2)
+  //! List of faces in direction \a dir (0, 1 or 2)
   FaceDirectionMng& faceDirection(Integer idir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->faceDirection(idir);
   }
 
-  //! Liste des noeuds dans la direction \a dir
+  //! List of nodes in direction \a dir
   NodeDirectionMng& nodeDirection(eMeshDirection dir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->nodeDirection(dir);
   }
 
-  //! Liste des noeuds dans la direction \a dir (0, 1 ou 2)
+  //! List of nodes in direction \a dir (0, 1 or 2)
   NodeDirectionMng& nodeDirection(Integer idir)
   {
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->nodeDirection(idir);
   }
 
-  //! Effectue des vérifications sur la validité de l'instance.
+  //! Performs checks on the instance validity.
   void checkValid() const
   {
     ARCANE_CHECK_POINTER(m_patch);
@@ -132,10 +132,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
   }
 
   /*!
-   * \brief Méthode permettant de récupérer la position du patch dans le
-   * maillage cartesien.
+   * \brief Method to retrieve the patch position in the
+   * Cartesian mesh.
    *
-   * \return Une copie de la position.
+   * \return A copy of the position.
    */
   AMRPatchPosition position() const
   {
@@ -143,10 +143,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
     return m_patch->position();
   }
 
-  //! Indique si le patch est nul.
+  //! Indicates if the patch is null.
   bool isNull() const { return !m_patch; }
 
-  //! Interface associée au patch (pour compatibilité avec l'existant)
+  //! Interface associated with the patch (for compatibility with existing code)
   ICartesianMeshPatch* patchInterface() const { return m_patch; }
 
  private:
@@ -162,5 +162,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

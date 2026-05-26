@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshAMRMng.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de l'AMR pour un maillage cartésien.                         */
+/* AMR Manager for a Cartesian Mesh.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ coarseZone(const AMRZonePosition& position) const
 void CartesianMeshAMRMng::
 beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
 {
-  // On calcule le nombre de mailles de recouvrements pour chaque level.
+  // We calculate the number of overlap cells for each level.
   m_cmesh->_internalApi()->cartesianPatchGroup().beginAdaptMesh(max_nb_levels, level_to_refine_first);
 }
 

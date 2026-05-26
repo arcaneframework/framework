@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshNumberingMng.h                                 (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
-/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
+/* Cartesian mesh numbering manager. The numbering used here is the same as  */
+/* that used in V2 renumbering.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,13 +38,13 @@ class ICartesianMeshNumberingMngInternal;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface de gestionnaire de numérotation pour maillage cartesian.
+ * \brief Numbering manager interface for Cartesian mesh.
  *
- * Dans ces gestionnaires, on considère que l'on a un intervalle d'uniqueIds
- * attribué à chaque niveau du maillage.
+ * In these managers, it is assumed that there is an interval of unique IDs
+ * assigned to each mesh level.
  *
- * \warning Le maillage ne doit pas être renuméroté si cette numérotation est
- * utilisée.
+ * \warning The mesh must not be renumbered if this numbering is
+ * used.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
 {
@@ -55,152 +55,152 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
  public:
 
   /*!
-   * \brief Méthode permettant de décrire l'état de l'objet.
+   * \brief Method allowing the description of the object's state.
    */
   void printStatus() const;
 
   /*!
-   * \brief Méthode permettant de récupérer le premier unique id utilisé par les mailles d'un niveau.
-   * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids
-   * d'un niveau.
+   * \brief Method allowing retrieval of the first unique ID used by the cells of a level.
+   * Calling this method with level and level+1 allows retrieval of the unique ID interval
+   * for a level.
    *
-   * \param level Le niveau.
-   * \return Le premier uid des mailles du niveau.
+   * \param level The level.
+   * \return The first UID of the cells of the level.
    */
   Int64 firstCellUniqueId(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le premier unique id utilisé par les noeuds d'un niveau.
-   * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids
-   * d'un niveau.
+   * \brief Method allowing retrieval of the first unique ID used by the nodes of a level.
+   * Calling this method with level and level+1 allows retrieval of the unique ID interval
+   * for a level.
    *
-   * \param level Le niveau.
-   * \return Le premier uid des noeuds du niveau.
+   * \param level The level.
+   * \return The first UID of the nodes of the level.
    */
   Int64 firstNodeUniqueId(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le premier unique id utilisé par les faces d'un niveau.
-   * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids
-   * d'un niveau.
+   * \brief Method allowing retrieval of the first unique ID used by the faces of a level.
+   * Calling this method with level and level+1 allows retrieval of the unique ID interval
+   * for a level.
    *
-   * \param level Le niveau.
-   * \return Le premier uid des faces du niveau.
+   * \param level The level.
+   * \return The first UID of the faces of the level.
    */
   Int64 firstFaceUniqueId(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles global en X d'un niveau.
+   * \brief Method allowing retrieval of the global number of cells in X for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de mailles en X.
+   * \param level The level.
+   * \return The number of cells in X.
    */
   CartCoord globalNbCellsX(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles global en Y d'un niveau.
+   * \brief Method allowing retrieval of the global number of cells in Y for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de mailles en Y.
+   * \param level The level.
+   * \return The number of cells in Y.
    */
   CartCoord globalNbCellsY(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles global en Z d'un niveau.
+   * \brief Method allowing retrieval of the global number of cells in Z for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de mailles en Z.
+   * \param level The level.
+   * \return The number of cells in Z.
    */
   CartCoord globalNbCellsZ(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de noeuds global en X d'un niveau.
+   * \brief Method allowing retrieval of the global number of nodes in X for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de noeuds en X.
+   * \param level The level.
+   * \return The number of nodes in X.
    */
   CartCoord globalNbNodesX(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de noeuds global en Y d'un niveau.
+   * \brief Method allowing retrieval of the global number of nodes in Y for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de noeuds en Y.
+   * \param level The level.
+   * \return The number of nodes in Y.
    */
   CartCoord globalNbNodesY(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de noeuds global en Z d'un niveau.
+   * \brief Method allowing retrieval of the global number of nodes in Z for a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de noeuds en Z.
+   * \param level The level.
+   * \return The number of nodes in Z.
    */
   CartCoord globalNbNodesZ(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces global en X d'un niveau.
+   * \brief Method allowing retrieval of the global number of faces in X for a level.
    *
-   * Admettons que l'on ai les faces suivantes :
+   * Let's assume we have the following faces:
    *  ┌─0──┬──2─┐
    * 4│   6│   8│
    *  ├─5──┼─7──┤
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Donc, on a 2x2 mailles.
-   * En X, on a 3 faces.
+   * So, we have 2x2 cells.
+   * In X, we have 3 faces.
    *
-   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesXCartesianView.
+   * For the number of faces in the Cartesian view, see \a globalNbFacesXCartesianView.
    *
-   * \param level Le niveau.
-   * \return Le nombre de faces en X.
+   * \param level The level.
+   * \return The number of faces in X.
    */
   CartCoord globalNbFacesX(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces global en Y d'un niveau.
+   * \brief Method allowing retrieval of the global number of faces in Y for a level.
    *
-   * Admettons que l'on ai les faces suivantes :
+   * Let's assume we have the following faces:
    *  ┌─0──┬──2─┐
    * 4│   6│   8│
    *  ├─5──┼─7──┤
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Donc, on a 2x2 mailles.
-   * En Y, on a 3 faces.
+   * So, we have 2x2 cells.
+   * In Y, we have 3 faces.
    *
-   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesYCartesianView.
+   * For the number of faces in the Cartesian view, see \a globalNbFacesYCartesianView.
    *
-   * \param level Le niveau.
-   * \return Le nombre de faces en Y.
+   * \param level The level.
+   * \return The number of faces in Y.
    */
   CartCoord globalNbFacesY(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces global en Z d'un niveau.
+   * \brief Method allowing retrieval of the global number of faces in Z for a level.
    *
-   * Admettons que l'on ai les faces suivantes :
+   * Let's assume we have the following faces:
    *  ┌─0──┬──2─┐
    * 4│   6│   8│
    *  ├─5──┼─7──┤
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Si on a 2x2x2 mailles, on aura, en Z, 3 faces.
+   * If we have 2x2x2 cells, we will have 3 faces in Z.
    *
-   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesZCartesianView.
+   * For the number of faces in the Cartesian view, see \a globalNbFacesZCartesianView.
    *
-   * \param level Le niveau.
-   * \return Le nombre de faces en Z.
+   * \param level The level.
+   * \return The number of faces in Z.
    */
   CartCoord globalNbFacesZ(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les faces.
+   * \brief Method allowing retrieval of the size of the "Cartesian grid"
+   *        view containing the faces.
    *
-   * En 2D, on peut avoir cette vue (pour un maillage de 2x2 mailles) :
+   * In 2D, we can have this view (for a 2x2 cell mesh):
    *     x =  0  1  2  3  4
    *        ┌──┬──┬──┬──┬──┐
    * y = -1 │ 0│  │ 2│  │ 4│
@@ -215,18 +215,17 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    *        ├──┼──┼──┼──┼──┤
    * y = 4  │  │11│  │13│  │
    *        └──┴──┴──┴──┴──┘
-   * (dans cette vue, les mailles se situent aux X et Y impaires
-   * (donc ici, [1, 1], [3, 1], [1, 3] et [3, 3])).
+   * (in this view, the cells are located at odd X and Y
+   * (so here, [1, 1], [3, 1], [1, 3] and [3, 3])).
    *
-   * \note En 2D, on considère que l'on a un niveau imaginaire y=-1.
-   * \warning Afin de commencer la numérotation à 0, dans les méthodes
-   * retournant un uniqueId de face 2D, on fait FaceUID-1.
+   * \note In 2D, it is considered that we have an imaginary level y=-1.
+   * \warning To start the numbering at 0, in methods returning a 2D face unique ID, we use FaceUID-1.
    *
-   * Et en 3D (pour un maillage de 2x2x2 mailles) :
+   * And in 3D (for a 2x2x2 cell mesh):
    *         z            │ z = 1            │ z = 2            │ z = 3            │ z = 4
    *      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
    *         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
-   *  y  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+   *  y      │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
    *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
    *  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
    *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
@@ -238,783 +237,760 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    *         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
    *                          │                  │                  │                  │
    *
-   * (dans cette vue, les mailles se situent aux X, Y et Z impaires
-   * (donc ici, [1, 1, 1], [3, 1, 1], [1, 3, 1], &c)).
+   * (in this view, the cells are located at odd X, Y, and Z
+   * (so here, [1, 1, 1], [3, 1, 1], [1, 3, 1], &c)).
    *
-   * \param level Le niveau.
-   * \return La taille de la grille en X.
+   * \param level The level.
+   * \return The size of the grid in X.
    */
   CartCoord globalNbFacesXCartesianView(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les faces.
+   * \brief Method allowing retrieval of the size of the "Cartesian grid"
+   *        view containing the faces.
    *
-   * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
+   * An example of this view is available in the documentation of \a globalNbFacesXCartesianView.
    *
-   * \param level Le niveau.
-   * \return La taille de la grille en Y.
+   * \param level The level.
+   * \return The size of the grid in Y.
    */
   CartCoord globalNbFacesYCartesianView(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
-   *        contenant les faces.
+   * \brief Method allowing retrieval of the size of the "Cartesian grid"
+   *        view containing the faces.
    *
-   * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
+   * An example of this view is available in the documentation of \a globalNbFacesXCartesianView.
    *
-   * \param level Le niveau.
-   * \return La taille de la grille en Z.
+   * \param level The level.
+   * \return The size of the grid in Z.
    */
   CartCoord globalNbFacesZCartesianView(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles total dans un niveau.
+   * \brief Method allowing retrieval of the total number of cells in a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de mailles dans le niveau.
+   * \param level The level.
+   * \return The number of cells in the level.
    */
   Int64 nbCellInLevel(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de noeuds total dans un niveau.
+   * \brief Method allowing retrieval of the total number of nodes in a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de noeuds dans le niveau.
+   * \param level The level.
+   * \return The number of nodes in the level.
    */
   Int64 nbNodeInLevel(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces total dans un niveau.
+   * \brief Method allowing retrieval of the total number of faces in a level.
    *
-   * \param level Le niveau.
-   * \return Le nombre de faces dans le niveau.
+   * \param level The level.
+   * \return The number of faces in the level.
    */
   Int64 nbFaceInLevel(Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le pattern de raffinement utilisé dans chaque maille.
-   * Par exemple, si le pattern vaut 2, chaque maille parente aura 2*2 mailles filles (2*2*2 en 3D).
+   * \brief Method allowing retrieval of the refinement pattern used in each cell.
+   * For example, if the pattern is 2, each parent cell will have 2*2 child cells (2*2*2 in 3D).
    *
-   * \return Le pattern de raffinement.
+   * \return The refinement pattern.
    */
   Int32 pattern() const;
 
   /*!
-   * \brief Méthode permettant de récupérer le niveau d'une maille avec son uid.
+   * \brief Method allowing retrieval of the level of a cell given its unique ID.
    *
-   * \param uid L'uniqueId de la maille.
-   * \return Le niveau de la maille.
+   * \param uid The unique ID of the cell.
+   * \return The level of the cell.
    */
   Int32 cellLevel(Int64 uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le niveau d'un noeud avec son uid.
+   * \brief Method allowing retrieval of the level of a node given its unique ID.
    *
-   * \param uid L'uniqueId du noeud.
-   * \return Le niveau du noeud.
+   * \param uid The unique ID of the node.
+   * \return The level of the node.
    */
   Int32 nodeLevel(Int64 uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le niveau d'une face avec son uid.
+   * \brief Method allowing retrieval of the level of a face given its unique ID.
    *
-   * \param uid L'uniqueId de la face.
-   * \return Le niveau de la face.
+   * \param uid The unique ID of the face.
+   * \return The level of the face.
    */
   Int32 faceLevel(Int64 uid) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir la position du premier noeud/maille fille à partir de la position
-   * du noeud/maille parent.
+   * \brief Method allowing retrieval of the position of the first child node/cell starting from the position
+   * of the parent node/cell.
    *
-   * Exemple : si l'on a un maillage 2D de 2*2 mailles et un pattern de raffinement de 2,
-   * on sait que la grille de niveau 1 (pour les patchs de niveau 1) sera de 4*4 mailles.
-   * Le premier noeud/maille fille du noeud/maille parent (Xp=1,Yp=0) aura la position Xf=Xp*Pattern=2 (idem pour Y).
+   * Example: if we have a 2D mesh of 2*2 cells and a refinement pattern of 2,
+   * we know that the level 1 grid (for level 1 patches) will be 4*4 cells.
+   * The first child node/cell of the parent node/cell (Xp=1,Yp=0) will have the position Xf=Xp*Pattern=2 (same for Y).
    *
-   * \param coord La position X ou Y ou Z du noeud/maille parent.
-   * \param level_from Le niveau parent.
-   * \param level_to Le niveau enfant.
-   * \return La position de la première fille du noeud/maille parent.
+   * \param coord The X, Y, or Z position of the parent node/cell.
+   * \param level_from The parent level.
+   * \param level_to The child level.
+   * \return The position of the first child of the parent node/cell.
    */
   CartCoord offsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir la position de la première face enfant à partir de la position
-   * de la face parente.
+   * \brief Method allowing retrieval of the position of the first child face starting from the position
+   * of the parent face.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in the "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param coord La position X ou Y ou Z de la face parente.
-   * \param level_from Le niveau parent.
-   * \param level_to Le niveau enfant.
-   * \return La position du premier enfant de la face parente.
+   * \param coord The X, Y, or Z position of the parent face.
+   * \param level_from The parent level.
+   * \param level_to The child level.
+   * \return The position of the parent face's first child.
    */
   CartCoord faceOffsetLevelToLevel(CartCoord coord, Int32 level_from, Int32 level_to) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les coordonnées d'une maille grâce à son uniqueId.
+   * \brief Method to retrieve the coordinates of a cell using its uniqueId.
    *
-   * \param uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille.
-   * \return La position de la maille.
+   * \param uid The uniqueId of the cell.
+   * \param level The level of the cell.
+   * \return The position of the cell.
    */
   CartCoord3 cellUniqueIdToCoord(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les coordonnées d'une maille.
+   * \brief Method to retrieve the coordinates of a cell.
    *
-   * \param cell La maille.
-   * \return La position de la maille.
+   * \param cell The cell.
+   * \return The position of the cell.
    */
   CartCoord3 cellUniqueIdToCoord(Cell cell) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'une maille grâce à son uniqueId.
+   * \brief Method to retrieve the X coordinate of a cell using its uniqueId.
    *
-   * \param uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille.
-   * \return La position en X de la maille.
+   * \param uid The uniqueId of the cell.
+   * \param level The level of the cell.
+   * \return The X position of the cell.
    */
   CartCoord cellUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'une maille.
+   * \brief Method to retrieve the X coordinate of a cell.
    *
-   * \param cell La maille.
-   * \return La position en X de la maille.
+   * \param cell The cell.
+   * \return The X position of the cell.
    */
   CartCoord cellUniqueIdToCoordX(Cell cell) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'une maille grâce à son uniqueId.
+   * \brief Method to retrieve the Y coordinate of a cell using its uniqueId.
    *
-   * \param uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille.
-   * \return La position en Y de la maille.
+   * \param uid The uniqueId of the cell.
+   * \param level The level of the cell.
+   * \return The Y position of the cell.
    */
   CartCoord cellUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'une maille.
+   * \brief Method to retrieve the Y coordinate of a cell.
    *
-   * \param cell La maille.
-   * \return La position en Y de la maille.
+   * \param cell The cell.
+   * \return The Y position of the cell.
    */
   CartCoord cellUniqueIdToCoordY(Cell cell) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'une maille grâce à son uniqueId.
+   * \brief Method to retrieve the Z coordinate of a cell using its uniqueId.
    *
-   * \param uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille.
-   * \return La position en Z de la maille.
+   * \param uid The uniqueId of the cell.
+   * \param level The level of the cell.
+   * \return The Z position of the cell.
    */
   CartCoord cellUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'une maille.
+   * \brief Method to retrieve the Z coordinate of a cell.
    *
-   * \param cell La maille.
-   * \return La position en Z de la maille.
+   * \param cell The cell.
+   * \return The Z position of the cell.
    */
   CartCoord cellUniqueIdToCoordZ(Cell cell) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud grâce à son uniqueId.
+   * \brief Method to retrieve the X coordinate of a node using its uniqueId.
    *
-   * \param uid L'uniqueId du noeud.
-   * \param level Le niveau du noeud.
-   * \return La position en X du noeud.
+   * \param uid The uniqueId of the node.
+   * \param level The level of the node.
+   * \return The X position of the node.
    */
   CartCoord nodeUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud.
+   * \brief Method to retrieve the X coordinate of a node.
    *
-   * \param node Le noeud.
-   * \return La position en X du noeud.
+   * \param node The node.
+   * \return The X position of the node.
    */
   CartCoord nodeUniqueIdToCoordX(Node node) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud grâce à son uniqueId.
+   * \brief Method to retrieve the Y coordinate of a node using its uniqueId.
    *
-   * \param uid L'uniqueId du noeud.
-   * \param level Le niveau du noeud.
-   * \return La position en Y du noeud.
+   * \param uid The uniqueId of the node.
+   * \param level The level of the node.
+   * \return The Y position of the node.
    */
   CartCoord nodeUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud.
+   * \brief Method to retrieve the Y coordinate of a node.
    *
-   * \param node Le noeud.
-   * \return La position en Y du noeud.
+   * \param node The node.
+   * \return The Y position of the node.
    */
   CartCoord nodeUniqueIdToCoordY(Node node) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud grâce à son uniqueId.
+   * \brief Method to retrieve the Z coordinate of a node using its uniqueId.
    *
-   * \param uid L'uniqueId du noeud.
-   * \param level Le niveau du noeud.
-   * \return La position en Z du noeud.
+   * \param uid The uniqueId of the node.
+   * \param level The level of the node.
+   * \return The Z position of the node.
    */
   CartCoord nodeUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud.
+   * \brief Method to retrieve the Z coordinate of a node.
    *
-   * \param node Le noeud.
-   * \return La position en Z du noeud.
+   * \param node The node.
+   * \return The Z position of the node.
    */
   CartCoord nodeUniqueIdToCoordZ(Node node) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'une face grâce à son uniqueId.
+   * \brief Method to retrieve the X coordinate of a face using its uniqueId.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param uid L'uniqueId de la face.
-   * \param level Le niveau de la face.
-   * \return La position en X de la face.
+   * \param uid The uniqueId of the face.
+   * \param level The level of the face.
+   * \return The X position of the face.
    */
   CartCoord faceUniqueIdToCoordX(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en X d'une face.
+   * \brief Method to retrieve the X coordinate of a face.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param face La face.
-   * \return La position en X de la face.
+   * \param face The face.
+   * \return The X position of the face.
    */
   CartCoord faceUniqueIdToCoordX(Face face) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'une face grâce à son uniqueId.
+   * \brief Method to retrieve the Y coordinate of a face using its uniqueId.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param uid L'uniqueId de la face.
-   * \param level Le niveau de la face.
-   * \return La position en Y de la face.
+   * \param uid The uniqueId of the face.
+   * \param level The level of the face.
+   * \return The Y position of the face.
    */
   CartCoord faceUniqueIdToCoordY(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Y d'une face.
+   * \brief Method to retrieve the Y coordinate of a face.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param face La face.
-   * \return La position en Y de la face.
+   * \param face The face.
+   * \return The Y position of the face.
    */
   CartCoord faceUniqueIdToCoordY(Face face) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'une face grâce à son uniqueId.
+   * \brief Method to retrieve the Z coordinate of a face using its uniqueId.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param uid L'uniqueId de la face.
-   * \param level Le niveau de la face.
-   * \return La position en Z de la face.
+   * \param uid The uniqueId of the face.
+   * \param level The level of the face.
+   * \return The Z position of the face.
    */
   CartCoord faceUniqueIdToCoordZ(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la coordonnée en Z d'une face.
+   * \brief Method to retrieve the Z coordinate of a face.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param face La face.
-   * \return La position en Z de la face.
+   * \param face The face.
+   * \return The Z position of the face.
    */
   CartCoord faceUniqueIdToCoordZ(Face face) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a cell from its position and level.
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille.
-   * \return L'uniqueId de la maille.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell.
+   * \return The uniqueId of the cell.
    */
   Int64 cellUniqueId(CartCoord3 cell_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a cell from its position and level.
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille.
-   * \return L'uniqueId de la maille.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell.
+   * \return The uniqueId of the cell.
    */
   Int64 cellUniqueId(CartCoord2 cell_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a node from its position and level.
    *
-   * \param node_coord La position du noeud.
-   * \param level Le niveau du noeud.
-   * \return L'uniqueId du noeud.
+   * \param node_coord The position of the node.
+   * \param level The level of the node.
+   * \return The uniqueId of the node.
    */
   Int64 nodeUniqueId(CartCoord3 node_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a node from its position and level.
    *
-   * \param node_coord La position du noeud.
-   * \param level Le niveau du noeud.
-   * \return L'uniqueId du noeud.
+   * \param node_coord The position of the node.
+   * \param level The level of the node.
+   * \return The uniqueId of the node.
    */
   Int64 nodeUniqueId(CartCoord2 node_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a face from its position and level.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param face_coord La position de la face.
-   * \param level Le niveau de la face.
-   * \return L'uniqueId de la face.
+   * \param face_coord The position of the face.
+   * \param level The level of the face.
+   * \return The uniqueId of the face.
    */
   Int64 faceUniqueId(CartCoord3 face_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
+   * \brief Method to retrieve the uniqueId of a face from its position and level.
    *
-   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
-   * (voir \a globalNbFacesXCartesianView ).
+   * Note: The coordinates used here are the coordinates of the faces in "Cartesian view"
+   * (see \a globalNbFacesXCartesianView ).
    *
-   * \param face_coord La position de la face.
-   * \param level Le niveau de la face.
-   * \return L'uniqueId de la face.
+   * \param face_coord The position of the face.
+   * \param level The level of the face.
+   * \return The uniqueId of the face.
    */
   Int64 faceUniqueId(CartCoord2 face_coord, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de noeuds dans une maille.
+   * \brief Method to retrieve the number of nodes in a cell.
    *
-   * \return Le nombre de noeuds d'une maille.
+   * \return The number of nodes in a cell.
    */
   Int32 nbNodeByCell() const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
-   * ses coordonnées.
+   * \brief Method to retrieve the uniqueIds of the nodes in a cell from its coordinates.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the nodes
+   * of an Arcane cell.
    *      3--2
    * ^y   |  |
    * |    0--1
    * ->x
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille (et donc des noeuds).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus of the nodes).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbNodeByCell().
    */
   void cellNodeUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
-   * ses coordonnées.
+   * \brief Method to retrieve the uniqueIds of the nodes in a cell from its coordinates.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the nodes
+   * of an Arcane cell.
    *      3--2
    * ^y   |  |
    * |    0--1
    * ->x
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille (et donc des noeuds).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus of the nodes).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbNodeByCell().
    */
   void cellNodeUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
-   * son uniqueId.
+   * \brief Method to retrieve the uniqueIds of the nodes in a cell from its uniqueId.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the nodes
+   * of an Arcane cell.
    *      3--2
    * ^y   |  |
    * |    0--1
    * ->x
    *
-   * \param cell_uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille (et donc des noeuds).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
+   * \param cell_uid The uniqueId of the cell.
+   * \param level The level of the cell (and thus of the nodes).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbNodeByCell().
    */
   void cellNodeUniqueIds(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille.
+   * \brief Method to retrieve the uniqueIds of the nodes in a cell.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the nodes
+   * of an Arcane cell.
    *      3--2
    * ^y   |  |
    * |    0--1
    * ->x
    *
-   * \param cell La maille.
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbNodeByCell().
+   * \param cell The cell.
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbNodeByCell().
    */
   void cellNodeUniqueIds(Cell cell, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de faces dans une maille.
+   * \brief Method to retrieve the number of faces in a cell.
    *
-   * \return Le nombre de faces d'une maille.
+   * \return The number of faces in a cell.
    */
   Int32 nbFaceByCell() const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
-   * ses coordonnées.
+   * \brief Method to retrieve the uniqueIds of the faces in a cell from its coordinates.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille (et donc des faces).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus of the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   void cellFaceUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
-   * ses coordonnées.
+   * \brief Method to retrieve the uniqueIds of the faces of a cell from its coordinates.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille (et donc des faces).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus of the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   void cellFaceUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
-   * son uniqueId.
+   * \brief Method to retrieve the uniqueIds of the faces of a cell from its uniqueId.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_uid L'uniqueId de la maille.
-   * \param level Le niveau de la maille (et donc des faces).
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
+   * \param cell_uid The uniqueId of the cell.
+   * \param level The level of the cell (and thus of the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   void cellFaceUniqueIds(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des faces d'une maille.
+   * \brief Method to retrieve the uniqueIds of the faces of a cell.
    *
-   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
-   * d'une maille d'Arcane.
+   * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell La maille.
-   * \param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à nbFaceByCell().
+   * \param cell The cell.
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   void cellFaceUniqueIds(Cell cell, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'une maille.
+   * \brief Method to retrieve the uniqueIds of the cells around a cell.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 27.
+   * The passed view must have a size of 27.
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille au centre.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundCell(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'une maille.
+   * \brief Method to retrieve the uniqueIds of the cells around a cell.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 9.
+   * The passed view must have a size of 9.
    *
-   * \param cell_coord La position de la maille.
-   * \param level Le niveau de la maille au centre.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundCell(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
-   * en paramètre.
+   * \brief Method to retrieve the uniqueIds of the cells around the cell passed as a parameter.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
+   * The passed view must have a size of 9 in 2D and 27 in 3D.
    *
-   * \param cell_uid L'uniqueId de la maille au centre.
-   * \param level Le niveau de la maille au centre.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell_uid The uniqueId of the cell at the center.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundCell(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
-   * en paramètre.
+   * \brief Method to retrieve the uniqueIds of the cells around the cell passed as a parameter.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
+   * The passed view must have a size of 9 in 2D and 27 in 3D.
    *
-   * \param cell La maille au centre.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param cell The cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundCell(Cell cell, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'un noeud.
+   * \brief Method to retrieve the uniqueIds of the cells around a node.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 8.
+   * The passed view must have a size of 8.
    *
-   * \param node_coord La position du noeud.
-   * \param level Le niveau du noeud.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_coord The position of the node.
+   * \param level The level of the node.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundNode(CartCoord3 node_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour d'un noeud.
+   * \brief Method to retrieve the uniqueIds of the cells around a node.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 4.
+   * The passed view must have a size of 4.
    *
-   * \param node_coord La position du noeud.
-   * \param level Le niveau du noeud.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_coord The position of the node.
+   * \param level The level of the node.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundNode(CartCoord2 node_coord, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour du noeud passée
-   * en paramètre.
+   * \brief Method to retrieve the uniqueIds of the cells around the node passed as a parameter.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 4 en 2D ou de 8 en 3D.
+   * The passed view must have a size of 4 in 2D or 8 in 3D.
    *
-   * \param node_uid L'uniqueId du noeud.
-   * \param level Le niveau du noeud.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node_uid The uniqueId of the node.
+   * \param level The level of the node.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundNode(Int64 node_uid, Int32 level, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer les uniqueIds des mailles autour du noeud passée
-   * en paramètre.
+   * \brief Method to retrieve the uniqueIds of the cells around the node passed as a parameter.
    *
-   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
-   * on met un uniqueId = -1.
+   * If there is no cell in a surrounding location (e.g., if we are at the edge of the mesh),
+   * a uniqueId of -1 is set.
    *
-   * La vue passée en paramètre doit faire une taille de 4 en 2D ou de 8 en 3D.
+   * The passed view must have a size of 4 in 2D or 8 in 3D.
    *
-   * \param node Le noeud.
-   * \param uid [OUT] Les uniqueIds des mailles autour.
+   * \param node The node.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   void cellUniqueIdsAroundNode(Node node, ArrayView<Int64> uid) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
+   * \brief Method to retrieve the uniqueId of a cell's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param uid L'uniqueId de la maille enfant.
-   * \param level Le niveau de la maille enfant.
-   * \return L'uniqueId de la maille parent de la maille passé en paramètre.
+   * \param uid The uniqueId of the child cell.
+   * \param level The level of the child cell.
+   * \return The uniqueId of the parent cell of the cell passed as a parameter.
    */
   Int64 parentCellUniqueIdOfCell(Int64 uid, Int32 level, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
+   * \brief Method to retrieve the uniqueId of a cell's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param cell La maille enfant.
-   * \return L'uniqueId de la maille parent de la maille passé en paramètre.
+   * \param cell The child cell.
+   * \return The uniqueId of the parent cell of the cell passed as a parameter.
    */
   Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
-   * à partir de la position de la maille enfant dans la maille parent.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the child cell's position within the parent cell.
    *
-   * \param cell La maille parent.
-   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
-   * \return L'uniqueId de la maille enfant demandée.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   Int64 childCellUniqueIdOfCell(Cell cell, CartCoord3 child_coord_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
-   * à partir de la position de la maille enfant dans la maille parent.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the child cell's position within the parent cell.
    *
-   * \param cell La maille parent.
-   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
-   * \return L'uniqueId de la maille enfant demandée.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   Int64 childCellUniqueIdOfCell(Cell cell, CartCoord2 child_coord_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
-   * à partir de l'index de la maille enfant dans la maille parent.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the child cell's index within the parent cell.
    *
-   * \param cell La maille parent.
-   * \param child_index_in_parent L'index de l'enfant dans la maille parent.
-   * \return L'uniqueId de la maille enfant demandée.
+   * \param cell The parent cell.
+   * \param child_index_in_parent The index of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   Int64 childCellUniqueIdOfCell(Cell cell, Int32 child_index_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
-   * à partir de la position de la maille enfant dans la maille parent.
+   * \brief Method to retrieve a child cell of a parent cell based on the child cell's position within the parent cell.
    *
-   * \param cell La maille parent.
-   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
-   * \return La maille enfant demandée.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The requested child cell.
    */
   Cell childCellOfCell(Cell cell, CartCoord3 child_coord_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
-   * à partir de la position de la maille enfant dans la maille parent.
+   * \brief Method to retrieve a child cell of a parent cell based on the child cell's position within the parent cell.
    *
-   * \param cell La maille parent.
-   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
-   * \return La maille enfant demandée.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The requested child cell.
    */
   Cell childCellOfCell(Cell cell, CartCoord2 child_coord_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'un noeud.
+   * \brief Method to retrieve the uniqueId of a node's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param uid L'uniqueId du noeud enfant.
-   * \param level Le niveau du noeud enfant.
-   * \return L'uniqueId du noeud parent du noeud enfant.
+   * \param uid The uniqueId of the child node.
+   * \param level The level of the child node.
+   * \return The uniqueId of the parent node of the child node.
    */
   Int64 parentNodeUniqueIdOfNode(Int64 uid, Int32 level, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'un noeud.
+   * \brief Method to retrieve the uniqueId of a node's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param node Le noeud enfant.
-   * \return L'uniqueId du noeud parent du noeud passé en paramètre.
+   * \param node The child node.
+   * \return The uniqueId of the parent node of the node passed as a parameter.
    */
   Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud enfant d'un noeud parent.
+   * \brief Method to retrieve the uniqueId of a child node of a parent node.
    *
-   * \param uid L'uniqueId du noeud enfant.
-   * \param level Le niveau du noeud enfant.
-   * \return L'uniqueId du noeud enfant demandée.
+   * \param uid The uniqueId of the child node.
+   * \param level The level of the child node.
+   * \return The uniqueId of the requested child node.
    */
   Int64 childNodeUniqueIdOfNode(Int64 uid, Int32 level) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud enfant d'un noeud parent.
+   * \brief Method to retrieve the uniqueId of a child node of a parent node.
    *
-   * \param node Le noeud parent.
-   * \return L'uniqueId du noeud enfant demandée.
+   * \param node The parent node.
+   * \return The uniqueId of the requested child node.
    */
   Int64 childNodeUniqueIdOfNode(Node node) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une face.
+   * \brief Method to retrieve the uniqueId of a face's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param uid L'uniqueId de la face enfant.
-   * \param level Le niveau de la face enfant.
-   * \return L'uniqueId de la face parent de la face enfant.
+   * \param uid The uniqueId of the child face.
+   * \param level The level of the child face.
+   * \return The uniqueId of the parent face of the child face.
    */
   Int64 parentFaceUniqueIdOfFace(Int64 uid, Int32 level, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une face.
+   * \brief Method to retrieve the uniqueId of a face's parent.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
-   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param face La face enfant.
-   * \return L'uniqueId de la face parent de la face passé en paramètre.
+   * \param face The child face.
+   * \return The uniqueId of the parent face of the face passed as a parameter.
    */
   Int64 parentFaceUniqueIdOfFace(Face face, bool do_fatal = true) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une face enfant d'une face parent
-   * à partir de l'index de la face enfant dans la face parent.
+   * \brief Method to retrieve the uniqueId of a child face of a parent face based on the child face's index within the parent face.
    *
-   * \param uid L'uniqueId de la face parent.
-   * \param level Le niveau de la face parent.
-   * \param child_index_in_parent L'index de l'enfant dans la face parent.
-   * \return L'uniqueId de la face enfant demandée.
+   * \param uid The uniqueId of the parent face.
+   * \param level The level of the parent face.
+   * \param child_index_in_parent The index of the child within the parent face.
+   * \return The uniqueId of the requested child face.
    */
   Int64 childFaceUniqueIdOfFace(Int64 uid, Int32 level, Int32 child_index_in_parent) const;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une face enfant d'une face parent
-   * à partir de l'index de la face enfant dans la face parent.
+   * \brief Method to retrieve the uniqueId of a child face of a parent face based on the child face's index within the parent face.
    *
-   * \param face La face parent.
-   * \param child_index_in_parent L'index de l'enfant dans la face parent.
-   * \return L'uniqueId de la face enfant demandée.
+   * \param face The parent face.
+   * \param child_index_in_parent The index of the child within the parent face.
+   * \return The uniqueId of the requested child face.
    */
   Int64 childFaceUniqueIdOfFace(Face face, Int32 child_index_in_parent) const;
 
