@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5Utils.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Utilitaires HDF5.                                                         */
+/* HDF5 Utilities.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -78,8 +78,7 @@ Hdf5Mutex& _ArcaneHdf5UtilsMutex()
 HInit::
 HInit()
 {
-  // Garanti que cela ne sera appelé qu'une seule fois et protège des appels
-  // concurrents.
+  // Ensure this is called only once and protects against concurrent calls.
   std::call_once(h5open_once_flag, [](){ H5open(); });
 }
 
@@ -275,7 +274,7 @@ recursiveCreate(const Hid& loc_id,const Array<String>& bufs)
     last_hid = _checkOrCreate(last_hid,bufs[i]);
     ref_ids[i] = last_hid;
   }
-  // Libere tous les groupes intermediaires crees
+  // Release all intermediate created groups
   ARCANE_HDF5_MUTEX;
   for (Integer i = 0; i < nb_create - 1; ++i) {
     H5Gclose(ref_ids[i]);
@@ -301,7 +300,7 @@ checkDelete(const Hid& loc_id,const String& var)
     if (last_hid==0)
       break;
   }
-  // Groupe trouvé, on le détruit.
+  // Group found, we delete it.
   if (last_hid>0 && parent_hid>0 && i==size){
     //cerr << "** DELETE <" << bufs[size-1] << "\n";
     ARCANE_HDF5_MUTEX;
@@ -326,7 +325,7 @@ recursiveOpen(const Hid& loc_id,const String& var)
     last_hid = _H5Gopen(last_hid,bufs[i].localstr());
     ref_ids[i] = last_hid;
   }
-  // Libere tous les groupes intermediaires ouverts
+  // Release all intermediate opened groups
   for (Integer i = 0; i < nb_open - 1; ++i) {
     H5Gclose(ref_ids[i]);
   }
@@ -358,7 +357,7 @@ openIfExists(const Hid& loc_id,const Array<String>& paths)
   }
   if (is_valid)
     _setId(last_hid);
-  // Ferme tous les groupes intermediaires
+  // Close all intermediate groups
   ARCANE_HDF5_MUTEX;
   for (Integer i = 0; i < ref_ids.size(); ++i) {
     if (ref_ids[i] != last_hid) {
@@ -396,16 +395,16 @@ hasChildren(hid_t loc_id,const String& var)
 hid_t HGroup::
 _checkOrCreate(hid_t loc_id,const String& group_name)
 {
-  // Pour vérifier si un groupe existe déjà, comme il n'existe aucune
-  // fonction digne de ce nom dans HDF5, on utilise le mécanisme d'itération
-  // pour stocker tous les groupes fils de ce groupe, et on recherche ensuite
-  // si le groupe souhaité existe
+  // To check if a group already exists, since there is no
+  // worthy function in HDF5, we use the iteration mechanism
+  // to store all child groups of this group, and then search
+  // if the desired group exists
   HGroupSearch gs(group_name);
   //cerr << "** CHECK CREATE <" << group_name.str()  << ">\n";
   ARCANE_HDF5_MUTEX;
   herr_t v = H5Giterate(loc_id,".",0,_ArcaneHdf5UtilsGroupIterateMe,&gs);
 
-  // Regarde si le groupe existe déjà
+  // Check if the group already exists
   //herr_t he = H5Gget_objinfo(loc_id,group_name.str(),true,0);
   //cerr << "** CHECK CREATE <" << group_name.str()  << "> " << v << "\n";
   //cerr << "** CHECK CREATE <" << group_name.str()  << "> " << v << ' ' << he << "\n";
@@ -474,16 +473,16 @@ close()
 hid_t HGroup::
 _checkExist(hid_t loc_id,const String& group_name)
 {
-  // Pour vérifier si un groupe existe déjà, comme il n'existe aucune
-  // fonction digne de ce nom dans HDF5, on utilise le mécanisme d'itération
-  // pour stocker tous les groupes fils de ce groupe, et on recherche ensuite
-  // si le groupe souhaité existe
+  // To check if a group already exists, since there is no
+  // proper function in HDF5, we use the iteration mechanism
+  // to store all child groups of this group, and then search
+  // if the desired group exists
   HGroupSearch gs(group_name);
   //cerr << "** CHECK CREATE <" << group_name.str()  << ">\n";
   ARCANE_HDF5_MUTEX;
   herr_t v = H5Giterate(loc_id,".",0,_ArcaneHdf5UtilsGroupIterateMe,&gs);
 
-  // Regarde si le groupe existe déjà
+  // Check if the group already exists
   //herr_t he = H5Gget_objinfo(loc_id,group_name.str(),true,0);
   //cerr << "** CHECK CREATE <" << group_name.str()  << "> " << v << "\n";
   //cerr << "** CHECK CREATE <" << group_name.str()  << "> " << v << ' ' << he << "\n";
@@ -682,8 +681,8 @@ void HDataset::
 recursiveCreate(const Hid& loc_id,const String& var,hid_t save_type,
                 const HSpace& space_id,hid_t plist)
 {
-  // Si le dataset existe déjà, il faut le supprimer
-  // car sinon il n'est pas toujours possible de modifer le space_id
+  // If the dataset already exists, it must be removed
+  // otherwise it is not always possible to modify the space_id
   UniqueArray<String> paths;
   splitString(var,paths,'/');
   Integer nb_path = paths.size();
@@ -1053,16 +1052,16 @@ initialize()
     m_real3x3_id.setId(type_id);
   }
 
-  // HDF5 1.10 et 1.12 ne supportent pas encore les types 'BFloat16' et 'Float16'.
-  // Lorsque ce sera le cas, on pourra utiliser le type fourni par HDF5.
-  // (NOTE: HDF5 1.14.4 supporte Float16)
+  // HDF5 1.10 and 1.12 do not yet support 'BFloat16' and 'Float16' types.
+  // When that is the case, we will be able to use the type provided by HDF5.
+  // (NOTE: HDF5 1.14.4 supports Float16)
 
-  // Ajoute type opaque pour BFloat16.
+  // Add opaque type for BFloat16.
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_B16);
     m_bfloat16_id.setId(type_id);
   }
-  // Ajoute type opaque pour Float16.
+  // Add opaque type for Float16.
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_B16);
     m_float16_id.setId(type_id);
@@ -1085,7 +1084,7 @@ StandardTypes::
 void StandardTypes::
 _H5Tinsert(hid_t type,const char* name,Integer offset,hid_t field_id)
 {
-  // Mutex géré par initialize.
+  // Mutex managed by initialize.
   herr_t herr = H5Tinsert(type,name,offset,field_id);
   if (herr<0){
     ARCANE_FATAL("Can not insert type");
@@ -1177,7 +1176,7 @@ readDim()
   m_hdataset.open(m_hfile,m_hpath);
   HSpace hspace(m_hdataset.getSpace());
   {
-    const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
+    const int max_dim = 256; // Maximum number of dimensions for HDF arrays
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
     int nb_dim = -1;
@@ -1192,8 +1191,8 @@ readDim()
       m_dimensions.add((Int64)hdf_dims[i]);
     }
   }
-  // Vérifie s'il existe une variable suffixée '_Ids' contenant les numéros
-  // uniques des entités
+  // Checks if a variable suffixed '_Ids' exists containing the unique numbers
+  // of the entities
   m_ids_dataset.openIfExists(m_hfile,m_ids_hpath);
   //cout << "TRY OPEN ID DATASET path=" << m_ids_hpath << " r=" << m_ids_dataset.id()>0 << '\n';
 }
@@ -1381,14 +1380,13 @@ parallelWrite(IParallelMng* pm,StandardTypes& st,
               ConstArrayView<DataType> buffer,Int64ConstArrayView unique_ids)
 {
   //TODO:
-  // Pour l'instant, seul le proc maitre ecrit.
-  // Il recupère toutes les valeurs, les trie par uniqueId croissant
-  // et les écrit.
-  // Il est important que tout soit trié par ordre croissant car
-  // cela permet de garder le même ordre d'écriture même en présence
-  // de repartitionnement du maillage. La relecture considère
-  // que cette contrainte est respectée et ne relit les informations
-  // des uniqueId qu'au démarrage du cas.
+  // For now, only the master process writes.
+  // It retrieves all values, sorts them by increasing uniqueId
+  // and writes them.
+  // It is important that everything is sorted in ascending order because
+  // this allows maintaining the same writing order even when mesh partitioning
+  // occurs. The read operation assumes this constraint is met and only reads the
+  // uniqueId information at the start of the case.
   bool is_parallel = pm->isParallel();
   ITraceMng* tm = pm->traceMng();
 
@@ -1403,9 +1401,9 @@ parallelWrite(IParallelMng* pm,StandardTypes& st,
   Integer buf_size = buffer.size();
   Integer unique_id_size = unique_ids.size();
   IntegerUniqueArray rank_sizes(2*nb_rank);
-  // Le sous-domaine maitre récupère les infos de tous les autres.
-  // Si un sous-domaine n'a pas d'éléments à envoyer, il ne fait rien
-  // (on n'envoie pas de buffers vides)
+  // The master subdomain retrieves information from all others.
+  // If a subdomain has no elements to send, it does nothing
+  // (it does not send empty buffers)
   if (is_master){
     Integer buf[2];
     buf[0] = buf_size;
@@ -1452,7 +1450,7 @@ parallelWrite(IParallelMng* pm,StandardTypes& st,
     buf[1] = unique_id_size;
     IntegerArrayView iav(2,buf);
     pm->allGather(iav,rank_sizes);
-    // Pas la peine d'envoyer des buffers vides
+    // No need to send empty buffers
     if (buffer.size()>0){
       pm->send(buffer,master_rank);
       pm->send(unique_ids,master_rank);
@@ -1474,9 +1472,9 @@ template class StandardArrayT<Int64>;
 template class StandardArrayT<Byte>;
 template class StandardArrayT<Int8>;
 template class StandardArrayT<Float32>;
-// NOTE: on ne peut pas encore instantier ces types car ils nécessitent
-// de pouvoir faire des send/receive via le IParallelMng et cela n'est pas
-// encore implémenté.
+// NOTE: these types cannot yet be instantiated because they require
+// the ability to perform send/receive via IParallelMng, which is not
+// yet implemented.
 //template class StandardArrayT<Float16>;
 //template class StandardArrayT<BFloat16>;
 
@@ -1491,7 +1489,7 @@ read(Hdf5Utils::StandardTypes & st)
   m_hdataset.open(m_hfile,m_hpath);
   Hdf5Utils::HSpace hspace(m_hdataset.getSpace());
   {
-    const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
+    const int max_dim = 256; // Maximum number of HDF array dimensions
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
     int nb_dim = -1;
@@ -1522,7 +1520,7 @@ read(Hdf5Utils::StandardTypes & st)
   m_hdataset.open(m_hfile,m_hpath);
   Hdf5Utils::HSpace hspace(m_hdataset.getSpace());
   {
-    const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
+    const int max_dim = 256; // Maximum number of HDF array dimensions
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
     int nb_dim = -1;

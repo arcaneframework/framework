@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtkHdfV2PostProcessor.cc                                    (C) 2000-2026 */
 /*                                                                           */
-/* Pos-traitement au format VTK HDF.                                         */
+/* Post-processing in VTK HDF format.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,30 +40,30 @@
 
 #include <map>
 
-// Ce format est décrit sur la page web suivante :
+// This format is described on the following web page:
 //
 // https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats
 //
-// Le format 2.0 avec le support intégré de l'évolution temporelle n'est
-// disponible que dans la branche master de VTK à partir d'avril 2023.
+// Format 2.0 with integrated temporal evolution support is only available
+// in the VTK master branch starting from April 2023.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Ajouter test de vérifcation des valeurs sauvegardées
+// TODO: Add verification test for saved values
 
-// TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
+// TODO: Look into saving uniqueId() (via vtkOriginalCellIds)
 
-// TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
-//       ne change pas.
+// TODO: Look into how to avoid saving the mesh at every iteration if it
+//       does not change.
 
-// TODO: Regarder la compression
+// TODO: Look into compression
 
-// TODO: gérer les variables 2D
+// TODO: handle 2D variables
 
-// TODO: hors HDF5, faire un mécanisme qui regroupe plusieurs parties
-// du maillage en une seule. Cela permettra de réduire le nombre de mailles
-// fantômes et d'utiliser MPI/IO en mode hybride.
+// TODO: outside of HDF5, implement a mechanism that groups several parts
+// of the mesh into one. This will allow reducing the number of ghost meshes
+// and using MPI/IO in hybrid mode.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,10 +92,10 @@ class VtkHdfV2DataWriter
  public:
 
   /*!
-   * \brief Classe pour conserver un couple (hdf_group,nom_du_dataset).
+   * \brief Class to store a pair (hdf_group, dataset_name).
    *
-   * Les instances de cette classe utilisent une référence sur un groupe HDF5
-   * et ce dernier doit donc vivre plus longtemps que l'instance.
+   * Instances of this class use a reference to an HDF5 group
+   * and thus this group must live longer than the instance.
    */
   struct DatasetGroupAndName
   {
@@ -113,15 +113,15 @@ class VtkHdfV2DataWriter
   };
 
   /*!
-   * \brief Classe pour conserver les information d'un offset.
+   * \brief Class to store offset information.
    *
-   * Il s'agit d'un couple (hdf_group,nom_du_dataset).
+   * This is a pair (hdf_group, dataset_name).
    *
-   * Le groupe peut être nul auquel cas il s'agit d'un offset qui est
-   * uniquement calculé et qui ne sera pas sauvegardé.
+   * The group can be null in which case it is an offset that is
+   * only calculated and will not be saved.
    *
-   * Les instances de cette classe utilisent une référence sur un groupe HDF5
-   * et ce dernier doit donc vivre plus longtemps que l'instance.
+   * Instances of this class use a reference to an HDF5 group
+   * and thus this group must live longer than the instance.
    */
   struct DatasetInfo
   {
@@ -137,7 +137,7 @@ class VtkHdfV2DataWriter
 
     HGroup* group() const { return m_group; }
     const String& name() const { return m_name; }
-    //! Valeur de l'offset. (-1) si on écrit à la fin du tableau
+    //! Offset value. (-1) if writing to the end of the array
     Int64 offset() const { return m_offset; }
     void setOffset(Int64 v) { m_offset = v; }
     friend bool operator<(const DatasetInfo& s1, const DatasetInfo& s2)
@@ -152,7 +152,7 @@ class VtkHdfV2DataWriter
     Int64 m_offset = -1;
   };
 
-  //! Informations sur l'offset de la partie à écrire associée à un rang
+  //! Offset information for the part to write associated with a rank
   struct WritePartInfo
   {
    public:
@@ -167,15 +167,15 @@ class VtkHdfV2DataWriter
 
    private:
 
-    //! Nombre d'éléments sur tous les rangs
+    //! Number of elements across all ranks
     Int64 m_total_size = 0;
-    //! Nombre d'éléments de mon rang
+    //! Number of elements on my rank
     Int64 m_size = 0;
-    //! Offset de mon rang
+    //! Offset of my rank
     Int64 m_offset = -1;
   };
 
-  //! Informations collectives sur un ItemGroup;
+  //! Collective information for an ItemGroup;
   struct ItemGroupCollectiveInfo
   {
    public:
@@ -191,14 +191,14 @@ class VtkHdfV2DataWriter
 
    public:
 
-    //! Groupe associé
+    //! Associated group
     ItemGroup m_item_group;
-    //! Informations sur l'écriture.
+    //! Writing information.
     WritePartInfo m_write_part_info;
   };
 
   /*!
-   * \brief Conserve les infos sur les données à sauver et l'offset associé.
+   * \brief Stores info about the data to be saved and the associated offset.
    */
   struct DataInfo
   {
@@ -247,25 +247,25 @@ class VtkHdfV2DataWriter
 
  private:
 
-  //! Maillage associé
+  //! Associated mesh
   IMesh* m_mesh = nullptr;
 
-  //! Gestionnaire de matériaux associé (peut-être nul)
+  //! Associated material manager (may be null)
   IMeshMaterialMng* m_material_mng = nullptr;
 
-  //! Liste des groupes à sauver
+  //! List of groups to save
   ItemGroupCollection m_groups;
 
-  //! Liste des temps
+  //! List of times
   UniqueArray<Real> m_times;
 
-  //! Nom du fichier HDF courant
+  //! Current HDF filename
   String m_full_filename;
 
-  //! Répertoire de sortie.
+  //! Output directory.
   String m_directory_name;
 
-  //! Identifiant HDF du fichier
+  //! HDF file identifier
   HFile m_file_id;
 
   HGroup m_top_group;
@@ -302,10 +302,10 @@ class VtkHdfV2DataWriter
   UniqueArray<Ref<GatherGroupInfo>> m_gather_info_materials_groups;
 
   /*!
-   * \brief Taille maximale (en kilo-octet) pour une écriture.
+   * \brief Maximum size (in kilobytes) for a write operation.
    *
-   * Si l'écriture dépasse cette taille, elle est scindée en plusieurs écriture.
-   * Cela peut être nécessaire avec MPI-IO pour les gros volumes.
+   * If the write exceeds this size, it is split into multiple writes.
+   * This may be necessary with MPI-IO for large volumes.
    */
   Int64 m_max_write_size = 0;
 
@@ -379,7 +379,7 @@ beginWrite(const VariableCollection& vars)
 {
   ARCANE_UNUSED(vars);
 
-  // Récupère le gestionnaire de matériaux s'il existe
+  // Retrieve the material manager if it exists
   m_material_mng = IMeshMaterialMng::getReference(m_mesh, false);
 
   IParallelMng* pm = m_mesh->parallelMng();
@@ -390,7 +390,7 @@ beginWrite(const VariableCollection& vars)
   const bool is_first_call = (time_index < 2);
   m_is_first_call = is_first_call;
   if (is_first_call)
-    info() << "WARNING: L'implémentation au format 'VtkHdfV2' est expérimentale";
+    info() << "WARNING: The 'VtkHdfV2' implementation is experimental";
 
   String filename = _getFileName();
 
@@ -402,9 +402,9 @@ beginWrite(const VariableCollection& vars)
   HInit();
   HInit::useMutex(pm->isThreadImplementation(), pm);
 
-  // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants :
-  // * Hdf5 a été compilé avec MPI,
-  // * on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride).
+  // It is possible to use the collective mode of HDF5 via MPI-IO in the following cases:
+  // * Hdf5 was compiled with MPI,
+  // * we are in pure MPI mode (neither shared memory mode nor hybrid mode).
   m_is_collective_io = m_is_collective_io && (pm->isParallel() && HInit::hasParallelHdf5());
   if (pm->isThreadImplementation() && !pm->isHybridImplementation())
     m_is_collective_io = false;
@@ -417,10 +417,10 @@ beginWrite(const VariableCollection& vars)
 
   bool is_master_io = pm->isMasterIO();
 
-  // Vrai si on doit participer aux écritures
-  // Si on utilise MPI/IO avec HDF5, il faut tout de même que tous
-  // les rangs fassent toutes les opérations d'écriture pour garantir
-  // la cohérence des méta-données.
+  // True if we must participate in the writes
+  // If we use MPI/IO with HDF5, all
+  // ranks must perform all write operations to guarantee
+  // metadata consistency.
   if (m_is_collective_io) {
     m_writer = pm->_internalApi()->masterParallelIORank();
     m_is_writer = (m_writer == pm->commRank());
@@ -430,12 +430,12 @@ beginWrite(const VariableCollection& vars)
     m_is_writer = is_master_io;
   }
 
-  // Indique qu'on utilise MPI/IO si demandé
+  // Indicates that we are using MPI/IO if requested
   HProperty plist_id;
   if (m_is_collective_io && m_is_writer)
     plist_id.createFilePropertyMPIIO(pm);
 
-  // Même avec MPI-IO, un seul proc doit créer le dossier.
+  // Even with MPI-IO, only one proc must create the directory.
   if (is_first_call && is_master_io)
     dir.createDirectory();
 
@@ -459,7 +459,7 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  // Initialise les informations collectives sur les groupes de mailles et noeuds
+  // Initializes collective information on cell and node groups
   _initializeItemGroupCollectiveInfos(m_all_cells_info, m_all_cells_gather_group_info);
   _initializeItemGroupCollectiveInfos(m_all_nodes_info, m_all_nodes_gather_group_info);
 
@@ -475,8 +475,8 @@ beginWrite(const VariableCollection& vars)
     total_nb_connected_node += cell.nodeIds().size();
   }
 
-  // Pour les offsets, la taille du tableau est égal
-  // au nombre de mailles plus 1.
+  // For the offsets, the array size is equal
+  // to the number of cells plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
@@ -509,11 +509,11 @@ beginWrite(const VariableCollection& vars)
 
   _initializeOffsets();
 
-  // ggi est un GatherGroupInfo pour les tableaux qui ne sont pas de taille nb_cell ou nb_node.
+  // ggi is a GatherGroupInfo for arrays that are not of size nb_cell or nb_node.
   Ref<GatherGroupInfo> ggi_ref = createRef<GatherGroupInfo>(m_mesh->parallelMng(), m_is_collective_io);
   GatherGroupInfo* ggi = ggi_ref.get();
 
-  // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
+  // TODO: create an offset for this object (or look into how to calculate it automatically
   _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, ggi, cells_offset);
   ggi->setNeedRecompute();
 
@@ -537,7 +537,7 @@ beginWrite(const VariableCollection& vars)
   }
   ggi->setNeedRecompute();
 
-  // Sauve les uniqueIds, les types et les coordonnées des noeuds.
+  // Saves the unique IDs, types, and coordinates of the nodes.
   {
     UniqueArray<Int64> nodes_uid(nb_node);
     UniqueArray<unsigned char> nodes_ghost_type(nb_node);
@@ -562,36 +562,36 @@ beginWrite(const VariableCollection& vars)
       points[index][2] = pos.z;
     }
 
-    // Sauve l'uniqueId de chaque nœud dans le dataset "GlobalNodeId".
+    // Saves the unique ID of each node in the dataset "GlobalNodeId".
     _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_uid);
 
-    // Sauve les informations sur le type de nœud (réel ou fantôme).
+    // Saves the information about the node type (real or ghost).
     _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_ghost_type);
 
-    // Sauve les coordonnées des noeuds.
+    // Saves the coordinates of the nodes.
     _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
     ggi->setNeedRecompute();
   }
 
-  // Sauve les informations sur le type de maille (réel ou fantôme)
+  // Saves the information about the cell type (real or ghost)
   _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_ghost_type);
 
-  // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
-  // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
+  // Saves the unique ID of each cell in the dataset "GlobalCellId".
+  // Using the dataset "vtkOriginalCellIds" does not work in Paraview.
   _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_uid);
 
   if (m_is_writer) {
-    // Liste des temps.
+    // List of times.
     Real current_time = m_times[time_index - 1];
-    // TODO : Remplacer ggi par nullptr en non-collective ?
+    // TODO: Replace ggi with nullptr in non-collective mode?
     _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, ggi, asConstSpan(&current_time));
 
-    // Offset de la partie.
+    // Part offset.
     Int64 comm_size = pm->commSize();
     Int64 part_offset = (time_index - 1) * comm_size;
     _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, ggi, asConstSpan(&part_offset));
 
-    // Nombre de temps
+    // Number of times
     _addInt64Attribute(m_steps_group, "NSteps", time_index);
   }
   //ggi->needRecompute();
@@ -608,8 +608,8 @@ _writeConstituentsGroups()
   if (!m_material_mng)
     return;
 
-  // Remplit les informations des groupes liés aux constituents
-  // NOTE : Pour l'instant, on ne traite que les milieux.
+  // Fills the information for groups related to constituents
+  // NOTE: For now, we only process the media.
   for (IMeshEnvironment* env : m_material_mng->environments()) {
     CellGroup cells = env->cells();
 
@@ -634,12 +634,12 @@ _writeConstituentsGroups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule l'offset de notre partie et le nombre total d'éléments.
+ * \brief Computes the offset of our part and the total number of elements.
  */
 VtkHdfV2DataWriter::WritePartInfo VtkHdfV2DataWriter::
 _computeWritePartInfo(Int64 local_size)
 {
-  // TODO: regarder pour utiliser un scan.
+  // TODO: look into using a scan.
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
@@ -687,7 +687,7 @@ namespace
     Int64 n = total_size;
     Int64 isize = n / nb_interval;
     Int64 ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
+    // For the last interval, take the remaining elements
     if ((index + 1) == nb_interval)
       isize = n - ibegin;
     return { ibegin, isize };
@@ -697,10 +697,10 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Écrit une donnée 1D ou 2D.
+ * \brief Writes a 1D or 2D data.
  *
- * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
- * sauf en cas de retour arrière où l'offset est dans data_info.
+ * For each time added, the data is written at the end of previous values
+ * unless rolling back, in which case the offset is in data_info.
  */
 void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, Int32 nb_dim,
@@ -715,28 +715,28 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
 
-  // Si positif ou nul, indique l'offset d'écriture.
-  // Sinon, on écrit à la fin du dataset actuel.
+  // If positive or zero, indicates the write offset.
+  // Otherwise, we write to the end of the current dataset.
   Int64 wanted_offset = data_info.datasetInfo().offset();
 
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
 
-  // En cas d'opération collective, local_dims et global_dims sont
-  // différents sur la première dimension. La deuxième dimension est toujours
-  // identique pour local_dims et global_dims et ne doit pas être modifiée durant
-  // tout le calcul.
+  // In case of collective operation, local_dims and global_dims are
+  // different on the first dimension. The second dimension is always
+  // identical for local_dims and global_dims and should not be modified during
+  // the entire calculation.
 
-  // Dimensions du dataset que le rang courant va écrire.
+  // Dimensions of the dataset that the current rank will write.
   FixedArray<hsize_t, MAX_DIM> local_dims;
   local_dims[0] = dim1_size;
   local_dims[1] = dim2_size;
 
-  // Dimensions cumulées de tous les rangs pour l'écriture.
+  // Cumulative dimensions of all ranks for writing.
   FixedArray<hsize_t, MAX_DIM> global_dims;
 
-  // Dimensions maximales du DataSet
-  // Pour la deuxième dimension, on suppose qu'elle est constante au cours du temps.
+  // Maximum dimensions of the DataSet
+  // For the second dimension, we assume it is constant over time.
   FixedArray<hsize_t, MAX_DIM> max_dims;
   max_dims[0] = H5S_UNLIMITED;
   max_dims[1] = dim2_size;
@@ -752,8 +752,8 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
     nb_participating_rank = gather_info->nbWriterGlobal();
     WritePartInfo part_info;
     if (data_info.m_group_info) {
-      // Si la donnée est associée à un groupe, alors les informations
-      // sur l'offset ont déjà été calculées
+      // If the data is associated with a group, then the information
+      // about the offset has already been calculated
       part_info = data_info.m_group_info->writePartInfo();
     }
     else {
@@ -763,7 +763,7 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
     my_index = part_info.offset();
   }
 
-  // La seule opération collective était _computeWritePartInfo().
+  // The only collective operation was _computeWritePartInfo().
   if (!m_is_writer) {
     return;
   }
@@ -780,11 +780,11 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
   FixedArray<hsize_t, MAX_DIM> hyperslab_offsets;
 
   if (m_is_first_call) {
-    // TODO: regarder comment mieux calculer le chunk
+    // TODO: look into how to better calculate the chunk
     FixedArray<hsize_t, MAX_DIM> chunk_dims;
     global_dims[0] = global_dim1_size;
     global_dims[1] = dim2_size;
-    // Il est important que tout le monde ait la même taille de chunk.
+    // It is important that everyone has the same chunk size.
     Int64 chunk_size = global_dim1_size / nb_participating_rank;
     if (chunk_size < 1024)
       chunk_size = 1024;
@@ -809,20 +809,20 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
     }
   }
   else {
-    // Agrandit la première dimension du dataset.
-    // On va ajouter 'global_dim1_size' à cette dimension.
+    // Expands the first dimension of the dataset.
+    // We are going to add 'global_dim1_size' to this dimension.
     dataset.open(group, name.localstr());
     file_space = dataset.getSpace();
     int nb_dimension = file_space.nbDimension();
     if (nb_dimension != nb_dim)
       ARCANE_THROW(IOException, "Bad dimension '{0}' for dataset '{1}' (should be 1)",
                    nb_dimension, name);
-    // TODO: Vérifier que la deuxième dimension est la même que celle sauvée.
+    // TODO: Check that the second dimension is the same as the one saved.
     FixedArray<hsize_t, MAX_DIM> original_dims;
     file_space.getDimensions(original_dims.data(), nullptr);
     hsize_t offset0 = original_dims[0];
-    // Si on a un offset positif issu de DatasetInfo alors on le prend.
-    // Cela signifie qu'on a fait un retour arrière.
+    // If we have a positive offset from DatasetInfo, we take it.
+    // This means we have performed a rollback.
     if (wanted_offset >= 0) {
       offset0 = wanted_offset;
       info() << "Forcing offset to " << wanted_offset;
@@ -830,8 +830,8 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
     global_dims[0] = offset0 + global_dim1_size;
     global_dims[1] = dim2_size;
     write_offset = offset0;
-    // Agrandit le dataset.
-    // ATTENTION cela invalide file_space. Il faut donc le relire juste après.
+    // Expands the dataset.
+    // WARNING this invalidates file_space. It must therefore be re-read immediately after.
     if ((herror = dataset.setExtent(global_dims.data())) < 0)
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
@@ -846,8 +846,8 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
 
   Int64 nb_write_byte = global_dim1_size * dim2_size * values_data.datatypeSize();
 
-  // Effectue l'écriture en plusieurs parties si demandé.
-  // Cela n'est possible que pour l'écriture collective.
+  // Performs the writing in multiple parts if requested.
+  // This is only possible for collective writing.
   Int64 nb_interval = 1;
   if (is_collective && m_max_write_size > 0) {
     nb_interval = 1 + nb_write_byte / (m_max_write_size * 1024);
@@ -856,7 +856,7 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
 
   for (Int64 i = 0; i < nb_interval; ++i) {
     auto [index, nb_element] = _getInterval(i, nb_interval, dim1_size);
-    // Sélectionne la partie de la donnée à écrire
+    // Selects the part of the data to write
     FixedArray<hsize_t, 2> dims;
     dims[0] = nb_element;
     dims[1] = dim2_size;
@@ -869,7 +869,7 @@ _writeDataSetGeneric(const DataInfo& data_info, GatherGroupInfo* gather_info, In
     HSpace memory_space;
     memory_space.createSimple(nb_dim, dims.data());
     Int64 data_offset = index * values_data.datatypeSize() * dim2_size;
-    // Effectue l'écriture
+    // Performs the writing
     if ((herror = dataset.write(hdf_type, values_data.data() + data_offset, memory_space, file_space, write_plist_id)) < 0)
       ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
 
@@ -1070,7 +1070,7 @@ _addStringAttribute(Hid& hid, const char* name, const String& value)
 void VtkHdfV2DataWriter::
 endWrite()
 {
-  // Sauvegarde les offsets enregistrés
+  // Save the recorded offsets
 
   if (m_is_writer) {
     for (const auto& i : m_offset_info_list) {
@@ -1094,7 +1094,7 @@ endWrite()
 void VtkHdfV2DataWriter::
 _openOrCreateGroups()
 {
-  // Tout groupe ouvert ici doit être fermé dans closeGroups().
+  // Any group opened here must be closed in closeGroups().
   m_top_group.openOrCreate(m_file_id, "VTKHDF");
   m_cell_data_group.openOrCreate(m_top_group, "CellData");
   m_node_data_group.openOrCreate(m_top_group, "PointData");
@@ -1210,7 +1210,7 @@ _writeReal3Dataset(const DataInfo& data_info, GatherGroupInfo* gather_info, IDat
   ARCANE_CHECK_POINTER(true_data);
   SmallSpan<const Real3> values(true_data->view());
   Int32 nb_value = values.size();
-  // TODO: optimiser cela sans passer par un tableau temporaire
+  // TODO: optimize this without passing through a temporary array
   UniqueArray2<Real> scalar_values;
   scalar_values.resize(nb_value, 3);
   for (Int32 i = 0; i < nb_value; ++i) {
@@ -1228,7 +1228,7 @@ _writeReal3Dataset(const DataInfo& data_info, GatherGroupInfo* gather_info, IDat
 void VtkHdfV2DataWriter::
 _writeReal2Dataset(const DataInfo& data_info, GatherGroupInfo* gather_info, IData* data)
 {
-  // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
+  // Convert to an array of 3 components where the last one will be 0.
   auto* true_data = dynamic_cast<IArrayDataT<Real2>*>(data);
   ARCANE_CHECK_POINTER(true_data);
   SmallSpan<const Real2> values(true_data->view());
@@ -1267,35 +1267,35 @@ _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step)
 void VtkHdfV2DataWriter::
 _initializeOffsets()
 {
-  // Il y a 5 valeurs d'offset utilisées :
+  // There are 5 offset values used:
   //
-  // - offset sur le nombre de mailles (CellOffsets). Cet offset a pour nombre d'éléments
-  //   le nombre de temps sauvés et est augmenté à chaque sortie du nombre de mailles. Cet offset
-  //   est aussi utilisé pour les variables aux mailles
-  // - offset sur le nombre de noeuds (PointOffsets). Il est équivalent à 'CellOffsets' mais
-  //   pour les noeuds.
-  // - offset pour "NumberOfCells", "NumberOfPoints" et "NumberOfConnectivityIds". Pour chacun
-  //   de ces champs il y a NbPart valeurs par temps, avec 'NbPart' le nombre de parties (donc
-  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a ainsi au total
-  //   NbPart * NbTimeStep dans ce champ d'offset.
-  // - offset pour le champ "Connectivity" qui s'appelle "ConnectivityIdOffsets".
-  //   Cet offset a pour nombre d'éléments le nombre de temps sauvés.
-  // - offset pour le champ "Offsets". "Offset" contient pour chaque maille l'offset dans
-  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés,
-  //   mais comme ce champ à un nombre de valeurs égal au nombre de mailles plus un il est possible
-  //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
+  // - offset on the number of meshes (CellOffsets). This offset has a number of elements
+  //   equal to the number of saved time steps and is increased at each mesh output. This offset
+  //   is also used for cell variables
+  // - offset on the number of nodes (PointOffsets). It is equivalent to 'CellOffsets' but
+  //   for nodes.
+  // - offset for "NumberOfCells", "NumberOfPoints" and "NumberOfConnectivityIds". For each
+  //   of these fields there are NbPart values per time step, with 'NbPart' being the number of parts (and
+  //   thus the number of sub-domains if no grouping is done). There are thus a total of
+  //   NbPart * NbTimeStep in this offset field.
+  // - offset for the "Connectivity" field, which is called "ConnectivityIdOffsets".
+  //   This offset has a number of elements equal to the number of saved time steps.
+  // - offset for the "Offsets" field. "Offset" contains for each mesh the offset in
+  //   "Connectivity" of the mesh node connectivity. This offset is not saved,
+  //   but since this field has a number of values equal to the number of meshes plus one it is possible
+  //   to deduce it from "CellOffsets" (it equals "CellOffsets" plus the current time index).
 
   m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");
   m_point_offset_info = DatasetInfo(m_steps_group, "PointOffsets");
   m_connectivity_offset_info = DatasetInfo(m_steps_group, "ConnectivityIdOffsets");
-  // Ces trois offsets ne sont pas sauvegardés dans le format VTK
+  // These three offsets are not saved in the VTK format
   m_offset_for_cell_offset_info = DatasetInfo("_OffsetForCellOffsetInfo");
   m_part_offset_info = DatasetInfo("_PartOffsetInfo");
   m_time_offset_info = DatasetInfo("_TimeOffsetInfo");
 
-  // Regarde si on n'a pas fait de retour-arrière.
-  // C'est le cas si le nombre de temps sauvés est supérieur au nombre
-  // de valeurs de \a m_times.
+  // Check if we haven't done a backward run.
+  // This is the case if the number of saved time steps is greater than the number
+  // of values in \a m_times.
   if (m_is_writer && !m_is_first_call) {
     IParallelMng* pm = m_mesh->parallelMng();
     const Int32 nb_rank = pm->commSize();
@@ -1313,8 +1313,8 @@ _initializeOffsets()
     if ((nb_current_step + 1) != time_index) {
       info() << "[VtkHdf] go_backward detected";
       Int32 wanted_step = time_index - 1;
-      // Signifie qu'on a fait un retour arrière.
-      // Dans ce cas, il faut relire les offsets
+      // This means a backward run has been performed.
+      // In this case, the offsets must be reread
       _readAndSetOffset(m_cell_offset_info, wanted_step);
       _readAndSetOffset(m_point_offset_info, wanted_step);
       _readAndSetOffset(m_connectivity_offset_info, wanted_step);
@@ -1331,7 +1331,7 @@ _initializeOffsets()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Post-traitement au format VtkHdf V2.
+ * \brief Post-processing in VtkHdf V2 format.
  */
 class VtkHdfV2PostProcessor
 : public ArcaneVtkHdfV2PostProcessorObject

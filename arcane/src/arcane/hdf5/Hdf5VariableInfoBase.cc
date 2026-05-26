@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5ItemVariableInfo.cc                                     (C) 2000-2023 */
 /*                                                                           */
-/* Lecture de variables au format HDF5.                                      */
+/* Reading variables in HDF5 format.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -245,9 +245,9 @@ writeGroup(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
   Integer nb_item = enumerate_group.size();
   ITraceMng* tm = pm->traceMng();
 
-  // Pour l'instant la méthode parallèle créé un tampon
-  // du nombre total d'éléments du tableau
-  ///TODO a optimiser
+  // For now, the parallel method creates a buffer
+  // of the total number of array elements
+  ///TODO to optimize
   Int64UniqueArray unique_ids(nb_item);
   {
     Integer index = 0;
@@ -262,14 +262,14 @@ writeGroup(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
     ids_writer.parallelWrite(pm,st,unique_ids,unique_ids);
   }
 
-  // Pour l'instant, on ne peut sauver que des tableaux 2D dont le nombre
-  // d'éléments dans la 2ème dimension est identique. Cela pose problème
-  // si toutes les entités n'ont pas le même nombre de noeuds. Pour
-  // éviter ce problème, on calcule le nombre max de noeud possible et on
-  // utilise cette valeur. Pour les entités qui ont moins de noeuds, on
-  // ajoute comme coordonnées des NaN. Cela n'est pas optimum notamment
-  // si une seule entité a beaucoup plus de noeuds que les autres mais
-  // cela fonctionne dans tous les cas.
+  // For now, we can only save 2D arrays where the number
+  // of elements in the second dimension is identical. This causes a problem
+  // if all entities do not have the same number of nodes. To
+  // avoid this problem, we calculate the maximum possible number of nodes and
+  // use this value. For entities that have fewer nodes, we
+  // add NaN as coordinates. This is not optimal, especially
+  // if only one entity has many more nodes than the others, but
+  // it works in all cases.
   if (save_type & SAVE_COORDS){
     IMesh* mesh = enumerate_group.mesh();
     VariableNodeReal3& nodes_coords(mesh->toPrimaryMesh()->nodesCoordinates());
@@ -300,7 +300,7 @@ writeGroup(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
           item_center += nodes_coords[inode];
         }
         item_center /= nb_node;
-        // Ajoute des NaN pour les coordonnées restantes
+        // Add NaN for remaining coordinates
         for( Integer k=nb_node; k<max_nb_node; ++k )
           coords.add(real3_nan);
         centers.add(item_center);
@@ -343,7 +343,7 @@ readGroupInfo(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
   ITraceMng* tm = pm->traceMng();
   bool is_master = pm->isMasterIO();
 
-  // Lit les unique ids sauvegardés
+  // Read the saved unique ids
   Int64UniqueArray dummy_uids;
   Int64UniqueArray saved_unique_ids;
   Hdf5Utils::StandardArrayT<Int64> ids_reader(hfile.id(),hdf_path+"_Ids");
@@ -422,10 +422,10 @@ readVariable(Hdf5Utils::HFile& hfile,const String& filename,
   //ArrayView<DataType> var_value = m_variable.asArray();
   Integer nb_var_value = var_value.size();
   if (var->isPartial()){
-    // Dans le cas d'une variables partielle, il faut d'abord
-    // mettre dans une table de hashage la valeur pour chaque uid,
-    // puis parcourir le groupe de la variable et remplir
-    // la valeur pour chaque uid.
+    // In the case of a partial variable, we must first
+    // put the value for each uid into a hash table,
+    // then iterate through the variable group and fill
+    // the value for each uid.
     HashTableMapT<Int64,DataType> values_from_uid(buf_size,true);
     for( Integer z=0; z<buf_size; ++z ){
       values_from_uid.add(unique_ids[z],buffer[z]);
@@ -560,9 +560,9 @@ writeVariable(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st)
     values.resize(index);
     unique_ids.resize(index);
   }
-  // Pour l'instant la méthode parallèle créé un tampon
-  // du nombre total d'éléments du tableau
-  ///TODO a optimiser
+  // For now, the parallel method creates a buffer
+  // of the total number of array elements
+  ///TODO to optimize
   {
     Hdf5Utils::StandardArrayT<DataType> values_writer(hfile.id(),path());
     values_writer.parallelWrite(pm,st,values,unique_ids);
@@ -691,9 +691,9 @@ writeVariable(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st)
   for( Integer i=0; i<size; ++i )
     values[i] = var_values[i];
 
-  // Comme il s'agit d'une variable scalaire, on considère que tous
-  // les processeurs ont la même valeur. Donc seul le processeur
-  // maitre écrit.
+  // Since it is a scalar variable, we consider that all
+  // processors have the same value. Therefore, only the master processor
+  // writes.
   if (is_master){
     //{
     Int64UniqueArray unique_ids;

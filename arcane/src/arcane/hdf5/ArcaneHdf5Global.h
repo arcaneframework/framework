@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneHdf5Global.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations pour la composante Arcane gérant HDF5.                       */
+/* Declarations for the Arcane component managing HDF5.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HDF5_HDF5GLOBAL_H
 #define ARCANE_HDF5_HDF5GLOBAL_H

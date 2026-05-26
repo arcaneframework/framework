@@ -1,32 +1,32 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <!--  parent-name="PostProcessorService" -->
 <service name="Hdf5MpiReaderWriter" parent-name="CheckpointService" type="caseoption">
   <name lang='fr'>arcane-hdf5-mpi-checkpoint2</name>
   <userclass>User</userclass>
   <description>
-    Protections/Reprise au format HDF5
+    HDF5 format protection and recovery
   </description>
-    
+
   <interface name="Arcane::ICheckpointWriter" inherited="false"/>
 
   <variables>
   </variables>
 
   <options>
-      
-   <!-- - - - - - fileset-size - - - - - -->
-   <simple
-    name    = "fileset-size"
-    type    = "integer"
-    default = "1"
-   >
-    <name lang='fr'>nombre-fichier-par-groupe</name>
-    <userclass>User</userclass>
-    <description>
-Nombre de fichiers par groupe. Si 1, il y aura un fichier par sous-domaine. Si 0, toutes les sorties
-se feront dans un seul fichier. Les autres valeurs ne sont pas supportés actuellement
-    </description>
-   </simple>
+
+    <!-- - - - - - fileset-size - - - - - -->
+    <simple
+      name="fileset-size"
+      type="integer"
+      default="1"
+    >
+      <name lang='fr'>nombre-fichier-par-groupe</name>
+      <userclass>User</userclass>
+      <description>
+        Number of files per group. If 1, there will be one file per subdomain. If 0, all outputs will be made in a
+        single file. Other values are not currently supported
+      </description>
+    </simple>
   </options>
 
 </service>

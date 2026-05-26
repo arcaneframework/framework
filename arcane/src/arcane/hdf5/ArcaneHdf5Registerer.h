@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneHdf5Registerer.h                                       (C) 2000-2025 */
+/* ArcaneHdf5Registerer.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe vide servant pour charger un symbole de cette bibliotheque.        */
+/* Empty class used to load a symbol from this library.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HDF5_ARCANEHDF5REGISTERER_H
 #define ARCANE_HDF5_ARCANEHDF5REGISTERER_H

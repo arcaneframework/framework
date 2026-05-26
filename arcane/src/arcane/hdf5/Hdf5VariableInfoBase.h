@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5VariableInfoBase.h                                      (C) 2000-2023 */
 /*                                                                           */
-/* Liaison d'une variable avec un fichier HDF5.                              */
+/* Linking a variable with an HDF5 file.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HDF5_HDF5VARIABLEINFOBASE_H
 #define ARCANE_HDF5_HDF5VARIABLEINFOBASE_H
@@ -32,14 +32,14 @@ class IVariable;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe de base pour lire ou écrire une variables.
+ * \brief Base class for reading or writing a variable.
  */
 class ARCANE_HDF5_EXPORT Hdf5VariableInfoBase
 {
  public:
   /*!
-   * \brief Fonctor pour faire la correspondance entre une
-   * entité du maillage courant et celle du maillage sauvegardé.
+   * \brief Functor to establish the correspondence between a
+   * entity of the current mesh and that of the saved mesh.
    */
   class ICorrespondanceFunctor
   {
@@ -58,13 +58,13 @@ class ARCANE_HDF5_EXPORT Hdf5VariableInfoBase
  public:
   static Hdf5VariableInfoBase* create(IMesh* mesh,const String& name,
                                       const String& family);
-  //! Créé une instance pour la variable \a variable.
+  //! Creates an instance for the variable \a variable.
   static Hdf5VariableInfoBase* create(IVariable* variable);
                                           
  public:
-  //! Chemin dans le fichier Hdf5 contenant la valeur de la variable
+  //! Path in the Hdf5 file containing the variable value
   const String& path() const { return m_path; }
-  //! Positionne le chemin dans le fichier Hdf5 contenant la valeur de la variable
+  //! Sets the path in the Hdf5 file containing the variable value
   void setPath(const String& path) { m_path = path; }
   virtual void readVariable(Hdf5Utils::HFile& hfile,const String& filename,
                             Hdf5Utils::StandardTypes& st,const String& ids_hpath,IData* data) =0;
@@ -95,4 +95,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

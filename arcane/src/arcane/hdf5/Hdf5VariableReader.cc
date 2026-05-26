@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5VariableReader.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Lecture de variables au format HDF5.                                      */
+/* Reading variables in HDF5 format.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -209,14 +209,14 @@ _checkValidVariable(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Reading variables in HDF5 format.
  */
 class Hdf5VariableReaderHelper
 : public Hdf5VariableReaderHelperBase
 {
  public:
   /*!
-   * \todo permettre autre chose que 'Real' comme type de variable.
+   * \todo allow something other than 'Real' as variable type.
    */
   class TimeVariableInfoBase
   {
@@ -240,12 +240,12 @@ class Hdf5VariableReaderHelper
     VariableItemReal m_end_variable;
 
     /*!
-     * \brief Contient l'indice dans le tableau des temps du temps actuellement lu.
+     * \brief Contains the index in the time array of the currently read time.
      *
-     * Cet indice vaut (-1) si aucun temps n'a été lu.
+     * This index is -1 if no time has been read.
      */
     Integer m_current_index;
-    //! Temps du maillage auquel on a lu cet index.
+    //! Mesh timestamp at which this index was read.
     Int64 m_mesh_timestamp;
   };
 
@@ -258,20 +258,20 @@ class Hdf5VariableReaderHelper
  public:
 
   /*!
-   * \brief Ouvre le fichier contenant les informations de lecture.
+   * \brief Opens the file containing the reading information.
    *
-   * \a is_start est vrai lors du démarrage d'un cas. Si ce n'est pas le cas,
-   * il n'y a pas besoin de lire les variables d'initialisation.
+   * \a is_start is true when starting a case. If not,
+   * there is no need to read initialization variables.
    */
   void open(bool is_start);
 
-  //! Lit les informations
+  //! Reads the information
   void readInit();
 
-  //! Lecture et mise à jour des variables
+  //! Reads and updates time variables
   void readAndUpdateTimeVariables(Real wanted_time);
 
-  //! Notification d'un retout-arrière 
+  //! Notification of a rollback
   void notifyRestore();
 
 
@@ -332,7 +332,7 @@ open(bool is_start)
   XmlNode root_element = m_xml_document_holder->documentNode().documentElement();
   m_hdf5_file_name = root_element.attrValue("file-name",true);
 
-  // Lecture des variables pour l'initialisation
+  // Reading variables for initialization
   if (is_start){
     XmlNodeList variables_elem = root_element.children("init-variable");
     for( XmlNode elem : variables_elem ){
@@ -389,7 +389,7 @@ open(bool is_start)
 void Hdf5VariableReaderHelper::
 readInit()
 {
-  //TODO lancer exception en cas d'erreur.
+  //TODO throw exception in case of error.
   HFile hfile;
 
   for( Integer iz=0, izs=m_init_variables.size(); iz<izs; ++iz ){
@@ -430,7 +430,7 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
       break;
     }
   }
-  // Ne fait rien si on n'est pas dans la table
+  // Do nothing if not in the table
   if (current_index<0)
     return;
   info(4) << " FIND TIME: var=" << var.variable()->fullName() << " current=" << wanted_time
@@ -439,9 +439,9 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
   Int64 mesh_timestamp = var.variable()->meshHandle().mesh()->timestamp();
   bool need_read = current_index!=vi->m_current_index || vi->m_mesh_timestamp!=mesh_timestamp;
   if (nb_value==1 || (current_index+1)==nb_value){
-    // On est à la fin de la table.
-    // Dans ce cas, prend la valeur correspondant au dernier index sans faire
-    // d'interpolation.
+    // We are at the end of the table.
+    // In this case, take the value corresponding to the last index without performing
+    // interpolation.
     if (need_read){
       RealUniqueArray buffer;
       String begin_path = vi->m_time_path_values[current_index].path();
@@ -516,8 +516,8 @@ readAndUpdateTimeVariables(Real wanted_time)
 void Hdf5VariableReaderHelper::
 notifyRestore()
 {
-  // Pour les variables qui dépendent du temps, indique que le temps
-  // courant est invalide et qu'il faut le recharger
+  // For variables that depend on time, indicates that the current time
+  // is invalid and must be reloaded
   for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
     TimeVariableInfoBase* vi = m_time_variables[iz];
     vi->m_current_index = -1;
@@ -530,16 +530,16 @@ notifyRestore()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Reading variables in HDF5 format.
  */
 class Hdf5VariableReaderHelper2
 : public Hdf5VariableReaderHelperBase
 {
  public:
   /*!
-   * Nouveau format permettant de relire n'importe quelle variable
-   * (mais pour l'instant uniquement avec le type 'Real'...)
-   * //TODO: traiter changement de maillage.
+   * New format allowing reading of any variable
+   * (but for now only with the 'Real' type...)
+   * //TODO: handle mesh change.
    */
   class TimeVariableInfoBase
   {
@@ -578,18 +578,18 @@ class Hdf5VariableReaderHelper2
     Ref<IData> m_end_data;
 
     /*!
-     * \brief Contient l'indice dans le tableau des temps du temps actuellement lu.
+     * \brief Contains the index in the time array of the currently read time.
      *
-     * Cet indice vaut (-1) si aucun temps n'a été lu.
+     * This index is -1 if no time has been read.
      */
     Integer m_current_index;
-    //! Temps du maillage auquel on a lu cet index.
+    //! Mesh timestamp when this index was read.
     Int64 m_mesh_timestamp;
   };
 
   /*!
-   * \brief Infos de correspondance entre les uids sauvés et ceux
-   * du maillage courant pour le groupe \a group.
+   * \brief Correspondence information between saved uids and those
+   * of the current mesh for the group \a group.
    */
   class CorrespondanceInfo : public Hdf5VariableInfoBase::ICorrespondanceFunctor
   {
@@ -634,11 +634,10 @@ class Hdf5VariableReaderHelper2
  public:
 
   /*!
-   * \brief Spécifie les variables qu'on souhaite relire.
+   * \brief Specifies the variables that we want to reread.
    *
-   * Cette méthode doit être appelée avant open(). Si cette méthode n'est
-   * pas appelée, on essaie de relire toutes les variables sauvegardées dans
-   * le fichier.
+   * This method must be called before open(). If this method is not called,
+   * it attempts to reread all variables saved in the file.
    */
   void setVariables(ConstArrayView<IVariable*> vars)
   {
@@ -646,17 +645,17 @@ class Hdf5VariableReaderHelper2
   }
 
   /*!
-   * \brief Ouvre le fichier contenant les informations de lecture.
+   * \brief Opens the file containing the reading information.
    *
-   * \a is_start est vrai lors du démarrage d'un cas. Si ce n'est pas le cas,
-   * il n'y a pas besoin de lire les variables d'initialisation.
+   * \a is_start is true when starting a case. If not,
+   * there is no need to read the initialization variables.
    */
   void open(bool is_start);
 
-  //! Lecture et mise à jour des variables
+  //! Reading and updating variables
   void readAndUpdateTimeVariables(Real wanted_time);
 
-  //! Notification d'un retout-arrière 
+  //! Notification of a rollback 
   void notifyRestore();
 
   Real2 timeInterval(IVariable* var)
@@ -746,7 +745,7 @@ open(bool is_start)
     info(4) << "TIME_VARIABLE: name=" << var_name << " family=" << var_family;
     if (!_isWanted(var_name,var_family))
       continue;
-    //TODO: creer la variable si elle n'existe pas ou faire quelque chose (exception...)
+    //TODO: create the variable if it doesn't exist or do something (exception...)
     Hdf5VariableInfoBase* var_info = Hdf5VariableInfoBase::create(m_mesh,var_name,var_family);
     //TODO: tmp
     String group_name = var_info->variable()->itemGroupName();
@@ -782,7 +781,7 @@ void Hdf5VariableReaderHelper2::
 _checkCreateCorrespondance(Hdf5VariableInfoBase* var_info,HFile& file_id,const String& group_path,bool is_start)
 {
   IVariable* var = var_info->variable();
-  // Vérifie si la correspondance existe déjà.
+  // Checks if the correspondence already exists.
   ItemGroup group = var->itemGroup();
   CorrespondanceInfo* ci = 0;
   std::map<String,CorrespondanceInfo*>::const_iterator iter = m_correspondance_map.find(group.fullName());
@@ -805,21 +804,17 @@ _checkCreateCorrespondance(Hdf5VariableInfoBase* var_info,HFile& file_id,const S
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recherche à quel entité du maillage sauvegardé correspondant
- * une entité du maillage actuel.
+ * \brief Finds which saved mesh entity corresponds to a current mesh entity.
  *
- * Lorsqu'on relit les valeurs des variables d'un fichier, on supporte le fait
- * que le maillage actuel n'est pas forcément le même que le maillage
- * sauvegardé. Dans ce cas, les uniqueId des entités ne correspondent pas.
- * Il faut donc chercher à quel entité sauvée correspondant chaque entité
- * du maillage actuel. Pour savoir laquelle utiliser, on prend celle
- * du maillage d'origine la plus proche de celle du maillage actuel.
- * Comme seules les coordonnées initiales sont sauvées, cela ne fonctionne
- * correctement que lors de l'initialisation. Il ne faut pas faire
- * ce traitement en reprise. On sauvegarde donc cette information dans
- * une variable.
- * TODO: Il faudrait pouvoir utiliser un autre algorithme que juste
- * l'entité la plus proche.
+ * When rereading variable values from a file, we assume that the current mesh
+ * is not necessarily the same as the saved mesh. In this case, the uniqueIds
+ * of the entities do not match. Therefore, we must find which saved entity
+ * corresponds to each current mesh entity. To know which one to use, we take
+ * the one from the original mesh closest to the current mesh. Since only
+ * initial coordinates are saved, this only works correctly during
+ * initialization. This processing should not be done during restart. This
+ * information is therefore saved in a variable.
+ * TODO: It would be necessary to be able to use an algorithm other than just the closest entity.
  */
 void Hdf5VariableReaderHelper2::
 _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView saved_uids,
@@ -850,7 +845,7 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
       item_center = nodes_coords[node];
     }
 
-    // Recherche l'entité la plus proche.
+    // Search for the closest entity.
     Real min_dist = FloatInfo<Real>::maxValue();
     Integer min_index = -1;
     for( Integer z=0; z<nb_orig_item; ++z ){
@@ -868,13 +863,12 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
     corresponding_uids.add(saved_uids[min_index]);
   }
 
-  // Pour l'instant et pour se simplifier la vie en cas de repartitionnement
-  // de maillage, on récupère toutes les infos des autres sous-domaine.
-  // Ce n'est pas idéal car cela duplique les infos chez tout le monde,
-  // mais cela permet de ne pas avoir à gérer le repartitionnement.
-  // A terme, il faudrait répartir ces infos sur chaque proc et les
-  // regrouper au moment de mettre à jour la table de hashage lors
-  // d'un changement de maillage.
+  // For now, and to simplify things in case of mesh redistribution
+  // of the mesh, we retrieve all information from other subdomains.
+  // This is not ideal because it duplicates information everywhere,
+  // but it avoids having to manage the redistribution.
+  // Eventually, this information should be distributed to each process
+  // and grouped when updating the hash table during a mesh change.
   Int64UniqueArray global_uids;
   pm->allGatherVariable(corresponding_uids,global_uids);
   ci->m_corresponding_uids.resize(global_uids.size());
@@ -919,7 +913,7 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
     }
     current_index = i;
     if ((i+1)==nb_value){
-      // Atteint la fin de la table. Ne fait rien.
+      // Reached the end of the table. Does nothing.
       current_index = -1;
       break;
     }
@@ -931,16 +925,16 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
       break;
     }
   }
-  // Ne fait rien si on n'est pas dans la table
+  // Does nothing if we are not in the table
   if (current_index<0)
     return;
 
-  //TODO utiliser le modifiedTime du groupe de la variable plutot que du maillage
+  //TODO use the modifiedTime of the variable group instead of the mesh
   IVariable* variable = vi->variable();
   Int64 mesh_timestamp = variable->meshHandle().mesh()->timestamp();
 
-  // Il faut relire les infos si on change d'indice dans la table
-  // ou si le maillage change
+  // We must reread the info if we change the index in the table
+  // or if the mesh changes
   bool need_read = current_index!=vi->m_current_index || vi->m_mesh_timestamp!=mesh_timestamp;
   if (need_read)
     vi->rebuildData();
@@ -1030,8 +1024,8 @@ readAndUpdateTimeVariables(Real wanted_time)
 void Hdf5VariableReaderHelper2::
 notifyRestore()
 {
-  // Pour les variables qui dépendent du temps, indique que le temps
-  // courant est invalide et qu'il faut le recharger
+  // For variables that depend on time, indicates that the time
+  // current is invalid and must be reloaded
   for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
     TimeVariableInfoBase* vi = m_time_variables[iz];
     vi->m_current_index = -1;
@@ -1044,7 +1038,7 @@ notifyRestore()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Reading variables in HDF5 format.
  */
 class Hdf5VariableReader
 : public ArcaneHdf5VariableReaderObject
@@ -1069,7 +1063,7 @@ class Hdf5VariableReader
   }
   void onTimeLoopContinueInit() override
   {
-    // En reprise, il faut charger les variables mais pas les relire
+    // On resume, variables must be loaded but not reread
     _load(false);
   }
   void onTimeLoopEndLoop() override {}
@@ -1138,7 +1132,7 @@ Hdf5VariableReader::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Reading variables in HDF5 format.
  */
 class ManualHdf5VariableReader
 : public BasicService
@@ -1231,7 +1225,7 @@ ManualHdf5VariableReader::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5 via un descripteur XML
+ * \brief Reading variables in HDF5 format via an XML descriptor
  */
 class OldManualHdf5VariableReader
 : public BasicService

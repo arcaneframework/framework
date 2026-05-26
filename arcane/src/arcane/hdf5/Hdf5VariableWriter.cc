@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5VariableWriter.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Ecriture de variables au format HDF5.                                     */
+/* Writing variables in HDF5 format.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@ class Hdf5VariableWriterHelper
   String m_xml_file_name;
   String m_hdf5_file_name;
   Hdf5Utils::StandardTypes m_types;
-  HFile m_file_id; //!< Identifiant HDF du fichier 
+  HFile m_file_id; //!< HDF file identifier 
   ScopedPtrT<IXmlDocumentHolder> m_xml_document_holder;
   UniqueArray<Hdf5VariableInfoBase*> m_exit_variables;
 };
@@ -90,7 +90,7 @@ open()
   XmlNode root_element = m_xml_document_holder->documentNode().documentElement();
   m_hdf5_file_name = root_element.attrValue("file-name",true);
 
-  // Lecture des variables pour les sorties finales
+  // Reading variables for final outputs
   {
     XmlNodeList variables_elem = root_element.children("exit-variable");
     for( XmlNode elem : variables_elem ){
@@ -112,7 +112,7 @@ open()
 void Hdf5VariableWriterHelper::
 writeOnExit()
 {
-  //TODO lancer exception en cas d'erreur.
+  //TODO throw exception in case of error.
   HFile hfile;
 
   if (m_mesh->parallelMng()->isMasterIO()){
@@ -130,7 +130,7 @@ writeOnExit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture de variables au format HDF5.
+ * \brief Writing variables in HDF5 format.
  */
 class Hdf5VariableWriter
 : public ArcaneHdf5VariableWriterObject
@@ -251,8 +251,8 @@ class ManualHdf5DataWriter
     var_info->setPath(path);
     var_info->writeVariable(m_hdf_file,m_hdf5_types);
     if (m_index==1){
-      // HACK: pour l'instant, sauve uniquement les infos de groupe lors de la premiere protection
-      // Normalement, cela devrait etre specifié par l'API.
+      // HACK: for now, only save group info during the first protection
+      // Normally, this should be specified by the API.
       ItemGroup group = var->itemGroup();
       if (!group.null() && m_saved_groups.find(group)==m_saved_groups.end()){
         Integer save_type = Hdf5VariableInfoBase::SAVE_IDS + Hdf5VariableInfoBase::SAVE_COORDS;
@@ -282,7 +282,7 @@ class ManualHdf5DataWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture de variables au format HDF5.
+ * \brief Writing variables in HDF5 format.
  */
 class ManualHdf5VariableWriter
 : public PostProcessorWriterBase
@@ -298,10 +298,10 @@ class ManualHdf5VariableWriter
   {
   }
 
-  //! Retourne l'écrivain associé à ce post-processeur
+  //! Returns the writer associated with this post-processor
   virtual IDataWriter* dataWriter() { return m_writer; }
 
-  //! Notifie qu'une sortie va être effectuée avec les paramètres courants.
+  //! Notifies that an output will be performed with the current parameters.
   virtual void notifyBeginWrite()
   {
     _setFileName();
@@ -311,10 +311,10 @@ class ManualHdf5VariableWriter
     m_writer = new ManualHdf5DataWriter(subDomain()->parallelMng(),index,baseDirectoryName(),m_file_name);
   }
 
-  //! Notifie qu'une sortie vient d'être effectuée.
+  //! Notifies that an output has just been performed.
   virtual void notifyEndWrite()
   {
-    // Ecrit le fichier XML contenant les infos des temps et des variables
+    // Writes the XML file containing time and variable information
     bool is_master = subDomain()->parallelMng()->isMasterIO();
     if (is_master){
       IApplication* app = subDomain()->application();
@@ -326,7 +326,7 @@ class ManualHdf5VariableWriter
       RealConstArrayView my_times = times();
       for( VariableCollection::Enumerator ivar(variables); ++ivar; ){
         IVariable* var = *ivar;
-        // Ne gère que les variables sur des entités du maillage.
+        // Only handles variables on mesh entities.
         if (var->itemKind()==IK_Unknown)
           continue;
         XmlNode x = root_element.createAndAppendElement("time-variable");
@@ -344,13 +344,13 @@ class ManualHdf5VariableWriter
       if (m_writer)
         m_writer->writeInfos(xml_bytes);
       app->ioMng()->writeXmlFile(info_doc.get(),"toto.xml");
-      // Il faut écrire le fichier XML dans le fichier hdf5.
+      // The XML file must be written into the hdf5 file.
     }
     delete m_writer;
     m_writer = 0;
   }
 
-  //! Ferme l'écrivain. Après fermeture, il ne peut plus être utilisé
+  //! Closes the writer. After closing, it can no longer be used
   virtual void close() {}
 
  private:

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5MpiReaderWriter.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Lecture/Ecriture au format HDF5.                                          */
+/* HDF5 format Reading/Writing.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,7 +58,7 @@
 
 //#define ARCANE_TEST_HDF5MPI
 
-// Pour l'instant (1.8.0 beta 2), cela ne fonctionne pas sur tera 10
+// For now (1.8.0 beta 2), this does not work on tera 10
 // #define ARCANE_TEST_HDF5DIRECT
 
 /*---------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ initialize()
         fatal() << "Error in MPI_Comm_create";
     }
 
-    // Si ce n'est pas moi qui écrit, n'ouvre pas le fichier
+    // If I am not the one writing, do not open the file
     if (m_send_rank!=m_my_rank)
       return;
     if (m_open_mode==OpenModeTruncate || m_open_mode==OpenModeAppend){
@@ -220,27 +220,27 @@ initialize()
       //m_file_id.openTruncate("toto",plist_id);
       //}
       //else
-      if (m_open_mode==OpenModeTruncate){
-        info() << " BEGIN OPEN TRUNCATE";
-        m_file_id.openTruncate(m_filename,plist_id);
-        info() << " END OPEN TRUNCATE";
-      }
-      else if (m_open_mode==OpenModeAppend){
-        info() << " BEGIN OPEN ADD";
-        m_file_id.openAppend(m_filename,plist_id);
-        info() << " END OPEN ADD";
-      }
+    if (m_open_mode==OpenModeTruncate){
+      info() << " BEGIN OPEN TRUNCATE";
+      m_file_id.openTruncate(m_filename,plist_id);
+      info() << " END OPEN TRUNCATE";
     }
-    if (m_sub_group_name!="/"){
-      info() << " CHECK CREATE GROUP name=" << m_sub_group_name;
-      //m_sub_group_id.checkDelete(m_file_id,m_sub_group_name);
-      m_sub_group_id.recursiveCreate(m_file_id,m_sub_group_name);
-      info() << " END CHECK CREATE GROUP name=" << m_sub_group_name;
+    else if (m_open_mode==OpenModeAppend){
+      info() << " BEGIN OPEN ADD";
+      m_file_id.openAppend(m_filename,plist_id);
+      info() << " END OPEN ADD";
     }
-    else
-      m_sub_group_id.open(m_file_id,m_sub_group_name);
-    m_variable_group_id.create(m_sub_group_id,"Variables");
   }
+  if (m_sub_group_name!="/"){
+    info() << " CHECK CREATE GROUP name=" << m_sub_group_name;
+    //m_sub_group_id.checkDelete(m_file_id,m_sub_group_name);
+    m_sub_group_id.recursiveCreate(m_file_id,m_sub_group_name);
+    info() << " END CHECK CREATE GROUP name=" << m_sub_group_name;
+  }
+  else
+    m_sub_group_id.open(m_file_id,m_sub_group_name);
+  m_variable_group_id.create(m_sub_group_id,"Variables");
+}
 
   if (m_file_id.isBad()){
     OStringStream ostr;
@@ -338,29 +338,29 @@ beginWrite(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture en parallèle.
+ * \brief Parallel writing.
  *
- * \warning En cours de test, pas utilisable.
+ * \warning Under test, not usable.
  */
 void Hdf5MpiReaderWriter::
 _writeValParallel(IVariable* v,const ISerializedData* sdata)
 {
   SerializeBuffer sb;
   sb.setMode(ISerializer::ModeReserve);
-  sb.reserve(DT_Int32,1); // Pour indiquer la fin des envois
+  sb.reserve(DT_Int32,1); // To indicate the end of sends
   sb.reserve(v->fullName());
-  sb.reserve(m_sub_group_name); //!< Nom du groupe.
-  //sb.reserveInteger(1); // Pour le type de données
-  //sb.reserveInteger(1); // Pour la dimension
+  sb.reserve(m_sub_group_name); //!< Group name.
+  //sb.reserveInteger(1); // For data type
+  //sb.reserveInteger(1); // For dimension
   //v->serialize(&sb,0);
   sdata->serialize(&sb);
   sb.allocateBuffer();
   sb.setMode(ISerializer::ModePut);
-  sb.putInt32(1); // Indique qu'il s'agit d'un message non vide
+  sb.putInt32(1); // Indicates a non-empty message
   sb.put(v->fullName());
-  sb.put(m_sub_group_name); //!< Nom du groupe.
-  //sb.putInteger(v->dataType()); // Pour le type de données
-  //sb.putInteger(v->dimension()); // Pour la dimension
+  sb.put(m_sub_group_name); //!< Group name.
+  //sb.putInteger(v->dataType()); // For data type
+  //sb.putInteger(v->dimension()); // For dimension
   //v->serialize(&sb,0);
   sdata->serialize(&sb);
 
@@ -452,7 +452,7 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
   Int32UniqueArray int32_array;
   if (m_is_parallel && m_fileset_size!=1){
     if (m_send_rank==m_my_rank){
-      // Je recois les valeurs des autres
+      // I receive the values from others
       nb_element_to_write = 0;
       for( Integer i=m_send_rank; i<=m_last_recv_rank; ++i ){
         nb_element_to_write += offset_info->second.m_all_sizes[i];
@@ -481,7 +481,7 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
     }
     else{
       return;
-      // J'envoie à mon référent
+      // I send to my reference
       //switch(sdata->baseDataType()){
       //case DT_Real:
       //_send(sdata,Real());
@@ -494,7 +494,7 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
   HGroup var_base_group;
   var_base_group.recursiveCreate(m_file_id,sub_group_name);
 
-  // Création du groupe contenant les informations de la variable
+  // Creation of the group containing the variable information
   HGroup group_id;
   //group_id.create(m_variable_group_id,var_group_name);
   group_id.create(var_base_group,var_group_name);
@@ -519,7 +519,7 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
   //Integer dimension_array_size = dimensions.size();
 
 #if 0
-  // Sauve les informations concernant les tailles et dimensions de la variable
+  // Save the information concerning the sizes and dimensions of the variable
   {
     hsize_t att_dims[1];
     att_dims[0] = 9;
@@ -550,8 +550,8 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
 #endif
 
 #if 0
-  // Si la variable est de type tableau à deux dimensions, sauve les
-  // tailles de la deuxième dimension par élément.
+  // If the variable is a two-dimensional array type, save the
+  // sizes of the second dimension per element.
   if (dimension_array_size!=0){
     hsize_t att_dims[1];
     att_dims[0] = dimension_array_size;
@@ -573,7 +573,7 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
   //IParallelMng* pm = m_parallel_mng;
   //Integer nb_rank = pm->commSize();
 
-  // Maintenant, sauve les valeurs si necessaire
+  // Now, save the values if necessary
   if (nb_base_element!=0 && ptr!=0){
     debug(Trace::High) << "Variable " << var_group_name << " begin dumped (nb_base_element=" << nb_base_element << ").";
 
@@ -686,7 +686,7 @@ _readDim2(IVariable* var)
 {
   const char* func_name = "Hdf5MpiReaderWriter::_readDim2()";
 
-  const int max_dim = 256; // Nombre maxi de dimensions des tableaux HDF
+  const int max_dim = 256; // Maximum number of dimensions for HDF arrays
 
   String vname = _variableGroupName(var);
 
@@ -695,9 +695,9 @@ _readDim2(IVariable* var)
   Integer dimension_array_size = 0;
   Integer nb_element = 0;
   Integer nb_dimension = -1;
-  // Regarde si le nom correspondant est dans la liste des variables.
-  // S'il n'y est pas, cela signifie que le tableau n'a pas été sauvé et
-  // donc que ses dimensions sont nulles.
+  // Checks if the corresponding name is in the list of variables.
+  // If it is not there, it means that the array was not saved and
+  // therefore its dimensions are null.
   {
     bool is_found = false;
     for( StringList::Enumerator i(m_variables_name); ++i; )
@@ -712,7 +712,7 @@ _readDim2(IVariable* var)
     }
   }
 
-  // Récupère le groupe contenant les informations de la variable
+  // Retrieves the group containing the variable information
   HGroup group_id;
   //group_id.open(m_variable_group_id,vname);
   group_id.open(m_sub_group_id,vname);
@@ -728,14 +728,14 @@ _readDim2(IVariable* var)
   Integer dim1_size = 0;
   Integer dim2_size = 0;
   Int64UniqueArray dims;
-  // Récupère les informations concernant les tailles et dimensions de la variable
+  // Retrieves the information concerning the sizes and dimensions of the variable
   {
     HAttribute att_id;
     att_id.open(group_id,"Dims");
     HSpace space_id = att_id.getSpace();
 		
-    // On attend une seule dimension, et le nombre d'eléments de
-    // l'attribut (hdf_dims[0]) doit être égal à 1 ou 2.
+    // We expect a single dimension, and the number of elements of
+    // the attribute (hdf_dims[0]) must be equal to 1 or 2.
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
@@ -785,8 +785,8 @@ _readDim2(IVariable* var)
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
-    // Vérifie que le nombre d'éléments du dataset est bien égal à celui
-    // attendu.
+    // Checks that the number of elements in the dataset is equal to that
+    // expected.
     if ((Integer)hdf_dims[0]!=dimension_array_size){
       OStringStream ostr;
       ostr() << "Wrong number of elements in 'Dim2' for variable '"
@@ -845,10 +845,10 @@ _readVal(IVariable* v,IData* data)
   data->allocateBufferForSerializedData(sd.get());
 
   //bool no_dump = v.property() & IVariable::PNoDump;
-  // Lit toujours, car le fait de sauver ou non se fait en amont
+  // Always read, because whether or not to save is done upstream
   //bool no_dump = false;
   if (storage_size!=0){
-    // Récupère le groupe contenant les informations de la variable
+    // Retrieves the group containing the variable information
     HGroup group_id;
     //group_id.open(m_variable_group_id,var_group_name);
     group_id.open(m_sub_group_id,var_group_name);
@@ -898,7 +898,7 @@ setMetaData(const String& meta_data)
     IParallelMng* pm = m_parallel_mng;
     Integer nb_rank = pm->commSize();
     if (m_send_rank!=m_my_rank){
-      // Envoie le groupe et les meta donnees
+      // Sends the group and the meta data
       SerializeBuffer sb;
       sb.setMode(ISerializer::ModeReserve);
       sb.reserve(m_sub_group_name);
@@ -1004,13 +1004,13 @@ endWrite()
       _receiveRemoteVariables();
     }
     else{
-      // Envoie un message de fin
+      // Sends an end message
       SerializeBuffer sb;
       sb.setMode(ISerializer::ModeReserve);
-      sb.reserve(DT_Int32,1); // Pour indiquer la fin des envoies
+      sb.reserve(DT_Int32,1); // To indicate the end of sends
       sb.allocateBuffer();
       sb.setMode(ISerializer::ModePut);
-      sb.putInt32(0); // Indique qu'il s'agit d'un message de fin
+      sb.putInt32(0); // Indicates it is an end message
       m_parallel_mng->sendSerializer(&sb,m_send_rank);
     }
   }
