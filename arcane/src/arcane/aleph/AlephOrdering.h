@@ -24,7 +24,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire de reordering
+ * \brief Reordering manager
  */
 class AlephOrdering
 : public TraceAccessor

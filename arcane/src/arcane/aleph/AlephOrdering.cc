@@ -131,7 +131,7 @@ initCellOrder(void)
 
 /******************************************************************************
  * initTwiceCellOrder
- * Pour le mode Complexe
+ * For Complex mode
  *****************************************************************************/
 void AlephOrdering::
 initTwiceCellOrder(void)

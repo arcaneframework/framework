@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephPETSc.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation PETSc de Aleph.                                            */
+/* PETSc implementation of Aleph.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@
 #include "petscksp.h"
 #include "petscsys.h"
 
-// TODO: mieux gérer les sous-versions de PETSC
+// TODO: better handle PETSC sub-versions
 #if PETSC_VERSION_GE(3,6,1)
 #include "petscmat.h"
 #elif PETSC_VERSION_(3,3,0)
@@ -55,9 +55,9 @@ const PetscInt* _toPetscInt(const AlephInt* v)
 inline void
 petscCheck(PetscErrorCode error_code)
 {
-  // Note GG: Je ne sais pas vraiment à partir de quelle version de PETSc
-  // la valeur 'PETSC_SUCCESS' la fonction 'PetscCallVoid' sont
-  // disponibles mais elles le sont dans la 3.18.0.
+  // Note GG: I don't really know from which PETSc version
+  // the value 'PETSC_SUCCESS' and the function 'PetscCallVoid'
+  // are available, but they are available in 3.18.0.
 #if PETSC_VERSION_GE(3,19,0)
   if (error_code==PETSC_SUCCESS)
     return;
@@ -175,11 +175,11 @@ class PETScAlephFactoryImpl
     for (auto* v : m_IAlephTopologys)
       delete v;
     if (global_need_petsc_finalize){
-      // TODO: Il faudrait appeler PETscFinalize() mais il
-      // faut le faire faire avant le MPI_Finalize() ce qui
-      // n'est pas toujours le cas suivant quand cette fabrique
-      // est détruite. En attendant, on n'appelle pas la fonction
-      //PetscFinalize();
+      // TODO: PETscFinalize() should be called, but it
+      // must be done before MPI_Finalize(), which
+      // is not always the case when this factory
+      // is destroyed. For now, we do not call the
+      // PetscFinalize() function;
       global_need_petsc_finalize = false;
     }
   }
@@ -253,7 +253,7 @@ AlephTopologyPETSc(ITraceMng* tm, AlephKernel* kernel, Integer index, Integer nb
 void AlephTopologyPETSc::
 _checkInitPETSc()
 {
-  // Ne fait rien si PETSc a déjà été initialisé.
+  // Does nothing if PETSc has already been initialized.
   PetscBool is_petsc_initialized = PETSC_FALSE;
   PetscInitialized(&is_petsc_initialized);
   if (is_petsc_initialized==PETSC_TRUE)
@@ -315,7 +315,7 @@ AlephVectorCreate(void)
       jLower=m_kernel->topology()->gathered_nb_row(iCpu);
     jUpper=m_kernel->topology()->gathered_nb_row(iCpu+1);
   }
-  // Mise à jour de la taille locale du buffer pour le calcul plus tard de la norme max, par exemple
+  // Update the local buffer size for later max norm calculation, for example
   jSize=jUpper-jLower;
   VecCreateMPI(MPI_COMM_SUB,
                jSize, // n
@@ -334,7 +334,7 @@ AlephVectorSet(const double *bfr_val, const AlephInt *bfr_idx, Integer size)
 {
   VecSetValues(m_petsc_vector,size,_toPetscInt(bfr_idx),bfr_val,INSERT_VALUES);
   debug()<<"\t\t[AlephVectorPETSc::AlephVectorSet] "<<size<<" values inserted!";
-  // En séquentiel, il faut le fair aussi avec PETSc
+  // In sequential mode, it must also be done with PETSc
   AlephVectorAssemble();
 }
 
@@ -507,7 +507,7 @@ AlephMatrixFill(int size, AlephInt* rows, AlephInt* cols, double *values)
     MatSetValue(m_petsc_matrix, rows[i], cols[i], values[i], INSERT_VALUES);
   }
   debug()<<"\t\t[AlephMatrixPETSc::AlephMatrixFill] done";
-  // PETSc réclame systématiquement l'assemblage
+  // PETSc systematically requires assembly
   AlephMatrixAssemble();
 }
 
@@ -600,7 +600,7 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   case TypesSolver::DIAGONAL : PCSetType(prec,PCJACOBI); break;
     // Incomplete factorization preconditioners.
   case TypesSolver::ILU:
-    // ILU ne fonctionne pas en parallèle avec PETSc (sauf si compilé avec Hypre)
+    // ILU does not work in parallel with PETSc (unless compiled with Hypre)
     // ILU can be set up in parallel via a sub-preconditioner to Block-Jacobi preconditioner
     if (is_parallel)
       PCSetType(prec,PCBJACOBI);

@@ -88,13 +88,13 @@ public:
     delete m_sloop_topology;
   }
 public:
-  // On backup la session courante et on initialise la nouvelle session avec notre m_sloop_comminfo
+  // We back up the current session and initialize the new session with our m_sloop_comminfo
   void backupAndInitialize(){
     if (!m_participating_in_solver) return;
     SLOOP::SLOOPInitSession(m_sloop_comminfo,SLOOP::WITHOUT_EXCEPTIONS,SLOOP::OUTPUT_UNIQ);
   }
   void restore(){
-    // Dans tous les cas, tout le monde restore la WORLD session
+    // In any case, everyone restores the WORLD session
     SLOOP::SLOOPInitSession(m_world_comminfo,SLOOP::WITHOUT_EXCEPTIONS,SLOOP::OUTPUT_UNIQ);
     
   }
@@ -168,7 +168,7 @@ int AlephVectorAssemble(void){
  * AlephVectorGet
  *****************************************************************************/
 void AlephVectorGet(double *bfr_val, const int *bfr_idx, Integer size){
-  // Je récupère déjà les valeurs depuis le vecteur Sloop
+  // I am already retrieving the values from the Sloop vector.
   debug()<<"\t[AlephVectorSloop::AlephVectorGet]";
   if (m_sloop_vector->get_locval(bfr_val, bfr_idx, size))
 	 throw Exception("AlephVectorSloop::AlephVectorGet", "get_locval() failed");
@@ -232,7 +232,7 @@ public:
     
     if (!m_sloop_matrix) throw Exception("AlephSolverMatrix::create","new SLOOPDistMatrix() failed");
     
-    // la renumerotation doit etre faite avant le remplissage de la matrice pour etre prise en compte
+    // Renumbering must be done before filling the matrix to be taken into account.
     if (aleph_topology_sloop->m_sloop_topology->get_type()==SLOOP::contiguous)
       m_sloop_matrix->set_renumbering_opt(SLOOP::SLOOPDistMatrix::interface, false);
     m_sloop_matrix->set_renumbering_opt(SLOOP::SLOOPDistMatrix::processor, false);
@@ -287,19 +287,19 @@ public:
     const bool convergence_analyse = params->convergenceAnalyse();
 	
     if (convergence_analyse)
-      debug() << "analyse convergence : norme max du second membre res0 : " << res0;
+      debug() << "convergence analysis: max norm of the right-hand side res0: " << res0;
    
     if (res0 < considered_as_null) {
 		x->fill(Real(0.0));
 		residual_norm[0]= res0;
 		if (convergence_analyse)
-        debug() << "analyse convergence : le second membre du système linéaire est inférieur à "
+        debug() << "convergence analysis: the right-hand side of the linear system is less than "
                 << considered_as_null;
 		return true;
     }
 
     if (params->xoUser()) {
-      // on test si b est déjà solution du système à epsilon près
+      // We test if b is already a solution to the system within epsilon tolerance
       m_sloop_matrix->vector_multiply(*tmp,*x);  // tmp=A*x
       tmp->substract(*tmp,*b);                   // tmp=A*x-b
       const Real residu= tmp->norm_max(); 
@@ -307,20 +307,20 @@ public:
 
       if (residu < considered_as_null) {
         if (convergence_analyse) {
-          debug() << "analyse convergence : |Ax0-b| est inférieur à " << considered_as_null;
-          debug() << "analyse convergence : x0 est déjà solution du système.";
+          debug() << "convergence analysis: |Ax0-b| is less than " << considered_as_null;
+          debug() << "convergence analysis: x0 is already a solution to the system.";
         }
         residual_norm[0] = residu;
         return true;
       }
       const Real relative_error = residu / res0;
       if (convergence_analyse)
-        debug() << "analyse convergence : résidu initial : " << residu
-                << " --- residu relatif initial (residu/res0) : " << residu / res0;
+        debug() << "convergence analysis: initial residual: " << residu
+                << " --- initial relative residual (residu/res0): " << residu / res0;
      
       if (relative_error < (params->epsilon())) {
         if (convergence_analyse)
-          debug() << "analyse convergence : X est déjà solution du système";
+          debug() << "convergence analysis: X is already a solution to the system";
         residual_norm[0] = residu;
         return true;
       }
@@ -386,19 +386,19 @@ public:
     const bool xo = solver_param->xoUser();
     switch (solver_param->precond()) {
     case TypesSolver::NONE:
-      // appel sans preconditionnement : utilise dans le CAS des solveurs SAMG et SuperLU
+      // call without preconditioning: used in the case of SAMG and SuperLU solvers
       if (xo){
-        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à true (sans preconditionnement)";
+        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à true (without preconditioning)";
         status = global_solver->solve(*m_sloop_matrix, *solution, *RHS, *sc);
       }else{
-        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à false (sans preconditionnement)";
+        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à false (without preconditioning)";
         status = global_solver->solve_b(*m_sloop_matrix, *solution, *RHS, *sc);
       }
       break;
     default:
-      // appel avec preconditionnement
+      // call with preconditioning
       if (xo){
-        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à true (avec preconditionnement)";
+        debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à true (with preconditioning)";
         status = global_solver->solve(*m_sloop_matrix, *solution, *RHS, *precond, *sc);
       } else{
         debug() << "\t\t[AlephMatrixSloop::SloopSolve] xo à false (avec preconditionnement)";
@@ -418,8 +418,8 @@ public:
     residual_norm[3] = global_solver->get_stagnation();
     
     if ((solver_param->getCriteriaStop()==TypesSolver::STAG)||(solver_param->getCriteriaStop()==TypesSolver::NIter)){
-      // pas de controle des iterations dans les cas du critere de stagnation
-      // et du critere sur le nombre d'iterations impose du solveur
+      // no iteration control in cases of stagnation criterion
+      // and the criterion on the number of iterations imposed by the solver
     }else{
       if (nb_iteration == max_iteration && solver_param->stopErrorStrategy()){
         info() << "\n============================================================";
@@ -479,8 +479,8 @@ public:
     ItacFunction(AlephMatrixSloop);
     switch (solver_param->precond())	{
     case TypesSolver::AINV: 
-      // Pour le moment utilisation AINV(0) pour des matrices symetriques
-      // et SPAI pour les matrices non symetriques
+      // For now, AINV(0) is used for symmetric matrices
+      // and SPAI for non-symmetric matrices
       if (TypesSolver::PCG == solver_param->method())
         return new SLOOP::SLOOPAINVPC(info_sloop_msg, output_level);
       else
@@ -534,7 +534,7 @@ public:
     error+=sloop_solver->set_parameter(SLOOP::sv_epsilon, solver_param->epsilon());
     error+=sloop_solver->set_parameter(SLOOP::sv_max_iter, solver_param->maxIter());
     switch (solver_param->method()) {
-    case TypesSolver::PCG: break; // TODOMB  valeurs propres //error += sloop_solver->set_parameter(cg_spectrum_size, 50);
+    case TypesSolver::PCG: break; // TODOMB eigenvalues //error += sloop_solver->set_parameter(cg_spectrum_size, 50);
     case TypesSolver::QMR: break;
     case TypesSolver::SuperLU: break;
     case TypesSolver::BiCGStab: error += sloop_solver->set_parameter(SLOOP::bicg_dimension, 1); break;
@@ -545,29 +545,29 @@ public:
       break;
     case TypesSolver::SAMG:	{
       error += sloop_solver->set_parameter(SLOOP::amg_buffer_size, 200);
-      // gamma niveaux maximum de deraffinement
-      if (gamma == -1) gamma = 50; // valeur par defaut du nombre de niveaux
+      // gamma maximum deraffinment levels
+      if (gamma == -1) gamma = 50; // default value for the number of levels
       error += sloop_solver->set_parameter(SLOOP::amg_level, gamma);
       //(solver_param->gamma() == -1)?50:solver_param->gamma());//Works fine here
-      // valeur par defaut du parametre d'influence
+      // default value for the influence parameter
       if (alpha < 0.0) alpha = 0.1;
       error += sloop_solver->set_parameter(SLOOP::amg_alpha, alpha);
       //(solver_param->alpha() < 0.0)?0.1:solver_param->alpha());// Works here too
-      // nombre d'itérations du lisseur du solveur AMG
+      // number of iterations of the AMG solver smoother
       error += sloop_solver->set_parameter(SLOOP::amg_smoother_iter, solver_param->getAmgSmootherIter());
-      //1= cycle en V , 2=cycle en W, 3=cycle en FullMultigridV       (defaut 1)
+      //1= V cycle, 2= W cycle, 3= FullMultigridV cycle (default 1)
       error += sloop_solver->set_parameter(SLOOP::amg_iter, solver_param->getAmgCycle());
-      // definition du deraffinement AMG
+      // definition of AMG deraffinment
       SLOOP::SLOOPAMGCoarseningOption coarsening_option =
         static_cast<SLOOP::SLOOPAMGCoarseningOption> (solver_param->getAmgCoarseningOption());
       error += sloop_solver->set_parameter(SLOOP::amg_coarsening_option, coarsening_option);
       //error += sloop_solver->set_parameter(SLOOP::amg_coarsening_option, solver_param->getAmgCoarseningOption());
-      // definition du solveur du deraffinement
+      // definition of the deraffinment solver
       SLOOP::SLOOPAMGCoarseSolverOption coarse_solver_option =
         static_cast<SLOOP::SLOOPAMGCoarseSolverOption> (solver_param->getAmgCoarseSolverOption());
       error += sloop_solver->set_parameter(SLOOP::amg_coarse_solver_option, coarse_solver_option);
       //error += sloop_solver->set_parameter(SLOOP::amg_coarse_solver_option, solver_param->getAmgCoarseSolverOption());
-      // definition du lisseur AMG
+      // definition of the AMG smoother
       SLOOP::SLOOPAMGSmootherOption smoother_option =
         static_cast<SLOOP::SLOOPAMGSmootherOption> (solver_param->getAmgSmootherOption());
       error += sloop_solver->set_parameter(SLOOP::amg_smoother_option, smoother_option);
@@ -591,7 +591,7 @@ public:
     int gamma = solver_param->gamma();
     const String function_id = "SolverMatrixSloop::setSloopPreconditionnerParameters";
     ItacFunction(AlephMatrixSloop);
-    //valeur par defaut du parametre d'influence
+    // default value of the influence parameter
     if (alpha < 0.0) alpha = 0.1; // 0.25 ;
     switch (precond_method) {
     case TypesSolver::NONE: break;
@@ -603,18 +603,18 @@ public:
       preconditionner->set_parameter(SLOOP::amg_solver_iter, solver_param->getAmgSolverIter());
       preconditionner->set_parameter(SLOOP::amg_iter, solver_param->getAmgCycle());
       preconditionner->set_parameter(SLOOP::amg_smoother_iter, solver_param->getAmgSmootherIter());
-      // option du lisseur
+      // smoother option
       SLOOP::SLOOPAMGSmootherOption smoother_option =
         static_cast<SLOOP::SLOOPAMGSmootherOption> (solver_param->getAmgSmootherOption());
-      // option du deraffinement
+      // deraffinment option
       SLOOP::SLOOPAMGCoarseningOption coarsening_option =
         static_cast<SLOOP::SLOOPAMGCoarseningOption> (solver_param->getAmgCoarseningOption());
-      //  choix du solveur du systeme grossier  defaut (CG_coarse_solver) pour une matrice symetrique
+      // choice of coarse system solver default (CG_coarse_solver) for a symmetric matrix
       SLOOP::SLOOPAMGCoarseSolverOption coarse_solver_option =
         static_cast<SLOOP::SLOOPAMGCoarseSolverOption> (solver_param->getAmgCoarseSolverOption());
-      // options pour matrice symetrique
+      // options for symmetric matrix
       if (TypesSolver::PCG == solver_param->method()) {
-        // controle du smoother  pour matrice symetrique
+        // smoother control for symmetric matrix
         switch (solver_param->getAmgSmootherOption()) {
         case TypesSolver::CG_smoother:
         case TypesSolver::Rich_IC_smoother:
@@ -624,10 +624,10 @@ public:
         case TypesSolver::SymHybGSJ_block_smoother:
           break;
         default: throw Exception("AlephMatrixSloop::setSloopPreconditionnerParameters",
-                                 "choix du smoother incorrect  pour une matrice symetrique");
+                                 "incorrect smoother choice for a symmetric matrix");
         }
-      }else{		//options pour matrices non symetrique
-		  // choix du lisseur dans le cas non-symetrique
+      }else{		//options for non-symmetric matrices
+		  // choice of smoother in the non-symmetric case
         switch (solver_param->getAmgSmootherOption()) {
         case TypesSolver::CG_smoother:
         case TypesSolver::Rich_IC_smoother:
@@ -635,38 +635,38 @@ public:
         case TypesSolver::Rich_IC_block_smoother:
         case TypesSolver::SymHybGSJ_block_smoother:
           throw Exception("AlephMatrixSloop::setSloopPreconditionnerParameters",
-                          "choix du smoother incorrect avec une matrice non-symetrique ");
+                          "incorrect smoother choice with a non-symmetric matrix ");
         case TypesSolver::SymHybGSJ_smoother:
-          // on modifie la valeur mise par defaut pour AMG
+          // we modify the default value for AMG
           solver_param->setAmgSmootherOption(TypesSolver::HybGSJ_smoother);
           break;
         default: break;
         }
-        // controle du solveur
+        // coarse solver control
         switch (solver_param->getAmgCoarseSolverOption()) {
         case TypesSolver::CG_coarse_solver:
         case TypesSolver::Cholesky_coarse_solver:
           solver_param->setAmgCoarseSolverOption(TypesSolver::LU_coarse_solver);
           break;
-        default:solver_param->setAmgCoarseSolverOption(TypesSolver::BiCGStab_coarse_solver); // choix du solveur du systeme grossier
+        default:solver_param->setAmgCoarseSolverOption(TypesSolver::BiCGStab_coarse_solver); // choice of coarse system solver
           break;
         }
-      } // fin du if matrice symetrique
-		// definition du lisseur AMG apres controle
+      } // end of symmetric matrix if
+		// definition of AMG smoother after control
       preconditionner->set_parameter(SLOOP::amg_smoother_option, smoother_option);//solver_param->getAmgSmootherOption());
-		// definition du deraffinement AMG
+		// definition of AMG deraffinment
       preconditionner->set_parameter(SLOOP::amg_coarsening_option, coarsening_option);//solver_param->getAmgCoarseningOption());
-      // definition du solveur du systeme grossier apres controle
+      // definition of the coarse system solver after control
       preconditionner->set_parameter(SLOOP::amg_coarse_solver_option, coarse_solver_option);//solver_param->getAmgCoarseSolverOption());
     }
       break;
 	 
     case TypesSolver::POLY:
-		if (gamma == -1) gamma = 3; // la valeur pour l'ordre du polynome
+		if (gamma == -1) gamma = 3; // the value for the polynomial order
 		break;
     case TypesSolver::AINV:
-      if (gamma == -1) gamma = 0; // valeur par defaut pour le parametre de remplissage -> AINV0
-      // le système linéaire doit être normalisé
+      if (gamma == -1) gamma = 0; // default value for the fill-in parameter -> AINV0
+      // the linear system must be normalized
       break;
     case TypesSolver::IC:
     case TypesSolver::ILU: if (gamma == -1) gamma = 0; break;
@@ -688,7 +688,7 @@ public:
       throw Exception("AlephMatrixSloop::setSloopPreconditionnerParameters", "Préconditionneur inconnu.");
     }
   
-    // initialisations communes aux preconditionneurs ( sauf sans precond )
+    // common initializations for preconditioners (except without precond)
     switch (precond_method) {
     case TypesSolver::NONE:
     case TypesSolver::SPAIstat:
@@ -699,7 +699,7 @@ public:
       preconditionner->set_parameter(SLOOP::amg_alpha, alpha);
       preconditionner->set_parameter(SLOOP::amg_level, gamma);
       preconditionner->set_parameter(SLOOP::amg_parallel_opt, 0);
-      // definition du critere d'arret du solveur grossier (default RB)
+      // definition of the coarse solver stopping criterion (default RB)
       preconditionner->set_parameter(SLOOP::amg_coarse_solver_sc_option,SLOOP::RB);
       break;
 	 

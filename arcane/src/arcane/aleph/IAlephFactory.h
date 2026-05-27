@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IAlephFactory.h                                             (C) 2000-2015 */
 /*                                                                           */
-/* Interface des fabriques pour Aleph.                                       */
+/* Factory interface for Aleph.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ALEPH_IALEPHFACTORY_H
 #define ARCANE_ALEPH_IALEPHFACTORY_H

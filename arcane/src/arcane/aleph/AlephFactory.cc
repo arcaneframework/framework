@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephFactory.cc                                             (C) 2010-2022 */
 /*                                                                           */
-/* Fabriques pour Aleph.                                                     */
+/* Factories for Aleph.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -60,16 +60,16 @@ AlephFactory::
 AlephFactory(IApplication* app, ITraceMng* tm)
 : IAlephFactory(tm)
 {
-  // Liste des implémentations possibles.
-  // 0 est le choix automatique qui doit aller vers une des bibliothèques suivantes:
+  // List of possible implementations.
+  // 0 is the automatic choice which must go to one of the following libraries:
   m_impl_map.insert(std::make_pair(1, new FactoryImpl("Sloop")));
   m_impl_map.insert(std::make_pair(2, new FactoryImpl("Hypre")));
   m_impl_map.insert(std::make_pair(3, new FactoryImpl("Trilinos")));
   m_impl_map.insert(std::make_pair(4, new FactoryImpl("Cuda")));
   m_impl_map.insert(std::make_pair(5, new FactoryImpl("PETSc")));
   ServiceBuilder<IAlephFactoryImpl> sb(app);
-  // Pour chaque implémentation possible,
-  // créé la fabrique correspondante si elle est disponible.
+  // For each possible implementation,
+  // create the corresponding factory if it is available.
   for (const auto& i : m_impl_map) {
     FactoryImpl* implementation = i.second;
     const String& name = implementation->name();
@@ -107,8 +107,7 @@ _getFactory(Integer solver_index)
     throw NotSupportedException(A_FUNCINFO,
                                 String::format("Implementation for '{0}' not available",
                                                implementation->name()));
-  // Si la fabrique de l'implémentation considérée n'a pas
-  // été initialisée, on le fait maintenant
+  // If the factory of the considered implementation has not been initialized, we do it now
   if (!implementation->m_initialized) {
     debug() << "\33[1;34m\t\t[_getFactory] initializing solver_index="
             << solver_index << " ..."

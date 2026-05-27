@@ -31,7 +31,7 @@ AlephKernelSolverInitializeArguments()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * AlephKernel utilisé par Kappa où l'on met le m_sub_domain à 'nullptr'.
+ * AlephKernel used by Kappa where m_sub_domain is set to 'nullptr'.
  */
 AlephKernel::
 AlephKernel(IParallelMng* wpm,
@@ -51,7 +51,7 @@ AlephKernel(IParallelMng* wpm,
 , m_world_parallel(wpm)
 , m_factory(factory)
 , m_aleph_vector_idx(0)
-// Pour l'instant, on met Sloop par défaut
+// For now, Sloop is set by default
 , m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
 , m_reorder(alephOrdering)
 , m_solver_index(0)
@@ -69,9 +69,9 @@ AlephKernel(IParallelMng* wpm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Kernel standard dont la factory est passé en argument
- * Cela correspond à l'ancienne API utilisée encore dans certains
- * tests Arcane et surtout encore dans le code
+ * Standard kernel whose factory is passed as an argument
+ * This corresponds to the old API still used in some Arcane
+ * tests and especially in the code
  */
 AlephKernel::
 AlephKernel(ITraceMng* tm,
@@ -92,7 +92,7 @@ AlephKernel(ITraceMng* tm,
 , m_world_parallel(sd->parallelMng()->worldParallelMng())
 , m_factory(factory)
 , m_aleph_vector_idx(0)
-// Pour l'instant, on met Sloop par défaut
+// For now, Sloop is set by default
 , m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
 , m_reorder(alephOrdering)
 , m_solver_index(0)
@@ -106,10 +106,10 @@ AlephKernel(ITraceMng* tm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Aleph Kernel minimaliste pour utiliser avec l'indexing
- * C'est ce kernel qui créée lui même sa factory
- * et qui doit gérer son initialization.
- * Il a en plus des options underlying_solver et number_of_cores
+ * Minimalist Aleph Kernel to use with indexing
+ * This kernel creates its own factory
+ * and must manage its initialization.
+ * It also has underlying_solver and number_of_cores options.
  */
 AlephKernel::
 AlephKernel(ISubDomain* sd,
@@ -144,7 +144,7 @@ AlephKernel(ISubDomain* sd,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Setup: configuration générale
+ * Setup: general configuration
  */
 void AlephKernel::
 setup(void)
@@ -156,10 +156,10 @@ setup(void)
   }
   else
     debug() << "\33[1;31m[AlephKernel] I am an additional site #" << m_rank << " among " << m_world_size << "\33[0m";
-  // Solveur utilisé par défaut
+  // Default solver used.
   debug() << "\33[1;31m[AlephKernel] Aleph underlying solver has been set to "
           << m_underlying_solver << "\33[0m";
-  // Par défaut, on utilise tous les coeurs alloués au calcul pour chaque résolution
+  // By default, all cores allocated to the calculation are used for each resolution
   if (m_solver_size == 0) {
     m_solver_size = m_world_size;
     debug() << "\33[1;31m[AlephKernel] Aleph Number of Cores"
@@ -176,7 +176,7 @@ setup(void)
   debug() << "\33[1;31m[AlephKernel] Each solver takes "
           << m_solver_size << " site(s)"
           << "\33[0m";
-  // S'il y a des 'autres, on les tient au courant de la configuration
+  // If there are 'others, we keep them informed of the configuration
   if (m_there_are_idles && !m_i_am_an_other) {
     UniqueArray<Integer> cfg(0);
     cfg.add(m_underlying_solver);
@@ -209,7 +209,7 @@ AlephKernel::
   m_matrix_queue.clear();
 
   for ( AlephKernelArguments* aq : m_arguments_queue ){
-    // TODO: regarder pourquoi cela n'est pas fait dans le destructeur de AlephKernelArguments.
+    // TODO: look into why this is not done in the AlephKernelArguments destructor.
     delete aq->m_x_vector;
     delete aq->m_b_vector;
     delete aq->m_tmp_vector;
@@ -360,24 +360,22 @@ createSolverMatrix(void)
     m_sub_parallel_mng_queue.add(upm);
     debug() << "\33[1;31m[createSolverMatrix] Queuing new kernel arguments: X, B and Tmp with their topolgy"
             << "\33[0m";
-    // On va chercher la topologie avant toute autres choses afin que la bibliothèque
-    // sous-jacente la prenne en compte pour les vecteurs et la matrice à venir
+    // We fetch the topology first so that the underlying library can account for it when processing the upcoming vectors and matrix
     IAlephTopology* underlying_topology = factory()->GetTopology(this, index(), topology()->nb_row_size());
-    // Dans le cas d'une bibliothèque qui possède une IAlephTopology
-    // On trig le prefix, on fera le postfix apres les solves
+    // If the library has an IAlephTopology, we trigger the prefix; we will perform the postfix after the solves
     if (underlying_topology != NULL)
       underlying_topology->backupAndInitialize();
     m_arguments_queue.add(new AlephKernelArguments(traceMng(),
-                                                   new AlephVector(this), // Vecteur X
-                                                   new AlephVector(this), // Vecteur B
-                                                   new AlephVector(this), // Vecteur tmp (pour l'isAlreadySolved)
+                                                   new AlephVector(this), // Vector X
+                                                   new AlephVector(this), // Vector B
+                                                   new AlephVector(this), // Vector tmp (for isAlreadySolved)
                                                    underlying_topology));
-    // On initialise le vecteur temporaire qui n'est pas vu de l'API
-    // Pas besoin de l'assembler, il sert en output puis comme buffer
+    // We initialize the temporary vector which is not seen by the API
+    // No need to assemble it, it serves as output and then as a buffer
     debug() << "\33[1;31m[createSolverMatrix] Creating Tmp vector for this set of arguments"
             << "\33[0m";
     m_arguments_queue.at(m_solver_index)->m_tmp_vector->create();
-    // On initialise la matrice apres la topologies et les vecteurs
+    // We initialize the matrix after the topologies and vectors
     debug() << "\33[1;31m[createSolverMatrix] Now queuing the matrix\33[0m";
     m_matrix_queue.add(new AlephMatrix(this));
     debug() << "\33[1;31m[createSolverMatrix] Now queuing the space for the resolution results\33[0m";
@@ -486,8 +484,8 @@ postSolver(AlephParams* params,
   debug() << "\33[1;31m[postSolver] Backuping its params @" << params << "\33[0m";
   m_arguments_queue.at(m_solver_index)->m_params = params;
 
-  // Mis à jour des indices solvers et sites
-  debug() << "\33[1;31m[postSolver] Mis à jour des indices solvers et sites"
+  // Update of solver and site indices
+  debug() << "\33[1;31m[postSolver] Update of solver and site indices"
           << "\33[0m";
   m_solver_index += 1;
   debug() << "\33[1;31m[postSolver] m_solver_index=" << m_solver_index << "\33[0m";
@@ -497,7 +495,7 @@ postSolver(AlephParams* params,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Ce sont ces arguments qui doivent être remplis
+ * These are the arguments that must be filled
  * bf8d3adf
  */
 AlephVector* AlephKernel::
@@ -579,7 +577,7 @@ workSolver(void)
                                      m_results_queue.at(gid)->m_nb_iteration,
                                      m_results_queue.at(gid)->m_residual_norm,
                                      m_arguments_queue.at(gid)->m_params);
-    // Après le solve, on 'restore' la session
+    // After the solve, we 'restore' the session
     if (getTopologyImplementation(gid) != NULL)
       getTopologyImplementation(gid)->restore();
   }

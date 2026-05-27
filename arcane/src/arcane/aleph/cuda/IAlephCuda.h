@@ -178,7 +178,7 @@ int AlephMatrixSolve(AlephVector* x,
   debug()<<"\t\t[AlephMatrixCnc::AlephMatrixSolve] Flushing X";
   X->set_all(0.0f);
   
-  // résolution du système algébrique
+  // solving the algebraic system
   unsigned int cnc_nb_iter_max = solver_param->maxIter();
   double cnc_epsilon = solver_param->epsilon();
   
@@ -192,12 +192,12 @@ int AlephMatrixSolve(AlephVector* x,
   
   if ( nb_iteration == solver_param->maxIter() && solver_param->stopErrorStrategy()){
 	 info() << "\n============================================================";
-	 info() << "\nCette erreur est retournée après " << nb_iteration << "\n";
-	 info() << "\nOn a atteind le nombre max d'itérations du solveur.";
-	 info() << "\nIl est possible de demander au code de ne pas tenir compte de cette erreur.";
-	 info() << "\nVoir la documentation du jeu de données concernant le service solveur.";
+	 info() << "\nThis error is returned after " << nb_iteration << "\n";
+	 info() << "\nThe maximum number of solver iterations has been reached.";
+	 info() << "\nIt is possible to ask the code not to consider this error.";
+	 info() << "\nSee the dataset documentation regarding the solver service.";
 	 info() << "\n======================================================";
-	 throw  Exception("AlephMatrixCnc::Solve", "On a atteind le nombre max d'itérations du solveur");
+	 throw  Exception("AlephMatrixCnc::Solve", "The maximum number of solver iterations has been reached");
   }
   return 0;
 }

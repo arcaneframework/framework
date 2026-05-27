@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephHypre.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation Hypre de Aleph.                                            */
+/* Hypre implementation of Aleph.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@
 
 #include "arcane/aleph/AlephArcane.h"
 
-// Le type HYPRE_BigInt n'existe qu'à partir de Hypre 2.16.0
+// The HYPRE_BigInt type only exists starting from Hypre 2.16.0
 #if HYPRE_RELEASE_NUMBER < 21600
 using HYPRE_BigInt = HYPRE_Int;
 #endif
@@ -51,13 +51,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*
- * NOTE: A partir de la version 2.14 de hypre (peut-être un peu avant),
- * hypre_TAlloc() et hypre_CAlloc() prennent un 3ème argument qui est
- * sur quel peripherique on alloue la mémoire (GPU ou CPU). Il n'y a pas
- * de moyens simples de savoir quelle est la version de hypre à partir
- * des .h mais par contre HYPRE_MEMORY_DEVICE et HYPRE_MEMORY_HOST sont
- * des macros donc on peut tester leur existance pour savoir s'il faut
- * appeler les méthodes hypre_TAlloc() et hypre_CAlloc() avec 2 ou 3 arguments.
+ * NOTE: Starting from Hypre version 2.14 (maybe a little earlier),
+ * hypre_TAlloc() and hypre_CAlloc() take a 3rd argument specifying
+ * which peripheral the memory is allocated on (GPU or CPU). There is no
+ * simple way to know the Hypre version from the .h files, but since
+ * HYPRE_MEMORY_DEVICE and HYPRE_MEMORY_HOST are macros, we can test
+ * their existence to determine whether to call hypre_TAlloc() and
+ * hypre_CAlloc() with 2 or 3 arguments.
  */
 namespace
 {
@@ -154,7 +154,7 @@ class AlephVectorHypre
     }
 
     debug() << "[AlephVectorHypre::AlephVectorCreate] jLower=" << jLower << ", jupper=" << jUpper;
-    // Mise à jour de la taille locale du buffer pour le calcul plus tard de la norme max, par exemple
+    // Update the local buffer size for later max norm calculation, for example
     jSize = jUpper - jLower + 1;
 
     hypreCheck("IJVectorCreate",
@@ -352,38 +352,38 @@ class AlephMatrixHypre
     HYPRE_ClearAllErrors();
     const bool convergence_analyse = params->convergenceAnalyse();
 
-    // test le second membre du système linéaire
+    // test the right-hand side of the linear system
     const Real res0 = b->norm_max();
 
     if (convergence_analyse)
-      info() << "analyse convergence : norme max du second membre res0 : " << res0;
+      info() << "convergence analysis: max norm of the right-hand side res0: " << res0;
 
     const Real considered_as_null = params->minRHSNorm();
     if (res0 < considered_as_null) {
       HYPRE_ParVectorSetConstantValues(x->m_hypre_parvector, 0.0);
       residual_norm[0] = res0;
       if (convergence_analyse)
-        info() << "analyse convergence : le second membre du système linéaire est inférieur à : " << considered_as_null;
+        info() << "convergence analysis: the right-hand side of the linear system is less than: " << considered_as_null;
       return true;
     }
 
     if (params->xoUser()) {
-      // on test si b est déjà solution du système à epsilon près
+      // we test if b is already a solution to the system within epsilon tolerance
       //matrix->vectorProduct(b, tmp_vector); tmp_vector->sub(x);
       //M->vector_multiply(*tmp,*x);  // tmp=A*x
       //tmp->substract(*tmp,*b);      // tmp=A*x-b
 
-      // X= alpha* M.B + beta * X (lu dans les sources de HYPRE)
+      // X= alpha* M.B + beta * X (read from HYPRE sources)
       HYPRE_ParCSRMatrixMatvec(1.0, m_hypre_parmatrix, x->m_hypre_parvector, 0., tmp->m_hypre_parvector);
       HYPRE_ParVectorAxpy(-1.0, b->m_hypre_parvector, tmp->m_hypre_parvector);
 
       const Real residu = tmp->norm_max();
-      //info() << "[IAlephHypre::isAlreadySolved] residu="<<residu;
+      //info() << "[IAlephHypre::isAlreadySolved] residual="<<residu;
 
       if (residu < considered_as_null) {
         if (convergence_analyse) {
-          info() << "analyse convergence : |Ax0-b| est inférieur à " << considered_as_null;
-          info() << "analyse convergence : x0 est déjà solution du système.";
+          info() << "convergence analysis: |Ax0-b| is less than " << considered_as_null;
+          info() << "convergence analysis: x0 is already a solution to the system.";
         }
         residual_norm[0] = residu;
         return true;
@@ -391,12 +391,12 @@ class AlephMatrixHypre
 
       const Real relative_error = residu / res0;
       if (convergence_analyse)
-        info() << "analyse convergence : résidu initial : " << residu
-               << " --- residu relatif initial (residu/res0) : " << residu / res0;
+        info() << "convergence analysis: initial residual : " << residu
+               << " --- initial relative residual (residu/res0) : " << residu / res0;
 
       if (relative_error < (params->epsilon())) {
         if (convergence_analyse)
-          info() << "analyse convergence : X est déjà solution du système";
+          info() << "convergence analysis: X is already a solution to the system";
         residual_norm[0] = residu;
         return true;
       }
@@ -448,7 +448,7 @@ class AlephMatrixHypre
     //  TypesSolver::ePreconditionerMethod preconditioner_method = TypesSolver::NONE;
     TypesSolver::eSolverMethod solver_method = solver_param->method();
 
-    // déclaration et initialisation du solveur
+    // declaration and initialization of the solver
     HYPRE_Solver solver = 0;
 
     switch (solver_method) {
@@ -462,10 +462,10 @@ class AlephMatrixHypre
       initSolverGMRES(solver_param, solver);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu");
+      throw ArgumentException(func_name, "unknown solver");
     }
 
-    // déclaration et initialisation du preconditionneur
+    // declaration and initialization of the preconditioner
     HYPRE_Solver precond = 0;
 
     switch (preconditioner_method) {
@@ -484,20 +484,20 @@ class AlephMatrixHypre
       setAMGPreconditioner(solver_method, solver, solver_param, precond);
       break;
     case TypesSolver::AINV:
-      throw ArgumentException(func_name, "preconditionnement AINV indisponible");
+      throw ArgumentException(func_name, "AINV preconditioning unavailable");
     case TypesSolver::SPAIdyn:
-      throw ArgumentException(func_name, "preconditionnement SPAIdyn indisponible");
+      throw ArgumentException(func_name, "SPAIdyn preconditioning unavailable");
     case TypesSolver::ILUp:
-      throw ArgumentException(func_name, "preconditionnement ILUp indisponible");
+      throw ArgumentException(func_name, "ILUp preconditioning unavailable");
     case TypesSolver::IC:
-      throw ArgumentException(func_name, "preconditionnement IC indisponible");
+      throw ArgumentException(func_name, "IC preconditioning unavailable");
     case TypesSolver::POLY:
-      throw ArgumentException(func_name, "preconditionnement POLY indisponible");
+      throw ArgumentException(func_name, "POLY preconditioning unavailable");
     default:
-      throw ArgumentException(func_name, "preconditionnement inconnu");
+      throw ArgumentException(func_name, "unknown preconditioner");
     }
 
-    // résolution du système algébrique
+    // solving the algebraic system
     HYPRE_Int iteration = 0;
     double residue = 0.0;
 
@@ -546,30 +546,30 @@ class AlephMatrixHypre
       HYPRE_BoomerAMGDestroy(precond);
       break;
     default:
-      throw ArgumentException(func_name, "preconditionnement inconnu");
+      throw ArgumentException(func_name, "unknown preconditioner");
     }
 
     if (iteration == solver_param->maxIter() && solver_param->stopErrorStrategy()) {
       info() << "\n============================================================";
-      info() << "\nCette erreur est retournée après " << iteration << "\n";
-      info() << "\nOn a atteind le nombre max d'itérations du solveur.";
-      info() << "\nIl est possible de demander au code de ne pas tenir compte de cette erreur.";
-      info() << "\nVoir la documentation du jeu de données concernant le service solveur.";
+      info() << "\nThis error is returned after " << iteration << "\n";
+      info() << "\nMaximum number of solver iterations reached.";
+      info() << "\nIt is possible to ask the code not to consider this error.";
+      info() << "\nSee the dataset documentation regarding the solver service.";
       info() << "\n======================================================";
-      throw Exception("AlephMatrixHypre::Solve", "On a atteind le nombre max d'itérations du solveur");
+      throw Exception("AlephMatrixHypre::Solve", "Maximum number of solver iterations reached");
     }
     return ierr;
   }
 
   /******************************************************************************
- *****************************************************************************/
+   *****************************************************************************/
   void writeToFile(const String filename)
   {
     HYPRE_IJMatrixPrint(m_hypre_ijmatrix, filename.localstr());
   }
 
   /******************************************************************************
- *****************************************************************************/
+   *****************************************************************************/
   void initSolverPCG(const AlephParams* solver_param, HYPRE_Solver& solver)
   {
     const String func_name = "SolverMatrixHypre::initSolverPCG";
@@ -643,7 +643,7 @@ class AlephMatrixHypre
                                   precond);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu pour preconditionnement 'Diagonal'");
+      throw ArgumentException(func_name, "unknown solver for 'Diagonal' preconditioner");
     }
   }
 
@@ -656,7 +656,7 @@ class AlephMatrixHypre
     const String func_name = "SolverMatrixHypre::setILUPreconditioner";
     switch (solver_method) {
     case TypesSolver::PCG:
-      throw ArgumentException(func_name, "solveur PCG indisponible avec le preconditionnement 'ILU'");
+      throw ArgumentException(func_name, "PCG solver unavailable with 'ILU' preconditioner");
       break;
     case TypesSolver::BiCGStab:
       HYPRE_ParCSRPilutCreate(MPI_COMM_SUB, &precond);
@@ -674,7 +674,7 @@ class AlephMatrixHypre
                                   precond);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu pour preconditionnement ILU\n");
+      throw ArgumentException(func_name, "unknown solver for ILU preconditioner\n");
     }
   }
 
@@ -689,9 +689,9 @@ class AlephMatrixHypre
     double alpha = solver_param->alpha();
     int gamma = solver_param->gamma();
     if (alpha < 0.0)
-      alpha = 0.1; // valeur par defaut pour le parametre de tolerance
+      alpha = 0.1; // default value for the tolerance parameter
     if (gamma == -1)
-      gamma = 1; // valeur par defaut pour le parametre de remplissage
+      gamma = 1; // default value for the fill-in parameter
     HYPRE_ParCSRParaSailsSetParams(precond, alpha, gamma);
     switch (solver_method) {
     case TypesSolver::PCG:
@@ -701,7 +701,7 @@ class AlephMatrixHypre
       throw ArgumentException("AlephMatrixHypre::setSpaiStatPreconditioner", "solveur 'BiCGStab' invalide pour preconditionnement 'SPAIstat'");
       break;
     case TypesSolver::GMRES:
-      // matrice non symétrique
+      // non-symmetric matrix
       HYPRE_ParCSRParaSailsSetSym(precond, 0);
       HYPRE_ParCSRGMRESSetPrecond(solver, HYPRE_ParaSailsSolve, HYPRE_ParaSailsSetup, precond);
       break;
@@ -730,18 +730,18 @@ class AlephMatrixHypre
     //        3=Hybrid Jacobi/Gauss-Seidel
     int num_sweep = 1; // Use <val> sweeps on each level (here 1)
     int hybrid = 1; // no switch in coarsening if -1
-    int measure_type = 1; // use globale measures
+    int measure_type = 1; // use global measures
     double max_row_sum = 1.0; // set AMG maximum row sum threshold for dependency weakening
 
     int max_levels = 50; // 25;  // maximum number of AMG levels
     const int gamma = solver_param->gamma();
     if (gamma != -1)
-      max_levels = gamma; // utilisation de la valeur du jeu de donnees
+      max_levels = gamma; // use the dataset value
 
     double strong_threshold = 0.1; // 0.25; // set AMG threshold Theta = val
     const double alpha = solver_param->alpha();
     if (alpha > 0.0)
-      strong_threshold = alpha; // utilisation de la valeur du jeu de donnees
+      strong_threshold = alpha; // use the dataset value
     // news
     Integer output_level = solver_param->getOutputLevel();
 
@@ -815,7 +815,7 @@ class AlephMatrixHypre
     grid_relax_points[3] = _allocHypre<HYPRE_Int>(1);
     grid_relax_points[3][0] = 0;
 
-    // end of default seting
+    // end of default setting
 
     HYPRE_BoomerAMGCreate(&precond);
     HYPRE_BoomerAMGSetPrintLevel(precond, output_level);
@@ -966,9 +966,9 @@ class HypreAlephFactoryImpl
 
   void initialize() override
   {
-    // NOTE: A partir de la 2.29, on peut utiliser
-    // HYPRE_Initialize() et tester si l'initialisation
-    // a déjà été faite via HYPRE_Initialized().
+    // NOTE: Starting from 2.29, we can use
+    // HYPRE_Initialize() and test if the initialization
+    // has already been done via HYPRE_Initialized().
 #if HYPRE_RELEASE_NUMBER >= 22900
     if (!HYPRE_Initialized()){
       info() << "Initializing HYPRE";

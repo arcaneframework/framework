@@ -1,4 +1,4 @@
-CUDA_eros=/opt/cuda/3.2
+﻿CUDA_eros=/opt/cuda/3.2
 ARCH_eros=sm_21
 
 CUDA_lascaux=/opt/cuda/5.0

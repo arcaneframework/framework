@@ -1,18 +1,18 @@
-/*---------------------------------------------------------------------------*/
+ï»¿/*---------------------------------------------------------------------------*/
 /* AlephCuda.cc                                                     (C) 2011 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Visiblement CUDA (au moins jusqu'a la version 6.5) ne supporte
-// pas 'nullptr' meme avec l'option '-std=c++11' active
+// CUDA (at least up to version 6.5) apparently does not support
+// 'nullptr' even with the '-std=c++11' option active
 
 #define nullptr 0
 
 #include "arcane/aleph/AlephArcane.h"
 #include "AlephCuda.h"
 
-// Thread block size (THREAD_BLOCK_SIZE² = 768 at max)
+// Thread block size (THREAD_BLOCK_SIZE = 768 at max)
 #warning HARD-CODED THREAD_BLOCK_SIZE
 #define THREAD_BLOCK_SIZE 32
 #define SSE2_ALIGNEMENT 32
@@ -233,8 +233,8 @@ bool Cuda::solve(CNC_MatrixCRS<double> &A,
   //printf("\n[solve_cg_internal] GPU Matrix allocation") ;
   A.gpu_upload() ;
 
-  // building the Jacobi preconditionner
-//    printf("\n[solve_cg_internal] Building the Jacobi preconditionner") ;
+  // building the Jacobi preconditioner
+//    printf("\n[solve_cg_internal] Building the Jacobi preconditioner") ;
   CNC_Vector<double> cpu_diag_inv(N+16);
   for(long i=0; i<N; i++) {
     cpu_diag_inv[i] = (double)(((i >= N) || (diag_matrix[i] == 0.0)) ? 1.0 : 1.0 / diag_matrix[i]);

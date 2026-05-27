@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephTrilinos.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation Trilinos/Epetra de Aleph.                                  */
+/* Implementation of Aleph using Trilinos/Epetra.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -271,23 +271,23 @@ class AlephMatrixTrilinos
   {
     const bool convergence_analyse = true; //params->convergenceAnalyse();
 
-    // test le second membre du système linéaire
+    // test the right-hand side of the linear system
     const Real res0 = b->LinftyNorm();
 
     if (convergence_analyse)
-      debug() << "analyse convergence : norme max du second membre res0 : " << res0;
+      debug() << "convergence analysis: max norm of the right-hand side res0: " << res0;
 
     const Real considered_as_null = params->minRHSNorm();
     if (res0 < considered_as_null) {
       x->fill(Real(0.0));
       residual_norm[0] = res0;
       if (convergence_analyse)
-        debug() << "analyse convergence : le second membre du système linéaire est inférieur à : " << considered_as_null;
+        debug() << "convergence analysis: the right-hand side of the linear system is less than: " << considered_as_null;
       return true;
     }
 
     if (params->xoUser()) {
-      // on test si b est déjà solution du système à epsilon près
+      // we test if b is already a solution to the system within epsilon
       //matrix->vectorProduct(b, tmp_vector); tmp_vector->sub(x);
       m_trilinos_matrix->Multiply(false,
                                   *x->m_trilinos_vector,
@@ -296,12 +296,12 @@ class AlephMatrixTrilinos
                                      *b->m_trilinos_vector,
                                      1.0); // tmp=A*x-b
       const Real residu = tmp->LinftyNorm();
-      //debug() << "[IAlephTrilinos::isAlreadySolved] residu="<<residu;
+      //debug() << "[IAlephTrilinos::isAlreadySolved] residual="<<residu;
 
       if (residu < considered_as_null) {
         if (convergence_analyse) {
-          debug() << "analyse convergence : |Ax0-b| est inférieur à " << considered_as_null;
-          debug() << "analyse convergence : x0 est déjà solution du système.";
+          debug() << "convergence analysis: |Ax0-b| is less than " << considered_as_null;
+          debug() << "convergence analysis: x0 is already a solution to the system.";
         }
         residual_norm[0] = residu;
         return true;
@@ -309,18 +309,18 @@ class AlephMatrixTrilinos
 
       const Real relative_error = residu / res0;
       if (convergence_analyse)
-        debug() << "analyse convergence : résidu initial : " << residu
-                << " --- residu relatif initial (residu/res0) : " << residu / res0;
+        debug() << "convergence analysis: initial residual : " << residu
+                << " --- initial relative residual (residu/res0) : " << residu / res0;
 
       if (relative_error < (params->epsilon())) {
         if (convergence_analyse)
-          debug() << "analyse convergence : X est déjà solution du système";
+          debug() << "convergence analysis: X is already a solution to the system";
         residual_norm[0] = residu;
         return true;
       }
     }
     if (convergence_analyse)
-      debug() << "analyse convergence : return false";
+      debug() << "convergence analysis: return false";
     return false;
   }
 
@@ -388,7 +388,7 @@ class AlephMatrixTrilinos
       solver.SetAztecOption(AZ_solver, AZ_slu);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu");
+      throw ArgumentException(func_name, "unknown solver");
     }
 
     switch (solver_param->precond()) {
@@ -455,16 +455,16 @@ class AlephMatrixTrilinos
       break;
     }
     case TypesSolver::SPAIstat:
-      throw ArgumentException(func_name, "preconditionnement AztecOO::SPAIstat indisponible");
+      throw ArgumentException(func_name, "AztecOO::SPAIstat preconditioner unavailable");
     case TypesSolver::AINV:
-      throw ArgumentException(func_name, "preconditionnement AztecOO::AINV indisponible");
+      throw ArgumentException(func_name, "AztecOO::AINV preconditioner unavailable");
     case TypesSolver::SPAIdyn:
-      throw ArgumentException(func_name, "preconditionnement AztecOO::SPAIdyn indisponible");
+      throw ArgumentException(func_name, "AztecOO::SPAIdyn preconditioner unavailable");
     default:
-      throw ArgumentException(func_name, "preconditionnement inconnu");
+      throw ArgumentException(func_name, "unknown preconditioner");
     }
 
-    // Déclenchement du solver
+    // Solver triggering
     // Iterates on the current problem until MaxIters or Tolerance is reached.
     solver.Iterate(solver_param->maxIter(), solver_param->epsilon());
 
@@ -489,10 +489,10 @@ class AlephMatrixTrilinos
     residual_norm[0] = static_cast<Real>(solver.TrueResidual()); // vs ScaledResidual ?
 
     if (solver_param->maxIter() <= nb_iteration)
-      throw Exception("Nombre max d'itérations du solveur atteint!",
+      throw Exception("Maximum number of solver iterations reached!",
                       "AlephMatrixTrilinos::AlephMatrixSolve");
     /*if (solver_param->epsilon()<residual_norm[0])
-      throw Exception("Convergence non atteinte!", "AlephMatrixTrilinos::AlephMatrixSolve");
+      throw Exception("Convergence not reached!", "AlephMatrixTrilinos::AlephMatrixSolve");
     */
 
     if (MLList != NULL)

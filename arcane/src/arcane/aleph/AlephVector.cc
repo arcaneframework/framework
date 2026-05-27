@@ -77,7 +77,7 @@ create(void)
   if (m_kernel->thereIsOthers() && !m_kernel->isAnOther()) {
     m_kernel->world()->broadcast(UniqueArray<unsigned long>(1, 0x6bdba30al).view(), 0);
   }
-  // Si nous sommes dans le cas parallèle, mais que nous ne sommes pas le solver, on se dimensionne localement
+  // If we are in the parallel case, but we are not the solver, we size locally
   if (m_kernel->isParallel()) { // && (!m_participating_in_solver)){
     debug() << "\33[1;36m[AlephVector::create] // resizing idx & val to " << m_kernel->topology()->nb_row_rank() << "\33[0m";
     m_aleph_vector_buffer_idx.resize(m_kernel->topology()->nb_row_rank());
@@ -86,8 +86,8 @@ create(void)
   if (m_participating_in_solver) {
     debug() << "\33[1;36m[AlephVector::create] Participating in solver!"
             << "\33[0m";
-    // Initialisation des buffers du solver
-    // On en profite pour initialiser en même temps les indices
+    // Initialization of solver buffers
+    // We take the opportunity to initialize the indices at the same time
     for (Integer iCpu = 0, idx = 0; iCpu < m_kernel->size(); ++iCpu) {
       debug() << "\33[1;36m[AlephVector::create] m_kernel->rank()=" << m_kernel->rank() << ", m_ranks[" << iCpu << "]=" << m_ranks[iCpu] << "\33[0m";
       if (m_kernel->rank() != m_ranks[iCpu])
@@ -104,12 +104,12 @@ create(void)
     debug() << "\33[1;36m[AlephVector::create] resizing m_aleph_vector_buffer_[vals&idxs] to " << m_aleph_vector_buffer_vals.size() << "\33[0m";
   }
   else {
-    // En parallèle, sans solveur, on a pas besoin de vecteur
+    // In parallel, without solver, we don't need a vector
     debug() << "\33[1;36m[AlephVector::create] not participating, returning before 'create_really'"
             << "\33[0m";
     return;
   }
-  // Dans les autres cas, oui
+  // In other cases, yes
   create_really();
   debug() << "\33[1;36m[AlephVector::create] done"
           << "\33[0m";
@@ -174,15 +174,15 @@ setLocalComponents(Integer num_values,
   }
   debug() << "\33[1;36m[AlephVector::setLocalComponents]\33[0m";
   for (Integer i = 0, is = num_values; i < is; ++i) {
-    // Si je suis sur le site de résolution, je place les values dans les 'vals'
+    // If I am on the solver site, I place the values in 'vals'
     if (m_participating_in_solver && (m_kernel->rank() == m_ranks[m_kernel->rank()])) {
       if (!m_kernel->isCellOrdering()) {
-        // Dans le cas multi-site de résolution, on shift avec la base m_aleph_vector_buffer_idxs[0]
-        //debug() << "\33[1;36m[AlephVector::setLocalComponents] multi-site de résolution"<<", indexs["<<i<<"]="<<indexs[i]<<", m_aleph_vector_buffer_idxs[0]="<<m_aleph_vector_buffer_idxs[0]<<"\33[0m";
+        // In the multi-site solving case, we shift with the base m_aleph_vector_buffer_idxs[0]
+        //debug() << "\33[1;36m[AlephVector::setLocalComponents] multi-site solving"<<", indexs["<<i<<"]="<<indexs[i]<<", m_aleph_vector_buffer_idxs[0]="<<m_aleph_vector_buffer_idxs[0]<<"\33[0m";
         m_aleph_vector_buffer_vals[indexs[i] - m_aleph_vector_buffer_idxs[0]] = values[i];
       }
       else {
-        // Dans le cas de l'ordering, on est mono site, on veut pas de shift
+        // In the ordering case, we are single site, we don't want a shift
         m_aleph_vector_buffer_vals[indexs[i]] = values[i];
       }
     }
@@ -218,11 +218,11 @@ assemble(void)
   }
   if (m_kernel->thereIsOthers() && !m_kernel->isAnOther())
     m_kernel->world()->broadcast(UniqueArray<unsigned long>(1, 0xec7a979fl).view(), 0);
-  // Si on est en mode seq, on a rien à faire
+  // If we are in seq mode, we have nothing to do
   if (!m_kernel->isParallel())
     return;
   if (m_participating_in_solver) {
-    // Si je suis le solveur, je recv le reste des vecteurs provenant d'autres coeurs
+    // If I am the solver, I receive the rest of the vectors coming from other cores
     debug() << "\33[1;36m[AlephVector::assemble] m_participating_in_solver"
             << "\33[0m";
     AlephInt nbRows = 0;
@@ -230,7 +230,7 @@ assemble(void)
       nbRows = 0;
       if (m_kernel->rank() != m_ranks[iCpu])
         continue;
-      // Dans les autres cas, il faut décaler l'offset iRows
+      // In other cases, we must shift the iRows offset
       nbRows = m_kernel->topology()->gathered_nb_row(iCpu + 1) - m_kernel->topology()->gathered_nb_row(iCpu);
       if (iCpu == m_kernel->rank())
         continue;
@@ -244,7 +244,7 @@ assemble(void)
                                                       false));
     }
   }
-  if (m_kernel->rank() != m_ranks[m_kernel->rank()] && !m_kernel->isAnOther()) { // Dans ce cas, il faut envoyer ses données
+  if (m_kernel->rank() != m_ranks[m_kernel->rank()] && !m_kernel->isAnOther()) { // In this case, we must send its data
     debug() << "\33[1;36m[AlephVector::assemble]"
             << " send " << m_kernel->rank()
             << " => " << m_ranks[m_kernel->rank()]
@@ -296,7 +296,7 @@ reassemble(void)
   ItacFunction(AlephVector);
   if (!m_kernel->isParallel())
     return;
-  // Cas où le site de résolution n'est pas le notre, on pousse les données dans le 'val'
+  // Case where the solving site is not ours, we push the data into 'val'
   if (m_kernel->rank() != m_ranks[m_kernel->rank()] && !m_kernel->isAnOther()) {
     debug() << "\33[1;36m[AlephVector::REassemble] "
             << m_kernel->rank()
@@ -304,15 +304,15 @@ reassemble(void)
             << m_ranks[m_kernel->rank()] << "\33[0m";
     m_parallel_reassemble_requests.add(m_kernel->world()->recv(m_aleph_vector_buffer_val, m_ranks[m_kernel->rank()], false));
   }
-  // Si je suis un site de résolution, je résupère les résultats
+  // If I am a solving site, I retrieve the results
   if (m_participating_in_solver) {
-    // Je récupère déjà les valeurs depuis le vecteur
-    debug() << "\33[1;36m[AlephVector::REassemble] J'ai participé, je récupère les résultats depuis l'implémentation"
+    // I already retrieve the values from the vector
+    debug() << "\33[1;36m[AlephVector::REassemble] I participated, I retrieve the results from the implementation"
             << "\33[0m";
     m_implementation->AlephVectorGet(m_aleph_vector_buffer_vals.unguardedBasePointer(),
                                      m_aleph_vector_buffer_idxs.unguardedBasePointer(),
                                      m_aleph_vector_buffer_idxs.size());
-    // Puis je send les parties des vecteurs aux autres sites
+    // Then I send the parts of the vectors to the other sites
     AlephInt nbRows = 0;
     for (Integer iCpu = 0, iRows = 0; iCpu < m_kernel->size(); ++iCpu, iRows += nbRows) {
       nbRows = 0;
@@ -355,16 +355,16 @@ getLocalComponents(Integer vector_size,
   ItacFunction(AlephVector);
   debug() << "\33[1;36m[AlephVector::getLocalComponents] vector_size=" << vector_size << "\33[0m";
   if (!m_kernel->isParallel()) {
-    // En séquentiel, on va piocher les résultats directement
+    // In sequential mode, we will retrieve the results directly
     m_implementation->AlephVectorGet(vector_values.data(),
                                      global_indice.data(),
                                      vector_size);
     debug() << "\33[1;36m[AlephVector::getLocalComponents] seq done!\33[0m";
     return;
   }
-  // En parallèle, on va piocher dans nos buffers qui devraient être à jour
+  // In parallel mode, we will retrieve from our buffers which should be up to date
   for (int i = 0; i < vector_size; ++i) {
-    // Dans le cas où nous sommes sur notre site de résolution, les 'vals' sont nos cibles
+    // In the case where we are on our solving site, 'vals' are our targets
     if (m_participating_in_solver && (m_kernel->rank() == m_ranks[m_kernel->rank()])) {
       if (!m_kernel->isCellOrdering()) {
         vector_values[i] = m_aleph_vector_buffer_vals[global_indice[i] - m_aleph_vector_buffer_idxs[0]];
@@ -373,7 +373,7 @@ getLocalComponents(Integer vector_size,
         vector_values[i] = m_aleph_vector_buffer_vals[global_indice[i]];
       }
     }
-    // Dans le cas où le site de résolution est distant, on vient dans les 'val'
+    // In the case where the solving site is remote, we come into 'val'
     else {
       vector_values[i] = m_aleph_vector_buffer_val[i];
     }
@@ -398,18 +398,18 @@ getLocalComponents(Array<double>& vector_values)
       //debug()<<"\33[1;36mm_aleph_vector_buffer_idx["<<i<<"]="<<m_aleph_vector_buffer_idx[i]<<"\33[0m";
     }
     ARCANE_CHECK_POINTER(m_implementation);
-    // En séquentiel, on va piocher les résultats directement
+    // In sequential mode, we will retrieve the results directly
     m_implementation->AlephVectorGet(vector_values.data(), m_aleph_vector_buffer_idx.data(), vector_size);
     debug() << "\33[1;36m[getLocalComponents(vector_values)] seq done!\33[0m";
     return;
   }
-  // En parallèle, on va piocher dans nos buffers qui devraient être à jour
+  // In parallel mode, we will retrieve from our buffers which should be up to date
   for (int i = 0; i < vector_size; ++i) {
-    // Dans le cas où nous sommes sur notre site de résolution, les 'vals' sont nos cibles
+    // In the case where we are on our solving site, 'vals' are our targets
     if (m_participating_in_solver && (m_kernel->rank() == m_ranks[m_kernel->rank()])) {
       vector_values[i] = m_aleph_vector_buffer_vals[i];
     }
-    else { // Dans le cas où le site de résolution est distant, on vient dans les 'val'
+    else { // In the case where the solving site is remote, we come into 'val'
       vector_values[i] = m_aleph_vector_buffer_val[i];
     }
   }

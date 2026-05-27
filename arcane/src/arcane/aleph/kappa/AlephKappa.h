@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephKappa.h                                                      (C) 2012 */
+/* AlephKappa.h                                                     (C) 2012 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ALEPH_KAPPA_H
@@ -31,9 +31,9 @@ class AlephKappaService
   virtual void build(void) {}
 
  public:
-  //! Exécute l'opération du service
+  //! Executes the service operation
   virtual void execute(void);
-  //! Vrai si le service est actif
+  //! True if the service is active
   virtual bool isActive(void) const { return true; }
   virtual void setParallelMng(IParallelMng* wpm) { m_world_parallel = wpm; }
 

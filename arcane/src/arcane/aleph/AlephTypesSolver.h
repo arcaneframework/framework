@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephTypesSolver.h                                               (C) 2010 */
 /*                                                                           */
-/* Types du package Solver.                                                  */
+/* Types of the Solver package.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_SERVICE_SOLVER_TYPESSOLVER_H
 #define ARCANE_SERVICE_SOLVER_TYPESSOLVER_H
@@ -42,7 +42,7 @@ class TypesSolver
   };
 
   /*!
-   * \brief Stratégie à adopter en cas d'erreur du solveur.
+   * \brief Strategy to adopt in case of solver error.
    */
   enum eErrorStrategy
   {
@@ -78,8 +78,8 @@ class TypesSolver
     AMG_COARSENING_HYPRE_22 = 11
   };
 
-  // ordre de eAmgSmootherOption est le meme que celui de Sloop
-  // attention de ne pas le modifier voir Mireille ou bien AMG.h dans Sloop
+  // the order of eAmgSmootherOption is the same as that of Sloop
+  // attention not to modify it, see Mireille or AMG.h in Sloop
   enum eAmgSmootherOption
   {
     Rich_IC_smoother = 0,
@@ -94,8 +94,8 @@ class TypesSolver
     Rich_ILU_block_smoother = 9
   };
 
-  // ordre de eAmgCoarseningOption est le meme que celui de Sloop
-  // attention de ne pas le modifier voir Mireille ou bien AMG.h dans Sloop
+  // the order of eAmgCoarseningOption is the same as that of Sloop
+  // attention not to modify it, see Mireille or AMG.h in Sloop
   enum eAmgCoarseningOption
   {
     ParallelRugeStuben = 0,
@@ -109,8 +109,8 @@ class TypesSolver
     GMBF = 8
   };
 
-  // ordre de eAmgCoarseSolverOption est le meme que celui de Sloop
-  // attention de ne pas le modifier voir Mireille ou bien AMG.h dans Sloop
+  // the order of eAmgCoarseSolverOption is the same as that of Sloop
+  // attention not to modify it, see Mireille or AMG.h in Sloop
   enum eAmgCoarseSolverOption
   {
     CG_coarse_solver = 0,
@@ -121,7 +121,7 @@ class TypesSolver
     SuperLU_coarse_solver = 5
   };
 
-  // critere d'arret du solveur Sloop
+  // stopping criterion of the Sloop solver
   enum eCriteriaStop
   {
     RR0 = 0,

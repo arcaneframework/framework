@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vecteur d'un système linéaire.
+ * \brief Vector of a linear system.
  */
 class ARCANE_ALEPH_EXPORT AlephVector
 : public TraceAccessor
@@ -69,7 +69,7 @@ class ARCANE_ALEPH_EXPORT AlephVector
 
  private:
 
-  // Buffers utilisés dans le cas où nous sommes le solveur
+  // Buffers used when we are the solver
   UniqueArray<AlephInt> m_aleph_vector_buffer_idxs;
   UniqueArray<Real> m_aleph_vector_buffer_vals;
   UniqueArray<AlephInt> m_aleph_vector_buffer_idx;

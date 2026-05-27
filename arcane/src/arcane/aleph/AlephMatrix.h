@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Matrice d'un système linéaire.
+ * \brief Matrix of a linear system.
  */
 class ARCANE_ALEPH_EXPORT AlephMatrix
 : public TraceAccessor
@@ -75,17 +75,19 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
 
  private:
 
-  // Matrice utilisée dans le cas où nous sommes le solveur
+  // Matrix used when we are the solver
   MultiArray2<AlephInt> m_aleph_matrix_buffer_rows;
   MultiArray2<AlephInt> m_aleph_matrix_buffer_cols;
   MultiArray2<Real> m_aleph_matrix_buffer_vals;
-  // Tableaux tampons des setValues
+  // Buffers for setValues
   Integer m_setValue_idx;
   UniqueArray<AlephInt> m_setValue_row;
   UniqueArray<AlephInt> m_setValue_col;
   UniqueArray<Real> m_setValue_val;
 
- private: // Tableaux tampons des addValues
+ private:
+
+  // Buffers for addValues
   typedef std::map<Integer, Integer> colMap;
   typedef std::map<Integer, colMap*> rowColMap;
   rowColMap m_row_col_map;
@@ -94,11 +96,11 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   UniqueArray<Integer> m_addValue_col;
   UniqueArray<Real> m_addValue_val;
 
- private: // Tableaux des requètes
+ private: // Arrays of requests
   UniqueArray<Parallel::Request> m_aleph_matrix_mpi_data_requests;
   UniqueArray<Parallel::Request> m_aleph_matrix_mpi_results_requests;
 
- private: // Résultats. Placés ici afin de les conserver hors du scope de la fonction les utilisant
+ private: // Results. Placed here to keep them outside the scope of the functions using them
   UniqueArray<Int32> m_aleph_matrix_buffer_n_iteration;
   UniqueArray<Real> m_aleph_matrix_buffer_residual_norm;
 };

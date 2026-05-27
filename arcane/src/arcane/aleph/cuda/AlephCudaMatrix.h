@@ -129,13 +129,13 @@ public:
   // constructors / destructor
 
   /**
-   * Constructs a m*n sparse matrix.
+   * Constructs an m*n sparse matrix.
    * @param Storage can be one of ROWS, COLUMNS, ROWS_AND_COLUMNS
    */
   CNC_Matrix(long m, long n, Storage storage = ROWS) ;
 
   /**
-   * Constructs a n*n sparse matrix, row storage is used,
+   * Constructs an n*n sparse matrix, row storage is used,
    * Non symmetric storage is used
    */
   CNC_Matrix(long n ) ;

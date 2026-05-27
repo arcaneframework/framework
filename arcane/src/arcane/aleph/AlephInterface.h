@@ -180,10 +180,9 @@ class IAlephFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'une fabrique d'implémentation pour Aleph.
+ * \brief Interface of an implementation factory for Aleph.
  *
- * Cette interface est utilisée par AlephFactory pour choisir la
- * bibliothèque d'algèbre linéaire sous-jacente (par exemple sloop, hypre,...)
+ * This interface is used by AlephFactory to choose the underlying linear algebra library (for example, sloop, hypre,...)
  */
 class IAlephFactoryImpl
 {

@@ -19,7 +19,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Gestionaire d'indexing
+ * \brief Indexing Manager
  */
 class ARCANE_ALEPH_EXPORT AlephIndexing : public TraceAccessor
 {

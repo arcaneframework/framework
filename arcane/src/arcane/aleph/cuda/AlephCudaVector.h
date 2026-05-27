@@ -106,4 +106,3 @@ private:
 ARCANE_END_NAMESPACE
 
 #endif
-

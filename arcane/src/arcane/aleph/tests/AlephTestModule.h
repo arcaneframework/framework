@@ -28,7 +28,7 @@ namespace ArcaneTest
 using namespace Arcane;
 
 /*!
- * \brief Module de test pour Aleph.
+ * \brief Test module for Aleph.
  */
 class AlephTestModule
 : public ArcaneAlephTestModuleObject

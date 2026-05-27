@@ -55,11 +55,11 @@ Int32 AlephIndexing::
 updateKnownItems(VariableItemInt32* var_idx,
                  const Item& itm)
 {
-  // Dans tous les cas l'adresse est celle-ci
+  // In all cases, the address is this one
   m_known_items_all_address.add(&(*var_idx)[itm]);
-  // Si l'item ciblé n'est pas à nous, on ne doit pas le compter
+  // If the targeted item is not ours, we should not count it
   if (itm.isOwn()) {
-    // On met à jour la case mémoire, et on le rajoute aux owned
+    // We update the memory slot, and we add it to the owned ones
     (*var_idx)[itm] = m_current_idx;
     m_known_items_own += 1;
   }
@@ -67,9 +67,9 @@ updateKnownItems(VariableItemInt32* var_idx,
     //debug()<< "\t\t\33[33m[AlephIndexing::updateKnownItems] " << var_idx->name() << " is NOT ours"<<"\33[m";
     (*var_idx)[itm] = m_current_idx;
   }
-  // Maintenant, on peut incrémenter l'index de ligne
+  // Now, we can increment the row index
   m_current_idx += 1;
-  // Et on retourne le numéro demandé de la ligne
+  // And we return the requested row number
   //debug()<< "\t\t\33[33m[AlephIndexing::updateKnownItems] returning \33[1;32m"<<m_current_idx-1<<"\33[m";
   return m_current_idx - 1;
 }
@@ -87,8 +87,8 @@ findWhichLidFromMapMap(IVariable* var,
 #endif
 
   VarMapIdx::const_iterator iVarMap = m_var_map_idx.find(var);
-  // Si la variable n'est même pas encore connue
-  // On rajoute une entrée map(map(m_current_idx))
+  // If the variable is not even known yet
+  // We add a map entry (map(m_current_idx))
   if (iVarMap == m_var_map_idx.end()) {
     //debug()<<"\t\33[33m[findWhichLidFromMapMap] Unknown variable "<<var->name()<<"\33[m";
     traceMng()->flush();
@@ -98,16 +98,16 @@ findWhichLidFromMapMap(IVariable* var,
     new VariableItemInt32(VariableBuildInfo(var->itemFamily(),
                                             var_idx_name,IVariable::PSubDomainDepend),
                           var->itemKind());
-    // On rajoute à notre map la variable '_idx' de cette variable
+    // We add the '_idx' variable of this variable to our map
     m_var_map_idx.insert(std::make_pair(var, var_idx));
-    // On flush tous les indices potentiels de cette variable
+    // We flush all potential indices of this variable
     var_idx->fill(ALEPH_INDEX_NOT_USED);
     return updateKnownItems(var_idx, itm);
   }
   VariableItemInt32* var_idx = iVarMap->second;
-  // Si cet item n'est pas connu de cette variable, on rajoute une entrée
+  // If this item is not known by this variable, we add an entry
   if ((*var_idx)[itm] == ALEPH_INDEX_NOT_USED) {
-    //debug()<<"\t\33[33m[findWhichLidFromMapMap] Cet item n'est pas connu de cette variable, on rajoute une entrée\33[m";
+    //debug()<<"\t\33[33m[findWhichLidFromMapMap] This item is not known by this variable, we add an entry\33[m";
     traceMng()->flush();
     return updateKnownItems(var_idx, itm);
   }
@@ -117,7 +117,7 @@ findWhichLidFromMapMap(IVariable* var,
 }
 
 // ****************************************************************************
-// * get qui trig findWhichLidFromMapMap
+// * get which triggers findWhichLidFromMapMap
 // ****************************************************************************
 Int32 AlephIndexing::
 get(const VariableRef& variable,
@@ -135,10 +135,10 @@ Int32 AlephIndexing::get(const VariableRef& variable,
       ARCANE_FATAL("Can not find variable {0}",var->name());
     return (*x->second)[itm] - m_kernel->topology()->part()[m_kernel->rank()];
   }
-  // On teste de bien travailler sur une variables scalaire
+  // We test if we are working on a scalar variable
   if (var->dimension() != 1)
     throw ArgumentException(A_FUNCINFO, "cannot get non-scalar variables!");
-  // On vérifie que le type d'item est bien connu
+  // We check that the item type is well known
   if (var->itemKind() >= IK_Unknown)
     throw ArgumentException(A_FUNCINFO, "Unknown Item Kind!");
   //debug()<<"\33[1;33m[AlephIndexing::get] Valid couple, now looking for known idx (uid="<<itm->uniqueId()<<")\33[m";
@@ -153,16 +153,16 @@ buildIndexesFromAddress(void)
 {
   const Integer topology_row_offset = m_kernel->topology()->part()[m_kernel->rank()];
   VarMapIdx::const_iterator iVarIdx = m_var_map_idx.begin();
-  debug() << "\33[1;7;33m[buildIndexesFromAddress] Re-inexing variables with offset " << topology_row_offset << "\33[m";
-  // On ré-indice et synchronise toutes les variables qu'on a pu voir passer
+  debug() << "\33[1;7;33m[buildIndexesFromAddress] Re-indexing variables with offset " << topology_row_offset << "\33[m";
+  // We re-index and synchronize all variables that we have seen
   for (; iVarIdx != m_var_map_idx.end(); ++iVarIdx) {
     ItemGroup group = iVarIdx->first->itemGroup();
     VariableItemInt32* var_idx = iVarIdx->second;
     ENUMERATE_ITEM (itm, group) {
-      // Si cet item n'est pas utilisé, on s'en occupe pas
+      // If this item is not used, we skip it
       if ((*var_idx)[itm] == ALEPH_INDEX_NOT_USED)
         continue;
-      // Sinon on rajoute l'offset
+      // Otherwise, we add the offset
       (*var_idx)[itm] += topology_row_offset;
     }
     debug() << "\t\33[1;7;33m[buildIndexesFromAddress] Synchronizing idx for variable " << iVarIdx->second->name() << "\33[m";
@@ -172,7 +172,7 @@ buildIndexesFromAddress(void)
 
 // ****************************************************************************
 // * localKnownItems
-// * Consolidation en nombre des m_known_items_own fonction des items
+// * Consolidation of m_known_items_own based on items
 // ****************************************************************************
 Integer AlephIndexing::
 localKnownItems(void)
@@ -188,21 +188,21 @@ nowYouCanBuildTheTopology(AlephMatrix* fromThisMatrix,
                           AlephVector* fromThisX,
                           AlephVector* fromThisB)
 {
-  // Récupération de la consolidation en nombre des items
+  // Retrieval of the item count consolidation
   Integer lki = localKnownItems();
-  // ReduceSum sur l'ensemble de la topologie
+  // ReduceSum over the entire topology
   Integer gki = m_kernel->parallel()->reduce(Parallel::ReduceSum, lki);
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] Working with lki="
           << lki << ", gki=" << gki << "\33[m";
-  // Initialisation du kernel d'Aleph en fonction les locals et globals known items
+  // Initialization of the Aleph kernel based on local and global known items
   m_kernel->initialize(gki, lki);
-  // A partir d'ici, le kernel est initialisé, on utilise directement les m_arguments_queue
-  // LA topologie a été remplacée par une nouvelle
+  // From here, the kernel is initialized, we use m_arguments_queue directly
+  // The topology has been replaced by a new one
   debug() << "\33[1;7;33m[AlephIndexing::nowYouCanBuildTheTopology] Kernel is now initialized, rewinding Aleph operations!\33[m";
-  // Si on est en parallèle, il faut consolider les indices suivant la nouvelle topologie
+  // If we are in parallel, we must consolidate the indices according to the new topology
   if (m_kernel->isParallel())
     buildIndexesFromAddress();
-  // On peut maintenant créer le triplet (matrice,lhs,rhs)
+  // We can now create the triplet (matrix,lhs,rhs)
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] asking kernel for a Matrix\33[m";
   AlephMatrix* firstMatrix = m_kernel->createSolverMatrix();
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] asking kernel for a RHS Vector\33[m";
@@ -215,18 +215,18 @@ nowYouCanBuildTheTopology(AlephMatrix* fromThisMatrix,
   firstRhsVector->create();
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] firstLhsVector->create()\33[m";
   firstLhsVector->create();
-  // Et on revient pour rejouer les setValues de la matrice avec les indices consolidés
+  // And we return to replay the matrix's setValues with the consolidated indices
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] reSetValues fromThisMatrix\33[m";
   fromThisMatrix->reSetValuesIn(firstMatrix,
                                 m_known_items_all_address);
-  // Et on revient pour rejouer les addValues de la matrice avec les indices consolidés
+  // And we return to replay the matrix's addValues with the consolidated indices
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] reAddValues fromThisMatrix\33[m";
   fromThisMatrix->reAddValuesIn(firstMatrix,
                                 m_known_items_all_address);
-  // On reprovoque l'assemblage
+  // We re-run the assembly
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] firstMatrix->assemble()\33[m";
   firstMatrix->assemble();
-  // Et on fait le même processus pour les lhs et rhs
+  // And we do the same process for lhs and rhs
   debug() << "\33[1;33m[AlephIndexing::nowYouCanBuildTheTopology] firstRhsVector reSetLocalComponents/assemble\33[m";
   firstRhsVector->reSetLocalComponents(fromThisB);
   firstRhsVector->assemble();

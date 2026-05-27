@@ -28,7 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur l'environnement parallèle.
+ * \brief Information about the parallel environment.
  */
 class ARCANE_ALEPH_EXPORT AlephTopology
 : public TraceAccessor
@@ -90,11 +90,11 @@ class ARCANE_ALEPH_EXPORT AlephTopology
 
  private:
   AlephKernel* m_kernel;
-  Integer m_nb_row_size; // Nombre de lignes de la matrice réparties sur l'ensemble
-  Integer m_nb_row_rank; // Nombre de lignes de la matrice vue de mon rang
-  UniqueArray<AlephInt> m_gathered_nb_row; // Indices des lignes par CPU
-  UniqueArray<AlephInt> m_gathered_nb_row_elements; // nombre d'éléments par ligne
-  UniqueArray<AlephInt> m_gathered_nb_setValued; // nombre d'éléments setValué par CPU
+  Integer m_nb_row_size; // Number of matrix rows distributed across the set
+  Integer m_nb_row_rank; // Number of matrix rows viewed from my rank
+  UniqueArray<AlephInt> m_gathered_nb_row; // Row indices per CPU
+  UniqueArray<AlephInt> m_gathered_nb_row_elements; // Number of elements per row
+  UniqueArray<AlephInt> m_gathered_nb_setValued; // Number of setValued elements per CPU
   bool m_created;
   bool m_has_set_row_nb_elements;
   bool m_has_been_initialized;

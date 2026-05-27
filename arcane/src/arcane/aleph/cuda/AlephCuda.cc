@@ -34,7 +34,7 @@ class CudaAlephFactoryImpl
     cudaDeviceReset();
     debug()<<"\t[AlephFactory::AlephFactory] cudaDeviceSynchronize";
     cudaDeviceSynchronize();
-    // Si le cublasInit ne pass pas, c'est que l'on a pas de device
+    // If cublasInit fails, it means there is no device
     if (cublasInit()!=CUBLAS_STATUS_SUCCESS)
       return;
     //      throw FatalErrorException("AlephFactory", "Could not initialize CUBLAS!");

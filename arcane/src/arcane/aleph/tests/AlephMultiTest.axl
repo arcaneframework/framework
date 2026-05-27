@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+﻿<?xml version="1.0" ?>
 <module name="AlephMultiTest" version="1.0" namespace-name="ArcaneTest">
   <description>Module de test d'Aleph+Multi</description>
 
@@ -22,7 +22,7 @@
 
     <simple name="aleph-number-of-successive-solvers" type="integer" default="2" />
 
-    <!-- On encode par chiffres les 'underlying' et 'number's'' -->
+    <!-- We encode the 'underlying' and 'numbers' using digits -->
     <simple name="aleph-number-of-resolutions-per-solvers" type="integer" default="0x73" />
     <simple name="aleph-underlying-solver" type="integer" default="0x00" />
     <simple name="aleph-number-of-cores" type="integer" default="0x10"/>

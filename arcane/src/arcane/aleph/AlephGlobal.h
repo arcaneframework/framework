@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlephGlobal.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Déclarations générales de la composante 'arcane_aleph'.                   */
+/* General declarations for the 'arcane_aleph' component.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ALEPH_ALEPHGLOBAL_H
 #define ARCANE_ALEPH_ALEPHGLOBAL_H
@@ -46,7 +46,7 @@ class AlephIndexing;
 class AlephVector;
 class AlephParams;
 
-//! Type par défaut pour indexer les lignes et les colonnes des matrices et vecteurs
+//! Default type for indexing rows and columns of matrices and vectors
 using AlephInt = int;
 
 /*---------------------------------------------------------------------------*/

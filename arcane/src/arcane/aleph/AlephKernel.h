@@ -44,13 +44,13 @@ class AlephKernelResults
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour initialiser le solveur linéaire utilisé.
+ * \brief Information to initialize the linear solver used.
  *
- * Les valeurs utilisées sont spécifiques à l'implémentation choisie.
+ * The values used are specific to the chosen implementation.
  *
- * Actuellement cette instance n'est utilisée que pour PETSc et si hasValues()
- * est vrai alors on utilise PetscInitialize(int *argc,char ***args,char file[],...)
- * pour initialiser PETSc au lieu de PetscInitializeNoArguments().
+ * Currently, this instance is only used for PETSc, and if hasValues()
+ * is true, then we use PetscInitialize(int *argc,char ***args,char file[],...)
+ * to initialize PETSc instead of PetscInitializeNoArguments().
  */
 class AlephKernelSolverInitializeArguments
 {
