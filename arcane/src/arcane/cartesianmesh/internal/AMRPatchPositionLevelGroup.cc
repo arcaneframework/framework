@@ -29,15 +29,14 @@ namespace Arcane
 AMRPatchPositionLevelGroup::
 AMRPatchPositionLevelGroup(Int32 max_level)
 : m_max_level(max_level)
-, m_patches(max_level+1)
+, m_patches(max_level + 1)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPositionLevelGroup::
-~AMRPatchPositionLevelGroup()
-= default;
+~AMRPatchPositionLevelGroup() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -14,10 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/ItemEnumerator.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
@@ -43,11 +43,14 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 
  private:
 
-  DirFace(Cell n,Cell p) : m_previous(p), m_next(n){}
+  DirFace(Cell n, Cell p)
+  : m_previous(p)
+  , m_next(n)
+  {}
 
  public:
 
- //! Previous mesh
+  //! Previous mesh
   Cell previousCell() const { return m_previous; }
   //! Previous mesh
   CellLocalId previousCellId() const { return m_previous.itemLocalId(); }

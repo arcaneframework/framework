@@ -2068,13 +2068,13 @@ parentCellUniqueIdOfCell(Int64 uid, Int32 level, bool do_fatal)
 
   if (m_dimension == 2) {
     return cellUniqueId(CartCoord2(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
-                                        offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1)),
+                                   offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1)),
                         level - 1);
   }
 
   return cellUniqueId(CartCoord3(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
-                                      offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1),
-                                      offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level - 1)),
+                                 offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1),
+                                 offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level - 1)),
                       level - 1);
 }
 
@@ -2101,8 +2101,8 @@ childCellUniqueIdOfCell(Cell cell, CartCoord3 child_coord_in_parent)
   const Int32 level = cell.level();
 
   return cellUniqueId(CartCoord3(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
-                                      offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y,
-                                      offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level + 1) + child_coord_in_parent.z),
+                                 offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y,
+                                 offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level + 1) + child_coord_in_parent.z),
                       level + 1);
 }
 
@@ -2119,7 +2119,7 @@ childCellUniqueIdOfCell(Cell cell, CartCoord2 child_coord_in_parent)
   const Int32 level = cell.level();
 
   return cellUniqueId(CartCoord2(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
-                                      offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y),
+                                 offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y),
                       level + 1);
 }
 
@@ -2222,7 +2222,7 @@ parentNodeUniqueIdOfNode(Int64 uid, Int32 level, bool do_fatal)
 
   if (m_dimension == 2) {
     return nodeUniqueId(CartCoord2(offsetLevelToLevel(coord_x, level, level - 1),
-                                        offsetLevelToLevel(coord_y, level, level - 1)),
+                                   offsetLevelToLevel(coord_y, level, level - 1)),
                         level - 1);
   }
 
@@ -2235,8 +2235,8 @@ parentNodeUniqueIdOfNode(Int64 uid, Int32 level, bool do_fatal)
     return NULL_ITEM_UNIQUE_ID;
   }
   return nodeUniqueId(CartCoord3(offsetLevelToLevel(coord_x, level, level - 1),
-                                      offsetLevelToLevel(coord_y, level, level - 1),
-                                      offsetLevelToLevel(coord_z, level, level - 1)),
+                                 offsetLevelToLevel(coord_y, level, level - 1),
+                                 offsetLevelToLevel(coord_z, level, level - 1)),
                       level - 1);
 }
 
@@ -2258,13 +2258,13 @@ childNodeUniqueIdOfNode(Int64 uid, Int32 level)
 {
   if (m_dimension == 2) {
     return nodeUniqueId(CartCoord2(offsetLevelToLevel(nodeUniqueIdToCoordX(uid, level), level, level + 1),
-                                        offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1)),
+                                   offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1)),
                         level + 1);
   }
 
   return nodeUniqueId(CartCoord3(offsetLevelToLevel(nodeUniqueIdToCoordX(uid, level), level, level + 1),
-                                      offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1),
-                                      offsetLevelToLevel(nodeUniqueIdToCoordZ(uid, level), level, level + 1)),
+                                 offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1),
+                                 offsetLevelToLevel(nodeUniqueIdToCoordZ(uid, level), level, level + 1)),
                       level + 1);
 }
 

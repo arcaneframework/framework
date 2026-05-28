@@ -40,8 +40,13 @@ namespace Arcane
 class FaceDirectionMng::Impl
 {
  public:
-  Impl() : m_infos(platform::getDefaultDataAllocator()){}
+
+  Impl()
+  : m_infos(platform::getDefaultDataAllocator())
+  {}
+
  public:
+
   FaceGroup m_inner_all_items;
   FaceGroup m_outer_all_items;
   FaceGroup m_inpatch_all_items;
@@ -58,7 +63,7 @@ class FaceDirectionMng::Impl
 FaceDirectionMng::
 FaceDirectionMng()
 : m_direction(MD_DirInvalid)
-, m_p (nullptr)
+, m_p(nullptr)
 {
 }
 
@@ -66,7 +71,7 @@ FaceDirectionMng()
 /*---------------------------------------------------------------------------*/
 
 void FaceDirectionMng::
-_internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index)
+_internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index)
 {
   if (m_p)
     ARCANE_FATAL("Initialisation already done");
@@ -100,16 +105,16 @@ _internalResizeInfos(Int32 new_size)
 /*---------------------------------------------------------------------------*/
 
 void FaceDirectionMng::
-_internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center,
+_internalComputeInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& cells_center,
                       const VariableFaceReal3& faces_center)
 {
   IMesh* mesh = m_p->m_cartesian_mesh->mesh();
   IItemFamily* face_family = mesh->faceFamily();
   IItemFamily* cell_family = mesh->cellFamily();
   int dir = (int)m_direction;
-  String base_group_name = String("Direction")+dir;
-  if (m_p->m_patch_index>=0)
-    base_group_name = base_group_name + String("AMRPatch")+m_p->m_patch_index;
+  String base_group_name = String("Direction") + dir;
+  if (m_p->m_patch_index >= 0)
+    base_group_name = base_group_name + String("AMRPatch") + m_p->m_patch_index;
 
   // Calculates the list of faces in a given direction.
   // For each cell, it is necessary to add to the list of faces
@@ -121,27 +126,27 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
     faces_lid.reserve(all_cells.size());
     // Set of faces already added
     std::set<Int32> done_faces;
-    ENUMERATE_CELL(icell,all_cells){
+    ENUMERATE_CELL (icell, all_cells) {
       DirCellFace dcf(cell_dm.cellFace(*icell));
       Face next_face = dcf.next();
       Face prev_face = dcf.previous();
 
       //! Adds the previous face to the list of faces in this direction
       Int32 prev_lid = prev_face.localId();
-      if (done_faces.find(prev_lid)==done_faces.end()){
+      if (done_faces.find(prev_lid) == done_faces.end()) {
         faces_lid.add(prev_lid);
         done_faces.insert(prev_lid);
       }
       Int32 next_lid = next_face.localId();
-      if (done_faces.find(next_lid)==done_faces.end()){
+      if (done_faces.find(next_lid) == done_faces.end()) {
         faces_lid.add(next_lid);
         done_faces.insert(next_lid);
       }
     }
   }
 
-  FaceGroup all_faces = face_family->createGroup(String("AllFaces")+base_group_name,Int32ConstArrayView(),true);
-  all_faces.setItems(faces_lid,true);
+  FaceGroup all_faces = face_family->createGroup(String("AllFaces") + base_group_name, Int32ConstArrayView(), true);
+  all_faces.setItems(faces_lid, true);
 
   UniqueArray<Int32> inner_lids;
   UniqueArray<Int32> outer_lids;
@@ -154,12 +159,12 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
     else
       inner_lids.add(lid);
   }
-  m_p->m_inner_all_items = face_family->createGroup(String("AllInner")+base_group_name,inner_lids,true);
-  m_p->m_outer_all_items = face_family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
+  m_p->m_inner_all_items = face_family->createGroup(String("AllInner") + base_group_name, inner_lids, true);
+  m_p->m_outer_all_items = face_family->createGroup(String("AllOuter") + base_group_name, outer_lids, true);
   m_p->m_all_items = all_faces;
   m_cells = CellInfoListView(cell_family);
 
-  _computeCellInfos(cell_dm,cells_center,faces_center);
+  _computeCellInfos(cell_dm, cells_center, faces_center);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -267,10 +272,10 @@ _internalComputeInfos(const CellDirectionMng& cell_dm)
 /*---------------------------------------------------------------------------*/
 
 bool FaceDirectionMng::
-_hasFace(Cell cell,Int32 face_local_id) const
+_hasFace(Cell cell, Int32 face_local_id) const
 {
-  for( FaceLocalId iface_lid : cell.faceIds() ){
-    if (iface_lid==face_local_id)
+  for (FaceLocalId iface_lid : cell.faceIds()) {
+    if (iface_lid == face_local_id)
       return true;
   }
   return false;
@@ -285,7 +290,7 @@ _hasFace(Cell cell,Int32 face_local_id) const
  * of the face centers and the cell centers.
  */
 void FaceDirectionMng::
-_computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center,
+_computeCellInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& cells_center,
                   const VariableFaceReal3& faces_center)
 {
   eMeshDirection dir = m_direction;
@@ -294,11 +299,11 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
   // to ensure that every front/back cell is in
   // this set
   std::set<Int32> patch_cells_set;
-  ENUMERATE_CELL(icell,cell_dm.allCells()){
+  ENUMERATE_CELL (icell, cell_dm.allCells()) {
     patch_cells_set.insert(icell.itemLocalId());
   }
 
-  ENUMERATE_FACE(iface,m_p->m_all_items){
+  ENUMERATE_FACE (iface, m_p->m_all_items) {
     Face face = *iface;
     Int32 face_lid = iface.itemLocalId();
     Real3 face_coord = faces_center[iface];
@@ -314,49 +319,49 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
         back_cell = Cell();
 
     bool is_inverse = false;
-    if (!front_cell.null()){
+    if (!front_cell.null()) {
       Real3 front_coord = cells_center[front_cell];
-      if (dir==MD_DirX){
-        if (front_coord.x<face_coord.x)
+      if (dir == MD_DirX) {
+        if (front_coord.x < face_coord.x)
           is_inverse = true;
       }
-      else if (dir==MD_DirY){
-        if (front_coord.y<face_coord.y)
+      else if (dir == MD_DirY) {
+        if (front_coord.y < face_coord.y)
           is_inverse = true;
       }
-      else if (dir==MD_DirZ){
-        if (front_coord.z<face_coord.z)
+      else if (dir == MD_DirZ) {
+        if (front_coord.z < face_coord.z)
           is_inverse = true;
       }
     }
-    else{
+    else {
       Real3 back_coord = cells_center[back_cell];
-      if (dir==MD_DirX){
-        if (back_coord.x>face_coord.x)
+      if (dir == MD_DirX) {
+        if (back_coord.x > face_coord.x)
           is_inverse = true;
       }
-      else if (dir==MD_DirY){
-        if (back_coord.y>face_coord.y)
+      else if (dir == MD_DirY) {
+        if (back_coord.y > face_coord.y)
           is_inverse = true;
       }
-      else if (dir==MD_DirZ){
-        if (back_coord.z>face_coord.z)
+      else if (dir == MD_DirZ) {
+        if (back_coord.z > face_coord.z)
           is_inverse = true;
       }
     }
     // If the face has two connected cells, look at the AMR level of these
     // two cells and if they are different, only keep the cell
     // whose AMR level is that of the face.
-    if (!back_cell.null() && !front_cell.null()){
+    if (!back_cell.null() && !front_cell.null()) {
       Int32 back_level = back_cell.level();
       Int32 front_level = front_cell.level();
-      if (back_level!=front_level){
+      if (back_level != front_level) {
         // The face does not have its level information, but if the two
         // cells are not of the same level, the face belongs only to one
         // of the two cells. We therefore only keep that one.
-        if (!_hasFace(back_cell,face_lid))
+        if (!_hasFace(back_cell, face_lid))
           back_cell = Cell();
-        if (!_hasFace(front_cell,face_lid))
+        if (!_hasFace(front_cell, face_lid))
           front_cell = Cell();
       }
     }

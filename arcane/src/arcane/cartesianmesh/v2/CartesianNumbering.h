@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,10 +45,12 @@ template <typename IdType>
 class CartesianNumbering
 {
  public:
+
   //! Type for Cartesian triplets (i,j,k) and dimension triplets (ni,nj,nk)
   using IdType3 = IdType[3];
 
  public:
+
   CartesianNumbering() {}
 
   ARCCORE_HOST_DEVICE CartesianNumbering(const CartesianNumbering<IdType>& rhs)
@@ -217,6 +219,7 @@ class CartesianNumbering
   }
 
  protected:
+
   Integer m_dimension = 0;
 
   IdType3 m_nitems_dir = { 1, 1, 1 }; // Number of elements per direction

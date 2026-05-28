@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 

@@ -1011,4 +1011,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNG_H
+#endif

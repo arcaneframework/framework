@@ -1072,4 +1072,4 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHNUMBERINGMNGINTERNAL_H
+#endif

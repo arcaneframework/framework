@@ -156,7 +156,7 @@ compress()
   }
 
   // If a size reduction must occur in X.
-  if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size()-1) {
+  if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size() - 1) {
     // The patch cannot be "flat".
     if (reduce_x_max < reduce_x_min) {
       ARCANE_FATAL("Bad patch X : no refine cell");
@@ -172,7 +172,7 @@ compress()
     m_patch.setMaxPoint(patch_max);
   }
 
-  if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size()-1) {
+  if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size() - 1) {
     if (reduce_y_max < reduce_y_min) {
       ARCANE_FATAL("Bad patch Y : no refine cell");
     }
@@ -341,8 +341,8 @@ efficacity() const
   if (m_sig_x.size() <= TARGET_SIZE) {
     eff_xy = static_cast<Real>(m_sig_x.size()) / TARGET_SIZE;
   }
-  else if (m_sig_x.size() < TARGET_SIZE*2) {
-    Real size_x = math::abs(m_sig_x.size() - TARGET_SIZE*2);
+  else if (m_sig_x.size() < TARGET_SIZE * 2) {
+    Real size_x = math::abs(m_sig_x.size() - TARGET_SIZE * 2);
     eff_xy = size_x / TARGET_SIZE;
   }
 
@@ -371,7 +371,7 @@ efficacity() const
   }
   eff_xy *= TARGET_SIZE_WEIGHT_IN_EFFICACITY;
 
-  return (eff+eff_xy)/(1+TARGET_SIZE_WEIGHT_IN_EFFICACITY);
+  return (eff + eff_xy) / (1 + TARGET_SIZE_WEIGHT_IN_EFFICACITY);
 }
 
 /*---------------------------------------------------------------------------*/

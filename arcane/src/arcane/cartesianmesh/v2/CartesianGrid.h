@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,6 +33,7 @@ template <typename IdType>
 class CartesianGrid
 {
  public:
+
   //! Type for Cartesian triplets (i,j,k) and dimension triplets (ni,nj,nk).
   using IdType3 = IdType[3];
 
@@ -43,6 +44,7 @@ class CartesianGrid
   using CartesianNumberingType3 = CartesianNumberingType[3];
 
  public:
+
   //! param[in] ncells_dir Number of cells in each direction.
   //  param[in] dimension  Dimension of the Cartesian grid (up to 3).
   CartesianGrid(const IdType3& ncells_dir, Integer dimension)
@@ -144,6 +146,7 @@ class CartesianGrid
   }
 
  protected:
+
   IdType3 m_ncells_dir = { 1, 1, 1 }; // Number of cells per direction.
   IdType3 m_nnodes_dir = { 1, 1, 1 }; // Number of nodes per direction.
   IdType3 m_nfaces_norm_dir[3]; //! m_nfaces_norm_dir[dnorm] = dimension of the face grid normal to dnorm.

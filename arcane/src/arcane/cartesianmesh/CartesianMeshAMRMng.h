@@ -339,4 +339,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_CARTESIANMESHAMRMNG_H
+#endif

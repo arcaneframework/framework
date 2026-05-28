@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/AMRPatchPosition.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   virtual ~ICartesianMeshPatch() {} //<! Releases resources
 
   //! Mesh group of the patch
-  virtual CellGroup cells() =0;
+  virtual CellGroup cells() = 0;
   virtual CellGroup inPatchCells() = 0;
   virtual CellGroup overlapCells() = 0;
 
@@ -51,25 +51,25 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   virtual Integer index() = 0;
 
   //! List of meshes in direction \a dir
-  virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
+  virtual CellDirectionMng& cellDirection(eMeshDirection dir) = 0;
 
   //! List of meshes in direction \a dir (0, 1 or 2)
-  virtual CellDirectionMng& cellDirection(Integer idir) =0;
+  virtual CellDirectionMng& cellDirection(Integer idir) = 0;
 
   //! List of faces in direction \a dir
-  virtual FaceDirectionMng& faceDirection(eMeshDirection dir) =0;
+  virtual FaceDirectionMng& faceDirection(eMeshDirection dir) = 0;
 
   //! List of faces in direction \a dir (0, 1 or 2)
-  virtual FaceDirectionMng& faceDirection(Integer idir) =0;
+  virtual FaceDirectionMng& faceDirection(Integer idir) = 0;
 
   //! List of nodes in direction \a dir
-  virtual NodeDirectionMng& nodeDirection(eMeshDirection dir) =0;
+  virtual NodeDirectionMng& nodeDirection(eMeshDirection dir) = 0;
 
   //! List of nodes in direction \a dir (0, 1 or 2)
-  virtual NodeDirectionMng& nodeDirection(Integer idir) =0;
+  virtual NodeDirectionMng& nodeDirection(Integer idir) = 0;
 
   //! Performs checks on the validity of the instance.
-  virtual void checkValid() const =0;
+  virtual void checkValid() const = 0;
 
   virtual AMRPatchPosition position() const = 0;
 

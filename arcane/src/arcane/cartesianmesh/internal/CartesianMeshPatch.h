@@ -33,6 +33,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
  * \brief Information by direction for each type of mesh entity.
@@ -70,10 +71,13 @@ class CartesianMeshPatch
   };
 
  public:
-  CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index);
+
+  CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index);
   CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index, const AMRPatchPosition& position);
   ~CartesianMeshPatch() override;
+
  public:
+
   CellGroup cells() override;
   CellGroup inPatchCells() override;
   CellGroup overlapCells() override;
@@ -124,10 +128,10 @@ class CartesianMeshPatch
 
  private:
 
-  void _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
+  void _internalComputeNodeCellInformations(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord);
   void _internalComputeNodeCellInformations();
-  void _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
-  void _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord);
+  void _computeNodeCellInformations2D(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord);
+  void _computeNodeCellInformations3D(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord);
 
  private:
 

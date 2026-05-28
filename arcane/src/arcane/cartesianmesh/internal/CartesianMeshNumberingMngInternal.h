@@ -233,4 +233,4 @@ class CartesianMeshNumberingMngInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNGINTERNAL_H
+#endif

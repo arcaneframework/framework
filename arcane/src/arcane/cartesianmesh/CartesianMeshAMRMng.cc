@@ -183,17 +183,17 @@ void CartesianMeshAMRMng::
 createSubLevel() const
 {
   auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
-  if(amr_type == eMeshAMRKind::Cell) {
+  if (amr_type == eMeshAMRKind::Cell) {
     Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cmesh);
     coarser->createCoarseCells();
   }
-  else if(amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+  else if (amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
   }
-  else if(amr_type == eMeshAMRKind::Patch) {
+  else if (amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
-  else{
+  else {
     ARCANE_FATAL("AMR is not enabled");
   }
   m_cmesh->_internalApi()->saveInfosInProperties();

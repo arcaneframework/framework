@@ -51,7 +51,7 @@ class AMRPatchPositionSignature
 
   AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, Int32 nb_cut);
 
-public:
+ public:
 
   AMRPatchPositionSignature& operator=(const AMRPatchPositionSignature&) = default;
 

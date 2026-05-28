@@ -32,6 +32,7 @@ namespace Arcane
 class AMRPatchPositionSignatureCut
 {
  public:
+
   AMRPatchPositionSignatureCut();
   ~AMRPatchPositionSignatureCut();
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,26 +41,33 @@ class CartesianMeshUniqueIdRenumberingV2
 : public TraceAccessor
 {
  public:
-  CartesianMeshUniqueIdRenumberingV2(ICartesianMesh* cmesh,ICartesianMeshGenerationInfo* gen_info);
+
+  CartesianMeshUniqueIdRenumberingV2(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info);
   ~CartesianMeshUniqueIdRenumberingV2() = default;
+
  public:
+
   void renumber();
+
  private:
+
   ICartesianMesh* m_cartesian_mesh = nullptr;
   ICartesianMeshGenerationInfo* m_generation_info = nullptr;
   bool m_is_verbose = false;
+
  private:
-  void _applyChildrenCell2D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
+
+  void _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
                             VariableCellInt64& cells_new_uid,
-                            Int64 coord_i,Int64 coord_j,
+                            Int64 coord_i, Int64 coord_j,
                             Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y,
                             Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
-  void _applyChildrenCell3D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
+  void _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
                             VariableCellInt64& cells_new_uid,
-                            Int64 coord_i,Int64 coord_j,Int64 coord_k,
+                            Int64 coord_i, Int64 coord_j, Int64 coord_k,
                             Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
                             Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
-  void _applyFamilyRenumbering(IItemFamily* family,VariableItemInt64& items_new_uid);
+  void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
 };
 
 /*---------------------------------------------------------------------------*/

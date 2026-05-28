@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -114,8 +114,8 @@ renumber()
         info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
                << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
       _applyChildrenCell2D(cell, nodes_new_uid, faces_new_uid, cells_new_uid,
-                          coord_i, coord_j, nb_cell_x, nb_cell_y,
-                          0, 0, 0, 0);
+                           coord_i, coord_j, nb_cell_x, nb_cell_y,
+                           0, 0, 0, 0);
     }
   }
 
@@ -307,7 +307,7 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
   coord_i *= pattern;
   coord_j *= pattern;
-  
+
   Int32 nb_child = cell.nbHChildren();
   for (Int32 icell = 0; icell < nb_child; ++icell) {
     Cell sub_cell = cell.hChild(icell);
@@ -483,21 +483,15 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
     const Int64 nb_cell_before_j = coord_j * current_level_nb_cell_x;
 
-    new_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y)
-                + nb_cell_before_j
-                + (coord_i);
+    new_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y) + nb_cell_before_j + (coord_i);
 
     new_uids[3] = new_uids[0] + current_level_nb_cell_x * current_level_nb_cell_y;
 
-    new_uids[1] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y)
-                + (coord_j * current_level_nb_face_x)
-                + (coord_i) + total_face_xy;
+    new_uids[1] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y) + (coord_j * current_level_nb_face_x) + (coord_i) + total_face_xy;
 
     new_uids[4] = new_uids[1] + 1;
 
-    new_uids[2] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y)
-                + nb_cell_before_j
-                + (coord_i) + total_face_xy_yz;
+    new_uids[2] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y) + nb_cell_before_j + (coord_i) + total_face_xy_yz;
 
     new_uids[5] = new_uids[2] + current_level_nb_cell_x;
 
