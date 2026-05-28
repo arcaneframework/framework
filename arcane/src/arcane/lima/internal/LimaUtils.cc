@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LimaUtils.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour Lima.                                          */
+/* Utility functions for Lima.                                               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/lima/internal/LimaUtils.h"
@@ -40,41 +40,41 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void LimaUtils::
-createGroup(IItemFamily* family,const String& name,Int32ArrayView local_ids)
+createGroup(IItemFamily* family, const String& name, Int32ArrayView local_ids)
 {
   ITraceMng* tm = family->traceMng();
   if (!local_ids.empty())
-    std::sort(std::begin(local_ids),std::end(local_ids));
+    std::sort(std::begin(local_ids), std::end(local_ids));
   Integer nb_item = local_ids.size();
   Integer nb_duplicated = 0;
-  // Détecte les doublons
-  for( Integer i=1; i<nb_item; ++i )
-    if (local_ids[i]==local_ids[i-1]){
+  // Detects duplicates
+  for (Integer i = 1; i < nb_item; ++i)
+    if (local_ids[i] == local_ids[i - 1]) {
       ++nb_duplicated;
     }
-  if (nb_duplicated!=0){
+  if (nb_duplicated != 0) {
     tm->warning() << "Duplicated items in group name=" << name
                   << " nb_duplicated=" << nb_duplicated;
     auto xbegin = std::begin(local_ids);
     auto xend = std::end(local_ids);
-    Integer new_size = CheckedConvert::toInteger(std::unique(xbegin,xend)-xbegin);
+    Integer new_size = CheckedConvert::toInteger(std::unique(xbegin, xend) - xbegin);
     tm->info() << "NEW_SIZE=" << new_size << " old=" << nb_item;
-    local_ids = local_ids.subView(0,new_size);
+    local_ids = local_ids.subView(0, new_size);
   }
 
-  family->createGroup(name,local_ids,true);
+  family->createGroup(name, local_ids, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType
-LimaUtils::_directLimaPartitionMalipp(ITimerMng* timer_mng,IPrimaryMesh* mesh,
-                           const String& filename, Real length_multiplier)
+LimaUtils::_directLimaPartitionMalipp(ITimerMng* timer_mng, IPrimaryMesh* mesh,
+                                      const String& filename, Real length_multiplier)
 {
 #ifdef ARCANE_LIMA_HAS_MLI
   LimaMalippReader<Lima::MaliPPReader> reader(mesh->traceMng());
-  IMeshReader::eReturnType rt = reader.readMeshFromFile(timer_mng,mesh, filename, length_multiplier);
+  IMeshReader::eReturnType rt = reader.readMeshFromFile(timer_mng, mesh, filename, length_multiplier);
   return rt;
 #else
   ARCANE_UNUSED(timer_mng);
@@ -89,12 +89,12 @@ LimaUtils::_directLimaPartitionMalipp(ITimerMng* timer_mng,IPrimaryMesh* mesh,
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType
-LimaUtils::_directLimaPartitionMalipp2(ITimerMng* timer_mng,IPrimaryMesh* mesh,
-                           const String& filename, Real length_multiplier)
+LimaUtils::_directLimaPartitionMalipp2(ITimerMng* timer_mng, IPrimaryMesh* mesh,
+                                       const String& filename, Real length_multiplier)
 {
 #ifdef ARCANE_LIMA_HAS_MLI2
   LimaMalippReader<Lima::MaliPPReader2> reader(mesh->traceMng());
-  auto rt = reader.readMeshFromFile(timer_mng,mesh,filename,length_multiplier);
+  auto rt = reader.readMeshFromFile(timer_mng, mesh, filename, length_multiplier);
   return rt;
 #else
   ARCANE_UNUSED(timer_mng);

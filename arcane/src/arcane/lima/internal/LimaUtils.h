@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LimaUtils.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour Lima.                                          */
+/* Utility functions for Lima.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_LIMAUTILS_H
 #define ARCANE_CORE_INTERNAL_LIMAUTILS_H
@@ -42,11 +42,11 @@ class ARCANE_LIMA_EXPORT LimaUtils
  public:
 
   /*!
-   * \brief Créé un groupe d'entités.
+   * \brief Creates a group of entities.
    *
-   * Pour assurer la reproductibilité, s'assure que les entités sont
-   * triées suivant leur localid. S'assure aussi qu'il n'y a pas de doublons
-   * dans la liste car lima l'autorise mais pas Arcane.
+   * To ensure reproducibility, ensures that the entities are
+   * sorted according to their localid. Also ensures there are no duplicates
+   * in the list because Lima allows it but Arcane does not.
    */
   static void createGroup(IItemFamily* family, const String& name, Int32ArrayView local_ids);
 
