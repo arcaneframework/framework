@@ -285,22 +285,97 @@ class ConstituentItemIndexedSelectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Selection sur un ComponentCellVectorView.
+ */
+class ComponentCellVectorSelectionView
+: public ConstituentItemIndexedSelectionView<ComponentCellVectorView>
+{
+  using BaseClass = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
+
+ public:
+
+  ComponentCellVectorSelectionView(ComponentCellVectorView vector_view, SmallSpan<const Int32> indices)
+  : BaseClass(vector_view, indices)
+  {
+  }
+
+  //! Construit une sélection contenant tous les éléments de \view
+  explicit ComponentCellVectorSelectionView(ComponentCellVectorView vector_view)
+  : BaseClass(vector_view)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Selection sur un EnvCellVectorView.
+ */
+class EnvCellVectorSelectionView
+: public ConstituentItemIndexedSelectionView<EnvCellVectorView>
+{
+  using BaseClass = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
+
+ public:
+
+  EnvCellVectorSelectionView(EnvCellVectorView vector_view, SmallSpan<const Int32> indices)
+  : BaseClass(vector_view, indices)
+  {
+  }
+
+  //! Construit une sélection contenant tous les éléments de \view
+  explicit EnvCellVectorSelectionView(EnvCellVectorView vector_view)
+  : BaseClass(vector_view)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Selection sur un MatCellVectorView.
+ */
+class MatCellVectorSelectionView
+: public ConstituentItemIndexedSelectionView<MatCellVectorView>
+{
+  using BaseClass = ConstituentItemIndexedSelectionView<MatCellVectorView>;
+
+ public:
+
+  MatCellVectorSelectionView(MatCellVectorView vector_view, SmallSpan<const Int32> indices)
+  : BaseClass(vector_view, indices)
+  {
+  }
+
+  //! Construit une sélection contenant tous les éléments de \view
+  explicit MatCellVectorSelectionView(MatCellVectorView vector_view)
+  : BaseClass(vector_view)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Enumérateur sur une sélection d'un constituant
 inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
-arcaneImplCreateConstituentEnumerator(ComponentCell, ConstituentItemIndexedSelectionView<ComponentCellVectorView> container)
+arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentCellVectorSelectionView container)
 {
   return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(container);
 }
+
 //! Enumérateur sur une sélection d'un constituant
 inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
-arcaneImplCreateConstituentEnumerator(ComponentCell, ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+arcaneImplCreateConstituentEnumerator(ComponentCell, EnvCellVectorSelectionView container)
 {
   ConstituentItemIndexedSelectionView<ComponentCellVectorView> c2(container.sourceView(), container.selectionView());
   return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(c2);
 }
+
 //! Enumérateur sur une sélection d'un milieu
 inline ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
-arcaneImplCreateConstituentEnumerator(EnvCell, ConstituentItemIndexedSelectionView<EnvCellVectorView> container)
+arcaneImplCreateConstituentEnumerator(EnvCell, EnvCellVectorSelectionView container)
 {
   return ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>::create(container);
 }

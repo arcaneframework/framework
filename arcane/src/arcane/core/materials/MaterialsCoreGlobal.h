@@ -191,12 +191,17 @@ using EnvCellLocalId = EnvItemLocalId;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if 0
 //! Selection sur un 'EvnCellVectorView'
 using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
 //! Selection sur un 'MatCellVectorView'
 using MatCellVectorSelectionView = ConstituentItemIndexedSelectionView<MatCellVectorView>;
 //! Selection sur un 'ComponentCellVectorView'
 using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
+#endif
+class EnvCellVectorSelectionView;
+class MatCellVectorSelectionView;
+class ComponentCellVectorSelectionView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
