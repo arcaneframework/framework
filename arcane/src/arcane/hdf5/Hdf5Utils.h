@@ -34,7 +34,7 @@
 /*---------------------------------------------------------------------------*/
 
 // At least hdf5 1.8 is required
-#if (H5_VERS_MAJOR<2) && (H5_VERS_MAJOR==1 && H5_VERS_MINOR<10)
+#if (H5_VERS_MAJOR < 2) && (H5_VERS_MAJOR == 1 && H5_VERS_MINOR < 10)
 #error "This version of HDF5 is too old. Version 1.10+ is required"
 #endif
 
@@ -47,22 +47,19 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class IParallelMng;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Utility functions for Hdf5.
  */
-namespace Hdf5Utils
+namespace Arcane::Hdf5Utils
 {
-extern "C"
-{
-  ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t,const char*,void*);
+extern "C" {
+ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t, const char*, void*);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -323,19 +320,24 @@ class ARCANE_HDF5_EXPORT HFile
 class ARCANE_HDF5_EXPORT HGroupSearch
 {
  public:
+
   HGroupSearch(const String& group_name)
   : m_group_name(group_name)
   {
   }
+
  public:
+
   herr_t iterateMe(const char* member_name)
   {
     //cerr << "** ITERATE <" << member_name << ">\n";
-    if (m_group_name==member_name)
+    if (m_group_name == member_name)
       return 1;
     return 0;
   }
+
  private:
+
   String m_group_name;
 };
 
@@ -472,9 +474,9 @@ class ARCANE_HDF5_EXPORT HDataset
 
   void close();
   void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
-  void create(const Hid& loc_id,const String& var,hid_t save_type,
-              const HSpace& space_id,const HProperty& link_plist,
-              const HProperty& creation_plist,const HProperty& access_plist);
+  void create(const Hid& loc_id, const String& var, hid_t save_type,
+              const HSpace& space_id, const HProperty& link_plist,
+              const HProperty& creation_plist, const HProperty& access_plist);
   void recursiveCreate(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
   void open(const Hid& loc_id, const String& var);
   void openIfExists(const Hid& loc_id, const String& var);
@@ -534,7 +536,6 @@ class ARCANE_HDF5_EXPORT HAttribute
   herr_t read(hid_t native_type, void* array);
   HSpace getSpace();
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -814,44 +815,54 @@ class ARCANE_HDF5_EXPORT StandardArray
  * \brief Encapsulates a simple dataset from an HDF5 file that represents
  * an array.
  */
-template<typename DataType>
+template <typename DataType>
 class ARCANE_HDF5_EXPORT StandardArrayT
 : public StandardArray
 {
  private:
+
   struct ValueWithUid
   {
    public:
+
     Int64 m_uid;
     Integer m_index;
+
    public:
+
     bool operator<(const ValueWithUid& rhs) const
     {
       return m_uid < rhs.m_uid;
     }
   };
+
  public:
-  StandardArrayT(hid_t hfile,const String& hpath);
+
+  StandardArrayT(hid_t hfile, const String& hpath);
+
  public:
+
   /*!
    * \brief Reads the dataset of a 1D array.
    * This operation is only valid after calling readDim().
    * \a buffer must have been allocated.
    * To read directly, use directRead()
    */
-  void read(StandardTypes& st,ArrayView<DataType> buffer);
+  void read(StandardTypes& st, ArrayView<DataType> buffer);
   /*!
    * \brief Reads the dataset of a 1D array.
    */
-  void directRead(StandardTypes& st,Array<DataType>& buffer);
-  void parallelRead(IParallelMng* pm,StandardTypes& st,
-                    Array<DataType>& buffer,Int64Array& unique_ids);
-  void write(StandardTypes& st,ConstArrayView<DataType> buffer);
-  void parallelWrite(IParallelMng* pm,StandardTypes& st,
+  void directRead(StandardTypes& st, Array<DataType>& buffer);
+  void parallelRead(IParallelMng* pm, StandardTypes& st,
+                    Array<DataType>& buffer, Int64Array& unique_ids);
+  void write(StandardTypes& st, ConstArrayView<DataType> buffer);
+  void parallelWrite(IParallelMng* pm, StandardTypes& st,
                      ConstArrayView<DataType> buffer,
                      Int64ConstArrayView unique_ids);
+
  private:
-  void _writeSortedValues(ITraceMng* tm,StandardTypes& st,ConstArrayView<DataType> buffer,
+
+  void _writeSortedValues(ITraceMng* tm, StandardTypes& st, ConstArrayView<DataType> buffer,
                           Int64ConstArrayView unique_ids);
 };
 
@@ -861,20 +872,27 @@ class ARCANE_HDF5_EXPORT StandardArrayT
 /*!
  * \brief Encapsulates a simple dataset from an HDF5 file that represents a scalar (possibly String).
  */
-template<typename DataType>
+template <typename DataType>
 class ARCANE_HDF5_EXPORT StandardScalarT
 {
  public:
+
   //! Constructor
-  StandardScalarT(hid_t hfile,const String& hpath) : m_hfile(hfile), m_hpath(hpath) { }
+  StandardScalarT(hid_t hfile, const String& hpath)
+  : m_hfile(hfile)
+  , m_hpath(hpath)
+  {}
+
  public:
+
   //! Reads a data item
   DataType read(Hdf5Utils::StandardTypes& st);
 
   //! Writes a data item
-  void write(Hdf5Utils::StandardTypes& st, const DataType & t);
+  void write(Hdf5Utils::StandardTypes& st, const DataType& t);
 
  protected:
+
   hid_t m_hfile;
   String m_hpath;
 };
@@ -882,12 +900,7 @@ class ARCANE_HDF5_EXPORT StandardScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
+} // namespace Arcane::Hdf5Utils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

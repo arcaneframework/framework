@@ -426,7 +426,6 @@ _writeDataSet1DCollectiveWithCollectiveIO(HGroup& group, const String& name, Spa
 
   if (herr < 0)
     ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
-
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IDataReader.h"
-#include "arcane/IDataWriter.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataWriter.h"
 
 #include "arcane/hdf5/Hdf5Utils.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,12 +87,13 @@ class Hdf5ReaderWriter
     OpenModeTruncate,
     OpenModeAppend
   };
+
  public:
 
-  Hdf5ReaderWriter(ISubDomain* sd,const String& filename,const String& m_sub_group_name,
+  Hdf5ReaderWriter(ISubDomain* sd, const String& filename, const String& m_sub_group_name,
                    Integer fileset_size,
                    Integer write_index, Integer index_modulo,
-                   eOpenMode om,bool do_verif=false);
+                   eOpenMode om, bool do_verif = false);
   ~Hdf5ReaderWriter();
 
  public:
@@ -113,15 +114,15 @@ class Hdf5ReaderWriter
   virtual void setMetaData(const String& meta_data);
   virtual String metaData();
 
-  virtual void write(IVariable* v,IData* data);
-  virtual void read(IVariable* v,IData* data);
+  virtual void write(IVariable* v, IData* data);
+  virtual void read(IVariable* v, IData* data);
 
  public:
-	
-  herr_t iterateMe(hid_t group_id,const char* member_name);
+
+  herr_t iterateMe(hid_t group_id, const char* member_name);
 
  private:
-	
+
   IParallelMng* m_parallel_mng; //!< Parallelism manager;
   eOpenMode m_open_mode; //!< Open mode
   String m_filename; //!< Filename.
@@ -130,7 +131,7 @@ class Hdf5ReaderWriter
 
   Hdf5Utils::StandardTypes m_types;
 
-  Hdf5Utils::HFile m_file_id;       //!< HDF file identifier 
+  Hdf5Utils::HFile m_file_id; //!< HDF file identifier
   Hdf5Utils::HGroup m_sub_group_id; //!< HDF group identifier containing the protection
   Hdf5Utils::HGroup m_variable_group_id; //!< HDF group identifier containing the variables
 
@@ -154,20 +155,20 @@ class Hdf5ReaderWriter
   void _writeVal(const String& var_group_name,
                  const String& sub_group_name,
                  const ISerializedData* sdata,
-                 const Int32 from_rank=0);
-  void _writeValParallel(IVariable* v,const ISerializedData* sdata);
-  void _readVal(IVariable* var,IData* data);
+                 const Int32 from_rank = 0);
+  void _writeValParallel(IVariable* v, const ISerializedData* sdata);
+  void _readVal(IVariable* var, IData* data);
 
   Ref<ISerializedData> _readDim2(IVariable* v);
 
-  void _directReadVal(IVariable* v,IData* data);
-  void _directWriteVal(IVariable* v,IData* data);
+  void _directReadVal(IVariable* v, IData* data);
+  void _directWriteVal(IVariable* v, IData* data);
   void _checkValid();
   String _variableGroupName(IVariable* var);
 
   void _receiveRemoteVariables();
   void _writeRemoteVariable(ISerializer* sb);
-  void _setMetaData(const String& meta_data,const String& sub_group_name);
+  void _setMetaData(const String& meta_data, const String& sub_group_name);
 };
 
 /*---------------------------------------------------------------------------*/

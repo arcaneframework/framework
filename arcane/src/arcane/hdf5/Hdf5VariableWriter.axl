@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Hdf5VariableWriter" type="caseoption" version="1.0"
          namespace-macro-name="ARCANE" parent-name="BasicTimeLoopService">
   <name lang='fr'>ecrivain-variable-hdf5</name>

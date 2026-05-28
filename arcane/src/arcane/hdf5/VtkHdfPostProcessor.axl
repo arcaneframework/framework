@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
 <service name="VtkHdfPostProcessor" parent-name="PostProcessorWriterBase"
          type="caseoption" type2="subdomain">

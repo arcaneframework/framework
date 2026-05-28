@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,20 +18,20 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
 
-#include "arcane/AbstractService.h"
-#include "arcane/IVariableReader.h"
-#include "arcane/BasicTimeLoopService.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/Directory.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IMeshMng.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IVariableReader.h"
+#include "arcane/core/BasicTimeLoopService.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IMeshMng.h"
 
 #include "arcane/hdf5/Hdf5VariableReader_axl.h"
 #include "arcane/hdf5/Hdf5Utils.h"
@@ -61,29 +61,39 @@ class Hdf5VariableReaderHelperBase
   class TimePathPair
   {
    public:
+
     TimePathPair()
-    : m_time(0.0) {}
-    TimePathPair(Real vtime,const String& path)
-    : m_time(vtime), m_path(path) {}
+    : m_time(0.0)
+    {}
+    TimePathPair(Real vtime, const String& path)
+    : m_time(vtime)
+    , m_path(path)
+    {}
+
    public:
+
     Real timeValue() const { return m_time; }
     const String& path() const { return m_path; }
+
    private:
+
     Real m_time;
     String m_path;
   };
 
  public:
-  
+
   Hdf5VariableReaderHelperBase(IMesh* mesh)
-  : TraceAccessor(mesh->traceMng()), m_mesh(mesh), m_is_verbose(false)
+  : TraceAccessor(mesh->traceMng())
+  , m_mesh(mesh)
+  , m_is_verbose(false)
   {
     if (!platform::getEnvironmentVariable("ARCANE_DEBUG_HDF5VARIABLE").null())
       m_is_verbose = true;
   }
 
  protected:
-  
+
   IMesh* m_mesh;
   Hdf5Utils::StandardTypes m_types;
   String m_hdf5_file_name;
@@ -91,8 +101,8 @@ class Hdf5VariableReaderHelperBase
 
  protected:
 
-  void _readStandardArray(IVariable* var,RealArray& buffer,hid_t file_id,const String& path);
-  void _readVariable(IVariable* var,RealArray& buffer,HFile& hfile,const String& path);
+  void _readStandardArray(IVariable* var, RealArray& buffer, hid_t file_id, const String& path);
+  void _readVariable(IVariable* var, RealArray& buffer, HFile& hfile, const String& path);
   void _checkValidVariable(IVariable* var);
 };
 
@@ -100,13 +110,13 @@ class Hdf5VariableReaderHelperBase
 /*---------------------------------------------------------------------------*/
 
 void Hdf5VariableReaderHelperBase::
-_readStandardArray(IVariable* var,RealArray& buffer,hid_t file_id,const String& path)
+_readStandardArray(IVariable* var, RealArray& buffer, hid_t file_id, const String& path)
 {
-  Hdf5Utils::StandardArrayT<Real> values(file_id,path);
+  Hdf5Utils::StandardArrayT<Real> values(file_id, path);
   values.readDim();
   Int64ConstArrayView dims(values.dimensions());
   Integer nb_dim = dims.size();
-  if (nb_dim!=1)
+  if (nb_dim != 1)
     fatal() << "Only one-dimension array are allowed "
             << " dim=" << nb_dim << " var_name=" << var->fullName() << " path=" << path;
   Integer nb_item = arcaneCheckArraySize(dims[0]);
@@ -119,7 +129,7 @@ _readStandardArray(IVariable* var,RealArray& buffer,hid_t file_id,const String& 
             << " family=" << var_family;
 #endif
   buffer.resize(nb_item);
-  values.read(m_types,buffer);
+  values.read(m_types, buffer);
 #if 0
   {
     Integer index=0;
@@ -139,7 +149,7 @@ _readStandardArray(IVariable* var,RealArray& buffer,hid_t file_id,const String& 
 /*---------------------------------------------------------------------------*/
 
 void Hdf5VariableReaderHelperBase::
-_readVariable(IVariable* var,RealArray& buffer,HFile& hfile,const String& path)
+_readVariable(IVariable* var, RealArray& buffer, HFile& hfile, const String& path)
 {
   IParallelMng* pm = m_mesh->parallelMng();
   bool is_master = pm->isMasterIO();
@@ -147,47 +157,46 @@ _readVariable(IVariable* var,RealArray& buffer,HFile& hfile,const String& path)
   Integer master_rank = pm->masterIORank();
   Integer buf_size = 0;
 
-  if (is_master){
-    if (hfile.id()<0){
+  if (is_master) {
+    if (hfile.id() < 0) {
       info() << "Hdf5VariableReaderHelper::OPEN FILE " << m_hdf5_file_name;
       hfile.openRead(m_hdf5_file_name);
     }
-    _readStandardArray(var,buffer,hfile.id(),path);
+    _readStandardArray(var, buffer, hfile.id(), path);
     buf_size = buffer.size();
-    IntegerArrayView iav(1,&buf_size);
-    pm->broadcast(iav,master_rank);
-    pm->broadcast(buffer,master_rank);
+    IntegerArrayView iav(1, &buf_size);
+    pm->broadcast(iav, master_rank);
+    pm->broadcast(buffer, master_rank);
   }
-  else{
-    IntegerArrayView iav(1,&buf_size);
-    pm->broadcast(iav,master_rank);
+  else {
+    IntegerArrayView iav(1, &buf_size);
+    pm->broadcast(iav, master_rank);
     buffer.resize(buf_size);
-    pm->broadcast(buffer,master_rank);
+    pm->broadcast(buffer, master_rank);
   }
-    
+
   Int64UniqueArray unique_ids(buf_size);
   Int32UniqueArray local_ids(buf_size);
   IData* var_data = var->data();
-  auto* var_true_data = dynamic_cast< IArrayDataT<Real>* >(var_data);
+  auto* var_true_data = dynamic_cast<IArrayDataT<Real>*>(var_data);
   if (!var_true_data)
-    throw FatalErrorException(A_FUNCINFO,"Variable is not an array of Real");
+    throw FatalErrorException(A_FUNCINFO, "Variable is not an array of Real");
   RealArrayView var_value(var_true_data->view());
   Integer nb_var_value = var_value.size();
-  for( Integer z=0; z<buf_size; ++z )
+  for (Integer z = 0; z < buf_size; ++z)
     unique_ids[z] = z;
-  var->itemFamily()->itemsUniqueIdToLocalId(local_ids,unique_ids,false);
-  for( Integer z=0; z<buf_size; ++z ){
+  var->itemFamily()->itemsUniqueIdToLocalId(local_ids, unique_ids, false);
+  for (Integer z = 0; z < buf_size; ++z) {
     Integer lid = local_ids[z];
-    if (lid==NULL_ITEM_LOCAL_ID)
+    if (lid == NULL_ITEM_LOCAL_ID)
       continue;
-    if (lid>nb_var_value)
-      throw FatalErrorException(A_FUNCINFO,"Bad variable");
+    if (lid > nb_var_value)
+      throw FatalErrorException(A_FUNCINFO, "Bad variable");
     var_value[lid] = buffer[z];
   }
   info(4) << "End of read for variable '" << var->fullName()
           << "' path=" << path;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -195,7 +204,7 @@ _readVariable(IVariable* var,RealArray& buffer,HFile& hfile,const String& path)
 void Hdf5VariableReaderHelperBase::
 _checkValidVariable(IVariable* var)
 {
-  if (var->dataType()==DT_Real && (var->dimension()==1) && var->itemFamily())
+  if (var->dataType() == DT_Real && (var->dimension() == 1) && var->itemFamily())
     return;
   throw FatalErrorException(A_FUNCINFO,
                             String::format("Bad variable '{0}'. Variable must be an item variable,"
@@ -215,26 +224,37 @@ class Hdf5VariableReaderHelper
 : public Hdf5VariableReaderHelperBase
 {
  public:
+
   /*!
    * \todo allow something other than 'Real' as variable type.
    */
   class TimeVariableInfoBase
   {
    public:
+
     TimeVariableInfoBase(const VariableItemReal& var)
-    : m_variable(var),
-      m_begin_variable(VariableBuildInfo(var.itemGroup().mesh(),String("Hdf5TimeVariableBegin")+var.name(),
-                                         IVariable::PNoDump),var.itemGroup().itemKind()),
-      m_end_variable(VariableBuildInfo(var.itemGroup().mesh(),String("Hdf5TimeVariableEnd")+var.name(),
-                                       IVariable::PNoDump),var.itemGroup().itemKind()),
-      m_current_index(-1), m_mesh_timestamp(-1)
-      {
-      }
+    : m_variable(var)
+    , m_begin_variable(VariableBuildInfo(var.itemGroup().mesh(), String("Hdf5TimeVariableBegin") + var.name(),
+                                         IVariable::PNoDump),
+                       var.itemGroup().itemKind())
+    , m_end_variable(VariableBuildInfo(var.itemGroup().mesh(), String("Hdf5TimeVariableEnd") + var.name(),
+                                       IVariable::PNoDump),
+                     var.itemGroup().itemKind())
+    , m_current_index(-1)
+    , m_mesh_timestamp(-1)
+    {
+    }
+
    public:
-    VariableItemReal& variable(){ return m_variable; }
+
+    VariableItemReal& variable() { return m_variable; }
+
    private:
+
     VariableItemReal m_variable;
+
    public:
+
     UniqueArray<TimePathPair> m_time_path_values;
     VariableItemReal m_begin_variable;
     VariableItemReal m_end_variable;
@@ -249,10 +269,9 @@ class Hdf5VariableReaderHelper
     Int64 m_mesh_timestamp;
   };
 
-
  public:
 
-  Hdf5VariableReaderHelper(IMesh* mesh,const String& xml_file_name);
+  Hdf5VariableReaderHelper(IMesh* mesh, const String& xml_file_name);
   ~Hdf5VariableReaderHelper();
 
  public:
@@ -274,9 +293,8 @@ class Hdf5VariableReaderHelper
   //! Notification of a rollback
   void notifyRestore();
 
-
  private:
-	
+
   String m_xml_file_name;
 
   ScopedPtrT<IXmlDocumentHolder> m_xml_document_holder;
@@ -287,7 +305,7 @@ class Hdf5VariableReaderHelper
 
   //void _checkValidVariable(IVariable* var);
   //void _readVariable(IVariable* var,RealUniqueArray buffer,HFile& hfile,const String& path);
-  void _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile);
+  void _readAndUpdateVariable(TimeVariableInfoBase* vi, Real wanted_time, HFile& hfile);
 
  private:
 };
@@ -296,7 +314,7 @@ class Hdf5VariableReaderHelper
 /*---------------------------------------------------------------------------*/
 
 Hdf5VariableReaderHelper::
-Hdf5VariableReaderHelper(IMesh* mesh,const String& xml_file_name)
+Hdf5VariableReaderHelper(IMesh* mesh, const String& xml_file_name)
 : Hdf5VariableReaderHelperBase(mesh)
 , m_xml_file_name(xml_file_name)
 {
@@ -308,10 +326,10 @@ Hdf5VariableReaderHelper(IMesh* mesh,const String& xml_file_name)
 Hdf5VariableReaderHelper::
 ~Hdf5VariableReaderHelper()
 {
-  for( Integer i=0, n=m_init_variables.size(); i<n; ++i )
+  for (Integer i = 0, n = m_init_variables.size(); i < n; ++i)
     delete m_init_variables[i];
   m_init_variables.clear();
-  for( Integer i=0, n=m_time_variables.size(); i<n; ++i )
+  for (Integer i = 0, n = m_time_variables.size(); i < n; ++i)
     delete m_time_variables[i];
   m_time_variables.clear();
 }
@@ -327,56 +345,55 @@ open(bool is_start)
   IIOMng* io_mng = m_mesh->parallelMng()->ioMng();
   m_xml_document_holder = io_mng->parseXmlFile(m_xml_file_name);
   if (!m_xml_document_holder.get())
-    ARCANE_FATAL("Can not read file '{0}'",m_xml_file_name);
+    ARCANE_FATAL("Can not read file '{0}'", m_xml_file_name);
 
   XmlNode root_element = m_xml_document_holder->documentNode().documentElement();
-  m_hdf5_file_name = root_element.attrValue("file-name",true);
+  m_hdf5_file_name = root_element.attrValue("file-name", true);
 
   // Reading variables for initialization
-  if (is_start){
+  if (is_start) {
     XmlNodeList variables_elem = root_element.children("init-variable");
-    for( XmlNode elem : variables_elem ){
-      String var_name = elem.attrValue("name",true);
-      String var_family = elem.attrValue("family",true);
-      String var_path = elem.attrValue("path",true);
+    for (XmlNode elem : variables_elem) {
+      String var_name = elem.attrValue("name", true);
+      String var_family = elem.attrValue("family", true);
+      String var_path = elem.attrValue("path", true);
       info() << "INIT_VARIABLE: name=" << var_name << " path=" << var_path
              << " family=" << var_family;
-      Hdf5VariableInfoBase* var_info = Hdf5VariableInfoBase::create(m_mesh,var_name,var_family);
+      Hdf5VariableInfoBase* var_info = Hdf5VariableInfoBase::create(m_mesh, var_name, var_family);
       var_info->setPath(var_path);
       m_init_variables.add(var_info);
     }
   }
 
-
   XmlNodeList variables_elem = root_element.children("time-variable");
-  for( XmlNode elem : variables_elem ){
-    String var_name = elem.attrValue("name",true);
-    String var_family = elem.attrValue("family",true);
+  for (XmlNode elem : variables_elem) {
+    String var_name = elem.attrValue("name", true);
+    String var_family = elem.attrValue("family", true);
     info() << "TIME_VARIABLE: name=" << var_name << " family=" << var_family;
-    IItemFamily* family = m_mesh->findItemFamily(var_family,true);
-    IVariable* var = family->findVariable(var_name,false);
-    if (!var){
+    IItemFamily* family = m_mesh->findItemFamily(var_family, true);
+    IVariable* var = family->findVariable(var_name, false);
+    if (!var) {
       warning() << "TEMPORARY: Create variable from hdf5 file";
-      VariableCellReal* vcr = new VariableCellReal(VariableBuildInfo(m_mesh,var_name));
+      VariableCellReal* vcr = new VariableCellReal(VariableBuildInfo(m_mesh, var_name));
       var = vcr->variable();
     }
     _checkValidVariable(var);
-    VariableItemReal vir(VariableBuildInfo(m_mesh,var->name(),var->itemFamily()->name()),var->itemKind());
+    VariableItemReal vir(VariableBuildInfo(m_mesh, var->name(), var->itemFamily()->name()), var->itemKind());
     TimeVariableInfoBase* var_info = new TimeVariableInfoBase(vir);
 
     XmlNodeList times_elem = elem.children("time-value");
     Real last_var_time = -1.0;
-    for( XmlNode time_elem : times_elem ){
-      String var_path = time_elem.attrValue("path",true);
-      XmlNode var_time_node = time_elem.attr("global-time",true);
+    for (XmlNode time_elem : times_elem) {
+      String var_path = time_elem.attrValue("path", true);
+      XmlNode var_time_node = time_elem.attr("global-time", true);
       Real var_time = var_time_node.valueAsReal(true);
-      if (var_time<=last_var_time){
+      if (var_time <= last_var_time) {
         fatal() << "Bad value for " << var_time_node.xpathFullName()
                 << " current=" << var_time << " previous=" << last_var_time
                 << ". current value should be greater than previous time.";
       }
       last_var_time = var_time;
-      var_info->m_time_path_values.add(TimePathPair(var_time,var_path));
+      var_info->m_time_path_values.add(TimePathPair(var_time, var_path));
     }
 
     m_time_variables.add(var_info);
@@ -392,11 +409,11 @@ readInit()
   //TODO throw exception in case of error.
   HFile hfile;
 
-  for( Integer iz=0, izs=m_init_variables.size(); iz<izs; ++iz ){
+  for (Integer iz = 0, izs = m_init_variables.size(); iz < izs; ++iz) {
     Hdf5VariableInfoBase* vi = m_init_variables[iz];
     IVariable* var = vi->variable();
     info() << "Hdf5VariableReader: init for variable name=" << var->fullName();
-    vi->readVariable(hfile,m_hdf5_file_name,m_types,String(),var->data());
+    vi->readVariable(hfile, m_hdf5_file_name, m_types, String(), var->data());
   }
 }
 
@@ -404,7 +421,7 @@ readInit()
 /*---------------------------------------------------------------------------*/
 
 void Hdf5VariableReaderHelper::
-_readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
+_readAndUpdateVariable(TimeVariableInfoBase* vi, Real wanted_time, HFile& hfile)
 {
   VariableItemReal& var = vi->variable();
 
@@ -413,40 +430,40 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
   Real begin_time = 0.0;
   Real end_time = 0.0;
   Integer nb_value = time_path_values.size();
-  for( Integer i=0; i<nb_value; ++i ){
+  for (Integer i = 0; i < nb_value; ++i) {
     begin_time = time_path_values[i].timeValue();
-    if (wanted_time<begin_time){
+    if (wanted_time < begin_time) {
       break;
     }
     current_index = i;
-    if ((i+1)==nb_value){
+    if ((i + 1) == nb_value) {
       break;
     }
-    if (math::isEqual(begin_time,wanted_time)){
+    if (math::isEqual(begin_time, wanted_time)) {
       break;
     }
-    end_time = time_path_values[i+1].timeValue();
-    if (wanted_time>begin_time && wanted_time<end_time){
+    end_time = time_path_values[i + 1].timeValue();
+    if (wanted_time > begin_time && wanted_time < end_time) {
       break;
     }
   }
   // Do nothing if not in the table
-  if (current_index<0)
+  if (current_index < 0)
     return;
   info(4) << " FIND TIME: var=" << var.variable()->fullName() << " current=" << wanted_time
           << " begin=" << begin_time << " end=" << end_time
           << " index=" << current_index;
   Int64 mesh_timestamp = var.variable()->meshHandle().mesh()->timestamp();
-  bool need_read = current_index!=vi->m_current_index || vi->m_mesh_timestamp!=mesh_timestamp;
-  if (nb_value==1 || (current_index+1)==nb_value){
+  bool need_read = current_index != vi->m_current_index || vi->m_mesh_timestamp != mesh_timestamp;
+  if (nb_value == 1 || (current_index + 1) == nb_value) {
     // We are at the end of the table.
     // In this case, take the value corresponding to the last index without performing
     // interpolation.
-    if (need_read){
+    if (need_read) {
       RealUniqueArray buffer;
       String begin_path = vi->m_time_path_values[current_index].path();
       info() << "Hdf5VariableReaderHelper:: PATH=" << begin_path;
-      _readVariable(vi->m_begin_variable.variable(),buffer,hfile,begin_path);
+      _readVariable(vi->m_begin_variable.variable(), buffer, hfile, begin_path);
       vi->m_current_index = current_index;
       vi->m_mesh_timestamp = mesh_timestamp;
     }
@@ -454,28 +471,28 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
     begin_time = vi->m_time_path_values[current_index].timeValue();
     VariableItemReal& begin_variable = vi->m_begin_variable;
 
-    ENUMERATE_ITEM(iitem,var.itemGroup()){
+    ENUMERATE_ITEM (iitem, var.itemGroup()) {
       Real begin_value = begin_variable[iitem];
       var[iitem] = begin_value;
       if (m_is_verbose)
         info() << "Value for cell=" << (*iitem).uniqueId() << " var_value=" << var[iitem];
     }
   }
-  else{
-    if (need_read){
+  else {
+    if (need_read) {
       RealUniqueArray buffer;
       String begin_path = vi->m_time_path_values[current_index].path();
-      String end_path = vi->m_time_path_values[current_index+1].path();
+      String end_path = vi->m_time_path_values[current_index + 1].path();
       info(4) << "Hdf5VariableReaderHelper:: BEGIN_PATH=" << begin_path << " END_PATH=" << end_path;
-      _readVariable(vi->m_begin_variable.variable(),buffer,hfile,begin_path);
-      _readVariable(vi->m_end_variable.variable(),buffer,hfile,end_path);
+      _readVariable(vi->m_begin_variable.variable(), buffer, hfile, begin_path);
+      _readVariable(vi->m_end_variable.variable(), buffer, hfile, end_path);
       vi->m_current_index = current_index;
       vi->m_mesh_timestamp = mesh_timestamp;
     }
 
     begin_time = vi->m_time_path_values[current_index].timeValue();
-    end_time = vi->m_time_path_values[current_index+1].timeValue();
-    if (math::isEqual(begin_time,end_time))
+    end_time = vi->m_time_path_values[current_index + 1].timeValue();
+    if (math::isEqual(begin_time, end_time))
       fatal() << "Hdf5VariableReaderHelper::_readAndUpdateVariable() "
               << " same value for begin and end time (value=" << begin_time << ")";
     Real ratio = (wanted_time - begin_time) / (end_time - begin_time);
@@ -483,11 +500,11 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
     VariableItemReal& begin_variable = vi->m_begin_variable;
     VariableItemReal& end_variable = vi->m_end_variable;
 
-    ENUMERATE_ITEM(iitem,var.itemGroup()){
+    ENUMERATE_ITEM (iitem, var.itemGroup()) {
       Real begin_value = begin_variable[iitem];
       Real end_value = end_variable[iitem];
-      var[iitem] = (end_value-begin_value)*ratio + begin_value;
-      if (m_is_verbose){
+      var[iitem] = (end_value - begin_value) * ratio + begin_value;
+      if (m_is_verbose) {
         info() << "Value for cell=" << (*iitem).uniqueId()
                << " begin=" << begin_value << " end_value=" << end_value
                << " var_value=" << var[iitem];
@@ -504,9 +521,9 @@ readAndUpdateTimeVariables(Real wanted_time)
 {
   HFile hfile;
 
-  for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
+  for (Integer iz = 0, izs = m_time_variables.size(); iz < izs; ++iz) {
     TimeVariableInfoBase* vi = m_time_variables[iz];
-    _readAndUpdateVariable(vi,wanted_time,hfile);
+    _readAndUpdateVariable(vi, wanted_time, hfile);
   }
 }
 
@@ -518,7 +535,7 @@ notifyRestore()
 {
   // For variables that depend on time, indicates that the current time
   // is invalid and must be reloaded
-  for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
+  for (Integer iz = 0, izs = m_time_variables.size(); iz < izs; ++iz) {
     TimeVariableInfoBase* vi = m_time_variables[iz];
     vi->m_current_index = -1;
   }
@@ -536,6 +553,7 @@ class Hdf5VariableReaderHelper2
 : public Hdf5VariableReaderHelperBase
 {
  public:
+
   /*!
    * New format allowing reading of any variable
    * (but for now only with the 'Real' type...)
@@ -544,8 +562,11 @@ class Hdf5VariableReaderHelper2
   class TimeVariableInfoBase
   {
    public:
+
     TimeVariableInfoBase(Hdf5VariableInfoBase* var)
-    : m_hdf5_var_info(var), m_current_index(-1), m_mesh_timestamp(-1)
+    : m_hdf5_var_info(var)
+    , m_current_index(-1)
+    , m_mesh_timestamp(-1)
     {
     }
     ~TimeVariableInfoBase()
@@ -553,16 +574,17 @@ class Hdf5VariableReaderHelper2
     }
 
    public:
-    IVariable* variable(){ return  m_hdf5_var_info->variable(); }
-    Hdf5VariableInfoBase* hdf5Info(){ return m_hdf5_var_info; }
+
+    IVariable* variable() { return m_hdf5_var_info->variable(); }
+    Hdf5VariableInfoBase* hdf5Info() { return m_hdf5_var_info; }
     Real2 timeInterval() const
     {
       Integer n = m_time_path_values.size();
-      if (n==0)
-        return Real2(0.0,0.0);
+      if (n == 0)
+        return Real2(0.0, 0.0);
       Real x = m_time_path_values[0].timeValue();
-      Real y = m_time_path_values[n-1].timeValue();
-      return Real2(x,y);
+      Real y = m_time_path_values[n - 1].timeValue();
+      return Real2(x, y);
     }
     void rebuildData()
     {
@@ -570,9 +592,13 @@ class Hdf5VariableReaderHelper2
       m_begin_data = v->data()->cloneRef();
       m_end_data = v->data()->cloneRef();
     }
+
    private:
+
     Hdf5VariableInfoBase* m_hdf5_var_info;
+
    public:
+
     UniqueArray<TimePathPair> m_time_path_values;
     Ref<IData> m_begin_data;
     Ref<IData> m_end_data;
@@ -594,41 +620,48 @@ class Hdf5VariableReaderHelper2
   class CorrespondanceInfo : public Hdf5VariableInfoBase::ICorrespondanceFunctor
   {
    public:
+
     CorrespondanceInfo(const ItemGroup& group)
-    : m_group(group),
-      m_corresponding_uids(VariableBuildInfo(group.mesh(),String("CorrespondingUids_")+group.fullName(),IVariable::PNoRestore)),
-      m_corresponding_hash(512,true)
+    : m_group(group)
+    , m_corresponding_uids(VariableBuildInfo(group.mesh(), String("CorrespondingUids_") + group.fullName(), IVariable::PNoRestore))
+    , m_corresponding_hash(512, true)
     {
     }
+
    public:
-    virtual Int64 getOldUniqueId(Int64 uid,Integer index)
+
+    virtual Int64 getOldUniqueId(Int64 uid, Integer index)
     {
       ARCANE_UNUSED(index);
-      HashTableMapT<Int64,Int64>::Data* uid_data = m_corresponding_hash.lookup(uid);
+      HashTableMapT<Int64, Int64>::Data* uid_data = m_corresponding_hash.lookup(uid);
       if (!uid_data)
         throw FatalErrorException(A_FUNCINFO,
                                   String::format("Can not find corresponding uid item='{0}' group={1}",
-                                                  uid,m_group.fullName()));
+                                                 uid, m_group.fullName()));
       Int64 old_uid = uid_data->value();
       return old_uid;
     }
+
    public:
+
     void updateHashMap()
     {
       m_corresponding_hash.clear();
       Integer nb_pair = m_corresponding_uids.size() / 2;
-      for( Integer z=0; z<nb_pair; ++z )
-        m_corresponding_hash.add(m_corresponding_uids[z*2],m_corresponding_uids[(z*2)+1]);
+      for (Integer z = 0; z < nb_pair; ++z)
+        m_corresponding_hash.add(m_corresponding_uids[z * 2], m_corresponding_uids[(z * 2) + 1]);
     }
+
    public:
+
     ItemGroup m_group;
     VariableArrayInt64 m_corresponding_uids;
-    HashTableMapT<Int64,Int64> m_corresponding_hash;
+    HashTableMapT<Int64, Int64> m_corresponding_hash;
   };
 
  public:
 
-  Hdf5VariableReaderHelper2(IMesh* mesh,const String& hdf5_file_name);
+  Hdf5VariableReaderHelper2(IMesh* mesh, const String& hdf5_file_name);
   ~Hdf5VariableReaderHelper2();
 
  public:
@@ -655,35 +688,34 @@ class Hdf5VariableReaderHelper2
   //! Reading and updating variables
   void readAndUpdateTimeVariables(Real wanted_time);
 
-  //! Notification of a rollback 
+  //! Notification of a rollback
   void notifyRestore();
 
   Real2 timeInterval(IVariable* var)
   {
-    for( Integer i=0, n=m_time_variables.size(); i<n; ++i ){
+    for (Integer i = 0, n = m_time_variables.size(); i < n; ++i) {
       TimeVariableInfoBase* vinfo = m_time_variables[i];
-      if (vinfo->variable()==var)
+      if (vinfo->variable() == var)
         return vinfo->timeInterval();
     }
-    return Real2(0.0,0.0);
+    return Real2(0.0, 0.0);
   }
 
  protected:
-
  private:
-	
+
   UniqueArray<IVariable*> m_wanted_vars;
   ScopedPtrT<IXmlDocumentHolder> m_xml_document_holder;
   UniqueArray<TimeVariableInfoBase*> m_time_variables;
-  std::map<String,CorrespondanceInfo*> m_correspondance_map;
+  std::map<String, CorrespondanceInfo*> m_correspondance_map;
 
  private:
 
   template <typename DataType>
-  void _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile);
-  bool _isWanted(const String& var_name,const String& var_family);
-  void _checkCreateCorrespondance(Hdf5VariableInfoBase* var,HFile& file_id,const String& group_path,bool is_start);
-  void _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView saved_uids,Real3ConstArrayView saved_centers);
+  void _readAndUpdateVariable(TimeVariableInfoBase* vi, Real wanted_time, HFile& hfile);
+  bool _isWanted(const String& var_name, const String& var_family);
+  void _checkCreateCorrespondance(Hdf5VariableInfoBase* var, HFile& file_id, const String& group_path, bool is_start);
+  void _createCorrespondance(IVariable* var, CorrespondanceInfo* ci, Int64ConstArrayView saved_uids, Real3ConstArrayView saved_centers);
 
  private:
 };
@@ -692,7 +724,7 @@ class Hdf5VariableReaderHelper2
 /*---------------------------------------------------------------------------*/
 
 Hdf5VariableReaderHelper2::
-Hdf5VariableReaderHelper2(IMesh* mesh,const String& hdf5_file_name)
+Hdf5VariableReaderHelper2(IMesh* mesh, const String& hdf5_file_name)
 : Hdf5VariableReaderHelperBase(mesh)
 {
   m_hdf5_file_name = hdf5_file_name;
@@ -704,7 +736,7 @@ Hdf5VariableReaderHelper2(IMesh* mesh,const String& hdf5_file_name)
 Hdf5VariableReaderHelper2::
 ~Hdf5VariableReaderHelper2()
 {
-  for( Integer i=0, n=m_time_variables.size(); i<n; ++i )
+  for (Integer i = 0, n = m_time_variables.size(); i < n; ++i)
     delete m_time_variables[i];
   m_time_variables.clear();
 }
@@ -716,58 +748,58 @@ void Hdf5VariableReaderHelper2::
 open(bool is_start)
 {
   if (m_hdf5_file_name.null())
-    throw FatalErrorException(A_FUNCINFO,"No hdf5 file specified");
+    throw FatalErrorException(A_FUNCINFO, "No hdf5 file specified");
 
   HFile file_id;
   IParallelMng* pm = m_mesh->parallelMng();
   bool is_master = pm->isMasterIO();
   ByteUniqueArray xml_bytes;
-  if (is_master){
+  if (is_master) {
     file_id.openRead(m_hdf5_file_name);
-    Hdf5Utils::StandardArrayT<Byte> v(file_id.id(),"Infos");
-    v.directRead(m_types,xml_bytes);
+    Hdf5Utils::StandardArrayT<Byte> v(file_id.id(), "Infos");
+    v.directRead(m_types, xml_bytes);
   }
   info(5) << "XML_DATA len=" << xml_bytes.size() << " data=" << xml_bytes << "__EOF";
-  pm->broadcastMemoryBuffer(xml_bytes,pm->masterIORank());
-  
+  pm->broadcastMemoryBuffer(xml_bytes, pm->masterIORank());
+
   IIOMng* io_mng = m_mesh->parallelMng()->ioMng();
-  m_xml_document_holder = io_mng->parseXmlBuffer(xml_bytes,m_hdf5_file_name);
+  m_xml_document_holder = io_mng->parseXmlBuffer(xml_bytes, m_hdf5_file_name);
   if (!m_xml_document_holder.get())
-    ARCANE_FATAL("Can not XML data from file '{0}'",m_hdf5_file_name);
+    ARCANE_FATAL("Can not XML data from file '{0}'", m_hdf5_file_name);
 
   XmlNode root_element = m_xml_document_holder->documentNode().documentElement();
   //m_hdf5_file_name = root_element.attrValue("file-name",true);
 
   XmlNodeList variables_elem = root_element.children("time-variable");
-  for( const auto& elem : variables_elem ){
-    String var_name = elem.attrValue("name",true);
-    String var_family = elem.attrValue("family",true);
+  for (const auto& elem : variables_elem) {
+    String var_name = elem.attrValue("name", true);
+    String var_family = elem.attrValue("family", true);
     info(4) << "TIME_VARIABLE: name=" << var_name << " family=" << var_family;
-    if (!_isWanted(var_name,var_family))
+    if (!_isWanted(var_name, var_family))
       continue;
     //TODO: create the variable if it doesn't exist or do something (exception...)
-    Hdf5VariableInfoBase* var_info = Hdf5VariableInfoBase::create(m_mesh,var_name,var_family);
+    Hdf5VariableInfoBase* var_info = Hdf5VariableInfoBase::create(m_mesh, var_name, var_family);
     //TODO: tmp
     String group_name = var_info->variable()->itemGroupName();
     String index_path = String("Index") + 1;
     String group_path = index_path + "/Groups/" + group_name;
-    _checkCreateCorrespondance(var_info,file_id,group_path,is_start);
-    
+    _checkCreateCorrespondance(var_info, file_id, group_path, is_start);
+
     TimeVariableInfoBase* time_var_info = new TimeVariableInfoBase(var_info);
-    
+
     XmlNodeList times_elem = elem.children("time-value");
     Real last_var_time = -1.0;
-    for( const auto& time_elem : times_elem ){
-      String var_path = time_elem.attrValue("path",true);
-      XmlNode var_time_node = time_elem.attr("global-time",true);
+    for (const auto& time_elem : times_elem) {
+      String var_path = time_elem.attrValue("path", true);
+      XmlNode var_time_node = time_elem.attr("global-time", true);
       Real var_time = var_time_node.valueAsReal(true);
-      if (var_time<=last_var_time){
+      if (var_time <= last_var_time) {
         fatal() << "Bad value for " << var_time_node.xpathFullName()
                 << " current=" << var_time << " previous=" << last_var_time
                 << ". current value should be greater than previous time.";
       }
       last_var_time = var_time;
-      time_var_info->m_time_path_values.add(TimePathPair(var_time,var_path));
+      time_var_info->m_time_path_values.add(TimePathPair(var_time, var_path));
     }
 
     m_time_variables.add(time_var_info);
@@ -778,23 +810,23 @@ open(bool is_start)
 /*---------------------------------------------------------------------------*/
 
 void Hdf5VariableReaderHelper2::
-_checkCreateCorrespondance(Hdf5VariableInfoBase* var_info,HFile& file_id,const String& group_path,bool is_start)
+_checkCreateCorrespondance(Hdf5VariableInfoBase* var_info, HFile& file_id, const String& group_path, bool is_start)
 {
   IVariable* var = var_info->variable();
   // Checks if the correspondence already exists.
   ItemGroup group = var->itemGroup();
   CorrespondanceInfo* ci = 0;
-  std::map<String,CorrespondanceInfo*>::const_iterator iter = m_correspondance_map.find(group.fullName());
-  if (iter==m_correspondance_map.end()){
+  std::map<String, CorrespondanceInfo*>::const_iterator iter = m_correspondance_map.find(group.fullName());
+  if (iter == m_correspondance_map.end()) {
     ci = new CorrespondanceInfo(group);
-    if (is_start){
+    if (is_start) {
       Int64UniqueArray saved_uids;
       Real3UniqueArray saved_centers;
-      var_info->readGroupInfo(file_id,m_types,group_path,saved_uids,saved_centers);
-      _createCorrespondance(var,ci,saved_uids,saved_centers);
+      var_info->readGroupInfo(file_id, m_types, group_path, saved_uids, saved_centers);
+      _createCorrespondance(var, ci, saved_uids, saved_centers);
     }
     ci->updateHashMap();
-    m_correspondance_map.insert(std::make_pair(group.fullName(),ci));
+    m_correspondance_map.insert(std::make_pair(group.fullName(), ci));
   }
   else
     ci = iter->second;
@@ -817,30 +849,30 @@ _checkCreateCorrespondance(Hdf5VariableInfoBase* var_info,HFile& file_id,const S
  * TODO: It would be necessary to be able to use an algorithm other than just the closest entity.
  */
 void Hdf5VariableReaderHelper2::
-_createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView saved_uids,
+_createCorrespondance(IVariable* var, CorrespondanceInfo* ci, Int64ConstArrayView saved_uids,
                       Real3ConstArrayView saved_centers)
 {
   IMesh* mesh = var->meshHandle().mesh();
   ItemGroup group = var->itemGroup();
   IParallelMng* pm = mesh->parallelMng();
- 
+
   Int64UniqueArray corresponding_uids;
   Integer nb_orig_item = saved_uids.size();
   VariableNodeReal3& nodes_coords(mesh->nodesCoordinates());
-  ENUMERATE_ITEM(iitem,group){
+  ENUMERATE_ITEM (iitem, group) {
     Real3 item_center;
     ItemUniqueId item_uid = (*iitem).uniqueId();
-    if ((*iitem).isItemWithNodes()){
+    if ((*iitem).isItemWithNodes()) {
       ItemWithNodes item = (*iitem).toItemWithNodes();
       if (!item.isOwn())
         continue;
       Integer nb_node = item.nbNode();
-      for( NodeLocalId inode : item.nodeIds() ){
+      for (NodeLocalId inode : item.nodeIds()) {
         item_center += nodes_coords[inode];
       }
       item_center /= nb_node;
     }
-    else{
+    else {
       Node node = (*iitem).toNode();
       item_center = nodes_coords[node];
     }
@@ -848,15 +880,15 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
     // Search for the closest entity.
     Real min_dist = FloatInfo<Real>::maxValue();
     Integer min_index = -1;
-    for( Integer z=0; z<nb_orig_item; ++z ){
+    for (Integer z = 0; z < nb_orig_item; ++z) {
       Real d = (item_center - saved_centers[z]).squareNormL2();
-      if (d<min_dist){
+      if (d < min_dist) {
         min_dist = d;
         min_index = z;
       }
     }
-    if (min_index==(-1))
-      throw FatalErrorException(A_FUNCINFO,"Can not find old unique id");
+    if (min_index == (-1))
+      throw FatalErrorException(A_FUNCINFO, "Can not find old unique id");
     info() << "FIND NEAREST my_uid=" << item_uid << " orig_uid=" << saved_uids[min_index]
            << " d^2=" << min_dist;
     corresponding_uids.add(item_uid);
@@ -870,7 +902,7 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
   // Eventually, this information should be distributed to each process
   // and grouped when updating the hash table during a mesh change.
   Int64UniqueArray global_uids;
-  pm->allGatherVariable(corresponding_uids,global_uids);
+  pm->allGatherVariable(corresponding_uids, global_uids);
   ci->m_corresponding_uids.resize(global_uids.size());
   ci->m_corresponding_uids.copy(global_uids);
 }
@@ -879,14 +911,14 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
 /*---------------------------------------------------------------------------*/
 
 bool Hdf5VariableReaderHelper2::
-_isWanted(const String& var_name,const String& var_family)
+_isWanted(const String& var_name, const String& var_family)
 {
   Integer nb_var = m_wanted_vars.size();
-  if (nb_var==0)
+  if (nb_var == 0)
     return true;
-  for( Integer i=0, n=m_wanted_vars.size(); i<n; ++i ){
+  for (Integer i = 0, n = m_wanted_vars.size(); i < n; ++i) {
     IVariable* v = m_wanted_vars[i];
-    if (v->name()==var_name && v->itemFamilyName()==var_family)
+    if (v->name() == var_name && v->itemFamilyName() == var_family)
       return true;
   }
   return false;
@@ -897,7 +929,7 @@ _isWanted(const String& var_name,const String& var_family)
 
 template <typename DataType>
 void Hdf5VariableReaderHelper2::
-_readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
+_readAndUpdateVariable(TimeVariableInfoBase* vi, Real wanted_time, HFile& hfile)
 {
   //VariableItemReal& var = vi->variable();
 
@@ -906,27 +938,27 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
   Real begin_time = 0.0;
   Real end_time = 0.0;
   Integer nb_value = time_path_values.size();
-  for( Integer i=0; i<nb_value; ++i ){
+  for (Integer i = 0; i < nb_value; ++i) {
     begin_time = time_path_values[i].timeValue();
-    if (wanted_time<begin_time){
+    if (wanted_time < begin_time) {
       break;
     }
     current_index = i;
-    if ((i+1)==nb_value){
+    if ((i + 1) == nb_value) {
       // Reached the end of the table. Does nothing.
       current_index = -1;
       break;
     }
-    if (math::isEqual(begin_time,wanted_time)){
+    if (math::isEqual(begin_time, wanted_time)) {
       break;
     }
-    end_time = time_path_values[i+1].timeValue();
-    if (wanted_time>begin_time && wanted_time<end_time){
+    end_time = time_path_values[i + 1].timeValue();
+    if (wanted_time > begin_time && wanted_time < end_time) {
       break;
     }
   }
   // Does nothing if we are not in the table
-  if (current_index<0)
+  if (current_index < 0)
     return;
 
   //TODO use the modifiedTime of the variable group instead of the mesh
@@ -935,7 +967,7 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
 
   // We must reread the info if we change the index in the table
   // or if the mesh changes
-  bool need_read = current_index!=vi->m_current_index || vi->m_mesh_timestamp!=mesh_timestamp;
+  bool need_read = current_index != vi->m_current_index || vi->m_mesh_timestamp != mesh_timestamp;
   if (need_read)
     vi->rebuildData();
 
@@ -948,27 +980,27 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
   IArrayDataT<DataType>* true_data = dynamic_cast<IArrayDataT<DataType>*>(variable->data());
   info(4) << "DATA: begin=" << vi->m_begin_data.get() << " end=" << vi->m_end_data.get() << " current=" << variable->data();
   info(4) << "TRUEDATA: begin=" << true_begin_data << " end=" << true_end_data << " current=" << true_data;
-  if (!true_data || !true_end_data || !true_begin_data){
-    throw FatalErrorException(A_FUNCINFO,"variable data can not be cast to type IArrayDataT");
+  if (!true_data || !true_end_data || !true_begin_data) {
+    throw FatalErrorException(A_FUNCINFO, "variable data can not be cast to type IArrayDataT");
   }
   bool is_partial = variable->isPartial();
 
-  if (need_read){
+  if (need_read) {
     String begin_path = vi->m_time_path_values[current_index].path();
-    String end_path = vi->m_time_path_values[current_index+1].path();
+    String end_path = vi->m_time_path_values[current_index + 1].path();
     info(4) << "Hdf5VariableReaderHelper2:: Reading new index BEGIN_PATH=" << begin_path << " END_PATH=" << end_path;
     var_info->setPath(begin_path);
-    var_info->readVariable(hfile,m_hdf5_file_name,m_types,ids_hpath,vi->m_begin_data.get());
+    var_info->readVariable(hfile, m_hdf5_file_name, m_types, ids_hpath, vi->m_begin_data.get());
     var_info->setPath(end_path);
-    var_info->readVariable(hfile,m_hdf5_file_name,m_types,ids_hpath,vi->m_end_data.get());
+    var_info->readVariable(hfile, m_hdf5_file_name, m_types, ids_hpath, vi->m_end_data.get());
   }
 
   vi->m_current_index = current_index;
   vi->m_mesh_timestamp = mesh_timestamp;
 
   begin_time = vi->m_time_path_values[current_index].timeValue();
-  end_time = vi->m_time_path_values[current_index+1].timeValue();
-  if (math::isEqual(begin_time,end_time))
+  end_time = vi->m_time_path_values[current_index + 1].timeValue();
+  if (math::isEqual(begin_time, end_time))
     throw FatalErrorException(A_FUNCINFO,
                               String::format("same value for begin and end time (value={0})",
                                              begin_time));
@@ -979,12 +1011,12 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
     ConstArrayView<DataType> begin_values_view = true_begin_data->view();
     ConstArrayView<DataType> end_values_view = true_end_data->view();
     ArrayView<DataType> values_view = true_data->view();
-    ENUMERATE_ITEM(iitem,variable->itemGroup()){
+    ENUMERATE_ITEM (iitem, variable->itemGroup()) {
       Int32 lid = (is_partial) ? iitem.index() : iitem.itemLocalId();
       DataType begin_value = begin_values_view[lid];
       DataType end_value = end_values_view[lid];
-      values_view[lid] = (end_value-begin_value)*ratio + begin_value;
-      if (m_is_verbose){
+      values_view[lid] = (end_value - begin_value) * ratio + begin_value;
+      if (m_is_verbose) {
         info() << "Value for cell=" << (*iitem).uniqueId()
                << " begin=" << begin_value << " end_value=" << end_value
                << " var_value=" << values_view[lid];
@@ -992,7 +1024,6 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
     }
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1002,18 +1033,18 @@ readAndUpdateTimeVariables(Real wanted_time)
 {
   HFile hfile;
 
-  for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
+  for (Integer iz = 0, izs = m_time_variables.size(); iz < izs; ++iz) {
     TimeVariableInfoBase* vi = m_time_variables[iz];
-    IVariable* variable=vi->variable();
+    IVariable* variable = vi->variable();
     switch (variable->dataType()) {
     case DT_Real:
-      _readAndUpdateVariable<Real>(vi,wanted_time,hfile);
+      _readAndUpdateVariable<Real>(vi, wanted_time, hfile);
       break;
     case DT_Real3:
-      _readAndUpdateVariable<Real3>(vi,wanted_time,hfile);
+      _readAndUpdateVariable<Real3>(vi, wanted_time, hfile);
       break;
     default:
-      throw NotSupportedException(A_FUNCINFO,"Bad variable datatype (only Real and Real3 are supported)");
+      throw NotSupportedException(A_FUNCINFO, "Bad variable datatype (only Real and Real3 are supported)");
     }
   }
 }
@@ -1026,7 +1057,7 @@ notifyRestore()
 {
   // For variables that depend on time, indicates that the time
   // current is invalid and must be reloaded
-  for( Integer iz=0, izs=m_time_variables.size(); iz<izs; ++iz ){
+  for (Integer iz = 0, izs = m_time_variables.size(); iz < izs; ++iz) {
     TimeVariableInfoBase* vi = m_time_variables[iz];
     vi->m_current_index = -1;
   }
@@ -1057,7 +1088,7 @@ class Hdf5VariableReader
   void onTimeLoopStartInit() override
   {
     _load(true);
-    for( Integer i=0, is=m_readers.size(); i<is; ++i ){
+    for (Integer i = 0, is = m_readers.size(); i < is; ++i) {
       m_readers[i]->readInit();
     }
   }
@@ -1069,14 +1100,14 @@ class Hdf5VariableReader
   void onTimeLoopEndLoop() override {}
   void onTimeLoopRestore() override
   {
-    for( Integer i=0, is=m_readers.size(); i<is; ++i ){
+    for (Integer i = 0, is = m_readers.size(); i < is; ++i) {
       m_readers[i]->notifyRestore();
     }
   }
   void onTimeLoopBeginLoop() override
   {
     Real current_time = subDomain()->commonVariables().globalTime();
-    for( Integer i=0, is=m_readers.size(); i<is; ++i ){
+    for (Integer i = 0, is = m_readers.size(); i < is; ++i) {
       m_readers[i]->readAndUpdateTimeVariables(current_time);
     }
   }
@@ -1086,23 +1117,24 @@ class Hdf5VariableReader
   void _load(bool is_start)
   {
     IMeshMng* mm = subDomain()->meshMng();
-    for( Integer i=0, is=options()->read.size(); i<is; ++i ){
+    for (Integer i = 0, is = options()->read.size(); i < is; ++i) {
       String file_name = options()->read[i]->fileName();
       String mesh_name = options()->read[i]->meshName();
       info() << "Hdf5VariableReader: FILE_INFO: mesh=" << mesh_name << " file_name=" << file_name;
       {
         IMesh* mesh = mm->findMeshHandle(mesh_name).mesh();
-        Hdf5VariableReaderHelper* sd = new Hdf5VariableReaderHelper(mesh,file_name);
+        Hdf5VariableReaderHelper* sd = new Hdf5VariableReaderHelper(mesh, file_name);
         m_readers.add(sd);
       }
     }
     info() << "Hdf5VariableReader: Nb reader =" << m_readers.size();
-    for( Integer i=0, is=m_readers.size(); i<is; ++i ){
+    for (Integer i = 0, is = m_readers.size(); i < is; ++i) {
       m_readers[i]->open(is_start);
     }
   }
 
  private:
+
   UniqueArray<Hdf5VariableReaderHelper*> m_readers;
 };
 
@@ -1121,7 +1153,7 @@ Hdf5VariableReader(const ServiceBuildInfo& sbi)
 Hdf5VariableReader::
 ~Hdf5VariableReader()
 {
-  for( Integer i=0, is=m_readers.size(); i<is; ++i )
+  for (Integer i = 0, is = m_readers.size(); i < is; ++i)
     delete m_readers[i];
   m_readers.clear();
 }
@@ -1162,7 +1194,7 @@ class ManualHdf5VariableReader
     String file_name = m_base_file_name + ".h5";
     Directory dir(m_directory_name);
     String full_file_name = dir.file(file_name);
-    m_helper = new Hdf5VariableReaderHelper2(mesh(),full_file_name);
+    m_helper = new Hdf5VariableReaderHelper2(mesh(), full_file_name);
     m_helper->setVariables(m_variables);
     m_helper->open(is_start);
   }
@@ -1184,7 +1216,7 @@ class ManualHdf5VariableReader
 
   virtual void setVariables(VariableCollection vars)
   {
-    for( VariableCollection::Enumerator ivar(vars); ++ivar; )
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;)
       m_variables.add(*ivar);
   }
   virtual Real2 timeInterval(IVariable* var)
@@ -1195,6 +1227,7 @@ class ManualHdf5VariableReader
   }
 
  public:
+
   Hdf5VariableReaderHelper2* m_helper;
   String m_directory_name;
   String m_base_file_name;
@@ -1234,7 +1267,9 @@ class OldManualHdf5VariableReader
  public:
 
   OldManualHdf5VariableReader(const ServiceBuildInfo& sbi)
-  : BasicService(sbi), m_reader(nullptr){}
+  : BasicService(sbi)
+  , m_reader(nullptr)
+  {}
   ~OldManualHdf5VariableReader()
   {
     delete m_reader;
@@ -1247,7 +1282,7 @@ class OldManualHdf5VariableReader
   }
 
  public:
-  
+
   virtual void read(IVariable* var)
   {
     ARCANE_UNUSED(var);
@@ -1297,11 +1332,12 @@ class OldManualHdf5VariableReader
 
     info() << "OldManualHdf5VariableReader: FILE_INFO: file_name=" << file_name;
     IMesh* mesh = subDomain()->defaultMesh();
-    Hdf5VariableReaderHelper* sd = new Hdf5VariableReaderHelper(mesh,file_name);
+    Hdf5VariableReaderHelper* sd = new Hdf5VariableReaderHelper(mesh, file_name);
     m_reader = sd;
   }
 
  private:
+
   Hdf5VariableReaderHelper* m_reader;
   String m_directory_name;
   String m_base_file_name;
@@ -1310,16 +1346,15 @@ class OldManualHdf5VariableReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 ARCANE_REGISTER_SERVICE_HDF5VARIABLEREADER(Hdf5VariableReader,
                                            Hdf5VariableReader);
 
 ARCANE_REGISTER_SERVICE(ManualHdf5VariableReader,
-                        ServiceProperty("Hdf5VariableReader",ST_SubDomain),
+                        ServiceProperty("Hdf5VariableReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IVariableReader));
 
 ARCANE_REGISTER_SERVICE(OldManualHdf5VariableReader,
-                        ServiceProperty("OldManualHdf5VariableReader",ST_SubDomain),
+                        ServiceProperty("OldManualHdf5VariableReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IVariableReader));
 
 /*---------------------------------------------------------------------------*/

@@ -61,29 +61,29 @@ namespace Arcane
 
 using namespace Hdf5Utils;
 
-static herr_t _Hdf5ReaderWriterIterateMe(hid_t,const char*,void*);
+static herr_t _Hdf5ReaderWriterIterateMe(hid_t, const char*, void*);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
+  constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
 
 #if (defined(H5_HAVE_THREADSAFE) || defined(H5_HAVE_CONCURRENCY))
 #define ARCANE_HDF5_MUTEX
 #else
-struct ScopedMutex
-{
-  ScopedMutex()
+  struct ScopedMutex
   {
-    _ArcaneHdf5UtilsMutex().lock();
-  }
-  ~ScopedMutex()
-  {
-    _ArcaneHdf5UtilsMutex().unlock();
-  }
-};
+    ScopedMutex()
+    {
+      _ArcaneHdf5UtilsMutex().lock();
+    }
+    ~ScopedMutex()
+    {
+      _ArcaneHdf5UtilsMutex().unlock();
+    }
+  };
 #define ARCANE_HDF5_MUTEX ScopedMutex scoped_mutex
 #endif
 } // namespace
@@ -92,17 +92,17 @@ struct ScopedMutex
 /*---------------------------------------------------------------------------*/
 
 Hdf5ReaderWriter::
-Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
+Hdf5ReaderWriter(ISubDomain* sd, const String& filename,
                  const String& sub_group_name,
                  Integer fileset_size, Integer currentIndex, Integer index_modulo,
-                 eOpenMode open_mode,[[maybe_unused]] bool do_verif)
+                 eOpenMode open_mode, [[maybe_unused]] bool do_verif)
 : TraceAccessor(sd->traceMng())
 , m_parallel_mng(sd->parallelMng())
 , m_open_mode(open_mode)
 , m_filename(filename)
 , m_sub_group_name(sub_group_name)
 , m_is_initialized(false)
-, m_io_timer(sd,"Hdf5Timer",Timer::TimerReal)
+, m_io_timer(sd, "Hdf5Timer", Timer::TimerReal)
 , m_is_parallel(false)
 , m_my_rank(m_parallel_mng->commRank())
 , m_send_rank(m_my_rank)
@@ -112,17 +112,17 @@ Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
 , m_index_modulo(index_modulo)
 {
 
-  if (m_fileset_size!=1 && m_parallel_mng->isParallel()){
+  if (m_fileset_size != 1 && m_parallel_mng->isParallel()) {
     m_is_parallel = true;
     Integer nb_rank = m_parallel_mng->commSize();
-    if (m_fileset_size==0){
+    if (m_fileset_size == 0) {
       m_send_rank = 0;
       m_last_recv_rank = nb_rank;
     }
-    else{
+    else {
       m_send_rank = (m_my_rank / m_fileset_size) * m_fileset_size;
       m_last_recv_rank = m_send_rank + m_fileset_size;
-      if (m_last_recv_rank>nb_rank)
+      if (m_last_recv_rank > nb_rank)
         m_last_recv_rank = nb_rank;
       --m_last_recv_rank;
     }
@@ -132,7 +132,6 @@ Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
                          << " last_recv_rank=" << m_last_recv_rank
                          << " filename=" << filename;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,17 +151,17 @@ initialize()
     unsigned vminor = 0;
     unsigned vrel = 0;
     ARCANE_HDF5_MUTEX;
-    ::H5get_libversion(&vmajor,&vminor,&vrel);
+    ::H5get_libversion(&vmajor, &vminor, &vrel);
     info() << "HDF5 version = " << vmajor << '.' << vminor << '.' << vrel;
   }
-  info() << "SubGroup is '" << m_sub_group_name <<"'";
-  if (m_open_mode==OpenModeRead){
+  info() << "SubGroup is '" << m_sub_group_name << "'";
+  if (m_open_mode == OpenModeRead) {
     m_file_id.openRead(m_filename);
-    m_sub_group_id.recursiveOpen(m_file_id,m_sub_group_name);
+    m_sub_group_id.recursiveOpen(m_file_id, m_sub_group_name);
   }
-  else{
+  else {
     // If I am not the one writing, do not open the file
-    if (m_send_rank!=m_my_rank)
+    if (m_send_rank != m_my_rank)
       return;
     if (m_open_mode == OpenModeTruncate) {
       hid_t plist_id = -1;
@@ -204,32 +203,31 @@ initialize()
         info() << " SET SMALL BLOCK SIZE s=" << small_block_size << " r=" << r;
       }
 
-      m_file_id.openTruncate(m_filename,plist_id);
+      m_file_id.openTruncate(m_filename, plist_id);
     }
-    else if (m_open_mode==OpenModeAppend){
+    else if (m_open_mode == OpenModeAppend) {
       m_file_id.openAppend(m_filename);
     }
-    if (m_sub_group_name!="/"){
-      m_sub_group_id.checkDelete(m_file_id,m_sub_group_name);
-      m_sub_group_id.recursiveCreate(m_file_id,m_sub_group_name);
+    if (m_sub_group_name != "/") {
+      m_sub_group_id.checkDelete(m_file_id, m_sub_group_name);
+      m_sub_group_id.recursiveCreate(m_file_id, m_sub_group_name);
     }
     else
-      m_sub_group_id.open(m_file_id,m_sub_group_name);
+      m_sub_group_id.open(m_file_id, m_sub_group_name);
   }
   if (m_file_id.isBad())
-    ARCANE_THROW(ReaderWriterException,"Unable to open file '{0}'",m_filename);
+    ARCANE_THROW(ReaderWriterException, "Unable to open file '{0}'", m_filename);
 
   if (m_sub_group_id.isBad())
-    ARCANE_THROW(ReaderWriterException,"HDF5 group '{0}' not found",m_sub_group_name);
+    ARCANE_THROW(ReaderWriterException, "HDF5 group '{0}' not found", m_sub_group_name);
 
-  if (m_open_mode==OpenModeRead){
+  if (m_open_mode == OpenModeRead) {
     int index = 0;
     ARCANE_HDF5_MUTEX;
     //H5Giterate(m_sub_group_id.id(),"Variables",&index,_Hdf5ReaderWriterIterateMe,this);
-    H5Giterate(m_file_id.id(),m_sub_group_name.localstr(),&index,_Hdf5ReaderWriterIterateMe,this);
+    H5Giterate(m_file_id.id(), m_sub_group_name.localstr(), &index, _Hdf5ReaderWriterIterateMe, this);
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -267,49 +265,49 @@ _variableGroupName(IVariable* var)
  * \warning Under test, not usable.
  */
 void Hdf5ReaderWriter::
-_writeValParallel(IVariable* v,const ISerializedData* sdata)
+_writeValParallel(IVariable* v, const ISerializedData* sdata)
 {
   SerializeBuffer sb;
   sb.setMode(ISerializer::ModeReserve);
-  sb.reserve(DT_Int32,1);       // To indicate the end of sends
+  sb.reserve(DT_Int32, 1); // To indicate the end of sends
   sb.reserve(v->fullName());
   sb.reserve(m_sub_group_name); //!< Group name.
-  sb.reserve(DT_Int32,1);       // To indicate the rank the message comes from
+  sb.reserve(DT_Int32, 1); // To indicate the rank the message comes from
   sdata->serialize(&sb);
   sb.allocateBuffer();
   sb.setMode(ISerializer::ModePut);
-  sb.putInt32(1);               // Indicates that it is a non-empty message
+  sb.putInt32(1); // Indicates that it is a non-empty message
   sb.put(v->fullName());
-  sb.put(m_sub_group_name);     //!< Group name.
+  sb.put(m_sub_group_name); //!< Group name.
   sb.put(m_my_rank);
   sdata->serialize(&sb);
-  m_parallel_mng->sendSerializer(&sb,m_send_rank);
+  m_parallel_mng->sendSerializer(&sb, m_send_rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-_directReadVal(IVariable* v,IData* data)
+_directReadVal(IVariable* v, IData* data)
 {
   _checkValid();
   info(4) << "DIRECT READ VAL v=" << v->name();
-  _readVal(v,data);
+  _readVal(v, data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-_directWriteVal(IVariable* v,IData* data)
+_directWriteVal(IVariable* v, IData* data)
 {
   _checkValid();
   Ref<ISerializedData> sdata(data->createSerializedDataRef(false));
-  if (m_is_parallel && m_send_rank!=m_my_rank){
-    _writeValParallel(v,sdata.get());
+  if (m_is_parallel && m_send_rank != m_my_rank) {
+    _writeValParallel(v, sdata.get());
   }
-  else{
-    _writeVal(v->fullName(),m_sub_group_name,sdata.get());
+  else {
+    _writeVal(v->fullName(), m_sub_group_name, sdata.get());
   }
 }
 
@@ -317,17 +315,17 @@ _directWriteVal(IVariable* v,IData* data)
 /*---------------------------------------------------------------------------*/
 
 static herr_t
-_Hdf5ReaderWriterIterateMe(hid_t g,const char* mn,void* ptr)
+_Hdf5ReaderWriterIterateMe(hid_t g, const char* mn, void* ptr)
 {
   Hdf5ReaderWriter* rw = reinterpret_cast<Hdf5ReaderWriter*>(ptr);
-  return rw->iterateMe(g,mn);
+  return rw->iterateMe(g, mn);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 herr_t Hdf5ReaderWriter::
-iterateMe(hid_t group_id,const char* member_name)
+iterateMe(hid_t group_id, const char* member_name)
 {
   ARCANE_UNUSED(group_id);
   m_variables_name.add(StringView(member_name));
@@ -343,7 +341,7 @@ _writeVal(const String& var_group_name,
           const ISerializedData* sdata,
           const Int32 from_rank)
 {
-  const bool hits_modulo=(m_index_modulo!=0) && (m_index_write!=0) && ((m_index_write%m_index_modulo)==0);
+  const bool hits_modulo = (m_index_modulo != 0) && (m_index_write != 0) && ((m_index_write % m_index_modulo) == 0);
   Timer::Sentry ts(&m_io_timer);
 
   info(4) << " SDATA name=" << var_group_name << " nb_element=" << sdata->nbElement()
@@ -364,19 +362,19 @@ _writeVal(const String& var_group_name,
   Int64 nb_base_element = sdata->nbBaseElement();
 
   HGroup var_base_group;
-  var_base_group.recursiveCreate(m_file_id,sub_group_name);
+  var_base_group.recursiveCreate(m_file_id, sub_group_name);
 
   // Creation of the group containing the variable information
   HGroup group_id;
-  group_id.recursiveCreate(var_base_group,var_group_name);
+  group_id.recursiveCreate(var_base_group, var_group_name);
   if (group_id.isBad())
-    ARCANE_THROW(ReaderWriterException,"HDF5 group '{0}' not found",var_group_name);
+    ARCANE_THROW(ReaderWriterException, "HDF5 group '{0}' not found", var_group_name);
 
   Int64 nb_element = sdata->nbElement();
   bool is_multi_size = sdata->isMultiSize();
   Int64 dim2_size = 0;
   Int64 dim1_size = 0;
-  if (nb_dimension==2 && !is_multi_size){
+  if (nb_dimension == 2 && !is_multi_size) {
     dim1_size = dimensions[0];
     dim2_size = dimensions[1];
   }
@@ -387,8 +385,8 @@ _writeVal(const String& var_group_name,
     hsize_t att_dims[1];
     att_dims[0] = VARIABLE_INFO_SIZE;
     HSpace space_id;
-    space_id.createSimple(1,att_dims);
-    std::array<Int64,VARIABLE_INFO_SIZE> dim_val_buf;
+    space_id.createSimple(1, att_dims);
+    std::array<Int64, VARIABLE_INFO_SIZE> dim_val_buf;
     SmallSpan<Int64> dim_val(dim_val_buf);
     dim_val.fill(0);
 
@@ -406,42 +404,42 @@ _writeVal(const String& var_group_name,
       Int32 shape_nb_dim = shape.nbDimension();
       auto shape_dims = shape.dimensions();
       dim_val[9] = shape_nb_dim;
-      for (Integer i=0; i<shape_nb_dim; ++i )
-        dim_val[10+i] = shape_dims[i];
+      for (Integer i = 0; i < shape_nb_dim; ++i)
+        dim_val[10 + i] = shape_dims[i];
     }
     HAttribute att_id;
-    if (m_is_parallel && hits_modulo && (from_rank!=0))
-      att_id.remove(group_id,"Dims");
-    att_id.create(group_id,"Dims",m_types.saveType(dim1_size),space_id);
-    herr_t herr = att_id.write(m_types.nativeType(dim2_size),dim_val.data());
-    if (herr<0)
-      ARCANE_THROW(ReaderWriterException,"Wrong dimensions written for variable '{0}'",var_group_name);
+    if (m_is_parallel && hits_modulo && (from_rank != 0))
+      att_id.remove(group_id, "Dims");
+    att_id.create(group_id, "Dims", m_types.saveType(dim1_size), space_id);
+    herr_t herr = att_id.write(m_types.nativeType(dim2_size), dim_val.data());
+    if (herr < 0)
+      ARCANE_THROW(ReaderWriterException, "Wrong dimensions written for variable '{0}'", var_group_name);
   }
 
   // If the variable is a two-dimensional array type, save the
   // sizes of the second dimension per element.
-  if (dimension_array_size!=0){
+  if (dimension_array_size != 0) {
     hsize_t att_dims[1];
     att_dims[0] = dimension_array_size;
     HSpace space_id;
     HDataset array_id;
-    space_id.createSimple(1,att_dims);
-    array_id.recursiveCreate(group_id,"Dim2",m_types.saveType(dim1_size),space_id,H5P_DEFAULT);
-    herr_t herr = array_id.write(m_types.nativeType(dim1_size),dimensions.data());
-    if (herr<0)
-      ARCANE_THROW(ReaderWriterException,"Wrong dimensions written for variable '{0}'",var_group_name);
+    space_id.createSimple(1, att_dims);
+    array_id.recursiveCreate(group_id, "Dim2", m_types.saveType(dim1_size), space_id, H5P_DEFAULT);
+    herr_t herr = array_id.write(m_types.nativeType(dim1_size), dimensions.data());
+    if (herr < 0)
+      ARCANE_THROW(ReaderWriterException, "Wrong dimensions written for variable '{0}'", var_group_name);
   }
 
   // Now, save the values if necessary
-  if (nb_base_element!=0 && ptr!=nullptr){
+  if (nb_base_element != 0 && ptr != nullptr) {
     debug(Trace::High) << "Variable " << var_group_name << " begin dumped (nb_base_element=" << nb_base_element << ").";
     hsize_t dims[1];
     dims[0] = nb_base_element;
     HSpace space_id;
-    space_id.createSimple(1,dims);
+    space_id.createSimple(1, dims);
     if (space_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"Wrong dataspace for variable '{0}'",var_group_name);
-    
+      ARCANE_THROW(ReaderWriterException, "Wrong dataspace for variable '{0}'", var_group_name);
+
     HDataset dataset_id;
     hid_t plist_id = H5P_DEFAULT;
 
@@ -455,13 +453,13 @@ _writeVal(const String& var_group_name,
       info() << " SET CHUNK FOR " << var_group_name << " s=" << nb_element;
     }
 #endif
-    dataset_id.recursiveCreate(group_id,"Values",save_typeid,space_id,plist_id);
+    dataset_id.recursiveCreate(group_id, "Values", save_typeid, space_id, plist_id);
     if (dataset_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"Wrong dataset for variable '{0}'",var_group_name);
+      ARCANE_THROW(ReaderWriterException, "Wrong dataset for variable '{0}'", var_group_name);
 
-    herr_t herr = dataset_id.write(trueid,ptr);
-    if (herr<0)
-      ARCANE_THROW(ReaderWriterException,"Wrong dataset written for variable '{0}'",var_group_name);
+    herr_t herr = dataset_id.write(trueid, ptr);
+    if (herr < 0)
+      ARCANE_THROW(ReaderWriterException, "Wrong dataset written for variable '{0}'", var_group_name);
   }
 }
 
@@ -482,21 +480,21 @@ _readDim2(IVariable* var)
   // therefore its dimensions are null.
   {
     bool is_found = false;
-    for( StringList::Enumerator i(m_variables_name); ++i; )
-      if (*i==vname){
+    for (StringList::Enumerator i(m_variables_name); ++i;)
+      if (*i == vname) {
         is_found = true;
         break;
       }
     if (!is_found)
-      ARCANE_THROW(ReaderWriterException,"No HDF5 group named '{0} exists",vname);
+      ARCANE_THROW(ReaderWriterException, "No HDF5 group named '{0} exists", vname);
   }
 
   // Retrieve the group containing the variable information
   HGroup group_id;
   //group_id.open(m_variable_group_id,vname);
-  group_id.open(m_sub_group_id,vname);
+  group_id.open(m_sub_group_id, vname);
   if (group_id.isBad())
-    ARCANE_THROW(ReaderWriterException,"HDF5 group '{0}' not found",vname);
+    ARCANE_THROW(ReaderWriterException, "HDF5 group '{0}' not found", vname);
 
   bool is_multi_size = false;
   eDataType data_type = DT_Unknown;
@@ -510,9 +508,9 @@ _readDim2(IVariable* var)
   // Retrieve the information concerning the variable sizes and dimensions
   {
     HAttribute att_id;
-    att_id.open(group_id,"Dims");
+    att_id.open(group_id, "Dims");
     HSpace space_id = att_id.getSpace();
-		
+
     // We expect a single dimension, and the number of elements of
     // the attribute (hdf_dims[0]) must be equal to 1 or 2.
     hsize_t hdf_dims[max_dim];
@@ -522,12 +520,12 @@ _readDim2(IVariable* var)
       H5Sget_simple_extent_dims(space_id.id(), hdf_dims, max_dims);
     }
 
-    if (hdf_dims[0]!=VARIABLE_INFO_SIZE)
-      ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected={2})",
+    if (hdf_dims[0] != VARIABLE_INFO_SIZE)
+      ARCANE_THROW(ReaderWriterException, "Wrong dimensions for variable '{0}' (found={1} expected={2})",
                    vname, hdf_dims[0], VARIABLE_INFO_SIZE);
 
-    std::array<Int64,VARIABLE_INFO_SIZE> dim_val_buf;
-    att_id.read(m_types.nativeType(Int64()),dim_val_buf.data());
+    std::array<Int64, VARIABLE_INFO_SIZE> dim_val_buf;
+    att_id.read(m_types.nativeType(Int64()), dim_val_buf.data());
 
     SmallSpan<const Int64> dim_val(dim_val_buf);
 
@@ -537,13 +535,13 @@ _readDim2(IVariable* var)
     nb_element = dim_val[3];
     nb_base_element = dim_val[4];
     dimension_array_size = dim_val[5];
-    is_multi_size = dim_val[6]!=0;
+    is_multi_size = dim_val[6] != 0;
     data_type = (eDataType)dim_val[7];
     memory_size = dim_val[8];
-    Int32 shape_nb_dim =  CheckedConvert::toInt32(dim_val[9]);
+    Int32 shape_nb_dim = CheckedConvert::toInt32(dim_val[9]);
     data_shape.setNbDimension(shape_nb_dim);
-    for (Integer i=0; i<shape_nb_dim; ++i )
-      data_shape.setDimension(i,CheckedConvert::toInt32(dim_val[10+i]));
+    for (Integer i = 0; i < shape_nb_dim; ++i)
+      data_shape.setDimension(i, CheckedConvert::toInt32(dim_val[10 + i]));
   }
 
   info(4) << " READ DIM name=" << vname
@@ -554,15 +552,15 @@ _readDim2(IVariable* var)
           << " data_type" << data_type
           << " shape=" << data_shape.dimensions();
 
-  if (dimension_array_size>0){
+  if (dimension_array_size > 0) {
     HDataset array_id;
-    array_id.open(group_id,"Dim2");
+    array_id.open(group_id, "Dim2");
     if (array_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"Wrong dataset for variable '{0}'",vname);
+      ARCANE_THROW(ReaderWriterException, "Wrong dataset for variable '{0}'", vname);
 
     HSpace space_id = array_id.getSpace();
     if (space_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"Wrong dataspace for variable '{0}'",vname);
+      ARCANE_THROW(ReaderWriterException, "Wrong dataspace for variable '{0}'", vname);
 
     hsize_t hdf_dims[max_dim];
     hsize_t max_dims[max_dim];
@@ -572,19 +570,18 @@ _readDim2(IVariable* var)
     }
     // Verify that the number of elements in the dataset is equal to that
     // expected.
-    if ((Int64)hdf_dims[0]!=dimension_array_size){
-      ARCANE_THROW(ReaderWriterException,"Wrong number of elements in 'Dim2' for variable '{0}' (found={1} expected={2})",
+    if ((Int64)hdf_dims[0] != dimension_array_size) {
+      ARCANE_THROW(ReaderWriterException, "Wrong number of elements in 'Dim2' for variable '{0}' (found={1} expected={2})",
                    vname, hdf_dims[0], dimension_array_size);
-                   
     }
     dim2_size = 0;
     dims.resize(dimension_array_size);
-    herr_t herr = array_id.read(m_types.nativeType(Int64()),dims.data());
-    if (herr<0)
-      ARCANE_THROW(ReaderWriterException,"Wrong dataset read for variable '{0}'",vname);
+    herr_t herr = array_id.read(m_types.nativeType(Int64()), dims.data());
+    if (herr < 0)
+      ARCANE_THROW(ReaderWriterException, "Wrong dataset read for variable '{0}'", vname);
   }
-  Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                             nb_base_element,is_multi_size,dims,data_shape);
+  Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(data_type, memory_size, nb_dimension, nb_element,
+                                                             nb_base_element, is_multi_size, dims, data_shape);
   return sdata;
 }
 
@@ -595,16 +592,16 @@ _readDim2(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-write(IVariable* v,IData* data)
+write(IVariable* v, IData* data)
 {
-  _directWriteVal(v,data);
+  _directWriteVal(v, data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-_readVal(IVariable* v,IData* data)
+_readVal(IVariable* v, IData* data)
 {
   String var_group_name = _variableGroupName(v);
   info(4) << " TRY TO READ var_group=" << var_group_name;
@@ -612,33 +609,33 @@ _readVal(IVariable* v,IData* data)
   Int64 storage_size = sd->memorySize();
   info(4) << " READ DATA n=" << storage_size;
   data->allocateBufferForSerializedData(sd.get());
-  if (storage_size!=0){
+  if (storage_size != 0) {
     // Retrieve the group containing the variable information
     HGroup group_id;
     //group_id.open(m_variable_group_id,var_group_name);
-    group_id.open(m_sub_group_id,var_group_name);
+    group_id.open(m_sub_group_id, var_group_name);
     if (group_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"No HDF5 group with name '{0}' exists",var_group_name);
+      ARCANE_THROW(ReaderWriterException, "No HDF5 group with name '{0}' exists", var_group_name);
     HDataset dataset_id;
-    dataset_id.open(group_id,"Values");
+    dataset_id.open(group_id, "Values");
     if (dataset_id.isBad())
-      ARCANE_THROW(ReaderWriterException,"Wrong dataset for variable '{0}'",var_group_name);
+      ARCANE_THROW(ReaderWriterException, "Wrong dataset for variable '{0}'", var_group_name);
     void* ptr = sd->writableBytes().data();
-    info() << "READ Variable " << var_group_name << " ptr=" << ptr;;
+    info() << "READ Variable " << var_group_name << " ptr=" << ptr;
+    ;
     hid_t trueid = m_types.nativeType(sd->baseDataType());
-    dataset_id.read(trueid,ptr);
+    dataset_id.read(trueid, ptr);
   }
   data->assignSerializedData(sd.get());
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-read(IVariable* var,IData* data)
+read(IVariable* var, IData* data)
 {
-  _directReadVal(var,data);
+  _directReadVal(var, data);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -647,10 +644,10 @@ read(IVariable* var,IData* data)
 void Hdf5ReaderWriter::
 setMetaData(const String& meta_data)
 {
-  if (m_is_parallel){
+  if (m_is_parallel) {
     IParallelMng* pm = m_parallel_mng;
     //Integer nb_rank = pm->commSize();
-    if (m_send_rank!=m_my_rank){
+    if (m_send_rank != m_my_rank) {
       // Send the group and the meta data
       SerializeBuffer sb;
       sb.setMode(ISerializer::ModeReserve);
@@ -660,60 +657,60 @@ setMetaData(const String& meta_data)
       sb.setMode(ISerializer::ModePut);
       sb.put(m_sub_group_name);
       sb.put(meta_data);
-      m_parallel_mng->sendSerializer(&sb,m_send_rank);
+      m_parallel_mng->sendSerializer(&sb, m_send_rank);
     }
-    else{
-      _setMetaData(meta_data,m_sub_group_name);
-      for( Integer i=m_send_rank+1; i<=m_last_recv_rank; ++i ){
+    else {
+      _setMetaData(meta_data, m_sub_group_name);
+      for (Integer i = m_send_rank + 1; i <= m_last_recv_rank; ++i) {
         SerializeBuffer sb;
-        pm->recvSerializer(&sb,i);
+        pm->recvSerializer(&sb, i);
         sb.setMode(ISerializer::ModeGet);
         String remote_group_name;
         String remote_meta_data;
         sb.get(remote_group_name);
         sb.get(remote_meta_data);
-        _setMetaData(remote_meta_data,remote_group_name);
+        _setMetaData(remote_meta_data, remote_group_name);
       }
     }
   }
   else
-    _setMetaData(meta_data,m_sub_group_name);
+    _setMetaData(meta_data, m_sub_group_name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void Hdf5ReaderWriter::
-_setMetaData(const String& meta_data,const String& sub_group_name)
+_setMetaData(const String& meta_data, const String& sub_group_name)
 {
-  const bool hits_modulo=(m_index_modulo!=0) && (m_index_write!=0) && ((m_index_write%m_index_modulo)==0);
+  const bool hits_modulo = (m_index_modulo != 0) && (m_index_write != 0) && ((m_index_write % m_index_modulo) == 0);
   HGroup base_group;
   if (hits_modulo)
-    base_group.recursiveOpen(m_file_id,sub_group_name);
+    base_group.recursiveOpen(m_file_id, sub_group_name);
   else
-    base_group.recursiveCreate(m_file_id,sub_group_name);
-  
+    base_group.recursiveCreate(m_file_id, sub_group_name);
+
   Span<const Byte> meta_data_bytes = meta_data.bytes();
   const Byte* _meta_data = meta_data_bytes.data();
   hsize_t dims[1];
   dims[0] = meta_data_bytes.size();
-  
+
   HSpace space_id;
-  space_id.createSimple(1,dims);
+  space_id.createSimple(1, dims);
   if (space_id.isBad())
-    throw ReaderWriterException(A_FUNCINFO,"Wrong space for meta-data ('MetaData')");
+    throw ReaderWriterException(A_FUNCINFO, "Wrong space for meta-data ('MetaData')");
 
   HDataset dataset_id;
   if (hits_modulo)
-    dataset_id.recursiveCreate(base_group,"MetaData", m_types.nativeType(Byte()), space_id, H5P_DEFAULT);
+    dataset_id.recursiveCreate(base_group, "MetaData", m_types.nativeType(Byte()), space_id, H5P_DEFAULT);
   else
-    dataset_id.create(base_group,"MetaData", m_types.nativeType(Byte()), space_id, H5P_DEFAULT);
+    dataset_id.create(base_group, "MetaData", m_types.nativeType(Byte()), space_id, H5P_DEFAULT);
   if (dataset_id.isBad())
-    throw ReaderWriterException(A_FUNCINFO,"Wrong dataset for meta-data ('MetaData')");
+    throw ReaderWriterException(A_FUNCINFO, "Wrong dataset for meta-data ('MetaData')");
 
-  herr_t herr = dataset_id.write(m_types.nativeType(Byte()),_meta_data);
-  if (herr<0)
-    throw ReaderWriterException(A_FUNCINFO,"Unable to write meta-data ('MetaData')");
+  herr_t herr = dataset_id.write(m_types.nativeType(Byte()), _meta_data);
+  if (herr < 0)
+    throw ReaderWriterException(A_FUNCINFO, "Unable to write meta-data ('MetaData')");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -723,13 +720,13 @@ String Hdf5ReaderWriter::
 metaData()
 {
   HDataset dataset_id;
-  dataset_id.open(m_sub_group_id,"MetaData");
-  if (dataset_id.isBad()){
-    throw ReaderWriterException(A_FUNCINFO,"Wrong dataset for meta-data ('MetaData')");
+  dataset_id.open(m_sub_group_id, "MetaData");
+  if (dataset_id.isBad()) {
+    throw ReaderWriterException(A_FUNCINFO, "Wrong dataset for meta-data ('MetaData')");
   }
   HSpace space_id = dataset_id.getSpace();
-  if (space_id.isBad()){
-    throw ReaderWriterException(A_FUNCINFO,"Wrong space for meta-data ('MetaData')");
+  if (space_id.isBad()) {
+    throw ReaderWriterException(A_FUNCINFO, "Wrong space for meta-data ('MetaData')");
   }
   const int max_dim = 256;
   hsize_t hdf_dims[max_dim];
@@ -738,11 +735,11 @@ metaData()
     ARCANE_HDF5_MUTEX;
     H5Sget_simple_extent_dims(space_id.id(), hdf_dims, max_dims);
   }
-  if (hdf_dims[0]<=0)
-    throw ReaderWriterException(A_FUNCINFO,"Wrong number of elements for meta-data ('MetaData')");
+  if (hdf_dims[0] <= 0)
+    throw ReaderWriterException(A_FUNCINFO, "Wrong number of elements for meta-data ('MetaData')");
   Integer nb_byte = static_cast<Integer>(hdf_dims[0]);
   ByteUniqueArray uchars(nb_byte);
-  dataset_id.read(m_types.nativeType(Byte()),uchars.data());
+  dataset_id.read(m_types.nativeType(Byte()), uchars.data());
   String s(uchars);
   return s;
 }
@@ -753,19 +750,19 @@ metaData()
 void Hdf5ReaderWriter::
 endWrite()
 {
-  if (m_is_parallel){
-    if (m_my_rank==m_send_rank){
+  if (m_is_parallel) {
+    if (m_my_rank == m_send_rank) {
       _receiveRemoteVariables();
     }
-    else{
+    else {
       // Sends an end message
       SerializeBuffer sb;
       sb.setMode(ISerializer::ModeReserve);
-      sb.reserve(DT_Int32,1); // To indicate the end of sends
+      sb.reserve(DT_Int32, 1); // To indicate the end of sends
       sb.allocateBuffer();
       sb.setMode(ISerializer::ModePut);
       sb.putInt32(0); // Indicates it is an end message
-      m_parallel_mng->sendSerializer(&sb,m_send_rank);
+      m_parallel_mng->sendSerializer(&sb, m_send_rank);
     }
   }
   {
@@ -784,15 +781,15 @@ _receiveRemoteVariables()
   Integer nb_remaining = m_last_recv_rank - m_send_rank;
   info() << "NB REMAINING = " << nb_remaining;
   Ref<ISerializeMessageList> m_messages(pm->createSerializeMessageListRef());
-  while(nb_remaining>0){
-    ScopedPtrT<ISerializeMessage> sm(new SerializeMessage(m_my_rank,NULL_SUB_DOMAIN_ID,ISerializeMessage::MT_Recv));
+  while (nb_remaining > 0) {
+    ScopedPtrT<ISerializeMessage> sm(new SerializeMessage(m_my_rank, NULL_SUB_DOMAIN_ID, ISerializeMessage::MT_Recv));
     m_messages->addMessage(sm.get());
     m_messages->processPendingMessages();
     m_messages->waitMessages(Parallel::WaitAll);
     ISerializer* sb = sm->serializer();
     sb->setMode(ISerializer::ModeGet);
     Int32 id = sb->getInt32();
-    if (id==0)
+    if (id == 0)
       --nb_remaining;
     else
       _writeRemoteVariable(sb);
@@ -814,7 +811,7 @@ _writeRemoteVariable(ISerializer* sb)
   Ref<ISerializedData> sdata = arcaneCreateEmptySerializedDataRef();
   sb->setReadMode(ISerializer::ReadReplace);
   sdata->serialize(sb);
-  _writeVal(var_name,group_name,sdata.get(),rank);
+  _writeVal(var_name, group_name, sdata.get(), rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -829,6 +826,7 @@ class ArcaneHdf5CheckpointService2
 : public ArcaneHdf5ReaderWriterObject
 {
  public:
+
   ArcaneHdf5CheckpointService2(const ServiceBuildInfo& sbi)
   : ArcaneHdf5ReaderWriterObject(sbi)
   , m_write_index(0)
@@ -866,20 +864,20 @@ class ArcaneHdf5CheckpointService2
     StringBuilder buf;
 
     // Ajoute si besoin le numero du processeur
-    if (pm->isParallel()){
+    if (pm->isParallel()) {
       Integer file_id = rank;
-      if (m_fileset_size!=0)
+      if (m_fileset_size != 0)
         file_id = (rank / m_fileset_size) * m_fileset_size;
       buf = "arcanedump.";
       buf += file_id;
     }
-    else{
+    else {
       buf = "arcanedump";
     }
 
     // Ajoute si besoin le numero du replica
     IParallelReplication* pr = subDomain()->parallelMng()->replication();
-    if (pr->hasReplication()){
+    if (pr->hasReplication()) {
       buf += "_r";
       buf += pr->replicationRank();
     }
@@ -887,8 +885,9 @@ class ArcaneHdf5CheckpointService2
     buf += ".h5";
     return buf.toString();
   }
-  
-  Directory _defaultDirectory(){
+
+  Directory _defaultDirectory()
+  {
     return Directory(baseDirectoryName());
   }
   void _parseMetaData(String meta_data);
@@ -901,21 +900,23 @@ void ArcaneHdf5CheckpointService2::
 _parseMetaData(String meta_data)
 {
   IIOMng* io_mng = subDomain()->ioMng();
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlBuffer(meta_data.utf8(),"MetaData"));
+  ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlBuffer(meta_data.utf8(), "MetaData"));
   XmlNode root = xml_doc->documentNode().documentElement();
   Integer version = root.attr("version").valueAsInteger();
-  if (version!=1){
-    throw ReaderWriterException(A_FUNCINFO,"Bad version (expected 1)");
+  if (version != 1) {
+    throw ReaderWriterException(A_FUNCINFO, "Bad version (expected 1)");
   }
   {
     Integer fileset_size = root.child("fileset-size").valueAsInteger();
-    if (fileset_size<0) fileset_size = 0;
+    if (fileset_size < 0)
+      fileset_size = 0;
     m_fileset_size = fileset_size;
   }
   {
     Integer index_modulo = root.child("index-modulo").valueAsInteger();
-    if (index_modulo<0) index_modulo = 0;
-    m_index_modulo=index_modulo;
+    if (index_modulo < 0)
+      index_modulo = 0;
+    m_index_modulo = index_modulo;
   }
   info() << " FileSet size=" << m_fileset_size;
   info() << " Index modulo=" << m_index_modulo;
@@ -933,7 +934,7 @@ notifyBeginRead()
   info() << " GET META DATA READER " << readerMetaData()
          << " filename=" << fileName();
 
-  if (fileName().null()){
+  if (fileName().null()) {
     Directory dump_dir(_defaultDirectory());
     setFileName(dump_dir.file(_defaultFileName()));
   }
@@ -942,12 +943,12 @@ notifyBeginRead()
   sub_group = "SubDomain";
   sub_group += subDomain()->subDomainId();
   sub_group += "/Index";
-  
+
   Integer index = currentIndex();
-  if (m_index_modulo!=0)
+  if (m_index_modulo != 0)
     index %= m_index_modulo;
   sub_group += index;
-  
+
   m_reader = new Hdf5ReaderWriter(subDomain(),
                                   fileName(),
                                   sub_group.toString(),
@@ -974,44 +975,43 @@ notifyEndRead()
 void ArcaneHdf5CheckpointService2::
 notifyBeginWrite()
 {
-  if (options()){
+  if (options()) {
     // Récupération du nombre de fichiers par groupe
     m_fileset_size = options()->filesetSize();
     // Récupération du nombre d'indexes au maximum par fichiers
     m_index_modulo = options()->indexModulo();
   }
 
-  if (fileName().null()){
+  if (fileName().null()) {
     Directory dump_dir(_defaultDirectory());
     setFileName(dump_dir.file(_defaultFileName()));
   }
   Hdf5ReaderWriter::eOpenMode open_mode = Hdf5ReaderWriter::OpenModeAppend;
   Integer write_index = checkpointTimes().size();
   --write_index;
-  
-  if (write_index==0)
+
+  if (write_index == 0)
     open_mode = Hdf5ReaderWriter::OpenModeTruncate;
 
   // Test de l'option m_index_modulo pour savoir la profondeur du modulo
-  if (m_index_modulo!=0)
-    write_index%=m_index_modulo;
+  if (m_index_modulo != 0)
+    write_index %= m_index_modulo;
 
   StringBuilder sub_group;
   sub_group = "SubDomain";
   sub_group += subDomain()->parallelMng()->commRank();
   sub_group += "/Index";
   sub_group += write_index;
-  
+
   m_writer = new Hdf5ReaderWriter(subDomain(),
                                   fileName(),
                                   sub_group,
                                   m_fileset_size,
-                                  checkpointTimes().size()-1,
+                                  checkpointTimes().size() - 1,
                                   m_index_modulo,
                                   open_mode);
   m_writer->initialize();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1034,11 +1034,11 @@ notifyEndWrite()
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(ArcaneHdf5CheckpointService2,
-                        ServiceProperty("ArcaneHdf5CheckpointReader2",ST_SubDomain),
+                        ServiceProperty("ArcaneHdf5CheckpointReader2", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(ICheckpointReader));
 
 ARCANE_REGISTER_SERVICE(ArcaneHdf5CheckpointService2,
-                        ServiceProperty("ArcaneHdf5CheckpointWriter2",ST_SubDomain),
+                        ServiceProperty("ArcaneHdf5CheckpointWriter2", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(ICheckpointWriter));
 
 ARCANE_REGISTER_SERVICE_HDF5READERWRITER(ArcaneHdf5Checkpoint2,
