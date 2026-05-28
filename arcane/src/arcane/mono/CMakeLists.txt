@@ -6,10 +6,10 @@ message(FATAL_ERROR "The component 'arcane_mono' is no longer supported")
 
 set(PKGS MonoEmbed Glib)
 arcane_find_package(MonoEmbed)
-if(NOT MonoEmbed_FOUND)
+if (NOT MonoEmbed_FOUND)
   message(STATUS "Disabling 'arcane_mono' because MonoEmbed is not found")
   return()
-endif()
+endif ()
 
 include(srcs.cmake)
 
@@ -28,7 +28,7 @@ target_compile_definitions(arcane_mono PRIVATE ARCANE_COMPONENT_arcane_mono)
 if (MONOEMBEDPKG_VERSION VERSION_GREATER_EQUAL "6.0")
   message(STATUS "[arcane_mono] Do not attach threads")
   target_compile_definitions(arcane_mono PRIVATE ARCANE_MONO_NO_THREAD_ATTACH)
-endif()
+endif ()
 
 target_link_libraries(arcane_mono PRIVATE arcane_utils)
 
