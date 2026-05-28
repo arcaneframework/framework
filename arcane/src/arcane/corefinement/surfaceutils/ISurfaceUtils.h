@@ -35,19 +35,19 @@ public:
   typedef UniqueArray<FaceFaceContact> FaceFaceContactList;
 
 public:
-  //! Constructeur
+  //! Constructor
 	ISurfaceUtils() {}
 
-  //! Destructeur
+  //! Destructor
   virtual ~ISurfaceUtils() {} ;
 
-  //! Initialisation
+  //! Initialization
   virtual void init() = 0 ;
 
-  //! Création d'une nouvelle surface
+  //! Creation of a new surface
   virtual ISurface* createSurface() = 0 ;
 
-  //! Définit les faces d'une surface
+  //! Sets the faces of a surface
   virtual void setFaceToSurface(ISurface* surface, FaceGroup face_group) = 0 ;
 
   //! compute for each face of surface1 the nearest face of surface2 

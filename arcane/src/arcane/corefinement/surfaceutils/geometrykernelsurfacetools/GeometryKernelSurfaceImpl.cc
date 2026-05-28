@@ -28,8 +28,8 @@ GeometryKernelSurfaceImpl()
 GeometryKernelSurfaceImpl::
 ~GeometryKernelSurfaceImpl()
 { 
-  // destruction des objets 
-  // (meme m_triangulation qui est un boost::shared_ptr)
+  // destruction of objects 
+  // (even m_triangulation which is a boost::shared_ptr)
 }
 
 /*---------------------------------------------------------------------------*/

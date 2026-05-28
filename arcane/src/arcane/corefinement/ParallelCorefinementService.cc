@@ -89,8 +89,8 @@ class ParallelCorefinementService::Internal
     const VariableNodeReal3& m_nodes_coordinates;
   };
 
-  //! test de distance entre faces
-  /*! Compatible avec Box::isInside */
+  //! test distance between faces
+  /*! Compatible with Box::isInside */
   class CheckCloseFaces {
   public:
     CheckCloseFaces(const VariableNodeReal3 & nodesCoordinates, const Real distance) 
@@ -194,7 +194,7 @@ class ParallelCorefinementService::Internal
     
     const Integer nbSubDomain = parallel_mng->commSize();  
 
-    // Initialisation de l'échangeur de données
+    // Initialization of the data exchanger
     for(Integer isd=0;isd<nbSubDomain;++isd)
       if (not cells_to_send[isd].empty())
         exchanger->addSender(isd);
@@ -338,13 +338,13 @@ update()
   parallel_mng->allGather(myBox,allBoxes);
 
   // NB: ne traite pas les aretes.
-  // exchangers utilisés en mode slave->master puis master->slave
+  // exchangers used in slave->master mode then master->slave
   UniqueArray<std::set<Int32> > nodes_to_send; nodes_to_send.resize(nbSubDomain);
   UniqueArray<std::set<Int32> > faces_to_send; faces_to_send.resize(nbSubDomain);
   UniqueArray<std::set<Int32> > cells_to_send; cells_to_send.resize(nbSubDomain);
 
-  // On peut optimiser les calculs d'inclusion en ayant déjà la boite englobante locale
-  // Si pas d'intersection des boites locale et distante => rien à faire.
+  // Inclusion calculations can be optimized by already having the local bounding box
+  // If there is no intersection between the local and remote boxes => nothing to do.
 #ifndef NO_USER_WARNING
 #warning "optimisations possibles"
 #endif /* NO_USER_WARNING */
@@ -387,17 +387,17 @@ update()
 
   m_internal->migrationTimer.stop();
 
-  // 3- Calcul des composantes connexes
-  // On vérifie pour l'instant que localement nous n'avons qu'une composante connexe.
-  // Pour cela, on vérifie que le bord des surfaces ne forment qu'une courbe
+  // 3- Calculating connected components
+  // For now, we check that locally we only have one connected component.
+  // To do this, we check that the boundary of the surfaces forms only a curve
     
-  // Choix des surfaces pour le co-raffinement local
+  // Selection of surfaces for local co-refinement
   FaceGroup slave_coref_group = m_slave_group;
   FaceGroup master_coref_group = m_master_group;
 
   typedef Internal::NodeComparator::IntPair IntPair;
-  std::map<IntPair, Integer > slave_edges; // paires des sommets indexés par leurs localIds
-  std::map<IntPair, Integer > master_edges; // paires des sommets indexés par leurs localIds
+  std::map<IntPair, Integer > slave_edges; // pairs of vertices indexed by their localIds
+  std::map<IntPair, Integer > master_edges; // pairs of vertices indexed by their localIds
   Internal::surfaceSetup(slave_edges,slave_coref_group,m_geometry);
   Internal::surfaceSetup(master_edges,master_coref_group,m_geometry);
 
@@ -422,10 +422,10 @@ update()
       fatal() << "Master surface is not connex";
   }
 
-  // 4- Calcul du co-raffinement par composantes connexes
-  // Actuellement une seule composante par surface
-  // A partir de cette étape si modif de maillage le résultat du coraffinement est invalidé
-  // car une renumérotation des items locaux est possible 
+  // 4- Calculating co-refinement by connected components
+  // Currently one component per surface
+  // From this step onwards, if the mesh is modified, the co-refinement result is invalidated
+  // because a renumbering of local items is possible 
 
   ISurfaceUtils * surfaceUtils = options()->surfaceUtils();
   ISurface * masterSurface = surfaceUtils->createSurface();
@@ -436,7 +436,7 @@ update()
   FaceFaceContactList coarse_contacts;
   surfaceUtils->computeSurfaceContact(masterSurface,slaveSurface,coarse_contacts);
 
-//   { // test d'intégrité du co-raffinement local
+//   { // local co-refinement integrity test
 //     Real3 normalA_coref(0,0,0), normalA_local(0,0,0);
 //     Real3 normalB_coref(0,0,0), normalB_local(0,0,0);
     
@@ -445,7 +445,7 @@ update()
 //     ENUMERATE_FACE(iface,m_slave_group.own())
 //       normalB_local += m_geometry->computeOrientedMeasure(*iface);
     
-//     for(Integer i=0; i<coarse_contacts.size(); ++i) {
+//     for(Integer i=0;i<coarse_contacts.size(); ++i) {
 //       const ISurfaceUtils::FaceFaceContact & contact = coarse_contacts[i];
 //       if (not contact.faceA.null() and contact.faceA.isOwn()) 
 //         normalA_coref += contact.normalA;
@@ -463,16 +463,16 @@ update()
   delete masterSurface;
   delete slaveSurface;
 
-  // 5- Filtrage des contacts par la distance de leurs 2 faces
-  // et diffusion des faces maitres utiles coté esclave.
+  // 5- Filtering contacts by the distance between their 2 faces
+  // and diffusion of useful master faces to the slave side.
   m_contacts.clear();
 
-  // Enregistrement des besoins de raffinement pour des void-face
+  // Registration of refinement needs for void-faces
   ItemInternalList internals = mesh()->faceFamily()->itemsInternal();
-  // La clef des SharedCorefinement est en référence à l'internals précédent
+  // The key of SharedCorefinement refers to the previous internals
   typedef std::map<Integer,Real3> SharedCorefinement;
   SharedCorefinement voidface_shared_corefinement;
-  ARCANE_ASSERT(( coarse_contacts.empty() == master_coref_group.empty() ),("Incompatible emptyness"));
+  ARCANE_ASSERT(( coarse_contacts.empty() == master_coref_group.empty() ),("Incompatible emptiness"));
 
   if (coarse_contacts.empty()) 
     {
@@ -483,7 +483,7 @@ update()
   else 
     {
       Internal::CheckCloseFaces checkFaces(nodesCoordinates,m_box_tolerance);
-      SharedCorefinement facevoid_shared_corefinement; // pour aggregation sur le master
+      SharedCorefinement facevoid_shared_corefinement; // for aggregation on the master
       for(FaceFaceContactList::iterator i = coarse_contacts.begin(); i != coarse_contacts.end(); ++i) {
         const ISurfaceUtils::FaceFaceContact & contact = *i;
         const Face master_face = contact.faceA;
@@ -494,17 +494,17 @@ update()
           } // else not use since non local
         } else if (master_face.null()) {
           if (slave_face.isOwn()) {
-            // Cette face doit etre post-traitée en parallèle
+            // This face must be post-processed in parallel
             voidface_shared_corefinement[slave_face.localId()];
           } // else not use since non local
         } else if (master_face.isOwn() or slave_face.isOwn()) {
           if (checkFaces(master_face,slave_face)) { 
-            // Distance compatible avec la sélection de la boite
-            // Contact admissible (stockage + préparation pour diffusion)
-            if (master_face.isOwn()) // si !master_face.isOwn() il recevra l'info par son owner
+            // Distance compatible with the box selection
+            // Admissible contact (storage + preparation for diffusion)
+            if (master_face.isOwn()) // if !master_face.isOwn() it will receive the info via its owner
               m_contacts.add(contact);
           } else {
-            // Complétion du co-raffinement du non-contact
+            // Completion of co-refinement for non-contact
             if (master_face.isOwn()) {
               facevoid_shared_corefinement[master_face.localId()] += contact.normalA;
             }
@@ -515,7 +515,7 @@ update()
         }
       }
 
-      // Intégration des face-void aggrégés
+      // Integration of aggregated face-voids
       for(SharedCorefinement::const_iterator i=facevoid_shared_corefinement.begin();
           i != facevoid_shared_corefinement.end(); ++i) {
         Face faceA(internals[i->first]);
@@ -528,10 +528,10 @@ update()
       }
     }
 
-  // 6- Sérialisation des données vers les esclaves; préparation de la synthèse void-face
+  // 6- Serialization of data to slaves; preparation of void-face synthesis
 
-  // Compatibilité des données à envoyer
-  // Comptabilise des sous-faces bi-parent (faceface)
+  // Compatibility of data to send
+  // Counts bi-parent sub-faces (faceface)
   UniqueArray<Integer> info_to_send(nbSubDomain,0);
   for(FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i) 
     {
@@ -539,10 +539,10 @@ update()
       const Face master_face = contact.faceA;
       const Face slave_face = contact.faceB;
       if (not slave_face.null()) {
-        ARCANE_ASSERT((not master_face.null()),("Integrity error")); // pas construction du remplissage de m_contacts
+        ARCANE_ASSERT((not master_face.null()),("Integrity error")); // no construction of m_contacts filling
         if (slave_face.isOwn()) {
           if (master_face.isOwn()) {
-            // Traitement local des void-faces
+            // Local processing of void-faces
             SharedCorefinement::iterator vf_finder = voidface_shared_corefinement.find(slave_face.localId());
             if (vf_finder != voidface_shared_corefinement.end()) {
               vf_finder->second += contact.normalB; 
@@ -556,12 +556,12 @@ update()
       }
     }
 
-  // Liste de synthèse des messages (emissions / réceptions)
+  // List of synthesis messages (emissions / receptions)
   ISerializeMessageList * messageList = NULL;
   if (parallel_mng->isParallel())
     messageList = parallel_mng->createSerializeMessageList();
 
-  // Préparation de la réception
+  // Preparation of reception
   UniqueArray<Integer> info_to_recv(nbSubDomain,0);
   parallel_mng->allToAll(info_to_send,info_to_recv,1);
   std::list<std::shared_ptr<SerializeMessage> > recv_messages;
@@ -575,7 +575,7 @@ update()
         }
     }
 
-  // Préparation des émissions
+  // Preparation of emissions
   UniqueArray<std::shared_ptr<SerializeMessage> > sent_messages(nbSubDomain);
   for(Integer i=0;i<nbSubDomain;++i)
     {
@@ -586,18 +586,18 @@ update()
           sent_messages[i].reset(message);
           messageList->addMessage(message);
           SerializeBuffer & sbuf = message->buffer();
-          sbuf.setMode(ISerializer::ModeReserve); // phase préparatoire
+          sbuf.setMode(ISerializer::ModeReserve); // preparatory phase
           sbuf.reserveInteger(2); // Nb d'item faceface puis voidface
-          sbuf.reserve(DT_Int64,2*faceface_info_to_send); // Les uid
-          sbuf.reserve(DT_Real,6*faceface_info_to_send); // Les normales (rien pour voidface)
-          sbuf.reserve(DT_Real,6*faceface_info_to_send); // Les centres  (rien pour voidface)
-          sbuf.allocateBuffer(); // allocation mémoire
+          sbuf.reserve(DT_Int64,2*faceface_info_to_send); // The uids
+          sbuf.reserve(DT_Real,6*faceface_info_to_send); // The normals (nothing for voidface)
+          sbuf.reserve(DT_Real,6*faceface_info_to_send); // The centers (nothing for voidface)
+          sbuf.allocateBuffer(); // memory allocation
           sbuf.setMode(ISerializer::ModePut);
           sbuf.putInteger(faceface_info_to_send);
         }
     }
 
-  // Remplissage des messages sortants
+  // Filling outgoing messages
   for(FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i)
     {
       const ISurfaceUtils::FaceFaceContact & contact = *i;
@@ -607,7 +607,7 @@ update()
         {
           std::shared_ptr<SerializeMessage> message = sent_messages[slave_face.owner()];
           SerializeBuffer & sbuf = message->buffer();
-          // Pas possible de mettre des Real3 ??? (meme si on peut les réserver)
+          // Not possible to put Real3 ??? (even if we can reserve them)
           sbuf.put(master_face.uniqueId().asInt64());
           sbuf.putReal(contact.normalA.x); sbuf.putReal(contact.normalA.y); sbuf.putReal(contact.normalA.z);
           sbuf.putReal(contact.centerA.x); sbuf.putReal(contact.centerA.y); sbuf.putReal(contact.centerA.z);
@@ -621,14 +621,14 @@ update()
         }
     }
 
-  // Traitement des communications
+  // Processing communications
   if (messageList) {
     messageList->processPendingMessages();
     messageList->waitMessages(Parallel::WaitAll);
-    delete messageList; messageList = NULL; // Destruction propre
+    delete messageList; messageList = NULL; // Clean destruction
   }
 
-  // Traitement des messages reçus
+  // Processing received messages
   for(std::list<std::shared_ptr<SerializeMessage> >::iterator i=recv_messages.begin(); i!=recv_messages.end(); ++i)
     {
       std::shared_ptr<SerializeMessage> & message = *i;
@@ -643,7 +643,7 @@ update()
       sbuf.get(uids);
       mesh()->faceFamily()->itemsUniqueIdToLocalId(lids,uids,true);
 
-      // Traitement des pairs face-face
+      // Processing face-face pairs
       for(Integer j=0;j<faceface_count;++j)
         {
           Face faceA(internals[lids[2*j  ]]);
@@ -664,7 +664,7 @@ update()
         }
     }
 
-  // 7- Traitement final des pairs void-face
+  // 7- Final processing of void-face pairs
   for(SharedCorefinement::const_iterator i=voidface_shared_corefinement.begin();
       i != voidface_shared_corefinement.end(); ++i) {
     Face faceA; // null
@@ -680,8 +680,8 @@ update()
     }
   }
 
-  // 8- Nettoyage des réplicats inutiles
-  // Non implémentés et ATTN cela peut modifier les numérotations locales
+  // 8- Cleanup of unnecessary replicas
+  // Not implemented and NOTE this can change local numbering
 
   m_internal->corefinementTimer.stop();
  

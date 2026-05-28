@@ -71,7 +71,7 @@ computeSurfaceContact(ISurface* s1,
   GK::TriangulationDataStructurePtr gkSurface1 = surface1->m_triangulation;
   GK::TriangulationDataStructurePtr gkSurface2 = surface2->m_triangulation;
 
-  // bidouille pour sauter les pb de pointeurs boost non voulus
+  // hack to skip unwanted boost pointer issues
   GK::TriangulationDataStructurePtr surfaceA = gkSurface1;
   GK::TriangulationDataStructurePtr surfaceB = gkSurface2;
 
@@ -147,13 +147,13 @@ computeSurfaceContact(ISurface* s1,
   
   Integer count = 0;  
 
-  // voidIndex sur indexA est traité à part
+  // voidIndex on indexA is handled separately
   for (Integer indexA = s.beginA(); indexA < s.endA(); /*incr inside*/) {
     ARCANE_ASSERT((indexA != voidIndex),("indexA cannot be voidIndex by documentation"));
     Face faceA = face_arrayA[indexA];
     Integer split_sizeA = faceA.nbNode()-2; // assume what split method has been used
     
-    // Table des positions courantes des sous-faces B associées à cette face A
+    // Table of current positions of sub-faces B associated with this face A
     UniqueArray<Iter> jB(split_sizeA);
     UniqueArray<Iter> endB(split_sizeA);
     bool canContinue = false;
@@ -164,7 +164,7 @@ computeSurfaceContact(ISurface* s1,
     }
     
     while (canContinue) {
-      // Calcul de l'indexB minimal : selection d'une faceB candidate
+      // Calculate the minimal indexB: selection of a candidate faceB
       Integer minIndexB = voidIndex;
       for(Integer iA=0;iA<split_sizeA;++iA) {
         Integer indexB = voidIndex;
@@ -187,14 +187,14 @@ computeSurfaceContact(ISurface* s1,
         const Integer m_void_index;
       } convertFace(face_arrayB,voidIndex);
 
-      // Utilise de cet minIndexB donne le faceB
+      // Use this minIndexB to get faceB
       Face faceB = convertFace(minIndexB);
 
       // Current accumulator for co-refinement values for faceA/faceB
       FaceFaceContact c(faceA,faceB);
 
-      // Collecte des informations associées à la faceB courante
-      canContinue = false; // recalcul de la fin possible
+      // Collection of information associated with the current faceB
+      canContinue = false; // recalculate possible end
       for(Integer iA=0;iA<split_sizeA;++iA) {
         while (jB[iA] != endB[iA] and convertFace(jB[iA]->indexB()) == faceB) {
           const Handle & handle = *jB[iA];
@@ -238,7 +238,7 @@ computeSurfaceContact(ISurface* s1,
       // Current accumulator for co-refinement values for faceA/faceB
       FaceFaceContact c(Face(),faceB);
 
-      // Collecte des informations associées à la faceB courante
+      // Collection of information associated with the current faceB
       while (jB != endB and face_arrayB[jB->indexB()] == faceB) {
         const Handle & handle = *jB;
         Real3 normal = convertGKVector(handle.normalB());

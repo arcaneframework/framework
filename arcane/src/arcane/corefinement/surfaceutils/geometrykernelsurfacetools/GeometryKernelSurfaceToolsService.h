@@ -24,24 +24,24 @@ class GeometryKernelSurfaceToolsService :
   public ArcaneGeometryKernelSurfaceToolsObject
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   GeometryKernelSurfaceToolsService(const Arcane::ServiceBuildInfo & sbi) : 
     ArcaneGeometryKernelSurfaceToolsObject(sbi) 
     {
       ;
     }
   
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GeometryKernelSurfaceToolsService() {}
   
 public:
-  //! Initialisation
+  //! Initialization
   void init() ;
   
-  //! Création d'une nouvelle surface
+  //! Creation of a new surface
   ISurface* createSurface() ;
 
-  //! Définit les faces d'une surface
+  //! Defines the faces of a surface
   void setFaceToSurface(ISurface* surface, FaceGroup face_group) ;
 
   //! compute for each face of surface1 the nearest face of surface2 

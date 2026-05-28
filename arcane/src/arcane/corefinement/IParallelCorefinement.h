@@ -20,27 +20,27 @@ NUMERICS_BEGIN_NAMESPACE
 
 using namespace Arcane;
 
-//! Pré-déclaration
+//! Forward declaration
 class IGeometry;
 
-//! Interface du co-raffinement parallèle
+//! Parallel corefinement interface
 class IParallelCorefinement
 {
 public:
   typedef ISurfaceUtils::FaceFaceContactList FaceFaceContactList;
 
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   IParallelCorefinement() 
     {
       ;
     }
   
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IParallelCorefinement() { }
   
 public:
-  //! Initialisation
+  //! Initialization
   virtual void init(const FaceGroup & masterGroup, 
                     const FaceGroup & slaveGroup, 
                     const Real boxTolerance,

@@ -26,15 +26,15 @@ class ParallelCorefinementService :
   public ArcaneParallelCorefinementObject
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   ParallelCorefinementService(const Arcane::ServiceBuildInfo & sbi);
   
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~ParallelCorefinementService();
   
 public:
 
-  //! Initialisation
+  //! Initialization
   void init(const FaceGroup & masterGroup, 
             const FaceGroup & slaveGroup, 
             const Real boxTolerance,
@@ -53,8 +53,8 @@ private:
   IGeometry * m_geometry;
   FaceFaceContactList m_contacts;
 
-  //! Localisation d'algorithme interne
-  /*! Masquage des algorithmes ou structures internes */
+  //! Internal algorithm location
+  /*! Masking of internal algorithms or structures */
   class Internal;
   Internal * m_internal;
 };

@@ -28,18 +28,18 @@ class GeometryKernelSurfaceImpl
   : public ISurface
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   GeometryKernelSurfaceImpl();
   
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GeometryKernelSurfaceImpl();
 
 public:
   GK::TriangulationDataStructurePtr m_triangulation;
-  UniqueArray<Node> m_node_array; //! Noeuds originaux de la triangulation 
-  UniqueArray<Face> m_face_array; //! Faces originales de la triangulation 
-  UniqueArray<bool> m_face_reorient; //! Flag d'orientation des faces de la triangulation (true => orientation != originale)
-  Real3 m_mean_normal; //! Normale locale à la surface (sur isOwn part)
+  UniqueArray<Node> m_node_array; //! Original nodes of the triangulation 
+  UniqueArray<Face> m_face_array; //! Original faces of the triangulation 
+  UniqueArray<bool> m_face_reorient; //! Flag for face orientation of the triangulation (true => orientation != original)
+  Real3 m_mean_normal; //! Local normal to the surface (on isOwn part)
 };
 
 NUMERICS_END_NAMESPACE

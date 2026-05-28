@@ -28,7 +28,7 @@ void buildFaceGroupSurface(FaceGroup group,
 {  
   surface->clear();
   face_array.clear();
-  face_array.reserve(group.size()); // au moins un par face
+  face_array.reserve(group.size()); // at least one per face
   node_array.clear();
   normal = Real3(0.,0.,0.);
 
@@ -65,7 +65,7 @@ void buildFaceGroupSurface(FaceGroup group,
     }
   }
 
-  // Orientation de la surface et sauvegarde des changements d'orientation
+  // Surface orientation and saving orientation changes
   GeometryKernel::TriangulationTopoTools topology(*surface);
   face_reorient.resize(face_array.size());
   topology.computeMicroTopology(face_reorient.begin(),face_reorient.end());
@@ -143,4 +143,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
