@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshEventsImpl.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Implémentation des évènements sur le maillage.                            */
+/* Implementation of mesh events.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHEVENTS_H
 #define ARCANE_MESH_MESHEVENTS_H
@@ -28,7 +28,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Implémentation des évènements sur le maillage.
+ * \brief Implementation of mesh events.
  */
 class ARCANE_MESH_EXPORT MeshEventsImpl
 {

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CommonItemGroupFilterer.cc                                  (C) 2000-2021 */
 /*                                                                           */
-/* Filtrage des groupes communs à toutes les parties d'un maillage.          */
+/* Filtering of groups common to all parts of a mesh.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,9 +16,9 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IItemFamily.h"
 
 #include <map>
 
@@ -53,7 +53,7 @@ void CommonItemGroupFilterer::
 applyFiltering()
 {
   UniqueArray<ItemGroup> groups_to_check;
-  for( List<ItemGroup>::Enumerator i(m_input_groups); ++i; )
+  for (List<ItemGroup>::Enumerator i(m_input_groups); ++i;)
     groups_to_check.add(*i);
   IParallelMng* pm = m_family->parallelMng();
   ITraceMng* tm = m_family->traceMng();
@@ -61,57 +61,57 @@ applyFiltering()
   Integer nb_group = groups_to_check.size();
   tm->info(4) << "CHECK: nb_group_to_compare=" << nb_group;
 
-  // Créé un buffer pour sérialiser les noms des groupes
+  // Create a buffer to serialize the group names
   SerializeBuffer send_buf;
   send_buf.setMode(ISerializer::ModeReserve);
   send_buf.reserveInteger(1);
-  for( Integer i=0; i< nb_group; ++i ){
+  for (Integer i = 0; i < nb_group; ++i) {
     send_buf.reserve(groups_to_check[i].fullName());
   }
 
   send_buf.allocateBuffer();
   send_buf.setMode(ISerializer::ModePut);
   send_buf.putInteger(nb_group);
-  for( Integer i=0; i< nb_group; ++i ){
+  for (Integer i = 0; i < nb_group; ++i) {
     send_buf.put(groups_to_check[i].fullName());
   }
 
-  // Récupère les infos des autres PE.
+  // Retrieves info from other PEs.
   SerializeBuffer recv_buf;
-  pm->allGather(&send_buf,&recv_buf);
+  pm->allGather(&send_buf, &recv_buf);
 
-  std::map<String,Int32> group_occurences;
+  std::map<String, Int32> group_occurences;
 
   Int32 nb_rank = pm->commSize();
   recv_buf.setMode(ISerializer::ModeGet);
-  for( Integer i=0; i<nb_rank; ++i ){
+  for (Integer i = 0; i < nb_rank; ++i) {
     Integer nb_group_rank = recv_buf.getInteger();
-    for( Integer z=0; z< nb_group_rank; ++z ){
+    for (Integer z = 0; z < nb_group_rank; ++z) {
       String x;
       recv_buf.get(x);
       auto vo = group_occurences.find(x);
-      if (vo== group_occurences.end())
-        group_occurences.insert(std::make_pair(x,1));
+      if (vo == group_occurences.end())
+        group_occurences.insert(std::make_pair(x, 1));
       else
         vo->second = vo->second + 1;
     }
   }
 
-  // Parcours la liste des groupes et range dans \a common_groups
-  // ceux qui sont disponibles sur tous les rangs de \a pm.
-  // Cette liste sera triée par ordre alphabétique.
-  std::map<String,ItemGroup> common_groups;
+  // Iterates through the list of groups and stores in \a common_groups
+  // those that are available on all ranks of \a pm.
+  // This list will be sorted alphabetically.
+  std::map<String, ItemGroup> common_groups;
   UniqueArray<String> bad_groups;
   {
     auto end_var = group_occurences.end();
-    for( Integer i=0; i< nb_group; ++i ){
+    for (Integer i = 0; i < nb_group; ++i) {
       ItemGroup group = groups_to_check[i];
       String group_name = group.fullName();
       auto i_group = group_occurences.find(group_name);
-      if (i_group ==end_var)
-        // Ne devrait pas arriver
+      if (i_group == end_var)
+        // Should not happen
         continue;
-      if (i_group->second!=nb_rank){
+      if (i_group->second != nb_rank) {
         bad_groups.add(group_name);
         continue;
       }
@@ -120,10 +120,10 @@ applyFiltering()
   }
 
   if (!bad_groups.empty())
-    ARCANE_FATAL("The following ItemGroup are not on all mesh parts: {0}",bad_groups);
+    ARCANE_FATAL("The following ItemGroup are not on all mesh parts: {0}", bad_groups);
 
   m_sorted_common_groups.clear();
-  for( const auto& x : common_groups )
+  for (const auto& x : common_groups)
     m_sorted_common_groups.add(x.second);
 }
 
@@ -134,4 +134,3 @@ applyFiltering()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

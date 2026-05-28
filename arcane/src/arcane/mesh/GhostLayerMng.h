@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GhostLayerMng.h                                             (C) 2000-2013 */
 /*                                                                           */
-/* Gestionnaire de couche fantômes d'un maillage.                            */
+/* Mesh ghost layer manager.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GHOSTLAYERMNG_H
 #define ARCANE_MESH_GHOSTLAYERMNG_H
@@ -15,23 +15,19 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/IGhostLayerMng.h"
+#include "arcane/core/IGhostLayerMng.h"
 #include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Gestionnaire de couche fantômes d'un maillage.
+ * Mesh ghost layer manager.
  */
 class GhostLayerMng
 : public TraceAccessor
@@ -62,10 +58,8 @@ class GhostLayerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 
 #include "arcane/mesh/BasicParticleExchanger.h"
 
-#include "arcane/IAsyncParticleExchanger.h"
+#include "arcane/core/IAsyncParticleExchanger.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,11 +27,13 @@ class AsyncParticleExchanger
 
   //Constructors and destructors
  public:
+
   explicit AsyncParticleExchanger(const ServiceBuildInfo& sbi);
   ~AsyncParticleExchanger() override;
 
   //IParticleExchanger.h interface
  public:
+
   void build() override;
   void initialize(IItemFamily* item_family) override;
   void beginNewExchange(Integer nb_particule) override;
@@ -73,8 +75,8 @@ class AsyncParticleExchanger
   BasicParticleExchanger m_bpe;
   Integer m_nb_particle_send_before_reduction = 0;
   Integer m_nb_particle_send_before_reduction_tmp = 0;
-  Integer m_sum_of_nb_particle_sent = 0; //Somme des particules envoyé calculé dans la condition d'arrêt du mode asynchrone
-  UniqueArray<Parallel::Request> m_reduce_requests; //Ce tableau doit avoir qu'une seule requête à la fois
+  Integer m_sum_of_nb_particle_sent = 0; //Sum of particles sent calculated in the stopping condition of asynchronous mode
+  UniqueArray<Parallel::Request> m_reduce_requests; //This array should only have one request at a time
 
   //Private functions used by internal implementation of AsyncParticleExchanger
  private:
@@ -88,3 +90,6 @@ class AsyncParticleExchanger
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::mesh
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

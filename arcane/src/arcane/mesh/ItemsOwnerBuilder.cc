@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemsOwnerBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Classe pour calculer les propriétaires des entités.                       */
+/* Class for calculating entity owners.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,29 +41,23 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Ce fichier contient un algorithme pour calculer les propriétaires des
- * entités autres que les mailles à partir des propriétaires des mailles.
+ * This file contains an algorithm to calculate the owners of
+ * entities other than cells, based on the owners of the cells.
  *
- * L'algorithme suppose que les propriétaires des mailles sont à jours et
- * synchronisés. Le propriétaire d'une entité sera alors le propriétaire de
- * la maille de plus petit uniqueId() connectée à cette entité.
+ * The algorithm assumes that the owners of the cells are up-to-date and
+ * synchronized. The owner of an entity will then be the owner of the cell
+ * with the smallest uniqueId() connected to this entity.
  *
- * En parallèle, si une entité est à la frontière d'un sous-domaine, il n'est
- * pas possible de connaitre toutes les mailles qui y sont connectées.
- * Pour résoudre ce problème, on crée une liste des entités de la frontière
- * contenant pour chaque maille connectée un triplet (uniqueId() de l'entité,
- * uniqueId() de la maille connectée, owner() de la maille connectées).
- * Cette liste est ensuite triée en parallèle (via BitonicSort) par uniqueId()
- * de l'entité, puis par uniqueId() de la maille.
- * Pour déterminer le propriétaire d'une entité, il suffit ensuite de prendre
- * le propriétaire de la maille associée à la première occurrence de l'entité
- * dans cette liste triée. Une fois ceci fait, on renvoie aux rangs qui possèdent
- * cette entité cette information.
+ * In parallel, if an entity is on the boundary of a subdomain, it is not
+ * possible to know all the cells connected to it.
+ * To solve this problem, we create a list of boundary entities containing for each connected cell a triplet (entity uniqueId(), connected cell uniqueId(), owner() of the connected cell).
+ * This list is then sorted in parallel (via BitonicSort) by the entity uniqueId(), then by the cell uniqueId().
+ * To determine the owner of an entity, it is enough to take the owner of the cell associated with the first occurrence of the entity in this sorted list. Once this is done, this information is sent to the ranks that possess this entity.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de l'algorithme de calcul des propriétaires.
+ * \brief Implementation of the owner calculation algorithm.
  */
 class ItemsOwnerBuilderImpl
 : public TraceAccessor
@@ -71,15 +65,10 @@ class ItemsOwnerBuilderImpl
   class ItemOwnerInfoSortTraits;
 
   /*!
-   * \brief Informations sur une entité partagée.
+   * \brief Information about a shared entity.
    *
-   * On conserve dans l'instance le uniqueId() du premier noeud
-   * de l'entité et on s'en sert comme clé primaire pour le tri.
-   * En général, les noeuds dont le uniqueId() est proche sont dans le même
-   * sous-domaine. Comme on se sert de cette valeur comme clé primaire
-   * du tri, cela permet de garantir une certaine cohérence topologique
-   * des entités distribuées et ainsi éviter de faire un all-to-all qui
-   * concerne un grand nombre de rangs.
+   * The uniqueId() of the first node of the entity is kept in the instance and used as the primary key for sorting.
+   * Generally, nodes whose uniqueId() are close are in the same subdomain. Since this value is used as the primary key for sorting, it helps guarantee a certain topological consistency of the distributed entities and thus avoids performing an all-to-all operation involving a large number of ranks.
    */
   class ItemOwnerInfo
   {
@@ -97,15 +86,15 @@ class ItemsOwnerBuilderImpl
 
    public:
 
-    //! uniqueId() de l'entité
+    //! uniqueId() of the entity
     Int64 m_item_uid = NULL_ITEM_UNIQUE_ID;
-    //! uniqueId() du premier noeud de l'entité
+    //! uniqueId() of the first node of the entity
     Int64 m_first_node_uid = NULL_ITEM_UNIQUE_ID;
-    //! uniqueId() de la maille à laquelle l'entité appartient
+    //! uniqueId() of the cell to which the entity belongs
     Int64 m_cell_uid = NULL_ITEM_UNIQUE_ID;
-    //! rang de celui qui a créé cette instance
+    //! rank of the one who created this instance
     Int32 m_item_sender_rank = A_NULL_RANK;
-    //! Propriétaire de la maille connectée à cette entité
+    //! Owner of the cell connected to this entity
     Int32 m_cell_owner = A_NULL_RANK;
   };
 
@@ -125,11 +114,9 @@ class ItemsOwnerBuilderImpl
   Int32 m_verbose_level = 0;
   UniqueArray<ItemOwnerInfo> m_items_owner_info;
   /*!
-   * \brief Indique comment effectuer le tri.
+   * \brief Indicates how to perform the sort.
    *
-   * Si vrai, on utilise la maille de plus petit uniqueId()
-   * pour le tri. Sinon, c'est le plus petit rang. Cela servira
-   * à déterminer qui sera le propriétaire d'une entité.
+   * If true, the cell with the smallest uniqueId() is used for sorting. Otherwise, it is the smallest rank. This will be used to determine who will be the owner of an entity.
    */
   bool m_use_cell_uid_to_sort = true;
 
@@ -237,8 +224,8 @@ ItemsOwnerBuilderImpl(IMesh* mesh)
   m_mesh = dm;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_IMPL_DEBUG_LEVEL", true))
     m_verbose_level = v.value();
-  // Indique si on trie en fonction de la maille de plus petit uniqueId()
-  // ou en fonction du plus petit rang.
+  // Indicates if sorting is done based on the cell with the smallest uniqueId()
+  // or based on the smallest rank.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_USE_RANK", true))
     m_use_cell_uid_to_sort = !v.value();
 }
@@ -258,9 +245,8 @@ computeFacesOwner()
 
   info() << "** BEGIN ComputeFacesOwner nb_face=" << faces_map.count();
 
-  // Parcours toutes les faces.
-  // Ne garde que celles qui sont frontières ou dont les propriétaires des
-  // deux mailles de part et d'autre sont différents de notre sous-domaine.
+  // Iterates over all faces.
+  // Only keeps those that are boundary or whose owners of the two cells on either side are different from our subdomain.
   UniqueArray<Int32> faces_to_add;
   UniqueArray<Int64> faces_to_add_uid;
   faces_map.eachItem([&](Face face) {
@@ -287,8 +273,8 @@ computeFacesOwner()
     }
   }
 
-  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
-  // dans items_owner_info.
+  // Sorts the ItemOwnerInfo instances and places the sorted values
+  // into items_owner_info.
   _sortInfos();
   _processSortedInfos(faces_map);
 
@@ -310,16 +296,14 @@ computeEdgesOwner()
 
   info() << "** BEGIN ComputeEdgesOwner nb_edge=" << edges_map.count();
 
-  // Parcours toutes les arêtes.
-  // Ne garde que celles qui sont frontières ou dont au moins un des propriétaires des
-  // mailles connectées sont différents de notre sous-domaine.
+  // Iterates over all edges.
+  // Only keeps those that are boundary or whose owners of at least one of the connected cells are different from our subdomain.
   UniqueArray<Int32> edges_to_add;
   UniqueArray<Int64> edges_to_add_uid;
-  // La force brute ajoute toutes les arêtes.
-  // Cela permet de garantir qu'on calcule bien les propriétaires, même si
-  // on ne sait pas déterminer les arêtes frontìères.
-  // Cela n'est pas optimum, car on envoie aussi nos arêtes internes
-  // alors qu'on est certain qu'on est leur propriétaire.
+  // Brute force adds all edges.
+  // This ensures that the owners are calculated correctly, even if we cannot determine the boundary edges.
+  // This is not optimal, because we also send our internal edges
+  // even though we are certain that we are their owner.
   bool do_brute_force = true;
   edges_map.eachItem([&](Edge edge) {
     Int32 nb_cell = edge.nbCell();
@@ -349,8 +333,8 @@ computeEdgesOwner()
     }
   }
 
-  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
-  // dans items_owner_info.
+  // Sorts the ItemOwnerInfo instances and places the sorted values
+  // in items_owner_info.
   _sortInfos();
   _processSortedInfos(edges_map);
 
@@ -373,21 +357,21 @@ computeNodesOwner()
 
   info() << "** BEGIN ComputeNodesOwner nb_node=" << nodes_map.count();
 
-  // Place par défaut tous les noeuds dans ce sous-domaine
+  // By default, place all nodes in this subdomain
   nodes_map.eachItem([&](Node node) {
     node.mutableItemBase().setOwner(my_rank, my_rank);
   });
 
-  // Parcours toutes les faces frontières et ajoute leurs noeuds
-  // à la liste des noeuds à traiter (nodes_to_add). Les faces frontières sont
-  // celles qui ne sont connectées qu'à une seule maille.
-  // qui connectées à une seule maille.
+  // Iterates over all boundary faces and adds their nodes
+  // to the list of nodes to process (nodes_to_add). Boundary faces are
+  // those connected to only one mesh.
+  // connected to only one mesh.
   const Int32 verbose_level = m_verbose_level;
 
-  // Liste des noeuds à traiter
+  // List of nodes to process
   UniqueArray<Int32> nodes_to_add;
 
-  // Ensemble pour déterminer si un noeud a déjà été ajouté à \a nodes_to_add.
+  // Set to determine if a node has already been added to \a nodes_to_add.
   std::unordered_set<Int32> done_nodes;
 
   const bool is_mono_dimension = m_mesh->meshKind().isMonoDimension();
@@ -409,12 +393,12 @@ computeNodesOwner()
     });
   }
   else {
-    // Dans le cas de maillage multi-dimension, il n'y a pas actuellement
-    // de moyen simple de détecter les noeuds frontières. On traite donc tous
-    // les noeuds même si cela n'est pas optimal.
-    // NOTE: La détection n'est difficile que pour les noeuds connectés à des mailles
-    // de dimension 1 ou 2. Pour les mailles 3D, on pourrait n'ajouter que
-    // les noeuds connectées à une face n'ayant qu'une maille.
+    // In the case of multi-dimension meshing, there is currently
+    // no simple way to detect boundary nodes. We therefore process all
+    // nodes even if it is not optimal.
+    // NOTE: Detection is difficult only for nodes connected to meshes
+    // of dimension 1 or 2. For 3D meshes, we could only add
+    // nodes connected to a face having only one mesh.
     ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
       nodes_to_add.add(inode.itemLocalId());
     }
@@ -432,8 +416,8 @@ computeNodesOwner()
     }
   }
 
-  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
-  // dans items_owner_info.
+  // Sorts the instances contained in m_items_owner_info and replaces the sorted values
+  // in this same array.
   _sortInfos();
   _processSortedInfos(nodes_map);
 
@@ -443,8 +427,8 @@ computeNodesOwner()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tri les instances contenues dans m_items_owner_info replace les
- * valeurs triées dans ce même tableau.
+ * \brief Sorts the instances contained in m_items_owner_info and replaces the
+ * sorted values in this same array.
  */
 void ItemsOwnerBuilderImpl::
 _sortInfos()
@@ -482,12 +466,12 @@ _processSortedInfos(ItemInternalMap& items_map)
   const bool is_first_rank = (my_rank == 0);
   const Int32 verbose_level = m_verbose_level;
 
-  // Comme les informations d'une entité peuvent être réparties sur plusieurs rangs
-  // après le tri, chaque rang envoie au rang suivant les informations
-  // de la dernière entité de sa liste.
-  // Il faut faire attention à bien envoyer la liste dans le même ordre trié pour
-  // garantir la cohérence car on va prendre le premier élément de la liste pour
-  // positionner le propriétaire.
+  // Since the information for an entity can be distributed across multiple ranks
+  // after sorting, each rank sends the information of the last entity in its list
+  // to the next rank.
+  // Care must be taken to send the list in the same sorted order to guarantee
+  // consistency because we will take the first element of the list to
+  // position the owner.
 
   UniqueArray<ItemOwnerInfo> items_owner_info_send_to_next;
   if (nb_sorted > 0 && !is_last_rank) {
@@ -514,7 +498,7 @@ _processSortedInfos(ItemInternalMap& items_map)
 
   Int32 nb_to_receive_from_previous = 0;
   SmallArray<Parallel::Request> requests;
-  // Envoie et recoit les tailles des tableaux
+  // Sends and receives the sizes of the arrays
   if (!is_last_rank)
     requests.add(pm->send(ConstArrayView<Int32>(1, &nb_send_to_next), my_rank + 1, false));
   if (!is_first_rank)
@@ -523,7 +507,7 @@ _processSortedInfos(ItemInternalMap& items_map)
   pm->waitAllRequests(requests);
   requests.clear();
 
-  // Envoie le tableau au suivant et récupère celui du précédent.
+  // Sends the array to the next and receives the one from the previous.
   UniqueArray<ItemOwnerInfo> items_owner_info_received_from_previous(nb_to_receive_from_previous);
   if (!is_last_rank)
     requests.add(ItemOwnerInfoSortTraits::send(pm, my_rank + 1, items_owner_info_send_to_next));
@@ -531,7 +515,7 @@ _processSortedInfos(ItemInternalMap& items_map)
     requests.add(ItemOwnerInfoSortTraits::recv(pm, my_rank - 1, items_owner_info_received_from_previous));
   pm->waitAllRequests(requests);
 
-  // Supprime de la liste les entités qu'on a envoyé au suivant
+  // Removes the entities that were sent to the next
   m_items_owner_info.resize(nb_sorted - nb_send_to_next);
   items_owner_info = m_items_owner_info.view();
   nb_sorted = items_owner_info.size();
@@ -540,26 +524,26 @@ _processSortedInfos(ItemInternalMap& items_map)
   Int64 current_item_uid = NULL_ITEM_UNIQUE_ID;
   Int32 current_item_owner = A_NULL_RANK;
 
-  // Parcours la liste des entités qu'on a recu.
-  // Chaque entité est présente plusieurs fois dans la liste : au moins
-  // une fois par maille connectée à cette entité. Comme cette liste est triée
-  // par uniqueId() croissant de ces mailles, et que c'est la maille de plus
-  // petit uniqueId() qui donne le propriétaire de l'entité, alors le propriétaire
-  // est celui du premier élément de cette liste.
-  // On envoie ensuite à tous les rangs qui possèdent cette entité ce nouveau propriétaire.
-  // Le tableau envoyé contient une liste de couples (item_uid, item_new_owner).
+  // Iterates over the list of entities received.
+  // Each entity is present multiple times in the list: at least
+  // once per mesh connected to this entity. Since this list is sorted
+  // by increasing uniqueId() of these meshes, and the mesh with the smallest
+  // uniqueId() determines the owner of the entity, the owner is that of the first
+  // element in this list.
+  // This new owner is then sent to all ranks that own this entity.
+  // The array sent contains a list of pairs (item_uid, item_new_owner).
   impl::HashTableMap2<Int32, UniqueArray<Int64>> resend_items_owner_info_map;
   for (Int32 index = 0; index < (nb_sorted + nb_to_receive_from_previous); ++index) {
     const ItemOwnerInfo* first_ioi = nullptr;
-    // Si \a i est inférieur à nb_to_receive_from_previous, on prend
-    // les informations de la liste recue.
+    // If \a i is less than nb_to_receive_from_previous, take
+    // the information from the received list.
     if (index < nb_to_receive_from_previous)
       first_ioi = &items_owner_info_received_from_previous[index];
     else
       first_ioi = &items_owner_info[index - nb_to_receive_from_previous];
     Int64 item_uid = first_ioi->m_item_uid;
 
-    // Si l'id courant est différent du précédent, on commence une nouvelle liste.
+    // If the current id is different from the previous one, start a new list.
     if (item_uid != current_item_uid) {
       current_item_uid = item_uid;
       if (m_use_cell_uid_to_sort)
@@ -609,7 +593,7 @@ _processSortedInfos(ItemInternalMap& items_map)
     Int32 receive_size = receive_info.size();
     if (verbose_level >= 1)
       info() << "RECEIVE_INFO size=" << receive_size << " rank2=" << sm->destination();
-    // Vérifie que la taille est un multiple de 2
+    // Checks that the size is a multiple of 2
     if ((receive_size % 2) != 0)
       ARCANE_FATAL("Size '{0}' is not a multiple of 2", receive_size);
     Int32 buf_size = receive_size / 2;
@@ -638,8 +622,8 @@ ItemsOwnerBuilder(IMesh* mesh)
 ItemsOwnerBuilder::
 ~ItemsOwnerBuilder()
 {
-  // Le destructeur doit être dans le '.cc' car 'ItemsOwnerBuilderImpl' n'est
-  // pas connu dans le '.h'.
+  // The destructor must be in the '.cc' because 'ItemsOwnerBuilderImpl' is not
+  // known in the '.h'.
 }
 
 /*---------------------------------------------------------------------------*/

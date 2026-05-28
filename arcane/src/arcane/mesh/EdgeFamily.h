@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* EdgeFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Famille d'arêtes.                                                         */
+/* Edge family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EDGEFAMILY_H
 #define ARCANE_MESH_EDGEFAMILY_H
@@ -28,21 +28,21 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Famille d'arêtes.
+ * \brief Edge family.
  */
 class ARCANE_MESH_EXPORT EdgeFamily
 : public ItemFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex, IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex, IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex, IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
-  EdgeFamily(IMesh* mesh,const String& name);
-  virtual ~EdgeFamily(); //<! Libère les ressources
+  EdgeFamily(IMesh* mesh, const String& name);
+  virtual ~EdgeFamily(); //<! Releases resources
 
  public:
 
@@ -52,30 +52,30 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
  public:
 
-  //! Version appelées dans l'ajout générique d'item
+  //! Version called in generic item addition
   // IItemFamilyModifier interface
-  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
-  Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override;
-  IItemFamily* family() override {return this;}
+  Item allocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
+  IItemFamily* family() override { return this; }
 
   ItemInternal* allocOne(Int64 uid);
-  ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc);
+  ItemInternal* findOrAllocOne(Int64 uid, bool& is_alloc);
 
-  void replaceNode(ItemLocalId edge,Integer index,ItemLocalId node);
+  void replaceNode(ItemLocalId edge, Integer index, ItemLocalId node);
 
-  //! Ajoute une maille voisine à une arête
-  void addCellToEdge(Edge edge,Cell new_cell);
-  //! Ajoute une maille voisine à une arête
-  void addFaceToEdge(Edge edge,Face new_face);
-  //! Supprime une maille d'une arête
-  void removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid);
-  //! Supprime une maille d'une arête
-  void removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove);
-  //! Supprime l'arête si elle n'est plus connectée
+  //! Adds a neighboring cell to an edge
+  void addCellToEdge(Edge edge, Cell new_cell);
+  //! Adds a neighboring face to an edge
+  void addFaceToEdge(Edge edge, Face new_face);
+  //! Removes a cell from an edge
+  void removeCellFromEdge(Edge edge, ItemLocalId cell_to_remove_lid);
+  //! Removes a face from an edge
+  void removeFaceFromEdge(ItemLocalId edge, ItemLocalId face_to_remove);
+  //! Removes the edge if it is no longer connected
   void removeEdgeIfNotConnected(Edge edge);
 
-  //! Définit la connectivité active pour le maillage associé
-  /*! Ceci conditionne les connectivités à la charge de cette famille */
+  //! Sets the active connectivity for the associated mesh
+  /*! This conditions the connectivities handled by this family */
   void setConnectivity(const Integer c);
 
   void reorientEdgesIfNeeded();
@@ -94,11 +94,11 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
  private:
 
-  //! Famille des noeuds associée à cette famille
+  //! Node family associated with this family
   NodeFamily* m_node_family = nullptr;
 
   inline void _removeEdge(Edge edge);
-  inline void _createOne(ItemInternal* item,Int64 uid);
+  inline void _createOne(ItemInternal* item, Int64 uid);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -109,4 +109,4 @@ class ARCANE_MESH_EXPORT EdgeFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

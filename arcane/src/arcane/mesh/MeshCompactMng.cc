@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshCompactMng.cc                                           (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire des compactages de familles d'un maillage.                   */
+/* Mesh family compaction manager.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/mesh/MeshCompacter.h"
 #include "arcane/mesh/DynamicMesh.h"
@@ -26,9 +26,6 @@
 
 namespace Arcane::mesh
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,7 +54,7 @@ beginCompact()
 {
   if (m_compacter)
     ARCANE_FATAL("Already compacting");
-  MeshCompacter* c = new MeshCompacter(m_mesh,m_mesh->parallelMng()->timeStats());
+  MeshCompacter* c = new MeshCompacter(m_mesh, m_mesh->parallelMng()->timeStats());
   return _setCompacter(c);
 }
 
@@ -69,7 +66,7 @@ beginCompact(IItemFamily* family)
 {
   if (m_compacter)
     ARCANE_FATAL("Already compacting");
-  MeshCompacter* c = new MeshCompacter(family,m_mesh->parallelMng()->timeStats());
+  MeshCompacter* c = new MeshCompacter(family, m_mesh->parallelMng()->timeStats());
   return _setCompacter(c);
 }
 

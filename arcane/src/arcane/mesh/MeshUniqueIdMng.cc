@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUniqueIdMng.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de couche fantômes d'un maillage.                            */
+/* Mesh ghost layer manager.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,8 +43,8 @@ MeshUniqueIdMng(ITraceMng* tm)
 void MeshUniqueIdMng::
 setFaceBuilderVersion(Integer n)
 {
-  if (n<0)
-    ARCANE_THROW(ArgumentException,"Bad value for '{0}'<0",n);
+  if (n < 0)
+    ARCANE_THROW(ArgumentException, "Bad value for '{0}'<0", n);
   m_face_builder_version = n;
 }
 
@@ -54,8 +54,8 @@ setFaceBuilderVersion(Integer n)
 void MeshUniqueIdMng::
 setEdgeBuilderVersion(Integer n)
 {
-  if (n<0)
-    ARCANE_THROW(ArgumentException,"Bad value for '{0}'<0",n);
+  if (n < 0)
+    ARCANE_THROW(ArgumentException, "Bad value for '{0}'<0", n);
   m_edge_builder_version = n;
 }
 
@@ -67,27 +67,27 @@ _initFaceVersion()
 {
   m_face_builder_version = 1;
 
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION",true)){
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION", true)) {
     m_face_builder_version = v.value();
     return;
   }
 
-  // Pour des raisons de compatibilité avec l'existant, on positionne les
-  // valeurs par défaut en fonction de certaines variables d'environnement.
-  // Il faudra supprimer ce comportement à terme (car de plus il s'applique
-  // à tous les maillages même ceux créés dynamiquement)
+  // For compatibility with existing implementations, default values are set
+  // based on certain environment variables.
+  // This behavior must be removed eventually (as it applies to all meshes,
+  // even those created dynamically).
 
-  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null()) {
     m_face_builder_version = 3;
     return;
   }
 
-  if (!platform::getEnvironmentVariable("ARCANE_NO_FACE_RENUMBER").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_NO_FACE_RENUMBER").null()) {
     m_face_builder_version = 0;
     return;
   }
 
-  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()) {
     m_face_builder_version = 2;
     return;
   }
@@ -101,7 +101,7 @@ _initEdgeVersion()
 {
   m_edge_builder_version = 1;
 
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION",true)){
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION", true)) {
     m_edge_builder_version = v.value();
     return;
   }

@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SubMeshTools.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Algorithmes spécifiques aux sous-maillages.                               */
+/* Algorithms specific to sub-meshing.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_SUBMESHTOOLS_H
 #define ARCANE_MESH_SUBMESHTOOLS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette section devrait contenir à terme l'ensemble de l'implémentation spécifique des sous-maillages
+ * This section should eventually contain the entire specific implementation of sub-meshing
  */
 
 #include "arcane/mesh/MeshGlobal.h"
@@ -25,24 +25,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 class IItemFamily;
 class IParallelMng;
 class IMesh;
 class ItemInternal;
 class Cell;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 class DynamicMesh;
 class DynamicMeshIncrementalBuilder;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,16 +50,18 @@ class SubMeshTools
 : public TraceAccessor
 {
  public:
-  SubMeshTools(DynamicMesh * mesh, DynamicMeshIncrementalBuilder * mesh_builder);
+
+  SubMeshTools(DynamicMesh* mesh, DynamicMeshIncrementalBuilder* mesh_builder);
   ~SubMeshTools();
 
  public:
+
   void removeDeadGhostCells();
   void removeGhostMesh();
   void removeFloatingItems();
   void updateGhostMesh();
-  void updateGhostFamily(IItemFamily * family);
-  static void display(IMesh * mesh, const String msg = String());
+  void updateGhostFamily(IItemFamily* family);
+  static void display(IMesh* mesh, const String msg = String());
 
  private:
 
@@ -70,6 +71,7 @@ class SubMeshTools
   void _checkFloatingItems();
 
  private:
+
   DynamicMesh* m_mesh;
   DynamicMeshIncrementalBuilder* m_mesh_builder;
   IParallelMng* m_parallel_mng;
@@ -83,8 +85,7 @@ class SubMeshTools
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

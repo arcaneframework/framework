@@ -1,6 +1,6 @@
-set( ARCANE_SOURCES
-  # Les fichiers suivants sont en premier car ce sont
-  # les plus longs à compiler
+﻿set( ARCANE_SOURCES
+  # The following files are listed first because they are
+  # the longest to compile
   PolyhedralMesh.cc
   PolyhedralMesh.h
   DynamicMesh.cc

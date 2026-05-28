@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IndexedIncrementalItemConnectivityMng.h                     (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire de 'IIndexedIncrementalItemConnectivity'.                    */
+/* Manager for 'IIndexedIncrementalItemConnectivity'.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
 #define ARCANE_MESH_INDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Ref.h"
-#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
 
 #include <map>
 
@@ -29,7 +29,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des connectivités incrémentales indexées sur les entités.
+ * \brief Interface for the manager of incremental connectivities indexed on entities.
  */
 class ARCANE_MESH_EXPORT IndexedIncrementalItemConnectivityMng
 : public TraceAccessor

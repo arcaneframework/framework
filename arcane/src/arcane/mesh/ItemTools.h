@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemTools.h                                                 (C) 2000-2023 */
 /*                                                                           */
-/* Utilitaires aidant à retrouver des items à partir d'autres                */
+/* Utilities helping to find items based on others                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMTOOLS_H
 #define ARCANE_MESH_ITEMTOOLS_H
@@ -16,7 +16,7 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,29 +27,29 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief  Utilitaires aidant à retrouver des items à partir d'autres
+ * \brief  Utilities helping to find items based on others
  */
 class ItemTools
 {
  public:
 
   /*!
-   * Vérifie si la liste des noeuds d'une face correspond à une liste fournie
-   * On compare les uids des noeuds. L'ordre doit être le même.
+   * Checks if the list of nodes of a face matches a provided list
+   * Compares the uids of the nodes. The order must be the same.
    *
-   * @param face : la face à tester
-   * @param face_nodes_uid : une liste de uids de noeuds
+   * @param face : the face to test
+   * @param face_nodes_uid : a list of node uids
    *
    */
   static bool isSameFace(Face face, Int64ConstArrayView face_nodes_uid);
 
   /*!
-   * Recherche une face connectée au noeud \a node correspondant à la liste de
-   * noeuds \a  face_nodes_uid.
+   * Searches for a face connected to the node \a node corresponding to the list of
+   * nodes \a  face_nodes_uid.
    *
-   * @param node : noeud à tester
-   * @param face_type_id : type de la face recherchée
-   * @param face_nodes_uid : une liste de uids de noeuds
+   * @param node : node to test
+   * @param face_type_id : type of the face searched
+   * @param face_nodes_uid : a list of node uids
    *
    */
   static Face findFaceInNode2(Node node,
@@ -57,12 +57,12 @@ class ItemTools
                               Int64ConstArrayView face_nodes_uid);
 
   /*!
-   * Recherche une arête connectée à un noeud \a node et connectant les noeuds 
-   * d'uids \a begin_node et \a end_node
+   * Searches for an edge connected to the node \a node and connecting the nodes 
+   * with uids \a begin_node and \a end_node
    *
-   * @param node : noeud à tester
-   * @param begin_node : uid du premier noeud de l'arête recherchée
-   * @param end_node : uid du second noeud de l'arête recherchée
+   * @param node : node to test
+   * @param begin_node : uid of the first node of the searched edge
+   * @param end_node : uid of the second node of the searched edge
    *
    */
   static Edge findEdgeInNode2(Node node, Int64 begin_node, Int64 end_node);
@@ -70,12 +70,12 @@ class ItemTools
  private:
 
   /*!
-   * Recherche une face connectée au noeud \a node correspondant à la liste de
-   * noeuds \a  face_nodes_uid.
+   * Searches for a face connected to the node \a node corresponding to the list of
+   * nodes \a  face_nodes_uid.
    *
-   * @param node : noeud à tester
-   * @param face_type_id : type de la face recherchée
-   * @param face_nodes_uid : une liste de uids de noeuds
+   * @param node : node to test
+   * @param face_type_id : type of the face searched
+   * @param face_nodes_uid : a list of node uids
    *
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use findFaceInNode2() instead")
@@ -84,12 +84,12 @@ class ItemTools
                                       Int64ConstArrayView face_nodes_uid);
 
   /*!
-   * Recherche une arête connectée à un noeud \a node et connectant les noeuds
-   * d'uids \a begin_node et \a end_node
+   * Searches for an edge connected to the node \a node and connecting the nodes
+   * with uids \a begin_node and \a end_node
    *
-   * @param node : noeud à tester
-   * @param begin_node : uid du premier noeud de l'arête recherchée
-   * @param end_node : uid du second noeud de l'arête recherchée
+   * @param node : node to test
+   * @param begin_node : uid of the first node of the searched edge
+   * @param end_node : uid of the second node of the searched edge
    *
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use findEdgeInNode2() instead")
@@ -99,9 +99,9 @@ class ItemTools
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_MESH_ITEMTOOLS_H */
+#endif

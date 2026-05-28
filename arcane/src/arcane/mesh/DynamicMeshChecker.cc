@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshChecker.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Classe fournissant des méthodes de vérification sur le maillage.          */
+/* Class providing methods for mesh checking.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,12 +64,11 @@ DynamicMeshChecker::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérification sommaire de la validité du maillage.
- * Les vérifications portent sur les points suivants:
- * - pas d'entités du maillage ayant un indice nul.
- * - pour les faces, vérifie qu'il existe au moins une frontCell ou une
- * backCell.
- * Une erreur fatale est générée en cas de non respect de ces règles.
+ * \brief Performs a preliminary check of mesh validity.
+ * The checks cover the following points:
+ * - no mesh entities having a null index.
+ * - for faces, checks that at least one frontCell or backCell exists.
+ * A fatal error is generated if these rules are not respected.
  */
 void DynamicMeshChecker::
 checkValidMesh()
@@ -77,49 +76,49 @@ checkValidMesh()
   info(4) << "Check mesh coherence.";
   checkValidConnectivity();
 
-  for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
+  for (IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i;) {
     IItemFamily* family = *i;
-    //GG: regarder pourquoi il y a ce test.
-    if (family->itemKind()>=NB_ITEM_KIND)
+    //GG: check why this test exists.
+    if (family->itemKind() >= NB_ITEM_KIND)
       continue;
     family->checkValid();
   }
-  mesh_utils::checkMeshProperties(m_mesh,false,false,true);
+  mesh_utils::checkMeshProperties(m_mesh, false, false, true);
 
-  // Sauve dans une variable aux mailles la liste des faces et
-  // noeuds qui la composent.
-  // Ceci n'est utile que pour des vérifications
-  // NOTE: pour l'instant mis a false car fait planter si utilise
-  // partitionnement initial dans Arcane
+  // Store in a mesh variable the list of faces and
+  // nodes that compose it.
+  // This is only useful for checks
+  // NOTE: currently set to false because it crashes if
+  // initial partitioning is used in Arcane
   const bool global_check = false;
-  if (m_check_level>=1 && global_check){
+  if (m_check_level >= 1 && global_check) {
     if (!m_var_cells_faces)
-      m_var_cells_faces = new VariableCellArrayInt64(VariableBuildInfo(m_mesh,"MeshTestCellFaces"));
+      m_var_cells_faces = new VariableCellArrayInt64(VariableBuildInfo(m_mesh, "MeshTestCellFaces"));
 
     if (!m_var_cells_nodes)
-      m_var_cells_nodes = new VariableCellArrayInt64(VariableBuildInfo(m_mesh,"MeshTestCellNodes"));
+      m_var_cells_nodes = new VariableCellArrayInt64(VariableBuildInfo(m_mesh, "MeshTestCellNodes"));
 
     CellGroup all_cells(m_mesh->allCells());
     Integer max_nb_face = 0;
     Integer max_nb_node = 0;
-    ENUMERATE_CELL(i,all_cells){
+    ENUMERATE_CELL (i, all_cells) {
       Cell cell = *i;
       Integer nb_face = cell.nbFace();
       Integer nb_node = cell.nbNode();
-      if (nb_face>max_nb_face)
+      if (nb_face > max_nb_face)
         max_nb_face = nb_face;
-      if (nb_node>max_nb_node)
+      if (nb_node > max_nb_node)
         max_nb_node = nb_node;
     }
     m_var_cells_faces->resize(max_nb_face);
     m_var_cells_nodes->resize(max_nb_node);
-    ENUMERATE_CELL(i,all_cells){
+    ENUMERATE_CELL (i, all_cells) {
       Cell cell = *i;
       Integer nb_face = cell.nbFace();
-      for( Integer z=0; z<nb_face; ++z )
+      for (Integer z = 0; z < nb_face; ++z)
         (*m_var_cells_faces)[cell][z] = cell.face(z).uniqueId().asInt64();
       Integer nb_node = cell.nbNode();
-      for( Integer z=0; z<nb_node; ++z )
+      for (Integer z = 0; z < nb_node; ++z)
         (*m_var_cells_nodes)[cell][z] = cell.node(z).uniqueId().asInt64();
     }
   }
@@ -135,46 +134,46 @@ checkValidMeshFull()
   String func_name("DynamicMesh::checkValidMeshFull");
   info() << func_name << " on " << m_mesh->name();
   Integer nb_error = 0;
-  VariableFaceInt64 var_faces(VariableBuildInfo(m_mesh,"MeshCheckFaces"));
+  VariableFaceInt64 var_faces(VariableBuildInfo(m_mesh, "MeshCheckFaces"));
   debug() << " VAR_FACE GROUP=" << var_faces.variable()->itemFamily()
           << " NAME=" << var_faces.itemGroup().name()
           << " FAMILY_NAME=" << var_faces.variable()->itemFamilyName()
           << " GROUP_NAME=" << var_faces.variable()->itemGroupName();
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Cell c = face.backCell();
     Int64 uid = c.null() ? NULL_ITEM_UNIQUE_ID : c.uniqueId();
     var_faces[face] = uid;
   }
   var_faces.synchronize();
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Cell c = face.backCell();
     Int64 uid = c.null() ? NULL_ITEM_UNIQUE_ID : c.uniqueId();
-    if (uid!=var_faces[face] && uid!=NULL_ITEM_ID && var_faces[face]!=NULL_ITEM_ID){
+    if (uid != var_faces[face] && uid != NULL_ITEM_ID && var_faces[face] != NULL_ITEM_ID) {
       error() << func_name << " bad back cell in face uid=" << face.uniqueId();
       ++nb_error;
     }
   }
 
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Cell c = face.frontCell();
     Int64 uid = c.null() ? NULL_ITEM_UNIQUE_ID : c.uniqueId();
     var_faces[face] = uid;
   }
   var_faces.synchronize();
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Cell c = face.frontCell();
-    Int64 uid = c.null() ?  NULL_ITEM_UNIQUE_ID : c.uniqueId();
-    if (uid!=var_faces[face] && uid!=NULL_ITEM_ID && var_faces[face]!=NULL_ITEM_ID){
+    Int64 uid = c.null() ? NULL_ITEM_UNIQUE_ID : c.uniqueId();
+    if (uid != var_faces[face] && uid != NULL_ITEM_ID && var_faces[face] != NULL_ITEM_ID) {
       error() << func_name << " bad front cell in face uid=" << face.uniqueId();
       ++nb_error;
     }
   }
 
-  ENUMERATE_CELL(icell,m_mesh->allCells()){
+  ENUMERATE_CELL (icell, m_mesh->allCells()) {
     Cell cell = *icell;
     Integer cell_type = cell.type();
     if (cell_type == IT_Line2) {
@@ -183,7 +182,7 @@ checkValidMeshFull()
     }
   }
 
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Integer face_type = face.type();
     if (face_type == IT_Vertex) {
@@ -192,23 +191,20 @@ checkValidMeshFull()
     }
   }
 
-  if (nb_error!=0)
+  if (nb_error != 0)
     ARCANE_FATAL("Invalid mesh");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Vérifie que la connectivité est valide.
+ * \brief Checks that connectivity is valid.
  *
- * Les vérifications portent sur les points suivants:
- * - pas d'entités du maillage ayant un indice nul.
- * - pour les faces, vérifie qu'il existe au moins une frontCell ou une
- * backCell. De plus, si elle a deux mailles, la backCell doit
- * toujours être la première.
- * - les noeuds et les faces doivent avoir le même propriétaire
- * qu'une des mailles attenante.
- * - vérifie que les faces sont bien ordonnées et orientées
+ * The checks cover the following points:
+ * - no mesh entities having a null index.
+ * - for faces, checks that at least one frontCell or backCell exists. Furthermore, if it has two meshes, the backCell must always be the first.
+ * - nodes and faces must have the same owner as one of the adjacent meshes.
+ * - checks that faces are correctly ordered and oriented
  */
 void DynamicMeshChecker::
 checkValidConnectivity()
@@ -216,138 +212,141 @@ checkValidConnectivity()
   String func_name = "MeshChecker::checkValidConnectivity";
   debug() << func_name << " check";
 
-  // Appelle la méthode de vérification de chaque famille.
+  // Calls the checkValidConnectivity method for each family.
   IItemFamilyCollection item_families = m_mesh->itemFamilies();
-  for( auto x = item_families.enumerator(); ++x; ){
+  for (auto x = item_families.enumerator(); ++x;) {
     IItemFamily* f = *x;
     f->checkValidConnectivity();
   }
 
-  if (!m_mesh->parentMesh()){
+  if (!m_mesh->parentMesh()) {
     Integer index = 0;
-    ENUMERATE_(Face,i,m_mesh->allFaces()){
+    ENUMERATE_ (Face, i, m_mesh->allFaces()) {
       Face elem = *i;
       Cell front_cell = elem.frontCell();
-      Cell back_cell  = elem.backCell();
+      Cell back_cell = elem.backCell();
       if (front_cell.null() && back_cell.null())
-        ARCANE_FATAL("Local face '{0}' has two null cell face=",index,ItemPrinter(elem));
+        ARCANE_FATAL("Local face '{0}' has two null cell face=", index, ItemPrinter(elem));
       index++;
     }
   }
 
-  // Vérifie que la connective maille<->noeud
-  // est réciproque
-  ENUMERATE_NODE(inode,m_mesh->allNodes()){
+  // Checks that the mesh<->node connectivity
+  // is reciprocal
+  ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node node = *inode;
-    for( Cell cell : node.cells() ){
+    for (Cell cell : node.cells()) {
       bool has_found = false;
-      for( Node node2 : cell.nodes() ){
-        if (node2==node){
+      for (Node node2 : cell.nodes()) {
+        if (node2 == node) {
           has_found = true;
           break;
         }
       }
-      if (!has_found){
+      if (!has_found) {
         ARCANE_FATAL("Node uid={0} is connected to the cell uid={1} but the cell"
-                     " is not connected to this node.",ItemPrinter(node),ItemPrinter(cell));
+                     " is not connected to this node.",
+                     ItemPrinter(node), ItemPrinter(cell));
       }
     }
   }
 
-  // ATT: les verifications suivantes ne sont pas compatible avec l'AMR
-  // TODO : etendre les verifs au cas AMR
+  // ATT: the following checks are not compatible with AMR
+  // TODO : extend checks for AMR
   //! AMR
-  if(!m_mesh->isAmrActivated()){
-    // Vérifie que la connective maille<->arêtes
-    // est réciproque
-    ENUMERATE_EDGE(iedge,m_mesh->allEdges()){
+  if (!m_mesh->isAmrActivated()) {
+    // Checks that the mesh<->edge connectivity
+    // is reciprocal
+    ENUMERATE_EDGE (iedge, m_mesh->allEdges()) {
       Edge edge = *iedge;
-      for( Cell cell : edge.cells() ){
+      for (Cell cell : edge.cells()) {
         bool has_found = false;
-        for( Edge edge2 : cell.edges() ){
-          if (edge2==edge){
+        for (Edge edge2 : cell.edges()) {
+          if (edge2 == edge) {
             has_found = true;
             break;
           }
         }
-        if (!has_found){
+        if (!has_found) {
           ARCANE_FATAL("Edge uid={0} is connected to the cell uid={1} but the cell"
-                       " is not connected to this edge.",ItemPrinter(edge),ItemPrinter(cell));
+                       " is not connected to this edge.",
+                       ItemPrinter(edge), ItemPrinter(cell));
         }
       }
     }
   }
-  // Vérifie que la connective maille<->face
-  // est réciproque
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
-	  Face face = *iface;
-	  if(!m_mesh->isAmrActivated()){
-		  for( Cell cell : face.cells() ){
-			  bool has_found = false;
-			  for( Face face2 : cell.faces() ){
-				  if (face2==face){
-					  has_found = true;
-					  break;
-				  }
-			  }
-			  if (!has_found){
+  // Checks that the mesh<->face connectivity
+  // is reciprocal
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
+    Face face = *iface;
+    if (!m_mesh->isAmrActivated()) {
+      for (Cell cell : face.cells()) {
+        bool has_found = false;
+        for (Face face2 : cell.faces()) {
+          if (face2 == face) {
+            has_found = true;
+            break;
+          }
+        }
+        if (!has_found) {
           ARCANE_FATAL("Face uid={0} is connected to the cell uid={1} but the cell"
-                       " is not connected to this face.",ItemPrinter(face),ItemPrinter(cell));
-			  }
-		  }
-	  }
-    for( Cell cell : face.cells() ){
+                       " is not connected to this face.",
+                       ItemPrinter(face), ItemPrinter(cell));
+        }
+      }
+    }
+    for (Cell cell : face.cells()) {
       bool has_found = false;
-      for( Face face2 : cell.faces() ){
-        if (face2==face){
+      for (Face face2 : cell.faces()) {
+        if (face2 == face) {
           has_found = true;
           break;
         }
       }
-      if (!has_found && (face.backCell().level() == face.frontCell().level())){
+      if (!has_found && (face.backCell().level() == face.frontCell().level())) {
         warning() << func_name << ". The face " << FullItemPrinter(face)
                   << " is connected to the cell " << FullItemPrinter(cell)
-                  << " but the cell (level "<< cell.level()<< ")"
+                  << " but the cell (level " << cell.level() << ")"
                   << " is not connected to the face.";
       }
     }
 
-	  Integer nb_cell = face.nbCell();
-	  Cell back_cell = face.backCell();
-	  Cell front_cell = face.frontCell();
-	  if ((back_cell.null() || front_cell.null()) && nb_cell==2)
-		  ARCANE_FATAL("Face uid='{0}' bad number of cells face",ItemPrinter(face));
-	  // Si on a deux mailles connectées, alors la back cell doit être la première
-	  if (nb_cell==2 && back_cell!=face.cell(0))
-		  ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
-                   ItemPrinter(face),ItemPrinter(back_cell),ItemPrinter(front_cell),ItemPrinter(face.cell(0)));
+    Integer nb_cell = face.nbCell();
+    Cell back_cell = face.backCell();
+    Cell front_cell = face.frontCell();
+    if ((back_cell.null() || front_cell.null()) && nb_cell == 2)
+      ARCANE_FATAL("Face uid='{0}' bad number of cells face", ItemPrinter(face));
+    // If we have two connected meshes, then the back cell must be the first
+    if (nb_cell == 2 && back_cell != face.cell(0))
+      ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
+                   ItemPrinter(face), ItemPrinter(back_cell), ItemPrinter(front_cell), ItemPrinter(face.cell(0)));
   }
 
   _checkFacesOrientation();
   _checkEdgesOrientation();
 
-  if (m_mesh->parentMesh()){
+  if (m_mesh->parentMesh()) {
     Integer nerror = 0;
     eItemKind kinds[] = { IK_Node, IK_Edge, IK_Face, IK_Cell };
-    Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
+    Integer nb_kind = sizeof(kinds) / sizeof(eItemKind);
 
-    for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
+    for (Integer i_kind = 0; i_kind < nb_kind; ++i_kind) {
       const eItemKind kind = kinds[i_kind];
-      IItemFamily * family = m_mesh->itemFamily(kind);
-      if (!family->parentFamily()){
+      IItemFamily* family = m_mesh->itemFamily(kind);
+      if (!family->parentFamily()) {
         error() << "Mesh " << m_mesh->name() << " : Family " << kind << " does not exist in mesh";
         ++nerror;
       }
-      else{
-        ENUMERATE_ITEM(iitem,family->allItems()){
-          const Item & item = *iitem;
-          const Item & parent_item = item.parent();
-          if (parent_item.itemBase().isSuppressed()){
-            error() << "Mesh " << m_mesh->name() << " : Inconsistent suppresssed parent item uid : " 
+      else {
+        ENUMERATE_ITEM (iitem, family->allItems()) {
+          const Item& item = *iitem;
+          const Item& parent_item = item.parent();
+          if (parent_item.itemBase().isSuppressed()) {
+            error() << "Mesh " << m_mesh->name() << " : Inconsistent suppresssed parent item uid : "
                     << ItemPrinter(item) << " / " << ItemPrinter(parent_item);
             ++nerror;
           }
-          if (parent_item.uniqueId() != item.uniqueId()){
+          if (parent_item.uniqueId() != item.uniqueId()) {
             error() << "Mesh " << m_mesh->name() << " : Inconsistent item/parent item uid : " << ItemPrinter(item);
             ++nerror;
           }
@@ -355,17 +354,17 @@ checkValidConnectivity()
       }
     }
     if (nerror > 0)
-      ARCANE_FATAL("Mesh name={0} has {1} (see above)",m_mesh->name(),String::plural(nerror, "error"));
+      ARCANE_FATAL("Mesh name={0} has {1} (see above)", m_mesh->name(), String::plural(nerror, "error"));
 
-    // Vérifie la consistence parallèle du groupe parent
+    // Checks the parallel consistency of the parent group
     nerror = 0;
     {
       ItemGroup parent_group = m_mesh->parentGroup();
-      String var_name = String::format("SubMesh_{0}_GroupConsistencyChecker",parent_group.name());
-      TemporaryVariableBuildInfo tvbi(m_mesh->parentMesh(),var_name,parent_group.itemFamily()->name());
-      ItemVariableScalarRefT<Integer> var(tvbi,m_mesh->parentGroup().itemKind());
+      String var_name = String::format("SubMesh_{0}_GroupConsistencyChecker", parent_group.name());
+      TemporaryVariableBuildInfo tvbi(m_mesh->parentMesh(), var_name, parent_group.itemFamily()->name());
+      ItemVariableScalarRefT<Integer> var(tvbi, m_mesh->parentGroup().itemKind());
       var.fill(-1);
-      ENUMERATE_ITEM(iitem, m_mesh->parentGroup()){
+      ENUMERATE_ITEM (iitem, m_mesh->parentGroup()) {
         var[iitem] = iitem->owner();
       }
       nerror += var.checkIfSync(10);
@@ -373,10 +372,10 @@ checkValidConnectivity()
     if (nerror > 0)
       ARCANE_FATAL("Mesh name={0} has parent group consistency {1}\n"
                    "This usually means that parent group was not symmetrically built",
-                   m_mesh->name(),String::plural(nerror, "error", false));
+                   m_mesh->name(), String::plural(nerror, "error", false));
   }
 
-  if (m_is_check_items_owner){
+  if (m_is_check_items_owner) {
     _checkValidItemOwner(m_mesh->nodeFamily());
     _checkValidItemOwner(m_mesh->edgeFamily());
     _checkValidItemOwner(m_mesh->faceFamily());
@@ -390,21 +389,21 @@ checkValidConnectivity()
 void DynamicMeshChecker::
 updateAMRFaceOrientation()
 {
-	String func_name = "MeshChecker::updateAMRFaceOrientation";
+  String func_name = "MeshChecker::updateAMRFaceOrientation";
   FaceReorienter fr(m_mesh);
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Integer nb_cell = face.nbCell();
     Cell back_cell = face.backCell();
     Cell front_cell = face.frontCell();
-    if ((back_cell.null() || front_cell.null()) && nb_cell==2)
-      ARCANE_FATAL("Bad number of cells for face={0}",ItemPrinter(face));
-    // Si on a deux mailles connectées, alors la back cell doit être la première
-    if (nb_cell==2 && back_cell!=face.cell(0))
-		  ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
-                   ItemPrinter(face),ItemPrinter(back_cell),ItemPrinter(front_cell),ItemPrinter(face.cell(0)));
+    if ((back_cell.null() || front_cell.null()) && nb_cell == 2)
+      ARCANE_FATAL("Bad number of cells for face={0}", ItemPrinter(face));
+    // If we have two connected meshes, then the back cell must be the first
+    if (nb_cell == 2 && back_cell != face.cell(0))
+      ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
+                   ItemPrinter(face), ItemPrinter(back_cell), ItemPrinter(front_cell), ItemPrinter(face.cell(0)));
 
-    // Ceci pourrait sans doutes etre optimise
+    // This could undoubtedly be optimized
     fr.checkAndChangeOrientationAMR(face);
   }
 }
@@ -415,19 +414,19 @@ updateAMRFaceOrientation()
 void DynamicMeshChecker::
 updateAMRFaceOrientation(ArrayView<Int64> ghost_cell_to_refine)
 {
-  ItemInternalList cells = m_mesh->itemsInternal(IK_Cell) ;
-  UniqueArray<Integer> lids(ghost_cell_to_refine.size()) ;
-  m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids,ghost_cell_to_refine,true) ;
+  ItemInternalList cells = m_mesh->itemsInternal(IK_Cell);
+  UniqueArray<Integer> lids(ghost_cell_to_refine.size());
+  m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids, ghost_cell_to_refine, true);
   FaceReorienter fr(m_mesh);
-  std::set<Int64> set ;
-  typedef std::pair<std::set<Int64>::iterator,bool> return_type ;
-  for(Integer i=0, n=lids.size();i<n;++i){
-    Cell icell = cells[lids[i]] ;
-    for( Integer ic=0, nchild=icell.nbHChildren();ic<nchild;++ic){
-      Cell child = icell.hChild(ic) ;
-      for( Face face : child.faces() ){
+  std::set<Int64> set;
+  typedef std::pair<std::set<Int64>::iterator, bool> return_type;
+  for (Integer i = 0, n = lids.size(); i < n; ++i) {
+    Cell icell = cells[lids[i]];
+    for (Integer ic = 0, nchild = icell.nbHChildren(); ic < nchild; ++ic) {
+      Cell child = icell.hChild(ic);
+      for (Face face : child.faces()) {
         return_type value = set.insert(face.uniqueId());
-        if(value.second){
+        if (value.second) {
           fr.checkAndChangeOrientationAMR(face);
         }
       }
@@ -438,13 +437,13 @@ updateAMRFaceOrientation(ArrayView<Int64> ghost_cell_to_refine)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que les faces sont correctement orientées et connectées.
+ * \brief Checks that faces are correctly oriented and connected.
  */
 void DynamicMeshChecker::
 _checkFacesOrientation()
 {
-  bool is_1d = (m_mesh->dimension()==1);
-  //Temporaire: pour l'instant, ne teste pas l'orientation en 1D.
+  bool is_1d = (m_mesh->dimension() == 1);
+  //Temporary: for now, does not test orientation in 1D.
   if (is_1d)
     return;
 
@@ -455,20 +454,20 @@ _checkFacesOrientation()
   Int64UniqueArray work_face_orig_nodes_uid;
   ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
   NodesOfItemReorderer face_reorderer(item_type_mng);
-  ENUMERATE_(Cell,icell,m_mesh->allCells()){
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
     Cell cell = *icell;
     const ItemTypeInfo* type = cell.typeInfo();
     Int32 cell_nb_face = type->nbLocalFace();
-    for( Integer i_face=0; i_face<cell_nb_face; ++i_face ){
+    for (Integer i_face = 0; i_face < cell_nb_face; ++i_face) {
       const ItemTypeInfo::LocalFace& lf = type->localFace(i_face);
       Integer face_nb_node = lf.nbNode();
 
       work_face_orig_nodes_uid.resize(face_nb_node);
-      for( Integer z=0; z<face_nb_node; ++z )
+      for (Integer z = 0; z < face_nb_node; ++z)
         work_face_orig_nodes_uid[z] = cell.node(lf.node(z)).uniqueId();
 
       bool is_reorder = false;
-      if (is_1d){
+      if (is_1d) {
         is_reorder = face_reorderer.reorder1D(i_face, work_face_orig_nodes_uid[0]);
       }
       else
@@ -476,37 +475,37 @@ _checkFacesOrientation()
       ConstArrayView<Int64> face_sorted_nodes(face_reorderer.sortedNodes());
 
       Face cell_face = cell.face(i_face);
-      if (cell_face.nbNode()!=face_nb_node)
+      if (cell_face.nbNode() != face_nb_node)
         ARCANE_FATAL("Incoherent number of node for 'face' and 'localFace'"
                      " cell={0} face={1} nb_local_node={2} nb_face_node={3}",
-                     ItemPrinter(cell),ItemPrinter(cell_face),face_nb_node,cell_face.nbNode());
+                     ItemPrinter(cell), ItemPrinter(cell_face), face_nb_node, cell_face.nbNode());
 
-      for( Integer z=0; z<face_nb_node; ++z ){
-        if (cell_face.node(z).uniqueId()!=face_sorted_nodes[z])
+      for (Integer z = 0; z < face_nb_node; ++z) {
+        if (cell_face.node(z).uniqueId() != face_sorted_nodes[z])
           ARCANE_FATAL("Bad node unique id for face: cell={0} face={1} cell_node_uid={2} face_node_uid={3} z={4}",
-                       ItemPrinter(cell),ItemPrinter(cell_face),face_sorted_nodes[z],
+                       ItemPrinter(cell), ItemPrinter(cell_face), face_sorted_nodes[z],
                        cell_face.node(z).uniqueId());
       }
-      if (is_reorder){
+      if (is_reorder) {
         Cell front_cell = cell_face.frontCell();
-        if (front_cell!=cell){
+        if (front_cell != cell) {
           if (!front_cell.null())
             ARCANE_FATAL("Bad orientation for face. Should be front cell: cell={0} face={1} front_cell={2}",
-                         ItemPrinter(cell),ItemPrinter(cell_face),ItemPrinter(front_cell));
+                         ItemPrinter(cell), ItemPrinter(cell_face), ItemPrinter(front_cell));
           else
             ARCANE_FATAL("Bad orientation for face. Should be front cell (no front cell) cell={0} face={1}",
-                         ItemPrinter(cell),ItemPrinter(cell_face));
+                         ItemPrinter(cell), ItemPrinter(cell_face));
         }
       }
-      else{
+      else {
         Cell back_cell = cell_face.backCell();
-        if (back_cell!=cell){
+        if (back_cell != cell) {
           if (!back_cell.null())
             ARCANE_FATAL("Bad orientation for face. Should be back cell: cell={0} face={1} front_cell={2}",
-                         ItemPrinter(cell),ItemPrinter(cell_face),ItemPrinter(back_cell));
+                         ItemPrinter(cell), ItemPrinter(cell_face), ItemPrinter(back_cell));
           else
             ARCANE_FATAL("Bad orientation for face. Should be back cell (no back cell) cell={0} face={1}",
-                         ItemPrinter(cell),ItemPrinter(cell_face));
+                         ItemPrinter(cell), ItemPrinter(cell_face));
         }
       }
     }
@@ -516,13 +515,13 @@ _checkFacesOrientation()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que les arêtes sont correctement numérotées.
+ * \brief Checks that edges are correctly numbered.
  */
 void DynamicMeshChecker::
 _checkEdgesOrientation()
 {
-  // Pour les arêtes, vérifie que le uniqueId() du premier noeud est
-  // inférieur à celui du deuxième.
+  // For edges, checks that the uniqueId() of the first node is
+  // less than that of the second.
   Int32 nb_error = 0;
   ENUMERATE_ (Edge, iedge, m_mesh->allEdges()) {
     Edge edge = *iedge;
@@ -547,30 +546,30 @@ _checkEdgesOrientation()
 void DynamicMeshChecker::
 _checkValidItemOwner(IItemFamily* family)
 {
-  // Pour les maillages non sous-maillages, il faut que tout sub-item
-  // (Node, Edge ou Face) ait une cellule voisine de même propriétaire,
-  // sauf si on autorise les entités orphelines et que l'entité n'est
-  // connectée à aucune maille.
-  // Pour les sous-maillages, il faut, en plus, que tout item soit de
-  // même propriétaire que son parent.
+  // For non-sub-meshes, every sub-item
+  // (Node, Edge or Face) must have an adjacent cell with the same owner,
+  // unless orphan entities are allowed and the entity is not
+  // connected to any mesh.
+  // For sub-meshes, furthermore, every item must have the same owner
+  // as its parent.
   bool allow_orphan_items = m_mesh->meshKind().isNonManifold();
 
   Integer nerror = 0;
-  if (!m_mesh->parentMesh()){
-    
+  if (!m_mesh->parentMesh()) {
+
     if (family->itemKind() == IK_Cell)
-      return; // implicitement valide pour les cellules
-    
+      return; // implicitly valid for cells
+
     ItemGroup own_items = family->allItems().own();
-    ENUMERATE_ITEM(iitem,own_items){
+    ENUMERATE_ITEM (iitem, own_items) {
       Item item = *iitem;
       Int32 owner = item.owner();
       bool is_ok = false;
       ItemVectorView cells = item.itemBase().cellList();
-      if (cells.size()==0 && allow_orphan_items)
+      if (cells.size() == 0 && allow_orphan_items)
         continue;
-      for( Item cell : cells ){
-        if (cell.owner()==owner){
+      for (Item cell : cells) {
+        if (cell.owner() == owner) {
           is_ok = true;
           break;
         }
@@ -579,7 +578,7 @@ _checkValidItemOwner(IItemFamily* family)
         OStringStream ostr;
         Integer index = 0;
         ostr() << " nb_cell=" << cells.size();
-        for( Item cell : cells ){
+        for (Item cell : cells) {
           ostr() << " SubCell i=" << index << " cell=" << ItemPrinter(cell);
           ++index;
         }
@@ -591,7 +590,7 @@ _checkValidItemOwner(IItemFamily* family)
     }
   }
   else {
-    ENUMERATE_ITEM(iitem,family->allItems()){
+    ENUMERATE_ITEM (iitem, family->allItems()) {
       Item item = *iitem;
       Item parent_item = item.parent();
       if (parent_item.owner() != item.owner()) {
@@ -601,10 +600,10 @@ _checkValidItemOwner(IItemFamily* family)
       }
     }
   }
-  
-  if (nerror>0)
-    ARCANE_FATAL("mesh {0} family={1} has {2}",m_mesh->name(),family->name(),
-                 String::plural(nerror,"owner error"));
+
+  if (nerror > 0)
+    ARCANE_FATAL("mesh {0} family={1} has {2}", m_mesh->name(), family->name(),
+                 String::plural(nerror, "owner error"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -615,9 +614,9 @@ checkVariablesSynchronization()
 {
   Int64 nb_diff = 0;
   VariableCollection used_vars(m_mesh->variableMng()->usedVariables());
-  for( VariableCollection::Enumerator i_var(used_vars); ++i_var; ){
+  for (VariableCollection::Enumerator i_var(used_vars); ++i_var;) {
     IVariable* var = *i_var;
-    switch (var->itemKind()){
+    switch (var->itemKind()) {
     case IK_Node:
     case IK_Edge:
     case IK_Face:
@@ -630,8 +629,8 @@ checkVariablesSynchronization()
       break;
     }
   }
-  if (nb_diff!=0)
-    ARCANE_FATAL("Error in checkVariablesSynchronization() nb_diff=",nb_diff);
+  if (nb_diff != 0)
+    ARCANE_FATAL("Error in checkVariablesSynchronization() nb_diff=", nb_diff);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -641,7 +640,7 @@ void DynamicMeshChecker::
 checkItemGroupsSynchronization()
 {
   Int64 nb_diff = 0;
-  // TODO: parcourir toutes les familles (sauf particules)
+  // TODO: iterate over all families (except particles)
   ItemGroupsSynchronize node_sync(m_mesh->nodeFamily());
   nb_diff += node_sync.checkSynchronize();
   ItemGroupsSynchronize edge_sync(m_mesh->edgeFamily());
@@ -650,20 +649,19 @@ checkItemGroupsSynchronization()
   nb_diff += face_sync.checkSynchronize();
   ItemGroupsSynchronize cell_sync(m_mesh->cellFamily());
   nb_diff += cell_sync.checkSynchronize();
-  if (nb_diff!=0)
-    ARCANE_FATAL("some groups are not synchronized nb_diff={0}",nb_diff);
+  if (nb_diff != 0)
+    ARCANE_FATAL("some groups are not synchronized nb_diff={0}", nb_diff);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie que la couche de mailles fantômes est correcte.
+ * \brief Checks that the ghost cell layer is correct.
  *
- * Vérifie que toutes les mailles fantômes sont bien connectés à
- * une maille de ce sous-domaine (cas où il n'y a qu'une couche de mailles
- * fantômes).
- * \todo Vérifier qu'aucune maille du bord n'appartient à ce sous-domaine
- * \todo Supporter plusieurs couches de mailles fantômes.
+ * Checks that all ghost cells are properly connected to
+ * a mesh of this sub-domain (case where there is only one layer of ghost cells).
+ * \todo Check that no boundary mesh belongs to this sub-domain
+ * \todo Support multiple layers of ghost cells.
  */
 void DynamicMeshChecker::
 checkGhostCells()
@@ -699,20 +697,20 @@ checkMeshFromReferenceFile()
   IParallelMng* pm = m_mesh->parallelMng();
 
   if (!pm->isParallel())
-    return; // uniquement en parallèle
+    return; // only in parallel
 
   debug() << "Testing the mesh against the initial mesh";
   String base_file_name("meshconnectivity");
-  // En parallèle, compare le maillage actuel avec le fichier
-  // contenant la connectivité complète (cas séquentiel)
+  // In parallel, compare the current mesh with the file
+  // containing the full connectivity (sequential case)
   IIOMng* io_mng = pm->ioMng();
   ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlFile(base_file_name));
-  if (xml_doc.get()){
+  if (xml_doc.get()) {
     XmlNode doc_node = xml_doc->documentNode();
     if (!doc_node.null())
-      mesh_utils::checkMeshConnectivity(m_mesh,doc_node,true);
+      mesh_utils::checkMeshConnectivity(m_mesh, doc_node, true);
   }
-  else{
+  else {
     warning() << "Can't test the subdomain coherence "
               << "against the initial mesh";
   }
@@ -732,50 +730,50 @@ checkValidReplication()
 
   IParallelMng* pm = pr->replicaParallelMng();
 
-  // Vérifie que toutes les familles (sauf les particules) sont les mêmes
+  // Checks that all families (except particles) are the same
   UniqueArray<IItemFamily*> wanted_same_family;
 
-  for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
+  for (IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i;) {
     IItemFamily* family = *i;
-    if (family->itemKind()!=IK_Particle)
+    if (family->itemKind() != IK_Particle)
       wanted_same_family.add(family);
   }
   ValueChecker vc(A_FUNCINFO);
 
-  // Vérifie que tout le monde à le même nombre de famille.
+  // Checks that everyone has the same number of families.
   Integer nb_family = wanted_same_family.size();
-  Integer max_nb_family = pm->reduce(Parallel::ReduceMax,nb_family);
-  vc.areEqual(nb_family,max_nb_family,"Bad number of family");
+  Integer max_nb_family = pm->reduce(Parallel::ReduceMax, nb_family);
+  vc.areEqual(nb_family, max_nb_family, "Bad number of family");
 
-  // Vérifie que toutes les familles ont le même nombre d'éléments.
-  //TODO: il faudrait vérifier aussi que les noms des familles correspondent.
+  // Checks that all families have the same number of elements.
+  //TODO: it should also check that the family names match.
   {
     UniqueArray<Int32> families_size(nb_family);
-    for( Integer i=0; i<nb_family; ++i )
+    for (Integer i = 0; i < nb_family; ++i)
       families_size[i] = wanted_same_family[i]->nbItem();
     UniqueArray<Int32> global_families_size(families_size);
-    pm->reduce(Parallel::ReduceMax,global_families_size.view());
-    vc.areEqualArray(global_families_size,families_size,"Bad family");
+    pm->reduce(Parallel::ReduceMax, global_families_size.view());
+    vc.areEqualArray(global_families_size, families_size, "Bad family");
   }
 
-  // Vérifie que toutes les familles ont les mêmes entités (même uniqueId())
+  // Checks that all families have the same entities (same uniqueId())
   {
     UniqueArray<Int64> unique_ids;
     UniqueArray<Int64> global_unique_ids;
-    for( Integer i=0; i<nb_family; ++i ){
+    for (Integer i = 0; i < nb_family; ++i) {
       ItemGroup group = wanted_same_family[i]->allItems();
       unique_ids.resize(group.size());
       Integer index = 0;
-      ENUMERATE_ITEM(iitem,group){
+      ENUMERATE_ITEM (iitem, group) {
         unique_ids[index] = iitem->uniqueId();
         ++index;
       }
       global_unique_ids.resize(group.size());
       global_unique_ids.copy(unique_ids);
-      pm->reduce(Parallel::ReduceMax,global_unique_ids.view());
+      pm->reduce(Parallel::ReduceMax, global_unique_ids.view());
       String message = String::format("Bad unique ids for family '{0}'",
                                       wanted_same_family[i]->name());
-      vc.areEqualArray(global_unique_ids,unique_ids,message);
+      vc.areEqualArray(global_unique_ids, unique_ids, message);
     }
   }
 }

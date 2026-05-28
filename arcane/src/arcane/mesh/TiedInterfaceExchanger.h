@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceExchanger.h                                    (C) 2000-2016 */
 /*                                                                           */
-/* Echangeur entre sous-domaines des interfaces liées.                       */
+/* Exchanger between sub-domains of linked interfaces.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_TIEDINTERFACEEXCHANGER_H
 #define ARCANE_MESH_TIEDINTERFACEEXCHANGER_H
@@ -18,26 +18,25 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/ItemInternalVectorView.h"
-#include "arcane/IItemFamilySerializeStep.h"
+#include "arcane/core/ItemInternalVectorView.h"
+#include "arcane/core/IItemFamilySerializeStep.h"
 
 #include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ISubDomain;
 class ItemFamilySerializeArgs;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,22 +45,23 @@ class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Echangeur entre sous-domaines les interfaces liées.
+ * \brief Exchanger between sub-domains of linked interfaces.
 
- Une instance de cette classe gère l'échange des informations sur
- les interfaces liées (ITiedInterface) lors d'un échange d'entités
- entre sous-domaines.
+ An instance of this class manages the exchange of information about
+ linked interfaces (ITiedInterface) during an exchange of entities
+ between sub-domains.
 
- Cette classe est utilisée via ItemsExchangeInfo2.
+ This class is used via ItemsExchangeInfo2.
  
- Une instance n'est valide que pour un échange et est ensuite détruite.
+ An instance is only valid for one exchange and is then destroyed.
 
- L'ordre d'appel est le suivant:
- 1. computeExchangeInfos() qui calcule les infos à sérialiser.
- 2. serialize() en écriture pour chaque rang à envoyer
- 3. serialize() en lecture pour chaque rang reçu
- 4. rebuildTiedInterfaces() pour reconstruire les interfaces.
+ The order of calls is as follows:
+ 1. computeExchangeInfos() which calculates the info to be serialized.
+ 2. serialize() in writing mode for each rank to be sent
+ 3. serialize() in reading mode for each rank received
+ 4. rebuildTiedInterfaces() to reconstruct the interfaces.
 */
 class TiedInterfaceExchanger
 : public TraceAccessor
@@ -90,7 +90,7 @@ class TiedInterfaceExchanger
   ISubDomain* m_sub_domain;
   DeserializedInfo* m_deserialized_info;
   Int32 m_my_rank;
-  typedef std::map<Int32,OneSubDomainInfo*> SubDomainInfoMap;
+  typedef std::map<Int32, OneSubDomainInfo*> SubDomainInfoMap;
   SubDomainInfoMap m_infos;
 
  private:
@@ -101,17 +101,9 @@ class TiedInterfaceExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
-
+#endif

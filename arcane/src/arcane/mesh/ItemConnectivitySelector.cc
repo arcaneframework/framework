@@ -1,24 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivitySelector.cc                                 (C) 2000-2021 */
 /*                                                                           */
-/* Sélection entre les connectivités historiques et à la demande.            */
+/* Selection between historical and on-demand connectivities.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/ItemFamily.h"
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,8 +29,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 ItemConnectivitySelector::
-ItemConnectivitySelector(ItemFamily* source_family,IItemFamily* target_family,
-                         const String& connectivity_name,Integer connectivity_index)
+ItemConnectivitySelector(ItemFamily* source_family, IItemFamily* target_family,
+                         const String& connectivity_name, Integer connectivity_index)
 : TraceAccessor(source_family->traceMng())
 , m_source_family(source_family)
 , m_target_family(target_family)
@@ -68,8 +67,8 @@ setPreAllocatedSize(Integer size)
 {
   m_pre_allocated_size = size;
   auto c = customConnectivity();
-  // Pour les nouvelles connectivités, la valeur de pré-allocation est sauvée
-  // lors d'une protection et n'est pas prise en compte en reprise.
+  // For new connectivities, the pre-allocation value is saved
+  // during a protection and is not taken into account during recovery.
   if (c)
     c->setPreAllocatedSize(size);
 }

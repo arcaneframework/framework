@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IndexedItemConnectivityAccessor.h                           (C) 2000-2023 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
+/* Incremental connectivity of entities.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
 #define ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
@@ -16,10 +16,10 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 

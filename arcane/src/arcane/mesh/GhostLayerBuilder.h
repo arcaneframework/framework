@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GhostLayerBuilder.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Construction des couches fantômes.                                        */
+/* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GHOSTLAYERBUILDER_H
 #define ARCANE_MESH_GHOSTLAYERBUILDER_H
@@ -33,7 +33,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des couches fantômes.
+ * \brief Construction of ghost layers.
  */
 class GhostLayerBuilder
 : public TraceAccessor
@@ -42,12 +42,12 @@ class GhostLayerBuilder
 
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
 
-  typedef HashTableMapT<Int32,SharedArray<Int64> > BoundaryInfosMap;
-  typedef HashTableMapEnumeratorT<Int32,SharedArray<Int64> > BoundaryInfosMapEnumerator;
-  
+  typedef HashTableMapT<Int32, SharedArray<Int64>> BoundaryInfosMap;
+  typedef HashTableMapEnumeratorT<Int32, SharedArray<Int64>> BoundaryInfosMapEnumerator;
+
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the \a mesh.
   explicit GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
   virtual ~GhostLayerBuilder();
 
@@ -65,25 +65,26 @@ class GhostLayerBuilder
   DynamicMeshIncrementalBuilder* m_mesh_builder;
 
  private:
-  
+
   void _addOneGhostLayerV2();
-  void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
-  void _printItem(ItemInternal* ii,std::ostream& o);
-  void _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags);
+  void _exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send);
+  void _printItem(ItemInternal* ii, std::ostream& o);
+  void _exchangeCells(HashTableMapT<Int32, SharedArray<Int32>>& cells_to_send, bool with_flags);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//TOTO A definir ailleurs
+//TBD to be defined elsewhere
 class NodeUidToSubDomain
 {
  public:
-  NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank);
+
+  NodeUidToSubDomain(Int64 max_uid, Int32 nb_rank);
 
   Int32 uidToRank(Int64 uid)
   {
     Int32 rank = (Int32)(uid / m_nb_by_rank);
-    if (rank>=m_nb_rank)
+    if (rank >= m_nb_rank)
       --rank;
     Int32 nrank = rank % m_modulo;
     return nrank;
@@ -105,4 +106,4 @@ class NodeUidToSubDomain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

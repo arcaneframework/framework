@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CellFamilyPolicyMng.cc                                      (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille de mailles.                     */
+/* Mesh family policy manager.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IItemFamilyNetwork.h"
+#include "arcane/core/IItemFamilyNetwork.h"
 
 #include "arcane/mesh/ItemFamilyPolicyMng.h"
 #include "arcane/mesh/ItemFamilyCompactPolicy.h"
@@ -20,41 +20,43 @@
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/ItemFamilySerializer.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire des politiques d'une famille de mailles.
+ * \brief Mesh family policy manager.
  */
 class ARCANE_MESH_EXPORT CellFamilyPolicyMng
 : public ItemFamilyPolicyMng
 {
  public:
+
   CellFamilyPolicyMng(CellFamily* family)
-  : ItemFamilyPolicyMng(family,new StandardItemFamilyCompactPolicy(family))
-  , m_family(family){}
+  : ItemFamilyPolicyMng(family, new StandardItemFamilyCompactPolicy(family))
+  , m_family(family)
+  {}
+
  public:
+
   IItemFamilySerializer* createSerializer(bool use_flags) override
   {
     IMesh* mesh = m_family->mesh();
     DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(mesh));
     // Todo use unique_ptr ?
-    if(mesh->useMeshItemFamilyDependencies())
+    if (mesh->useMeshItemFamilyDependencies())
       return new ItemFamilySerializer(m_family, m_family, dmesh->incrementalBuilder());
     else
-      return new CellFamilySerializer(m_family,use_flags,dmesh->incrementalBuilder());
-
+      return new CellFamilySerializer(m_family, use_flags, dmesh->incrementalBuilder());
   }
+
  private:
+
   CellFamily* m_family;
 };
 
@@ -71,8 +73,7 @@ createCellFamilyPolicyMng(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

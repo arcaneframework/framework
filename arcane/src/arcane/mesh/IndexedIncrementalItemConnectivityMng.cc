@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IndexedIncrementalItemConnectivityMng.cc                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire de 'IIndexedIncrementalItemConnectivity'.                    */
+/* Manager for 'IIndexedIncrementalItemConnectivity'.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,9 +30,13 @@ class IndexedIncrementalItemConnectivity
 : public IIndexedIncrementalItemConnectivity
 {
  public:
+
   explicit IndexedIncrementalItemConnectivity(IncrementalItemConnectivity* x)
-  : m_true_connectivity(x){}
+  : m_true_connectivity(x)
+  {}
+
  public:
+
   IIncrementalItemConnectivity* connectivity() override
   {
     return m_true_connectivity;
@@ -41,7 +45,9 @@ class IndexedIncrementalItemConnectivity
   {
     return m_true_connectivity->connectivityView();
   }
+
  public:
+
   IncrementalItemConnectivity* m_true_connectivity;
 };
 
@@ -79,12 +85,12 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
                    name, old_target->name(), target->name());
   }
   else {
-    // Les connectivités créées sont désallouées automatiquement par les familles
+    // The created connectivities are automatically deallocated by the families
     auto* true_connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
     connectivity = makeRef<IIndexedIncrementalItemConnectivity>(new IndexedIncrementalItemConnectivity(true_connectivity));
     m_connectivity_map.insert(std::make_pair(name, connectivity));
 
-    // Ajoute les entités existantes dans la connectivité.
+    // Adds existing entities to the connectivity.
     true_connectivity->_internalNotifySourceItemsAdded(source->allItems().view().localIds());
   }
   return connectivity;

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianFaceUniqueIdBuilder.cc                             (C) 2000-2024 */
 /*                                                                           */
-/* Construction des indentifiants uniques des faces en cartésien.            */
+/* Construction of unique face IDs in cartesian coordinates.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,14 +30,14 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construction des uniqueId() des faces pour un maillage cartésien.
+ * \brief Construction of uniqueId() for faces in a cartesian mesh.
  */
 class CartesianFaceUniqueIdBuilder
 : public TraceAccessor
 {
  public:
 
-  //! Construit une instance pour le maillage \a mesh
+  //! Constructs an instance for the mesh \a mesh
   explicit CartesianFaceUniqueIdBuilder(DynamicMesh* mesh);
 
  public:
@@ -68,13 +68,13 @@ CartesianFaceUniqueIdBuilder(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule les uniqueId() et les propriétaires.
+ * \brief Calculates the uniqueIds() and owners.
  *
- * Pour les propriétaires, on considère que toutes les faces appartiennent
- * à ce sous-domaine sauf les faces sur les frontières inférieures qui
- * appartiennent au sous-domaine inférieur dans chaque direction.
- * NOTE: cela n'équilibre pas forcément le nombre de faces fantômes/partagées
- * entre les sous-domaines mais c'est plus facile à calculer.
+ * For owners, it is assumed that all faces belong
+ * to this sub-domain except for faces on the lower boundaries which
+ * belong to the lower sub-domain in each direction.
+ * NOTE: this does not necessarily balance the number of ghost/shared
+ * faces between sub-domains but it is easier to calculate.
  */
 void CartesianFaceUniqueIdBuilder::
 computeFacesUniqueIdAndOwner()
@@ -130,7 +130,7 @@ computeFacesUniqueIdAndOwner()
   Int32 nb_sub_domain_z = nb_sub_domains[2];
   info() << "NbSubDomain: X=" << nb_sub_domain_x << " Y=" << nb_sub_domain_y << " Z=" << nb_sub_domain_z;
 
-  // Détermine le rang inférieur dans chaque direction
+  // Determines the lower rank in each direction
   Int32 previous_rank_x = my_rank;
   Int32 previous_rank_y = my_rank;
   Int32 previous_rank_z = my_rank;
@@ -147,18 +147,18 @@ computeFacesUniqueIdAndOwner()
     CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell.x);
     CartesianGridDimension::FaceUniqueIdComputer2D face_uid_computer(grid_dimension.getFaceComputer2D(0));
 
-    // Les mailles sont des quadrangles
+    // The meshes are quadrangles
     std::array<Int64, 4> face_uids;
     std::array<Int64, 4> face_uids2;
     cells_map.eachItem([&](Cell cell) {
-      // Récupère l'indice (I,J) de la maille
+      // Retrieves the index (I,J) of the mesh
       Int64 uid = cell.uniqueId();
       const Int64 y2 = uid / nb_cell.x;
       const Int64 x2 = uid % nb_cell.x;
       Int64x3 xyz = cell_uid_computer.compute(uid);
       Int64 x = xyz.x;
       Int64 y = xyz.y;
-      // Pour test. A supprimer par la suite
+      // For test. To be removed later
       if (x != x2)
         ARCANE_FATAL("Bad X {0} {1}", x, x2);
       if (y != y2)
@@ -169,12 +169,12 @@ computeFacesUniqueIdAndOwner()
                << " N1=" << cell.node(1).uniqueId()
                << " N2=" << cell.node(2).uniqueId()
                << " N3=" << cell.node(3).uniqueId();
-      //  Pour test. A supprimer par la suite et garder celui de face_uid_computer.
-      // Faces selon Y
+      //  For test. To be removed later and keep the one from face_uid_computer.
+      // Faces according to Y
       face_uids[0] = (x + 0) + ((y + 0) * nb_cell.x) + nb_face_dir.x;
       face_uids[2] = (x + 0) + ((y + 1) * nb_cell.x) + nb_face_dir.x;
 
-      // Faces selon X
+      // Faces according to X
       face_uids[1] = (x + 1) + (y + 0) * nb_face.x;
       face_uids[3] = (x + 0) + (y + 0) * nb_face.x;
       face_uids2 = face_uid_computer.computeForCell(x, y);
@@ -191,10 +191,10 @@ computeFacesUniqueIdAndOwner()
 
         face.mutableItemBase().setUniqueId(face_uids[i]);
       }
-      // Positionne le propriétaire de la face inférieure en X
+      // Positions the owner of the lower face in X
       if (x == own_cell_offset_x && previous_rank_x != my_rank)
         cell.face(3).mutableItemBase().setOwner(previous_rank_x, my_rank);
-      // Positionne le propriétaire de la face inférieure en Y
+      // Positions the owner of the lower face in Y
       if (y == own_cell_offset_y && previous_rank_y != my_rank)
         cell.face(0).mutableItemBase().setOwner(previous_rank_y, my_rank);
     });
@@ -209,11 +209,11 @@ computeFacesUniqueIdAndOwner()
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y << " Z=" << previous_rank_z;
     CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell.x, nb_cell_xy);
     CartesianGridDimension::FaceUniqueIdComputer3D face_uid_computer(grid_dimension.getFaceComputer3D(0));
-    // Les mailles sont des hexaèdres
+    // The meshes are hexahedrons
     std::array<Int64, 6> face_uids;
     std::array<Int64, 6> face_uids2;
     cells_map.eachItem([&](Cell cell) {
-      // Récupère l'indice (I,J) de la maille
+      // Retrieves the index (I,J) of the mesh
       Int64 uid = cell.uniqueId();
       Int64 z2 = uid / nb_cell_xy;
       Int64 v2 = uid - (z2 * nb_cell_xy);
@@ -223,7 +223,7 @@ computeFacesUniqueIdAndOwner()
       Int64 x = xyz.x;
       Int64 y = xyz.y;
       Int64 z = xyz.z;
-      // Pour test. A supprimer par la suite
+      // For test. To be removed later
       if (x != x2)
         ARCANE_FATAL("Bad X {0} {1}", x, x2);
       if (y != y2)
@@ -241,16 +241,16 @@ computeFacesUniqueIdAndOwner()
                << " N6=" << cell.node(6).uniqueId()
                << " N7=" << cell.node(7).uniqueId();
 
-      //  Pour test. A supprimer par la suite et garder celui de face_uid_computer.
-      // Faces selon Z
+      //  For test. To be removed later and keep the one from face_uid_computer.
+      // Faces according to Z
       face_uids[0] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 0) * nb_face_dir.z) + total_nb_face_xy;
       face_uids[3] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 1) * nb_face_dir.z) + total_nb_face_xy;
 
-      // Faces selon X
+      // Faces according to X
       face_uids[1] = (x + 0) + ((y + 0) * nb_face.x) + ((z + 0) * nb_face_dir.x);
       face_uids[4] = (x + 1) + ((y + 0) * nb_face.x) + ((z + 0) * nb_face_dir.x);
 
-      // Faces selon Y
+      // Faces according to Y
       face_uids[2] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 0) * nb_face_dir.y) + total_nb_face_x;
       face_uids[5] = (x + 0) + ((y + 1) * nb_cell.x) + ((z + 0) * nb_face_dir.y) + total_nb_face_x;
 
@@ -271,13 +271,13 @@ computeFacesUniqueIdAndOwner()
         face.mutableItemBase().setUniqueId(face_uids[i]);
       }
 
-      // Positionne le propriétaire de la face inférieure en X
+      // Positions the owner of the lower face in X
       if (x == own_cell_offset_x && previous_rank_x != my_rank)
         cell.face(1).mutableItemBase().setOwner(previous_rank_x, my_rank);
-      // Positionne le propriétaire de la face inférieure en Y
+      // Positions the owner of the lower face in Y
       if (y == own_cell_offset_y && previous_rank_y != my_rank)
         cell.face(2).mutableItemBase().setOwner(previous_rank_y, my_rank);
-      // Positionne le propriétaire de la face inférieure en Z
+      // Positions the owner of the lower face in Z
       if (z == own_cell_offset_z && previous_rank_z != my_rank)
         cell.face(0).mutableItemBase().setOwner(previous_rank_z, my_rank);
     });
@@ -286,18 +286,18 @@ computeFacesUniqueIdAndOwner()
     ARCANE_FATAL("Invalid dimension");
 }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  extern "C++" void
-  arcaneComputeCartesianFaceUniqueId(DynamicMesh * mesh)
-  {
-    CartesianFaceUniqueIdBuilder f(mesh);
-    f.computeFacesUniqueIdAndOwner();
-  }
+extern "C++" void
+arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh)
+{
+  CartesianFaceUniqueIdBuilder f(mesh);
+  f.computeFacesUniqueIdAndOwner();
+}
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh
 

@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivityInfo.h                                      (C) 2000-2022 */
 /*                                                                           */
-/* Informations sur la connectivité par type d'entité.                       */
+/* Information on connectivity by entity type.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMCONNECTIVITYINFO_H
 #define ARCANE_MESH_ITEMCONNECTIVITYINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IItemConnectivityInfo.h"
+#include "arcane/core/IItemConnectivityInfo.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -25,7 +25,7 @@ namespace Arcane
 {
 class ItemInternalConnectivityList;
 class IParallelMng;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur la connectivité par type d'entité.
+ * \brief Information on connectivity by entity type.
  */
 class ARCANE_MESH_EXPORT ItemConnectivityInfo
 : public IItemConnectivityInfo

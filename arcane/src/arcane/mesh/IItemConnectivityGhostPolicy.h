@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemConnectivityGhostPolicy.h                              (C) 2000-2015 */
 /*                                                                           */
-/* Interface de la politique de création des fantômes pour une connectivité. */
+/* Interface for the policy of creating ghosts for a connectivity.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IITEMCONNECTIVITYGHOSTPOLICY_H
 #define ARCANE_IITEMCONNECTIVITYGHOSTPOLICY_H
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,49 +29,49 @@ class IItemConnectivityGhostPolicy
 {
  public:
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IItemConnectivityGhostPolicy() {}
 
  public:
 
-  //! Rangs des sous-domaines avec lesquels on communique
+  //! Ranks of sub-domains with which we communicate
   virtual Int32ConstArrayView communicatingRanks() = 0;
 
   /*!
-   * \brief donne les local_ids des items de la famille \a family_name partagés
-   * pour la connectivité avec le processus de rang \a rank.
+   * \brief gives the local_ids of the items of the family \a family_name shared
+   * for the connectivity with the rank process \a rank.
    *
-   * Les items sont répétés autant de fois qu'ils apparaissent dans une connectivité.
-   * Ie s'ils sont connectés à trois items, ils apparaissent trois fois.
-   *   Ce tableau constitue,avec le tableau sharedItemsConnectedItems qui est de même taille,
-   *   un ensemble de pairs d'items connectés (un élément de la connexion dans chaque tableau).
+   * The items are repeated as many times as they appear in a connectivity.
+   * If they are connected to three items, they appear three times.
+   * This array constitutes, with the sharedItemsConnectedItems array which is of the same size,
+   * a set of connected item pairs (one element of the connection in each array).
    *
    */
   virtual Int32ConstArrayView sharedItems(const Integer rank, const String& family_name) = 0;
 
   /*!
-   * \brief donne les local_ids des items de la famille \a family_name connectés avec les sharedItems(rank).
+   * \brief gives the local_ids of the items of the family \a family_name connected with the sharedItems(rank).
    *
-   * Les items sont répétés autant de fois qu'ils apparaissent dans une connectivité.
-   * Ie s'ils sont connectés à trois items, ils apparaissent trois fois.
-   *   Ce tableau constitue,avec le tableau sharedItems qui est de même taille,
-   *   un ensemble de pairs d'items connectés (un élément de la connexion dans chaque tableau).
+   * The items are repeated as many times as they appear in a connectivity.
+   * If they are connected to three items, they appear three times.
+   * This array constitutes, with the sharedItems array which is of the same size,
+   * a set of connected item pairs (one element of the connection in each array).
    */
   virtual Int32ConstArrayView sharedItemsConnectedItems(const Integer rank, const String& family_name) = 0;
 
   /*!
-   * \brief mets à jour la connectivité en connectant les items fantômes ajoutés..
+   * \brief updates the connectivity by connecting the added ghost items.
    *
-   * Les deux tableaux sont de même taille, égale au nombre de connexions 1 pour 1 existantes.
-   * Pour chaque connexion, les items sont répétés, par exemple pour deux connexions
-   * entre des identifiants 1-3 et 1-4 les tableaux seront [ 1 1 ] et [ 3 4 ]
+   * The two arrays are of the same size, equal to the number of existing 1-to-1 connections.
+   * For each connection, the items are repeated, for example for two connections
+   * between identifiers 1-3 and 1-4 the arrays will be [ 1 1 ] and [ 3 4 ]
    *
-   * Ce format est identique à celui des deux tableaux shared_items et shared_items_connected_items.
-   * Attention, \a ghost_items_connected_items sont des identifiants uniques (uids). Ce sont les items
-   * auxquels étaient connectés les ghost_items sur leur sous domaine propriétaire. Ces items
-   * n'existent pas forcément sur le sous-domaine courant.
+   * This format is identical to that of the two arrays shared_items and shared_items_connected_items.
+   * Warning, \a ghost_items_connected_items are unique identifiers (uids). They are the items
+   * to which the ghost_items were connected on their owning sub-domain. These items
+   * do not necessarily exist on the current sub-domain.
    *
-   * TODO: regarder si besoin de donner les familles ?
+   * TODO: check if it is necessary to provide the families?
    */
   virtual void updateConnectivity(Int32ConstArrayView ghost_items,
                                   Int64ConstArrayView ghost_items_connected_items) = 0;
@@ -79,9 +80,9 @@ class IItemConnectivityGhostPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* IITEMCONNECTIVITYGHOSTPOLICY_H */
+#endif

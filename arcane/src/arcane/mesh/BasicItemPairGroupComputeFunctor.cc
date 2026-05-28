@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions basiques de calcul des valeurs des ItemPairGroup.               */
+/* Basic functions for computing ItemPairGroup values.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,11 +30,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * TODO: Regarder pourquoi les méthodes de calcul suivantes:
+ * TODO: Investigate why the following computation methods:
  * _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
  * _computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
  * _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
- * sont spéciales et les fusionner avec les autres.
+ * are special and merge them with the others.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,16 +72,16 @@ void BasicItemPairGroupComputeFunctor::
 computeAdjacency(ItemPairGroup adjency_array, eItemKind link_kind,
                  Integer nb_layer)
 {
-  if (nb_layer!=1)
-    throw ArgumentException(A_FUNCINFO,"nb_layer should be 1");
+  if (nb_layer != 1)
+    throw ArgumentException(A_FUNCINFO, "nb_layer should be 1");
   eItemKind item_kind = adjency_array.itemKind();
   eItemKind sub_item_kind = adjency_array.subItemKind();
   AdjacencyType atype(item_kind, sub_item_kind, link_kind);
   auto i = m_compute_adjacency_functions.find(atype);
   if (i == m_compute_adjacency_functions.end()) {
     String s = String::format("Invalid adjency computation item_kind={0} sub_item_kind={1} link_item_kind={2}",
-                            item_kind,sub_item_kind,link_kind);
-    throw NotImplementedException(A_FUNCINFO,s);
+                              item_kind, sub_item_kind, link_kind);
+    throw NotImplementedException(A_FUNCINFO, s);
   }
   auto acf = new AdjacencyComputeFunctor(this, adjency_array.internal(), i->second);
   adjency_array.internal()->setComputeFunctor(acf);
@@ -114,30 +114,30 @@ _computeAdjacency(ItemPairGroupImpl* array,
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
-  const Integer undef_value = max_id+1;
+  const Integer undef_value = max_id + 1;
   items_list.fill(forbidden_value);
-  
-  ENUMERATE_ITEM(iitem,sub_group) {
+
+  ENUMERATE_ITEM (iitem, sub_group) {
     items_list[iitem.itemLocalId()] = undef_value;
   }
 
   indexes.add(0);
-  ENUMERATE_ITEM(iitem,group){
+  ENUMERATE_ITEM (iitem, group) {
     Item item = *iitem;
     Integer local_id = iitem.itemLocalId();
-    // Pour ne pas s'ajouter à sa propre liste
+    // To avoid adding to its own list
     if (items_list[local_id] != forbidden_value)
       items_list[local_id] = local_id;
-    for( Item linkitem : get_link_item_enumerator(item) ){
-      for( Item subitem : get_sub_item_enumerator(linkitem) ){
+    for (Item linkitem : get_link_item_enumerator(item)) {
+      for (Item subitem : get_sub_item_enumerator(linkitem)) {
         Int32 sub_local_id = subitem.localId();
-        if (items_list[sub_local_id]==forbidden_value || items_list[sub_local_id]==local_id)
+        if (items_list[sub_local_id] == forbidden_value || items_list[sub_local_id] == local_id)
           continue;
         items_list[sub_local_id] = local_id;
         sub_items_local_id.add(sub_local_id);
@@ -162,31 +162,31 @@ _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
-  const Integer undef_value = max_id+1; 
+  const Integer undef_value = max_id + 1;
   items_list.fill(forbidden_value);
-  
-  ENUMERATE_CELL(icell,sub_group) {
+
+  ENUMERATE_CELL (icell, sub_group) {
     items_list[icell.itemLocalId()] = undef_value;
   }
 
   indexes.add(0);
-  ENUMERATE_CELL(icell,group){
+  ENUMERATE_CELL (icell, group) {
     Cell cell = *icell;
     //Integer local_id = cell.localId();
-    for( Face face : cell.faces() ){
-      if (face.nbCell()!=2)
+    for (Face face : cell.faces()) {
+      if (face.nbCell() != 2)
         continue;
       Cell back_cell = face.backCell();
       Cell front_cell = face.frontCell();
-      
-      // On choisit l'autre cellule du cote de la face
-      const Integer sub_local_id = (back_cell==cell)?front_cell.localId():back_cell.localId();
+
+      // We choose the other cell side of the face
+      const Integer sub_local_id = (back_cell == cell) ? front_cell.localId() : back_cell.localId();
       if (items_list[sub_local_id] == forbidden_value)
         continue;
       sub_items_local_id.add(sub_local_id);
@@ -210,27 +210,27 @@ _computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
-  const Integer undef_value = max_id+1; 
+  const Integer undef_value = max_id + 1;
   items_list.fill(forbidden_value);
-  
-  ENUMERATE_CELL(icell,sub_group) {
+
+  ENUMERATE_CELL (icell, sub_group) {
     items_list[icell.itemLocalId()] = undef_value;
   }
 
   indexes.add(0);
-  ENUMERATE_FACE(iface,group){
+  ENUMERATE_FACE (iface, group) {
     Face face = *iface;
     Int32 local_id = face.localId();
-    for( Node node : face.nodes() ){
-      for( Cell isubcell : node.cells() ){
+    for (Node node : face.nodes()) {
+      for (Cell isubcell : node.cells()) {
         Int32 sub_local_id = isubcell.localId();
-        if (items_list[sub_local_id]==forbidden_value || items_list[sub_local_id]==local_id)
+        if (items_list[sub_local_id] == forbidden_value || items_list[sub_local_id] == local_id)
           continue;
         items_list[sub_local_id] = local_id;
         sub_items_local_id.add(sub_local_id);
@@ -255,26 +255,26 @@ _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
 
   IItemFamily* sub_family = sub_group.itemFamily();
   const Integer max_sub_id = sub_family->maxLocalId();
-  Int32UniqueArray items_list(max_sub_id); // indéxé par des sub-items
+  Int32UniqueArray items_list(max_sub_id); // indexed by sub-items
 
   IItemFamily* family = group.itemFamily();
-  const Integer max_id = family->maxLocalId(); // index maxi des items
+  const Integer max_id = family->maxLocalId(); // max index of items
 
   const Integer forbidden_value = NULL_ITEM_ID;
-  const Integer undef_value = max_id+1;
+  const Integer undef_value = max_id + 1;
   items_list.fill(forbidden_value);
-  
-  ENUMERATE_FACE(iface,sub_group) {
+
+  ENUMERATE_FACE (iface, sub_group) {
     items_list[iface.itemLocalId()] = undef_value;
   }
 
   indexes.add(0);
-  ENUMERATE_CELL(icell,group){
+  ENUMERATE_CELL (icell, group) {
     Cell cell = *icell;
-    for( FaceLocalId iface : cell.faceIds() ){
+    for (FaceLocalId iface : cell.faceIds()) {
       Int32 sub_local_id = iface.localId();
-      // Les controles sur les faces sont inutiles car on ne peut pas retomber dessus par l'énumération actuelle.
-      if (items_list[sub_local_id]==forbidden_value /* or items_list[sub_local_id]==local_id */)
+      // The checks on faces are useless because we cannot fall back to them via the current enumeration.
+      if (items_list[sub_local_id] == forbidden_value /* or items_list[sub_local_id]==local_id */)
         continue;
       // items_list[sub_local_id] = local_id;
       sub_items_local_id.add(sub_local_id);
@@ -289,8 +289,8 @@ _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeCellCellNodeAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item cell){ return cell.toCell().nodes(); };
-  GetItemVectorViewFunctor y = [](Item node){ return node.toNode().cells(); };
+  GetItemVectorViewFunctor x = [](Item cell) { return cell.toCell().nodes(); };
+  GetItemVectorViewFunctor y = [](Item node) { return node.toNode().cells(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -301,8 +301,8 @@ _computeCellCellNodeAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeNodeNodeCellAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item node){ return node.toNode().cells(); };
-  GetItemVectorViewFunctor y = [](Item cell){ return cell.toCell().nodes(); };
+  GetItemVectorViewFunctor x = [](Item node) { return node.toNode().cells(); };
+  GetItemVectorViewFunctor y = [](Item cell) { return cell.toCell().nodes(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -313,8 +313,8 @@ _computeNodeNodeCellAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeFaceFaceNodeAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item face){ return face.toFace().nodes(); };
-  GetItemVectorViewFunctor y = [](Item node){ return node.toNode().faces(); };
+  GetItemVectorViewFunctor x = [](Item face) { return face.toFace().nodes(); };
+  GetItemVectorViewFunctor y = [](Item node) { return node.toNode().faces(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -325,8 +325,8 @@ _computeFaceFaceNodeAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeNodeNodeFaceAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item node){ return node.toNode().faces(); };
-  GetItemVectorViewFunctor y = [](Item face){ return face.toFace().nodes(); };
+  GetItemVectorViewFunctor x = [](Item node) { return node.toNode().faces(); };
+  GetItemVectorViewFunctor y = [](Item face) { return face.toFace().nodes(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -337,8 +337,8 @@ _computeNodeNodeFaceAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeNodeNodeEdgeAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item node){ return node.toNode().edges(); };
-  GetItemVectorViewFunctor y = [](Item edge){ return edge.toEdge().nodes(); };
+  GetItemVectorViewFunctor x = [](Item node) { return node.toNode().edges(); };
+  GetItemVectorViewFunctor y = [](Item edge) { return edge.toEdge().nodes(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -349,8 +349,8 @@ _computeNodeNodeEdgeAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeFaceFaceEdgeAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item face){ return face.toFace().edges(); };
-  GetItemVectorViewFunctor y = [](Item edge){ return edge.toEdge().faces(); };
+  GetItemVectorViewFunctor x = [](Item face) { return face.toFace().edges(); };
+  GetItemVectorViewFunctor y = [](Item edge) { return edge.toEdge().faces(); };
 
   return _computeAdjacency(array, x, y);
 }
@@ -361,8 +361,8 @@ _computeFaceFaceEdgeAdjacency(ItemPairGroupImpl* array)
 void BasicItemPairGroupComputeFunctor::
 _computeFaceFaceCellAdjacency(ItemPairGroupImpl* array)
 {
-  GetItemVectorViewFunctor x = [](Item face){ return face.toFace().cells(); };
-  GetItemVectorViewFunctor y = [](Item cell){ return cell.toCell().faces(); };
+  GetItemVectorViewFunctor x = [](Item face) { return face.toFace().cells(); };
+  GetItemVectorViewFunctor y = [](Item cell) { return cell.toCell().faces(); };
 
   return _computeAdjacency(array, x, y);
 }

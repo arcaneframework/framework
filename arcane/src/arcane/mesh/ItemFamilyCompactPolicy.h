@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyCompactPolicy.h                                   (C) 2000-2024 */
 /*                                                                           */
-/* Politique de compactage des entités d'une famille.                        */
+/* Policy for compacting entities of a family.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMFAMILYCOMPACTPOLICY_H
 #define ARCANE_MESH_ITEMFAMILYCOMPACTPOLICY_H
@@ -35,10 +35,9 @@ class ItemFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base des politiques de compactage des entités.
+ * \brief Base class for entity compaction policies.
  *
- * Cette classe est abstraite car elle n'implémente pas
- * IItemFamilyCompactPolicy::updateReferences().
+ * This class is abstract because it does not implement IItemFamilyCompactPolicy::updateReferences().
  */
 class ARCANE_MESH_EXPORT ItemFamilyCompactPolicy
 : public TraceAccessor
@@ -82,7 +81,7 @@ class ARCANE_MESH_EXPORT ItemFamilyCompactPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Politique de compactage pour familles d'entités Node, Edge, Face ou Cell.
+ * \brief Compaction policy for Node, Edge, Face, or Cell entity families.
  */
 class StandardItemFamilyCompactPolicy
 : public ItemFamilyCompactPolicy

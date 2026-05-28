@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires sur un maillage.                                    */
+/* Utility functions on a mesh.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_BASICITEMPAIRGROUPCOMPUTEFUNCTOR_H
 #define ARCANE_MESH_BASICITEMPAIRGROUPCOMPUTEFUNCTOR_H
@@ -37,7 +37,7 @@ class ItemPairGroupImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctions utilitaires sur un maillage.
+ * \brief Utility functions on a mesh.
  */
 class BasicItemPairGroupComputeFunctor
 : public TraceAccessor
@@ -47,12 +47,15 @@ class BasicItemPairGroupComputeFunctor
   struct AdjacencyType
   {
     AdjacencyType()
-    : m_item_kind(IK_Unknown), m_sub_item_kind(IK_Unknown),
-      m_link_item_kind(IK_Unknown)
+    : m_item_kind(IK_Unknown)
+    , m_sub_item_kind(IK_Unknown)
+    , m_link_item_kind(IK_Unknown)
     {
     }
     AdjacencyType(eItemKind ik, eItemKind sik, eItemKind lik)
-    : m_item_kind(ik), m_sub_item_kind(sik), m_link_item_kind(lik)
+    : m_item_kind(ik)
+    , m_sub_item_kind(sik)
+    , m_link_item_kind(lik)
     {
     }
     eItemKind m_item_kind;
@@ -77,14 +80,20 @@ class BasicItemPairGroupComputeFunctor
 
     AdjacencyComputeFunctor(BasicItemPairGroupComputeFunctor* ptr,
                             ItemPairGroupImpl* array, ComputeFunctor func_ptr)
-    : m_ptr(ptr), m_array(array), m_func_ptr(func_ptr) {}
+    : m_ptr(ptr)
+    , m_array(array)
+    , m_func_ptr(func_ptr)
+    {}
+
    public:
 
     void executeFunctor() override
     {
       (m_ptr->*m_func_ptr)(m_array);
     }
+
    private:
+
     BasicItemPairGroupComputeFunctor* m_ptr;
     ItemPairGroupImpl* m_array;
     ComputeFunctor m_func_ptr;
@@ -130,4 +139,4 @@ class BasicItemPairGroupComputeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

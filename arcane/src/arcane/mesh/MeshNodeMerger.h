@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshNodeMerger.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Fusion de nœuds d'un maillage.                                            */
+/* Mesh node merging.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHNODEMERGER_H
 #define ARCANE_MESH_MESHNODEMERGER_H
@@ -40,19 +40,19 @@ class CellFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fusion de nœuds d'un maillage.
+ * \brief Merging nodes of a mesh.
  *
- * L'implémentation actuelle ne traite que les maillages 'classiques'
- * et ne traite que les familles de noeuds, arêtes, faces et mailles.
+ * The current implementation only handles 'classical' meshes
+ * and only handles node, edge, face, and cell families.
  *
- * De plus, pour la partie 3D n'a pas été testée. Elle devrait fonctionner
- * tant que les arêtes ne sont pas actives.
- * Idem pour la partie parallèle mais elle n'a pas été testée non plus.
+ * Furthermore, the 3D part has not been tested. It should work
+ * as long as the edges are not active.
+ * Same for the parallel part, but it has not been tested either.
  */
 class MeshNodeMerger
 : public TraceAccessor
 {
-public:
+ public:
 
   explicit MeshNodeMerger(IMesh* mesh);
 
@@ -69,8 +69,8 @@ public:
   EdgeFamily* m_edge_family = nullptr;
   FaceFamily* m_face_family = nullptr;
   CellFamily* m_cell_family = nullptr;
-  std::map<Node,Node> m_nodes_correspondance;
-  std::map<Face,Face> m_faces_correspondance;
+  std::map<Node, Node> m_nodes_correspondance;
+  std::map<Face, Face> m_faces_correspondance;
 };
 
 /*---------------------------------------------------------------------------*/

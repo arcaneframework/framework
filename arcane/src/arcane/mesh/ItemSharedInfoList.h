@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfoList.h                                        (C) 2000-2022 */
 /*                                                                           */
-/* Liste de 'ItemSharedInfo'.                                                */
+/* List of 'ItemSharedInfo'.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMSHAREDINFOLIST_H
 #define ARCANE_MESH_ITEMSHAREDINFOLIST_H
@@ -18,9 +18,9 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/VariableTypedef.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -37,15 +37,14 @@ namespace Arcane::mesh
 
 class ItemFamily;
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe temporaire pour conserver un ItemSharedInfo et un type d'entité.
+ * \brief Temporary class to hold an ItemSharedInfo and an entity type.
  *
- * Cette classe permet de faire la transition entre la version de Arcane où
- * le ItemSharedInfo contient aussi le type de l'entité et les futures versions
- * où cela ne sera pas le cas.
+ * This class allows for the transition between the version of Arcane where
+ * ItemSharedInfo also contains the entity type and future versions
+ * where this will not be the case.
  */
 class ItemSharedInfoWithType
 {
@@ -54,12 +53,14 @@ class ItemSharedInfoWithType
 
  public:
 
-  ItemSharedInfoWithType() : m_shared_info(&ItemSharedInfo::nullItemSharedInfo) {}
+  ItemSharedInfoWithType()
+  : m_shared_info(&ItemSharedInfo::nullItemSharedInfo)
+  {}
 
  private:
 
-  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type);
-  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32ConstArrayView buffer);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type, Int32ConstArrayView buffer);
 
  public:
 
@@ -68,14 +69,14 @@ class ItemSharedInfoWithType
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
   Int32 nbReference() const { return m_nb_reference; }
-  void addReference(){ ++m_nb_reference; }
-  void removeReference(){ --m_nb_reference; }
+  void addReference() { ++m_nb_reference; }
+  void removeReference() { --m_nb_reference; }
   void serializeWrite(Int32ArrayView buffer);
   static Integer serializeSize() { return 6; }
 
  public:
 
-  friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
+  friend std::ostream& operator<<(std::ostream& o, const ItemSharedInfoWithType& isi)
   {
     isi.m_shared_info->print(o);
     return o;
@@ -92,10 +93,10 @@ class ItemSharedInfoWithType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos de maillage pour un genre donné d'entité.
+ * \brief Mesh info for a given entity type.
 
- Une instance de cette classe gère toutes les structures de maillage
- pour une entité d'un genre donné.
+ An instance of this class manages all mesh structures
+ for an entity of a given type.
 */
 class ItemSharedInfoList
 : public TraceAccessor
@@ -104,12 +105,12 @@ class ItemSharedInfoList
 
   class ItemNumElements;
   class Variables;
-  typedef std::map<ItemNumElements,ItemSharedInfoWithType*> ItemSharedInfoMap;
+  typedef std::map<ItemNumElements, ItemSharedInfoWithType*> ItemSharedInfoMap;
 
  public:
 
-  ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info);
-  //! Libère les ressources
+  ItemSharedInfoList(ItemFamily* family, ItemSharedInfo* common_shared_info);
+  //! Frees resources
   ~ItemSharedInfoList();
 
  public:
@@ -141,7 +142,7 @@ class ItemSharedInfoList
 
  public:
 
-  //! Vérifie si les structures internes de l'instance sont valides
+  //! Checks if the internal structures of the instance are valid
   void checkValid();
 
   Integer nbItemSharedInfo() const { return m_nb_item_shared_info; }
@@ -151,7 +152,7 @@ class ItemSharedInfoList
 
   void dumpSharedInfos();
 
-  //! Indique si la liste a changée depuis le dernier appel à prepareForDump()
+  //! Indicates if the list has changed since the last call to prepareForDump()
   bool hasChanged() { return m_list_changed; }
 
  public:
@@ -182,12 +183,12 @@ class ItemSharedInfoList
     ItemSharedInfoWithType* new_item = 0;
     Integer nb_free = m_free_item_shared_infos.size();
     m_list_changed = true;
-    if (nb_free!=0){
+    if (nb_free != 0) {
       new_item = m_free_item_shared_infos.back();
       m_free_item_shared_infos.popBack();
       need_alloc = false;
     }
-    else{
+    else {
       new_item = m_item_shared_infos_buffer->allocOne();
       new_item->setIndex(m_item_shared_infos.size());
       m_item_shared_infos.add(new_item);
@@ -201,7 +202,7 @@ class ItemSharedInfoList
 
   ItemFamily* m_family = nullptr;
   ItemSharedInfo* m_common_item_shared_info = nullptr;
-  Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
+  Integer m_nb_item_shared_info = 0; //!< Number of allocated objects
   eItemKind m_item_kind = IK_Unknown;
   UniqueArray<ItemSharedInfoWithType*> m_item_shared_infos;
   UniqueArray<ItemSharedInfoWithType*> m_free_item_shared_infos;

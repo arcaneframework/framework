@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DoFFamily.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Famille de degrés de liberté (DoF)                                        */
+/* Degree of Freedom Family (DoF)                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DOFFAMILY_H
 #define ARCANE_MESH_DOFFAMILY_H
@@ -37,7 +37,7 @@ class DynamicMesh;
 class ARCANE_MESH_EXPORT DoFUids
 {
   /*!
-   * Utilitaire d'obtention d'identifiant unique. Version triviale pour experimentation.
+   * Utility for obtaining a unique identifier. Trivial version for experimentation.
    */
  public:
 
@@ -67,13 +67,13 @@ class ARCANE_MESH_EXPORT DoFFamily
 {
  private:
 
-  /** Constructeur de la classe  */
-  //! La famille ne peut pas etre cree directement, il faut utiliser le DoFManager
+  /** Constructor for the class  */
+  //! The family cannot be created directly; the DoFManager must be used
   DoFFamily(IMesh* mesh, const String& name);
 
  public:
 
-  // Implémentation de IDoFFamily
+  // Implementation of IDoFFamily
   String name() const override { return ItemFamily::name(); }
   String fullName() const override { return ItemFamily::fullName(); }
   Integer nbItem() const override { return ItemFamily::nbItem(); }
@@ -110,13 +110,13 @@ class ARCANE_MESH_EXPORT DoFFamily
 
   IDoFFamily* toDoFFamily() override { return this; }
 
-  //! En entree les uids des dofs et on recupere leurs lids
+  //! Takes the uids of the dofs and retrieves their lids
   DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids) override;
 
-  //! L'ajout de fantomes doit etre suivi d'un appel de computeSynchronizeInfos
+  //! Adding ghosts must be followed by a call to computeSynchronizeInfos
   DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids, Int32ConstArrayView owners) override;
 
-  //! Operation collective
+  //! Collective operation
   void computeSynchronizeInfos() override;
 
   DoFGroup allDoFs() { return ItemFamily::allItems(); }
@@ -127,12 +127,12 @@ class ARCANE_MESH_EXPORT DoFFamily
 
  private:
 
-  void build() override; //! Construction de l'item Family. C'est le DoFManager qui en a la responsabilite.
+  void build() override; //! Construction of the Item Family. The DoFManager is responsible for this.
   void _addItems(Int64ConstArrayView unique_ids, Int32ArrayView items);
   void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
   void _removeItems(Int32ConstArrayView local_ids, bool keep_ghost = false) { internalRemoveItems(local_ids, keep_ghost); };
   void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) override;
-  //  void compactItems(bool do_sort) {m_need_prepare_dump = false;} //! Surcharge ItemFamily::compactItems car pas de compactage pour l'instant dans les DoFs.
+  //  void compactItems(bool do_sort) {m_need_prepare_dump = false;} //! Overrides ItemFamily::compactItems because there is no compaction for DoFs for now.
 
   // FOR DEBUG
   void _printInfos(Integer nb_added);

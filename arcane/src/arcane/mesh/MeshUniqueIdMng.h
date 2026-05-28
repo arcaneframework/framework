@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUniqueIdMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de numérotation des uniqueId() d'un maillage.                */
+/* Mesh uniqueId() numbering manager.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHUNIQUEIDMNG_H
 #define ARCANE_MESH_MESHUNIQUEIDMNG_H
@@ -29,7 +29,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire de numérotation des uniqueId() d'un maillage.
+ * \brief Mesh uniqueId() numbering manager.
  */
 class ARCANE_MESH_EXPORT MeshUniqueIdMng
 : public TraceAccessor

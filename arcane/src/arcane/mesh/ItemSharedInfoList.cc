@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfoList.cc                                       (C) 2000-2022 */
 /*                                                                           */
-/* Liste de 'ItemSharedInfo'.                                                */
+/* List of 'ItemSharedInfo'.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/VariableTypes.h"
 
 #include "arcane/mesh/ItemSharedInfoList.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -34,36 +34,36 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfoWithType::
-ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type)
+ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type)
 : m_shared_info(shared_info)
 , m_type_id(item_type->typeId())
 {
 }
 
 ItemSharedInfoWithType::
-ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32ConstArrayView buffer)
+ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type, Int32ConstArrayView buffer)
 : m_shared_info(shared_info)
 , m_type_id(item_type->typeId())
 {
-  // La taille du buffer dépend des versions de Arcane.
-  // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
-  // Entre la 3.2 et la 3.6 (Mai 2022), la taille vaut toujours 13
-  // A partir de la 3.6, la taille vaut 6.
+  // The buffer size depends on the versions of Arcane.
+  // Before 3.2 (October 2021), the buffer size is 9 (non-AMR) or 13 (AMR)
+  // Between 3.2 and 3.6 (May 2022), the size is always 13
+  // Starting from 3.6, the size is 6.
   //
-  // On ne cherche pas à faire de reprise avec des versions
-  // de Arcane antérieures à 3.2 donc on peut supposer que la taille
-  // du buffer vaut 13. Ces versions utilisent la nouvelle connectivité
-  // et donc le nombre des éléments est toujours 0 (ainsi que les *allocated)
-  // sauf pour m_nb_node.
+  // We are not trying to recover with versions
+  // of Arcane prior to 3.2, so we can assume that the size
+  // of the buffer is 13. These versions use the new connectivity
+  // and therefore the number of elements is always 0 (as well as the *allocated)
+  // except for m_nb_node.
   //
-  // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
-  // plus et vaut toujours 0. On pourra donc pour les versions de fin
-  // 2022 supprimer ces champs de ItemSharedInfo.
+  // Starting from 3.6, the number of nodes is no longer used
+  // and is always 0. We can therefore delete these fields from ItemSharedInfo
+  // for the end of 2022 versions.
 
-  // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
-  // que buf_size==6 avec le numéro de version 0x0307
+  // TODO: Indicate that starting from version 3.7 we only support
+  // buf_size==6 with version number 0x0307
   Int32 buf_size = buffer.size();
-  if (buf_size!=6)
+  if (buf_size != 6)
     ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your checkpoint is from a version of Arcane which is too old (before 3.6)",
                  buf_size);
   m_index = buffer[2];
@@ -76,15 +76,15 @@ ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32
 void ItemSharedInfoWithType::
 serializeWrite(Int32ArrayView buffer)
 {
-  buffer[0] = m_type_id; // Doit toujours être le premier
+  buffer[0] = m_type_id; // Must always be the first
 
-  buffer[1] = 0x0307; // Numéro de version (3.7).
+  buffer[1] = 0x0307; // Version number (3.7).
 
   buffer[2] = m_index;
   buffer[3] = m_nb_reference;
 
-  buffer[4] = 0; // Réservé
-  buffer[5] = 0; // Réservé
+  buffer[4] = 0; // Reserved
+  buffer[5] = 0; // Reserved
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,7 +98,8 @@ class ItemSharedInfoList::ItemNumElements
  public:
 
   explicit ItemNumElements(Integer type)
-  : m_type(type) {}
+  : m_type(type)
+  {}
 
  public:
 
@@ -107,25 +108,29 @@ class ItemSharedInfoList::ItemNumElements
   Integer m_type;
 
   bool operator<(const ItemNumElements& b) const
-    {
+  {
 #ifdef ARCANE_CHECK
-      if (m_debug){
-        cout << "Compare:\nTHIS=";
-        print(cout);
-        cout << "\nTO=";
-        b.print(cout);
-        cout << "\nVAL=" << compare(b);
-        cout << "\n";
-      }
-#endif
-      return compare(b);
+    if (m_debug) {
+      cout << "Compare:\nTHIS=";
+      print(cout);
+      cout << "\nTO=";
+      b.print(cout);
+      cout << "\nVAL=" << compare(b);
+      cout << "\n";
     }
+#endif
+    return compare(b);
+  }
+
  private:
+
   inline bool compare(const ItemNumElements& b) const
   {
-    return m_type<b.m_type;
+    return m_type < b.m_type;
   }
+
  public:
+
   void print(std::ostream& o) const
   {
     o << " Type=" << m_type;
@@ -140,7 +145,7 @@ bool ItemSharedInfoList::ItemNumElements::m_debug = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream& operator<<(std::ostream& o,const ItemSharedInfoList::ItemNumElements& v)
+std::ostream& operator<<(std::ostream& o, const ItemSharedInfoList::ItemNumElements& v)
 {
   v.print(o);
   return o;
@@ -152,9 +157,13 @@ std::ostream& operator<<(std::ostream& o,const ItemSharedInfoList::ItemNumElemen
 class ItemSharedInfoList::Variables
 {
  public:
-  Variables(IMesh* mesh,const String& name)
-  : m_infos_values(VariableBuildInfo(mesh,name)){}
+
+  Variables(IMesh* mesh, const String& name)
+  : m_infos_values(VariableBuildInfo(mesh, name))
+  {}
+
  public:
+
   VariableArray2Int32 m_infos_values;
 };
 
@@ -165,7 +174,7 @@ class ItemSharedInfoList::Variables
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfoList::
-ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info)
+ItemSharedInfoList(ItemFamily* family, ItemSharedInfo* common_shared_info)
 : TraceAccessor(family->traceMng())
 , m_family(family)
 , m_common_item_shared_info(common_shared_info)
@@ -176,7 +185,7 @@ ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info)
   {
     String var_name(family->name());
     var_name = var_name + "_SharedInfoList";
-    m_variables = new Variables(family->mesh(),var_name);
+    m_variables = new Variables(family->mesh(), var_name);
   }
 }
 
@@ -208,8 +217,8 @@ prepareForDump()
   m_list_changed = false;
   //Integer n = m_item_shared_infos.size();
   Integer element_size = ItemSharedInfoWithType::serializeSize();
-  m_variables->m_infos_values.resize(n,element_size);
-  for( Integer i=0; i<n; ++i ){
+  m_variables->m_infos_values.resize(n, element_size);
+  for (Integer i = 0; i < n; ++i) {
     m_item_shared_infos[i]->serializeWrite(m_variables->m_infos_values[i]);
     //     if (i<20 && m_family->itemKind()==IK_Particle){
     //       ItemSharedInfo* isi = m_item_shared_infos[i];
@@ -229,50 +238,50 @@ readFromDump()
   Integer n = m_variables->m_infos_values.dim1Size();
   info() << "ItemSharedInfoList: read: " << m_family->name() << " count=" << n;
 
-  if (n>0){
-    // Le nombre d'éléments sauvés dépend de la version de Arcane et du fait
-    // qu'on utilise ou pas l'AMR.
+  if (n > 0) {
+    // The number of saved elements depends on the Arcane version and whether
+    // AMR is used.
     Integer stored_size = m_variables->m_infos_values[0].size();
-    if (stored_size==ItemSharedInfoWithType::serializeSize()){
+    if (stored_size == ItemSharedInfoWithType::serializeSize()) {
     }
-    else if (stored_size!=element_size){
-      // On ne peut relire que les anciennes versions (avant la 3.6)
-      // dont la taille vaut 13 (avec AMR) ou 9 (sans AMR) ce qui correspond
-      // aux versions de Arcane de 2021.
-      if (stored_size!=13 && stored_size!=9)
+    else if (stored_size != element_size) {
+      // We can only read older versions (before 3.6)
+      // whose size is 13 (with AMR) or 9 (without AMR), which corresponds
+      // to Arcane versions from 2021.
+      if (stored_size != 13 && stored_size != 9)
         ARCANE_FATAL("Incoherence of saved data (most probably due to a"
                      " difference of versions between the protection and the executable."
                      " stored_size={0} element_size={1} count={2}",
-                     stored_size,element_size,n);
+                     stored_size, element_size, n);
     }
   }
 
-  // Tous les types vont a nouveau être ajoutés à la liste
+  // All types will be added back to the list
   m_item_shared_infos.clear();
   m_infos_map->clear();
 
-  if (n==0)
+  if (n == 0)
     return;
 
-  for( Integer i=0; i<n; ++i )
+  for (Integer i = 0; i < n; ++i)
     allocOne();
 
   ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
-  for( Integer i=0; i<n; ++i ){
+  for (Integer i = 0; i < n; ++i) {
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
-    // Le premier élément du tampon contient toujours le type de l'entité
+    // The first element of the buffer always contains the entity type
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
     ItemSharedInfoWithType* isi = m_item_shared_infos[i];
-    *isi = ItemSharedInfoWithType(m_common_item_shared_info,it,buffer);
+    *isi = ItemSharedInfoWithType(m_common_item_shared_info, it, buffer);
 
     ItemNumElements ine(it->typeId());
-    std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
-    if (!old.second){
-      // Vérifie que l'instance ajoutée ne remplace pas une instance déjà présente,
-      // auquel il s'agit d'une erreur interne (opérateur de comparaison foireux)
+    std::pair<ItemSharedInfoMap::iterator, bool> old = m_infos_map->insert(std::make_pair(ine, isi));
+    if (!old.second) {
+      // Check that the added instance does not replace an already present instance,
+      // which is an internal error (faulty comparison operator)
       dumpSharedInfos();
       ItemNumElements::m_debug = true;
-      bool compare = m_infos_map->find(ine)!=m_infos_map->end();
+      bool compare = m_infos_map->find(ine) != m_infos_map->end();
       fatal() << "INTERNAL: ItemSharedInfoList::readfromDump(): SharedInfo already present family=" << m_family->name()
               << "\nWanted:"
               << " type=" << it->typeId()
@@ -281,7 +290,7 @@ readFromDump()
               << "\nOLD_INE=(" << old.first->first << ")"
               << "\nNEW_ISI=(" << *isi << ")"
               << "\nOLD_ISI=(" << *old.first->second << ")";
-     }
+    }
   }
 }
 
@@ -299,11 +308,11 @@ checkValid()
          << " free=" << m_free_item_shared_infos.size()
          << " changed=" << m_list_changed;
 
-  // Premièrement, le item->localId() doit correspondre à l'indice
-  // dans le tableau m_internal
-  for( Integer i=0, n=m_item_shared_infos.size(); i<n; ++i ){
+  // Firstly, item->localId() must correspond to the index
+  // in the m_internal array
+  for (Integer i = 0, n = m_item_shared_infos.size(); i < n; ++i) {
     ItemSharedInfoWithType* item = m_item_shared_infos[i];
-    if (item->index()!=i){
+    if (item->index() != i) {
       error() << "The index (" << item->index() << ") from the list 'ItemSharedInfo' "
               << "of the family " << m_family->name() << " is not "
               << "coherent with its internal value (" << i << ")";
@@ -322,23 +331,23 @@ findSharedInfo(ItemTypeInfo* type)
 {
   ItemNumElements ine(type->typeId());
   ItemSharedInfoMap::const_iterator i = m_infos_map->find(ine);
-  if (i!=m_infos_map->end())
+  if (i != m_infos_map->end())
     return i->second;
-  // Infos pas trouvé. On en construit une nouvelle
+  // Info not found. We build a new one
   ItemSharedInfoWithType* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfoWithType(m_common_item_shared_info,type);
+  *isi = ItemSharedInfoWithType(m_common_item_shared_info, type);
   isi->setIndex(old_index);
-  std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
+  std::pair<ItemSharedInfoMap::iterator, bool> old = m_infos_map->insert(std::make_pair(ine, isi));
 
   //#ifdef ARCANE_CHECK
-  if (!old.second){
-    // Vérifie que l'instance ajoutée ne remplace pas une instance déjà présente,
-    // auquel il s'agit d'une erreur interne (opérateur de comparaison foireux)
+  if (!old.second) {
+    // Check that the added instance does not replace an already present instance,
+    // which is an internal error (faulty comparison operator)
     dumpSharedInfos();
     ItemNumElements::m_debug = true;
-    bool compare = m_infos_map->find(ine)!=m_infos_map->end();
-    fatal() << "INTERNE: ItemSharedInfoList::findSharedInfo() SharedInfo déjà présent\n"
+    bool compare = m_infos_map->find(ine) != m_infos_map->end();
+    fatal() << "INTERNAL: ItemSharedInfoList::findSharedInfo() SharedInfo already present\n"
             << "\nWanted:"
             << " type=" << type->typeId()
             << " compare=" << compare
@@ -358,7 +367,7 @@ void ItemSharedInfoList::
 dumpSharedInfos()
 {
   info() << "--- ItemSharedInfos: family=" << m_family->name();
-  for( ConstIterT<ItemSharedInfoMap> i(*m_infos_map); i(); ++i ){
+  for (ConstIterT<ItemSharedInfoMap> i(*m_infos_map); i(); ++i) {
     info() << "INE: " << i->first;
     info() << "ISI: " << *i->second;
   }

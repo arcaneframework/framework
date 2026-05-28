@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CellFamilySerializer.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Sérialisation/Désérialisation des familles de mailles.                    */
+/* Serialization/Deserialization of mesh families.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CELLFAMILYSERIALIZER_H
 #define ARCANE_MESH_CELLFAMILYSERIALIZER_H
@@ -33,7 +33,7 @@ class CellFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sérialisation/Désérialisation des familles de mailles.
+ * \brief Serialization/Deserialization of mesh families.
  */
 class ARCANE_MESH_EXPORT CellFamilySerializer
 : public TraceAccessor
@@ -76,4 +76,3 @@ class ARCANE_MESH_EXPORT CellFamilySerializer
 /*---------------------------------------------------------------------------*/
 
 #endif
-

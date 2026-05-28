@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemData.cc                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Class gathering item data : ids and connectivities                        */
+/* Class gathering item data: IDs and connectivities                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,31 +31,25 @@ namespace Arcane::mesh
 void ItemData::
 serialize(ISerializer* buffer)
 {
-  switch(buffer->mode()){
-  case ISerializer::ModeReserve:
-    {
-      buffer->reserve(m_item_family->name());
-      buffer->reserve(itemKindName(m_item_family->itemKind()));
-      buffer->reserveInt64(2); // nb_items + item_infos.size
-      buffer->reserveSpan(eBasicDataType::Int32,m_nb_items);// m_owners
-      buffer->reserveSpan(eBasicDataType::Int64,m_item_infos.size());
-    }
-    break;
-  case ISerializer::ModePut:
-    {
-      buffer->put(m_item_family->name());
-      buffer->put(itemKindName(m_item_family->itemKind()));
-      buffer->putInt64(m_nb_items);
-      buffer->putInt64(m_item_infos.size());
-      buffer->putSpan(m_item_owners);
-      buffer->putSpan(m_item_infos);
-    }
-    break;
-  case ISerializer::ModeGet:
-    {
-      deserialize(buffer,m_item_family->mesh());
-    }
-    break;
+  switch (buffer->mode()) {
+  case ISerializer::ModeReserve: {
+    buffer->reserve(m_item_family->name());
+    buffer->reserve(itemKindName(m_item_family->itemKind()));
+    buffer->reserveInt64(2); // nb_items + item_infos.size
+    buffer->reserveSpan(eBasicDataType::Int32, m_nb_items); // m_owners
+    buffer->reserveSpan(eBasicDataType::Int64, m_item_infos.size());
+  } break;
+  case ISerializer::ModePut: {
+    buffer->put(m_item_family->name());
+    buffer->put(itemKindName(m_item_family->itemKind()));
+    buffer->putInt64(m_nb_items);
+    buffer->putInt64(m_item_infos.size());
+    buffer->putSpan(m_item_owners);
+    buffer->putSpan(m_item_infos);
+  } break;
+  case ISerializer::ModeGet: {
+    deserialize(buffer, m_item_family->mesh());
+  } break;
   }
 }
 
@@ -65,7 +59,7 @@ serialize(ISerializer* buffer)
 void ItemData::
 deserialize(ISerializer* buffer, IMesh* mesh)
 {
-  _deserialize(buffer,mesh);
+  _deserialize(buffer, mesh);
   // use internal lids array
   _internal_item_lids.resize(m_nb_items);
   m_item_lids = _internal_item_lids;
@@ -77,11 +71,10 @@ deserialize(ISerializer* buffer, IMesh* mesh)
 void ItemData::
 deserialize(ISerializer* buffer, IMesh* mesh, Int32Array& item_lids)
 {
-  _deserialize(buffer,mesh);
+  _deserialize(buffer, mesh);
   item_lids.resize(m_nb_items);
   m_item_lids = item_lids;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,16 +91,16 @@ _deserialize(ISerializer* buffer, IMesh* mesh)
   std::istringstream iss(item_kind_name.localstr());
   eItemKind family_kind;
   iss >> family_kind;
-  m_item_family = mesh->findItemFamily(family_kind,family_name,false);
-  m_item_family_modifier = mesh->findItemFamilyModifier(family_kind,family_name);
+  m_item_family = mesh->findItemFamily(family_kind, family_name, false);
+  m_item_family_modifier = mesh->findItemFamilyModifier(family_kind, family_name);
   m_nb_items = CheckedConvert::toInt32(buffer->getInt64());
   m_item_owners.resize(m_nb_items);
   m_item_infos.resize(buffer->getInt64());
   buffer->getSpan(m_item_owners);
   buffer->getSpan(m_item_infos);
   m_subdomain_id = mesh->meshPartInfo().partRank();
-//  mesh->traceMng()->debug() << " DESERIALIZE " << m_item_owners;
-//  mesh->traceMng()->debug() << " DESERIALIZE " << m_item_infos;
+  //  mesh->traceMng()->debug() << " DESERIALIZE " << m_item_owners;
+  //  mesh->traceMng()->debug() << " DESERIALIZE " << m_item_infos;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,6 +118,8 @@ clear()
   m_subdomain_id = -1;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh
 

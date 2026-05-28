@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyPolicyMng.cc                                      (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire des politiques d'une famille d'entités.                      */
+/* Policy manager for a family of items.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/IItemFamilyCompactPolicy.h"
+#include "arcane/core/IItemFamilyCompactPolicy.h"
 
 #include "arcane/mesh/ItemFamilyPolicyMng.h"
 #include "arcane/mesh/ItemsExchangeInfo2.h"
@@ -45,7 +45,7 @@ IItemFamilyExchanger* ItemFamilyPolicyMng::
 createExchanger()
 {
   ItemsExchangeInfo2* exchanger = _createExchanger();
-  for( IItemFamilySerializeStepFactory* factory : m_serialize_step_factories ){
+  for (IItemFamilySerializeStepFactory* factory : m_serialize_step_factories) {
     IItemFamilySerializeStep* step = factory->createStep(m_item_family);
     if (step)
       exchanger->addSerializeStep(step);
@@ -60,7 +60,7 @@ IItemFamilySerializer* ItemFamilyPolicyMng::
 createSerializer(bool with_flags)
 {
   if (with_flags)
-    throw NotSupportedException(A_FUNCINFO,"serialisation with 'with_flags==true'");
+    throw NotSupportedException(A_FUNCINFO, "serialisation with 'with_flags==true'");
   return new IndirectItemFamilySerializer(m_item_family);
 }
 
@@ -82,14 +82,14 @@ removeSerializeStep(IItemFamilySerializeStepFactory* factory)
 {
   ARCANE_CHECK_POINTER(factory);
   Integer index = -1;
-  for( Integer i=0, n=m_serialize_step_factories.size(); i<n; ++i ){
-    if (m_serialize_step_factories[i]==factory){
+  for (Integer i = 0, n = m_serialize_step_factories.size(); i < n; ++i) {
+    if (m_serialize_step_factories[i] == factory) {
       index = i;
       break;
     }
   }
-  if (index==(-1))
-    throw ArgumentException(A_FUNCINFO,"factory not in list");
+  if (index == (-1))
+    throw ArgumentException(A_FUNCINFO, "factory not in list");
   m_serialize_step_factories.remove(index);
 }
 
@@ -105,7 +105,7 @@ _createExchanger()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

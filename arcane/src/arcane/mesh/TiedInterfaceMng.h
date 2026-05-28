@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TiedInterfaceMng.h                                          (C) 2000-2010 */
 /*                                                                           */
-/* Gestionnaire des interfaces liées.                                        */
+/* Tied interface manager.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_TIEDINTERFACEMNG_H
 #define ARCANE_MESH_TIEDINTERFACEMNG_H
@@ -19,24 +19,22 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/VariableTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IMesh;
 class XmlNode;
 class IMeshPartitionConstraint;
-
+} // namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +45,7 @@ class TiedInterface;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation du gestionnaire d'interfaces liées.
+ * \brief Implementation of the tied interface manager.
  */
 class TiedInterfaceMng
 : public TraceAccessor
@@ -58,7 +56,7 @@ class TiedInterfaceMng
   virtual ~TiedInterfaceMng();
 
  public:
-  
+
   void computeTiedInterfaces(const XmlNode& mesh_node);
   void prepareTiedInterfacesForDump();
   void readTiedInterfacesFromDump();
@@ -93,7 +91,7 @@ class TiedInterfaceMng
   IMeshPartitionConstraint* m_tied_constraint;
 
  private:
-  
+
   void _deleteTiedInterfaces();
   void _applyTiedInterfaceStructuration(TiedInterface* tied_interface);
 };
@@ -101,10 +99,9 @@ class TiedInterfaceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

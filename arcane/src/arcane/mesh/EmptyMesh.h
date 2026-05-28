@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,30 +21,30 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshItemInternalList.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshChecker.h"
-#include "arcane/IMeshCompactMng.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/Properties.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/IItemFamilyNetwork.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/MeshVariableScalarRef.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/VariableRefScalar.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IParticleExchanger.h"
-#include "arcane/IExtraGhostCellsBuilder.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshItemInternalList.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshChecker.h"
+#include "arcane/core/IMeshCompactMng.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/IItemFamilyNetwork.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/MeshVariableScalarRef.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/VariableRefScalar.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IParticleExchanger.h"
+#include "arcane/core/IExtraGhostCellsBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -545,12 +545,12 @@ class EmptyMesh
 
   void computeSynchronizeInfos() override
   {
-    ARCANE_THROW(NotImplementedException,"");
+    ARCANE_THROW(NotImplementedException, "");
   }
 
   IMeshInternal* _internalApi() override
   {
-    ARCANE_THROW(NotImplementedException,"");
+    ARCANE_THROW(NotImplementedException, "");
   }
 };
 
@@ -562,4 +562,4 @@ class EmptyMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_EMPTYMESH_H
+#endif

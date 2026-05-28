@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DynamicMeshInternal.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de DynamicMesh.                                   */
+/* Internal part of DynamicMesh for Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -111,7 +111,7 @@ addCell(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_
   m_items_infos[1] = unique_id;
   m_items_infos.subView(2, nb_node).copy(nodes_uid);
   Int32 cell_local_id = NULL_ITEM_LOCAL_ID;
-  m_mesh->addCells(1, m_items_infos, ArrayView<Int32>(1,&cell_local_id));
+  m_mesh->addCells(1, m_items_infos, ArrayView<Int32>(1, &cell_local_id));
   return CellLocalId(cell_local_id);
 }
 

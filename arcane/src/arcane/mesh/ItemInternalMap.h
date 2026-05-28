@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemInternalMap.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Tableau associatif de ItemInternal.                                       */
+/* Associative array of ItemInternal.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMINTERNALMAP_H
 #define ARCANE_MESH_ITEMINTERNALMAP_H
@@ -38,20 +38,20 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tableau associatif de ItemInternal.
+ * \brief Associative array of ItemInternal.
  *
- * Cette classe est interne à Arcane.
+ * This class is internal to Arcane.
  *
- * La clé de ce tableau associatif est le UniqueId des entités.
- * S'il change, il faut appeler notifyUniqueIdsChanged() pour remettre
- * à jour le tableau associatif.
+ * The key of this associative array is the UniqueId of the entities.
+ * If it changes, you must call notifyUniqueIdsChanged() to update
+ * the associative array.
  *
- * \note Toutes les méthodes qui utilisent ou retournent un 'ItemInternal*'
- * sont obsolètes et ne doivent pas être utilisées.
+ * \note All methods that use or return an 'ItemInternal*'
+ * are obsolete and should not be used.
  */
 class ARCANE_MESH_EXPORT ItemInternalMap
 {
-  // Pour accès aux méthodes qui utilisent ItemInternal.
+  // For access to methods that use ItemInternal.
   friend class DynamicMeshKindInfos;
 
  private:
@@ -110,34 +110,34 @@ class ARCANE_MESH_EXPORT ItemInternalMap
  public:
 
   /*!
-   * \brief Ajoute la valeur \a v correspondant à la clé \a key
+   * \brief Adds the value \a v corresponding to the key \a key
    *
-   * Si une valeur correspondant à \a id existe déjà, elle est remplacée.
+   * If a value corresponding to \a id already exists, it is replaced.
    *
-   * \retval true si la clé est ajoutée
-   * \retval false si la clé existe déjà et est remplacée
+   * \retval true if the key is added
+   * \retval false if the key already exists and is replaced
    */
   bool add(Int64 key, ItemInternal* v)
   {
     return m_new_impl.insert(std::make_pair(key, v)).second;
   }
 
-  //! Supprime tous les éléments de la table
+  //! Removes all elements from the table
   void clear()
   {
     return m_new_impl.clear();
   }
 
-  //! Nombre d'éléments de la table
+  //! Number of elements in the table
   Int32 count() const
   {
     return CheckedConvert::toInt32(m_new_impl.size());
   }
 
   /*!
-   * \brief Supprime la valeur associée à la clé \a key
+   * \brief Removes the value associated with the key \a key
    *
-   * Lève une exception s'il n'y a pas de valeurs associées à la clé
+   * Throws an exception if there are no values associated with the key
    */
   void remove(Int64 key)
   {
@@ -147,29 +147,29 @@ class ARCANE_MESH_EXPORT ItemInternalMap
     m_new_impl.erase(x);
   }
 
-  //! \a true si une valeur avec la clé \a id est présente
+  //! \a true if a value with the key \a id is present
   bool hasKey(Int64 key)
   {
     return (m_new_impl.find(key) != m_new_impl.end());
   }
 
-  //! Redimensionne la table de hachage
+  //! Resizes the hash table
   void resize([[maybe_unused]] Int32 new_size, [[maybe_unused]] bool use_prime = false)
   {
   }
 
   /*!
-   * \brief Notifie que les numéros uniques des entités ont changés.
+   * \brief Notifies that the unique IDs of the entities have changed.
    *
-   * Cet appel peut provoquer un recalcul complet du tableau associatif.
+   * This call may cause a complete recalculation of the associative array.
    */
   void notifyUniqueIdsChanged();
 
   /*!
-   * \brief Fonction template pour itérer sur les entités de l'instance.
+   * \brief Template function to iterate over the instance's entities.
    *
-   * Le type de l'arguments template peut-être n'importe quel type d'entité
-   * qui peut être construit à partir d'un impl::ItemBase.
+   * The type of the template argument can be any type of entity
+   * that can be constructed from an impl::ItemBase.
    * \code
    * ItemInternalMap item_map = ...
    * item_map.eachItem([&](Item item){
@@ -183,7 +183,7 @@ class ARCANE_MESH_EXPORT ItemInternalMap
     for (auto [key, value] : m_new_impl)
       lambda(Arcane::impl::ItemBase(value));
   }
-  //! Nombre de buckets
+  //! Number of buckets
   Int32 nbBucket() const
   {
     return CheckedConvert::toInt32(m_new_impl.bucket_count());
@@ -191,13 +191,13 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
  public:
 
-  //! Retourne l'entité associée à \a key si trouvé ou l'entité nulle sinon
+  //! Returns the entity associated with \a key if found, or the null entity otherwise
   impl::ItemBase tryFind(Int64 key) const
   {
     auto x = m_new_impl.find(key);
     return (x != m_new_impl.end()) ? x->second : impl::ItemBase{};
   }
-  //! Retourne le localId() associé à \a key si trouvé ou NULL_ITEM_LOCAL_ID sinon aucun
+  //! Returns the localId() associated with \a key if found, or none otherwise
   Int32 tryFindLocalId(Int64 key) const
   {
     auto x = m_new_impl.find(key);
@@ -205,9 +205,9 @@ class ARCANE_MESH_EXPORT ItemInternalMap
   }
 
   /*!
-   * \brief Retourne l'entité de numéro unique \a uid.
+   * \brief Returns the unique ID entity \a uid.
    *
-   * Lève une exception si l'entité n'est pas dans la table.
+   * Throws an exception if the entity is not in the table.
    */
   impl::ItemBase findItem(Int64 uid) const
   {
@@ -218,9 +218,9 @@ class ARCANE_MESH_EXPORT ItemInternalMap
   }
 
   /*!
-   * \brief Retourne le numéro local de l'entité de numéro unique \a uid.
+   * \brief Returns the local number of the unique ID entity \a uid.
    *
-   * Lève une exception si l'entité n'est pas dans la table.
+   * Throws an exception if the entity is not in the table.
    */
   Int32 findLocalId(Int64 uid) const
   {
@@ -252,7 +252,7 @@ class ARCANE_MESH_EXPORT ItemInternalMap
     _throwNotSupported("buckets");
   }
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   BaseData* lookupAdd([[maybe_unused]] Int64 id,
                       [[maybe_unused]] ItemInternal* value,
                       [[maybe_unused]] bool& is_add)
@@ -284,10 +284,10 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
  private:
 
-  // Les trois méthodes suivantes sont uniquement pour la
-  // classe DynamicMeshKindInfos.
+  // The following three methods are only for the
+  // class DynamicMeshKindInfos.
 
-  //! Change la valeurs des localId()
+  //! Changes the values of localId()
   void _changeLocalIds(ArrayView<ItemInternal*> items_internal,
                        ConstArrayView<Int32> old_to_new_local_ids);
 
@@ -298,7 +298,7 @@ class ARCANE_MESH_EXPORT ItemInternalMap
     return LookupData(x.first);
   }
 
-  //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
+  //! Returns the entity associated with \a key if found, or nullptr otherwise
   ItemInternal* _tryFindItemInternal(Int64 key) const
   {
     auto x = m_new_impl.find(key);
@@ -317,9 +317,9 @@ class ARCANE_MESH_EXPORT ItemInternalMap
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

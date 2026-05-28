@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,12 +17,12 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/IItemConnectivity.h"
-#include "arcane/ConnectivityItemVector.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/IItemConnectivity.h"
+#include "arcane/core/ConnectivityItemVector.h"
 
 #include "arcane/mesh/DoFFamily.h"
 #include "arcane/mesh/ItemProperty.h"
@@ -36,15 +36,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe abstraite de gestion des connectivités.
+ * \brief Abstract connectivity management class.
  *
- * Cette classe gère les informations communes à tous les types de
- * connectivité comme son nom, les familles sources et cible, ...
+ * This class manages common information for all types of
+ * connectivity such as its name, source and target families, etc.
  */
 class ARCANE_MESH_EXPORT AbstractConnectivity
 : public IItemConnectivity
 {
  public:
+
   AbstractConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& connectivity_name)
   : m_source_family(source_family)
   , m_target_family(target_family)
@@ -63,21 +64,21 @@ class ARCANE_MESH_EXPORT AbstractConnectivity
 
  public:
 
-  virtual ConstArrayView<IItemFamily*> families() const { return m_families.constView();}
-  virtual IItemFamily* sourceFamily() const { return m_source_family;}
-  virtual IItemFamily* targetFamily() const { return m_target_family;}
+  virtual ConstArrayView<IItemFamily*> families() const { return m_families.constView(); }
+  virtual IItemFamily* sourceFamily() const { return m_source_family; }
+  virtual IItemFamily* targetFamily() const { return m_target_family; }
   virtual void _initializeStorage(ConnectivityItemVector*)
   {
-    // Pour l'instant ne fait rien. A terme, cela pourra servir par exemple
-    // pour dimensionner au nombre max d'entités connectées afin de ne pas
-    // faire de réallocations lors de la récupération des entités via _connectedItems().
+    // For now does nothing. Eventually, this can be used, for example,
+    // to dimension the storage based on the maximum number of connected entities
+    // to avoid reallocations when retrieving entities via _connectedItems().
   }
 
  protected:
 
-  ConstArrayView<IItemFamily*> _families() const { return m_families.constView();}
-  IItemFamily* _sourceFamily() const { return m_source_family;}
-  IItemFamily* _targetFamily() const { return m_target_family;}
+  ConstArrayView<IItemFamily*> _families() const { return m_families.constView(); }
+  IItemFamily* _sourceFamily() const { return m_source_family; }
+  IItemFamily* _targetFamily() const { return m_target_family; }
 
  private:
 
@@ -90,52 +91,54 @@ class ARCANE_MESH_EXPORT AbstractConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Connectivite item->item, exactement 1 item connecté par item (0 non admis).
+ * \brief Item->item connectivity, exactly 1 item connected per item (0 not allowed).
  */
 class ARCANE_MESH_EXPORT ItemConnectivity
 : public AbstractConnectivity
 {
-public:
+ public:
+
   typedef ItemScalarProperty<Int32> ItemPropertyType;
 
  public:
-  ItemConnectivity(IItemFamily* source_family, IItemFamily* target_family,const String& aname)
-  : AbstractConnectivity(source_family,target_family,aname)
+
+  ItemConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& aname)
+  : AbstractConnectivity(source_family, target_family, aname)
   {
     compute();
   }
 
-  ItemConnectivity(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& aname)
-    : AbstractConnectivity(source_family,target_family,aname) // IFPEN : voir le paramètre own de GE...
+  ItemConnectivity(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& aname)
+  : AbstractConnectivity(source_family, target_family, aname) // IFPEN: see the own parameter of GE...
   {
     m_item_property.copy(item_property);
   }
 
  public:
 
-  virtual ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
+  virtual ItemVectorView _connectedItems(ItemLocalId item, ConnectivityItemVector& con_items) const
   {
-    ARCANE_ASSERT((con_items.accessor()==this),("Bad connectivity"));
+    ARCANE_ASSERT((con_items.accessor() == this), ("Bad connectivity"));
     return con_items.setItem(m_item_property[item]);
- }
+  }
 
   virtual ConnectivityItemVectorCatalyst _connectedItems(ItemLocalId item) const
   {
-    auto set   = [this](ConnectivityItemVector& civ)mutable{civ = ConnectivityItemVector((ItemConnectivity*)this);};
-    auto apply = [this,item](ConnectivityItemVector& civ){this->_connectedItems(item,civ);};
-    return {set,apply};
+    auto set = [this](ConnectivityItemVector& civ) mutable { civ = ConnectivityItemVector((ItemConnectivity*)this); };
+    auto apply = [this, item](ConnectivityItemVector& civ) { this->_connectedItems(item, civ); };
+    return { set, apply };
   }
 
   virtual void updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items);
 
  public:
 
-  const Item operator() (ItemLocalId item) const
+  const Item operator()(ItemLocalId item) const
   {
     /*
     ARCANE_ASSERT((m_item_property[item] != NULL_ITEM_LOCAL_ID),
                   ("Item must be connected to one item in ItemConnectivity."));
-    //TODO: conserver ItemInternalList pour des raisons de performance.
+    //TODO: keep ItemInternalList for performance reasons.
     return Item(_targetFamily()->itemsInternal()[m_item_property[item]]);
     */
     // Needed for IFPEN applicative test: eventually returns a null item (reasonable for perf ?)
@@ -144,9 +147,9 @@ public:
     return Item();
   }
 
-  ItemScalarProperty<Int32>& itemProperty() {return m_item_property;}
+  ItemScalarProperty<Int32>& itemProperty() { return m_item_property; }
 
-  void updateItemProperty(const ItemScalarProperty<Int32>& item_property) {m_item_property.copy(item_property);}
+  void updateItemProperty(const ItemScalarProperty<Int32>& item_property) { m_item_property.copy(item_property); }
 
   virtual Integer nbConnectedItem(ItemLocalId lid) const
   {
@@ -154,19 +157,19 @@ public:
     return 1;
   }
 
-  virtual Int32 connectedItemLocalId(ItemLocalId lid,[[maybe_unused]] Integer index) const
+  virtual Int32 connectedItemLocalId(ItemLocalId lid, [[maybe_unused]] Integer index) const
   {
-    ARCANE_ASSERT((index==0),("Invalid value for index"))
+    ARCANE_ASSERT((index == 0), ("Invalid value for index"))
     return m_item_property[lid];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:
@@ -192,17 +195,19 @@ class ItemConnectivityT
 
  public:
 
-  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const String& connectivity_name)
-  : ItemConnectivity(source_family,target_family,connectivity_name){}
+  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family, const String& connectivity_name)
+  : ItemConnectivity(source_family, target_family, connectivity_name)
+  {}
 
-  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property,const String& connectivity_name)
-  : ItemConnectivity(source_family,target_family,item_property, connectivity_name){}
+  ItemConnectivityT(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& connectivity_name)
+  : ItemConnectivity(source_family, target_family, item_property, connectivity_name)
+  {}
 
  public:
 
   const ToItemType operator()(FromLocalIdType item) const
   {
-    return ItemConnectivity::operator ()(item).itemBase();
+    return ItemConnectivity::operator()(item).itemBase();
   }
 };
 
@@ -212,34 +217,36 @@ class ItemConnectivityT
 class ARCANE_MESH_EXPORT ItemArrayConnectivity
 : public AbstractConnectivity
 {
-public:
+ public:
+
   typedef ItemArrayProperty<Int32> ItemPropertyType;
 
  public:
-  ItemArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family,Integer nb_dof_per_item, const String& name)
-  : AbstractConnectivity(source_family,target_family,name)
+
+  ItemArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family, Integer nb_dof_per_item, const String& name)
+  : AbstractConnectivity(source_family, target_family, name)
   , m_nb_dof_per_item(nb_dof_per_item)
   {
     compute();
   }
 
-  ItemArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& name)
-  : AbstractConnectivity(source_family,target_family,name)
+  ItemArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& name)
+  : AbstractConnectivity(source_family, target_family, name)
   , m_nb_dof_per_item(item_property.dim2Size())
-    {
-      m_item_property.copy(item_property);
-    }
+  {
+    m_item_property.copy(item_property);
+  }
 
  public:
 
-  virtual ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
+  virtual ItemVectorView _connectedItems(ItemLocalId item, ConnectivityItemVector& con_items) const
   {
-    return this->operator()(item,con_items);
+    return this->operator()(item, con_items);
   }
 
   virtual ConnectivityItemVectorCatalyst _connectedItems(ItemLocalId item) const
   {
-    return this->operator ()(item);
+    return this->operator()(item);
   }
 
   virtual void updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items);
@@ -248,19 +255,19 @@ public:
 
   ItemArrayProperty<Int32>& itemProperty() { return m_item_property; }
 
-  void updateItemProperty(const ItemArrayProperty<Int32>& item_property) {m_item_property.copy(item_property);}
+  void updateItemProperty(const ItemArrayProperty<Int32>& item_property) { m_item_property.copy(item_property); }
 
-  ItemVectorView operator() (ItemLocalId item,ConnectivityItemVector& con_items) const
+  ItemVectorView operator()(ItemLocalId item, ConnectivityItemVector& con_items) const
   {
-    ARCANE_ASSERT((con_items.accessor()==this),("Bad connectivity"));
+    ARCANE_ASSERT((con_items.accessor() == this), ("Bad connectivity"));
     return con_items.resizeAndCopy(m_item_property[item]);
   }
 
   ConnectivityItemVectorCatalyst operator()(ItemLocalId item) const
   {
-    auto set   = [this](ConnectivityItemVector& civ)mutable{civ = ConnectivityItemVector((ItemConnectivity*)this);};
-    auto apply = [this,item](ConnectivityItemVector& civ){this->operator ()(item,civ);};
-    return {set,apply};
+    auto set = [this](ConnectivityItemVector& civ) mutable { civ = ConnectivityItemVector((ItemConnectivity*)this); };
+    auto apply = [this, item](ConnectivityItemVector& civ) { this->operator()(item, civ); };
+    return { set, apply };
   }
 
   virtual Integer nbConnectedItem(ItemLocalId lid) const
@@ -269,18 +276,18 @@ public:
     return m_nb_dof_per_item;
   }
 
-  virtual Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const
+  virtual Int32 connectedItemLocalId(ItemLocalId lid, Integer index) const
   {
     return m_item_property[lid][index];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:
@@ -296,7 +303,7 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class FromItemType,class ToItemType>
+template <class FromItemType, class ToItemType>
 class ItemArrayConnectivityT
 : public ItemArrayConnectivity
 {
@@ -306,18 +313,20 @@ class ItemArrayConnectivityT
 
  public:
 
-  ItemArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family,Integer nb_dof_per_item, const String& connectivity_name)
-  : ItemArrayConnectivity(source_family,target_family,nb_dof_per_item,connectivity_name){}
+  ItemArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family, Integer nb_dof_per_item, const String& connectivity_name)
+  : ItemArrayConnectivity(source_family, target_family, nb_dof_per_item, connectivity_name)
+  {}
 
-  ItemArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& connectivity_name)
-  : ItemArrayConnectivity(source_family,target_family,item_property,connectivity_name){}
+  ItemArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& connectivity_name)
+  : ItemArrayConnectivity(source_family, target_family, item_property, connectivity_name)
+  {}
 
-  ItemVectorView operator() (FromLocalIdType item,ConnectivityItemVector& con_items) const
+  ItemVectorView operator()(FromLocalIdType item, ConnectivityItemVector& con_items) const
   {
-    return ItemArrayConnectivity::operator()(item,con_items);
+    return ItemArrayConnectivity::operator()(item, con_items);
   }
 
-  ConnectivityItemVectorCatalyst operator() (FromLocalIdType item) const
+  ConnectivityItemVectorCatalyst operator()(FromLocalIdType item) const
   {
     return ItemArrayConnectivity::operator()(item);
   }
@@ -329,73 +338,74 @@ class ItemArrayConnectivityT
 class ARCANE_MESH_EXPORT ItemMultiArrayConnectivity
 : public AbstractConnectivity
 {
-public:
+ public:
+
   typedef ItemMultiArrayProperty<Int32> ItemPropertyType;
 
  public:
-  ItemMultiArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family,IntegerConstArrayView nb_dof_per_item, const String& name)
- : AbstractConnectivity(source_family,target_family,name)
+
+  ItemMultiArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family, IntegerConstArrayView nb_dof_per_item, const String& name)
+  : AbstractConnectivity(source_family, target_family, name)
   {
     compute(nb_dof_per_item);
   }
 
-  ItemMultiArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& name)
- : AbstractConnectivity(source_family,target_family,name)
+  ItemMultiArrayConnectivity(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& name)
+  : AbstractConnectivity(source_family, target_family, name)
   {
     m_item_property.copy(item_property);
   }
 
  public:
 
-  virtual ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
+  virtual ItemVectorView _connectedItems(ItemLocalId item, ConnectivityItemVector& con_items) const
   {
-    return this->operator()(item,con_items);
+    return this->operator()(item, con_items);
   }
 
   virtual ConnectivityItemVectorCatalyst _connectedItems(ItemLocalId item) const
   {
-    return this->operator ()(item);
+    return this->operator()(item);
   }
 
   virtual void updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items);
 
  public:
-  
-  ItemMultiArrayProperty<Int32>& itemProperty() {return m_item_property;}
 
-  void updateItemProperty(ItemMultiArrayProperty<Int32>& item_property) {m_item_property.copy(item_property);}
+  ItemMultiArrayProperty<Int32>& itemProperty() { return m_item_property; }
 
-  ItemVectorView operator() (ItemLocalId item,ConnectivityItemVector& con_items) const
+  void updateItemProperty(ItemMultiArrayProperty<Int32>& item_property) { m_item_property.copy(item_property); }
+
+  ItemVectorView operator()(ItemLocalId item, ConnectivityItemVector& con_items) const
   {
-    ARCANE_ASSERT((con_items.accessor()==this),("Bad connectivity"));
+    ARCANE_ASSERT((con_items.accessor() == this), ("Bad connectivity"));
     return con_items.resizeAndCopy(m_item_property[item]);
   }
 
   ConnectivityItemVectorCatalyst operator()(ItemLocalId item) const
   {
-    auto set   = [this](ConnectivityItemVector& civ)mutable{civ = ConnectivityItemVector((ItemConnectivity*)this);};
-    auto apply = [this,item](ConnectivityItemVector& civ){this->operator ()(item,civ);};
-    return {set,apply};
+    auto set = [this](ConnectivityItemVector& civ) mutable { civ = ConnectivityItemVector((ItemConnectivity*)this); };
+    auto apply = [this, item](ConnectivityItemVector& civ) { this->operator()(item, civ); };
+    return { set, apply };
   }
-
 
   virtual Integer nbConnectedItem(ItemLocalId lid) const
   {
     return m_item_property[lid].size();
   }
 
-  virtual Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const
+  virtual Int32 connectedItemLocalId(ItemLocalId lid, Integer index) const
   {
     return m_item_property[lid][index];
   }
 
-  //! Notifie la connectivité que la famille source est compactée.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
   {
     m_item_property.updateSupport(new_to_old_ids);
   }
 
-  //! Notifie la connectivité que la famille cible est compactée.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids);
 
  private:
@@ -410,7 +420,7 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class FromItemType,class ToItemType>
+template <class FromItemType, class ToItemType>
 class ItemMultiArrayConnectivityT
 : public ItemMultiArrayConnectivity
 {
@@ -420,31 +430,33 @@ class ItemMultiArrayConnectivityT
 
  public:
 
-  ItemMultiArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const IntegerConstArrayView nb_dof_per_item, const String& connectivity_name)
-  : ItemMultiArrayConnectivity(source_family,target_family,nb_dof_per_item,connectivity_name){}
+  ItemMultiArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family, const IntegerConstArrayView nb_dof_per_item, const String& connectivity_name)
+  : ItemMultiArrayConnectivity(source_family, target_family, nb_dof_per_item, connectivity_name)
+  {}
 
-  ItemMultiArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family,const ItemPropertyType& item_property, const String& connectivity_name)
-  : ItemMultiArrayConnectivity(source_family,target_family,item_property,connectivity_name){}
+  ItemMultiArrayConnectivityT(IItemFamily* source_family, IItemFamily* target_family, const ItemPropertyType& item_property, const String& connectivity_name)
+  : ItemMultiArrayConnectivity(source_family, target_family, item_property, connectivity_name)
+  {}
 
  public:
 
-  ItemVectorViewT<ToItemType> operator() (FromLocalIdType item,ConnectivityItemVector& con_items) const
+  ItemVectorViewT<ToItemType> operator()(FromLocalIdType item, ConnectivityItemVector& con_items) const
   {
-    return ItemMultiArrayConnectivity::operator() (item,con_items);
+    return ItemMultiArrayConnectivity::operator()(item, con_items);
   }
 
   ConnectivityItemVectorCatalyst operator()(ItemLocalId item) const
   {
-    return ItemMultiArrayConnectivity::operator() (item);
+    return ItemMultiArrayConnectivity::operator()(item);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* CONNECTIVITY_H_ */
+#endif

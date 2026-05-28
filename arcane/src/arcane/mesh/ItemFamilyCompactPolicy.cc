@@ -1,19 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyCompactPolicy.cc                                  (C) 2000-2022 */
 /*                                                                           */
-/* Politique de compactage des entités.                                      */
+/* Entity compaction policy.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/ItemFamilyCompactInfos.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/ItemFamilyCompactInfos.h"
 
 #include "arcane/mesh/ItemFamilyCompactPolicy.h"
 #include "arcane/mesh/ItemFamily.h"

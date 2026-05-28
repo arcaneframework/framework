@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshRefinement.h                                            (C) 2000-2024 */
 /*                                                                           */
-/* Gestion de l'adaptation de maillages non-structurés par raffinement       */
+/* Management of unstructured mesh adaptation by refinement                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHREFINEMENT_H
 #define ARCANE_MESH_MESHREFINEMENT_H
@@ -34,7 +34,7 @@ class Node;
 class Cell;
 class AMRCallBackMng;
 class FaceFamily;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,51 +49,53 @@ class ParallelAMRConsistency;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation des algorithmes d'adaptation par raffinement de
- * maillages non-structuré.
+ * \brief Implementation of unstructured mesh refinement adaptation algorithms.
  */
 class MeshRefinement
-:  public TraceAccessor
+: public TraceAccessor
 {
-public:
+ public:
+
 #ifdef ACTIVATE_PERF_COUNTER
   struct PerfCounter
   {
-      typedef enum {
-        INIT,
-        CLEAR,
-        ENDUPDATE,
-        UPDATEMAP,
-        UPDATEMAP2,
-        CONSIST,
-        PCONSIST,
-        PCONSIST2,
-        PGCONSIST,
-        CONTRACT,
-        COARSEN,
-        REFINE,
-        INTERP,
-        PGHOST,
-        COMPACT,
-        NbCounters
-      }  eType ;
+    typedef enum
+    {
+      INIT,
+      CLEAR,
+      ENDUPDATE,
+      UPDATEMAP,
+      UPDATEMAP2,
+      CONSIST,
+      PCONSIST,
+      PCONSIST2,
+      PGCONSIST,
+      CONTRACT,
+      COARSEN,
+      REFINE,
+      INTERP,
+      PGHOST,
+      COMPACT,
+      NbCounters
+    } eType;
 
-      static const std::string m_names[NbCounters] ;
-  } ;
+    static const std::string m_names[NbCounters];
+  };
 #endif
   /**
    * Constructor.
    */
   MeshRefinement(DynamicMesh* mesh);
 
-private:
-  // le ctor de copie et l'opérateur d'affectation sont
-  // déclarés privés mais non implémentés.  C'est la
-  // technique standard pour les empêcher d'être utilisés.
+ private:
+
+  // The copy constructor and assignment operator are
+  // declared private but not implemented. This is the
+  // standard technique to prevent them from being used.
   MeshRefinement(const MeshRefinement&);
   MeshRefinement& operator=(const MeshRefinement&);
 
-public:
+ public:
 
   /**
    * Destructor.
@@ -101,116 +103,112 @@ public:
   ~MeshRefinement();
 
   /**
-   * Supprime toutes les données qui sont actuellement stockés.
+   * Clears all currently stored data.
    */
   void clear();
   /**
-   * Calcul du max des uid.
+   * Calculates the maximum UID.
    */
   void init();
 
-  void update() ;
-  bool needUpdate() const {
-    return m_need_update ;
+  void update();
+  bool needUpdate() const
+  {
+    return m_need_update;
   }
-  void invalidate() {
-    m_need_update = true ;
+  void invalidate()
+  {
+    m_need_update = true;
   }
-  void initMeshContainingBox() ;
+  void initMeshContainingBox();
   /**
-   * Flag les items pour raffinement/déraffinement
+   * Flags items for refinement/coarsening
    */
   void flagItems(const Int32Array& flag_per_cell,
                  const Integer max_level = -1);
 
   /*!
-   * \brief Passage de l'erreur commise par maille au flag de raffinement.
+   * \brief Passing the error committed by the mesh to the refinement flag.
    *
-   * Cette métthode pourrait être condée de manières différentes:
-   * 1- implémentation actuelle: l'uilisateur fait la transformation lui-même
-   * dans ce cas, il modifie l'objet itemInternal en settant le flag de raffinement
-   * 2- l'uilisateur fait la transformation lui-même mais stocke et retourne un tableau des flags
-   * la classe MeshRefinement, dans ce cas là, implémente un setter à partir du tableau retourné ici
-   * 3- pour éviter la copie du tableau des flags, implémenter le converter directement dans meshRefinement
-   * et l'utilisateur ne fait que fournir le tableau d'erreur
+   * This method could be implemented in different ways:
+   * 1- current implementation: the user performs the transformation themselves
+   * in this case, they modify the itemInternal object by setting the refinement flag
+   * 2- the user performs the transformation themselves but stores and returns an array of flags
+   * the MeshRefinement class, in this case, implement a setter from the returned array
+   * 3- to avoid copying the array of flags, implement the converter directly in meshRefinement
+   * and the user only provides the error array
    */
   virtual void flagCellToRefine(Int32ConstArrayView cells_lids);
   virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids);
 
   /*!
-   * Raffine et déraffine les items demandés par l'utilisateur. également
-   * raffine/déraffine des items complémentaires pour satisfaire la règle de niveau-un.
-   * Il est possible que pour un ensemble donné de flags qu'il
-   * n'est réellement aucun changement en appelant cette méthode. En conséquence,
-   * elle envoie \p true si le maillage a changé réellement (dans ce cas
-   * les données doivent être projetées) et \p false sinon.
+   * Refines and coarsens the items requested by the user. It also
+   * refines/coarsens complementary items to satisfy the level-one rule.
+   * It is possible that for a given set of flags there is no actual change when calling this method. Consequently,
+   * it returns \p true if the mesh has actually changed (in which case
+   * the data must be projected) and \p false otherwise.
 
-   * L'argument \p maintain_level_one est deprecated; utilisez plutôtt l'option
-   * face_level_mismatch_limit() .
+   * The argument \p maintain_level_one is deprecated; use face_level_mismatch_limit() instead.
    */
-  bool refineAndCoarsenItems(const bool maintain_level_one=true);
+  bool refineAndCoarsenItems(const bool maintain_level_one = true);
 
   /*!
-   * Dérffine seulement les items demandés par l'utilisateur. Quelques items
-   * ne seront pas déraffinés pour satisfaire la régle de niveau un.
-   * Il est possible que pour un ensemble donné de flags qu'il
-   * n'est réellement aucun changement en appelant cette méthode.  En conséquence,
-   * elle envoie \p true si le maillage a changé réellement (dans ce cas
-   * les données doivent être projetées) et \p false sinon.
+   * Coarsens only the items requested by the user. Some items
+   * may not be coarsened to satisfy the level-one rule.
+   * It is possible that for a given set of flags there is no actual change when calling this method. Consequently,
+   * it returns \p true if the mesh has actually changed (in which case
+   * the data must be projected) and \p false otherwise.
 
-   * L'argument \p maintain_level_one est deprecated; utilisez plutôt l'option
-   * face_level_mismatch_limit() .
+   * The argument \p maintain_level_one is deprecated; use face_level_mismatch_limit() instead.
    */
   bool coarsenItems(const bool maintain_level_one = true);
 
   /*!
-   * \brief Méthode permettant de retirer les mailles marquées avec le
+   * \brief Method allowing the removal of meshes marked with the
    * flag "II_Coarsen".
    *
-   * Les propriétaires des faces et des noeuds ayant des mailles marquées
-   * et des mailles non marquées sont susceptibles d'être mis à jour.
+   * The owners of faces and nodes having marked meshes
+   * and unmarked meshes are likely to be updated.
    *
-   * \param update_parent_flag Si true, alors les flags des parents seront
-   * mis à jour. Cela inclut l'activation des mailles parents.
+   * \param update_parent_flag If true, the parent flags will be
+   * updated. This includes activating parent meshes.
    *
-   * \return true si le maillage a évolué.
+   * \return true if the mesh has changed.
    */
   bool coarsenItemsV2(bool update_parent_flag);
 
   /*!
-   * raffine seulement les items demandés par l'utilisateur.
-   * Il est possible que pour un ensemble donné de flags qu'il
-   * n'est réellement aucun changement en appelant cette méthode.  En conséquence,
-   * elle envoie \p true si le maillage a changé réellement (dans ce cas
-   * les données doivent être projetées) et \p false sinon.
+   * Refines only the items requested by the user.
+   * It is possible that for a given set of flags there is no actual change when calling this method. Consequently,
+   * it returns \p true if the mesh has actually changed (in which case
+   * the data must be projected) and \p false otherwise.
 
-   * L'argument \p maintain_level_one est deprecated; utilisez plutôtt l'option
-   * face_level_mismatch_limit() .
+   * The argument \p maintain_level_one is deprecated; use face_level_mismatch_limit() instead.
    */
-  bool refineItems(const bool maintain_level_one=true);
+  bool refineItems(const bool maintain_level_one = true);
 
   /*!
-   * Raffine uniformement le maillage \p n fois.
+   * Uniformly refines the mesh \p n times.
    */
-  void uniformlyRefine(Integer n=1);
+  void uniformlyRefine(Integer n = 1);
 
   /*!
-   * déraffine uniformement le maillage \p n fois.
+   * Uniformly coarsens the mesh \p n times.
    */
-  void uniformlyCoarsen(Integer n=1);
+  void uniformlyCoarsen(Integer n = 1);
 
   /*!
-   * \p max_level est le plus grand niveau de raffinement
-   * qu'un item peut atteindre.
+   * \p max_level is the highest refinement level
+   * an item can reach.
    *
-   * \p max_level est illimité (-1) par default
+   * \p max_level is unlimited (-1) by default
    */
   Integer& maxLevel();
 
-  //! Référence constante au maillage.
+  //! Constant reference to the mesh.
   const IMesh* getMesh() const;
 
-  //! Référence au maillage.
+  //! Reference to the mesh.
   IMesh* getMesh();
 
   //!
@@ -218,19 +216,19 @@ public:
   //!
   void unRegisterCallBack(IAMRTransportFunctor* f);
   /*!
-   * Ajout d'un nouveau uid associé au point \p p.
-   * si p existe déjà, on garde l'ancien uid.
-   * La tolerance \p tol donne le perimetre de recherche autour de p.
+   * Adds a new uid associated with point \p p.
+   * if p already exists, the old uid is kept.
+   * The tolerance \p tol gives the search perimeter around p.
    */
-  Int64 findOrAddNodeUid(const Real3& p,const Real& tol);
+  Int64 findOrAddNodeUid(const Real3& p, const Real& tol);
   /*!
-   * Ajout d'un nouveau uid associé au centre de la face \p face_center.
-   * si p existe déjà, on garde l'ancien uid.
-   * La tolerance \p tol donne le perimetre de recherche autour de face_center.
+   * Adds a new uid associated with the face center \p face_center.
+   * if p already exists, the old uid is kept.
+   * The tolerance \p tol gives the search perimeter around face_center.
    */
-  Int64 findOrAddFaceUid(const Real3& face_center,const Real& tol,bool& is_added);
+  Int64 findOrAddFaceUid(const Real3& face_center, const Real& tol, bool& is_added);
   /*!
-   * genere un nouveau uid pour les enfants.
+   * Generates a new uid for children.
    */
   Int64 getFirstChildNewUid();
 
@@ -240,11 +238,11 @@ public:
   void _updateMaxUid(ArrayView<ItemInternal*> cells_to_refine);
 
   /*!
-   * return le pattern de raffinement associe au type de maille.
+   * Returns the refinement pattern associated with the mesh type.
    */
-  template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const ;
+  template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const;
   /*!
-   * Determination des connexions non conformes des mailles raffinees.
+   * Determination of non-conforming connections of refined meshes.
    */
   void populateBackFrontCellsFromChildrenFaces(Cell parent_cell);
   void populateBackFrontCellsFromParentFaces(Cell parent_cell);
@@ -252,84 +250,79 @@ public:
  private:
 
   /*!
-   * Retourne true si et seulement si le maillage satisfait la règle de niveau un
-   * Retourne false sinon
-   * Arrète l'exècution si arcane_assert_yes est true et si
-   * le maillage ne satisfait pas la règle de niveau un
+   * Returns true if and only if the mesh satisfies the level-one rule.
+   * Returns false otherwise.
+   * Stops execution if arcane_assert_yes is true and if
+   * the mesh does not satisfy the level-one rule
    */
   bool _checkLevelOne(bool arcane_assert_yes = false);
 
   /*!
-   * Retourne true si et seulement si le maillage n'a pas d'items
-   * flaggès pour déraffinement ou raffinement
-   * Retourne false autrement
-   * Arrète l'exécution si \a arcane_assert_yes est true et si
-   * le maillage a des items flaggés
+   * Returns true if and only if the mesh has no items
+   * flagged for coarsening or refinement
+   * Returns false otherwise
+   * Stops execution if \a arcane_assert_yes is true and if
+   * the mesh has flagged items
    */
   bool _checkUnflagged(bool arcane_assert_yes = false);
 
   /*!
-   * Si \p coarsen_by_parents est true,
-   * les items avec le même parent seront flaggés pour déraffinement
-   * Ceci devrait produire un déraffinement plus proche à ce qui a été demandé.
+   * If \p coarsen_by_parents is true,
+   * items with the same parent will be flagged for coarsening
+   * This should produce a coarsening closer to what was requested.
    *
-   * \p coarsen_by_parents est true par default.
+   * \p coarsen_by_parents is true by default.
    */
   bool& coarsenByParents();
 
-
   /*!
-   * Si Face_level_mismatch_limit est mise à une valeur non nulle, alors
-   * le raffinement et déraffinement produiront des maillages dans lesquels
-   * le niveau de raffinement de deux mailles voisines par face ne différera pas plus que
-   * cette limite.  Si Face_level_mismatch_limit est 0, donc les diffèrences de niveau
-   * seront illimitées.
+   * If Face_level_mismatch_limit is set to a non-zero value, then   * refinement and coarsening will produce meshes where
+   * the refinement level of two neighboring meshes per face will not differ by more than
+   * this limit. If Face_level_mismatch_limit is 0, then level differences
+   * will be unlimited.
    *
-   * \p face_level_mismatch_limit est 1 par default.  Actuellement les seules
-   * options supportèes sont 0 et 1.
+   * \p face_level_mismatch_limit is 1 by default. Currently, the only
+   * supported options are 0 and 1.
    */
   unsigned char& faceLevelMismatchLimit();
 
   /*!
-   * Supprime les enfants subactifs du maillage
-   * Contracte un item actif, i.e. supprimer les pointers vers chaque
-   * enfant subactif.  Ceci devrait seulement ètre appelè après restriction des variables
-   * sur les parents
+   * Removes inactive children from the mesh
+   * Contracts an active item, i.e. deletes the pointers to each
+   * inactive child. This should only be called after variable restriction
+   * on the parents
    */
   bool _contract();
 
-  //! interpolation des données sur les mailles enfants
+  //! Interpolation of data on the child meshes
   void _interpolateData(const Int64Array& cells_to_refine);
 
-  //! restriction des données sur les mailles parents
+  //! Upscaling of data on the parent meshes
   void _upscaleData(Array<ItemInternal*>& parent_cells);
 
  private:
 
   /**
-   * Déraffine les items demandés par l'utilisateur. Les deux méthodes _coarsenItems()
-   * et _refineItems() ne sont pas dans l'interface publique de MeshRefinement. Car une
-   * prèparation approprièe (makeRefinementCompatible, makeCoarseningCompatible) est
-   * nècessaire pour qu'on puisse exècuter _coarsenItems().
+   * Coarsens the items requested by the user. The two methods _coarsenItems()
+   * and _refineItems() are not in the public interface of MeshRefinement. Because appropriate preparation (makeRefinementCompatible, makeCoarseningCompatible) is
+   * necessary to execute _coarsenItems().
    *
-   * Il est possible que pour un ensemble donné de flags qu'il
-   * n'est réellement aucun changement en appelant cette fonction.  En conséquence,
-   * Elle renvoie \p true si le maillage a changé réellement (dans ce cas
-   * les données doivent ètre projetées) \p false autrement.
+   * It is possible that for a given set of flags there is no actual change when calling this function. Consequently,
+   * it returns \p true if the mesh has actually changed (in which case
+   * the data must be projected) \p false otherwise.
    */
   bool _coarsenItems();
 
   /**
-   * Raffine les items demandès par l'utilisateur.
+   * Refines the items requested by the user.
    *
-   * Il est possible que pour un ensemble donné de flags qu'il
-   * n'est rèellement aucun changement en appelant cette fonction.  En conséquence,
-   * Elle renvoie \p true si le maillage a changé réellement (dans ce cas
-   * les données doivent ètre projetées) \p false autrement.
+   * It is possible that for a given set of flags there is no actual change when calling this function. Consequently,
+   * it returns \p true if the mesh has actually changed (in which case
+   * the data must be projected) \p false otherwise.
    */
   bool _refineItems(Int64Array& cells_to_refine);
 
-  // mise a jour des owner des items a partir des mailles
+  // Updates the owners of items from the meshes
   void _updateItemOwner(Int32ArrayView cell_to_remove);
   void _updateItemOwner2();
   //!
@@ -337,83 +330,79 @@ public:
   //---------------------------------------------
   // Utility algorithms
 
-
   /**
-   * Mise è jour de m_nodes_finder et m_faces_finder
+   * Updates m_nodes_finder and m_faces_finder
    */
   void _updateLocalityMap();
   void _updateLocalityMap2();
   /**
-   * Mettre le flag de raffinement à II_DoNothing
-   * pour chaque item du maillage.
+   * Sets the refinement flag to II_DoNothing
+   * for every item in the mesh.
    */
   void _cleanRefinementFlags();
 
   /**
-   * Agit sur les flags de déraffinement à ce que la règle
-   * de niveau-un soit satisaite.
+   * Acts on the coarsening flags so that the level-one rule is satisfied.
    */
   bool _makeCoarseningCompatible(const bool);
 
-
   /**
-   * Agir sur les flags de raffinement à ce que la règle
-   * de niveau-un soit satisaite.
+   * Acts on the refinement flags so that the level-one rule is satisfied.
    */
   bool _makeRefinementCompatible(const bool);
 
   /**
-   * Copie des flags de raffinement sur les items frontières à partir de leur
-   * processeurs owners.  Retourne true si un flag a changè.
+   * Copies refinement flags onto boundary items from their
+   * owner processors. Returns true if a flag has changed.
    */
   bool _makeFlagParallelConsistent();
   bool _makeFlagParallelConsistent2();
 
   /**
-   * Determination des connexions non conformes des mailles raffinées
+   * Determination of non-conforming connections of refined meshes
    */
   template <int typeID>
-  void _populateBackFrontCellsFromParentFaces(Cell parent_cell) ;
+  void _populateBackFrontCellsFromParentFaces(Cell parent_cell);
   template <int typeID>
-  void _populateBackFrontCellsFromChildrenFaces(Face face,Cell parent_cell,
+  void _populateBackFrontCellsFromChildrenFaces(Face face, Cell parent_cell,
                                                 Cell neighbor_cell);
 
-  void _checkOwner(const String & msg); // To avoid owner desynchronization
+  void _checkOwner(const String& msg); // To avoid owner desynchronization
 
  private:
 
   /**
-   * Reference au maillage.
+   * Reference to the mesh.
    */
   DynamicMesh* m_mesh;
   FaceFamily* m_face_family;
   bool m_need_update;
 
   /**
-   * recherche rapide des noeuds et des faces a partir de leurs coords
-   * pour les faces, les coords sont celles du centre de la face
+   * Quick search for nodes and faces based on their coordinates.
+   * For faces, the coordinates are those of the face center.
    */
-  MapCoordToUid::Box m_mesh_containing_box ;
+  MapCoordToUid::Box m_mesh_containing_box;
   NodeMapCoordToUid m_node_finder;
   FaceMapCoordToUid m_face_finder;
 
   /**
-   * reference au raffineur d'items
+   * Reference to the item refiner
    */
-  ItemRefinement * m_item_refinement;
+  ItemRefinement* m_item_refinement;
 
   /**
-   * assure la consistence des uid en parallèle
+   * Ensures UID consistency in parallel
    */
   ParallelAMRConsistency* m_parallel_amr_consistency;
 
   /**
-   * gestionnaire des functors de transport de donnees entre maillages
+   * Manager of data transport functors between meshes
    */
   AMRCallBackMng* m_call_back_mng;
 
   /**
-   * paramètres de Raffinement
+   * Refinement parameters
    */
 
   bool m_coarsen_by_parents;
@@ -433,7 +422,7 @@ public:
   Integer m_max_nb_hChildren;
 
   /**
-   * pattern de Raffinement
+   * Refinement patterns
    */
   const Quad4RefinementPattern4Quad m_quad4_refinement_pattern;
   const TetraRefinementPattern2Hex_2Penta_2Py_2Tetra m_tetra_refinement_pattern;
@@ -451,7 +440,7 @@ public:
   VariableNodeInt32 m_node_owner_memory;
 
 #ifdef ACTIVATE_PERF_COUNTER
-  PerfCounterMng<PerfCounter> m_perf_counter ;
+  PerfCounterMng<PerfCounter> m_perf_counter;
 #endif
 };
 
@@ -558,7 +547,4 @@ MeshRefinement::getRefinementPattern<IT_DiTetra5>() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // end ARCANE_MESH_MESHREFINEMENT_H
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#endif

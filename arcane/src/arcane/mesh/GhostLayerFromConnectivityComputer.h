@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*------------------------------------------------------------------------------*/
 /* GhostLayerFromConnectivityComputer.h                           (C) 2000-2015 */
 /*                                                                              */
-/* Implémentation d'une politique de création de fantômes pour une connectivité */
+/* Implementation of a ghost layer creation policy for connectivity             */
 /*------------------------------------------------------------------------------*/
 #ifndef ARCANE_DOF_GHOSTLAYERFROMCONNECTIVITYCOMPUTER_H
 #define ARCANE_DOF_GHOSTLAYERFROMCONNECTIVITYCOMPUTER_H
@@ -17,9 +17,9 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IExtraGhostItemsBuilder.h"
-#include "arcane/IItemConnectivity.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IExtraGhostItemsBuilder.h"
+#include "arcane/core/IItemConnectivity.h"
 
 #include "arcane/mesh/DoFFamily.h"
 #include "arcane/mesh/ItemConnectivity.h"
@@ -28,44 +28,44 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Outil de calcul de la couche fantôme d'une famille à partir
- * de la connectivité.
+ * \brief Tool for calculating the ghost layer of a family based on connectivity.
  *
- * Implémente l'interface IConnectivityGhostPolicy.
+ * Implements the IConnectivityGhostPolicy interface.
  *
- * Cette implémentation définit une politique où les items de la famille "To" seront définis
- * comme partagés s'ils sont connectés à des items de la famille "From" eux-mêmes partagés.
+ * This implementation defines a policy where items in the "To" family are defined
+ * as shared if they are connected to shared items in the "From" family.
  *
- * On obtient ces items partagés (avec le processus de rang k) de la
- * famille "To" viaa sharedItems(k, ToFamilyName).
- * On obtient les items de la famille "From" auxquels ils sont connectés
- * via sharedItemsConnectedItems(k, FromFamilyName)
+ * These shared items (with the rank k process) from the "To" family are obtained via sharedItems(k, ToFamilyName).
+ * The items in the "From" family to which they are connected are obtained via sharedItemsConnectedItems(k, FromFamilyName).
  *
- * Le calcul de ces items partagés est fait à la construction de l'objet et
- * à chaque appel de la méthode sharedItems(), pour prendre en compte un éventuelle
- * évolution de la famille "From". Attention donc si la famille a évolué, il faut
- * appeler sharedItems() avant sharedItemsConnectedItems().
+ * The calculation of these shared items is done during object construction and
+ * upon every call to the sharedItems() method, to account for a possible
+ * evolution of the "From" family. Therefore, be careful: if the family has evolved, sharedItems() must be called before sharedItemsConnectedItems().
  *
  */
 class ARCANE_MESH_EXPORT GhostLayerFromConnectivityComputer
 : public IItemConnectivityGhostPolicy
 {
-public:
+ public:
 
-  /** Constructeur de la classe */
+  /** Class constructor */
   GhostLayerFromConnectivityComputer(IItemConnectivity* item_to_dofs);
 
-  GhostLayerFromConnectivityComputer() : m_connectivity(NULL), m_trace_mng(NULL) {}
+  GhostLayerFromConnectivityComputer()
+  : m_connectivity(NULL)
+  , m_trace_mng(NULL)
+  {}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GhostLayerFromConnectivityComputer() {}
 
-public:
+ public:
 
   //! Interface IItemConnectivityGhostPolicy
   Int32ConstArrayView communicatingRanks();
@@ -73,14 +73,14 @@ public:
   Int32ConstArrayView sharedItemsConnectedItems(const Integer rank, const String& family_name);
   void updateConnectivity(Int32ConstArrayView ghost_items, Int64ConstArrayView ghost_items_connected_items);
 
+ protected:
 
-protected:
   IItemConnectivity* m_connectivity;
   ITraceMng* m_trace_mng;
   SharedArray<Int32SharedArray> m_shared_items;
   SharedArray<Int32SharedArray> m_shared_items_connected_items;
 
-private:
+ private:
 
   void _computeSharedItems();
 };
@@ -88,7 +88,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
