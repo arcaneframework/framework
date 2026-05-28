@@ -187,14 +187,6 @@ class ConstituentItemIndexedSelectionView
   {
   }
 
-  //! Construit une sélection contenant tous les éléments de \view
-  explicit ConstituentItemIndexedSelectionView(ItemVecView view)
-  requires(!IsSpanContainer())
-  : ConstituentItemIndexedSelectionViewBase(view.component(), TraitsType::size(view))
-  , m_container_view(view)
-  {
-  }
-
   //! Constructeur à partir d'une vue de ConstituentCell, de MatCell ou EnvCell
   explicit ConstituentItemIndexedSelectionView(IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
   requires(IsSpanContainer())
@@ -202,6 +194,17 @@ class ConstituentItemIndexedSelectionView
   , m_container_view(ecv)
   {
   }
+
+ protected:
+
+  //! Construit une sélection contenant tous les éléments de \view (qui doit dériver de ComponentCellVectorView)
+  explicit ConstituentItemIndexedSelectionView(ItemVecView view)
+  : ConstituentItemIndexedSelectionViewBase(view.component(), TraitsType::size(view))
+  , m_container_view(view)
+  {
+  }
+
+ public:
 
   // nombre total de mailles du milieu
   ARCCORE_HOST_DEVICE Int32 sourceSize() const { return TraitsType::size(m_container_view); }
