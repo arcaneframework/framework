@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* tv_display_arcane_types.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour le debugging avec totalview                             */
+/* Information for debugging with totalview                                  */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
@@ -28,22 +28,22 @@
 #include "arcane/totalview/tv_data_display.h"
 
 /*---------------------------------------------------------------------------*/
-// TODO: Ne pas toujours afficher le arcane_ttf_header
-// TODO: Supprimer _ArrayStruct et utiliser une chaine de caractères pour
-// afficher les infos des tableaux.
+// TODO: Do not always display the arcane_ttf_header
+// TODO: Remove _ArrayStruct and use a string for
+// displaying array info.
 
-// Cette fonctionnalité est accessible avec Totalview >= 8.9
-// La doc est disponible ici:
+// This feature is available with Totalview >= 8.9
+// The documentation is available here:
 // http://www.roguewave.com/support/product-documentation/totalview-family.aspx
-// Les sections de code ici présentes ne sont pas un exemple à suivre en dehors
-// du contexte très particulier de ttf.
-// En particulier la technique de __MY_ItemEnumerator permet d'accéder à des
-// champs privés de ItemEnumerator
+// The code sections present here are not an example to follow outside
+// the very specific context of ttf.
+// In particular, the __MY_ItemEnumerator technique allows access to
+// private fields of ItemEnumerator
 
-// Un point important est que le 3ème argument de TV_ttf_add_row() doit
-// contenir un pointeur sur la valeur à afficher et que ce pointeur doit
-// rester valide après l'appel. Il n'est donc pas possible d'utiliser des
-// variables locales.
+// An important point is that the 3rd argument of TV_ttf_add_row() must
+// contain a pointer to the value to be displayed and that this pointer must
+// remain valid after the call. Therefore, it is not possible to use
+// local variables.
 
 #ifdef __GCC__
 #define ATTR_USED __attribute__((used))
@@ -69,8 +69,7 @@ class TotalviewAdapter
 
 namespace
 {
-// Pour savoir si on affiche un message dans totalview indiquant qu'on utilise
-// les TTF.
+// To know if a message is displayed in totalview indicating that TTF is used.
 bool global_print_ttf = false;
 
 void
@@ -94,23 +93,24 @@ show_ttf_internal_flag(Arcane::Integer flags,
 }
 namespace
 {
-// A mettre en correspondance avec Arccore::ArrayMetaData
+// Must be mapped to Arccore::ArrayMetaData
 class _ArrayMetaData
 {
  public:
-  //! Nombre de références sur cet objet.
+
+  //! Number of references on this object.
   Arccore::Int64 nb_ref;
-  //! Nombre d'éléments alloués
+  //! Number of allocated elements
   Arccore::Int64 capacity;
-  //! Nombre d'éléments du tableau (pour les tableaux 1D)
+  //! Number of array elements (for 1D arrays)
   Arccore::Int64 size;
-  //! Taille de la première dimension (pour les tableaux 2D)
+  //! Size of the first dimension (for 2D arrays)
   Arccore::Int64 dim1_size;
-  //! Taille de la deuxième dimension (pour les tableaux 2D)
+  //! Size of the second dimension (for 2D arrays)
   Arccore::Int64 dim2_size;
 };
-// ATTENTION: classe qui mime la représentation de Arccore::AbstractArray.
-// A modifier si cette dernière évolue.
+// WARNING: class that mimics the representation of Arccore::AbstractArray.
+// Must be modified if the latter evolves.
 class _ArrayStruct
 {
  public:
@@ -118,8 +118,8 @@ class _ArrayStruct
   void* m_p;
   _ArrayMetaData* m_md;
 };
-// ATTENTION: classe qui mime la représentation de Arcane::ItemSharedInfo.
-// A modifier si cette dernière évolue.
+// WARNING: class that mimics the representation of Arcane::ItemSharedInfo.
+// Must be modified if the latter evolves.
 class _ItemSharedInfo
 {
  public:
@@ -138,7 +138,7 @@ class _ItemSharedInfo
 };
 }
 /*---------------------------------------------------------------------------*/
-/*                             Arcane::Array  (sur type de base)             */
+/*                             Arcane::Array  (on base type)                 */
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
@@ -170,7 +170,7 @@ ATTR_USED int \
 TV_ttf_display_type(const Arcane::SharedArray<type>* obj)\
 { return _displayArray(obj,#type); }
 
-// Les instances souhaitées doivent être explicitement instanciées
+// The desired instances must be explicitly instantiated
 TV_DISPLAY_ARRAY_TYPE(bool)
 TV_DISPLAY_ARRAY_TYPE(int)
 TV_DISPLAY_ARRAY_TYPE(double)
@@ -187,7 +187,7 @@ TV_DISPLAY_ARRAY_TYPE(Arcane::Cell)
 #undef TV_DISPLAY_ARRAY_TYPE
 
 /*---------------------------------------------------------------------------*/
-/*             Arcane::ArrayView et Arcane::ConstArrayView                   */
+/*             Arcane::ArrayView and Arcane::ConstArrayView                  */
 /*---------------------------------------------------------------------------*/
 
 #define TV_DISPLAY_ARRAY_TYPE(type)                                     \
@@ -210,7 +210,7 @@ TV_ttf_display_type(const Arcane::ArrayView<type> * obj)                \
   return TV_ttf_format_ok;                                              \
 }
 
-// Les instances souhaitées doivent être explicitement instanciées
+// The desired instances must be explicitly instantiated
 TV_DISPLAY_ARRAY_TYPE(bool)
 TV_DISPLAY_ARRAY_TYPE(int)
 TV_DISPLAY_ARRAY_TYPE(double)
@@ -234,9 +234,9 @@ ATTR_USED
 int
 TV_ttf_display_type(const Arcane::ItemInternal * obj)
 {
-  // ATTENTION: cette implémentation aggresse directement les structures Arcane.
-  // En cas de changement d'implémentation d'Arcane des incompatibilités peuvent
-  // se produire
+  // WARNING: this implementation directly accesses Arcane structures.
+  // If the Arcane implementation changes, incompatibilities may
+  // occur
 
   using Arcane::Integer;
   char strtype[32];
@@ -285,7 +285,7 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
     }
   }
 
-  // TODO pour les DualNode et Link, mais ce n'est pas si simple...
+  // TODO for DualNode and Link, but it's not that simple...
 
   const Integer flags = obj->flags();
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_Boundary,"Boundary");
@@ -319,7 +319,7 @@ TV_ttf_display_type(const Arcane::String * obj)
 {
   //arcane_ttf_header();
   TV_ttf_add_row("data",TV_ttf_type_ascii_string,obj->localstr());
-  //GG: avec elide, on evite une indentation supplementaire
+  //GG: with elide, we avoid an additional indentation
   return TV_ttf_format_ok_elide;
 }
 
@@ -351,15 +351,15 @@ TV_ttf_display_type(const Arcane::IItemFamily * obj)
 /*                         Arcane::ItemEnumerator                            */
 /*---------------------------------------------------------------------------*/
 
-// Structure symétrique pour permettre des accès à des données privées. 
-// Il faut etre certain que cette structure soit identique a ItemEnumerator
+// Symmetric structure to allow access to private data.
+// It must be certain that this structure is identical to ItemEnumerator
 struct __MY_ItemEnumerator
 {
   Arcane::ItemInternal** m_items;
   const Arcane::Int32* ARCANE_RESTRICT m_local_ids;
   Arcane::Integer m_index;
   Arcane::Integer m_count;
-  const Arcane::ItemGroupImpl * m_group_impl; // pourrait être retiré en mode release si nécessaire
+  const Arcane::ItemGroupImpl* m_group_impl; // could be removed in release mode if necessary
 };
 
 int

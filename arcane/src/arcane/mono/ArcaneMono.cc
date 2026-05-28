@@ -27,7 +27,7 @@ bool global_is_running = false;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Point d'entrée de l'exécutable pour 'mono'.
+//! Entry point of the executable for 'mono'.
 
 extern "C" int mono_main(int argc,char* argv[]);
 
@@ -91,7 +91,7 @@ _arcane_mono_main_internal(int argc, char* argv[],const char* assembly_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Obsolète: utiliser 'arcane_mono_main2' à la place.
+// Obsolete: use 'arcane_mono_main2' instead.
 extern "C" ARCANE_EXPORT int
 arcane_mono_main(int argc, char* argv[],const char* assembly_name)
 {
