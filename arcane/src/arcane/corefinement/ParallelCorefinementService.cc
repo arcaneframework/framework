@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,32 +9,38 @@
 #include <iso646.h>
 #endif
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #include "arcane/corefinement/ParallelCorefinementService.h"
 
-#include <arcane/utils/List.h>
-#include <arcane/utils/Limits.h>
-#include <arcane/utils/ITraceMng.h>
-#include <arcane/utils/ScopedPtr.h>
+#include "arcane/utils/List.h"
+#include "arcane/utils/Limits.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ScopedPtr.h"
 
-#include <arcane/core/IItemFamily.h>
-#include <arcane/core/IMesh.h>
-#include <arcane/core/IMeshModifier.h>
-#include <arcane/core/IMeshSubMeshTransition.h>
-#include <arcane/core/IParallelMng.h>
-#include <arcane/core/ISerializeMessageList.h>
-#include <arcane/core/Timer.h>
-#include <arcane/core/internal/SerializeMessage.h>
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
-#include <arcane/core/IParallelExchanger.h>
+#include "arcane/core/IParallelExchanger.h"
 
 #include <set>
 #include <list>
 #include <map>
 #include <vector>
 
-#include <arcane/geometry/IGeometry.h>
-#include <arcane/geometry/IGeometryMng.h>
-#include <arcane/corefinement/surfaceutils/ISurface.h>
+#include "arcane/geometry/IGeometry.h"
+#include "arcane/geometry/IGeometryMng.h"
+#include "arcane/corefinement/surfaceutils/ISurface.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using namespace Arcane;
 using namespace Arcane::Numerics;
@@ -91,13 +97,16 @@ class ParallelCorefinementService::Internal
 
   //! test distance between faces
   /*! Compatible with Box::isInside */
-  class CheckCloseFaces {
-  public:
-    CheckCloseFaces(const VariableNodeReal3 & nodesCoordinates, const Real distance) 
-      : m_nodes_coordinates(nodesCoordinates),
-        m_distance(distance) { }
-  
-    bool operator()(const Face & faceA, const Face & faceB)
+  class CheckCloseFaces
+  {
+   public:
+
+    CheckCloseFaces(const VariableNodeReal3& nodesCoordinates, const Real distance)
+    : m_nodes_coordinates(nodesCoordinates)
+    , m_distance(distance)
+    {}
+
+    bool operator()(const Face& faceA, const Face& faceB)
     {
       for (Node nodeA : faceA.nodes()) {
         for (Node nodeB : faceB.nodes()) {
@@ -109,116 +118,129 @@ class ParallelCorefinementService::Internal
     }
 
    private:
-    const VariableNodeReal3 & m_nodes_coordinates;
+
+    const VariableNodeReal3& m_nodes_coordinates;
     const Real m_distance;
   };
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  struct NodeComparator {
-    typedef std::pair<Integer,Integer> IntPair;
-    bool operator()(const IntPair & a, const IntPair & b) const {
+  struct NodeComparator
+  {
+    typedef std::pair<Integer, Integer> IntPair;
+    bool operator()(const IntPair& a, const IntPair& b) const
+    {
       if (a.first == b.first)
         return a.second < b.second;
       else
         return a.first < b.first;
     }
-    static IntPair order(const IntPair & p) {
+    static IntPair order(const IntPair& p)
+    {
       if (p.first > p.second)
-        return IntPair(p.second,p.first);
+        return IntPair(p.second, p.first);
       else
         return p;
     }
   };
 
-  static void surfaceSetup(std::map<NodeComparator::IntPair, Integer > & edges, FaceGroup group, IGeometry * geometry) {
+  static void surfaceSetup(std::map<NodeComparator::IntPair, Integer>& edges, FaceGroup group, IGeometry* geometry)
+  {
     typedef NodeComparator::IntPair IntPair;
-    Real3 normal(0.,0.,0.);
-    ENUMERATE_FACE(iface,group) {
+    Real3 normal(0., 0., 0.);
+    ENUMERATE_FACE (iface, group) {
       const Face face = *iface;
       const NodeVectorView nodes = face.nodes();
       const Integer nnodes = nodes.size();
-      for(Integer i=0;i<nnodes;++i) {
-        const IntPair p = NodeComparator::order(IntPair(nodes[i].localId(),nodes[(i+1)%nnodes].localId()));
+      for (Integer i = 0; i < nnodes; ++i) {
+        const IntPair p = NodeComparator::order(IntPair(nodes[i].localId(), nodes[(i + 1) % nnodes].localId()));
         edges[p]++;
       }
     }
   }
 
-  class AddEdges {
-  public:
-    void operator()(const NodeComparator::IntPair & p) {
+  class AddEdges
+  {
+   public:
+
+    void operator()(const NodeComparator::IntPair& p)
+    {
       const Integer indexA = mapNodes[p.first];
       const Integer indexB = mapNodes[p.second];
       if (not indexA and not indexB) {
         mapNodes[p.first] = mapNodes[p.second] = newRef();
-      } else if (not indexA and indexB) {
+      }
+      else if (not indexA and indexB) {
         mapNodes[p.first] = mapNodes[p.second];
-      } else if (indexA and not indexB) {
+      }
+      else if (indexA and not indexB) {
         mapNodes[p.second] = mapNodes[p.first];
-      } else if (indexA and indexB) {
-        allRefs[mapNodes[p.second]-1] = allRefs[mapNodes[p.first]-1];
+      }
+      else if (indexA and indexB) {
+        allRefs[mapNodes[p.second] - 1] = allRefs[mapNodes[p.first] - 1];
       }
     }
-  
-    Integer connexCount() {
+
+    Integer connexCount()
+    {
       std::set<Integer> refSet;
-      for(Integer i=0;i<(Integer)allRefs.size();++i)
+      for (Integer i = 0; i < (Integer)allRefs.size(); ++i)
         refSet.insert(*allRefs[i]);
       return refSet.size();
     }
-  
-  private:
-    std::vector<std::shared_ptr<Integer> > allRefs;
-    typedef std::map<Integer,Integer> MapNodes;
+
+   private:
+
+    std::vector<std::shared_ptr<Integer>> allRefs;
+    typedef std::map<Integer, Integer> MapNodes;
     MapNodes mapNodes;
-  
-    Integer newRef() {
-      Integer ref = allRefs.size()+1; // reserve 0 pour la non-valeur
+
+    Integer newRef()
+    {
+      Integer ref = allRefs.size() + 1; // reserve 0 pour la non-valeur
       allRefs.push_back(std::shared_ptr<Integer>(new Integer(ref)));
       return ref;
     }
   };
 
-
-  static void exchange_items(IMesh * mesh,
-                             UniqueArray<std::set<Int32> > & nodes_to_send,
-                             UniqueArray<std::set<Int32> > & faces_to_send,
-                             UniqueArray<std::set<Int32> > & cells_to_send) {
-    ITraceMng * traceMng = mesh->traceMng();  
-    if (mesh == NULL) traceMng->fatal() << "Incompatible Mesh type";
-    IParallelMng * parallel_mng = mesh->parallelMng();
+  static void exchange_items(IMesh* mesh,
+                             UniqueArray<std::set<Int32>>& nodes_to_send,
+                             UniqueArray<std::set<Int32>>& faces_to_send,
+                             UniqueArray<std::set<Int32>>& cells_to_send)
+  {
+    ITraceMng* traceMng = mesh->traceMng();
+    if (mesh == NULL)
+      traceMng->fatal() << "Incompatible Mesh type";
+    IParallelMng* parallel_mng = mesh->parallelMng();
 
     ScopedPtrT<IParallelExchanger> exchanger(parallel_mng->createExchanger());
-    
-    const Integer nbSubDomain = parallel_mng->commSize();  
+
+    const Integer nbSubDomain = parallel_mng->commSize();
 
     // Initialization of the data exchanger
-    for(Integer isd=0;isd<nbSubDomain;++isd)
+    for (Integer isd = 0; isd < nbSubDomain; ++isd)
       if (not cells_to_send[isd].empty())
         exchanger->addSender(isd);
     exchanger->initializeCommunicationsMessages();
 
-    for(Integer i=0, ns=exchanger->nbSender(); i<ns; ++i) 
-      {
-        ISerializeMessage* sm = exchanger->messageToSend(i);
-        Int32 rank = sm->destRank();
-        ISerializer* s = sm->serializer();
-        const std::set<Int32> & cell_set = cells_to_send[rank];
-        Int32UniqueArray items_to_send(cell_set.size());
-        std::copy(cell_set.begin(), cell_set.end(), items_to_send.begin());
-        mesh->/*modifier()->*/serializeCells(s, items_to_send);
-      }
+    for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
+      ISerializeMessage* sm = exchanger->messageToSend(i);
+      Int32 rank = sm->destRank();
+      ISerializer* s = sm->serializer();
+      const std::set<Int32>& cell_set = cells_to_send[rank];
+      Int32UniqueArray items_to_send(cell_set.size());
+      std::copy(cell_set.begin(), cell_set.end(), items_to_send.begin());
+      mesh->/*modifier()->*/ serializeCells(s, items_to_send);
+    }
     exchanger->processExchange();
-    
-    for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i )
-      {
-        ISerializeMessage* sm = exchanger->messageToReceive(i);
-        ISerializer* s = sm->serializer();
-            mesh->modifier()->addCells(s);
-      }
-    
+
+    for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
+      ISerializeMessage* sm = exchanger->messageToReceive(i);
+      ISerializer* s = sm->serializer();
+      mesh->modifier()->addCells(s);
+    }
+
     mesh->modifier()->endUpdate(true, false); // recalcul des ghosts sans suppression des anciens
   }
 
@@ -230,29 +252,30 @@ class ParallelCorefinementService::Internal
 /*---------------------------------------------------------------------------*/
 
 ParallelCorefinementService::
-ParallelCorefinementService(const Arcane::ServiceBuildInfo & sbi) : 
-  ArcaneParallelCorefinementObject(sbi),
-  m_internal(new Internal(this))
+ParallelCorefinementService(const Arcane::ServiceBuildInfo& sbi)
+: ArcaneParallelCorefinementObject(sbi)
+, m_internal(new Internal(this))
 {
   ;
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ParallelCorefinementService::
-~ParallelCorefinementService() 
+~ParallelCorefinementService()
 {
   delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void 
-ParallelCorefinementService::
-init(const FaceGroup & masterGroup, 
-     const FaceGroup & slaveGroup, 
+void ParallelCorefinementService::
+init(const FaceGroup& masterGroup,
+     const FaceGroup& slaveGroup,
      const Real boxTolerance,
-     IGeometry * geometry)
+     IGeometry* geometry)
 {
   m_master_group = masterGroup;
   m_slave_group = slaveGroup;
@@ -261,58 +284,57 @@ init(const FaceGroup & masterGroup,
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void 
-ParallelCorefinementService::
+void ParallelCorefinementService::
 update()
 {
-//   info() << "All groups list : ";
-//   ItemGroupCollection coll = mesh()->groups();
-//   for(ItemGroupCollection::Iterator i=coll.begin(); i !=coll.end(); ++i) {
-//     ItemGroup g = *i;
-//     info() << "\tGroup : " << g.name() << " size=" << g.size();
-//   }
+  //   info() << "All groups list : ";
+  //   ItemGroupCollection coll = mesh()->groups();
+  //   for(ItemGroupCollection::Iterator i=coll.begin(); i !=coll.end(); ++i) {
+  //     ItemGroup g = *i;
+  //     info() << "\tGroup : " << g.name() << " size=" << g.size();
+  //   }
   m_internal->corefinementTimer.start();
   m_internal->migrationTimer.start();
 
-  pinfo() << "Surface infos berfore migration " 
+  pinfo() << "Surface infos berfore migration "
           << m_master_group.name() << "(" << m_master_group.size() << ") and "
           << m_slave_group.name() << "(" << m_slave_group.size() << ")";
 
-  IParallelMng * parallel_mng = subDomain()->parallelMng();
+  IParallelMng* parallel_mng = subDomain()->parallelMng();
 
   // 1- Calcul des boites englobantes coté Master
-  //    + Slave pour minimiser (et non eviter) de multiples composantes connexes 
+  //    + Slave pour minimiser (et non eviter) de multiples composantes connexes
   //    (non supporté par le coraffinement simple)
   const Real maxValue = FloatInfo<Real>::maxValue();
-  const VariableNodeReal3 & nodesCoordinates = PRIMARYMESH_CAST(mesh())->nodesCoordinates();
-  Real3 
-    master_lower_left(maxValue,maxValue,maxValue), 
-    master_upper_right(-maxValue,-maxValue,-maxValue),
-    slave_lower_left(maxValue,maxValue,maxValue), 
-    slave_upper_right(-maxValue,-maxValue,-maxValue);
-    
-  
+  const VariableNodeReal3& nodesCoordinates = PRIMARYMESH_CAST(mesh())->nodesCoordinates();
+  Real3
+  master_lower_left(maxValue, maxValue, maxValue),
+  master_upper_right(-maxValue, -maxValue, -maxValue),
+  slave_lower_left(maxValue, maxValue, maxValue),
+  slave_upper_right(-maxValue, -maxValue, -maxValue);
+
   // Not optimized box computation (many nodes are min/max several times)
   // Master BOX
-  ENUMERATE_FACE(iface,m_master_group) {
+  ENUMERATE_FACE (iface, m_master_group) {
     for (Node node : iface->nodes()) {
-            master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
-            master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
+      master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
+      master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
     }
   }
-  ENUMERATE_FACE(iface,m_slave_group) {
+  ENUMERATE_FACE (iface, m_slave_group) {
     for (Node node : iface->nodes()) {
-            master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
-            master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
+      master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
+      master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
     }
   }
 
   // Slave BOX
-  ENUMERATE_FACE(iface,m_slave_group) {
+  ENUMERATE_FACE (iface, m_slave_group) {
     for (Node node : iface->nodes()) {
-            slave_lower_left = math::min(slave_lower_left, nodesCoordinates[node]);
-            slave_upper_right = math::max(slave_upper_right, nodesCoordinates[node]);
+      slave_lower_left = math::min(slave_lower_left, nodesCoordinates[node]);
+      slave_upper_right = math::max(slave_upper_right, nodesCoordinates[node]);
     }
   }
 
@@ -324,7 +346,7 @@ update()
   debug(Trace::Medium) << "Local Box sizes :"
                        << " M= " << master_lower_left << " - " << master_upper_right
                        << " S= " << slave_lower_left << " - " << slave_upper_right;
-  
+
   // 2- migration des faces esclaves en fonction des boites maitres
   //  + migration des faces maitres 'utiles' vers les processeurs esclaves
   UniqueArray<Real3> myBox;
@@ -334,25 +356,29 @@ update()
   myBox.add(slave_upper_right);
 
   const Integer nbSubDomain = subDomain()->nbSubDomain();
-  UniqueArray<Real3> allBoxes(4*nbSubDomain);
-  parallel_mng->allGather(myBox,allBoxes);
+  UniqueArray<Real3> allBoxes(4 * nbSubDomain);
+  parallel_mng->allGather(myBox, allBoxes);
 
   // NB: ne traite pas les aretes.
   // exchangers used in slave->master mode then master->slave
-  UniqueArray<std::set<Int32> > nodes_to_send; nodes_to_send.resize(nbSubDomain);
-  UniqueArray<std::set<Int32> > faces_to_send; faces_to_send.resize(nbSubDomain);
-  UniqueArray<std::set<Int32> > cells_to_send; cells_to_send.resize(nbSubDomain);
+  UniqueArray<std::set<Int32>> nodes_to_send;
+  nodes_to_send.resize(nbSubDomain);
+  UniqueArray<std::set<Int32>> faces_to_send;
+  faces_to_send.resize(nbSubDomain);
+  UniqueArray<std::set<Int32>> cells_to_send;
+  cells_to_send.resize(nbSubDomain);
 
   // Inclusion calculations can be optimized by already having the local bounding box
   // If there is no intersection between the local and remote boxes => nothing to do.
 #ifndef NO_USER_WARNING
 #warning "optimisations possibles"
 #endif /* NO_USER_WARNING */
-  for(Integer i_sub_domain=0; i_sub_domain<nbSubDomain;++i_sub_domain) {
-    if (i_sub_domain == subDomain()->subDomainId()) continue;
-    Internal::Box masterBox(allBoxes[4*i_sub_domain],allBoxes[4*i_sub_domain+1],nodesCoordinates);
+  for (Integer i_sub_domain = 0; i_sub_domain < nbSubDomain; ++i_sub_domain) {
+    if (i_sub_domain == subDomain()->subDomainId())
+      continue;
+    Internal::Box masterBox(allBoxes[4 * i_sub_domain], allBoxes[4 * i_sub_domain + 1], nodesCoordinates);
     masterBox.m_trace = traceMng();
-    ENUMERATE_FACE(iface,m_slave_group) {
+    ENUMERATE_FACE (iface, m_slave_group) {
       if (masterBox.isInside(*iface)) {
         faces_to_send[i_sub_domain].insert(iface->localId());
         Cell boundaryCell = iface->boundaryCell();
@@ -361,12 +387,12 @@ update()
         cells_to_send[i_sub_domain].insert(boundaryCell.localId());
         for (Node node : boundaryCell.nodes())
           nodes_to_send[i_sub_domain].insert(node.localId());
-            }
+      }
     }
 
-    Internal::Box slaveBox(allBoxes[4*i_sub_domain+2],allBoxes[4*i_sub_domain+3],nodesCoordinates);
+    Internal::Box slaveBox(allBoxes[4 * i_sub_domain + 2], allBoxes[4 * i_sub_domain + 3], nodesCoordinates);
     slaveBox.m_trace = traceMng();
-    ENUMERATE_FACE(iface,m_master_group) {
+    ENUMERATE_FACE (iface, m_master_group) {
       if (masterBox.isInside(*iface)) {
         faces_to_send[i_sub_domain].insert(iface->localId());
         Cell boundaryCell = iface->boundaryCell();
@@ -375,13 +401,13 @@ update()
         cells_to_send[i_sub_domain].insert(boundaryCell.localId());
         for (Node node : boundaryCell.nodes())
           nodes_to_send[i_sub_domain].insert(node.localId());
-            }
+      }
     }
   }
 
-  Internal::exchange_items(mesh(),nodes_to_send,faces_to_send,cells_to_send);
+  Internal::exchange_items(mesh(), nodes_to_send, faces_to_send, cells_to_send);
 
-  debug(Trace::Medium) << "Surface infos after migration " 
+  debug(Trace::Medium) << "Surface infos after migration "
                        << m_master_group.name() << "(" << m_master_group.size() << ") and "
                        << m_slave_group.name() << "(" << m_slave_group.size() << ")";
 
@@ -390,20 +416,20 @@ update()
   // 3- Calculating connected components
   // For now, we check that locally we only have one connected component.
   // To do this, we check that the boundary of the surfaces forms only a curve
-    
+
   // Selection of surfaces for local co-refinement
   FaceGroup slave_coref_group = m_slave_group;
   FaceGroup master_coref_group = m_master_group;
 
   typedef Internal::NodeComparator::IntPair IntPair;
-  std::map<IntPair, Integer > slave_edges; // pairs of vertices indexed by their localIds
-  std::map<IntPair, Integer > master_edges; // pairs of vertices indexed by their localIds
-  Internal::surfaceSetup(slave_edges,slave_coref_group,m_geometry);
-  Internal::surfaceSetup(master_edges,master_coref_group,m_geometry);
+  std::map<IntPair, Integer> slave_edges; // pairs of vertices indexed by their localIds
+  std::map<IntPair, Integer> master_edges; // pairs of vertices indexed by their localIds
+  Internal::surfaceSetup(slave_edges, slave_coref_group, m_geometry);
+  Internal::surfaceSetup(master_edges, master_coref_group, m_geometry);
 
   {
     Internal::AddEdges addEdges;
-    for(std::map<IntPair, Integer>::iterator i=slave_edges.begin(); i!=slave_edges.end(); ++i)
+    for (std::map<IntPair, Integer>::iterator i = slave_edges.begin(); i != slave_edges.end(); ++i)
       if (i->second == 1)
         addEdges(i->first);
       else if (i->second > 2)
@@ -413,7 +439,7 @@ update()
   }
   {
     Internal::AddEdges addEdges;
-    for(std::map<IntPair, Integer>::iterator i=master_edges.begin(); i!=master_edges.end(); ++i)
+    for (std::map<IntPair, Integer>::iterator i = master_edges.begin(); i != master_edges.end(); ++i)
       if (i->second == 1)
         addEdges(i->first);
       else if (i->second > 2)
@@ -425,37 +451,37 @@ update()
   // 4- Calculating co-refinement by connected components
   // Currently one component per surface
   // From this step onwards, if the mesh is modified, the co-refinement result is invalidated
-  // because a renumbering of local items is possible 
+  // because a renumbering of local items is possible
 
-  ISurfaceUtils * surfaceUtils = options()->surfaceUtils();
-  ISurface * masterSurface = surfaceUtils->createSurface();
-  surfaceUtils->setFaceToSurface(masterSurface,master_coref_group);
-  ISurface * slaveSurface = surfaceUtils->createSurface();
-  surfaceUtils->setFaceToSurface(slaveSurface,slave_coref_group);
+  ISurfaceUtils* surfaceUtils = options()->surfaceUtils();
+  ISurface* masterSurface = surfaceUtils->createSurface();
+  surfaceUtils->setFaceToSurface(masterSurface, master_coref_group);
+  ISurface* slaveSurface = surfaceUtils->createSurface();
+  surfaceUtils->setFaceToSurface(slaveSurface, slave_coref_group);
 
   FaceFaceContactList coarse_contacts;
-  surfaceUtils->computeSurfaceContact(masterSurface,slaveSurface,coarse_contacts);
+  surfaceUtils->computeSurfaceContact(masterSurface, slaveSurface, coarse_contacts);
 
-//   { // local co-refinement integrity test
-//     Real3 normalA_coref(0,0,0), normalA_local(0,0,0);
-//     Real3 normalB_coref(0,0,0), normalB_local(0,0,0);
-    
-//     ENUMERATE_FACE(iface,m_master_group.own())
-//       normalA_local += m_geometry->computeOrientedMeasure(*iface);
-//     ENUMERATE_FACE(iface,m_slave_group.own())
-//       normalB_local += m_geometry->computeOrientedMeasure(*iface);
-    
-//     for(Integer i=0;i<coarse_contacts.size(); ++i) {
-//       const ISurfaceUtils::FaceFaceContact & contact = coarse_contacts[i];
-//       if (not contact.faceA.null() and contact.faceA.isOwn()) 
-//         normalA_coref += contact.normalA;
-//       if (not contact.faceB.null() and contact.faceB.isOwn()) 
-//         normalB_coref += contact.normalB;
-//     }    
-//     pinfo() << "Global co-refinement stats0 : " 
-//             << math::normeR3(normalA_coref) << " vs " <<  math::normeR3(normalA_local) << " ; "
-//             << math::normeR3(normalB_coref) << " vs " <<  math::normeR3(normalB_local);
-//   }
+  //   { // local co-refinement integrity test
+  //     Real3 normalA_coref(0,0,0), normalA_local(0,0,0);
+  //     Real3 normalB_coref(0,0,0), normalB_local(0,0,0);
+
+  //     ENUMERATE_FACE(iface,m_master_group.own())
+  //       normalA_local += m_geometry->computeOrientedMeasure(*iface);
+  //     ENUMERATE_FACE(iface,m_slave_group.own())
+  //       normalB_local += m_geometry->computeOrientedMeasure(*iface);
+
+  //     for(Integer i=0;i<coarse_contacts.size(); ++i) {
+  //       const ISurfaceUtils::FaceFaceContact & contact = coarse_contacts[i];
+  //       if (not contact.faceA.null() and contact.faceA.isOwn())
+  //         normalA_coref += contact.normalA;
+  //       if (not contact.faceB.null() and contact.faceB.isOwn())
+  //         normalB_coref += contact.normalB;
+  //     }
+  //     pinfo() << "Global co-refinement stats0 : "
+  //             << math::normeR3(normalA_coref) << " vs " <<  math::normeR3(normalA_local) << " ; "
+  //             << math::normeR3(normalB_coref) << " vs " <<  math::normeR3(normalB_local);
+  //   }
 
 #ifndef NO_USER_WARNING
 #warning "utiliser un destroySurface ???"
@@ -470,210 +496,220 @@ update()
   // Registration of refinement needs for void-faces
   ItemInternalList internals = mesh()->faceFamily()->itemsInternal();
   // The key of SharedCorefinement refers to the previous internals
-  typedef std::map<Integer,Real3> SharedCorefinement;
+  typedef std::map<Integer, Real3> SharedCorefinement;
   SharedCorefinement voidface_shared_corefinement;
-  ARCANE_ASSERT(( coarse_contacts.empty() == master_coref_group.empty() ),("Incompatible emptiness"));
+  ARCANE_ASSERT((coarse_contacts.empty() == master_coref_group.empty()), ("Incompatible emptiness"));
 
-  if (coarse_contacts.empty()) 
-    {
-      ENUMERATE_FACE(iface,m_slave_group.own()) {
-        voidface_shared_corefinement[iface->localId()];
-      }
+  if (coarse_contacts.empty()) {
+    ENUMERATE_FACE (iface, m_slave_group.own()) {
+      voidface_shared_corefinement[iface->localId()];
     }
-  else 
-    {
-      Internal::CheckCloseFaces checkFaces(nodesCoordinates,m_box_tolerance);
-      SharedCorefinement facevoid_shared_corefinement; // for aggregation on the master
-      for(FaceFaceContactList::iterator i = coarse_contacts.begin(); i != coarse_contacts.end(); ++i) {
-        const ISurfaceUtils::FaceFaceContact & contact = *i;
-        const Face master_face = contact.faceA;
-        const Face slave_face = contact.faceB;
-        if (slave_face.null()) {
+  }
+  else {
+    Internal::CheckCloseFaces checkFaces(nodesCoordinates, m_box_tolerance);
+    SharedCorefinement facevoid_shared_corefinement; // for aggregation on the master
+    for (FaceFaceContactList::iterator i = coarse_contacts.begin(); i != coarse_contacts.end(); ++i) {
+      const ISurfaceUtils::FaceFaceContact& contact = *i;
+      const Face master_face = contact.faceA;
+      const Face slave_face = contact.faceB;
+      if (slave_face.null()) {
+        if (master_face.isOwn()) {
+          facevoid_shared_corefinement[master_face.localId()] += contact.normalA;
+        } // else not use since non local
+      }
+      else if (master_face.null()) {
+        if (slave_face.isOwn()) {
+          // This face must be post-processed in parallel
+          voidface_shared_corefinement[slave_face.localId()];
+        } // else not use since non local
+      }
+      else if (master_face.isOwn() or slave_face.isOwn()) {
+        if (checkFaces(master_face, slave_face)) {
+          // Distance compatible with the box selection
+          // Admissible contact (storage + preparation for diffusion)
+          if (master_face.isOwn()) // if !master_face.isOwn() it will receive the info via its owner
+            m_contacts.add(contact);
+        }
+        else {
+          // Completion of co-refinement for non-contact
           if (master_face.isOwn()) {
             facevoid_shared_corefinement[master_face.localId()] += contact.normalA;
-          } // else not use since non local
-        } else if (master_face.null()) {
+          }
           if (slave_face.isOwn()) {
-            // This face must be post-processed in parallel
             voidface_shared_corefinement[slave_face.localId()];
-          } // else not use since non local
-        } else if (master_face.isOwn() or slave_face.isOwn()) {
-          if (checkFaces(master_face,slave_face)) { 
-            // Distance compatible with the box selection
-            // Admissible contact (storage + preparation for diffusion)
-            if (master_face.isOwn()) // if !master_face.isOwn() it will receive the info via its owner
-              m_contacts.add(contact);
-          } else {
-            // Completion of co-refinement for non-contact
-            if (master_face.isOwn()) {
-              facevoid_shared_corefinement[master_face.localId()] += contact.normalA;
-            }
-            if (slave_face.isOwn()) {
-              voidface_shared_corefinement[slave_face.localId()];
-            }
           }
         }
       }
-
-      // Integration of aggregated face-voids
-      for(SharedCorefinement::const_iterator i=facevoid_shared_corefinement.begin();
-          i != facevoid_shared_corefinement.end(); ++i) {
-        Face faceA(internals[i->first]);
-        Face faceB; // null
-        ARCANE_ASSERT((faceA.isOwn()),("Non local facevoid"));
-        ISurfaceUtils::FaceFaceContact contact(faceA,faceB);
-        contact.normalA = i->second;
-        // info() << "Global co-refinement info : facevoid add " << faceA.uniqueId() << " " << contact.normalA;
-        m_contacts.add(contact);
-      }
     }
+
+    // Integration of aggregated face-voids
+    for (SharedCorefinement::const_iterator i = facevoid_shared_corefinement.begin();
+         i != facevoid_shared_corefinement.end(); ++i) {
+      Face faceA(internals[i->first]);
+      Face faceB; // null
+      ARCANE_ASSERT((faceA.isOwn()), ("Non local facevoid"));
+      ISurfaceUtils::FaceFaceContact contact(faceA, faceB);
+      contact.normalA = i->second;
+      // info() << "Global co-refinement info : facevoid add " << faceA.uniqueId() << " " << contact.normalA;
+      m_contacts.add(contact);
+    }
+  }
 
   // 6- Serialization of data to slaves; preparation of void-face synthesis
 
   // Compatibility of data to send
   // Counts bi-parent sub-faces (faceface)
-  UniqueArray<Integer> info_to_send(nbSubDomain,0);
-  for(FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i) 
-    {
-      const ISurfaceUtils::FaceFaceContact & contact = *i;
-      const Face master_face = contact.faceA;
-      const Face slave_face = contact.faceB;
-      if (not slave_face.null()) {
-        ARCANE_ASSERT((not master_face.null()),("Integrity error")); // no construction of m_contacts filling
-        if (slave_face.isOwn()) {
-          if (master_face.isOwn()) {
-            // Local processing of void-faces
-            SharedCorefinement::iterator vf_finder = voidface_shared_corefinement.find(slave_face.localId());
-            if (vf_finder != voidface_shared_corefinement.end()) {
-              vf_finder->second += contact.normalB; 
-              // info() << "Global co-ref Voidface add1 to slave " << slave_face.uniqueId() << " " << contact.normalB << " from " << master_face.uniqueId() << " " << contact.normalA;
-            }
+  UniqueArray<Integer> info_to_send(nbSubDomain, 0);
+  for (FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i) {
+    const ISurfaceUtils::FaceFaceContact& contact = *i;
+    const Face master_face = contact.faceA;
+    const Face slave_face = contact.faceB;
+    if (not slave_face.null()) {
+      ARCANE_ASSERT((not master_face.null()), ("Integrity error")); // no construction of m_contacts filling
+      if (slave_face.isOwn()) {
+        if (master_face.isOwn()) {
+          // Local processing of void-faces
+          SharedCorefinement::iterator vf_finder = voidface_shared_corefinement.find(slave_face.localId());
+          if (vf_finder != voidface_shared_corefinement.end()) {
+            vf_finder->second += contact.normalB;
+            // info() << "Global co-ref Voidface add1 to slave " << slave_face.uniqueId() << " " << contact.normalB << " from " << master_face.uniqueId() << " " << contact.normalA;
           }
-        } else { // has to be sent
-          if (master_face.isOwn())
-            ++info_to_send[slave_face.owner()];
         }
       }
+      else { // has to be sent
+        if (master_face.isOwn())
+          ++info_to_send[slave_face.owner()];
+      }
     }
+  }
 
   // List of synthesis messages (emissions / receptions)
-  ISerializeMessageList * messageList = NULL;
+  ISerializeMessageList* messageList = NULL;
   if (parallel_mng->isParallel())
     messageList = parallel_mng->createSerializeMessageList();
 
   // Preparation of reception
-  UniqueArray<Integer> info_to_recv(nbSubDomain,0);
-  parallel_mng->allToAll(info_to_send,info_to_recv,1);
-  std::list<std::shared_ptr<SerializeMessage> > recv_messages;
-  for(Integer i=0;i<nbSubDomain;++i)
-    {
-      if (info_to_recv[i] > 0)
-        {
-          SerializeMessage * message = new SerializeMessage(parallel_mng->commRank(),i,ISerializeMessage::MT_Recv);
-          recv_messages.push_back(std::shared_ptr<SerializeMessage>(message));
-          messageList->addMessage(message);
-        }
+  UniqueArray<Integer> info_to_recv(nbSubDomain, 0);
+  parallel_mng->allToAll(info_to_send, info_to_recv, 1);
+  std::list<std::shared_ptr<SerializeMessage>> recv_messages;
+  for (Integer i = 0; i < nbSubDomain; ++i) {
+    if (info_to_recv[i] > 0) {
+      SerializeMessage* message = new SerializeMessage(parallel_mng->commRank(), i, ISerializeMessage::MT_Recv);
+      recv_messages.push_back(std::shared_ptr<SerializeMessage>(message));
+      messageList->addMessage(message);
     }
+  }
 
   // Preparation of emissions
-  UniqueArray<std::shared_ptr<SerializeMessage> > sent_messages(nbSubDomain);
-  for(Integer i=0;i<nbSubDomain;++i)
-    {
-      const Integer faceface_info_to_send = info_to_send[i];
-      if (faceface_info_to_send > 0)
-        {
-          SerializeMessage * message = new SerializeMessage(parallel_mng->commRank(),i,ISerializeMessage::MT_Send);
-          sent_messages[i].reset(message);
-          messageList->addMessage(message);
-          SerializeBuffer & sbuf = message->buffer();
-          sbuf.setMode(ISerializer::ModeReserve); // preparatory phase
-          sbuf.reserveInteger(2); // Nb d'item faceface puis voidface
-          sbuf.reserve(DT_Int64,2*faceface_info_to_send); // The uids
-          sbuf.reserve(DT_Real,6*faceface_info_to_send); // The normals (nothing for voidface)
-          sbuf.reserve(DT_Real,6*faceface_info_to_send); // The centers (nothing for voidface)
-          sbuf.allocateBuffer(); // memory allocation
-          sbuf.setMode(ISerializer::ModePut);
-          sbuf.putInteger(faceface_info_to_send);
-        }
+  UniqueArray<std::shared_ptr<SerializeMessage>> sent_messages(nbSubDomain);
+  for (Integer i = 0; i < nbSubDomain; ++i) {
+    const Integer faceface_info_to_send = info_to_send[i];
+    if (faceface_info_to_send > 0) {
+      SerializeMessage* message = new SerializeMessage(parallel_mng->commRank(), i, ISerializeMessage::MT_Send);
+      sent_messages[i].reset(message);
+      messageList->addMessage(message);
+      SerializeBuffer& sbuf = message->buffer();
+      sbuf.setMode(ISerializer::ModeReserve); // preparatory phase
+      sbuf.reserveInteger(2); // Nb d'item faceface puis voidface
+      sbuf.reserve(DT_Int64, 2 * faceface_info_to_send); // The uids
+      sbuf.reserve(DT_Real, 6 * faceface_info_to_send); // The normals (nothing for voidface)
+      sbuf.reserve(DT_Real, 6 * faceface_info_to_send); // The centers (nothing for voidface)
+      sbuf.allocateBuffer(); // memory allocation
+      sbuf.setMode(ISerializer::ModePut);
+      sbuf.putInteger(faceface_info_to_send);
     }
+  }
 
   // Filling outgoing messages
-  for(FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i)
-    {
-      const ISurfaceUtils::FaceFaceContact & contact = *i;
-      const Face master_face = contact.faceA;
-      const Face slave_face = contact.faceB;
-      if (not slave_face.null() and not slave_face.isOwn() and master_face.isOwn())
-        {
-          std::shared_ptr<SerializeMessage> message = sent_messages[slave_face.owner()];
-          SerializeBuffer & sbuf = message->buffer();
-          // Not possible to put Real3 ??? (even if we can reserve them)
-          sbuf.put(master_face.uniqueId().asInt64());
-          sbuf.putReal(contact.normalA.x); sbuf.putReal(contact.normalA.y); sbuf.putReal(contact.normalA.z);
-          sbuf.putReal(contact.centerA.x); sbuf.putReal(contact.centerA.y); sbuf.putReal(contact.centerA.z);
-          sbuf.put(slave_face.uniqueId().asInt64());
-          sbuf.putReal(contact.normalB.x); sbuf.putReal(contact.normalB.y); sbuf.putReal(contact.normalB.z);
-          sbuf.putReal(contact.centerB.x); sbuf.putReal(contact.centerB.y); sbuf.putReal(contact.centerB.z);
+  for (FaceFaceContactList::iterator i = m_contacts.begin(); i != m_contacts.end(); ++i) {
+    const ISurfaceUtils::FaceFaceContact& contact = *i;
+    const Face master_face = contact.faceA;
+    const Face slave_face = contact.faceB;
+    if (not slave_face.null() and not slave_face.isOwn() and master_face.isOwn()) {
+      std::shared_ptr<SerializeMessage> message = sent_messages[slave_face.owner()];
+      SerializeBuffer& sbuf = message->buffer();
+      // Not possible to put Real3 ??? (even if we can reserve them)
+      sbuf.put(master_face.uniqueId().asInt64());
+      sbuf.putReal(contact.normalA.x);
+      sbuf.putReal(contact.normalA.y);
+      sbuf.putReal(contact.normalA.z);
+      sbuf.putReal(contact.centerA.x);
+      sbuf.putReal(contact.centerA.y);
+      sbuf.putReal(contact.centerA.z);
+      sbuf.put(slave_face.uniqueId().asInt64());
+      sbuf.putReal(contact.normalB.x);
+      sbuf.putReal(contact.normalB.y);
+      sbuf.putReal(contact.normalB.z);
+      sbuf.putReal(contact.centerB.x);
+      sbuf.putReal(contact.centerB.y);
+      sbuf.putReal(contact.centerB.z);
 
-          // pinfo() << "Global co-ref " << parallel_mng->commRank() << " push to " 
-          // << slave_face.owner() << " " << master_face.uniqueId() << " - " << slave_face.uniqueId() 
-          // << " : " << contact.normalA << " " << contact.normalB;
-        }
+      // pinfo() << "Global co-ref " << parallel_mng->commRank() << " push to "
+      // << slave_face.owner() << " " << master_face.uniqueId() << " - " << slave_face.uniqueId()
+      // << " : " << contact.normalA << " " << contact.normalB;
     }
+  }
 
   // Processing communications
   if (messageList) {
     messageList->processPendingMessages();
     messageList->waitMessages(Parallel::WaitAll);
-    delete messageList; messageList = NULL; // Clean destruction
+    delete messageList;
+    messageList = NULL; // Clean destruction
   }
 
   // Processing received messages
-  for(std::list<std::shared_ptr<SerializeMessage> >::iterator i=recv_messages.begin(); i!=recv_messages.end(); ++i)
-    {
-      std::shared_ptr<SerializeMessage> & message = *i;
-      const Integer origDomainId = message->destRank();
-      ARCANE_ASSERT((origDomainId != subDomain()->subDomainId()),("Local to local sent"));
-      SerializeBuffer& sbuf = message->buffer();
-      sbuf.setMode(ISerializer::ModeGet);
-      const Integer faceface_count = sbuf.getInteger();
-      ARCANE_ASSERT((faceface_count == info_to_recv[origDomainId]),("Bad recv faceface count"));
-      Int64UniqueArray uids(2*faceface_count);
-      Int32UniqueArray lids(2*faceface_count);
-      sbuf.get(uids);
-      mesh()->faceFamily()->itemsUniqueIdToLocalId(lids,uids,true);
+  for (std::list<std::shared_ptr<SerializeMessage>>::iterator i = recv_messages.begin(); i != recv_messages.end(); ++i) {
+    std::shared_ptr<SerializeMessage>& message = *i;
+    const Integer origDomainId = message->destRank();
+    ARCANE_ASSERT((origDomainId != subDomain()->subDomainId()), ("Local to local sent"));
+    SerializeBuffer& sbuf = message->buffer();
+    sbuf.setMode(ISerializer::ModeGet);
+    const Integer faceface_count = sbuf.getInteger();
+    ARCANE_ASSERT((faceface_count == info_to_recv[origDomainId]), ("Bad recv faceface count"));
+    Int64UniqueArray uids(2 * faceface_count);
+    Int32UniqueArray lids(2 * faceface_count);
+    sbuf.get(uids);
+    mesh()->faceFamily()->itemsUniqueIdToLocalId(lids, uids, true);
 
-      // Processing face-face pairs
-      for(Integer j=0;j<faceface_count;++j)
-        {
-          Face faceA(internals[lids[2*j  ]]);
-          Face faceB(internals[lids[2*j+1]]);
-          ARCANE_ASSERT((faceB.isOwn()),("Not local information recieved"));
-          ISurfaceUtils::FaceFaceContact contact(faceA,faceB);
-          contact.normalA.x = sbuf.getReal(); contact.normalA.y = sbuf.getReal(); contact.normalA.z = sbuf.getReal();
-          contact.centerA.x = sbuf.getReal(); contact.centerA.y = sbuf.getReal(); contact.centerA.z = sbuf.getReal();
-          contact.normalB.x = sbuf.getReal(); contact.normalB.y = sbuf.getReal(); contact.normalB.z = sbuf.getReal();
-          contact.centerB.x = sbuf.getReal(); contact.centerB.y = sbuf.getReal(); contact.centerB.z = sbuf.getReal();
-          m_contacts.add(contact);
+    // Processing face-face pairs
+    for (Integer j = 0; j < faceface_count; ++j) {
+      Face faceA(internals[lids[2 * j]]);
+      Face faceB(internals[lids[2 * j + 1]]);
+      ARCANE_ASSERT((faceB.isOwn()), ("Not local information recieved"));
+      ISurfaceUtils::FaceFaceContact contact(faceA, faceB);
+      contact.normalA.x = sbuf.getReal();
+      contact.normalA.y = sbuf.getReal();
+      contact.normalA.z = sbuf.getReal();
+      contact.centerA.x = sbuf.getReal();
+      contact.centerA.y = sbuf.getReal();
+      contact.centerA.z = sbuf.getReal();
+      contact.normalB.x = sbuf.getReal();
+      contact.normalB.y = sbuf.getReal();
+      contact.normalB.z = sbuf.getReal();
+      contact.centerB.x = sbuf.getReal();
+      contact.centerB.y = sbuf.getReal();
+      contact.centerB.z = sbuf.getReal();
+      m_contacts.add(contact);
 
-          SharedCorefinement::iterator vf_finder = voidface_shared_corefinement.find(faceB.localId());
-          if (vf_finder != voidface_shared_corefinement.end()) {
-            vf_finder->second += contact.normalB; 
-            // info() << "Global co-ref Voidface add2 to slave " << faceB.uniqueId() << " " << contact.normalB << " from " << faceA.uniqueId() << " " << contact.normalA;
-          }
-        }
+      SharedCorefinement::iterator vf_finder = voidface_shared_corefinement.find(faceB.localId());
+      if (vf_finder != voidface_shared_corefinement.end()) {
+        vf_finder->second += contact.normalB;
+        // info() << "Global co-ref Voidface add2 to slave " << faceB.uniqueId() << " " << contact.normalB << " from " << faceA.uniqueId() << " " << contact.normalA;
+      }
     }
+  }
 
   // 7- Final processing of void-face pairs
-  for(SharedCorefinement::const_iterator i=voidface_shared_corefinement.begin();
-      i != voidface_shared_corefinement.end(); ++i) {
+  for (SharedCorefinement::const_iterator i = voidface_shared_corefinement.begin();
+       i != voidface_shared_corefinement.end(); ++i) {
     Face faceA; // null
     Face faceB(internals[i->first]);
-    ARCANE_ASSERT((faceB.isOwn()),("Non local voidface"));
+    ARCANE_ASSERT((faceB.isOwn()), ("Non local voidface"));
     Real3 faceB_normal = m_geometry->computeOrientedMeasure(faceB);
     Real faceB_area = math::normeR3(faceB_normal);
     if (math::normeR3(i->second) < faceB_area) {
-      ISurfaceUtils::FaceFaceContact contact(faceA,faceB);
+      ISurfaceUtils::FaceFaceContact contact(faceA, faceB);
       contact.normalB = faceB_normal - i->second;
       // info() << "Global co-refinement info : voidface add " << faceB.uniqueId() << " " << contact.normalB << "    " << faceB_normal;
       m_contacts.add(contact);
@@ -684,17 +720,18 @@ update()
   // Not implemented and NOTE this can change local numbering
 
   m_internal->corefinementTimer.stop();
- 
+
   UniqueArray<Real> times(2);
   times[0] = m_internal->corefinementTimer.totalTime();
   times[1] = m_internal->migrationTimer.totalTime();
-  parallel_mng->reduce(Parallel::ReduceMin,times);
+  parallel_mng->reduce(Parallel::ReduceMin, times);
   info() << "Corefinement timers : all=" << times[0] << " migration=" << times[1] << " #domains=" << parallel_mng->commSize();
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-const IParallelCorefinement::FaceFaceContactList & 
+const IParallelCorefinement::FaceFaceContactList&
 ParallelCorefinementService::
 contacts()
 {
@@ -704,4 +741,4 @@ contacts()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PARALLELCOREFINEMENT(ParallelCorefinement,ParallelCorefinementService);
+ARCANE_REGISTER_SERVICE_PARALLELCOREFINEMENT(ParallelCorefinement, ParallelCorefinementService);
