@@ -39,7 +39,7 @@ class StandaloneSubDomain::Impl
   Impl() = default;
   ~Impl()
   {
-    arcaneCallFunctionAndCatchException([&]{ dumpStats(); });
+    arcaneCallFunctionAndCatchException([&] { dumpStats(); });
     StandaloneSubDomain::_notifyRemoveStandaloneSubDomain();
   }
 

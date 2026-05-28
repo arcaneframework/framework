@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,6 +43,7 @@ class IMainFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Execution management class.
  *
@@ -76,8 +77,6 @@ class IMainFactory;
  *   return ArcaneLauncher::run();
  * }
  * \endcode
- *
- * L
  */
 class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 {
@@ -113,7 +112,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static int run();
 
- /*!
+  /*!
    * \brief Direct execution.
    *
    * Initializes the application and calls the function \a func after
@@ -122,7 +121,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static int run(std::function<int(DirectExecutionContext&)> func);
 
- /*!
+  /*!
    * \brief Direct execution with subdomain creation.
    *
    * Initializes the application and creates the subdomain(s) and calls
@@ -143,7 +142,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 
- /*!
+  /*!
    * \brief Application information.
    *
    * This method allows retrieving the `ApplicationInfo` instance
@@ -154,7 +153,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static ApplicationInfo& applicationInfo();
 
- /*!
+  /*!
    * \brief Application execution parameter information.
    *
    * This method allows retrieving the `ApplicationBuildInfo` instance

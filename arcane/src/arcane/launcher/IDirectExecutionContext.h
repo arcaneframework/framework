@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,18 +32,21 @@ class ISubDomain;
 class ARCANE_LAUNCHER_EXPORT IDirectExecutionContext
 {
  public:
+
   virtual ~IDirectExecutionContext() = default;
+
  public:
+
   /*!
    * \brief Create a sequential sub-domain without a dataset
    */
-  virtual ISubDomain* createSequentialSubDomain() =0;
+  virtual ISubDomain* createSequentialSubDomain() = 0;
 
   /*!
    * \brief Create a sequential sub-domain with the dataset file
    * named \a case_file_name.
    */
-  virtual ISubDomain* createSequentialSubDomain(const String& case_file_name) =0;
+  virtual ISubDomain* createSequentialSubDomain(const String& case_file_name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
