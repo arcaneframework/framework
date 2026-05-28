@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DirectExecutionFunctor.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Fonctor pour l'exécution directe.                                         */
+/* Functor for direct execution.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_INTERNAL_DIRECTEXECUTIONFUNCTOR_H
 #define ARCANE_LAUNCHER_INTERNAL_DIRECTEXECUTIONFUNCTOR_H
@@ -67,4 +67,4 @@ class ARCANE_LAUNCHER_EXPORT DirectExecutionWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

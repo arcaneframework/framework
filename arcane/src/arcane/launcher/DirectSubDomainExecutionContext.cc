@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DirectSubDomainExecutionContext.cc                          (C) 2000-2022 */
 /*                                                                           */
-/* Contexte d'exécution directe avec création d'un sous-domaine.             */
+/* Direct execution context with creation of a subdomain.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

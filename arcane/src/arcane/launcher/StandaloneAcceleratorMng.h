@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneAcceleratorMng.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation autonome (sans IApplication) de 'IAcceleratorMng.h'.       */
+/* Standalone implementation (without IApplication) of 'IAcceleratorMng.h'.  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_STANDALONEACCELERATORMNG_H
 #define ARCANE_LAUNCHER_STANDALONEACCELERATORMNG_H
@@ -28,15 +28,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation autonome de 'IAcceleratorMng.h'.
+ * \brief Standalone implementation of 'IAcceleratorMng.h'.
  *
- * Les instances de cette classe sont créées par
+ * Instances of this class are created by
  * ArcaneLauncher::createStandaloneAcceleratorMng().
  *
- * Cette classe utilise une sémantique par référence.
+ * This class uses a reference semantics.
  *
- * Cette instance permet d'utiliser les fonctionnalités de %Arcane gérant les
- * accélérateurs sans être obligé de créér une application %Arcane classique.
+ * This instance allows using the %Arcane functionalities managing the
+ * accelerators without being forced to create a classic %Arcane application.
  */
 class ARCANE_LAUNCHER_EXPORT StandaloneAcceleratorMng
 {
@@ -49,10 +49,10 @@ class ARCANE_LAUNCHER_EXPORT StandaloneAcceleratorMng
 
  public:
 
-  //! Gestionnaire de trace associé.
+  //! Associated trace manager.
   ITraceMng* traceMng() const;
 
-  //! Gestionnaire des accélérateurs associé.
+  //! Associated accelerator manager.
   IAcceleratorMng* acceleratorMng() const;
 
  private:

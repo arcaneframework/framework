@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneLauncher.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant le lancement de l'exécution.                                */
+/* Class managing the execution launch.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -90,7 +90,7 @@ class DirectExecutionContextImpl
 void
 _checkReadConfigFile(StringView config_file_name)
 {
-  // TODO: en parallèle, ne faire la lecture que par un seul PE.
+  // TODO: in parallel, only one PE should perform the reading.
   if (config_file_name.empty())
     return;
   std::cout << "TRY_READING_CONFIG " << config_file_name << "\n";
@@ -201,7 +201,7 @@ class DirectCodeFunctor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Obsolète
+// Obsolete
 int ArcaneLauncher::
 runDirect(std::function<int(IDirectExecutionContext* c)> func)
 {
@@ -213,9 +213,9 @@ runDirect(std::function<int(IDirectExecutionContext* c)> func)
     int r = simple_exec.initialize();
     if (r!=0)
       return r;
-    // Encapsule le code dans un functor qui va gérer les
-    // exceptions. Sans cela, en cas d'exception et si le code
-    // appelant ne fait rien on aura un appel à std::terminate
+    // Encapsulates the code in a functor that will handle exceptions. Without
+    // this, in case of an exception and if the calling code does nothing, we
+    // will have a call to std::terminate
     DirectCodeFunctor direct_functor(&simple_exec,&func);
     simple_exec.runCode(&direct_functor);
     final_return = direct_functor.returnValue();
@@ -238,9 +238,9 @@ run(std::function<int(DirectExecutionContext&)> func)
     int r = simple_exec.initialize();
     if (r!=0)
       return r;
-    // Encapsule le code dans un functor qui va gérer les
-    // exceptions. Sans cela, en cas d'exception et si le code
-    // appelant ne fait rien on aura un appel à std::terminate
+    // Encapsulates the code in a functor that will handle exceptions. Without
+    // this, in case of an exception and if the calling code does nothing, we
+    // will have a call to std::terminate
     DirectCodeFunctor direct_functor(&simple_exec,&func);
     simple_exec.runCode(&direct_functor);
     final_return = direct_functor.returnValue();
@@ -282,12 +282,12 @@ run(std::function<int(DirectSubDomainExecutionContext&)> func)
     return (-1);
 
   ArcaneLauncherDirectExecuteFunctor direct_exec(func);
-  // En exécution directe, par défaut il n'y a pas de fichier de configuration
-  // du code. Si l'utilisateur n'a pas positionné de fichier de configuration,
-  // alors on le positionne à la chaîne nulle.
+  // In direct execution, by default there is no configuration file for the
+  // code. If the user has not provided a configuration file, we set it to
+  // the null string.
   String config_file = applicationBuildInfo().configFileName();
-  // Le défaut est la chaîne vide. La chaîne nulle indique explicitement qu'on
-  // ne souhaite pas de fichier de configuration
+  // The default is the empty string. The null string explicitly indicates
+  // that no configuration file is desired
   if (config_file.empty())
     applicationBuildInfo().setConfigFileName(String());
   int r = ArcaneMain::_internalRun(&direct_exec);
@@ -379,8 +379,8 @@ _initStandalone()
 {
   if (!global_has_init_done)
     ARCANE_FATAL("ArcaneLauncher::init() has to be called before");
-  // Cela est nécessaire pour éventuellement charger dynamiquement le runtime
-  // associé aux accélérateurs
+  // This is necessary to potentially dynamically load the runtime associated
+  // with accelerators
   ArcaneMain::_initRuntimes();
 }
 

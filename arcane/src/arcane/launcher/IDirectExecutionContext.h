@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDirectExecutionContext.h                                   (C) 2000-2021 */
 /*                                                                           */
-/* Implémentation de la classe de gestion de l'exécution.                    */
+/* Implementation of the execution management class.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_IDIRECTEXECUTIONCONTEXT_H
 #define ARCANE_LAUNCHER_IDIRECTEXECUTIONCONTEXT_H
@@ -27,7 +27,7 @@ class ISubDomain;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Implémentation de la classe de gestion de l'exécution.
+ * \brief Implementation of the execution management class.
  */
 class ARCANE_LAUNCHER_EXPORT IDirectExecutionContext
 {
@@ -35,13 +35,13 @@ class ARCANE_LAUNCHER_EXPORT IDirectExecutionContext
   virtual ~IDirectExecutionContext() = default;
  public:
   /*!
-   * \brief Créé un sous-domaine en séquentiel sans jeu de données
+   * \brief Create a sequential sub-domain without a dataset
    */
   virtual ISubDomain* createSequentialSubDomain() =0;
 
   /*!
-   * \brief Créé un sous-domaine en séquentiel avec le fichier de
-   * jeu de données ayant pour nom \a case_file_name.
+   * \brief Create a sequential sub-domain with the dataset file
+   * named \a case_file_name.
    */
   virtual ISubDomain* createSequentialSubDomain(const String& case_file_name) =0;
 };
@@ -54,4 +54,4 @@ class ARCANE_LAUNCHER_EXPORT IDirectExecutionContext
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

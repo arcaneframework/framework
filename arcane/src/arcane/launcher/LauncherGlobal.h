@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LauncherGlobal.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales de la composante 'Launcher' de Arcane.             */
+/* General declarations for the 'Launcher' component of Arcane.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_LAUNCHERGLOBAL_H
 #define ARCANE_LAUNCHER_LAUNCHERGLOBAL_H

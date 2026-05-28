@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneStandaloneAcceleratorMng.cc                       (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation autonome (sans IApplication) de 'IAcceleratorMng.h'.       */
+/* Standalone implementation (without IApplication) of 'IAcceleratorMng.h'.  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

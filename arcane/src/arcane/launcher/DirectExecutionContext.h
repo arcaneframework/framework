@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DirectExecutionContext.h                                    (C) 2000-2021 */
 /*                                                                           */
-/* Contexte d'exécution directe.                                             */
+/* Direct execution context.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_DIRECTEXECUTIONCONTEXT_H
 #define ARCANE_LAUNCHER_DIRECTEXECUTIONCONTEXT_H
@@ -27,7 +27,7 @@ class IDirectExecutionContext;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Contexte d'exécution directe.
+ * \brief Direct execution context.
  */
 class ARCANE_LAUNCHER_EXPORT DirectExecutionContext
 {
@@ -37,12 +37,12 @@ class ARCANE_LAUNCHER_EXPORT DirectExecutionContext
   DirectExecutionContext& operator=(const DirectExecutionContext&) = delete;
  public:
   /*!
-   * \brief Créé un sous-domaine en séquentiel sans jeu de données
+   * \brief Creates a sequential sub-domain without a dataset
    */
   ISubDomain* createSequentialSubDomain();
   /*!
-   * \brief Créé un sous-domaine en séquentiel avec le fichier de
-   * jeu de données ayant pour nom \a case_file_name.
+   * \brief Creates a sequential sub-domain with the dataset file named
+   * case_file_name.
    */
   ISubDomain* createSequentialSubDomain(const String& case_file_name);
  private:
@@ -57,4 +57,4 @@ class ARCANE_LAUNCHER_EXPORT DirectExecutionContext
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeneralHelp.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant le message d'aide générique.                                */
+/* Class managing the generic help message.                                  */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/launcher/GeneralHelp.h"
@@ -47,12 +47,12 @@ printHelp()
   std::cout << "                     -A,Option1=Value -A,Option2=Value" << std::endl;
   std::cout << std::endl;
   std::cout << "Arcane options:" << std::endl;
-  std::cout << "    -A,T=<Int32>                      Nombre de tâches concurrentes à exécuter (default=1)" << std::endl;
-  std::cout << "    -A,S=<Int32>                      Nombre de sous-domaines en mémoire partagée" << std::endl;
-  std::cout << "    -A,R=<Int32>                      Nombre de sous-domaines répliqués (default=1)" << std::endl;
-  std::cout << "    -A,P=<Int32>                      Nombre de processus à utiliser pour les sous-domaines. Cette valeur est normalement calculée automatiquement en fonction des paramètres MPI. Elle n'est utile que si on souhaite utiliser moins de processus pour le partitionnement de domaine que ceux alloués pour le calcul." << std::endl;
-  std::cout << "    -A,AcceleratorRuntime=<String>    Runtime accélérateur à utiliser. Les deux valeurs possibles sont cuda ou hip. Il faut avoir compiler Arcane avec le support des accélérateurs pour que cette option soit accessible. " << std::endl;
-  std::cout << "    -A,MaxIteration=<VALUE>           Nombre maximum d'itérations à effectuer pour l'exécution. Si le nombre d'itérations spécifié par cette variable est atteint, le calcul s'arrête." << std::endl;
+  std::cout << "    -A,T=<Int32>                      Number of concurrent tasks to execute (default=1)" << std::endl;
+  std::cout << "    -A,S=<Int32>                      Number of subdomains in shared memory" << std::endl;
+  std::cout << "    -A,R=<Int32>                      Number of replicated subdomains (default=1)" << std::endl;
+  std::cout << "    -A,P=<Int32>                      Number of processes to use for subdomains. This value is normally calculated automatically based on MPI parameters. It is only useful if you wish to use fewer processes for domain partitioning than those allocated for computation." << std::endl;
+  std::cout << "    -A,AcceleratorRuntime=<String>    Accelerator runtime to use. The two possible values are cuda or hip. Arcane must be compiled with accelerator support for this option to be accessible. " << std::endl;
+  std::cout << "    -A,MaxIteration=<VALUE>           Maximum number of iterations to perform for the execution. If the number of iterations specified by this variable is reached, the calculation stops." << std::endl;
 }
 
 /*---------------------------------------------------------------------------*/

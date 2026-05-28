@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeneralHelp.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant le message d'aide générique.                                */
+/* Class managing the generic help message.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_GENERALHELP_H
 #define ARCANE_LAUNCHER_GENERALHELP_H

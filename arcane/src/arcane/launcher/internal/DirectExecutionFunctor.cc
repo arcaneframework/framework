@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DirectExecutionFunctor.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Fonctor pour l'exécution directe.                                         */
+/* Functor for direct execution.                                             */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/launcher/internal/DirectExecutionFunctor.h"
