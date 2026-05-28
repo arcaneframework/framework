@@ -382,9 +382,15 @@ static const Int16 IT_Hexaedron27 = 47;
 static const Int16 IT_Line4 = 48;
 //! Triangle d'ordre 3. EXPERIMENTAL !
 static const Int16 IT_Triangle10 = 49;
+//! Ligen d'ordre 3. EXPERIMENTAL !
+static const Int16 IT_CellLine4 = 50;
+//! Ligen d'ordre 3. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Line4 = 51;
+//! Triangle d'ordre 3 dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Triangle10 = 52;
 
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 50;
+static const Integer NB_BASIC_ITEM_TYPE = 53;
 
 //! Première valeur pour les type polygones génériques (EXPERIMENTAL)
 static const Int16 IT_GenericPolygon = 200;
