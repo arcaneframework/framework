@@ -67,9 +67,8 @@ namespace Arcane
 
 using std::string;
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaGroupReader;
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,6 +76,7 @@ class LimaGroupReader;
 class LimaVolume
 {
  public:
+
   static Real Hexaedron8Volume(Real3 n[8])
   {
     Real v1 = math::matDet((n[6] - n[1]) + (n[7] - n[0]), n[6] - n[3], n[2] - n[0]);
@@ -132,21 +132,25 @@ class LimaVolume
  * The template parameter \a LimaMaliReader is either Lima::MaliPPReader for
  * 'mli' files, or Lima::MaliPPReader2 for 'mli2'.
  */
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaMalippMeshBase
 : public TraceAccessor
 {
  public:
+
   LimaMalippMeshBase(ITraceMng* trace_mng)
-  : TraceAccessor(trace_mng) {}
+  : TraceAccessor(trace_mng)
+  {}
   virtual ~LimaMalippMeshBase() = default;
 
  public:
  public:
+
   virtual bool readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
                             const String& filename, Real length_multiplier) = 0;
 
  protected:
+
   void _createGroupFromUniqueIds(IMesh* mesh, const String& name, eItemKind ik,
                                  Int64ConstArrayView unique_ids);
   void _createGroupFromHashTable(IMesh* mesh, const String& name, eItemKind ik,
@@ -156,6 +160,7 @@ class LimaMalippMeshBase
                   Int64 current_unique_id);
   void _createGroups(IMesh* mesh, eItemKind item_kind, LimaGroupReader<LimaMaliReader>* reader,
                      HashTableMapT<Int64, Int32>* converter);
+
  private:
 };
 
@@ -174,12 +179,16 @@ class LimaMalippReaderT
   using TraceAccessor::info;
   using TraceAccessor::log;
   using TraceAccessor::logdate;
+
  public:
+
   typedef typename ReaderWrapper::LimaMaliReaderType LimaMaliReader;
+
  public:
+
   LimaMalippReaderT(IParallelMng* pm)
-  : LimaMalippMeshBase<LimaMaliReader>(pm->traceMng()),
-    m_cut_infos_reader(new LimaCutInfosReader(pm))
+  : LimaMalippMeshBase<LimaMaliReader>(pm->traceMng())
+  , m_cut_infos_reader(new LimaCutInfosReader(pm))
   {}
 
   ~LimaMalippReaderT() override
@@ -189,29 +198,33 @@ class LimaMalippReaderT
 
  public:
  public:
-  bool readMeshPart(ITimerMng* timer_mng,LimaMaliReader* reader,
+
+  bool readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader,
                     IPrimaryMesh* mesh, const String& filename,
                     Real length_multiplier) override;
 
  private:
+
   LimaCutInfosReader* m_cut_infos_reader;
   ReaderWrapper m_wrapper;
 
-  bool _readMeshPart(ITimerMng* timer_mng,LimaMaliReader* reader, IPrimaryMesh* mesh,
+  bool _readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
                      const String& filename, Real length_multiplier);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaMalippReaderWrapper
 {
  public:
+
   typedef LimaMaliReader LimaMaliReaderType;
   typedef typename LimaMaliReader::NuageReader LimaNodeGroup;
 
  public:
+
   LimaMalippReaderWrapper()
   : m_mali_reader(0)
   {}
@@ -225,6 +238,7 @@ class LimaMalippReaderWrapper
   }
 
  public:
+
   Lima::size_type
   _readGroup(typename LimaMaliReader::SurfaceReader reader,
              Lima::size_type begin, Lima::size_type n, Lima::size_type* buffer)
@@ -292,6 +306,7 @@ class LimaMalippReaderWrapper
   }
 
  protected:
+
   LimaMaliReader* m_mali_reader;
   ScopedPtrT<LimaGroupReader<LimaMaliReader>> m_cell_group_reader;
   ScopedPtrT<LimaGroupReader<LimaMaliReader>> m_node_group_reader;
@@ -301,10 +316,11 @@ class LimaMalippReaderWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaGroupReader
 {
  public:
+
   LimaGroupReader(LimaMalippReaderWrapper<LimaMaliReader>* wrapper)
   : m_wrapper(wrapper)
   {}
@@ -312,6 +328,7 @@ class LimaGroupReader
   virtual void read(const String& name, Int64Array& items_unique_id) = 0;
 
  public:
+
   virtual StringConstArrayView groupsName()
   {
     std::vector<std::string> groups;
@@ -323,20 +340,24 @@ class LimaGroupReader
   }
 
  protected:
+
   virtual void _getGroupsName(std::vector<std::string>& groups) = 0;
 
  protected:
+
   LimaMalippReaderWrapper<LimaMaliReader>* m_wrapper;
 
  private:
+
   StringUniqueArray m_groups_name;
 };
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class NodeGroupReader
 : public LimaGroupReader<LimaMaliReader>
 {
  public:
+
   NodeGroupReader(LimaMalippReaderWrapper<LimaMaliReader>* wrapper)
   : LimaGroupReader<LimaMaliReader>(wrapper)
   {}
@@ -353,11 +374,12 @@ class NodeGroupReader
  private:
 };
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class EdgeGroupReader
 : public LimaGroupReader<LimaMaliReader>
 {
  public:
+
   EdgeGroupReader(LimaMalippReaderWrapper<LimaMaliReader>* wrapper)
   : LimaGroupReader<LimaMaliReader>(wrapper)
   {}
@@ -374,11 +396,12 @@ class EdgeGroupReader
  private:
 };
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class FaceGroupReader
 : public LimaGroupReader<LimaMaliReader>
 {
  public:
+
   FaceGroupReader(LimaMalippReaderWrapper<LimaMaliReader>* wrapper)
   : LimaGroupReader<LimaMaliReader>(wrapper)
   {
@@ -394,11 +417,12 @@ class FaceGroupReader
   }
 };
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class CellGroupReader
 : public LimaGroupReader<LimaMaliReader>
 {
  public:
+
   CellGroupReader(LimaMalippReaderWrapper<LimaMaliReader>* wrapper)
   : LimaGroupReader<LimaMaliReader>(wrapper)
   {
@@ -419,21 +443,25 @@ class CellGroupReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaMalipp2DReaderWrapper
 : public LimaMalippReaderWrapper<LimaMaliReader>
 {
   typedef LimaMalippReaderWrapper<LimaMaliReader> BaseClass;
-  using BaseClass::m_mali_reader;
   using BaseClass::m_cell_group_reader;
-  using BaseClass::m_node_group_reader;
   using BaseClass::m_face_group_reader;
+  using BaseClass::m_mali_reader;
+  using BaseClass::m_node_group_reader;
+
  public:
+
   typedef Lima::Composition LimaComposition;
   typedef typename LimaMaliReader::SurfaceReader LimaCellGroup;
   typedef typename LimaMaliReader::LigneReader LimaFaceGroup;
   typedef typename LimaMaliReader::NuageReader LimaNodeGroup;
+
  public:
+
   LimaComposition cells()
   {
     return m_mali_reader->composition_polygones();
@@ -564,22 +592,25 @@ class LimaMalipp2DReaderWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaMalipp3DReaderWrapper
 : public LimaMalippReaderWrapper<LimaMaliReader>
 {
   typedef LimaMalippReaderWrapper<LimaMaliReader> BaseClass;
-  using BaseClass::m_mali_reader;
   using BaseClass::m_cell_group_reader;
-  using BaseClass::m_node_group_reader;
   using BaseClass::m_face_group_reader;
+  using BaseClass::m_mali_reader;
+  using BaseClass::m_node_group_reader;
+
  public:
+
   typedef typename LimaMaliReader::VolumeReader LimaCellGroup;
   typedef typename LimaMaliReader::SurfaceReader LimaFaceGroup;
   typedef typename LimaMaliReader::NuageReader LimaNodeGroup;
   typedef Lima::Composition LimaComposition;
 
  public:
+
   LimaComposition cells()
   {
     return m_mali_reader->composition_polyedres();
@@ -595,6 +626,7 @@ class LimaMalipp3DReaderWrapper
 
  public:
  public:
+
   //typedef Lima::Volume LimaCellGroup;
   typedef Lima::Polyedre LimaCell;
   //typedef Lima::Surface LimaFaceGroup;
@@ -718,28 +750,32 @@ class LimaMalipp3DReaderWrapper
 /*!
  * \brief Mesh file reader via the LIMA library.
  */
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 class LimaMalippReader
 : public TraceAccessor
 {
  public:
+
   LimaMalippReader(ITraceMng* trace_mng)
-  : TraceAccessor(trace_mng) {}
+  : TraceAccessor(trace_mng)
+  {}
 
  public:
+
   IMeshReader::eReturnType
-  readMeshFromFile(ITimerMng* tm,IPrimaryMesh* mesh,
+  readMeshFromFile(ITimerMng* tm, IPrimaryMesh* mesh,
                    const String& file_name, Real length_multiplier);
+
  private:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LimaMaliReader>
+template <typename LimaMaliReader>
 IMeshReader::eReturnType LimaMalippReader<LimaMaliReader>::
-readMeshFromFile(ITimerMng* timer_mng,IPrimaryMesh* mesh,
-                 const String& filename,Real length_multiplier)
+readMeshFromFile(ITimerMng* timer_mng, IPrimaryMesh* mesh,
+                 const String& filename, Real length_multiplier)
 {
   if (filename.null() || filename.empty())
     return IMeshReader::RTIrrelevant;
@@ -754,10 +790,10 @@ readMeshFromFile(ITimerMng* timer_mng,IPrimaryMesh* mesh,
       reader = new LimaMaliReader(filename.localstr(), 1);
     }
     catch (const Lima::erreur& ex) {
-      ARCANE_FATAL("Impossible de lire le fichier MLI Lima <{0}> :",filename,ex.what());
+      ARCANE_FATAL("Impossible de lire le fichier MLI Lima <{0}> :", filename, ex.what());
     }
     catch (...) {
-      ARCANE_FATAL("Impossible de lire le fichier MLI Lima <{0}>",filename);
+      ARCANE_FATAL("Impossible de lire le fichier MLI Lima <{0}>", filename);
     }
     dimension = reader->dimension();
     pm->broadcast(IntegerArrayView(1, &dimension), master_io_rank);
@@ -782,7 +818,7 @@ readMeshFromFile(ITimerMng* timer_mng,IPrimaryMesh* mesh,
     log() << "Dimension du maillage non reconnue par lima";
     return IMeshReader::RTIrrelevant;
   }
-  bool ret = lm->readMeshPart(timer_mng,reader.get(), mesh, filename, length_multiplier);
+  bool ret = lm->readMeshPart(timer_mng, reader.get(), mesh, filename, length_multiplier);
   if (ret)
     return IMeshReader::RTError;
   return IMeshReader::RTOk;
@@ -793,7 +829,7 @@ readMeshFromFile(ITimerMng* timer_mng,IPrimaryMesh* mesh,
 
 template <typename ReaderWrapper>
 bool LimaMalippReaderT<ReaderWrapper>::
-readMeshPart(ITimerMng* timer_mng,LimaMaliReader* reader, IPrimaryMesh* mesh,
+readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
              const String& filename, Real length_multiplier)
 {
   return _readMeshPart(timer_mng, reader, mesh, filename, length_multiplier);
@@ -809,7 +845,7 @@ readMeshPart(ITimerMng* timer_mng,LimaMaliReader* reader, IPrimaryMesh* mesh,
 template <typename ReaderWrapper>
 bool LimaMalippReaderT<ReaderWrapper>::
 _readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
-              const String& file_name,Real length_multiplier)
+              const String& file_name, Real length_multiplier)
 {
   typedef Lima::size_type size_type;
   size_type basic_step = 100000;
@@ -836,7 +872,7 @@ _readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
   wrapper.setReader(reader);
 
   if (reader && reader->dimension() != wrapper.limaDimension())
-    ARCANE_FATAL("Le fichier n'est pas un maillage {0}",wrapper.strDimension());
+    ARCANE_FATAL("Le fichier n'est pas un maillage {0}", wrapper.strDimension());
 
   bool is_3d = (mesh->dimension() == 3);
 
@@ -918,7 +954,7 @@ _readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
     Integer last_print = 0;
     for (Integer i = 0; total_count < total_nb_cell; ++i) {
       if (i >= nb_rank)
-        ARCANE_FATAL("Too many count reading cells i={0} nrank=",i,nb_rank);
+        ARCANE_FATAL("Too many count reading cells i={0} nrank=", i, nb_rank);
       Int64 wanted_count = cell_step;
       // The last subdomain takes all remaining cells
       if ((i + 1) == nb_rank)

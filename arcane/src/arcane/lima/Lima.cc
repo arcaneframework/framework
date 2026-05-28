@@ -76,34 +76,34 @@ namespace Arcane
 namespace
 {
 
-// Mutex to protect calls to Lima in case MLI2 is used
-// because this format uses HDF5 which is not thread-safe in most cases
-// (this depends on the HDF5 compilation options but the thread-safe
-// version is incompatible with the MPI version and generally we need this
-// latter)
-std::mutex global_lima_mutex;
-class GlobalLimaMutex
-{
- public:
-
-  explicit GlobalLimaMutex(bool is_active)
-  : m_is_active(is_active)
+  // Mutex to protect calls to Lima in case MLI2 is used
+  // because this format uses HDF5 which is not thread-safe in most cases
+  // (this depends on the HDF5 compilation options but the thread-safe
+  // version is incompatible with the MPI version and generally we need this
+  // latter)
+  std::mutex global_lima_mutex;
+  class GlobalLimaMutex
   {
-    if (m_is_active)
-      global_lima_mutex.lock();
-  }
-  ~GlobalLimaMutex()
-  {
-    if (m_is_active)
-      global_lima_mutex.unlock();
-  }
+   public:
 
- private:
+    explicit GlobalLimaMutex(bool is_active)
+    : m_is_active(is_active)
+    {
+      if (m_is_active)
+        global_lima_mutex.lock();
+    }
+    ~GlobalLimaMutex()
+    {
+      if (m_is_active)
+        global_lima_mutex.unlock();
+    }
 
-  bool m_is_active = false;
-};
+   private:
 
-}
+    bool m_is_active = false;
+  };
+
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -116,20 +116,21 @@ class LimaMeshBase
  public:
 
   LimaMeshBase(ISubDomain* sub_domain)
-  : TraceAccessor(sub_domain->traceMng()), m_sub_domain(sub_domain) {}
+  : TraceAccessor(sub_domain->traceMng())
+  , m_sub_domain(sub_domain)
+  {}
   virtual ~LimaMeshBase() {}
 
  public:
 
-  virtual bool readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
-                        const String& dir_name,bool use_internal_partition,Real length_multiplier) =0;
+  virtual bool readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& filename,
+                        const String& dir_name, bool use_internal_partition, Real length_multiplier) = 0;
 
   ISubDomain* subDomain() const { return m_sub_domain; }
 
  protected:
-  
  private:
-  
+
   ISubDomain* m_sub_domain;
 
  private:
@@ -143,14 +144,16 @@ class LimaMeshBase
  * The 'template' parameter allows specifying a wrapper to read
  * 2D or 3D meshes.
  */
-template<typename ReaderWrapper>
+template <typename ReaderWrapper>
 class LimaWrapper
 : public LimaMeshBase
 {
  public:
 
   LimaWrapper(ISubDomain* sub_domain)
-  : LimaMeshBase(sub_domain), m_cut_infos_reader(new LimaCutInfosReader(sub_domain->parallelMng())) {}
+  : LimaMeshBase(sub_domain)
+  , m_cut_infos_reader(new LimaCutInfosReader(sub_domain->parallelMng()))
+  {}
 
   ~LimaWrapper()
   {
@@ -159,18 +162,18 @@ class LimaWrapper
 
  public:
 
-  virtual bool readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
-												const String& dir_name,bool use_internal_partition,Real length_multiplier);
+  virtual bool readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& filename,
+                        const String& dir_name, bool use_internal_partition, Real length_multiplier);
 
  private:
-  
+
   LimaCutInfosReader* m_cut_infos_reader;
-	ReaderWrapper m_wrapper;
+  ReaderWrapper m_wrapper;
 
-  bool _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
-                 const String& dir_name,bool use_internal_partition,Real length_multiplier);
+  bool _readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& filename,
+                 const String& dir_name, bool use_internal_partition, Real length_multiplier);
 
-  void _getProcList(UniqueArray<Integer>& proc_list,const String& dir_name);
+  void _getProcList(UniqueArray<Integer>& proc_list, const String& dir_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -181,9 +184,9 @@ class LimaMeshReaderWrapper
  public:
 
   void setLima(const Lima::Maillage& lima_mesh)
-	{
-		m_lima_mesh = lima_mesh;
-	}
+  {
+    m_lima_mesh = lima_mesh;
+  }
 
  protected:
 
@@ -197,79 +200,86 @@ class Lima2DReaderWrapper
 : public LimaMeshReaderWrapper
 {
  public:
-	typedef Lima::Surface LimaCellGroup;
-	typedef Lima::Polygone LimaCell;
-	typedef Lima::Ligne LimaFaceGroup;
-	typedef Lima::Bras LimaFace;
+
+  typedef Lima::Surface LimaCellGroup;
+  typedef Lima::Polygone LimaCell;
+  typedef Lima::Ligne LimaFaceGroup;
+  typedef Lima::Bras LimaFace;
+
  public:
-	Integer nbCellGroup()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_surfaces());
-	}
-	Integer nbFaceGroup()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_lignes());
-	}
-	LimaCellGroup cellGroup(Integer i)
-	{
-		return m_lima_mesh.surface(i);
-	}
-	LimaFaceGroup faceGroup(Integer i)
-	{
-		return m_lima_mesh.ligne(i);
-	}
-	Integer faceGroupNbFace(const LimaFaceGroup& group)
-	{
-		return CheckedConvert::toInteger(group.nb_bras());
-	}
-	LimaFace faceFaceGroup(const LimaFaceGroup& group,Integer i)
-	{
-		return group.bras(i);
-	}
-	Integer cellGroupNbCell(const LimaCellGroup& group)
-	{
-		return CheckedConvert::toInteger(group.nb_polygones());
-	}
-	LimaCell cellCellGroup(const LimaCellGroup& group,Integer i)
-	{
-		return group.polygone(i);
-	}
-	LimaCell cell(Integer i)
-	{
-		return m_lima_mesh.polygone(i);
-	}
-	LimaFace face(Integer i)
-	{
-		return m_lima_mesh.bras(i);
-	}
-	Integer nbCell()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_polygones());
-	}
-	Integer nbFace()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_bras());
-	}
-	int limaDimension()
-	{
-		return Lima::D2;
-	}
-	const char* strDimension()
-	{
-		return "2D";
-	}
-	static Integer cellToType(Integer nb_node)
-	{
-		switch(nb_node){
-    case 3: return IT_Triangle3;
-    case 4: return IT_Quad4;
-    case 5: return IT_Pentagon5;
-    case 6: return IT_Hexagon6;
+
+  Integer nbCellGroup()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_surfaces());
+  }
+  Integer nbFaceGroup()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_lignes());
+  }
+  LimaCellGroup cellGroup(Integer i)
+  {
+    return m_lima_mesh.surface(i);
+  }
+  LimaFaceGroup faceGroup(Integer i)
+  {
+    return m_lima_mesh.ligne(i);
+  }
+  Integer faceGroupNbFace(const LimaFaceGroup& group)
+  {
+    return CheckedConvert::toInteger(group.nb_bras());
+  }
+  LimaFace faceFaceGroup(const LimaFaceGroup& group, Integer i)
+  {
+    return group.bras(i);
+  }
+  Integer cellGroupNbCell(const LimaCellGroup& group)
+  {
+    return CheckedConvert::toInteger(group.nb_polygones());
+  }
+  LimaCell cellCellGroup(const LimaCellGroup& group, Integer i)
+  {
+    return group.polygone(i);
+  }
+  LimaCell cell(Integer i)
+  {
+    return m_lima_mesh.polygone(i);
+  }
+  LimaFace face(Integer i)
+  {
+    return m_lima_mesh.bras(i);
+  }
+  Integer nbCell()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_polygones());
+  }
+  Integer nbFace()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_bras());
+  }
+  int limaDimension()
+  {
+    return Lima::D2;
+  }
+  const char* strDimension()
+  {
+    return "2D";
+  }
+  static Integer cellToType(Integer nb_node)
+  {
+    switch (nb_node) {
+    case 3:
+      return IT_Triangle3;
+    case 4:
+      return IT_Quad4;
+    case 5:
+      return IT_Pentagon5;
+    case 6:
+      return IT_Hexagon6;
     default:
       break;
     }
-		return IT_NullType;
-	}
+    return IT_NullType;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -279,81 +289,88 @@ class Lima3DReaderWrapper
 : public LimaMeshReaderWrapper
 {
  public:
-	typedef Lima::Volume LimaCellGroup;
-	typedef Lima::Polyedre LimaCell;
-	typedef Lima::Surface LimaFaceGroup;
-	typedef Lima::Polygone LimaFace;
 
-	Integer nbCellGroup()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_volumes());
-	}
-	Integer nbFaceGroup()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_surfaces());
-	}
-	LimaCellGroup cellGroup(Integer i)
-	{
-		return m_lima_mesh.volume(i);
-	}
-	LimaFaceGroup faceGroup(Integer i)
-	{
-		return m_lima_mesh.surface(i);
-	}
-	Integer faceGroupNbFace(const LimaFaceGroup& group)
-	{
-		return CheckedConvert::toInteger(group.nb_polygones());
-	}
-	LimaFace faceFaceGroup(const LimaFaceGroup& group,Integer i)
-	{
-		return group.polygone(i);
-	}
-	Integer cellGroupNbCell(const LimaCellGroup& group)
-	{
-		return CheckedConvert::toInteger(group.nb_polyedres());
-	}
-	LimaCell cellCellGroup(const LimaCellGroup& group,Integer i)
-	{
-		return group.polyedre(i);
-	}
-	LimaCell cell(Integer i)
-	{
-		return m_lima_mesh.polyedre(i);
-	}
-	LimaFace face(Integer i)
-	{
-		return m_lima_mesh.polygone(i);
-	}
-	Integer nbCell()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_polyedres());
-	}
-	Integer nbFace()
-	{
-		return CheckedConvert::toInteger(m_lima_mesh.nb_polygones());
-	}
-	int limaDimension()
-	{
-		return Lima::D3;
-	}
-	const char* strDimension()
-	{
-		return "3D";
-	}
-	static Integer cellToType(Integer nb_node)
-	{
-		switch(nb_node){
-    case 4: return IT_Tetraedron4;
-    case 5: return IT_Pyramid5;
-    case 6: return IT_Pentaedron6;
-    case 8: return IT_Hexaedron8;
-    case 10: return IT_Heptaedron10;
-    case 12: return IT_Octaedron12;
+  typedef Lima::Volume LimaCellGroup;
+  typedef Lima::Polyedre LimaCell;
+  typedef Lima::Surface LimaFaceGroup;
+  typedef Lima::Polygone LimaFace;
+
+  Integer nbCellGroup()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_volumes());
+  }
+  Integer nbFaceGroup()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_surfaces());
+  }
+  LimaCellGroup cellGroup(Integer i)
+  {
+    return m_lima_mesh.volume(i);
+  }
+  LimaFaceGroup faceGroup(Integer i)
+  {
+    return m_lima_mesh.surface(i);
+  }
+  Integer faceGroupNbFace(const LimaFaceGroup& group)
+  {
+    return CheckedConvert::toInteger(group.nb_polygones());
+  }
+  LimaFace faceFaceGroup(const LimaFaceGroup& group, Integer i)
+  {
+    return group.polygone(i);
+  }
+  Integer cellGroupNbCell(const LimaCellGroup& group)
+  {
+    return CheckedConvert::toInteger(group.nb_polyedres());
+  }
+  LimaCell cellCellGroup(const LimaCellGroup& group, Integer i)
+  {
+    return group.polyedre(i);
+  }
+  LimaCell cell(Integer i)
+  {
+    return m_lima_mesh.polyedre(i);
+  }
+  LimaFace face(Integer i)
+  {
+    return m_lima_mesh.polygone(i);
+  }
+  Integer nbCell()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_polyedres());
+  }
+  Integer nbFace()
+  {
+    return CheckedConvert::toInteger(m_lima_mesh.nb_polygones());
+  }
+  int limaDimension()
+  {
+    return Lima::D3;
+  }
+  const char* strDimension()
+  {
+    return "3D";
+  }
+  static Integer cellToType(Integer nb_node)
+  {
+    switch (nb_node) {
+    case 4:
+      return IT_Tetraedron4;
+    case 5:
+      return IT_Pyramid5;
+    case 6:
+      return IT_Pentaedron6;
+    case 8:
+      return IT_Hexaedron8;
+    case 10:
+      return IT_Heptaedron10;
+    case 12:
+      return IT_Octaedron12;
     default:
       break;
     }
-		return IT_NullType;
-	}
+    return IT_NullType;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -367,12 +384,14 @@ class LimaMeshReader
  public:
 
   LimaMeshReader(ISubDomain* sd)
-  : TraceAccessor(sd->traceMng()), m_sub_domain(sd){}
+  : TraceAccessor(sd->traceMng())
+  , m_sub_domain(sd)
+  {}
 
  public:
 
   auto readMesh(IPrimaryMesh* mesh, const String& file_name,
-                const String& dir_name,bool use_internal_partition,
+                const String& dir_name, bool use_internal_partition,
                 bool use_length_unit) -> IMeshReader::eReturnType;
 
  private:
@@ -394,19 +413,19 @@ class LimaMeshReaderService
   explicit LimaMeshReaderService(const ServiceBuildInfo& sbi);
 
  public:
-	
-	void build() {}
+
+  void build() {}
 
  public:
-	
-	bool allowExtension(const String& str) override
-	{
-    return str=="unf" || str=="mli" || str=="mli2" || str=="ice" || str=="uns" || str=="unv";
-	}
 
-  eReturnType readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
+  bool allowExtension(const String& str) override
+  {
+    return str == "unf" || str == "mli" || str == "mli2" || str == "ice" || str == "uns" || str == "unv";
+  }
+
+  eReturnType readMeshFromFile(IPrimaryMesh* mesh, const XmlNode& mesh_node,
                                const String& file_name,
-                               const String& dir_name,bool use_internal_partition) override;
+                               const String& dir_name, bool use_internal_partition) override;
   ISubDomain* subDomain() { return m_sub_domain; }
 
  private:
@@ -420,7 +439,7 @@ class LimaMeshReaderService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(LimaMeshReaderService,
-                        ServiceProperty("Lima",ST_SubDomain),
+                        ServiceProperty("Lima", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));
 
 /*---------------------------------------------------------------------------*/
@@ -437,8 +456,8 @@ LimaMeshReaderService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType LimaMeshReaderService::
-readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
-                 const String& filename,const String& dir_name,
+readMeshFromFile(IPrimaryMesh* mesh, const XmlNode& mesh_node,
+                 const String& filename, const String& dir_name,
                  bool use_internal_partition)
 {
   ISubDomain* sd = subDomain();
@@ -451,20 +470,20 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
   // Checks if we want to use the length unit in the mesh file.
   String use_unit_attr_name = "utilise-unite";
   String use_unit_str = mesh_node.attrValue(use_unit_attr_name);
-  if (case_doc_lang=="en"){
+  if (case_doc_lang == "en") {
     // For compatibility reasons, check if 'utilise-unite' is present
     // if so, use it. Otherwise, use the English term.
-    if (!use_unit_str.empty()){
+    if (!use_unit_str.empty()) {
       warning() << "'utilise-unite' should only be used for French datasets."
                 << "Use 'use-unit' instead";
     }
     use_unit_attr_name = "use-unit";
   }
-  else{
+  else {
     // If it is not English and 'utilise-unite' is not found,
     // try using 'use-unit'. This is necessary to take into account
     // MeshReaderMng::isUseMeshUnit().
-    if (use_unit_str.null()){
+    if (use_unit_str.null()) {
       info() << "Attribute '" << use_unit_attr_name << "' is not found. Trying with 'use-unit'";
       use_unit_attr_name = "use-unit";
     }
@@ -480,28 +499,28 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
   if (use_unit_str.empty())
     use_unit_str = mesh_node.attrValue(use_unit_attr_name);
   info() << "Checking for attribute '" << use_unit_attr_name << "' value='" << use_unit_str << "'";
-  if (!use_unit_str.empty()){
-    if (use_unit_str=="1" || use_unit_str=="true")
+  if (!use_unit_str.empty()) {
+    if (use_unit_str == "1" || use_unit_str == "true")
       use_length_unit = true;
-    else if (use_unit_str=="0" || use_unit_str=="false")
+    else if (use_unit_str == "0" || use_unit_str == "false")
       use_length_unit = false;
     else
       ARCANE_FATAL("Invalid value boolean value '{0}' for '{1}' attribute."
                    " Valid values are '0', '1' 'true' or 'false'",
-                   use_unit_str,use_unit_attr_name);
+                   use_unit_str, use_unit_attr_name);
   }
 
   info() << "Uses Lima's length unit: " << use_length_unit << " (lang=" << case_doc_lang << ")";
 
   LimaMeshReader reader(sd);
-  return reader.readMesh(mesh,filename,dir_name,use_internal_partition,use_length_unit);
+  return reader.readMesh(mesh, filename, dir_name, use_internal_partition, use_length_unit);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType LimaMeshReader::
-readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
+readMesh(IPrimaryMesh* mesh, const String& filename, const String& dir_name,
          bool use_internal_partition, bool use_length_unit)
 {
   if (filename.null() || filename.empty())
@@ -509,28 +528,28 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
 
   ISubDomain* sd = m_sub_domain;
   ITimerMng* timer_mng = sd->timerMng();
-	LimaMeshBase* lm = 0;
+  LimaMeshBase* lm = 0;
   ICaseDocument* case_doc = sd->caseDocument();
 
   info() << "Lima: use_length_unit=" << use_length_unit
          << " use_internal_partition=" << use_internal_partition;
   Real length_multiplier = 0.0;
-  if (use_length_unit){
+  if (use_length_unit) {
     String code_system;
     if (case_doc)
       code_system = case_doc->codeUnitSystem();
-    if (code_system.null() || code_system.empty()){
+    if (code_system.null() || code_system.empty()) {
       info() << "No unit system configured. Use MKS unit system.";
       length_multiplier = 1.0;
     }
-    else if (code_system=="CGS"){
+    else if (code_system == "CGS") {
       length_multiplier = 100.0;
     }
-    else if (code_system=="MKS"){
+    else if (code_system == "MKS") {
       length_multiplier = 1.0;
     }
-    else{
-      ARCANE_FATAL("Unknown unit system '{0}' (valid values are: 'CGS' or 'MKS'",code_system);
+    else {
+      ARCANE_FATAL("Unknown unit system '{0}' (valid values are: 'CGS' or 'MKS'", code_system);
     }
   }
 
@@ -552,7 +571,7 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
   // around the read/write in this case.
   bool has_thread = !use_internal_partition && mesh->parallelMng()->isThreadImplementation();
   // We cannot use the mali pp API with threads
-  if (!has_thread && use_internal_partition && ((rpos+4)==loc_file_name.length())){
+  if (!has_thread && use_internal_partition && ((rpos + 4) == loc_file_name.length())) {
     info() << "Use direct partitioning with mli";
 #ifdef ARCANE_LIMA_HAS_MLI
     return LimaUtils::_directLimaPartitionMalipp(timer_mng, mesh, filename, length_multiplier);
@@ -560,7 +579,7 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
     ARCANE_FATAL("Can not use 'mli' files because Lima is not compiled with 'mli' support");
 #endif
   }
-  else if (!has_thread && use_internal_partition && ((rpos2+5)==loc_file_name.length())){
+  else if (!has_thread && use_internal_partition && ((rpos2 + 5) == loc_file_name.length())) {
     info() << "Use direct partitioning with mli2";
 #ifdef ARCANE_LIMA_HAS_MLI2
     return LimaUtils::_directLimaPartitionMalipp2(timer_mng, mesh, filename, length_multiplier);
@@ -574,66 +593,66 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
     const char* version = Lima::lima_version();
     info() << "Using version " << version << " of Lima";
 
-    Timer time_to_read(sd,"ReadLima",Timer::TimerReal);
+    Timer time_to_read(sd, "ReadLima", Timer::TimerReal);
 
     // No specific preparation needed
     LM_TYPEMASQUE preparation = LM_ORIENTATION | LM_COMPACTE;
 
     log() << "Starting file read " << filename;
-  
+
     Lima::Maillage lima(filename.localstr());
 
-    try{
+    try {
       {
         Timer::Sentry sentry(&time_to_read);
         Timer::Phase t_action(sd, TP_InputOutput);
         GlobalLimaMutex sc(need_mutex);
-        lima.lire(filename.localstr(),Lima::SUFFIXE,true);
+        lima.lire(filename.localstr(), Lima::SUFFIXE, true);
         //warning() << "Lima preparation removed";
         lima.preparation_parametrable(preparation);
       }
     }
-    catch(const Lima::erreur& ex){
-      ARCANE_FATAL("Can not read lima file '{0}' error is '{1}'",filename,ex.what());
+    catch (const Lima::erreur& ex) {
+      ARCANE_FATAL("Can not read lima file '{0}' error is '{1}'", filename, ex.what());
     }
-    catch(...){
-      ARCANE_FATAL("Can not read lima file '{0}'",filename);
+    catch (...) {
+      ARCANE_FATAL("Can not read lima file '{0}'", filename);
     }
-    
+
     info() << "Mesh read and preparation time (unit: seconds): "
            << time_to_read.lastActivationTime();
     // If the dimension has not yet been set, use the one
     // provided by Lima.
-    if (mesh->dimension()<=0){
-      if (lima.dimension()==Lima::D3){
+    if (mesh->dimension() <= 0) {
+      if (lima.dimension() == Lima::D3) {
         mesh->setDimension(3);
         info() << "3D Mesh";
       }
-      else if (lima.dimension()==Lima::D2){
+      else if (lima.dimension() == Lima::D2) {
         mesh->setDimension(2);
         info() << "2D Mesh";
       }
     }
 
-    if (mesh->dimension()==3){
+    if (mesh->dimension() == 3) {
       lm = new LimaWrapper<Lima3DReaderWrapper>(sd);
     }
-    else if (mesh->dimension()==2){
+    else if (mesh->dimension() == 2) {
       lm = new LimaWrapper<Lima2DReaderWrapper>(sd);
     }
-    if (!lm){
+    if (!lm) {
       log() << "Mesh dimension not recognized by lima";
       return IMeshReader::RTIrrelevant;
     }
-    
-    bool ret = lm->readMesh(lima,mesh,filename,dir_name,use_internal_partition,length_multiplier);
+
+    bool ret = lm->readMesh(lima, mesh, filename, dir_name, use_internal_partition, length_multiplier);
     if (ret)
       return IMeshReader::RTError;
 
     // To be done if there are multiple ghost mesh layers
     {
       Integer nb_ghost_layer = mesh->ghostLayerMng()->nbGhostLayer();
-      if (nb_ghost_layer>1)
+      if (nb_ghost_layer > 1)
         mesh->synchronizeGroupsAndVariables();
     }
 
@@ -646,19 +665,19 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ReaderWrapper> bool LimaWrapper<ReaderWrapper>::
-readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
-         const String& dir_name,bool use_internal_partition,Real length_multiplier)
+template <typename ReaderWrapper> bool LimaWrapper<ReaderWrapper>::
+readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& filename,
+         const String& dir_name, bool use_internal_partition, Real length_multiplier)
 {
-  return _readMesh(lima,mesh,filename,dir_name,use_internal_partition,length_multiplier);
+  return _readMesh(lima, mesh, filename, dir_name, use_internal_partition, length_multiplier);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ReaderWrapper> bool LimaWrapper<ReaderWrapper>::
-_readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
-          const String& dir_name,bool use_internal_partition,Real length_multiplier)
+template <typename ReaderWrapper> bool LimaWrapper<ReaderWrapper>::
+_readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& file_name,
+          const String& dir_name, bool use_internal_partition, Real length_multiplier)
 {
   ARCANE_UNUSED(file_name);
 
@@ -697,12 +716,12 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   info() << "File length unit: " << lima.unite_longueur();
   // If 0.0, it indicates that we do not want to use the file unit.
   // In this case, this corresponds to a multiplier of 1.0
-  if (length_multiplier==0.0)
+  if (length_multiplier == 0.0)
     length_multiplier = 1.0;
   else
     length_multiplier *= lima.unite_longueur();
 
-  if (mesh_nb_node==0){
+  if (mesh_nb_node == 0) {
     ARCANE_FATAL("No node in mesh");
   }
 
@@ -710,49 +729,48 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   //    -------------------------------- Mesh creation
   // ------------------------------------------------------------
 
-
   // Reads the unique IDs of the entities (in parallel)
   UniqueArray<Int64> nodes_unique_id(mesh_nb_node);
   UniqueArray<Int64> cells_unique_id(mesh_nb_cell);
-  if (is_parallel && !use_internal_partition && pm->commSize()>1){
-    m_cut_infos_reader->readItemsUniqueId(nodes_unique_id,cells_unique_id,dir_name);
+  if (is_parallel && !use_internal_partition && pm->commSize() > 1) {
+    m_cut_infos_reader->readItemsUniqueId(nodes_unique_id, cells_unique_id, dir_name);
   }
-  else{
-    for( Integer i=0; i<mesh_nb_node; ++i )
+  else {
+    for (Integer i = 0; i < mesh_nb_node; ++i)
       nodes_unique_id[i] = i;
-    for( Integer i=0; i<mesh_nb_cell; ++i )
+    for (Integer i = 0; i < mesh_nb_cell; ++i)
       cells_unique_id[i] = i;
   }
 
   // For now, leave it as false.
   // If true, the UIDs are incremented to start at one.
   bool first_uid_is_one = false;
-  if (!platform::getEnvironmentVariable("ARCANE_LIMA_UNIQUE_ID").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_LIMA_UNIQUE_ID").null()) {
     first_uid_is_one = true;
     info() << "WARNING: UniqueId begin at 1";
   }
-  if (first_uid_is_one){
-    for( Integer i=0; i<mesh_nb_node; ++i )
+  if (first_uid_is_one) {
+    for (Integer i = 0; i < mesh_nb_node; ++i)
       ++nodes_unique_id[i];
-    for( Integer i=0; i<mesh_nb_cell; ++i )
+    for (Integer i = 0; i < mesh_nb_cell; ++i)
       ++cells_unique_id[i];
   }
 
-  HashTableMapT<Int64,Real3> nodes_coords(mesh_nb_node,true);
-  if (!math::isEqual(length_multiplier,1.0)){
+  HashTableMapT<Int64, Real3> nodes_coords(mesh_nb_node, true);
+  if (!math::isEqual(length_multiplier, 1.0)) {
     info() << "Using length multiplier v=" << length_multiplier;
-    for( Integer i=0; i<mesh_nb_node; ++i ){
+    for (Integer i = 0; i < mesh_nb_node; ++i) {
       const Lima::Noeud& node = lima.noeud(i);
-      Real3 coord(node.x(),node.y(),node.z());
+      Real3 coord(node.x(), node.y(), node.z());
       coord *= length_multiplier;
-      nodes_coords.nocheckAdd(nodes_unique_id[i],coord);
+      nodes_coords.nocheckAdd(nodes_unique_id[i], coord);
     }
   }
-  else{
-    for( Integer i=0; i<mesh_nb_node; ++i ){
+  else {
+    for (Integer i = 0; i < mesh_nb_node; ++i) {
       const Lima::Noeud& node = lima.noeud(i);
-      Real3 coord(node.x(),node.y(),node.z());
-      nodes_coords.nocheckAdd(nodes_unique_id[i],coord);
+      Real3 coord(node.x(), node.y(), node.z());
+      nodes_coords.nocheckAdd(nodes_unique_id[i], coord);
     }
   }
 
@@ -762,7 +780,7 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
 
   bool use_own_mesh = false;
 
-  if (is_parallel && pm->commSize()>1){
+  if (is_parallel && pm->commSize() > 1) {
     use_own_mesh = true;
     if (use_internal_partition)
       use_own_mesh = false;
@@ -773,50 +791,50 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   typedef typename ReaderWrapper::LimaFaceGroup LimaFaceGroup;
   typedef typename ReaderWrapper::LimaFace LimaFace;
 
-	if (use_own_mesh){
+  if (use_own_mesh) {
     Integer nb = m_wrapper.nbCellGroup();
-    for( Integer i=0; i<nb; ++i ){
+    for (Integer i = 0; i < nb; ++i) {
       const LimaCellGroup& lima_group = m_wrapper.cellGroup(i);
       std::string group_name = lima_group.nom();
-      if (group_name=="LOCAL" || group_name=="local"){
+      if (group_name == "LOCAL" || group_name == "local") {
         Integer nb_own_cell = m_wrapper.cellGroupNbCell(lima_group);
         cells_filter.resize(nb_own_cell);
-        for( Integer z=0; z<nb_own_cell; ++z ){
-          cells_filter[z] = CheckedConvert::toInteger(m_wrapper.cellCellGroup(lima_group,z).id() - 1);
+        for (Integer z = 0; z < nb_own_cell; ++z) {
+          cells_filter[z] = CheckedConvert::toInteger(m_wrapper.cellCellGroup(lima_group, z).id() - 1);
         }
       }
     }
   }
-  else{
-    if (use_internal_partition && sid!=0){
+  else {
+    if (use_internal_partition && sid != 0) {
       mesh_nb_cell = 0;
       mesh_nb_node = 0;
       lima_nb_face = 0;
     }
     cells_filter.resize(mesh_nb_cell);
-    for( Integer i=0; i<mesh_nb_cell; ++i )
+    for (Integer i = 0; i < mesh_nb_cell; ++i)
       cells_filter[i] = i;
   }
 
   // Calculate the number of cells/nodes
   Integer mesh_nb_cell_node = 0;
-  for( Integer j=0, js=cells_filter.size(); j<js; ++j ){
+  for (Integer j = 0, js = cells_filter.size(); j < js; ++j) {
     mesh_nb_cell_node += CheckedConvert::toInteger(m_wrapper.cell(cells_filter[j]).nb_noeuds());
   }
-  
+
   // Array containing mesh info (see IMesh::allocateMesh())
-  UniqueArray<Int64> cells_infos(mesh_nb_cell_node+cells_filter.size()*2);
+  UniqueArray<Int64> cells_infos(mesh_nb_cell_node + cells_filter.size() * 2);
 
   // Fills the array containing mesh info
-  for( Integer i_cell=0, s_cell=cells_filter.size(); i_cell<s_cell; ++i_cell ){
+  for (Integer i_cell = 0, s_cell = cells_filter.size(); i_cell < s_cell; ++i_cell) {
 
     Integer cell_indirect_id = cells_filter[i_cell];
     LimaCell lima_cell = m_wrapper.cell(cell_indirect_id);
     Integer n = CheckedConvert::toInteger(lima_cell.nb_noeuds());
 
     Integer ct = ReaderWrapper::cellToType(n);
-    if (ct==IT_NullType)
-      throw UnknownItemTypeException("Lima::readFile: Cell",n,cell_indirect_id);
+    if (ct == IT_NullType)
+      throw UnknownItemTypeException("Lima::readFile: Cell", n, cell_indirect_id);
     // Stores the mesh type
     cells_infos[cells_infos_index] = ct;
     ++cells_infos_index;
@@ -825,9 +843,9 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
     ++cells_infos_index;
 
     // Fills the list of node numbers for the cell
-    for( Integer z=0, sz=n; z<sz; ++z ){
-      Int64 node_uid = nodes_unique_id[CheckedConvert::toInteger(lima_cell.noeud(z).id()-1)];
-      cells_infos[cells_infos_index+z] = node_uid;
+    for (Integer z = 0, sz = n; z < sz; ++z) {
+      Int64 node_uid = nodes_unique_id[CheckedConvert::toInteger(lima_cell.noeud(z).id() - 1)];
+      cells_infos[cells_infos_index + z] = node_uid;
     }
 
 #if 0
@@ -841,61 +859,61 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   }
 
   logdate() << "Début allocation du maillage nb_cell=" << cells_filter.size();
-  mesh->allocateCells(cells_filter.size(),cells_infos,false);
+  mesh->allocateCells(cells_filter.size(), cells_infos, false);
   logdate() << "Fin allocation du maillage";
 
   // Positions the owners of the nodes based on Lima node groups
-  if (use_internal_partition){
+  if (use_internal_partition) {
     ItemInternalList nodes(mesh->itemsInternal(IK_Node));
-    for( Integer i=0, is=nodes.size(); i<is; ++i )
-      nodes[i]->setOwner(sid,sid);
+    for (Integer i = 0, is = nodes.size(); i < is; ++i)
+      nodes[i]->setOwner(sid, sid);
     ItemInternalList cells(mesh->itemsInternal(IK_Cell));
-    for( Integer i=0, is=cells.size(); i<is; ++i )
-      cells[i]->setOwner(sid,sid);
+    for (Integer i = 0, is = cells.size(); i < is; ++i)
+      cells[i]->setOwner(sid, sid);
   }
-  else{
+  else {
     Int64UniqueArray unique_ids;
     Int32UniqueArray local_ids;
     Integer sub_domain_id = subDomain()->subDomainId();
     Integer nb = CheckedConvert::toInteger(lima.nb_nuages());
-    for( Integer i=0; i<nb; ++i ){
+    for (Integer i = 0; i < nb; ++i) {
       const Lima::Nuage& lima_group = lima.nuage(i);
       Integer nb_item_in_group = CheckedConvert::toInteger(lima_group.nb_noeuds());
       std::string group_name = lima_group.nom();
       unique_ids.resize(nb_item_in_group);
       local_ids.resize(nb_item_in_group);
-      for( Integer z=0; z<nb_item_in_group; ++z ){
+      for (Integer z = 0; z < nb_item_in_group; ++z) {
         unique_ids[z] = nodes_unique_id[CheckedConvert::toInteger(lima_group.noeud(z).id() - 1)];
       }
-      mesh->nodeFamily()->itemsUniqueIdToLocalId(local_ids,unique_ids,false);
+      mesh->nodeFamily()->itemsUniqueIdToLocalId(local_ids, unique_ids, false);
       bool remove_group = false;
-      if (group_name=="LOCALN" || group_name=="localn"){
+      if (group_name == "LOCALN" || group_name == "localn") {
         info() << "Utilisation du groupe 'LOCALN' pour indiquer que les "
                << "noeuds appartiennent au sous-domaine";
         ItemInternalList nodes(mesh->itemsInternal(IK_Node));
-        for( Integer z=0, sz=nb_item_in_group; z<sz; ++z ){
+        for (Integer z = 0, sz = nb_item_in_group; z < sz; ++z) {
           Integer local_id = local_ids[z];
-          if (local_id!=NULL_ITEM_ID)
-            nodes[local_id]->setOwner(sub_domain_id,sub_domain_id);
+          if (local_id != NULL_ITEM_ID)
+            nodes[local_id]->setOwner(sub_domain_id, sub_domain_id);
         }
         remove_group = true;
       }
       debug() << "Vérification du groupe '" << group_name << "'";
-      if (group_name.length()>3 && !remove_group){
+      if (group_name.length() > 3 && !remove_group) {
         String grp = group_name; //.c_str();
-        if (grp.startsWith("NF_")){
+        if (grp.startsWith("NF_")) {
           grp = grp.substring(3);
           Int32 ghost_sub_domain_id = 0;
-          bool is_bad = builtInGetValue(ghost_sub_domain_id,grp);
+          bool is_bad = builtInGetValue(ghost_sub_domain_id, grp);
           debug() << "Vérification du groupe '" << group_name << "' (3) " << is_bad;
-          if (!is_bad){
+          if (!is_bad) {
             info() << "Utilisation du groupe " << group_name << " pour indiquer que le "
                    << "sous-domaine " << ghost_sub_domain_id << " est propriétaire de ses noeuds";
             ItemInternalList nodes(mesh->itemsInternal(IK_Node));
-            for( Integer z=0, sz=nb_item_in_group; z<sz; ++z ){
+            for (Integer z = 0, sz = nb_item_in_group; z < sz; ++z) {
               Integer local_id = local_ids[z];
-              if (local_id!=NULL_ITEM_ID)
-                nodes[local_ids[z]]->setOwner(ghost_sub_domain_id,sub_domain_id);
+              if (local_id != NULL_ITEM_ID)
+                nodes[local_ids[z]]->setOwner(ghost_sub_domain_id, sub_domain_id);
             }
             remove_group = true;
           }
@@ -913,7 +931,7 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   {
     // Number of faces/nodes
     Integer face_nb_node = 0;
-    for( Integer i_face=0; i_face<lima_nb_face; ++i_face ){
+    for (Integer i_face = 0; i_face < lima_nb_face; ++i_face) {
       const LimaFace& lima_face = m_wrapper.face(i_face);
       face_nb_node += CheckedConvert::toInteger(lima_face.nb_noeuds());
     }
@@ -925,18 +943,18 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
 
     UniqueArray<Int64> orig_nodes_id;
     orig_nodes_id.reserve(100);
-    
+
     UniqueArray<Integer> face_nodes_index;
     face_nodes_index.reserve(100);
-    
+
     ItemInternalList mesh_nodes(mesh->itemsInternal(IK_Node));
-    
-    for( Integer i_face=0; i_face<lima_nb_face; ++i_face ){
+
+    for (Integer i_face = 0; i_face < lima_nb_face; ++i_face) {
       const LimaFace& lima_face = m_wrapper.face(i_face);
       Integer n = CheckedConvert::toInteger(lima_face.nb_noeuds());
       orig_nodes_id.resize(n);
       face_nodes_index.resize(n);
-      for( Integer z=0; z<n; ++z )
+      for (Integer z = 0; z < n; ++z)
         orig_nodes_id[z] = nodes_unique_id[CheckedConvert::toInteger(lima_face.noeud(z).id() - 1)];
       //face_orig_nodes_id[z] = lima_face.noeud(z).id() - 1;
 
@@ -947,31 +965,31 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
       cout << '\n';
 #endif
 
-      mesh_utils::reorderNodesOfFace2(orig_nodes_id,face_nodes_index);
-      for( Integer z=0; z<n; ++z )
-        faces_nodes_unique_id[faces_nodes_unique_id_index+z] = orig_nodes_id[face_nodes_index[z]];
+      mesh_utils::reorderNodesOfFace2(orig_nodes_id, face_nodes_index);
+      for (Integer z = 0; z < n; ++z)
+        faces_nodes_unique_id[faces_nodes_unique_id_index + z] = orig_nodes_id[face_nodes_index[z]];
       faces_first_node_unique_id[i_face] = orig_nodes_id[face_nodes_index[0]];
       faces_nodes_unique_id_index += n;
     }
 
-    mesh->nodeFamily()->itemsUniqueIdToLocalId(faces_first_node_local_id,faces_first_node_unique_id);
+    mesh->nodeFamily()->itemsUniqueIdToLocalId(faces_first_node_local_id, faces_first_node_unique_id);
 
     faces_nodes_unique_id_index = 0;
-    for( Integer i_face=0; i_face<lima_nb_face; ++i_face ){
+    for (Integer i_face = 0; i_face < lima_nb_face; ++i_face) {
       const LimaFace& lima_face = m_wrapper.face(i_face);
       Integer n = CheckedConvert::toInteger(lima_face.nb_noeuds());
-      Int64ConstArrayView face_nodes_id(n,&faces_nodes_unique_id[faces_nodes_unique_id_index]);
+      Int64ConstArrayView face_nodes_id(n, &faces_nodes_unique_id[faces_nodes_unique_id_index]);
       Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
-      Face face = mesh_utils::getFaceFromNodesUnique(current_node,face_nodes_id);
+      Face face = mesh_utils::getFaceFromNodesUnique(current_node, face_nodes_id);
 
-      if (face.null()){
+      if (face.null()) {
         OStringStream ostr;
         ostr() << "(Nodes:";
-        for( Integer z=0; z<n; ++z )
+        for (Integer z = 0; z < n; ++z)
           ostr() << ' ' << face_nodes_id[z];
         ostr() << " - " << current_node.localId() << ")";
         ARCANE_FATAL("INTERNAL: Lima face index={0} with nodes '{1}' is not in node/face connectivity",
-                     i_face,ostr.str());
+                     i_face, ostr.str());
       }
       faces_id[i_face] = face.localId();
 
@@ -984,129 +1002,128 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
   IItemFamily* cell_family = mesh->cellFamily();
 
   // Creation of groups
-  if (use_internal_partition && sid!=0){
+  if (use_internal_partition && sid != 0) {
     {
       Integer nb = CheckedConvert::toInteger(lima.nb_nuages());
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const Lima::Nuage& lima_group = lima.nuage(i);
         std::string group_name = lima_group.nom();
-        LimaUtils::createGroup(node_family,group_name,Int32ArrayView());
+        LimaUtils::createGroup(node_family, group_name, Int32ArrayView());
       }
     }
     {
       Integer nb = m_wrapper.nbFaceGroup();
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const LimaFaceGroup& lima_group = m_wrapper.faceGroup(i);
         std::string group_name = lima_group.nom();
-				LimaUtils::createGroup(face_family,group_name,Int32ArrayView());
+        LimaUtils::createGroup(face_family, group_name, Int32ArrayView());
       }
     }
     {
       Integer nb = m_wrapper.nbCellGroup();
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const LimaCellGroup& lima_group = m_wrapper.cellGroup(i);
         std::string group_name = lima_group.nom();
-				LimaUtils::createGroup(cell_family,group_name,Int32ArrayView());
+        LimaUtils::createGroup(cell_family, group_name, Int32ArrayView());
       }
     }
   }
-  else{
+  else {
     UniqueArray<Int64> unique_ids;
     UniqueArray<Int32> local_ids;
     Integer sub_domain_id = subDomain()->subDomainId();
     // Creation of node groups
     {
       Integer nb = CheckedConvert::toInteger(lima.nb_nuages());
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const Lima::Nuage& lima_group = lima.nuage(i);
         Integer nb_item_in_group = CheckedConvert::toInteger(lima_group.nb_noeuds());
         std::string group_name = lima_group.nom();
         unique_ids.resize(nb_item_in_group);
         local_ids.resize(nb_item_in_group);
-        for( Integer z=0; z<nb_item_in_group; ++z ){
+        for (Integer z = 0; z < nb_item_in_group; ++z) {
           Integer lima_node_id = CheckedConvert::toInteger(lima_group.noeud(z).id());
           unique_ids[z] = nodes_unique_id[lima_node_id - 1];
         }
-        mesh->nodeFamily()->itemsUniqueIdToLocalId(local_ids,unique_ids);
+        mesh->nodeFamily()->itemsUniqueIdToLocalId(local_ids, unique_ids);
         bool remove_group = false;
-        if (group_name=="LOCALN" || group_name=="localn"){
+        if (group_name == "LOCALN" || group_name == "localn") {
           remove_group = true;
         }
         debug() << "Vérification du groupe '" << group_name << "'";
-        if (group_name.length()>3 && !remove_group){
+        if (group_name.length() > 3 && !remove_group) {
           String grp = group_name.c_str();
           //grp.left(3);
           debug() << "Vérification du groupe '" << group_name << "' (2) '" << grp << "'";
-          if (grp.startsWith("NF_")){
+          if (grp.startsWith("NF_")) {
             //grp = group_name.c_str();
             //grp.right(group_name.length()-3);
             grp = grp.substring(3);
             Integer ghost_sub_domain_id = 0;
-            bool is_bad = builtInGetValue(ghost_sub_domain_id,grp);
+            bool is_bad = builtInGetValue(ghost_sub_domain_id, grp);
             debug() << "Vérification du groupe '" << group_name << "' (3) " << is_bad;
-            if (!is_bad){
+            if (!is_bad) {
               remove_group = true;
             }
           }
         }
-        if (!remove_group){
+        if (!remove_group) {
           log() << "NodeGroup Name <" << group_name << "> (" << nb_item_in_group << " elements)";
-          LimaUtils::createGroup(node_family,group_name,local_ids);
+          LimaUtils::createGroup(node_family, group_name, local_ids);
         }
       }
     }
     // Creation of face groups
     {
       Integer nb = m_wrapper.nbFaceGroup();
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const LimaFaceGroup& lima_group = m_wrapper.faceGroup(i);
         Integer nb_item_in_group = m_wrapper.faceGroupNbFace(lima_group);
         local_ids.resize(nb_item_in_group);
         // Since the face numbers provided by Lima do not correspond
         // to those created in Arcane, we use the mapping array
-        for( Integer z=0; z<nb_item_in_group; ++z ){
-          local_ids[z] = faces_id[CheckedConvert::toInteger(m_wrapper.faceFaceGroup(lima_group,z).id() - 1)];
+        for (Integer z = 0; z < nb_item_in_group; ++z) {
+          local_ids[z] = faces_id[CheckedConvert::toInteger(m_wrapper.faceFaceGroup(lima_group, z).id() - 1)];
         }
         std::string group_name = lima_group.nom();
         log() << "FaceGroup Name <" << group_name << "> (" << nb_item_in_group << " elements)";
-        LimaUtils::createGroup(face_family,group_name,local_ids);
+        LimaUtils::createGroup(face_family, group_name, local_ids);
       }
     }
     // Creation of cell groups
     {
       Integer nb = m_wrapper.nbCellGroup();
-      for( Integer i=0; i<nb; ++i ){
+      for (Integer i = 0; i < nb; ++i) {
         const LimaCellGroup& lima_group = m_wrapper.cellGroup(i);
         Integer nb_item_in_group = m_wrapper.cellGroupNbCell(lima_group);
         std::string group_name = lima_group.nom();
         unique_ids.resize(nb_item_in_group);
         local_ids.resize(nb_item_in_group);
-        for( Integer z=0; z<nb_item_in_group; ++z ){
-          unique_ids[z] = cells_unique_id[CheckedConvert::toInteger(m_wrapper.cellCellGroup(lima_group,z).id() - 1)];
+        for (Integer z = 0; z < nb_item_in_group; ++z) {
+          unique_ids[z] = cells_unique_id[CheckedConvert::toInteger(m_wrapper.cellCellGroup(lima_group, z).id() - 1)];
         }
-        mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids,unique_ids);
+        mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, unique_ids);
         bool remove_group = false;
-        if (group_name=="LOCAL" || group_name=="local"){
+        if (group_name == "LOCAL" || group_name == "local") {
           ItemInternalList cells(mesh->itemsInternal(IK_Cell));
-          for( Integer z=0, sz=nb_item_in_group; z<sz; ++z )
-            cells[local_ids[z]]->setOwner(sub_domain_id,sub_domain_id);
+          for (Integer z = 0, sz = nb_item_in_group; z < sz; ++z)
+            cells[local_ids[z]]->setOwner(sub_domain_id, sub_domain_id);
           remove_group = true;
         }
-        if (!remove_group){
+        if (!remove_group) {
           String grp(group_name.c_str());
-          if (grp.startsWith("MF_")){
+          if (grp.startsWith("MF_")) {
             info() << "Le groupe de mailles " << group_name << " n'est pas utilisé";
             remove_group = true;
           }
         }
-        if (!remove_group){
+        if (!remove_group) {
           log() << "CellGroup Name <" << group_name << "> (" << nb_item_in_group << " elements)";
-          LimaUtils::createGroup(cell_family,group_name,local_ids);
+          LimaUtils::createGroup(cell_family, group_name, local_ids);
         }
       }
     }
   }
-
 
   {
     // Fills the variable containing the node coordinates
@@ -1119,17 +1136,16 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
     NodeGroup nodes = mesh->allNodes();
     Integer nb_ghost_layer = mesh->ghostLayerMng()->nbGhostLayer();
-    if (nb_ghost_layer>1)
+    if (nb_ghost_layer > 1)
       nodes = mesh->ownNodes();
-    ENUMERATE_NODE(i,nodes){
+    ENUMERATE_NODE (i, nodes) {
       const Node& node = *i;
       nodes_coord_var[node] = nodes_coords.lookupValue(node.uniqueId());
       //info() << "Coord: " << node.uniqueId() << " v=" << nodes_coord_var[node];
     }
-    if (nb_ghost_layer>1)
+    if (nb_ghost_layer > 1)
       nodes_coord_var.synchronize();
   }
-
 
   //    -------------------------------- Reading groups
   info() << "Nombre de nuages   " << lima.nb_nuages();
@@ -1148,12 +1164,12 @@ _readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& file_name,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ReaderWrapper> void LimaWrapper<ReaderWrapper>::
-_getProcList(UniqueArray<Integer>& proc_list,const String& dir_name)
+template <typename ReaderWrapper> void LimaWrapper<ReaderWrapper>::
+_getProcList(UniqueArray<Integer>& proc_list, const String& dir_name)
 {
   ISubDomain* sd = subDomain();
   StringBuilder comm_file_nameb;
-  if (!dir_name.empty()){
+  if (!dir_name.empty()) {
     comm_file_nameb += dir_name;
     comm_file_nameb += "/";
   }
@@ -1163,27 +1179,27 @@ _getProcList(UniqueArray<Integer>& proc_list,const String& dir_name)
   // Reading the communication file
   ScopedPtrT<IXmlDocumentHolder> doc_holder(sd->ioMng()->parseXmlFile(comm_file_name));
   if (!doc_holder.get())
-    ARCANE_FATAL("Invalid file '{0}'",comm_file_name);
+    ARCANE_FATAL("Invalid file '{0}'", comm_file_name);
 
   XmlNode root_elem = doc_holder->documentNode().documentElement();
   XmlNode cpu_elem;
   XmlNodeList cpu_list = root_elem.child(String("cpus")).children(String("cpu-from"));
 
-  String ustr_buf  = String::fromNumber(sd->subDomainId());
+  String ustr_buf = String::fromNumber(sd->subDomainId());
   String ustr_id(String("id"));
-  for( Integer i=0, s=cpu_list.size(); i<s; ++i ){
+  for (Integer i = 0, s = cpu_list.size(); i < s; ++i) {
     String id_str = cpu_list[i].attrValue(ustr_id);
-    if (id_str==ustr_buf){
+    if (id_str == ustr_buf) {
       cpu_elem = cpu_list[i];
       break;
     }
   }
   if (cpu_elem.null())
-    ARCANE_FATAL("No element <cpus/cpu-from[@id=\"{0}\"]>",sd->subDomainId());
+    ARCANE_FATAL("No element <cpus/cpu-from[@id=\"{0}\"]>", sd->subDomainId());
   {
     cpu_list = cpu_elem.children(String("cpu-to"));
     debug() << "Nb procs " << cpu_list.size();
-    for( Integer i=0; i<cpu_list.size(); ++i ){
+    for (Integer i = 0; i < cpu_list.size(); ++i) {
       Integer v = cpu_list[i].valueAsInteger();
       proc_list.add(v);
       debug() << "Read proc " << v;
@@ -1239,7 +1255,8 @@ class LimaCaseMeshReader
  public:
 
   explicit LimaCaseMeshReader(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_sub_domain(sbi.subDomain())
+  : AbstractService(sbi)
+  , m_sub_domain(sbi.subDomain())
   {}
 
  public:
@@ -1248,7 +1265,7 @@ class LimaCaseMeshReader
   {
     IMeshBuilder* builder = nullptr;
     String str = read_info.format();
-    if (str=="unf" || str=="mli" || str=="mli2" || str=="ice" || str=="uns" || str=="unv")
+    if (str == "unf" || str == "mli" || str == "mli2" || str == "ice" || str == "uns" || str == "unv")
       builder = new Builder(m_sub_domain, read_info);
     return makeRef(builder);
   }
@@ -1276,88 +1293,94 @@ class LimaMeshWriter
 , public IMeshWriter
 {
  public:
+
   LimaMeshWriter(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_sub_domain(sbi.subDomain()) {}
+  : AbstractService(sbi)
+  , m_sub_domain(sbi.subDomain())
+  {}
+
  public:
+
   virtual void build() {}
-  virtual bool writeMeshToFile(IMesh* mesh,const String& file_name);
+  virtual bool writeMeshToFile(IMesh* mesh, const String& file_name);
 
  private:
+
   ISubDomain* m_sub_domain;
-  void _writeItem(Lima::Maillage& lima_mesh,ConstArrayView<Lima::Noeud> nodes,
-									ItemWithNodes item);
+  void _writeItem(Lima::Maillage& lima_mesh, ConstArrayView<Lima::Noeud> nodes,
+                  ItemWithNodes item);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(LimaMeshWriter,
-                        ServiceProperty("Lima",ST_SubDomain),
+                        ServiceProperty("Lima", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshWriter));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void LimaMeshWriter::
-_writeItem(Lima::Maillage& m,ConstArrayView<Lima::Noeud> nodes,ItemWithNodes c)
+_writeItem(Lima::Maillage& m, ConstArrayView<Lima::Noeud> nodes, ItemWithNodes c)
 {
-	switch(c.type()){
-	case IT_Octaedron12:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-														 nodes[c.node(4).localId()],nodes[c.node(5).localId()],
-														 nodes[c.node(6).localId()],nodes[c.node(7).localId()],
-														 nodes[c.node(8).localId()],nodes[c.node(9).localId()],
-														 nodes[c.node(10).localId()],nodes[c.node(11).localId()]));
-		break;
-	case IT_Heptaedron10:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-														 nodes[c.node(4).localId()],nodes[c.node(5).localId()],
-														 nodes[c.node(6).localId()],nodes[c.node(7).localId()],
-														 nodes[c.node(8).localId()],nodes[c.node(9).localId()]));
-		break;
-	case IT_Hexaedron8:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-														 nodes[c.node(4).localId()],nodes[c.node(5).localId()],
-														 nodes[c.node(6).localId()],nodes[c.node(7).localId()]));
-		break;
-	case IT_Pentaedron6:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-														 nodes[c.node(4).localId()],nodes[c.node(5).localId()]));
-		break;
-	case IT_Pyramid5:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-														 nodes[c.node(4).localId()]));
-		break;
-	case IT_Tetraedron4:
-		m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-														 nodes[c.node(2).localId()],nodes[c.node(3).localId()]));
-		break;
-	case IT_Hexagon6:
-		m.ajouter(Lima::Polygone(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-																nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-																nodes[c.node(4).localId()],nodes[c.node(5).localId()]));
-		break;
-	case IT_Pentagon5:
-		m.ajouter(Lima::Polygone(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-																nodes[c.node(2).localId()],nodes[c.node(3).localId()],
-																nodes[c.node(4).localId()]));
-		break;
-	case IT_Quad4:
-		m.ajouter(Lima::Polygone(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-																nodes[c.node(2).localId()],nodes[c.node(3).localId()]));
-		break;
-	case IT_Triangle3:
-		m.ajouter(Lima::Polygone(nodes[c.node(0).localId()],nodes[c.node(1).localId()],
-																nodes[c.node(2).localId()]));
-		break;
-	case IT_Line2:
-		m.ajouter(Lima::Bras(nodes[c.node(0).localId()],nodes[c.node(1).localId()]));
-		break;
+  switch (c.type()) {
+  case IT_Octaedron12:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()], nodes[c.node(5).localId()],
+                             nodes[c.node(6).localId()], nodes[c.node(7).localId()],
+                             nodes[c.node(8).localId()], nodes[c.node(9).localId()],
+                             nodes[c.node(10).localId()], nodes[c.node(11).localId()]));
+    break;
+  case IT_Heptaedron10:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()], nodes[c.node(5).localId()],
+                             nodes[c.node(6).localId()], nodes[c.node(7).localId()],
+                             nodes[c.node(8).localId()], nodes[c.node(9).localId()]));
+    break;
+  case IT_Hexaedron8:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()], nodes[c.node(5).localId()],
+                             nodes[c.node(6).localId()], nodes[c.node(7).localId()]));
+    break;
+  case IT_Pentaedron6:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()], nodes[c.node(5).localId()]));
+    break;
+  case IT_Pyramid5:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()]));
+    break;
+  case IT_Tetraedron4:
+    m.ajouter(Lima::Polyedre(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()]));
+    break;
+  case IT_Hexagon6:
+    m.ajouter(Lima::Polygone(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()], nodes[c.node(5).localId()]));
+    break;
+  case IT_Pentagon5:
+    m.ajouter(Lima::Polygone(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()],
+                             nodes[c.node(4).localId()]));
+    break;
+  case IT_Quad4:
+    m.ajouter(Lima::Polygone(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()], nodes[c.node(3).localId()]));
+    break;
+  case IT_Triangle3:
+    m.ajouter(Lima::Polygone(nodes[c.node(0).localId()], nodes[c.node(1).localId()],
+                             nodes[c.node(2).localId()]));
+    break;
+  case IT_Line2:
+    m.ajouter(Lima::Bras(nodes[c.node(0).localId()], nodes[c.node(1).localId()]));
+    break;
   }
 }
 
@@ -1369,30 +1392,30 @@ _writeItem(Lima::Maillage& m,ConstArrayView<Lima::Noeud> nodes,ItemWithNodes c)
  * \warning Entity numbering must be contiguous.
  */
 bool LimaMeshWriter::
-writeMeshToFile(IMesh* mesh,const String& file_name)
+writeMeshToFile(IMesh* mesh, const String& file_name)
 {
   ITraceMng* trace = mesh->traceMng();
-	int dimension = mesh->dimension();
+  int dimension = mesh->dimension();
 
   std::string std_file_name = file_name.localstr();
-	//TODO: ADD EXTENSION if not present
+  //TODO: ADD EXTENSION if not present
   // Check if the file has the extension '.unf', '.mli', or '.mli2'.
   // Otherwise, add '.mli2'
   const size_t rpos2 = std_file_name.rfind(".mli2");
   std::string::size_type std_end = std::string::npos;
-  bool need_mutex = rpos2!=std_end;
-  if (rpos2==std_end && std_file_name.rfind(".mli")==std_end && std_file_name.rfind(".unf")==std_end){
+  bool need_mutex = rpos2 != std_end;
+  if (rpos2 == std_end && std_file_name.rfind(".mli") == std_end && std_file_name.rfind(".unf") == std_end) {
     std_file_name += ".mli2";
     need_mutex = true;
   }
   info() << "FINAL_FILE_NAME=" << std_file_name;
   Lima::Maillage lima(std_file_name);
 
-  if (dimension==3)
+  if (dimension == 3)
     lima.dimension(Lima::D3);
-  else if (dimension==2)
+  else if (dimension == 2)
     lima.dimension(Lima::D2);
-	
+
   IItemFamily* node_family = mesh->nodeFamily();
   IItemFamily* edge_family = mesh->edgeFamily();
   IItemFamily* face_family = mesh->faceFamily();
@@ -1413,7 +1436,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
   VariableItemReal3& nodes_coords = mesh->nodesCoordinates();
 
   // Save nodes
-  for( Integer i=0; i<mesh_nb_node; ++i ){
+  for (Integer i = 0; i < mesh_nb_node; ++i) {
     Node node = nodes[i];
     Real3 coord = nodes_coords[node];
     lm_nodes[i].set_x(Convert::toDouble(coord.x));
@@ -1423,83 +1446,83 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
   }
 
   // Save edges
-  for( Integer i=0; i<mesh_nb_edge; ++i ){
-    _writeItem(lima,lm_nodes,edges[i]);
+  for (Integer i = 0; i < mesh_nb_edge; ++i) {
+    _writeItem(lima, lm_nodes, edges[i]);
   }
 
   // Save faces
-  for( Integer i=0; i<mesh_nb_face; ++i ){
-    _writeItem(lima,lm_nodes,faces[i]);
+  for (Integer i = 0; i < mesh_nb_face; ++i) {
+    _writeItem(lima, lm_nodes, faces[i]);
   }
 
   // Save cells
-  for( Integer i=0; i<mesh_nb_cell; ++i ){
-    _writeItem(lima,lm_nodes,cells[i]);
+  for (Integer i = 0; i < mesh_nb_cell; ++i) {
+    _writeItem(lima, lm_nodes, cells[i]);
   }
 
-  try{
+  try {
 
     // Save node groups
-    for( ItemGroupCollection::Enumerator i(node_family->groups()); ++i; ){
+    for (ItemGroupCollection::Enumerator i(node_family->groups()); ++i;) {
       ItemGroup group = *i;
       if (group.isAllItems())
         continue;
       Lima::Nuage lm_group(group.name().localstr());
       lima.ajouter(lm_group);
-      ENUMERATE_ITEM(iitem,group){
+      ENUMERATE_ITEM (iitem, group) {
         lm_group.ajouter(lima.noeud(iitem.localId()));
       }
     }
 
     // Save edge groups
-    for( ItemGroupCollection::Enumerator i(edge_family->groups()); ++i; ){
+    for (ItemGroupCollection::Enumerator i(edge_family->groups()); ++i;) {
       ItemGroup group = *i;
       if (group.isAllItems())
         continue;
       Lima::Ligne lm_group(group.name().localstr());
       lima.ajouter(lm_group);
-      ENUMERATE_ITEM(iitem,group){
+      ENUMERATE_ITEM (iitem, group) {
         lm_group.ajouter(lima.bras(iitem.localId()));
       }
     }
 
     // Save face groups
-    for( ItemGroupCollection::Enumerator i(face_family->groups()); ++i; ){
+    for (ItemGroupCollection::Enumerator i(face_family->groups()); ++i;) {
       ItemGroup group = *i;
       if (group.isAllItems())
         continue;
-      if (dimension==3){
+      if (dimension == 3) {
         Lima::Surface lm_group(group.name().localstr());
         lima.ajouter(lm_group);
-        ENUMERATE_ITEM(iitem,group){
+        ENUMERATE_ITEM (iitem, group) {
           lm_group.ajouter(lima.polygone(iitem.localId()));
         }
       }
-      else if (dimension==2){
+      else if (dimension == 2) {
         Lima::Ligne lm_group(group.name().localstr());
         lima.ajouter(lm_group);
-        ENUMERATE_ITEM(iitem,group){
+        ENUMERATE_ITEM (iitem, group) {
           lm_group.ajouter(lima.bras(iitem.localId()));
         }
       }
     }
- 
+
     // Save mesh groups
-    for( ItemGroupCollection::Enumerator i(cell_family->groups()); ++i; ){
+    for (ItemGroupCollection::Enumerator i(cell_family->groups()); ++i;) {
       ItemGroup group = *i;
       if (group.isAllItems())
         continue;
-      if (dimension==3){
+      if (dimension == 3) {
         Lima::Volume lm_group(group.name().localstr());
         lima.ajouter(lm_group);
-        ENUMERATE_ITEM(iitem,group){
+        ENUMERATE_ITEM (iitem, group) {
           lm_group.ajouter(lima.polyedre(iitem.localId()));
         }
       }
-      else if (dimension==2){
+      else if (dimension == 2) {
         Lima::Surface lm_group(group.name().localstr());
         lima.ajouter(lm_group);
-        ENUMERATE_ITEM(iitem,group){
+        ENUMERATE_ITEM (iitem, group) {
           lm_group.ajouter(lima.polygone(iitem.localId()));
         }
       }
@@ -1511,12 +1534,12 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
       lima.ecrire(std_file_name);
     }
   }
-  catch(const std::exception& ex){
+  catch (const std::exception& ex) {
     trace->warning() << "Exception (std::exception) in LIMA: Can not write file <" << std_file_name << ">"
-                      << " Exception: " << ex.what() << '\n';
+                     << " Exception: " << ex.what() << '\n';
     return true;
   }
-  catch(...){
+  catch (...) {
     trace->warning() << "Exception (unknown) in LIMA: Can not write file <" << std_file_name << ">";
     return true;
   }
