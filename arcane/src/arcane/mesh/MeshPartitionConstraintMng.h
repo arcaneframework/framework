@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,23 +19,17 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Mesh partitioning constraint manager.
  */
@@ -57,12 +51,12 @@ class MeshPartitionConstraintMng
   virtual void addConstraint(IMeshPartitionConstraint* constraint);
   virtual void removeConstraint(IMeshPartitionConstraint* constraint);
   virtual void computeAndApplyConstraints();
-  virtual void computeConstraintList(Int64MultiArray2 & tied_uids);
+  virtual void computeConstraintList(Int64MultiArray2& tied_uids);
 
   virtual void addWeakConstraint(IMeshPartitionConstraint* constraint);
   virtual void removeWeakConstraint(IMeshPartitionConstraint* constraint);
   virtual void computeAndApplyWeakConstraints();
-  virtual void computeWeakConstraintList(Int64MultiArray2 & tied_uids);
+  virtual void computeWeakConstraintList(Int64MultiArray2& tied_uids);
 
  private:
 
@@ -72,7 +66,7 @@ class MeshPartitionConstraintMng
   List<IMeshPartitionConstraint*> m_weak_constraints;
 
  private:
-  
+
   void _computeAndApplyConstraints(Helper& h);
   void _computeAndApplyWeakConstraints(Helper& h);
 };
@@ -80,14 +74,8 @@ class MeshPartitionConstraintMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
+} // namespace Arcane::mesh
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif

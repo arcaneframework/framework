@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,14 +39,14 @@ class BasicItemPairGroupComputeFunctor;
  */
 class UnstructuredMeshUtilities
 : public TraceAccessor
-  , public IMeshUtilities
+, public IMeshUtilities
 {
-public:
+ public:
 
   explicit UnstructuredMeshUtilities(IMesh* mesh);
   ~UnstructuredMeshUtilities() override; //!< Frees resources.
 
-public:
+ public:
 
   void changeOwnersFromCells() override;
 
@@ -104,12 +104,12 @@ public:
 
   void recomputeItemsUniqueIdFromNodesUniqueId() override;
 
-private:
+ private:
 
   IMesh* m_mesh = nullptr;
   BasicItemPairGroupComputeFunctor* m_compute_adjacency_functor = nullptr;
 
-private:
+ private:
 
   Real3 _round(Real3 value);
   Real3 _broadcastFarthestNode(Real distance, const Node& node,

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,10 +17,10 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/VariableCollection.h"
-#include "arcane/IItemFamilyExchanger.h"
-#include "arcane/IItemFamilySerializeStep.h"
-#include "arcane/ParallelExchangerOptions.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IItemFamilyExchanger.h"
+#include "arcane/core/IItemFamilySerializeStep.h"
+#include "arcane/core/ParallelExchangerOptions.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -35,7 +35,7 @@ class ItemInternal;
 class IParallelExchanger;
 class IItemFamilySerializer;
 class IItemFamilySerializeStep;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,8 +81,8 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
  public:
 
   void computeExchangeItems() override;
-  
-  void setExchangeItems(ConstArrayView< std::set<Int32> > items_to_send) override;
+
+  void setExchangeItems(ConstArrayView<std::set<Int32>> items_to_send) override;
 
   /*!
    * \brief Determines the necessary information for the exchanges.
@@ -152,7 +152,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
   IItemFamily* m_item_family;
 
   //! List of entities to send to each processor
-  UniqueArray< SharedArray<Int32> > m_send_local_ids;
+  UniqueArray<SharedArray<Int32>> m_send_local_ids;
 
   //! Serializer of groups
   UniqueArray<ItemGroupsSerializer2*> m_groups_serializers;
@@ -170,7 +170,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
   /*!
    * \brief List of local IDs of received entities.
    */
-  UniqueArray< SharedArray<Int32> > m_receive_local_ids;
+  UniqueArray<SharedArray<Int32>> m_receive_local_ids;
 
   IItemFamilySerializer* m_family_serializer;
 
@@ -180,7 +180,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
  private:
 
-  inline void _addItemToSend(Int32 sub_domain_id,Item item);
+  inline void _addItemToSend(Int32 sub_domain_id, Item item);
   bool _computeExchangeInfos();
   void _applySerializeStep(IItemFamilySerializeStep::ePhase phase,
                            const ItemFamilySerializeArgs& args);
@@ -190,7 +190,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

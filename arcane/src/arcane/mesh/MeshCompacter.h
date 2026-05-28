@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/List.h"
-#include "arcane/IMeshCompacter.h"
+#include "arcane/core/IMeshCompacter.h"
 #include "arcane/mesh/MeshGlobal.h"
 
 #include <map>
@@ -24,10 +24,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class ITimeStats;
 class IItemFamilyCompactPolicy;
-ARCANE_MESH_BEGIN_NAMESPACE
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,12 +58,12 @@ class ARCANE_MESH_EXPORT MeshCompacter
 
  private:
 
-  typedef std::map<IItemFamily*,ItemFamilyCompactInfos*> ItemFamilyCompactInfosMap;
+  typedef std::map<IItemFamily*, ItemFamilyCompactInfos*> ItemFamilyCompactInfosMap;
 
  private:
 
-  MeshCompacter(IMesh* mesh,ITimeStats* stats);
-  MeshCompacter(IItemFamily* family,ITimeStats* stats);
+  MeshCompacter(IMesh* mesh, ITimeStats* stats);
+  MeshCompacter(IItemFamily* family, ITimeStats* stats);
   ~MeshCompacter();
 
  private:
@@ -101,8 +108,7 @@ class ARCANE_MESH_EXPORT MeshCompacter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

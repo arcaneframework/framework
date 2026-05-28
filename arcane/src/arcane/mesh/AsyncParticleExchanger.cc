@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ initialize(IItemFamily* item_family)
 {
   m_bpe.initialize(item_family);
   IParallelMng* pm = m_bpe.m_parallel_mng;
-  if (pm->isParallel()){
+  if (pm->isParallel()) {
     IParallelNonBlockingCollective* pnbc = pm->nonBlockingCollective();
     if (!pnbc)
       ARCANE_THROW(NotSupportedException,
@@ -205,7 +205,7 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
     Timer::Sentry ts(m_bpe.m_timer);
     _generateSendItemsAsync(local_ids, sub_domains_to_send);
   }
-  if (m_bpe.m_verbose_level>=1)
+  if (m_bpe.m_verbose_level >= 1)
     info() << "ASE_BeginLoop loop=" << m_bpe.m_nb_loop;
   m_bpe._sendPendingMessages();
 
@@ -231,9 +231,9 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
   UniqueArray<Integer> isIallReduceRunning = pm->testSomeRequests(m_reduce_requests);
 
   //If the request matched, we clear the request array
-  if (isIallReduceRunning.size() != 0){
+  if (isIallReduceRunning.size() != 0) {
     m_reduce_requests.clear();
-    if (m_bpe.m_verbose_level>=1)
+    if (m_bpe.m_verbose_level >= 1)
       info() << "PSM_IAllReduceFinished loop=" << m_bpe.m_nb_loop
              << " total=" << m_sum_of_nb_particle_sent;
   }
@@ -241,12 +241,12 @@ exchangeItemsAsync(Integer nb_particle_finish_exchange,
   //Here, we test if we have particles to process locally
   //If there are no Iallreduce requests in flight
   //and no requests to send or receive in flight
-  if ((!has_local_flying_particles) && (m_reduce_requests.size() == 0) && (m_bpe.m_waiting_messages.size() == 0) && (m_bpe.m_pending_messages.size()==0)) {
+  if ((!has_local_flying_particles) && (m_reduce_requests.size() == 0) && (m_bpe.m_waiting_messages.size() == 0) && (m_bpe.m_pending_messages.size() == 0)) {
     if (m_sum_of_nb_particle_sent > 0) {
       //Perform MPI_Iallreduce
       IParallelNonBlockingCollective* pnbc = pm->nonBlockingCollective();
       m_nb_particle_send_before_reduction = m_nb_particle_send_before_reduction_tmp;
-      if (m_bpe.m_verbose_level>=1)
+      if (m_bpe.m_verbose_level >= 1)
         info() << "PSM_DoIAllReduce loop=" << m_bpe.m_nb_loop
                << " n=" << m_nb_particle_send_before_reduction
                << " nb_to_send=" << local_ids.size();
@@ -297,7 +297,7 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
   for (Integer j = 0; j < nb_connected_sub_domain; ++j) {
     if (ids_to_send[j].size() != 0) {
       auto* sm = new SerializeMessage(pm->commRank(), communicating_sub_domains[j],
-                                           ISerializeMessage::MT_Send);
+                                      ISerializeMessage::MT_Send);
       m_bpe.m_accumulate_infos[j] = sm;
       m_bpe._serializeMessage(sm, ids_to_send[j], items_to_send_uid, items_to_send_cells_uid);
       m_bpe.m_pending_messages.add(sm);
@@ -313,7 +313,7 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
 
     MessageTag tag(Arcane::MessagePassing::internal::BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
     MessageRank rank(communicating_sub_domains[j]);
-    PointToPointMessageInfo message(rank,tag);
+    PointToPointMessageInfo message(rank, tag);
     message.setBlocking(false);
     MessageId mid = pm->probe(message);
 

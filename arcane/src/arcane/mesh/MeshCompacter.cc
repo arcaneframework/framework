@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Timer.h"
+#include "arcane/core/Timer.h"
 
-#include "arcane/ItemFamilyCompactInfos.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IItemFamilyCompactPolicy.h"
+#include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IItemFamilyCompactPolicy.h"
 
 #include "arcane/mesh/MeshCompacter.h"
 #include "arcane/mesh/DynamicMesh.h"
@@ -30,7 +30,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 MeshCompacter::
-MeshCompacter(IMesh* mesh,ITimeStats* stats)
+MeshCompacter(IMesh* mesh, ITimeStats* stats)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_time_stats(stats)
@@ -38,7 +38,7 @@ MeshCompacter(IMesh* mesh,ITimeStats* stats)
 , m_is_sorted(false)
 , m_is_compact_variables_and_groups(true)
 {
-  for( IItemFamily* family : m_mesh->itemFamilies() ){
+  for (IItemFamily* family : m_mesh->itemFamilies()) {
     _addFamily(family);
   }
 }
@@ -47,7 +47,7 @@ MeshCompacter(IMesh* mesh,ITimeStats* stats)
 /*---------------------------------------------------------------------------*/
 
 MeshCompacter::
-MeshCompacter(IItemFamily* family,ITimeStats* stats)
+MeshCompacter(IItemFamily* family, ITimeStats* stats)
 : TraceAccessor(family->traceMng())
 , m_mesh(family->mesh())
 , m_time_stats(stats)
@@ -64,7 +64,7 @@ MeshCompacter(IItemFamily* family,ITimeStats* stats)
 MeshCompacter::
 ~MeshCompacter()
 {
-  for( const auto& i : m_family_compact_infos_map )
+  for (const auto& i : m_family_compact_infos_map)
     delete i.second;
 }
 
@@ -98,9 +98,9 @@ build()
 void MeshCompacter::
 _checkPhase(ePhase wanted_phase)
 {
-  if (m_phase!=wanted_phase)
+  if (m_phase != wanted_phase)
     ARCANE_FATAL("Invalid exchange phase wanted={0} current={1}",
-                 (int)wanted_phase,(int)m_phase);
+                 (int)wanted_phase, (int)m_phase);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -114,16 +114,16 @@ beginCompact()
   // Starts a compaction and calculates the correspondences between the
   // new and old localIds().
   {
-    Timer::Action ts_action(m_time_stats,"CompactItemsBegin");
-    for( IItemFamily* family : m_item_families ){
-      auto compact_infos = new ItemFamilyCompactInfos(this,family);
-      m_family_compact_infos_map.insert(std::make_pair(family,compact_infos));
+    Timer::Action ts_action(m_time_stats, "CompactItemsBegin");
+    for (IItemFamily* family : m_item_families) {
+      auto compact_infos = new ItemFamilyCompactInfos(this, family);
+      m_family_compact_infos_map.insert(std::make_pair(family, compact_infos));
     }
-    for( IItemFamily* family : m_item_families ){
+    for (IItemFamily* family : m_item_families) {
       IItemFamilyCompactPolicy* c = family->policyMng()->compactPolicy();
       auto iter = m_family_compact_infos_map.find(family);
-      if (iter==m_family_compact_infos_map.end())
-        ARCANE_FATAL("Can not find family '{0}'",family->name());
+      if (iter == m_family_compact_infos_map.end())
+        ARCANE_FATAL("Can not find family '{0}'", family->name());
       c->beginCompact(*iter->second);
     }
   }
@@ -141,9 +141,9 @@ compactVariablesAndGroups()
 
   // Updates groups and variables once the parents are updated.
   // This must only be done on the families that are compacted.
-  if (m_is_compact_variables_and_groups){
-    Timer::Action ts_action(m_time_stats,"CompactVariables");
-    for( const auto& iter : m_family_compact_infos_map ){
+  if (m_is_compact_variables_and_groups) {
+    Timer::Action ts_action(m_time_stats, "CompactVariables");
+    for (const auto& iter : m_family_compact_infos_map) {
       const ItemFamilyCompactInfos* compact_infos = iter.second;
       IItemFamilyCompactPolicy* c = compact_infos->family()->policyMng()->compactPolicy();
       c->compactVariablesAndGroups(*compact_infos);
@@ -163,8 +163,8 @@ updateInternalReferences()
 
   // Updates the references of each entity.
   {
-    Timer::Action ts_action(m_time_stats,"CompactUpdateInternalReferences");
-    for( IItemFamily* family : m_mesh->itemFamilies() ){
+    Timer::Action ts_action(m_time_stats, "CompactUpdateInternalReferences");
+    for (IItemFamily* family : m_mesh->itemFamilies()) {
       IItemFamilyCompactPolicy* c = family->policyMng()->compactPolicy();
       if (c)
         c->updateInternalReferences(this);
@@ -184,9 +184,9 @@ endCompact()
 
   // Ends the compaction.
   {
-    Timer::Action ts_action(m_time_stats,"CompactItemFinish");
+    Timer::Action ts_action(m_time_stats, "CompactItemFinish");
 
-    for( const auto& iter : m_family_compact_infos_map ){
+    for (const auto& iter : m_family_compact_infos_map) {
       ItemFamilyCompactInfos* compact_infos = iter.second;
       IItemFamilyCompactPolicy* c = compact_infos->family()->policyMng()->compactPolicy();
       c->endCompact(*compact_infos);
@@ -206,9 +206,9 @@ finalizeCompact()
 
   // Notifies that the compaction is finished.
   {
-    Timer::Action ts_action(m_time_stats,"CompactItemFinish");
+    Timer::Action ts_action(m_time_stats, "CompactItemFinish");
 
-    for( IItemFamily* family : m_mesh->itemFamilies() ){
+    for (IItemFamily* family : m_mesh->itemFamilies()) {
       IItemFamilyCompactPolicy* c = family->policyMng()->compactPolicy();
       if (c)
         c->finalizeCompact(this);
@@ -225,7 +225,7 @@ const ItemFamilyCompactInfos* MeshCompacter::
 findCompactInfos(IItemFamily* family) const
 {
   auto x = m_family_compact_infos_map.find(family);
-  if (x==m_family_compact_infos_map.end())
+  if (x == m_family_compact_infos_map.end())
     return nullptr;
   return x->second;
 }

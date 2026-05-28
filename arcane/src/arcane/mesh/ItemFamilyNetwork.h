@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,13 +22,13 @@
 #include "arcane/utils/DirectedGraphT.h"
 #include "arcane/utils/DirectedAcyclicGraphT.h"
 #include "arcane/utils/List.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/IGraph2.h"
-#include "arcane/IGraphModifier2.h"
-#include "arcane/IItemFamilyNetwork.h"
+#include "arcane/core/IGraph2.h"
+#include "arcane/core/IGraphModifier2.h"
+#include "arcane/core/IItemFamilyNetwork.h"
 #include "arcane/utils/NotImplementedException.h" //tmp !
 
 /*---------------------------------------------------------------------------*/
@@ -49,20 +49,21 @@ class ARCANE_MESH_EXPORT ItemFamilyNetwork
   ItemFamilyNetwork(ITraceMng* trace_mng)
   : m_relation_graph(trace_mng)
   , m_dependency_graph(trace_mng)
-{}
+  {}
 
   /** Destructor of the class */
-  virtual ~ItemFamilyNetwork() {
-    for (auto connectivity : m_connectivity_list)
-      {
-        delete connectivity;
-      }
+  virtual ~ItemFamilyNetwork()
+  {
+    for (auto connectivity : m_connectivity_list) {
+      delete connectivity;
+    }
   }
 
-public:
+ public:
 
-  bool isActivated() const override {
-    return m_is_activated ;
+  bool isActivated() const override
+  {
+    return m_is_activated;
   }
 
   /*! Adds a dependency between two families; an element of \a master_family is composed of elements of \a slave_family.
@@ -86,7 +87,6 @@ public:
   IIncrementalItemConnectivity* getStoredConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name) override;
   IIncrementalItemConnectivity* getStoredConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name, bool& is_dependency) override;
 
-
   //! Get the list of all connectivities, whether they are relations or dependencies
   List<IIncrementalItemConnectivity*> getConnectivities() override;
 
@@ -103,7 +103,7 @@ public:
   SharedArray<IIncrementalItemConnectivity*> getParentRelations(IItemFamily* target_family) override;
 
   //! Get the list of all families
-  const std::set<IItemFamily*>& getFamilies() const override {return m_families;}
+  const std::set<IItemFamily*>& getFamilies() const override { return m_families; }
 
   SharedArray<IItemFamily*> getFamilies(eSchedulingOrder order) const override;
 
@@ -118,15 +118,15 @@ public:
 
   bool isDeep(IIncrementalItemConnectivity* connectivity) override;
 
-
   Integer registerConnectedGraph(IGraph2* graph) override;
 
   void releaseConnectedGraph(Integer graph_id) override;
 
   void removeConnectedDoFsFromCells(Int32ConstArrayView local_ids) override;
+
  private:
 
-  bool m_is_activated = false ;
+  bool m_is_activated = false;
   using ConnectivityGraph = GraphBaseT<IItemFamily*, IIncrementalItemConnectivity*>;
   mutable DirectedGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_relation_graph;
   mutable DirectedAcyclicGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_dependency_graph;
@@ -136,15 +136,15 @@ public:
   // getConnectivities(). To check with Stéphane regarding the modification
   List<IIncrementalItemConnectivity*> m_connectivity_list;
 
-  std::map<IIncrementalItemConnectivity*,std::pair<bool,bool>> m_connectivity_status; // bool = is_stored
+  std::map<IIncrementalItemConnectivity*, std::pair<bool, bool>> m_connectivity_status; // bool = is_stored
   std::set<IItemFamily*> m_families;
 
-  UniqueArray<IGraph2*> m_registred_graphs ;
+  UniqueArray<IGraph2*> m_registred_graphs;
 
  private:
 
   void _checkConnectivityName(IIncrementalItemConnectivity* connectivity, const String& name);
-  std::pair<IIncrementalItemConnectivity* const, std::pair<bool,bool>>& _getConnectivityStatus(IIncrementalItemConnectivity* connectivity);
+  std::pair<IIncrementalItemConnectivity* const, std::pair<bool, bool>>& _getConnectivityStatus(IIncrementalItemConnectivity* connectivity);
   SharedArray<IIncrementalItemConnectivity*> _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges);
   SharedArray<IIncrementalItemConnectivity*> _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges1, const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges2);
 };
@@ -157,4 +157,4 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ITEMFAMILYNETWORK_H_ */
+#endif

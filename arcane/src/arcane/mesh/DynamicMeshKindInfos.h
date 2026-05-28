@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -62,14 +62,14 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
  public:
 
   //! Creates an instance for a given mesh and kind.
-  DynamicMeshKindInfos(IMesh* mesh,eItemKind kind,const String& kind_name);
+  DynamicMeshKindInfos(IMesh* mesh, eItemKind kind, const String& kind_name);
   //! Frees resources
   ~DynamicMeshKindInfos();
 
  public:
 
   void build();
-  
+
   //! Reallocates and recalculates structures after mesh modification
   /*! @internal Specifically injects the added and removed items into the total group
    *  of current all_items. Changes are made directly on this group without protection.
@@ -91,10 +91,10 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 
   //! Group of all entities
   ItemGroup allItems() const { return m_all_group; }
-  
+
   //! List of entities added or removed since the last endUpdate()
-  Int32ConstArrayView addedItems  () const { return m_added_items;  }
-  Int32ConstArrayView removedItems() const { return m_removed_items;}
+  Int32ConstArrayView addedItems() const { return m_added_items; }
+  Int32ConstArrayView removedItems() const { return m_removed_items; }
 
   //! Internal list of ItemInternals
   /*! Read-only; the write version was removed as indicated in todo */
@@ -108,23 +108,23 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     bool need_alloc = false;
     ItemInternal* next = _allocOne(need_alloc);
 #ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
-    _notifyAdd(next,unique_id);
+    _notifyAdd(next, unique_id);
 #endif
     if (m_has_unique_id_map)
-      if (!m_items_map.add(unique_id,next))
+      if (!m_items_map.add(unique_id, next))
         _badSameUniqueId(unique_id);
     return next;
   }
 
   //! Adds an entity with a unique ID \a unique_id
-  ItemInternal* allocOne(Int64 unique_id,bool& need_alloc)
+  ItemInternal* allocOne(Int64 unique_id, bool& need_alloc)
   {
     ItemInternal* next = _allocOne(need_alloc);
 #ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
-    _notifyAdd(next,unique_id);
+    _notifyAdd(next, unique_id);
 #endif
     if (m_has_unique_id_map)
-      if (!m_items_map.add(unique_id,next))
+      if (!m_items_map.add(unique_id, next))
         _badSameUniqueId(unique_id);
     return next;
   }
@@ -136,7 +136,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     _checkActiveItem(item);
 #endif
     _setSuppressed(item);
-    if (m_has_unique_id_map){
+    if (m_has_unique_id_map) {
       Int64 uid = item->uniqueId().asInt64();
       if (uid != NULL_ITEM_UNIQUE_ID)
         m_items_map.remove(uid);
@@ -173,7 +173,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
    *
    * The entity is removed from the list of uniqueIds()
    * if the REMOVE_UID_ON_DETACH macro is defined
-   */  
+   */
   void detachOne(ItemInternal* item)
   {
 #ifdef ARCANE_CHECK
@@ -192,18 +192,18 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   void removeMany(Int32ConstArrayView local_ids);
 
   //! Finds the entity with unique ID \a unique_id and creates it if it does not exist
-  ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc)
+  ItemInternal* findOrAllocOne(Int64 uid, bool& is_alloc)
   {
 #ifdef ARCANE_CHECK
     if (!m_has_unique_id_map)
       _badUniqueIdMap();
 #endif
     ItemInternalMap::LookupData item_data = m_items_map._lookupAdd(uid, 0, is_alloc);
-    if (is_alloc){
+    if (is_alloc) {
       bool need_alloc;
       item_data.setValue(_allocOne(need_alloc));
 #ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
-      _notifyAdd(item_data.value(),uid);
+      _notifyAdd(item_data.value(), uid);
 #endif
     }
     return item_data.value();
@@ -229,7 +229,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   eItemKind kind() const { return m_kind; }
 
   bool changed() const
-  { 
+  {
     return !m_added_items.empty() || !m_removed_items.empty();
   }
 
@@ -245,7 +245,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 
   //! Removes all entities
   void clear();
-  
+
   /*!
    * \brief Conversion between new and old local IDs.
    *
@@ -256,7 +256,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 
   void finishCompactItems(ItemFamilyCompactInfos& compact_infos);
 
-  void itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const;
+  void itemsUniqueIdToLocalId(ArrayView<Int64> ids, bool do_fatal) const;
   void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                               Int64ConstArrayView unique_ids,
                               bool do_fatal) const;
@@ -275,7 +275,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   {
     return m_has_unique_id_map;
   }
-  
+
   void setHasUniqueIdMap(bool v);
 
   void printFreeInternals(Integer max_print);
@@ -293,16 +293,16 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     ItemInternal* new_item = 0;
     Integer nb_free = m_free_internals.size();
     Int32 lid = 0;
-    if (nb_free!=0){
+    if (nb_free != 0) {
       new_item = m_internals[m_free_internals.back()];
       m_free_internals.popBack();
       _setAdded(new_item);
       lid = new_item->localId();
       need_alloc = false;
     }
-    else{
+    else {
       Integer nb_free2 = m_free_internals_in_multi_buffer.size();
-      if (nb_free2!=0){
+      if (nb_free2 != 0) {
         new_item = m_free_internals_in_multi_buffer.back();
         m_free_internals_in_multi_buffer.popBack();
       }
@@ -341,7 +341,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   EventObservable<const ItemFamilyItemListChangedEventArgs&> m_item_list_change_event;
 
  public:
-  
+
   UniqueArray<ItemInternal*> m_internals; //!< ItemInternals of the entities
   Int32UniqueArray m_free_internals; //!< List of freed ItemInternals from m_internals
   //!< List of free ItemInternals from m_item_internals_buffer
@@ -384,13 +384,13 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     if (m_item_list_change_event.hasObservers())
       _notifyRemove2(item);
   }
-  void _notifyAdd(ItemInternal* item,Int64 uid)
+  void _notifyAdd(ItemInternal* item, Int64 uid)
   {
     if (m_item_list_change_event.hasObservers())
-      _notifyAdd2(item,uid);
+      _notifyAdd2(item, uid);
   }
   void _notifyRemove2(ItemInternal* item);
-  void _notifyAdd2(ItemInternal* item,Int64 uid);
+  void _notifyAdd2(ItemInternal* item, Int64 uid);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,24 +17,22 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/MeshVariable.h"
+#include "arcane/core/MeshVariable.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IMesh;
-
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,7 +70,7 @@ class ItemGroupsSynchronize
    * \brief Create an instance to synchronize the groups \a groups
    * of the family \a item_family.
    */
-  ItemGroupsSynchronize(IItemFamily* item_family,ItemGroupCollection groups);
+  ItemGroupsSynchronize(IItemFamily* item_family, ItemGroupCollection groups);
   ~ItemGroupsSynchronize();
 
  public:
@@ -94,14 +92,14 @@ class ItemGroupsSynchronize
   ItemGroupList m_groups;
 
  private:
+
   void _setGroups();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

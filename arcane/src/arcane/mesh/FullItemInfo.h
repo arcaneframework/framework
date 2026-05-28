@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,8 +18,8 @@
 
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,27 +35,29 @@ namespace Arcane::mesh
  */
 class FullCellInfo
 {
- public:  
-  enum
-    { // parent info
-      PI_Node = 1 << 1,
-      PI_Edge = 1 << 2,
-      PI_Face = 1 << 3,
-      PI_Cell = 1 << 4
-    };
-  
  public:
+
+  enum
+  { // parent info
+    PI_Node = 1 << 1,
+    PI_Edge = 1 << 2,
+    PI_Face = 1 << 3,
+    PI_Cell = 1 << 4
+  };
+
+ public:
+
   /*!
    * \brief References the info of a mesh.
    *
    * The cells_infos array must remain valid as long as the instance exists.
    */
   FullCellInfo(Int64ConstArrayView cells_infos, Integer cell_index,
-               ItemTypeMng* itm, Integer parent_info, 
-               bool has_edge, bool has_amr, bool with_flags=false);
-  
+               ItemTypeMng* itm, Integer parent_info,
+               bool has_edge, bool has_amr, bool with_flags = false);
+
  public:
-  
+
   ItemTypeInfo* typeInfo() const { return m_type; }
   Integer typeId() const { return CheckedConvert::toInteger(m_infos[0]); }
   Int64 uniqueId() const { return m_infos[1]; }
@@ -63,38 +65,38 @@ class FullCellInfo
   Integer nbNode() const { return m_nb_node; }
   Integer nbEdge() const { return m_nb_edge; }
   Integer nbFace() const { return m_nb_face; }
-  Int64 faceUniqueId(Integer index) const { return m_infos[m_first_face + (index*2)]; }
-  Int32 faceOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[m_first_face + (index*2) + 1]); }
-  Int64 edgeUniqueId(Integer index) const { return m_infos[m_first_edge + (index*2)]; }
-  Int32 edgeOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[m_first_edge + (index*2) + 1]); }
-  Int64 nodeUniqueId(Integer index) const { return m_infos[3 + (index*2)]; }
-  Int32 nodeOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[3 + (index*2) + 1]); }
+  Int64 faceUniqueId(Integer index) const { return m_infos[m_first_face + (index * 2)]; }
+  Int32 faceOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[m_first_face + (index * 2) + 1]); }
+  Int64 edgeUniqueId(Integer index) const { return m_infos[m_first_edge + (index * 2)]; }
+  Int32 edgeOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[m_first_edge + (index * 2) + 1]); }
+  Int64 nodeUniqueId(Integer index) const { return m_infos[3 + (index * 2)]; }
+  Int32 nodeOwner(Integer index) const { return CheckedConvert::toInt32(m_infos[3 + (index * 2) + 1]); }
   Integer memoryUsed() const { return m_memory_used; }
   bool hasParentNode() const { return (m_parent_info & PI_Node); }
   Int64 parentNodeUniqueId(Integer index) const { return m_infos[m_first_parent_node + index]; }
   bool hasParentEdge() const { return (m_parent_info & PI_Edge); }
-  Int64 parentEdgeUniqueId(Integer index) const { return m_infos[m_first_parent_edge + (index*2)]; }
-  Int64 parentEdgeTypeId(Integer index) const { return m_infos[m_first_parent_edge + (index*2) + 1]; }
+  Int64 parentEdgeUniqueId(Integer index) const { return m_infos[m_first_parent_edge + (index * 2)]; }
+  Int64 parentEdgeTypeId(Integer index) const { return m_infos[m_first_parent_edge + (index * 2) + 1]; }
   bool hasParentFace() const { return (m_parent_info & PI_Face); }
-  Int64 parentFaceUniqueId(Integer index) const { return m_infos[m_first_parent_face + (index*2)]; }
-  Int64 parentFaceTypeId(Integer index) const { return m_infos[m_first_parent_face + (index*2) + 1]; }
+  Int64 parentFaceUniqueId(Integer index) const { return m_infos[m_first_parent_face + (index * 2)]; }
+  Int64 parentFaceTypeId(Integer index) const { return m_infos[m_first_parent_face + (index * 2) + 1]; }
   bool hasParentCell() const { return (m_parent_info & PI_Cell); }
   Int64 parentCellUniqueId() const { return m_infos[m_first_parent_cell]; }
   Int64 parentCellTypeId() const { return m_infos[m_first_parent_cell + 1]; }
   //! AMR
   Integer level() const { return CheckedConvert::toInteger(m_infos[m_first_hParent_cell]); }
   Int64 hParentCellUniqueId() const { return m_infos[m_first_hParent_cell + 1]; }
-  Integer whichChildAmI () const { return CheckedConvert::toInteger(m_infos[m_first_hParent_cell + 2]); }
-  Int32 flags() const { return CheckedConvert::toInt32(m_with_flags?m_infos[m_first_hParent_cell + 3]:0) ; }
+  Integer whichChildAmI() const { return CheckedConvert::toInteger(m_infos[m_first_hParent_cell + 2]); }
+  Int32 flags() const { return CheckedConvert::toInt32(m_with_flags ? m_infos[m_first_hParent_cell + 3] : 0); }
 
-  friend inline std::ostream& operator<<(std::ostream& o,const FullCellInfo& i)
+  friend inline std::ostream& operator<<(std::ostream& o, const FullCellInfo& i)
   {
     i.print(o);
     return o;
   }
 
  public:
-  
+
   void print(std::ostream& o) const;
 
  public:
@@ -102,11 +104,11 @@ class FullCellInfo
   //! Memory size in Int64 to represent a cell of type it
   /*! \a parent_info describes which parent relationship must be counted */
   ARCCORE_DEPRECATED_2020("Use dump() overload with buffer")
-  static Integer memoryUsed(ItemTypeInfo* it, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
+  static Integer memoryUsed(ItemTypeInfo* it, Integer parent_info, bool has_edge, bool has_amr, bool with_flags);
   ARCCORE_DEPRECATED_2020("Use dump() overload with buffer")
-  static void dump(ItemInternal* cell, ISerializer* buf, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
+  static void dump(ItemInternal* cell, ISerializer* buf, Integer parent_info, bool has_edge, bool has_amr, bool with_flags);
 
-  static void dump(Cell cell, Array<Int64>& buf, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
+  static void dump(Cell cell, Array<Int64>& buf, Integer parent_info, bool has_edge, bool has_amr, bool with_flags);
   static Integer parentInfo(IMesh* mesh);
 
  protected:

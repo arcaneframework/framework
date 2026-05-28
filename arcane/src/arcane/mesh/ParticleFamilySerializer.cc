@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,29 +39,29 @@ ParticleFamilySerializer(ParticleFamily* family)
 /*---------------------------------------------------------------------------*/
 
 void ParticleFamilySerializer::
-serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
+serializeItems(ISerializer* sbuf, Int32ConstArrayView local_ids)
 {
   const Integer nb_item = local_ids.size();
   ItemInfoListView items_internal(m_family);
 
-  switch(sbuf->mode()){
+  switch (sbuf->mode()) {
   case ISerializer::ModeReserve:
     sbuf->reserveInt64(1); // For the number of particles
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the particles' uniqueId()s.
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the uniqueId()s of the cells in which the particles are located
+    sbuf->reserveSpan(eBasicDataType::Int64, nb_item); // For the particles' uniqueId()s.
+    sbuf->reserveSpan(eBasicDataType::Int64, nb_item); // For the uniqueId()s of the cells in which the particles are located
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);
     {
       Int64UniqueArray particle_unique_ids(nb_item);
-      for( Integer z=0; z<nb_item; ++z ){
+      for (Integer z = 0; z < nb_item; ++z) {
         particle_unique_ids[z] = items_internal.uniqueId(local_ids[z]).asInt64();
       }
       sbuf->putSpan(particle_unique_ids);
     }
     {
       Int64UniqueArray particles_cell_uid(nb_item);
-      for( Integer z=0; z<nb_item; ++z ){
+      for (Integer z = 0; z < nb_item; ++z) {
         Particle item(items_internal[local_ids[z]]);
         bool has_cell = item.hasCell();
         particles_cell_uid[z] = (has_cell) ? item.cell().uniqueId() : NULL_ITEM_UNIQUE_ID;
@@ -70,7 +70,7 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
     }
     break;
   case ISerializer::ModeGet:
-    deserializeItems(sbuf,nullptr);
+    deserializeItems(sbuf, nullptr);
     break;
   }
 }
@@ -79,7 +79,7 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 
 void ParticleFamilySerializer::
-deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
+deserializeItems(ISerializer* sbuf, Int32Array* local_ids)
 {
   // NOTE: cells must have been deserialized beforehand.
   Int64UniqueArray particles_uid;
@@ -100,7 +100,7 @@ deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
   Int32Array* particles_local_id = (local_ids) ? local_ids : &temporary_particles_local_id;
   particles_local_id->resize(nb_item);
   Int32ArrayView local_ids_view = particles_local_id->view();
-  cell_family->itemsUniqueIdToLocalId(cells_local_id,cells_unique_id,true);
+  cell_family->itemsUniqueIdToLocalId(cells_local_id, cells_unique_id, true);
 
   // If ghost particles are handled, then particles have an owner
   // and in this case, particles must be created with this information.
@@ -109,35 +109,35 @@ deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
   // NOTE: in the current version, support for ghost particles implies
   // that the latter have a hash table for uniqueId()
   // (that is to say particle_family->hasUniqueIdMap() == true).
-  if (!m_family->getEnableGhostItems()){
-    m_family->addParticles(particles_uid,local_ids_view);
+  if (!m_family->getEnableGhostItems()) {
+    m_family->addParticles(particles_uid, local_ids_view);
   }
-  else{
-    particles_owner.resize(nb_item) ;
-    for( Integer zz=0; zz<nb_item; ++zz ){
+  else {
+    particles_owner.resize(nb_item);
+    for (Integer zz = 0; zz < nb_item; ++zz) {
       Int32 cell_lid = cells_local_id[zz];
-      if (cell_lid!=NULL_ITEM_LOCAL_ID){
-        Cell c = internal_cells[ cell_lid ];
-        particles_owner[zz] = c.owner() ;
+      if (cell_lid != NULL_ITEM_LOCAL_ID) {
+        Cell c = internal_cells[cell_lid];
+        particles_owner[zz] = c.owner();
       }
       else
         particles_owner[zz] = NULL_SUB_DOMAIN_ID;
     }
 
-    m_family->addParticles2(particles_uid,particles_owner,local_ids_view);
+    m_family->addParticles2(particles_uid, particles_owner, local_ids_view);
   }
 
   // IMPORTANT: this must be done here because it can change via endUpdate()
   ItemInternalList internal_particles(m_family->itemsInternal());
-  for( Integer zz=0; zz<nb_item; ++zz ){
-    Particle p = internal_particles[ local_ids_view[zz] ];
+  for (Integer zz = 0; zz < nb_item; ++zz) {
+    Particle p = internal_particles[local_ids_view[zz]];
     Int32 cell_lid = cells_local_id[zz];
-    if (cell_lid!=NULL_ITEM_LOCAL_ID){
-      Cell c = internal_cells[ cell_lid ];
-      m_family->setParticleCell(p,c);
+    if (cell_lid != NULL_ITEM_LOCAL_ID) {
+      Cell c = internal_cells[cell_lid];
+      m_family->setParticleCell(p, c);
     }
     else
-      m_family->setParticleCell(p,Cell());
+      m_family->setParticleCell(p, Cell());
   }
 }
 
@@ -153,7 +153,7 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

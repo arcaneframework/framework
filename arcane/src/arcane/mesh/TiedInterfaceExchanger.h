@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,26 +18,25 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/ItemInternalVectorView.h"
-#include "arcane/IItemFamilySerializeStep.h"
+#include "arcane/core/ItemInternalVectorView.h"
+#include "arcane/core/IItemFamilySerializeStep.h"
 
 #include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ISubDomain;
 class ItemFamilySerializeArgs;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,6 +45,7 @@ class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Exchanger between sub-domains of linked interfaces.
 
@@ -90,7 +90,7 @@ class TiedInterfaceExchanger
   ISubDomain* m_sub_domain;
   DeserializedInfo* m_deserialized_info;
   Int32 m_my_rank;
-  typedef std::map<Int32,OneSubDomainInfo*> SubDomainInfoMap;
+  typedef std::map<Int32, OneSubDomainInfo*> SubDomainInfoMap;
   SubDomainInfoMap m_infos;
 
  private:
@@ -101,14 +101,7 @@ class TiedInterfaceExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,10 +14,10 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/IItemFamilyCompactPolicy.h"
-#include "arcane/ItemFamilyCompactInfos.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/IItemFamilyCompactPolicy.h"
+#include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/mesh/ItemFamilyPolicyMng.h"
 #include "arcane/mesh/ParticleFamilySerializer.h"
@@ -26,8 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,12 +42,16 @@ class ParticleFamilyCompactPolicy
 , public IItemFamilyCompactPolicy
 {
  public:
+
   ParticleFamilyCompactPolicy(ParticleFamily* family)
-  : TraceAccessor(family->traceMng()), m_family(family)
+  : TraceAccessor(family->traceMng())
+  , m_family(family)
   {
     m_cell_family = family->mesh()->cellFamily();
   }
+
  public:
+
   void beginCompact(ItemFamilyCompactInfos& compact_infos) override
   {
     if (_checkWantCompact(compact_infos))
@@ -74,7 +78,9 @@ class ParticleFamilyCompactPolicy
   {
   }
   IItemFamily* family() const override { return m_family; }
+
  private:
+
   bool _checkWantCompact(const ItemFamilyCompactInfos& compact_infos)
   {
     // For compatibility reasons with the existing code (version 2.4.1
@@ -86,11 +92,13 @@ class ParticleFamilyCompactPolicy
     if (m_family->getEnableGhostItems())
       return true;
     ItemFamilyCollection families = compact_infos.compacter()->families();
-    if (families.count()==1 && families.front()==m_family)
+    if (families.count() == 1 && families.front() == m_family)
       return true;
     return false;
   }
+
  private:
+
   ParticleFamily* m_family;
   IItemFamily* m_cell_family;
 };
@@ -104,17 +112,23 @@ class ARCANE_MESH_EXPORT ParticleFamilyPolicyMng
 : public ItemFamilyPolicyMng
 {
  public:
+
   ParticleFamilyPolicyMng(ParticleFamily* family)
-  : ItemFamilyPolicyMng(family,new ParticleFamilyCompactPolicy(family))
-  , m_family(family){}
+  : ItemFamilyPolicyMng(family, new ParticleFamilyCompactPolicy(family))
+  , m_family(family)
+  {}
+
  public:
+
   IItemFamilySerializer* createSerializer(bool use_flags) override
   {
     if (use_flags)
-      throw NotSupportedException(A_FUNCINFO,"serialisation with 'use_flags==true'");
+      throw NotSupportedException(A_FUNCINFO, "serialisation with 'use_flags==true'");
     return new ParticleFamilySerializer(m_family);
   }
+
  private:
+
   ParticleFamily* m_family;
 };
 
@@ -131,8 +145,7 @@ createParticleFamilyPolicyMng(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

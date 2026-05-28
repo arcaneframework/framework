@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class Node;
 class Cell;
 class AMRCallBackMng;
 class FaceFamily;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,47 +52,50 @@ class ParallelAMRConsistency;
  * \brief Implementation of unstructured mesh refinement adaptation algorithms.
  */
 class MeshRefinement
-:  public TraceAccessor
+: public TraceAccessor
 {
-public:
+ public:
+
 #ifdef ACTIVATE_PERF_COUNTER
   struct PerfCounter
   {
-      typedef enum {
-        INIT,
-        CLEAR,
-        ENDUPDATE,
-        UPDATEMAP,
-        UPDATEMAP2,
-        CONSIST,
-        PCONSIST,
-        PCONSIST2,
-        PGCONSIST,
-        CONTRACT,
-        COARSEN,
-        REFINE,
-        INTERP,
-        PGHOST,
-        COMPACT,
-        NbCounters
-      }  eType ;
+    typedef enum
+    {
+      INIT,
+      CLEAR,
+      ENDUPDATE,
+      UPDATEMAP,
+      UPDATEMAP2,
+      CONSIST,
+      PCONSIST,
+      PCONSIST2,
+      PGCONSIST,
+      CONTRACT,
+      COARSEN,
+      REFINE,
+      INTERP,
+      PGHOST,
+      COMPACT,
+      NbCounters
+    } eType;
 
-      static const std::string m_names[NbCounters] ;
-  } ;
+    static const std::string m_names[NbCounters];
+  };
 #endif
   /**
    * Constructor.
    */
   MeshRefinement(DynamicMesh* mesh);
 
-private:
+ private:
+
   // The copy constructor and assignment operator are
   // declared private but not implemented. This is the
   // standard technique to prevent them from being used.
   MeshRefinement(const MeshRefinement&);
   MeshRefinement& operator=(const MeshRefinement&);
 
-public:
+ public:
 
   /**
    * Destructor.
@@ -108,14 +111,16 @@ public:
    */
   void init();
 
-  void update() ;
-  bool needUpdate() const {
-    return m_need_update ;
+  void update();
+  bool needUpdate() const
+  {
+    return m_need_update;
   }
-  void invalidate() {
-    m_need_update = true ;
+  void invalidate()
+  {
+    m_need_update = true;
   }
-  void initMeshContainingBox() ;
+  void initMeshContainingBox();
   /**
    * Flags items for refinement/coarsening
    */
@@ -145,7 +150,7 @@ public:
 
    * The argument \p maintain_level_one is deprecated; use face_level_mismatch_limit() instead.
    */
-  bool refineAndCoarsenItems(const bool maintain_level_one=true);
+  bool refineAndCoarsenItems(const bool maintain_level_one = true);
 
   /*!
    * Coarsens only the items requested by the user. Some items
@@ -180,17 +185,17 @@ public:
 
    * The argument \p maintain_level_one is deprecated; use face_level_mismatch_limit() instead.
    */
-  bool refineItems(const bool maintain_level_one=true);
+  bool refineItems(const bool maintain_level_one = true);
 
   /*!
    * Uniformly refines the mesh \p n times.
    */
-  void uniformlyRefine(Integer n=1);
+  void uniformlyRefine(Integer n = 1);
 
   /*!
    * Uniformly coarsens the mesh \p n times.
    */
-  void uniformlyCoarsen(Integer n=1);
+  void uniformlyCoarsen(Integer n = 1);
 
   /*!
    * \p max_level is the highest refinement level
@@ -215,13 +220,13 @@ public:
    * if p already exists, the old uid is kept.
    * The tolerance \p tol gives the search perimeter around p.
    */
-  Int64 findOrAddNodeUid(const Real3& p,const Real& tol);
+  Int64 findOrAddNodeUid(const Real3& p, const Real& tol);
   /*!
    * Adds a new uid associated with the face center \p face_center.
    * if p already exists, the old uid is kept.
    * The tolerance \p tol gives the search perimeter around face_center.
    */
-  Int64 findOrAddFaceUid(const Real3& face_center,const Real& tol,bool& is_added);
+  Int64 findOrAddFaceUid(const Real3& face_center, const Real& tol, bool& is_added);
   /*!
    * Generates a new uid for children.
    */
@@ -235,7 +240,7 @@ public:
   /*!
    * Returns the refinement pattern associated with the mesh type.
    */
-  template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const ;
+  template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const;
   /*!
    * Determination of non-conforming connections of refined meshes.
    */
@@ -269,7 +274,6 @@ public:
    * \p coarsen_by_parents is true by default.
    */
   bool& coarsenByParents();
-
 
   /*!
    * If Face_level_mismatch_limit is set to a non-zero value, then   * refinement and coarsening will produce meshes where
@@ -326,7 +330,6 @@ public:
   //---------------------------------------------
   // Utility algorithms
 
-
   /**
    * Updates m_nodes_finder and m_faces_finder
    */
@@ -342,7 +345,6 @@ public:
    * Acts on the coarsening flags so that the level-one rule is satisfied.
    */
   bool _makeCoarseningCompatible(const bool);
-
 
   /**
    * Acts on the refinement flags so that the level-one rule is satisfied.
@@ -360,12 +362,12 @@ public:
    * Determination of non-conforming connections of refined meshes
    */
   template <int typeID>
-  void _populateBackFrontCellsFromParentFaces(Cell parent_cell) ;
+  void _populateBackFrontCellsFromParentFaces(Cell parent_cell);
   template <int typeID>
-  void _populateBackFrontCellsFromChildrenFaces(Face face,Cell parent_cell,
+  void _populateBackFrontCellsFromChildrenFaces(Face face, Cell parent_cell,
                                                 Cell neighbor_cell);
 
-  void _checkOwner(const String & msg); // To avoid owner desynchronization
+  void _checkOwner(const String& msg); // To avoid owner desynchronization
 
  private:
 
@@ -380,14 +382,14 @@ public:
    * Quick search for nodes and faces based on their coordinates.
    * For faces, the coordinates are those of the face center.
    */
-  MapCoordToUid::Box m_mesh_containing_box ;
+  MapCoordToUid::Box m_mesh_containing_box;
   NodeMapCoordToUid m_node_finder;
   FaceMapCoordToUid m_face_finder;
 
   /**
    * Reference to the item refiner
    */
-  ItemRefinement * m_item_refinement;
+  ItemRefinement* m_item_refinement;
 
   /**
    * Ensures UID consistency in parallel
@@ -438,7 +440,7 @@ public:
   VariableNodeInt32 m_node_owner_memory;
 
 #ifdef ACTIVATE_PERF_COUNTER
-  PerfCounterMng<PerfCounter> m_perf_counter ;
+  PerfCounterMng<PerfCounter> m_perf_counter;
 #endif
 };
 
@@ -545,7 +547,4 @@ MeshRefinement::getRefinementPattern<IT_DiTetra5>() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // end ARCANE_MESH_MESHREFINEMENT_H
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#endif

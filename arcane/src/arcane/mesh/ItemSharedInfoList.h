@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,9 +18,9 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/VariableTypedef.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -36,7 +36,6 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 class ItemFamily;
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,12 +53,14 @@ class ItemSharedInfoWithType
 
  public:
 
-  ItemSharedInfoWithType() : m_shared_info(&ItemSharedInfo::nullItemSharedInfo) {}
+  ItemSharedInfoWithType()
+  : m_shared_info(&ItemSharedInfo::nullItemSharedInfo)
+  {}
 
  private:
 
-  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type);
-  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32ConstArrayView buffer);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info, ItemTypeInfo* item_type, Int32ConstArrayView buffer);
 
  public:
 
@@ -68,14 +69,14 @@ class ItemSharedInfoWithType
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
   Int32 nbReference() const { return m_nb_reference; }
-  void addReference(){ ++m_nb_reference; }
-  void removeReference(){ --m_nb_reference; }
+  void addReference() { ++m_nb_reference; }
+  void removeReference() { --m_nb_reference; }
   void serializeWrite(Int32ArrayView buffer);
   static Integer serializeSize() { return 6; }
 
  public:
 
-  friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
+  friend std::ostream& operator<<(std::ostream& o, const ItemSharedInfoWithType& isi)
   {
     isi.m_shared_info->print(o);
     return o;
@@ -104,11 +105,11 @@ class ItemSharedInfoList
 
   class ItemNumElements;
   class Variables;
-  typedef std::map<ItemNumElements,ItemSharedInfoWithType*> ItemSharedInfoMap;
+  typedef std::map<ItemNumElements, ItemSharedInfoWithType*> ItemSharedInfoMap;
 
  public:
 
-  ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info);
+  ItemSharedInfoList(ItemFamily* family, ItemSharedInfo* common_shared_info);
   //! Frees resources
   ~ItemSharedInfoList();
 
@@ -182,12 +183,12 @@ class ItemSharedInfoList
     ItemSharedInfoWithType* new_item = 0;
     Integer nb_free = m_free_item_shared_infos.size();
     m_list_changed = true;
-    if (nb_free!=0){
+    if (nb_free != 0) {
       new_item = m_free_item_shared_infos.back();
       m_free_item_shared_infos.popBack();
       need_alloc = false;
     }
-    else{
+    else {
       new_item = m_item_shared_infos_buffer->allocOne();
       new_item->setIndex(m_item_shared_infos.size());
       m_item_shared_infos.add(new_item);

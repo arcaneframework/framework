@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -44,11 +44,11 @@ class ARCANE_MESH_EXPORT MeshExchanger
 {
  private:
 
-  typedef std::map<IItemFamily*,IItemFamilyExchanger*> ItemFamilyExchangerMap;
+  typedef std::map<IItemFamily*, IItemFamilyExchanger*> ItemFamilyExchangerMap;
 
  public:
 
-  MeshExchanger(IMesh* mesh,ITimeStats* stats);
+  MeshExchanger(IMesh* mesh, ITimeStats* stats);
   ~MeshExchanger();
 
  public:

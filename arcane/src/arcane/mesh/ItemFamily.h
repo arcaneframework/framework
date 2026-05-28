@@ -44,7 +44,7 @@ class IMeshCompacter;
 class ItemFamilyCompactInfos;
 class ItemDataList;
 template <typename T> class ItemScalarProperty;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,15 +84,20 @@ class ARCANE_MESH_EXPORT ItemFamily
 
     AdjacencyInfo(const ItemGroup& item_group, const ItemGroup& sub_item_group,
                   eItemKind link_kind, Integer nb_layer)
-    : m_item_group(item_group), m_sub_item_group(sub_item_group),
-      m_link_kind(link_kind), m_nb_layer(nb_layer)
-      {
-      }
+    : m_item_group(item_group)
+    , m_sub_item_group(sub_item_group)
+    , m_link_kind(link_kind)
+    , m_nb_layer(nb_layer)
+    {
+    }
+
    public:
+
     ItemGroup m_item_group;
     ItemGroup m_sub_item_group;
     eItemKind m_link_kind;
     Integer m_nb_layer;
+
    public:
 
     bool operator<(const AdjacencyInfo& rhs) const
@@ -105,7 +110,6 @@ class ARCANE_MESH_EXPORT ItemFamily
         return m_link_kind < rhs.m_link_kind;
       return m_nb_layer < rhs.m_nb_layer;
     }
-
   };
   using AdjacencyGroupMap = std::map<AdjacencyInfo, ItemPairGroup>;
   // Keeps the misspelled version for compatibility reasons
@@ -124,7 +128,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  ItemFamily(IMesh* mesh,eItemKind ik,const String& name);
+  ItemFamily(IMesh* mesh, eItemKind ik, const String& name);
   ~ItemFamily() override; //<! Frees resources
 
  public:
@@ -141,10 +145,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemInternalList itemsInternal() override;
   ItemInfoListView itemInfoListView() override;
   VariableItemInt32& itemsNewOwner() override;
-  IItemFamily * parentFamily() const override;
-  void setParentFamily(IItemFamily * parent) override;
+  IItemFamily* parentFamily() const override;
+  void setParentFamily(IItemFamily* parent) override;
   Integer parentFamilyDepth() const override;
-  void addChildFamily(IItemFamily * family) override;
+  void addChildFamily(IItemFamily* family) override;
   IItemFamilyCollection childFamilies() override;
 
   void checkValid() override;
@@ -164,7 +168,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  void itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal=true) const;
+  void itemsUniqueIdToLocalId(ArrayView<Int64> ids, bool do_fatal = true) const;
   void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                               Int64ConstArrayView unique_ids,
                               bool do_fatal) const override;
@@ -186,7 +190,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost =false) override;
+  void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) override;
   void removeItems2(ItemDataList& item_data_list) override; // Remove items based on family dependencies (ItemFamilyNetwork)
   void removeNeedRemoveMarkedItems() override;
 
@@ -203,24 +207,24 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void notifyItemsOwnerChanged() override;
   ItemGroup findGroup(const String& name) const override;
-  ItemGroup findGroup(const String& name,bool create_if_needed) override;
-  ItemGroup createGroup(const String& name,Int32ConstArrayView elements,bool do_override=false) override;
+  ItemGroup findGroup(const String& name, bool create_if_needed) override;
+  ItemGroup createGroup(const String& name, Int32ConstArrayView elements, bool do_override = false) override;
   ItemGroup createGroup(const String& name) override;
-  ItemGroup createGroup(const String& name,const ItemGroup& parent,bool do_override=false) override;
+  ItemGroup createGroup(const String& name, const ItemGroup& parent, bool do_override = false) override;
   ItemGroupCollection groups() const override;
   void notifyItemsUniqueIdChanged() override;
   void destroyGroups() override;
 
  public:
 
-  IVariable* findVariable(const String& name,bool throw_exception) override;
+  IVariable* findVariable(const String& name, bool throw_exception) override;
   void usedVariables(VariableCollection collection) override;
 
  public:
 
   void prepareForDump() override;
   void readFromDump() override;
-  void copyItemsValues(Int32ConstArrayView source,Int32ConstArrayView destination) override;
+  void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,
                            Int32ConstArrayView second_source,
                            Int32ConstArrayView destination) override;
@@ -248,15 +252,15 @@ class ARCANE_MESH_EXPORT ItemFamily
   void synchronize(VariableCollection variables) override;
   void synchronize(VariableCollection variables, Int32ConstArrayView local_ids) override;
   IVariableSynchronizer* allItemsSynchronizer() override;
-  
-  void reduceFromGhostItems(IVariable* v,IDataOperation* operation) override;
-  void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) override;
+
+  void reduceFromGhostItems(IVariable* v, IDataOperation* operation) override;
+  void reduceFromGhostItems(IVariable* v, Parallel::eReduceType operation) override;
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2024: use findAdjacencyItems() instead")
   ItemPairGroup findAdjencyItems(const ItemGroup& group,
-                                 const ItemGroup& sub_group,eItemKind link_kind,
+                                 const ItemGroup& sub_group, eItemKind link_kind,
                                  Integer layer) override;
   ItemPairGroup findAdjacencyItems(const ItemGroup& group,
                                    const ItemGroup& sub_group, eItemKind link_kind,
@@ -275,7 +279,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
   EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent() override;
-  void experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id) override;
+  void experimentalChangeUniqueId(ItemLocalId local_id, ItemUniqueId unique_id) override;
 
   IItemFamilyPolicyMng* policyMng() override { return m_policy_mng; }
   Properties* properties() override { return m_properties; }
@@ -361,7 +365,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Properties* m_properties = nullptr;
   typedef std::set<IItemConnectivity*> ItemConnectivitySet;
   ItemConnectivitySet m_source_item_connectivities; //! connectivite ou ItemFamily == SourceFamily
-  ItemConnectivitySet m_target_item_connectivities;   //! connectivite ou ItemFamily == TargetFamily
+  ItemConnectivitySet m_target_item_connectivities; //! connectivite ou ItemFamily == TargetFamily
   IItemConnectivityMng* m_connectivity_mng = nullptr;
 
  private:
@@ -378,16 +382,16 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _checkNeedEndUpdate() const;
   void _updateSharedInfo();
 
-  void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi);
-  void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
+  void _allocateInfos(ItemInternal* item, Int64 uid, ItemSharedInfoWithType* isi);
+  void _allocateInfos(ItemInternal* item, Int64 uid, ItemTypeInfo* type);
   void _endUpdate(bool need_check_remove);
   bool _partialEndUpdate();
-  void _updateGroup(ItemGroup group,bool need_check_remove);
+  void _updateGroup(ItemGroup group, bool need_check_remove);
   void _updateVariable(IVariable* var);
 
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
-  void _preAllocate(Int32 nb_item,bool pre_alloc_connectivity);
+  void _preAllocate(Int32 nb_item, bool pre_alloc_connectivity);
   ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList()
   {
     return itemInternalConnectivityList();
@@ -432,7 +436,7 @@ class ARCANE_MESH_EXPORT ItemFamily
    * since the last save and therefore there is no entity recreation
    * to perform.
    */
-  Integer m_current_id  = 0;
+  Integer m_current_id = 0;
 
   bool m_item_need_prepare_dump = false;
 
@@ -476,8 +480,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _notifyDataIndexChanged();
   void _processNewGroup(ItemGroup group);
   String _variableName(const String& base_name) const;
-  template<class Type> void
-  _synchronizeVariable(IVariable* var,Type* var_value,Integer nb_elem);
+  template <class Type> void
+  _synchronizeVariable(IVariable* var, Type* var_value, Integer nb_elem);
   void _updateGroups(bool check_need_remove);
   void _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos);
   void _checkComputeSynchronizeInfos(Int32 changed);
@@ -489,7 +493,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _setTopologyModifier(IItemFamilyTopologyModifier* tm);
 
  private:
-  
+
   void _updateItemsSharedFlag();
 
  protected:
@@ -497,23 +501,23 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _checkValidItem(ItemInternal* item)
   {
 #ifdef ARCANE_CHECK
-    arcaneThrowIfNull(item,"item","Invalid null item");
+    arcaneThrowIfNull(item, "item", "Invalid null item");
 #else
     ARCANE_UNUSED(item);
 #endif
   }
-  void _checkValidSourceTargetItems(ItemInternal* source,ItemInternal* target)
+  void _checkValidSourceTargetItems(ItemInternal* source, ItemInternal* target)
   {
 #ifdef ARCANE_CHECK
-    arcaneThrowIfNull(source,"source","Invalid null source item");
-    arcaneThrowIfNull(target,"target","Invalid null target item");
+    arcaneThrowIfNull(source, "source", "Invalid null source item");
+    arcaneThrowIfNull(target, "target", "Invalid null target item");
 #else
     ARCANE_UNUSED(source);
     ARCANE_UNUSED(target);
 #endif
   }
   void _checkValidItem(Item item) { _checkValidItem(ItemCompatibility::_itemInternal(item)); }
-  void _checkValidSourceTargetItems(Item source,Item target)
+  void _checkValidSourceTargetItems(Item source, Item target)
   {
     _checkValidItem(ItemCompatibility::_itemInternal(source));
     _checkValidItem(ItemCompatibility::_itemInternal(target));
@@ -521,11 +525,11 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
 
-  void _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector& target_family_connected_items);
-  void _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent,ItemVectorView connected_items);
+  void _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity, ItemVector& target_family_connected_items);
+  void _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent, ItemVectorView connected_items);
   void _computeConnectivityInfo(ItemConnectivityInfo* ici);
   void _updateItemViews();
-  void _resizeItemVariables(Int32 new_size,bool force_resize);
+  void _resizeItemVariables(Int32 new_size, bool force_resize);
   void _handleOldCheckpoint();
 
   void _addSourceConnectivity(IIncrementalItemSourceConnectivity* c);
@@ -541,7 +545,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace ARcane::mesh
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

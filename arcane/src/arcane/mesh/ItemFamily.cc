@@ -97,7 +97,7 @@ namespace
       v[i] = v[i - 1];
   }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1458,7 +1458,7 @@ _readGroups()
   // Notifie les groupes qu'ils ont été mis à jour de manière
   // externe. Cela peut être nécessaire pour recalculer automatiquement
   // certaines informations (comme le padding pour la vectorisation)
-  for ( ItemGroup& group : m_item_groups) {
+  for (ItemGroup& group : m_item_groups) {
     group.incrementTimestamp();
   }
 }
@@ -2052,7 +2052,7 @@ findAdjacencyItems(const ItemGroup& group, const ItemGroup& sub_group,
   if (i == m_adjacency_groups.end()) {
     debug() << "** BUILD ADJENCY_ITEMS : " << group.name() << " x "
             << sub_group.name() << " link=" << link_kind << " nblayer=" << layer;
-    ItemPairGroup v(new ItemPairGroupImpl(group,sub_group));
+    ItemPairGroup v(new ItemPairGroupImpl(group, sub_group));
     mesh()->utilities()->computeAdjacency(v, link_kind, layer);
     m_adjacency_groups.insert(std::make_pair(at, v));
     return v;
@@ -2087,7 +2087,7 @@ void ItemFamily::
 setHasUniqueIdMap(bool v)
 {
   ARCANE_UNUSED(v);
-  throw NotSupportedException(A_FUNCINFO,"this kind of family doesn't support this function");
+  throw NotSupportedException(A_FUNCINFO, "this kind of family doesn't support this function");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2105,7 +2105,7 @@ hasUniqueIdMap() const
 ItemVectorView ItemFamily::
 view(Int32ConstArrayView local_ids)
 {
-  return ItemVectorView(itemInfoListView(),local_ids);
+  return ItemVectorView(itemInfoListView(), local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2124,7 +2124,7 @@ void ItemFamily::
 _addVariable(IVariable* var)
 {
   //info() << "Add var=" << var->fullName() << " to family=" << name();
-  if (var->itemFamily()!=this)
+  if (var->itemFamily() != this)
     ARCANE_FATAL("Can not add a variable to a different family");
 
   if (var->property() & IVariable::PInShMem)
@@ -2152,7 +2152,7 @@ _removeVariable(IVariable* var)
 void ItemFamily::
 usedVariables(VariableCollection collection)
 {
-  for( IVariable* var : m_used_variables ){
+  for (IVariable* var : m_used_variables) {
     collection.add(var);
   }
   for (IVariable* var : m_used_shmem_variables) {
@@ -2175,7 +2175,7 @@ allItemsSynchronizer()
 void ItemFamily::
 setItemSortFunction(IItemInternalSortFunction* sort_function)
 {
-  if (m_item_sort_function==sort_function)
+  if (m_item_sort_function == sort_function)
     return;
   delete m_item_sort_function;
   m_item_sort_function = sort_function;
@@ -2219,7 +2219,7 @@ addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstAr
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
   ARCANE_UNUSED(owners);
-  ARCANE_THROW(NotImplementedException,"this kind of family doesn't support this operation yet. Only DoF at present.");
+  ARCANE_THROW(NotImplementedException, "this kind of family doesn't support this operation yet. Only DoF at present.");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2229,7 +2229,7 @@ void ItemFamily::
 removeItems2(ItemDataList& item_data_list)
 {
   if (!m_mesh->itemFamilyNetwork())
-    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
+    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null", name());
 
   ItemData& item_data = item_data_list[itemKind()];
   // 1-Prepare : Get child connectivities and families
@@ -2240,15 +2240,17 @@ removeItems2(ItemDataList& item_data_list)
   Integer index = 0;
   for (auto child_connectivity : child_connectivities) {
     child_families.add(child_connectivity->targetFamily());
-    child_families_to_current_family.add(m_mesh->itemFamilyNetwork()->getConnectivity(child_families.back(),this,connectivityName(child_families.back(),this)));
-    if (child_families_to_current_family.back() == nullptr) fatal() << "removeItems2 needs reverse connectivity. Missing Connectivity " << connectivityName(child_families.back(),this);
+    child_families_to_current_family.add(m_mesh->itemFamilyNetwork()->getConnectivity(child_families.back(), this, connectivityName(child_families.back(), this)));
+    if (child_families_to_current_family.back() == nullptr)
+      fatal() << "removeItems2 needs reverse connectivity. Missing Connectivity " << connectivityName(child_families.back(), this);
     child_families_has_extra_parent_properties.add(ItemScalarProperty<bool>());
-    child_families_has_extra_parent_properties.back().resize(child_families.back(),false);
+    child_families_has_extra_parent_properties.back().resize(child_families.back(), false);
     for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentDependencies(child_families.back())) { // exclure parent actuel
-        if (parent_connectivity == child_connectivity) continue;
-        ItemVector connected_items;
-        _getConnectedItems(parent_connectivity,connected_items);
-        _fillHasExtraParentProperty(child_families_has_extra_parent_properties[index],connected_items);
+      if (parent_connectivity == child_connectivity)
+        continue;
+      ItemVector connected_items;
+      _getConnectedItems(parent_connectivity, connected_items);
+      _fillHasExtraParentProperty(child_families_has_extra_parent_properties[index], connected_items);
     }
     index++;
   }
@@ -2259,13 +2261,13 @@ removeItems2(ItemDataList& item_data_list)
     index = 0;
     for (auto child_connectivity : child_connectivities) {
       ConnectivityItemVector child_con_accessor(child_connectivity);
-      ENUMERATE_ITEM(connected_item, child_con_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
-        if (!this->itemsInternal()[removed_item_lid]->isDetached()) {// test necessary when doing removeDetached (the relations are already deleted).
-          child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item),ItemLocalId(removed_item_lid));
+      ENUMERATE_ITEM (connected_item, child_con_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
+        if (!this->itemsInternal()[removed_item_lid]->isDetached()) { // test necessary when doing removeDetached (the relations are already deleted).
+          child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item), ItemLocalId(removed_item_lid));
         }
         // Check if connected item is to remove
-        if (! child_families_has_extra_parent_properties[index][connected_item] && child_families_to_current_family[index]->nbConnectedItem(ItemLocalId(connected_item)) == 0) {
-          item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64) connected_item.localId());
+        if (!child_families_has_extra_parent_properties[index][connected_item] && child_families_to_current_family[index]->nbConnectedItem(ItemLocalId(connected_item)) == 0) {
+          item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64)connected_item.localId());
         }
       }
       index++;
@@ -2277,25 +2279,26 @@ removeItems2(ItemDataList& item_data_list)
     Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
       ConnectivityItemVector connectivity_accessor(child_relation);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
-        child_relation->removeConnectedItem(ItemLocalId(removed_item_lid),ItemLocalId(connected_item));
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
+        child_relation->removeConnectedItem(ItemLocalId(removed_item_lid), ItemLocalId(connected_item));
       }
     }
   }
   // 3-2 Remove relations for parent relations
   ItemScalarProperty<bool> is_removed_item;
-  is_removed_item.resize(this,false);
+  is_removed_item.resize(this, false);
   for (auto removed_item_lid_int64 : removed_item_lids) {
     Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     is_removed_item[*(this->itemsInternal()[removed_item_lid])] = true;
   }
   for (auto parent_relation : m_mesh->itemFamilyNetwork()->getParentRelations(this)) {
     for (auto source_item : parent_relation->sourceFamily()->itemsInternal()) {
-        if (source_item->isSuppressed()) continue;
+      if (source_item->isSuppressed())
+        continue;
       ConnectivityItemVector connectivity_accessor(parent_relation);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
         if (is_removed_item[connected_item])
-          parent_relation->removeConnectedItem(ItemLocalId(source_item),connected_item);
+          parent_relation->removeConnectedItem(ItemLocalId(source_item), connected_item);
       }
     }
   }
@@ -2310,18 +2313,19 @@ removeItems2(ItemDataList& item_data_list)
       m_infos->removeOne(removed_item);
     }
   }
-  this->endUpdate();// endUpdate is needed since we then go deeper in the dependency graph and will need to enumerate this changed family.
+  this->endUpdate(); // endUpdate is needed since we then go deeper in the dependency graph and will need to enumerate this changed family.
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector& target_family_connected_items)
+_getConnectedItems(IIncrementalItemConnectivity* parent_connectivity, ItemVector& target_family_connected_items)
 {
   ConnectivityItemVector connectivity_accessor(parent_connectivity);
-  for(auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
-    if (source_item->isSuppressed()) continue;
+  for (auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
+    if (source_item->isSuppressed())
+      continue;
     target_family_connected_items.add(connectivity_accessor.connectedItems(ItemLocalId(source_item)).localIds());
   }
 }
@@ -2330,9 +2334,9 @@ _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector&
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent,ItemVectorView connected_items)
+_fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent, ItemVectorView connected_items)
 {
-  ENUMERATE_ITEM(connected_item, connected_items) {
+  ENUMERATE_ITEM (connected_item, connected_items) {
     child_families_has_extra_parent[connected_item] = true;
   }
 }
@@ -2344,30 +2348,31 @@ void ItemFamily::
 _detachCells2(Int32ConstArrayView local_ids)
 {
   //- Only cells are detached, i.e., no parent dependencies are to be found
-  ARCANE_ASSERT((m_mesh->itemFamilyNetwork()->getParentDependencies(this).empty()),("Only cells are detached, no parent dependencies are to be found."))
+  ARCANE_ASSERT((m_mesh->itemFamilyNetwork()->getParentDependencies(this).empty()), ("Only cells are detached, no parent dependencies are to be found."))
   // Remove all parent and child relations. Keep child dependencies => used when removing detached cells. No parent dependencies
   // 1 Remove relations for child relations
   for (auto removed_item_lid : local_ids) {
-      for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
-        ConnectivityItemVector connectivity_accessor(child_relation);
-        ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
-          child_relation->removeConnectedItem(ItemLocalId(removed_item_lid),ItemLocalId(connected_item));
-        }
+    for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
+      ConnectivityItemVector connectivity_accessor(child_relation);
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
+        child_relation->removeConnectedItem(ItemLocalId(removed_item_lid), ItemLocalId(connected_item));
       }
+    }
   }
   // 2 Remove relations for parent relations
   ItemScalarProperty<bool> is_detached_item;
-  is_detached_item.resize(this,false);
+  is_detached_item.resize(this, false);
   for (auto detached_item_lid : local_ids) {
-      is_detached_item[*(this->itemsInternal()[detached_item_lid])] = true;
+    is_detached_item[*(this->itemsInternal()[detached_item_lid])] = true;
   }
   for (auto parent_relation : m_mesh->itemFamilyNetwork()->getParentRelations(this)) {
-    for(auto source_item : parent_relation->sourceFamily()->itemsInternal()) {
-      if (source_item->isSuppressed()) continue;
+    for (auto source_item : parent_relation->sourceFamily()->itemsInternal()) {
+      if (source_item->isSuppressed())
+        continue;
       ConnectivityItemVector connectivity_accessor(parent_relation);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
         if (is_detached_item[connected_item]) {
-          parent_relation->removeConnectedItem(ItemLocalId(source_item),connected_item);
+          parent_relation->removeConnectedItem(ItemLocalId(source_item), connected_item);
         }
       }
     }
@@ -2385,13 +2390,13 @@ void ItemFamily::
 removeNeedRemoveMarkedItems()
 {
   ItemInternalMap& item_map = itemsMap();
-  if (item_map.count()==0)
+  if (item_map.count() == 0)
     return;
 
   if (!m_mesh->itemFamilyNetwork())
-    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
+    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null", name());
   if (!IItemFamilyNetwork::plug_serializer)
-    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.",name());
+    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.", name());
 
   UniqueArray<ItemInternal*> items_to_remove;
   UniqueArray<Int32> items_to_remove_lids;
@@ -2400,32 +2405,33 @@ removeNeedRemoveMarkedItems()
 
   item_map.eachItem([&](impl::ItemBase item) {
     Integer f = item.flags();
-    if (f & ItemFlags::II_NeedRemove){
+    if (f & ItemFlags::II_NeedRemove) {
       f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
       item.toMutable().setFlags(f);
       items_to_remove.add(item._itemInternal());
       items_to_remove_lids.add(item.localId());
     }
   });
-  info() << "Number of " << itemKind() << " of family "<< name()<<" to remove: " << items_to_remove.size();
+  info() << "Number of " << itemKind() << " of family " << name() << " to remove: " << items_to_remove.size();
   if (items_to_remove.size() == 0)
     return;
 
   // Update connectivities => remove all con pointing on the removed items
   // TODO the nearly same procedure is done in _detachCells2: mutualize in a method (watch out the connectivities used are parentConnectivities or parentRelations...)
   ItemScalarProperty<bool> is_removed_item;
-  is_removed_item.resize(this,false);
-  for (auto removed_item: items_to_remove) {
+  is_removed_item.resize(this, false);
+  for (auto removed_item : items_to_remove) {
     is_removed_item[*removed_item] = true;
   }
   //for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentConnectivities(this)) {
   for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentRelations(this)) {
-    for(auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
-      if (source_item->isSuppressed()) continue;
+    for (auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
+      if (source_item->isSuppressed())
+        continue;
       ConnectivityItemVector connectivity_accessor(parent_connectivity);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
         if (is_removed_item[connected_item]) {
-          parent_connectivity->removeConnectedItem(ItemLocalId(source_item),connected_item);
+          parent_connectivity->removeConnectedItem(ItemLocalId(source_item), connected_item);
         }
       }
     }
@@ -2440,7 +2446,8 @@ removeNeedRemoveMarkedItems()
 class CompareUniqueIdWithSuppression
 {
  public:
-  bool operator()(const ItemInternal* item1,const ItemInternal* item2) const
+
+  bool operator()(const ItemInternal* item1, const ItemInternal* item2) const
   {
     // Destroyed entities must be placed at the end of the list.
     //cout << "Compare: " << item1->uniqueId() << " " << item2->uniqueId() << '\n';
@@ -2469,7 +2476,7 @@ _defaultItemSortFunction()
 void ItemFamily::
 setPolicyMng(IItemFamilyPolicyMng* policy_mng)
 {
-  if (m_policy_mng==policy_mng)
+  if (m_policy_mng == policy_mng)
     return;
   if (m_policy_mng)
     ARCANE_FATAL("PolicyMng already set");
@@ -2518,8 +2525,8 @@ removeTargetConnectivity(IItemConnectivity* connectivity)
 void ItemFamily::
 setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 {
-  ARCANE_ASSERT((m_connectivity_mng == NULL || m_connectivity_mng== connectivity_mng),
-                ("Connectivity Manager must be unique") )
+  ARCANE_ASSERT((m_connectivity_mng == NULL || m_connectivity_mng == connectivity_mng),
+                ("Connectivity Manager must be unique"))
   m_connectivity_mng = connectivity_mng;
 }
 
@@ -2536,19 +2543,19 @@ itemListChangedEvent()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id)
+experimentalChangeUniqueId(ItemLocalId local_id, ItemUniqueId unique_id)
 {
   ItemInternal* iitem = _itemInternal(local_id);
   Int64 old_uid = iitem->uniqueId();
-  if (old_uid==unique_id)
+  if (old_uid == unique_id)
     return;
   //MutableItemBase item_base(local_id,m_common_item_shared_info);
   iitem->setUniqueId(unique_id);
 
-  if (m_infos->hasUniqueIdMap()){
+  if (m_infos->hasUniqueIdMap()) {
     ItemInternalMap& item_map = itemsMap();
     item_map.remove(old_uid);
-    item_map.add(unique_id,iitem);
+    item_map.add(unique_id, iitem);
   }
 }
 
@@ -2578,55 +2585,55 @@ _checkValidConnectivity()
 {
   {
     // Checks that there are no null entities.
-    ENUMERATE_ITEM(i,allItems()){
+    ENUMERATE_ITEM (i, allItems()) {
       Item item = *i;
       if (item.null())
-        ARCANE_FATAL("family={0}: local item lid={1} is null",fullName(),item);
+        ARCANE_FATAL("family={0}: local item lid={1} is null", fullName(), item);
     }
   }
   {
     // Checks the consistency of the internal part
-    ENUMERATE_ITEM(i,allItems()){
+    ENUMERATE_ITEM (i, allItems()) {
       Item item = *i;
       Item i1 = item;
       Item i2 = m_common_item_shared_info->m_items_internal[item.localId()];
-      if (i1!=i2)
+      if (i1 != i2)
         ARCANE_FATAL("family={0}: incoherent item internal lid={1} i1={2} i2={3}",
-                     fullName(),item.localId(),ItemPrinter(i1),ItemPrinter(i2));
+                     fullName(), item.localId(), ItemPrinter(i1), ItemPrinter(i2));
     }
   }
   constexpr Int32 MAX_KIND = ItemInternalConnectivityList::MAX_ITEM_KIND;
-  std::array<Int32,MAX_KIND> computed_max;
+  std::array<Int32, MAX_KIND> computed_max;
   computed_max.fill(0);
 
-  for( Integer i=0; i<MAX_KIND; ++i ){
+  for (Integer i = 0; i < MAX_KIND; ++i) {
     eItemKind target_kind = static_cast<eItemKind>(i);
-    IndexedItemConnectivityViewBase con_view{m_item_connectivity_list.containerView(i),itemKind(),target_kind};
+    IndexedItemConnectivityViewBase con_view{ m_item_connectivity_list.containerView(i), itemKind(), target_kind };
     Int32 stored_max_nb = m_item_connectivity_list.maxNbConnectedItem(i);
     const Int32 con_nb_item_size = con_view.nbSourceItem();
 
     info(4) << "Family name=" << fullName() << " I=" << i << " nb_item_size=" << con_nb_item_size;
 
     Int32 max_nb = 0;
-    if (con_nb_item_size!=0){
+    if (con_nb_item_size != 0) {
       // It is necessary to iterate over all entities and not over \a con_nb_item
       // because some values may not be valid if there are
       // gaps in the numbering.
-      ENUMERATE_ITEM(i,allItems()){
+      ENUMERATE_ITEM (i, allItems()) {
         Int32 x = con_view.nbItem(i);
-        if (x>max_nb)
+        if (x > max_nb)
           max_nb = x;
       }
-      if (stored_max_nb<max_nb)
+      if (stored_max_nb < max_nb)
         ARCANE_FATAL("Bad value for max connected item family={0} kind={1} stored={2} computed={3}",
-                     name(),i,stored_max_nb,max_nb);
+                     name(), i, stored_max_nb, max_nb);
       computed_max[i] = max_nb;
     }
   }
   // Checks that the value returned by m_local_connectivity_info
   // is at least greater than 'computed_max'
   {
-    std::array<Int32,MAX_KIND> stored_max;
+    std::array<Int32, MAX_KIND> stored_max;
     stored_max.fill(0);
     auto* ci = m_local_connectivity_info;
     stored_max[ItemInternalConnectivityList::NODE_IDX] = ci->maxNodePerItem();
@@ -2637,12 +2644,12 @@ _checkValidConnectivity()
     // we put the calculated values to avoid generating an error.
     stored_max[ItemInternalConnectivityList::HPARENT_IDX] = computed_max[ItemInternalConnectivityList::HPARENT_IDX];
     stored_max[ItemInternalConnectivityList::HCHILD_IDX] = computed_max[ItemInternalConnectivityList::HCHILD_IDX];
-    for( Integer i=0; i<MAX_KIND; ++i )
-      if (stored_max[i]<computed_max[i])
+    for (Integer i = 0; i < MAX_KIND; ++i)
+      if (stored_max[i] < computed_max[i])
         ARCANE_FATAL("Bad value for local_connectivity_info family={0} kind={1} stored={2} computed={3}",
-                     name(),i,stored_max[i],computed_max[i]);
+                     name(), i, stored_max[i], computed_max[i]);
   }
-  for( auto  ics : m_connectivity_selector_list )
+  for (auto ics : m_connectivity_selector_list)
     ics->checkValidConnectivityList();
 }
 
@@ -2665,10 +2672,10 @@ _buildConnectivitySelectors()
   m_connectivity_selector_list_by_item_kind.resize(ItemInternalConnectivityList::MAX_ITEM_KIND);
   m_connectivity_selector_list_by_item_kind.fill(nullptr);
 
-  for( ItemConnectivitySelector* ics : m_connectivity_selector_list ){
+  for (ItemConnectivitySelector* ics : m_connectivity_selector_list) {
     ics->build();
     Int32 i = ics->itemConnectivityIndex();
-    if (i>=0){
+    if (i >= 0) {
       if (m_connectivity_selector_list_by_item_kind[i])
         ARCANE_FATAL("Can not have two connectivity selector for same item kind");
       m_connectivity_selector_list_by_item_kind[i] = ics;
@@ -2699,15 +2706,15 @@ void ItemFamily::
 _updateItemsSharedFlag()
 {
   ItemInternalList items(_itemsInternal());
-  for( Integer i=0, n=items.size(); i<n; ++i )
+  for (Integer i = 0, n = items.size(); i < n; ++i)
     items[i]->removeFlags(ItemFlags::II_Shared);
   Int32ConstArrayView comm_ranks = m_variable_synchronizer->communicatingRanks();
   Integer nb_rank = comm_ranks.size();
   // Iterates through the synchronizer's sharedItems() and sets the flag
   // II_Shared for the entities in the list.
-  for( Integer i=0; i<nb_rank; ++i ){
+  for (Integer i = 0; i < nb_rank; ++i) {
     Int32ConstArrayView shared_ids = m_variable_synchronizer->sharedItems(i);
-    for( auto id : shared_ids )
+    for (auto id : shared_ids)
       items[id]->addFlags(ItemFlags::II_Shared);
   }
 }
@@ -2746,15 +2753,15 @@ _handleOldCheckpoint()
 namespace
 {
 
-// Returns a view that starts on the second element of the array.
-template<typename DataType>
-ArrayView<DataType> _getView(Array<DataType>* v)
-{
-  Int32 n = v->size();
-  return v->subView(1,n-1);
- }
+  // Returns a view that starts on the second element of the array.
+  template <typename DataType>
+  ArrayView<DataType> _getView(Array<DataType>* v)
+  {
+    Int32 n = v->size();
+    return v->subView(1, n - 1);
+  }
 
-}
+} // namespace
 
 void ItemFamily::
 _updateItemViews()
@@ -2774,7 +2781,7 @@ _updateItemViews()
 void ItemFamily::
 _addOnSizeChangedObservable(VariableRef& var_ref)
 {
-  m_observers.addObserver(this,&ItemFamily::_updateItemViews,
+  m_observers.addObserver(this, &ItemFamily::_updateItemViews,
                           var_ref.variable()->onSizeChangedObservable());
 }
 

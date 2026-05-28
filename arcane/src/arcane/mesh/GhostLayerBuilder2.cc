@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ class GhostLayerBuilder2
 /*---------------------------------------------------------------------------*/
 
 GhostLayerBuilder2::
-GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version)
+GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version)
 : TraceAccessor(mesh_builder->mesh()->traceMng())
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
@@ -107,7 +107,7 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
     m_use_only_minimal_cell_uid = (v == 2 || vv == 3);
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_VERBOSE", true)) {
-    m_is_verbose = (v.value()!=0);
+    m_is_verbose = (v.value() != 0);
   }
 }
 
@@ -115,7 +115,7 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
-_printItem(ItemInternal* ii,std::ostream& o)
+_printItem(ItemInternal* ii, std::ostream& o)
 {
   o << ItemPrinter(ii);
 }
@@ -207,32 +207,33 @@ class GhostLayerBuilder2::BoundaryNodeInfo
 class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 {
  public:
-  static bool compareLess(const BoundaryNodeInfo& k1,const BoundaryNodeInfo& k2)
+
+  static bool compareLess(const BoundaryNodeInfo& k1, const BoundaryNodeInfo& k2)
   {
     Int64 k1_node_uid = k1.node_uid;
     Int64 k2_node_uid = k2.node_uid;
-    if (k1_node_uid<k2_node_uid)
+    if (k1_node_uid < k2_node_uid)
       return true;
-    if (k1_node_uid>k2_node_uid)
+    if (k1_node_uid > k2_node_uid)
       return false;
 
     Int64 k1_cell_uid = k1.cell_uid;
     Int64 k2_cell_uid = k2.cell_uid;
-    if (k1_cell_uid<k2_cell_uid)
+    if (k1_cell_uid < k2_cell_uid)
       return true;
-    if (k1_cell_uid>k2_cell_uid)
+    if (k1_cell_uid > k2_cell_uid)
       return false;
 
-    return (k1.cell_owner<k2.cell_owner);
+    return (k1.cell_owner < k2.cell_owner);
   }
 
-  static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<BoundaryNodeInfo> values)
+  static Parallel::Request send(IParallelMng* pm, Int32 rank, ConstArrayView<BoundaryNodeInfo> values)
   {
     auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
     return pm->send(buf_view, rank, false);
   }
 
-  static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<BoundaryNodeInfo> values)
+  static Parallel::Request recv(IParallelMng* pm, Int32 rank, ArrayView<BoundaryNodeInfo> values)
   {
     auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
     return pm->recv(buf_view, rank, false);
@@ -254,7 +255,7 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 
   static bool isValid(const BoundaryNodeInfo& bni)
   {
-    return bni.node_uid!=INT64_MAX;
+    return bni.node_uid != INT64_MAX;
   }
 };
 
@@ -264,6 +265,7 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 class GhostLayerBuilder2::BoundaryNodeToSendInfo
 {
  public:
+
   Integer m_index;
   Integer m_nb_cell;
 };

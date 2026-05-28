@@ -54,7 +54,7 @@ class ISubDomain;
 class IItemFamilyNetwork;
 class IGhostLayerMng;
 class IMeshExchangeMng;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -280,9 +280,9 @@ class PolyhedralMesh
   void exchangeItems() override;
 
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
-  IMeshModifier* modifier() override {return this;}
-  bool isDynamic() const override {return m_is_dynamic;}
-  void setDynamic(bool is_dynamic) override { m_is_dynamic = is_dynamic;}
+  IMeshModifier* modifier() override { return this; }
+  bool isDynamic() const override { return m_is_dynamic; }
+  void setDynamic(bool is_dynamic) override { m_is_dynamic = is_dynamic; }
   void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder*) override
   {
     // not yet implemented : must exit in parallel
@@ -332,13 +332,13 @@ class PolyhedralMesh
 
   void prepareForDump() override;
 
-  bool useMeshItemFamilyDependencies() const override {return false;}
+  bool useMeshItemFamilyDependencies() const override { return false; }
 
   IMeshModifierInternal* _modifierInternalApi() override;
 
-  IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override {return nullptr;}
+  IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override { return nullptr; }
 
-  VariableScalarInteger connectivity() override {return m_connectivity;}
+  VariableScalarInteger connectivity() override { return m_connectivity; }
 
   void connectivities(IItemFamily* source_family);
 
@@ -383,4 +383,4 @@ class PolyhedralMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_POLYHEDRALMESH_H
+#endif

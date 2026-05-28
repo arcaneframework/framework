@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -597,7 +597,7 @@ _sendInfosToOtherRanks()
   \brief Calculates the unique IDs for every edge sequentially.
   
   \sa computeEdgesUniqueIds()
-*/  
+*/
 void EdgeUniqueIdBuilder::
 _computeEdgesUniqueIdsSequential()
 {
@@ -611,22 +611,22 @@ _computeEdgesUniqueIdsSequential()
   Int32 max_uid = 0;
   cells_map.eachItem([&](Item cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
-    if (cell_uid>max_uid)
+    if (cell_uid > max_uid)
       max_uid = cell_uid;
   });
   info() << "Max uid=" << max_uid;
-  Int32UniqueArray cell_first_edge_uid(max_uid+1);
-  Int32UniqueArray cell_nb_num_back_edge(max_uid+1);
-  Int32UniqueArray cell_true_boundary_edge(max_uid+1);
+  Int32UniqueArray cell_first_edge_uid(max_uid + 1);
+  Int32UniqueArray cell_nb_num_back_edge(max_uid + 1);
+  Int32UniqueArray cell_true_boundary_edge(max_uid + 1);
 
   cells_map.eachItem([&](Cell cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
-    for( Edge edge : cell.edges()){
-      if (edge.itemBase().backCell()==cell)
+    for (Edge edge : cell.edges()) {
+      if (edge.itemBase().backCell() == cell)
         ++nb_num_back_edge;
-      else if (edge.nbCell()==1){
+      else if (edge.nbCell() == 1) {
         ++nb_true_boundary_edge;
       }
     }
@@ -635,17 +635,17 @@ _computeEdgesUniqueIdsSequential()
   });
 
   Integer current_edge_uid = 0;
-  for( Integer i=0; i<nb_cell; ++i ){
+  for (Integer i = 0; i < nb_cell; ++i) {
     cell_first_edge_uid[i] = current_edge_uid;
     current_edge_uid += cell_nb_num_back_edge[i] + cell_true_boundary_edge[i];
   }
-  
-  if (is_verbose){
-    for( Integer i=0; i<nb_cell; ++i ){
+
+  if (is_verbose) {
+    for (Integer i = 0; i < nb_cell; ++i) {
       info() << "Recv: Cell EdgeInfo celluid=" << i
              << " firstedgeuid=" << cell_first_edge_uid[i]
-                    << " nbback=" << cell_nb_num_back_edge[i]
-                    << " nbbound=" << cell_true_boundary_edge[i];
+             << " nbback=" << cell_nb_num_back_edge[i]
+             << " nbbound=" << cell_true_boundary_edge[i];
     }
   }
 
@@ -653,18 +653,18 @@ _computeEdgesUniqueIdsSequential()
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
-    for( Edge edge : cell.edges() ){
+    for (Edge edge : cell.edges()) {
       Int64 edge_new_uid = NULL_ITEM_UNIQUE_ID;
       //info() << "CHECK CELLUID=" << cell_uid << " EDGELID=" << edge->localId();
-      if (edge.itemBase().backCell()==cell){
+      if (edge.itemBase().backCell() == cell) {
         edge_new_uid = cell_first_edge_uid[cell_uid] + nb_num_back_edge;
         ++nb_num_back_edge;
       }
-      else if (edge.nbCell()==1){
+      else if (edge.nbCell() == 1) {
         edge_new_uid = cell_first_edge_uid[cell_uid] + cell_nb_num_back_edge[cell_uid] + nb_true_boundary_edge;
         ++nb_true_boundary_edge;
       }
-      if (edge_new_uid!=NULL_ITEM_UNIQUE_ID){
+      if (edge_new_uid != NULL_ITEM_UNIQUE_ID) {
         //info() << "NEW EDGE UID: LID=" << edge->localId() << " OLDUID=" << edge->uniqueId()
         //<< " NEWUID=" << edge_new_uid << " THIS=" << edge;
         edge.mutableItemBase().setUniqueId(edge_new_uid);
@@ -672,27 +672,27 @@ _computeEdgesUniqueIdsSequential()
     }
   });
 
-  if (is_verbose){
+  if (is_verbose) {
     OStringStream ostr;
     cells_map.eachItem([&](Cell cell) {
       Int32 cell_uid = cell.uniqueId().asInt32();
       Integer index = 0;
-      for( Edge edge : cell.edges() ){
+      for (Edge edge : cell.edges()) {
         Int64 opposite_cell_uid = NULL_ITEM_UNIQUE_ID;
         bool true_boundary = false;
         bool internal_other = false;
-        if (edge.itemBase().backCell()==cell){
+        if (edge.itemBase().backCell() == cell) {
         }
-        else if (edge.nbCell()==1){
+        else if (edge.nbCell() == 1) {
           true_boundary = true;
         }
-        else{
+        else {
           internal_other = true;
           opposite_cell_uid = edge.itemBase().backCell().uniqueId().asInt64();
         }
         ostr() << "NEW LOCAL ID FOR CELLEDGE " << cell_uid << ' '
                << index << ' ' << edge.uniqueId() << " (";
-        for( Node node : edge.nodes() ){
+        for (Node node : edge.nodes()) {
           ostr() << ' ' << node.uniqueId();
         }
         ostr() << ")";
@@ -700,7 +700,7 @@ _computeEdgesUniqueIdsSequential()
           ostr() << " internal-other";
         if (true_boundary)
           ostr() << " true-boundary";
-        if (opposite_cell_uid!=NULL_ITEM_ID)
+        if (opposite_cell_uid != NULL_ITEM_ID)
           ostr() << " opposite " << opposite_cell_uid;
         ostr() << '\n';
         ++index;
@@ -734,13 +734,13 @@ _computeEdgesUniqueIdsParallelV2()
     if (node.uniqueId() > max_uid)
       max_uid = node.uniqueId();
   });
-  Int64 total_max_uid = pm->reduce(Parallel::ReduceMax,max_uid);
-  if (total_max_uid>INT32_MAX)
-    ARCANE_FATAL("Max uniqueId() for node is too big v={0} max_allowed={1}",total_max_uid,INT32_MAX);
+  Int64 total_max_uid = pm->reduce(Parallel::ReduceMax, max_uid);
+  if (total_max_uid > INT32_MAX)
+    ARCANE_FATAL("Max uniqueId() for node is too big v={0} max_allowed={1}", total_max_uid, INT32_MAX);
 
   edges_map.eachItem([&](Edge edge) {
-    Node node0{edge.node(0)};
-    Node node1{edge.node(1)};
+    Node node0{ edge.node(0) };
+    Node node1{ edge.node(1) };
     Int64 new_uid = (node0.uniqueId().asInt64() * total_max_uid) + node1.uniqueId().asInt64();
     edge.mutableItemBase().setUniqueId(new_uid);
   });
@@ -783,8 +783,8 @@ _computeEdgesUniqueIdsParallel64bit()
   std::hash<Int64> hasher;
 
   edges_map.eachItem([&](Edge edge) {
-    Node node0{edge.node(0)};
-    Node node1{edge.node(1)};
+    Node node0{ edge.node(0) };
+    Node node1{ edge.node(1) };
     size_t hash0 = hasher(node0.uniqueId().asInt64());
     size_t hash1 = hasher(node1.uniqueId().asInt64());
     hash0 ^= hash1 + 0x9e3779b9 + (hash0 << 6) + (hash0 >> 2);

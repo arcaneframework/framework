@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,22 +45,21 @@ MeshNodeMerger(IMesh* mesh)
 , m_mesh(mesh)
 {
   if (m_mesh->hasTiedInterface())
-    throw NotImplementedException(A_FUNCINFO,"mesh with tied interfaces");
-  if (m_mesh->dimension()==3){
+    throw NotImplementedException(A_FUNCINFO, "mesh with tied interfaces");
+  if (m_mesh->dimension() == 3) {
     Int32 c = m_mesh->connectivity()();
-    if (Connectivity::hasConnectivity(c,Connectivity::CT_HasEdge))
-      throw NotImplementedException(A_FUNCINFO,"3D mesh with edges");
+    if (Connectivity::hasConnectivity(c, Connectivity::CT_HasEdge))
+      throw NotImplementedException(A_FUNCINFO, "3D mesh with edges");
   }
-  if (m_mesh->childMeshes().count()!=0)
-    throw NotSupportedException(A_FUNCINFO,"mesh with child meshes");
+  if (m_mesh->childMeshes().count() != 0)
+    throw NotSupportedException(A_FUNCINFO, "mesh with child meshes");
   if (m_mesh->isAmrActivated())
-    throw NotSupportedException(A_FUNCINFO,"mesh with AMR cells");
+    throw NotSupportedException(A_FUNCINFO, "mesh with AMR cells");
 
   m_node_family = ARCANE_CHECK_POINTER(dynamic_cast<NodeFamily*>(m_mesh->nodeFamily()));
   m_edge_family = ARCANE_CHECK_POINTER(dynamic_cast<EdgeFamily*>(m_mesh->edgeFamily()));
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(m_mesh->faceFamily()));
   m_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(m_mesh->cellFamily()));
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,7 +86,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
   ItemInternalList nodes_internal(m_node_family->itemsInternal());
   Integer nb_node = nodes_local_id.size();
   if (nb_node != nodes_to_merge_local_id.size())
-    throw ArgumentException(A_FUNCINFO,String::format("Arrays of different size"));
+    throw ArgumentException(A_FUNCINFO, String::format("Arrays of different size"));
   for (Integer i = 0; i < nb_node; ++i) {
     Node node(nodes_internal[nodes_local_id[i]]);
     Node node_to_merge(nodes_internal[nodes_to_merge_local_id[i]]);
@@ -99,7 +98,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
     //  if (node.localId()==node_to_merge.localId())
     //    ARCANE_FATAL("Can not merge a node with itself");
     info(4) << "ADD CORRESPONDANCE node=" << node.uniqueId() << " node_to_merge=" << node_to_merge.uniqueId();
-    m_nodes_correspondance.insert(std::make_pair(node_to_merge,node));
+    m_nodes_correspondance.insert(std::make_pair(node_to_merge, node));
   }
 
   // Mark all faces that contain at least one merged node
@@ -112,9 +111,9 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
     Face face = *iface;
     Integer face_nb_node = face.nbNode();
     Integer nb_merged_node = 0;
-    for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
+    for (NodeEnumerator inode(face.nodes()); inode(); ++inode) {
       Node node = *inode;
-      if (m_nodes_correspondance.find(node)!=m_nodes_correspondance.end()){
+      if (m_nodes_correspondance.find(node) != m_nodes_correspondance.end()) {
         ++nb_merged_node;
         marked_faces.insert(face);
       }
@@ -127,9 +126,9 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
       face_new_nodes_uid.resize(face_nb_node);
       face_new_nodes_sorted_uid.resize(face_nb_node);
       Node new_face_first_node;
-      for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
+      for (NodeEnumerator inode(face.nodes()); inode(); ++inode) {
         Node new_node = m_nodes_correspondance.find(*inode)->second;
-        if (inode.index()==0)
+        if (inode.index() == 0)
           new_face_first_node = new_node;
         face_new_nodes_uid[inode.index()] = new_node.uniqueId();
         info(4) << " OLD_node=" << (*inode).uniqueId() << " new=" << new_node.uniqueId();
@@ -143,7 +142,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         ARCANE_FATAL("Can not find corresponding face nodes_uid={0}", face_new_nodes_sorted_uid);
       }
       info(4) << "NEW FACE=" << new_face.uniqueId() << " nb_cell=" << new_face.nbCell();
-      m_faces_correspondance.insert(std::make_pair(face,new_face));
+      m_faces_correspondance.insert(std::make_pair(face, new_face));
       // Since this face is merged, it is removed from the list of
       // marked faces.
       marked_faces.erase(marked_faces.find(face));
@@ -153,54 +152,54 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
 
   // Mark all cells that contain at least one merged node.
   std::set<Cell> marked_cells;
-  ENUMERATE_CELL(icell,m_cell_family->allItems()){
+  ENUMERATE_CELL (icell, m_cell_family->allItems()) {
     Cell cell = *icell;
-    for( NodeEnumerator inode(cell.nodes()); inode(); ++inode ){
-      if (m_nodes_correspondance.find(*inode)!=m_nodes_correspondance.end())
+    for (NodeEnumerator inode(cell.nodes()); inode(); ++inode) {
+      if (m_nodes_correspondance.find(*inode) != m_nodes_correspondance.end())
         marked_cells.insert(cell);
     }
   }
 
-  for( Cell cell : marked_cells ){
+  for (Cell cell : marked_cells) {
     ItemLocalId cell_local_id(cell.localId());
     info(4) << "MARKED CELL2=" << cell.localId();
-    for( NodeEnumerator inode(cell.nodes()); inode(); ++inode ){
+    for (NodeEnumerator inode(cell.nodes()); inode(); ++inode) {
       Node node = *inode;
       auto x = m_nodes_correspondance.find(node);
-      if (x!=m_nodes_correspondance.end()){
+      if (x != m_nodes_correspondance.end()) {
         Node new_node = x->second;
         info(4) << "REMOVE node=" << ItemPrinter(node) << " from cell=" << ItemPrinter(cell);
-        m_node_family->removeCellFromNode(node,cell_local_id);
-        m_node_family->addCellToNode(new_node,cell);
-        m_cell_family->replaceNode(cell,inode.index(),new_node);
+        m_node_family->removeCellFromNode(node, cell_local_id);
+        m_node_family->addCellToNode(new_node, cell);
+        m_cell_family->replaceNode(cell, inode.index(), new_node);
       }
     }
-    for( FaceEnumerator iface(cell.faces()); iface(); ++iface ){
+    for (FaceEnumerator iface(cell.faces()); iface(); ++iface) {
       Face face = *iface;
       auto x = m_faces_correspondance.find(face);
-      if (x!=m_faces_correspondance.end()){
+      if (x != m_faces_correspondance.end()) {
         Face new_face = x->second;
-        m_face_family->removeCellFromFace(face,cell_local_id);
+        m_face_family->removeCellFromFace(face, cell_local_id);
         if (new_face.backCell().null())
-          m_face_family->addBackCellToFace(new_face,cell);
+          m_face_family->addBackCellToFace(new_face, cell);
         else
-          m_face_family->addFrontCellToFace(new_face,cell);
-        m_cell_family->replaceFace(cell,iface.index(),new_face);
+          m_face_family->addFrontCellToFace(new_face, cell);
+        m_cell_family->replaceFace(cell, iface.index(), new_face);
       }
     }
     // TODO: add edge management.
   }
 
-  for( Face face : marked_faces ){
+  for (Face face : marked_faces) {
     info(4) << "MARKED FACE=" << face.localId();
-    for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
+    for (NodeEnumerator inode(face.nodes()); inode(); ++inode) {
       Node node = *inode;
       auto x = m_nodes_correspondance.find(node);
-      if (x!=m_nodes_correspondance.end()){
+      if (x != m_nodes_correspondance.end()) {
         Node new_node = x->second;
-        m_node_family->removeFaceFromNode(node,face);
-        m_node_family->addFaceToNode(new_node,face);
-        m_face_family->replaceNode(face,inode.index(),new_node);
+        m_node_family->removeFaceFromNode(node, face);
+        m_node_family->addFaceToNode(new_node, face);
+        m_face_family->replaceNode(face, inode.index(), new_node);
       }
     }
   }
@@ -209,19 +208,19 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
   // Ensure that the new faces are properly oriented
   {
     FaceReorienter fr(m_mesh);
-    for( Face face : marked_faces ){
+    for (Face face : marked_faces) {
       fr.checkAndChangeOrientation(face);
     }
   }
 
   // Remove all faces that must be merged.
-  for( const auto& x : m_faces_correspondance ){
+  for (const auto& x : m_faces_correspondance) {
     Face face = x.first;
     m_face_family->removeFaceIfNotConnected(face);
   }
 
   // Remove all nodes that must be merged.
-  for( const auto& x : m_nodes_correspondance ){
+  for (const auto& x : m_nodes_correspondance) {
     Node node = x.first;
     m_node_family->removeNodeIfNotConnected(node);
   }

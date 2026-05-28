@@ -62,10 +62,10 @@ namespace Arcane::mesh
 class BasicParticleExchanger
 : public ArcaneBasicParticleExchangerObject
 {
- friend class AsyncParticleExchanger;
+  friend class AsyncParticleExchanger;
 
  public:
-  
+
   explicit BasicParticleExchanger(const ServiceBuildInfo& sbi);
   ~BasicParticleExchanger() override;
 
@@ -80,7 +80,7 @@ class BasicParticleExchanger
   IItemFamily* itemFamily() override { return m_item_family; }
   bool exchangeItems(Integer nb_particle_finish_exchange,
                      Int32ConstArrayView local_ids,
-                     Int32ConstArrayView sub_domains_to_send,ItemGroup item_group,
+                     Int32ConstArrayView sub_domains_to_send, ItemGroup item_group,
                      IFunctor* functor) override;
   bool exchangeItems(Integer nb_particle_finish_exchange,
                      Int32ConstArrayView local_ids,
@@ -90,13 +90,13 @@ class BasicParticleExchanger
   void sendItems(Integer nb_particle_finish_exchange,
                  Int32ConstArrayView local_ids,
                  Int32ConstArrayView sub_domains_to_send) override;
-  bool waitMessages(Integer nb_pending_particles,Int32Array* new_particle_local_ids,
+  bool waitMessages(Integer nb_pending_particles, Int32Array* new_particle_local_ids,
                     IFunctor* functor) override;
   void addNewParticles(Integer nb_particle) override;
 
   void setVerboseLevel(Integer level) override { m_verbose_level = level; }
   Integer verboseLevel() const override { return m_verbose_level; }
-  IAsyncParticleExchanger * asyncParticleExchanger() override { return nullptr; }
+  IAsyncParticleExchanger* asyncParticleExchanger() override { return nullptr; }
 
  public:
 
@@ -117,7 +117,7 @@ class BasicParticleExchanger
 
   //! List of variables to exchange
   VariableList m_variables_to_exchange;
-  
+
   //! List of messages pending sending
   UniqueArray<ISerializeMessage*> m_pending_messages;
 
@@ -166,19 +166,19 @@ class BasicParticleExchanger
   void _addItemsToSend(Int32ConstArrayView local_ids,
                        Int32ConstArrayView sub_domains_to_send,
                        Int32ConstArrayView communicating_sub_domains,
-                       UniqueArray< SharedArray<Int32> >& ids_to_send);
+                       UniqueArray<SharedArray<Int32>>& ids_to_send);
   void _sendPendingMessages();
 
-  void _generateSendItems(Int32ConstArrayView local_ids,Int32ConstArrayView sub_domains_to_send);
+  void _generateSendItems(Int32ConstArrayView local_ids, Int32ConstArrayView sub_domains_to_send);
   void _checkInitialized();
-  bool _waitMessages(Integer nb_pending_particles,ItemGroup item_group,Int32Array* new_particle_local_ids,IFunctor* functor);
-  void _waitMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,IFunctor* functor);
+  bool _waitMessages(Integer nb_pending_particles, ItemGroup item_group, Int32Array* new_particle_local_ids, IFunctor* functor);
+  void _waitMessages(ItemGroup item_group, Int32Array* new_particle_local_ids, IFunctor* functor);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

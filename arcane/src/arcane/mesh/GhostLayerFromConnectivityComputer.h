@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,9 +17,9 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IExtraGhostItemsBuilder.h"
-#include "arcane/IItemConnectivity.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IExtraGhostItemsBuilder.h"
+#include "arcane/core/IItemConnectivity.h"
 
 #include "arcane/mesh/DoFFamily.h"
 #include "arcane/mesh/ItemConnectivity.h"
@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,17 +52,20 @@ ARCANE_BEGIN_NAMESPACE
 class ARCANE_MESH_EXPORT GhostLayerFromConnectivityComputer
 : public IItemConnectivityGhostPolicy
 {
-public:
+ public:
 
   /** Class constructor */
   GhostLayerFromConnectivityComputer(IItemConnectivity* item_to_dofs);
 
-  GhostLayerFromConnectivityComputer() : m_connectivity(NULL), m_trace_mng(NULL) {}
+  GhostLayerFromConnectivityComputer()
+  : m_connectivity(NULL)
+  , m_trace_mng(NULL)
+  {}
 
   /** Class destructor */
   virtual ~GhostLayerFromConnectivityComputer() {}
 
-public:
+ public:
 
   //! Interface IItemConnectivityGhostPolicy
   Int32ConstArrayView communicatingRanks();
@@ -69,14 +73,14 @@ public:
   Int32ConstArrayView sharedItemsConnectedItems(const Integer rank, const String& family_name);
   void updateConnectivity(Int32ConstArrayView ghost_items, Int64ConstArrayView ghost_items_connected_items);
 
+ protected:
 
-protected:
   IItemConnectivity* m_connectivity;
   ITraceMng* m_trace_mng;
   SharedArray<Int32SharedArray> m_shared_items;
   SharedArray<Int32SharedArray> m_shared_items_connected_items;
 
-private:
+ private:
 
   void _computeSharedItems();
 };
@@ -84,7 +88,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

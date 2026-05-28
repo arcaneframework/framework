@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,10 +18,10 @@
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/Real3.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableTypes.h"
 
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 
@@ -42,7 +42,8 @@ namespace Arcane::mesh
 
 class FaceInfoMng
 {
-public:
+ public:
+
   Integer size() const
   {
     return m_nodes_unique_id.size();
@@ -55,7 +56,9 @@ public:
   {
     m_nodes_unique_id[i] = node_unique_id;
   }
-public:
+
+ public:
+
   SharedArray<ItemUniqueId> m_nodes_unique_id;
 };
 
@@ -65,14 +68,20 @@ public:
 class NodeInfo
 {
  public:
-  NodeInfo() : m_unique_id(NULL_ITEM_ID), m_owner(A_NULL_RANK)
+
+  NodeInfo()
+  : m_unique_id(NULL_ITEM_ID)
+  , m_owner(A_NULL_RANK)
   {
   }
-  NodeInfo(ItemUniqueId node_uid, Integer aowner) :
-    m_unique_id(node_uid), m_owner(aowner)
+  NodeInfo(ItemUniqueId node_uid, Integer aowner)
+  : m_unique_id(node_uid)
+  , m_owner(aowner)
   {
   }
+
  public:
+
   ItemUniqueId uniqueId() const
   {
     return m_unique_id;
@@ -96,7 +105,9 @@ class NodeInfo
   {
     return m_owner;
   }
-private:
+
+ private:
+
   //! Node unique ID
   ItemUniqueId m_unique_id;
   //! owner of the node
@@ -104,7 +115,7 @@ private:
   //! Coordinates of the node
   Real3 m_coord;
 
-public:
+ public:
 
   //! List of uniqueId() of active faces to which this node can be connected
   SharedArray<ItemUniqueId> m_connected_active_faces;
@@ -120,23 +131,34 @@ public:
  */
 class FaceInfo
 {
-public:
-  FaceInfo() :
-    m_unique_id(NULL_ITEM_ID), m_owner(A_NULL_RANK), m_nb_node(0), m_data_index(-1), m_mng(0)
+ public:
+
+  FaceInfo()
+  : m_unique_id(NULL_ITEM_ID)
+  , m_owner(A_NULL_RANK)
+  , m_nb_node(0)
+  , m_data_index(-1)
+  , m_mng(0)
   {
   }
   FaceInfo(
-      ItemUniqueId unique_id,
-      ItemUniqueId cell_unique_id,
-      Integer nb_node,
-      Integer owner,
-      Integer data_index,
-      FaceInfoMng* mng) :
-    m_unique_id(unique_id), m_cell_unique_id(cell_unique_id), m_owner(owner), m_nb_node(nb_node),
-        m_data_index(data_index), m_mng(mng)
+  ItemUniqueId unique_id,
+  ItemUniqueId cell_unique_id,
+  Integer nb_node,
+  Integer owner,
+  Integer data_index,
+  FaceInfoMng* mng)
+  : m_unique_id(unique_id)
+  , m_cell_unique_id(cell_unique_id)
+  , m_owner(owner)
+  , m_nb_node(nb_node)
+  , m_data_index(data_index)
+  , m_mng(mng)
   {
   }
-public:
+
+ public:
+
   ItemUniqueId uniqueId() const
   {
     return m_unique_id;
@@ -173,13 +195,17 @@ public:
   {
     return m_data_index;
   }
-private:
+
+ private:
+
   ItemUniqueId m_unique_id;
   ItemUniqueId m_cell_unique_id;
   Integer m_owner;
   Integer m_nb_node;
   Real3 m_center;
-public:
+
+ public:
+
   Integer m_data_index;
   FaceInfoMng* m_mng;
 };
@@ -195,11 +221,18 @@ public:
 class FaceInfo2
 {
  public:
+
   FaceInfo2()
-  : m_unique_id(NULL_ITEM_ID), m_owner(A_NULL_RANK) { }
+  : m_unique_id(NULL_ITEM_ID)
+  , m_owner(A_NULL_RANK)
+  {}
   FaceInfo2(ItemUniqueId unique_id, Integer aowner)
-  : m_unique_id(unique_id), m_owner(aowner) { }
+  : m_unique_id(unique_id)
+  , m_owner(aowner)
+  {}
+
  public:
+
   ItemUniqueId uniqueId() const
   {
     return m_unique_id;
@@ -218,6 +251,7 @@ class FaceInfo2
   }
 
  private:
+
   ItemUniqueId m_unique_id;
   Int32 m_owner;
   Real3 m_center;
@@ -237,39 +271,43 @@ class ParallelAMRConsistency
   typedef HashTableMapEnumeratorT<ItemUniqueId, NodeInfo> NodeInfoListEnumerator;
   typedef HashTableMapEnumeratorT<ItemUniqueId, FaceInfo2> FaceInfo2MapEnumerator;
 
-
   typedef std::unordered_set<Int64> ItemUidSet;
-  typedef std::unordered_map<Int64,Item> ItemMap;
-  typedef std::pair<Int64,Item> ItemMapValue;
-
+  typedef std::unordered_map<Int64, Item> ItemMap;
+  typedef std::pair<Int64, Item> ItemMapValue;
 
 #ifdef ACTIVATE_PERF_COUNTER
   struct PerfCounter
   {
-      typedef enum {
-        INIT,
-        COMPUTE,
-        GATHERFACE,
-        UPDATE,
-        REHASH,
-        ENDUPDATE,
-        NbCounters
-      }  eType ;
+    typedef enum
+    {
+      INIT,
+      COMPUTE,
+      GATHERFACE,
+      UPDATE,
+      REHASH,
+      ENDUPDATE,
+      NbCounters
+    } eType;
 
-      static const std::string m_names[NbCounters] ;
-  } ;
+    static const std::string m_names[NbCounters];
+  };
 #endif
-public:
+ public:
+
   ParallelAMRConsistency(IMesh* mesh);
 
-public:
-  void init() ;
-  void invalidate() ;
-  bool isUpdated() const {
-    return m_is_updated ;
+ public:
+
+  void init();
+  void invalidate();
+  bool isUpdated() const
+  {
+    return m_is_updated;
   }
-  void update() {
-    if(!m_is_updated) init() ;
+  void update()
+  {
+    if (!m_is_updated)
+      init();
   }
   void makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_finder);
   void makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder);
@@ -277,11 +315,12 @@ public:
   void changeOwnersOld();
 
 #ifdef ACTIVATE_PERF_COUNTER
-  PerfCounterMng<PerfCounter>& getPerfCounter() {
-    return m_perf_counter ;
+  PerfCounterMng<PerfCounter>& getPerfCounter()
+  {
+    return m_perf_counter;
   }
 #endif
-private:
+ private:
 
   IMesh* m_mesh;
   VariableNodeReal3 m_nodes_coord;
@@ -293,14 +332,14 @@ private:
   String m_active_face_name;
   FaceGroup m_active_face_group;
 
-  bool m_is_updated ;
-  UniqueArray<Int64> m_shared_face_uids ;
-  UniqueArray<Int64> m_connected_shared_face_uids ;
+  bool m_is_updated;
+  UniqueArray<Int64> m_shared_face_uids;
+  UniqueArray<Int64> m_connected_shared_face_uids;
 
 #ifdef ACTIVATE_PERF_COUNTER
-  PerfCounterMng<PerfCounter> m_perf_counter ;
+  PerfCounterMng<PerfCounter> m_perf_counter;
 #endif
-private:
+ private:
 
   bool _isInsideFace(const FaceInfo& face, Real3 point);
 
@@ -312,7 +351,7 @@ private:
                     ItemUidSet& updated_face_uids,
                     ItemUidSet& updated_node_uids);
 
-  void _update(Array<ItemUniqueId>& nodes_unique_id, NodeInfoList const& nodes_info) ;
+  void _update(Array<ItemUniqueId>& nodes_unique_id, NodeInfoList const& nodes_info);
 
   void _gatherItems(ConstArrayView<ItemUniqueId> nodes_to_send,
                     ConstArrayView<ItemUniqueId> faces_to_send,
@@ -340,4 +379,4 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* PARALLELAMRCONSISTENCY_H_ */
+#endif

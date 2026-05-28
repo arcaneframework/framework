@@ -1,9 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NewItemOwnerBuilder.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Owner management tool for new items                                       */
 /*---------------------------------------------------------------------------*/
@@ -15,17 +17,13 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,32 +39,32 @@ ARCANE_MESH_BEGIN_NAMESPACE
 
 class NewItemOwnerBuilder
 {
-public:
+ public:
 
   NewItemOwnerBuilder() {}
- 
+
   // Determines the mesh connected to the item
-  template<typename T>
+  template <typename T>
   inline Cell connectedCellOfItem(const T& item) const;
 
   // Determines the owner of the item, that is,
   // the owner of the mesh connected to the item
-  template<typename T>
-  inline Integer ownerOfItem(const T& item) const 
+  template <typename T>
+  inline Integer ownerOfItem(const T& item) const
   {
     return connectedCellOfItem(item).owner();
   }
 
-private:
-  
+ private:
+
   // Finds the mesh with the smallest uniqueId() of an item
   // Static polymorphism: only item types with a
   // cell() method are accepted
-  template<typename T>
-  inline Cell _minimumUniqueIdCellOfItem(const T& item) const 
+  template <typename T>
+  inline Cell _minimumUniqueIdCellOfItem(const T& item) const
   {
     Cell cell = item.cell(0);
-    for( Cell item_cell : item.cells() ){
+    for (Cell item_cell : item.cells()) {
       if (item_cell.uniqueId() < cell.uniqueId())
         cell = item_cell;
     }
@@ -75,46 +73,40 @@ private:
 };
 
 // For nodes, the connected mesh is the one with the smallest uniqueId().
-template<>
-inline Cell NewItemOwnerBuilder::connectedCellOfItem<Node>(const Node& node) const 
+template <>
+inline Cell NewItemOwnerBuilder::connectedCellOfItem<Node>(const Node& node) const
 {
   return _minimumUniqueIdCellOfItem(node);
 }
 
 // For edges, the connected mesh is the one with the smallest uniqueId().
-template<>
-inline Cell NewItemOwnerBuilder::connectedCellOfItem<Edge>(const Edge& edge) const 
+template <>
+inline Cell NewItemOwnerBuilder::connectedCellOfItem<Edge>(const Edge& edge) const
 {
   return _minimumUniqueIdCellOfItem(edge);
 }
 
 // For faces, the connected mesh is backCell() if it exists, otherwise frontCell()
-template<>
-inline Cell NewItemOwnerBuilder::connectedCellOfItem<Face>(const Face& face) const 
+template <>
+inline Cell NewItemOwnerBuilder::connectedCellOfItem<Face>(const Face& face) const
 {
   Cell cell = face.backCell();
   if (cell.null())
     cell = face.frontCell();
   return cell;
 }
-template<>
+template <>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Particle>(const Particle& particle) const
 {
   return particle.cell();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif /* ARCANE_MESH_NEWITEMOWNERBUILDER_H */
+#endif

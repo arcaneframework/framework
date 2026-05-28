@@ -1,21 +1,24 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="BasicParticleExchanger" type="caseoption" namespace="Arcane::mesh">
   <userclass>User</userclass>
   <description>
     Simple particle exchanger.
 
-    This exchanger uses a synchronous mechanism. During each exchange, the sub-domains send and receive particles to be exchanged from their neighbors. After this series of messages, a reduction is performed to determine if there are still particles to process. It is possible to skip this reduction every time by modifying the option `max-nb-message-without-reduce`.
+    This exchanger uses a synchronous mechanism. During each exchange, the sub-domains send and receive particles to be
+    exchanged from their neighbors. After this series of messages, a reduction is performed to determine if there are
+    still particles to process. It is possible to skip this reduction every time by modifying the option
+    `max-nb-message-without-reduce`.
   </description>
-    
+
   <interface name="Arcane::IParticleExchanger"/>
 
   <options>
-    <simple name="max-nb-message-without-reduce" type = "int32" default = "5">
+    <simple name="max-nb-message-without-reduce" type="int32" default="5">
       <description>
         Maximum number of messages to send before performing the reduction on the number of remaining particles.
       </description>
     </simple>
-    <simple name="debug-exchange-items-level" type = "int32" default="0">
+    <simple name="debug-exchange-items-level" type="int32" default="0">
       <description>
         Indicates whether additional information is displayed in the listing for exchange debugging.
         - 1 for basic information and

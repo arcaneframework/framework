@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IItemFamilyModifier.h"
+#include "arcane/core/IItemFamilyModifier.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/ItemInternalConnectivityIndex.h"
@@ -52,16 +52,16 @@ class ARCANE_MESH_EXPORT FaceFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex, IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex, IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex, IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex, IncrementalItemConnectivity> CellConnectivity;
   typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex, IncrementalItemConnectivity> HParentConnectivity;
   typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex, IncrementalItemConnectivity> HChildConnectivity;
 
  public:
 
-  FaceFamily(IMesh* mesh,const String& name);
+  FaceFamily(IMesh* mesh, const String& name);
   virtual ~FaceFamily(); //<! Frees resources
 
  public:
@@ -72,53 +72,53 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   // IItemFamilyModifier Interface
-  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
-  Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override;
+  Item allocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily* family() override { return this; }
 
   // TODO: DEPRECATED
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+  ItemInternal* allocOne(Int64 uid, ItemTypeInfo* type);
   // TODO: DEPRECATED
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
+  ItemInternal* findOrAllocOne(Int64 uid, ItemTypeInfo* type, bool& is_alloc);
 
-  Face allocOne(Int64 uid,ItemTypeId type);
-  Face findOrAllocOne(Int64 uid,ItemTypeId type,bool& is_alloc);
+  Face allocOne(Int64 uid, ItemTypeId type);
+  Face findOrAllocOne(Int64 uid, ItemTypeId type, bool& is_alloc);
 
  public:
 
   //! Adds a back cell to the face
-  void addBackCellToFace(Face face,Cell new_cell);
+  void addBackCellToFace(Face face, Cell new_cell);
   //! Adds a front edge to the face
-  void addFrontCellToFace(Face face,Cell new_cell);
+  void addFrontCellToFace(Face face, Cell new_cell);
   //! Removes a cell from the face
-  void removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid);
+  void removeCellFromFace(Face face, ItemLocalId cell_to_remove_lid);
   //! Adds an edge to the face
-  void addEdgeToFace(Face face,Edge new_edge);
+  void addEdgeToFace(Face face, Edge new_edge);
   //! Removes an edge from the face
   /*! No notion of no_destroy because the consistency is determined by the cells and not the edges */
-  void removeEdgeFromFace(Face face,Edge edge_to_remove);
+  void removeEdgeFromFace(Face face, Edge edge_to_remove);
   //! Removes the face if it is no longer connected
   void removeFaceIfNotConnected(Face face);
 
-  void replaceNode(ItemLocalId face,Integer index,ItemLocalId node);
-  void replaceEdge(ItemLocalId face,Integer index,ItemLocalId edge);
-  void replaceFace(ItemLocalId face,Integer index,ItemLocalId face2);
-  void replaceCell(ItemLocalId face,Integer index,ItemLocalId cell);
+  void replaceNode(ItemLocalId face, Integer index, ItemLocalId node);
+  void replaceEdge(ItemLocalId face, Integer index, ItemLocalId edge);
+  void replaceFace(ItemLocalId face, Integer index, ItemLocalId face2);
+  void replaceCell(ItemLocalId face, Integer index, ItemLocalId cell);
 
-  void setBackAndFrontCells(Face face,Int32 back_cell_lid,Int32 front_cell_lid);
+  void setBackAndFrontCells(Face face, Int32 back_cell_lid, Int32 front_cell_lid);
 
   //! AMR
-  void replaceBackCellToFace(Face face,ItemLocalId new_cell);
-  void replaceFrontCellToFace(Face face,ItemLocalId new_cell);
-  void addBackFrontCellsFromParentFace(Face subface,Face face);
-  void replaceBackFrontCellsFromParentFace(Cell subcell,Face subface,Cell cell,Face face);
-  bool isSubFaceInFace(Face subface,Face face) const;
-  bool isChildOnFace(ItemWithNodes child,Face face) const;
-  void subFaces(Face face,Array<ItemInternal*>& subfaces);
-  void allSubFaces(Face face,Array<ItemInternal*>& subfaces);
-  void activeSubFaces(Face face,Array<ItemInternal*>& subfaces);
-  void familyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
-  void activeFamilyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
+  void replaceBackCellToFace(Face face, ItemLocalId new_cell);
+  void replaceFrontCellToFace(Face face, ItemLocalId new_cell);
+  void addBackFrontCellsFromParentFace(Face subface, Face face);
+  void replaceBackFrontCellsFromParentFace(Cell subcell, Face subface, Cell cell, Face face);
+  bool isSubFaceInFace(Face subface, Face face) const;
+  bool isChildOnFace(ItemWithNodes child, Face face) const;
+  void subFaces(Face face, Array<ItemInternal*>& subfaces);
+  void allSubFaces(Face face, Array<ItemInternal*>& subfaces);
+  void activeSubFaces(Face face, Array<ItemInternal*>& subfaces);
+  void familyTree(Array<ItemInternal*>& family, Cell item, const bool reset = true) const;
+  void activeFamilyTree(Array<ItemInternal*>& family, Cell item, const bool reset = true) const;
   void _addChildFaceToFace(Face parent_face, Face child_face);
   void _addParentFaceToFace(Face parent_face, Face child_face);
   // OFF AMR
@@ -174,15 +174,15 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  private:
 
-  void _addMasterFaceToFace(Face face,Face master_face);
-  void _addSlaveFacesToFace(Face face,Int32ConstArrayView slave_faces_lid);
+  void _addMasterFaceToFace(Face face, Face master_face);
+  void _addSlaveFacesToFace(Face face, Int32ConstArrayView slave_faces_lid);
   void _removeMasterFaceToFace(Face face);
   void _removeSlaveFacesToFace(Face face);
 
   inline void _removeFace(Face face);
   Real3 _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const;
-  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
-  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id);
+  inline void _createOne(ItemInternal* item, Int64 uid, ItemTypeInfo* type);
+  inline void _createOne(ItemInternal* item, Int64 uid, ItemTypeId type_id);
 };
 
 /*---------------------------------------------------------------------------*/

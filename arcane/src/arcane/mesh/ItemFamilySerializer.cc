@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,17 +10,13 @@
 /* Unique Serializer valid for any item family.                              */
 /* Requires the use of the family graph: ItemFamilyNetwork                   */
 /*---------------------------------------------------------------------------*/
-
-
-
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ConnectivityItemVector.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ConnectivityItemVector.h"
 
 #include "arcane/mesh/ItemFamilySerializer.h"
 #include "arcane/mesh/ItemFamilyNetwork.h"
@@ -28,9 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,8 +40,8 @@ serializeItems(ISerializer* buf, Int32ConstArrayView local_ids)
 
   Int32UniqueArray created_item_lids(local_ids.size()); // todo do not provide the lids because they are not used later
   // Serialize items along with their dependencies
-  ItemData item_dependencies_data(local_ids.size(),0,created_item_lids, m_family, m_family_modifier, m_family->parallelMng()->commRank());
-  _fillItemDependenciesData(item_dependencies_data,local_ids);
+  ItemData item_dependencies_data(local_ids.size(), 0, created_item_lids, m_family, m_family_modifier, m_family->parallelMng()->commRank());
+  _fillItemDependenciesData(item_dependencies_data, local_ids);
   item_dependencies_data.serialize(buf); // ItemData handles the state of the ISerializer
 }
 
@@ -54,7 +49,7 @@ serializeItems(ISerializer* buf, Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilySerializer::
-deserializeItems(ISerializer* buf,Int32Array* local_ids)
+deserializeItems(ISerializer* buf, Int32Array* local_ids)
 {
   _deserializeItemsOrRelations(buf, local_ids);
 }
@@ -63,7 +58,7 @@ deserializeItems(ISerializer* buf,Int32Array* local_ids)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilySerializer::
-_deserializeItemsOrRelations(ISerializer *buf, Int32Array *local_ids)
+_deserializeItemsOrRelations(ISerializer* buf, Int32Array* local_ids)
 {
   // Deserialize items (if m_deserialize_items) or items relations
   ItemData item_data; // it may be dependencies or relations
@@ -82,7 +77,7 @@ _deserializeItemsOrRelations(ISerializer *buf, Int32Array *local_ids)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilySerializer::
-serializeItemRelations(Arcane::ISerializer *buf, Arcane::Int32ConstArrayView local_ids)
+serializeItemRelations(Arcane::ISerializer* buf, Arcane::Int32ConstArrayView local_ids)
 {
   m_family->traceMng()->debug(Trace::High) << "_serializeItems relations : "
                                            << m_family->mesh()->name() << " "
@@ -91,8 +86,8 @@ serializeItemRelations(Arcane::ISerializer *buf, Arcane::Int32ConstArrayView loc
 
   Int32UniqueArray created_item_lids(local_ids.size()); // todo do not provide the lids because they are not used later
   // Serialize items along with their relations
-  ItemData item_relations_data(local_ids.size(),0,created_item_lids, m_family, m_family_modifier, m_family->parallelMng()->commRank());
-  _fillItemRelationsData(item_relations_data,local_ids);
+  ItemData item_relations_data(local_ids.size(), 0, created_item_lids, m_family, m_family_modifier, m_family->parallelMng()->commRank());
+  _fillItemRelationsData(item_relations_data, local_ids);
   item_relations_data.serialize(buf); // ItemData handles the state of the ISerializer
 }
 
@@ -100,7 +95,7 @@ serializeItemRelations(Arcane::ISerializer *buf, Arcane::Int32ConstArrayView loc
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilySerializer::
-deserializeItemRelations(ISerializer* buf,Int32Array* local_ids)
+deserializeItemRelations(ISerializer* buf, Int32Array* local_ids)
 {
   _deserializeItemsOrRelations(buf, local_ids);
 }
@@ -111,28 +106,25 @@ deserializeItemRelations(ISerializer* buf,Int32Array* local_ids)
 void ItemFamilySerializer::
 _fillItemDependenciesData(ItemData& item_data, Int32ConstArrayView local_ids)
 {
-  Int64Array&    item_infos  = item_data.itemInfos();
+  Int64Array& item_infos = item_data.itemInfos();
   Int32ArrayView item_owners = item_data.itemOwners();
   // Reserve size
   const Integer nb_item = local_ids.size();
-  item_infos.reserve(1+nb_item*32); // Size evaluation for hexa cell (the more data to store) : 1_family_info + nb_item *(2_info_per_family + 6 (faces) + 12 (edges) + 8 (vertices) connected elements) = 1 + nb_item *(6 + 6 + 12 +8)
+  item_infos.reserve(1 + nb_item * 32); // Size evaluation for hexa cell (the more data to store) : 1_family_info + nb_item *(2_info_per_family + 6 (faces) + 12 (edges) + 8 (vertices) connected elements) = 1 + nb_item *(6 + 6 + 12 +8)
   // Fill item data (cf. ItemData.h)
   IItemFamilyNetwork* family_network = m_family->mesh()->itemFamilyNetwork();
   auto out_connectivities = family_network->getChildDependencies(m_family); // Only dependencies are needed to create item. Relations are treated separately
   item_infos.add(out_connectivities.size());
-  ENUMERATE_ITEM(item, m_family->view(local_ids))
-  {
+  ENUMERATE_ITEM (item, m_family->view(local_ids)) {
     item_infos.add(item->type());
     item_infos.add(item->uniqueId().asInt64());
     item_owners[item.index()] = item->owner();
-    for (auto out_connectivity : out_connectivities)
-    {
-      if(out_connectivity)
-      {
+    for (auto out_connectivity : out_connectivities) {
+      if (out_connectivity) {
         item_infos.add(out_connectivity->targetFamily()->itemKind());
         item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
         ConnectivityItemVector connectivity_accessor(out_connectivity);
-        ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
+        ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
           item_infos.add(connected_item->uniqueId().asInt64());
         }
       }
@@ -144,26 +136,24 @@ void ItemFamilySerializer::
 _fillItemRelationsData(ItemData& item_data, Int32ConstArrayView local_ids)
 {
   // Fill item relations, i.e., upward connectivities and extra connectivities (e.g., dof)
-  Int64Array&    item_infos  = item_data.itemInfos();
+  Int64Array& item_infos = item_data.itemInfos();
   Int32ArrayView item_owners = item_data.itemOwners();
   // Reserve size
   const Integer nb_item = local_ids.size();
-  item_infos.reserve(1+nb_item*32); // Size evaluation for hexa cell (the more data to store) : 1_family_info + nb_item *(2_info_per_family + 6 (faces) + 12 (edges) + 8 (vertices) connected elements) = 1 + nb_item *(6 + 6 + 12 +8)
+  item_infos.reserve(1 + nb_item * 32); // Size evaluation for hexa cell (the more data to store) : 1_family_info + nb_item *(2_info_per_family + 6 (faces) + 12 (edges) + 8 (vertices) connected elements) = 1 + nb_item *(6 + 6 + 12 +8)
   // Fill item data (cf. ItemData.h)
   IItemFamilyNetwork* family_network = m_family->mesh()->itemFamilyNetwork();
   auto out_connectivities = family_network->getChildRelations(m_family); // Only relations are taken
   item_infos.add(out_connectivities.size());
-  ENUMERATE_ITEM(item, m_family->view(local_ids)){
+  ENUMERATE_ITEM (item, m_family->view(local_ids)) {
     item_infos.add(item->type());
     item_infos.add(item->uniqueId().asInt64());
     item_owners[item.index()] = item->owner();
-    for (auto out_connectivity : out_connectivities)
-    {
+    for (auto out_connectivity : out_connectivities) {
       item_infos.add(out_connectivity->targetFamily()->itemKind());
       item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
       ConnectivityItemVector connectivity_accessor(out_connectivity);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item)))
-      {
+      ENUMERATE_ITEM (connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
         item_infos.add(connected_item->uniqueId().asInt64());
       }
     }
@@ -182,8 +172,7 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

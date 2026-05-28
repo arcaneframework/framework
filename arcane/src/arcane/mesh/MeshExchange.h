@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ namespace Arcane
 class IMesh;
 class IParallelMng;
 class IItemFamily;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,11 +48,11 @@ class MeshExchange
 : public TraceAccessor
 {
  private:
-  
-  template<typename T>
+
+  template <typename T>
   class IncrementalUnorderedMultiArray;
 
-  template<typename T>
+  template <typename T>
   class DynamicMultiArray;
 
  public:
@@ -66,7 +66,7 @@ class MeshExchange
   void computeInfos();
 
  public:
- 
+
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get ISubDomain from another way")
   ISubDomain* subDomain() const;
 
@@ -76,30 +76,30 @@ class MeshExchange
   ConstArrayView<std::set<Int32>> getItemsToSend(IItemFamily* family) const;
 
  private:
-  
+
   IMesh* m_mesh; //!< Mesh
   IParallelMng* m_parallel_mng;
   Int32 m_nb_rank;
   Int32 m_rank;
   IItemFamily* m_cell_family;
-  
+
   //! AMR
   void _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner);
-  void _addTreeCellToSend(ArrayView< std::set<Int32> > items_to_send,
-                          Int32 local_id,Int32 cell_local_id,CellInfoListView cells);
+  void _addTreeCellToSend(ArrayView<std::set<Int32>> items_to_send,
+                          Int32 local_id, Int32 cell_local_id, CellInfoListView cells);
   void _addTreeItemToSend(Int32 cell_local_id, CellInfoListView cells);
-  void _addItemToSend2(ArrayView< std::set<Int32> > items_to_send,
-                      Int32 item_local_id,Int32 cell_local_id); 
-  void _familyTree (Int32Array& family,Cell item, const bool reset=true) const;
+  void _addItemToSend2(ArrayView<std::set<Int32>> items_to_send,
+                       Int32 item_local_id, Int32 cell_local_id);
+  void _familyTree(Int32Array& family, Cell item, const bool reset = true) const;
   void _computeItemsToSend2();
-  
+
   void _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner);
   void _computeGraphConnectivityInfos();
-  void _exchangeCellDataInfos(Int32ConstArrayView cells_new_owner,bool use_active_cells);
-  void _computeItemsToSend(bool send_dof=false);
-  void _addItemToSend(ArrayView< std::set<Int32> > items_to_send,
-                      Int32 item_local_id,Int32 cell_local_id,
-                      bool use_itemfamily_network=false);
+  void _exchangeCellDataInfos(Int32ConstArrayView cells_new_owner, bool use_active_cells);
+  void _computeItemsToSend(bool send_dof = false);
+  void _addItemToSend(ArrayView<std::set<Int32>> items_to_send,
+                      Int32 item_local_id, Int32 cell_local_id,
+                      bool use_itemfamily_network = false);
 
   // Version based on ItemFamilyNetwork
   void _computeMeshConnectivityInfos3();
@@ -111,13 +111,13 @@ class MeshExchange
   void _propagatesToChildDependencies(IItemFamily* family);
   void _addDestRank(const Item& item, IItemFamily* item_family, const Integer new_owner);
   void _addDestRank(const Item& item, IItemFamily* item_family, const Item& followed_item,
-                    IItemFamily* followed_item_family);// add all the followed items destination rank to item
+                    IItemFamily* followed_item_family); // add all the followed items destination rank to item
   void _allocData(IItemFamily* family);
   void _addGraphConnectivityToNewConnectivityInfo();
 
  public:
 
-  std::map< IItemFamily*, UniqueArray< std::set<Int32> >* > m_items_to_send;
+  std::map<IItemFamily*, UniqueArray<std::set<Int32>>*> m_items_to_send;
 
  private:
 
@@ -128,18 +128,18 @@ class MeshExchange
 
   //! List of entities to send by subdomain for the family \a family.
   ArrayView<std::set<Int32>> _getItemsToSend(IItemFamily* family);
-  void _setItemsToSend(IItemFamily* family);//! Using ItemFamilyNetwork
-  void _printItemToSend(IItemFamily* family);// Debug print SDC
-  void _printItemToRemove(IItemFamily* family);// Debug print SDC
+  void _setItemsToSend(IItemFamily* family); //! Using ItemFamilyNetwork
+  void _printItemToSend(IItemFamily* family); // Debug print SDC
+  void _printItemToRemove(IItemFamily* family); // Debug print SDC
 
-  void _markRemovableItems(bool with_cell_family=true);
+  void _markRemovableItems(bool with_cell_family = true);
   void _markRemovableDoFs();
   void _markRemovableParticles();
-  void _markRemovableCells(Int32ConstArrayView cells_new_owner,bool use_active_cells);
+  void _markRemovableCells(Int32ConstArrayView cells_new_owner, bool use_active_cells);
 
   //  using ItemDestRankArray = IncrementalUnorderedMultiArray<Int32>; // l'un ou l'autre ?
   using ItemDestRankArray = DynamicMultiArray<Int32>;
-  using ItemDestRankMap = std::map<IItemFamily*,ItemDestRankArray*>;
+  using ItemDestRankMap = std::map<IItemFamily*, ItemDestRankArray*>;
   using ItemDestRankMapArray = UniqueArray<ItemDestRankMap>;
   ItemDestRankMap m_item_dest_ranks_map; // [family][item] = [item_destination_ranks]
   ItemDestRankMapArray m_ghost_item_dest_ranks_map; //[rank][family][item]

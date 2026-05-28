@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,12 +13,11 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/ItemFamily.h"
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,8 +29,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 ItemConnectivitySelector::
-ItemConnectivitySelector(ItemFamily* source_family,IItemFamily* target_family,
-                         const String& connectivity_name,Integer connectivity_index)
+ItemConnectivitySelector(ItemFamily* source_family, IItemFamily* target_family,
+                         const String& connectivity_name, Integer connectivity_index)
 : TraceAccessor(source_family->traceMng())
 , m_source_family(source_family)
 , m_target_family(target_family)

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 #include "arcane/mesh/ItemTools.h"
 
 /*---------------------------------------------------------------------------*/
@@ -29,8 +29,8 @@ bool ItemTools::
 isSameFace(Face face, Int64ConstArrayView face_nodes_uid)
 {
   Integer index = 0;
-  for( Node node : face.nodes() ){
-    if (node.uniqueId()!=face_nodes_uid[index])
+  for (Node node : face.nodes()) {
+    if (node.uniqueId() != face_nodes_uid[index])
       return false;
     ++index;
   }
@@ -41,13 +41,13 @@ isSameFace(Face face, Int64ConstArrayView face_nodes_uid)
 /*---------------------------------------------------------------------------*/
 
 Face ItemTools::
-findFaceInNode2(Node node,Integer face_type_id,
-               Int64ConstArrayView face_nodes_uid)
+findFaceInNode2(Node node, Integer face_type_id,
+                Int64ConstArrayView face_nodes_uid)
 {
-  for( Face current_face : node.faces() ){
-    if (current_face.type()!=face_type_id)
+  for (Face current_face : node.faces()) {
+    if (current_face.type() != face_type_id)
       continue;
-    if (isSameFace(current_face,face_nodes_uid))
+    if (isSameFace(current_face, face_nodes_uid))
       return current_face;
   }
   return Face();
@@ -70,10 +70,10 @@ findFaceInNode(Node node, Integer face_type_id,
 /*---------------------------------------------------------------------------*/
 
 Edge ItemTools::
-findEdgeInNode2(Node node,Int64 begin_node,Int64 end_node)
+findEdgeInNode2(Node node, Int64 begin_node, Int64 end_node)
 {
-  for( Edge edge : node.edges() )
-    if (edge.node(0).uniqueId()==begin_node && edge.node(1).uniqueId()==end_node)
+  for (Edge edge : node.edges())
+    if (edge.node(0).uniqueId() == begin_node && edge.node(1).uniqueId() == end_node)
       return edge;
   return Edge();
 }

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IItemFamilyModifier.h"
+#include "arcane/core/IItemFamilyModifier.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/ItemInternalConnectivityIndex.h"
@@ -45,14 +45,15 @@ class ARCANE_MESH_EXPORT CellFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex,IncrementalItemConnectivity> HParentConnectivity;
-  typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex,IncrementalItemConnectivity> HChildConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex, IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex, IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex, IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex, IncrementalItemConnectivity> HParentConnectivity;
+  typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex, IncrementalItemConnectivity> HChildConnectivity;
+
  public:
 
-  CellFamily(IMesh* mesh,const String& name);
+  CellFamily(IMesh* mesh, const String& name);
   virtual ~CellFamily(); //<! Releases resources
 
  public:
@@ -63,13 +64,13 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   // IItemFamilyModifier interface
-  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
-  Item findOrAllocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
-  IItemFamily* family() override {return this;}
+  Item allocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
+  IItemFamily* family() override { return this; }
 
-  Cell allocOne(Int64 uid,ItemTypeId type);
-  Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
-  
+  Cell allocOne(Int64 uid, ItemTypeId type);
+  Cell findOrAllocOne(Int64 uid, ItemTypeId type_id, bool& is_alloc);
+
   /*!
    * Detaches the mesh \a cell from the mesh without deleting it
    *
@@ -107,7 +108,7 @@ class ARCANE_MESH_EXPORT CellFamily
    *
    * @param local_ids the group of meshes to remove
    */
-  virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) override;
+  virtual void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) override;
 
   //! Defines the active connectivity for the associated mesh
   /*! This conditions the connectivities to the responsibility of this family */
@@ -116,21 +117,21 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   // TODO: make these methods private to enforce the use of IItemFamilyTopologyModifier.
-  void replaceNode(ItemLocalId cell,Integer index,ItemLocalId node);
-  void replaceEdge(ItemLocalId cell,Integer index,ItemLocalId edge);
-  void replaceFace(ItemLocalId cell,Integer index,ItemLocalId face);
-  void replaceHChild(ItemLocalId cell,Integer index,ItemLocalId child_cell);
-  void replaceHParent(ItemLocalId cell,Integer index,ItemLocalId parent_cell);
+  void replaceNode(ItemLocalId cell, Integer index, ItemLocalId node);
+  void replaceEdge(ItemLocalId cell, Integer index, ItemLocalId edge);
+  void replaceFace(ItemLocalId cell, Integer index, ItemLocalId face);
+  void replaceHChild(ItemLocalId cell, Integer index, ItemLocalId child_cell);
+  void replaceHParent(ItemLocalId cell, Integer index, ItemLocalId parent_cell);
 
  public:
 
   //! AMR
-  void _addParentCellToCell(Cell cell,Cell parent_cell);
-  void _addChildCellToCell(Cell parent_cell,Integer rank,Cell child_cell);
-  void _addChildCellToCell2(Cell parent_cell,Cell child_cell);
-  void _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid);
+  void _addParentCellToCell(Cell cell, Cell parent_cell);
+  void _addChildCellToCell(Cell parent_cell, Integer rank, Cell child_cell);
+  void _addChildCellToCell2(Cell parent_cell, Cell child_cell);
+  void _addChildrenCellsToCell(Cell parent_cell, Int32ConstArrayView children_cells_lid);
   void _removeParentCellToCell(Cell cell);
-  void _removeChildCellToCell(Cell parent_cell,Cell cell);
+  void _removeChildCellToCell(Cell parent_cell, Cell cell);
   void _removeChildrenCellsToCell(Cell parent_cell);
 
  public:
@@ -140,13 +141,12 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Use allocOne(Int64 uid,ItemTypeId type) instead")
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+  ItemInternal* allocOne(Int64 uid, ItemTypeInfo* type);
 
   ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc) instead")
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
+  ItemInternal* findOrAllocOne(Int64 uid, ItemTypeInfo* type, bool& is_alloc);
 
  protected:
-
  private:
 
   Integer m_node_prealloc;
@@ -170,8 +170,8 @@ class ARCANE_MESH_EXPORT CellFamily
   void _removeSubItems(Cell cell);
 
   void _removeNotConnectedSubItems(Cell cell);
-  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
-  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id);
+  inline void _createOne(ItemInternal* item, Int64 uid, ItemTypeInfo* type);
+  inline void _createOne(ItemInternal* item, Int64 uid, ItemTypeId type_id);
 };
 
 /*---------------------------------------------------------------------------*/

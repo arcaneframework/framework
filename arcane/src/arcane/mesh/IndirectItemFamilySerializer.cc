@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,29 +38,29 @@ IndirectItemFamilySerializer(IItemFamily* family)
 /*---------------------------------------------------------------------------*/
 
 void IndirectItemFamilySerializer::
-serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
+serializeItems(ISerializer* sbuf, Int32ConstArrayView local_ids)
 {
   const Integer nb_item = local_ids.size();
   ItemInfoListView items_internal(m_family);
 
-  switch(sbuf->mode()){
+  switch (sbuf->mode()) {
   case ISerializer::ModeReserve:
     sbuf->reserveInt64(1); // For the number of entities
-    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // For the uniqueId() of the entities.
+    sbuf->reserveSpan(eBasicDataType::Int64, nb_item); // For the uniqueId() of the entities.
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);
     {
       Int64UniqueArray particle_unique_ids(nb_item);
-      for( Integer z=0; z<nb_item; ++z ){
-        Item item = items_internal[ local_ids[z] ];
+      for (Integer z = 0; z < nb_item; ++z) {
+        Item item = items_internal[local_ids[z]];
         particle_unique_ids[z] = item.uniqueId().asInt64();
       }
       sbuf->putSpan(particle_unique_ids);
     }
     break;
   case ISerializer::ModeGet:
-    deserializeItems(sbuf,nullptr);
+    deserializeItems(sbuf, nullptr);
     break;
   }
 }
@@ -69,19 +69,19 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 
 void IndirectItemFamilySerializer::
-deserializeItems(ISerializer* sbuf,Int32Array* local_ids)
+deserializeItems(ISerializer* sbuf, Int32Array* local_ids)
 {
   Int64UniqueArray unique_ids;
 
   Int64 nb_item = sbuf->getInt64();
   unique_ids.resize(nb_item);
   sbuf->getSpan(unique_ids);
-  
+
   Int32UniqueArray temporary_local_ids;
   Int32Array* work_local_id = (local_ids) ? local_ids : &temporary_local_ids;
   work_local_id->resize(nb_item);
 
-  m_family->itemsUniqueIdToLocalId(*work_local_id,unique_ids,true);
+  m_family->itemsUniqueIdToLocalId(*work_local_id, unique_ids, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,7 +96,7 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

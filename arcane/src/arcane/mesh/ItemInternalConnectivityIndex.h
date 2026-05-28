@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshUtils.h"
+#include "arcane/core/MeshUtils.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -31,6 +31,7 @@ namespace Arcane::mesh
 class NodeInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::NODE_IDX; }
 };
 
@@ -41,6 +42,7 @@ class NodeInternalConnectivityIndex
 class EdgeInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::EDGE_IDX; }
 };
 
@@ -51,6 +53,7 @@ class EdgeInternalConnectivityIndex
 class FaceInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::FACE_IDX; }
 };
 
@@ -61,6 +64,7 @@ class FaceInternalConnectivityIndex
 class CellInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::CELL_IDX; }
 };
 
@@ -71,6 +75,7 @@ class CellInternalConnectivityIndex
 class HParentInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::HPARENT_IDX; }
 };
 
@@ -81,6 +86,7 @@ class HParentInternalConnectivityIndex
 class HChildInternalConnectivityIndex
 {
  public:
+
   static Integer connectivityIndex() { return ItemInternalConnectivityList::HCHILD_IDX; }
 };
 

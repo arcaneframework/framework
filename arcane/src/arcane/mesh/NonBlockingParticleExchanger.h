@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,9 +19,9 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/IParticleExchanger.h"
-#include "arcane/BasicService.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/IParticleExchanger.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/VariableCollection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace Arcane
 {
 class Timer;
 class SerializeMessage;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,12 +48,14 @@ class NonBlockingParticleExchanger
 , public IParticleExchanger
 {
  private:
+
   static const Integer MESSAGE_EXCHANGE = 1;
   static const Integer MESSAGE_NB_FINISH_EXCHANGE = 2;
   static const Integer MESSAGE_FINISH_EXCHANGE_STATUS = 3;
   static const Integer MESSAGE_CHANGE_BLOCKING = 4;
+
  public:
-  
+
   explicit NonBlockingParticleExchanger(const ServiceBuildInfo& sbi);
   ~NonBlockingParticleExchanger() override;
 
@@ -68,7 +70,7 @@ class NonBlockingParticleExchanger
   IItemFamily* itemFamily() override { return m_item_family; }
   bool exchangeItems(Integer nb_particle_finish_exchange,
                      Int32ConstArrayView local_ids,
-                     Int32ConstArrayView sub_domains_to_send,ItemGroup item_group,
+                     Int32ConstArrayView sub_domains_to_send, ItemGroup item_group,
                      IFunctor* functor) override;
   bool exchangeItems(Integer nb_particle_finish_exchange,
                      Int32ConstArrayView local_ids,
@@ -79,7 +81,7 @@ class NonBlockingParticleExchanger
                  Int32ConstArrayView local_ids,
                  Int32ConstArrayView sub_domains_to_send) override;
 
-  bool waitMessages(Integer nb_pending_particle,Int32Array* new_particle_local_ids,
+  bool waitMessages(Integer nb_pending_particle, Int32Array* new_particle_local_ids,
                     IFunctor* functor) override;
   void addNewParticles(Integer nb_particle) override
   {
@@ -88,7 +90,7 @@ class NonBlockingParticleExchanger
   }
   void setVerboseLevel(Integer level) override { m_verbose_level = level; }
   Integer verboseLevel() const override { return m_verbose_level; }
-  IAsyncParticleExchanger * asyncParticleExchanger() override { return nullptr; }
+  IAsyncParticleExchanger* asyncParticleExchanger() override { return nullptr; }
 
   void reset();
 
@@ -107,7 +109,7 @@ class NonBlockingParticleExchanger
 
   //! List of variables to exchange
   VariableList m_variables_to_exchange;
-  
+
   //! List of messages pending sending
   UniqueArray<ISerializeMessage*> m_pending_messages;
 
@@ -160,7 +162,7 @@ class NonBlockingParticleExchanger
   void _addItemsToSend(Int32ConstArrayView local_ids,
                        Int32ConstArrayView sub_domains_to_send,
                        Int32ConstArrayView communicating_sub_domains,
-                       UniqueArray<SharedArray<Int32> >& ids_to_send);
+                       UniqueArray<SharedArray<Int32>>& ids_to_send);
   void _sendPendingMessages();
   void _checkNeedReceiveMessage();
   bool _exchangeItems(Int32ConstArrayView local_ids,
@@ -168,17 +170,17 @@ class NonBlockingParticleExchanger
                       ItemGroup item_group,
                       Int32Array* new_particle_local_ids,
                       IFunctor* functor);
-  void _checkSendItems(Int32ConstArrayView local_ids,Int32ConstArrayView sub_domains_to_send);
-  void _generateSendItemsMessages(Int32ConstArrayView local_ids,Int32ConstArrayView sub_domains_to_send);
+  void _checkSendItems(Int32ConstArrayView local_ids, Int32ConstArrayView sub_domains_to_send);
+  void _generateSendItemsMessages(Int32ConstArrayView local_ids, Int32ConstArrayView sub_domains_to_send);
   void _checkInitialized();
-  void _processMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,bool wait_all,IFunctor* functor);
-  bool _waitMessages(Integer nb_pending_particle,ItemGroup group,Int32Array* new_particle_local_ids,IFunctor* functor);
+  void _processMessages(ItemGroup item_group, Int32Array* new_particle_local_ids, bool wait_all, IFunctor* functor);
+  bool _waitMessages(Integer nb_pending_particle, ItemGroup group, Int32Array* new_particle_local_ids, IFunctor* functor);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

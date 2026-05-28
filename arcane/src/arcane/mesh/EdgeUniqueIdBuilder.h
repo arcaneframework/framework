@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace Arcane
 class SerializeBuffer;
 class IParallelExchanger;
 class IParallelMng;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,9 +45,9 @@ class EdgeUniqueIdBuilder
 {
  public:
 
-  typedef HashTableMapT<Int32,SharedArray<Int64> > BoundaryInfosMap;
-  typedef HashTableMapEnumeratorT<Int32,SharedArray<Int64> > BoundaryInfosMapEnumerator;
-  
+  typedef HashTableMapT<Int32, SharedArray<Int64>> BoundaryInfosMap;
+  typedef HashTableMapEnumeratorT<Int32, SharedArray<Int64>> BoundaryInfosMapEnumerator;
+
  public:
 
   //! Constructs an instance for the mesh \a mesh
@@ -63,7 +63,7 @@ class EdgeUniqueIdBuilder
   DynamicMeshIncrementalBuilder* m_mesh_builder;
 
  private:
-  
+
   void _computeEdgesUniqueIdsSequential();
   void _computeEdgesUniqueIdsParallel3();
   void _computeEdgesUniqueIdsParallelV2();

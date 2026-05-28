@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
 {
   auto* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity);
   if (ptr)
-    IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
+    IndexedItemConnectivityViewBase::set(ptr->connectivityView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,22 +105,22 @@ class IncrementalItemConnectivityContainer
 {
  public:
 
-  IncrementalItemConnectivityContainer(IMesh* mesh,const String& var_name)
-  : m_var_name(var_name),
-    m_connectivity_nb_item_variable(VariableBuildInfo(mesh,var_name+"Nb",IVariable::PPrivate)),
-    m_connectivity_index_variable(VariableBuildInfo(mesh,var_name+"Index",IVariable::PPrivate)),
-    m_connectivity_list_variable(VariableBuildInfo(mesh,var_name+"List",IVariable::PPrivate)),
-    m_connectivity_nb_item_array(m_connectivity_nb_item_variable._internalTrueData()->_internalDeprecatedValue()),
-    m_connectivity_index_array(m_connectivity_index_variable._internalTrueData()->_internalDeprecatedValue()),
-    m_connectivity_list_array(m_connectivity_list_variable._internalTrueData()->_internalDeprecatedValue())
+  IncrementalItemConnectivityContainer(IMesh* mesh, const String& var_name)
+  : m_var_name(var_name)
+  , m_connectivity_nb_item_variable(VariableBuildInfo(mesh, var_name + "Nb", IVariable::PPrivate))
+  , m_connectivity_index_variable(VariableBuildInfo(mesh, var_name + "Index", IVariable::PPrivate))
+  , m_connectivity_list_variable(VariableBuildInfo(mesh, var_name + "List", IVariable::PPrivate))
+  , m_connectivity_nb_item_array(m_connectivity_nb_item_variable._internalTrueData()->_internalDeprecatedValue())
+  , m_connectivity_index_array(m_connectivity_index_variable._internalTrueData()->_internalDeprecatedValue())
+  , m_connectivity_list_array(m_connectivity_list_variable._internalTrueData()->_internalDeprecatedValue())
   {
     // Adds a tag to indicate that these variables are associated with connectivity.
     // For now, this is only used for display statistics.
 
     String tag_name = "ArcaneConnectivity";
-    m_connectivity_nb_item_variable.addTag(tag_name,"1");
-    m_connectivity_index_variable.addTag(tag_name,"1");
-    m_connectivity_list_variable.addTag(tag_name,"1");
+    m_connectivity_nb_item_variable.addTag(tag_name, "1");
+    m_connectivity_index_variable.addTag(tag_name, "1");
+    m_connectivity_list_variable.addTag(tag_name, "1");
   }
 
   String m_var_name;
@@ -148,22 +148,22 @@ class IncrementalItemConnectivityContainer
 
   Integer size() const { return m_connectivity_nb_item_array.size(); }
 
-  bool isAllocated() const { return size()>0; }
+  bool isAllocated() const { return size() > 0; }
 
   void _checkResize(Int32 lid)
   {
     //TODO: reuse the code from ItemFamily::_setUniqueId().
     Integer size = m_connectivity_nb_item_array.size();
     Integer wanted_size = lid + 1;
-    if (wanted_size<size)
+    if (wanted_size < size)
       return;
     Integer capacity = m_connectivity_nb_item_array.capacity();
-    if (wanted_size<capacity){
+    if (wanted_size < capacity) {
       // No need to increase capacity.
     }
-    else{
+    else {
       Integer reserve_size = 1000;
-      while (lid>reserve_size){
+      while (lid > reserve_size) {
         reserve_size *= 2;
       }
       m_connectivity_nb_item_array.reserve(reserve_size);
@@ -180,7 +180,6 @@ class IncrementalItemConnectivityContainer
   }
 
  public:
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -212,9 +211,9 @@ class IncrementalItemConnectivityBase::InternalApi
 /*---------------------------------------------------------------------------*/
 
 IncrementalItemConnectivityBase::
-IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_family,
+IncrementalItemConnectivityBase(IItemFamily* source_family, IItemFamily* target_family,
                                 const String& aname)
-: AbstractIncrementalItemConnectivity(source_family,target_family,aname)
+: AbstractIncrementalItemConnectivity(source_family, target_family, aname)
 , m_internal_api(std::make_unique<InternalApi>(this))
 {
   StringBuilder var_name("Connectivity");
@@ -223,17 +222,17 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   var_name += target_family->name();
 
   IMesh* mesh = source_family->mesh();
-  m_p = new IncrementalItemConnectivityContainer(mesh,var_name);
+  m_p = new IncrementalItemConnectivityContainer(mesh, var_name);
 
   using ThatClass = IncrementalItemConnectivityBase;
   // Get read events to indicate that the views must be updated.
-  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChangedFromObservable,
+  m_p->m_observers.addObserver(this, &ThatClass::_notifyConnectivityNbItemChangedFromObservable,
                                m_p->m_connectivity_nb_item_variable.variable()->readObservable());
 
-  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityIndexChanged,
+  m_p->m_observers.addObserver(this, &ThatClass::_notifyConnectivityIndexChanged,
                                m_p->m_connectivity_index_variable.variable()->readObservable());
 
-  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityListChanged,
+  m_p->m_observers.addObserver(this, &ThatClass::_notifyConnectivityListChanged,
                                m_p->m_connectivity_list_variable.variable()->readObservable());
 
   // Update the views from the associated arrays.
@@ -259,16 +258,16 @@ IncrementalItemConnectivityBase::
 void IncrementalItemConnectivityBase::
 reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity)
 {
-  if (n<=0)
+  if (n <= 0)
     return;
 
   m_p->reserveForItems(n);
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChanged();
 
-  if (pre_alloc_connectivity){
+  if (pre_alloc_connectivity) {
     Int32 pre_alloc_size = preAllocatedSize();
-    if (pre_alloc_size>0){
+    if (pre_alloc_size > 0) {
       m_p->m_connectivity_list_array.reserve(n * pre_alloc_size);
       _notifyConnectivityListChanged();
     }
@@ -283,7 +282,7 @@ _notifyConnectivityListChanged()
 {
   m_connectivity_list = m_p->m_connectivity_list_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->_setConnectivityList(m_item_connectivity_index,m_connectivity_list);
+    m_item_connectivity_list->_setConnectivityList(m_item_connectivity_index, m_connectivity_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -294,7 +293,7 @@ _notifyConnectivityIndexChanged()
 {
   m_connectivity_index = m_p->m_connectivity_index_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->_setConnectivityIndex(m_item_connectivity_index,m_connectivity_index);
+    m_item_connectivity_list->_setConnectivityIndex(m_item_connectivity_index, m_connectivity_index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -305,7 +304,7 @@ _notifyConnectivityNbItemChanged()
 {
   m_connectivity_nb_item = m_p->m_connectivity_nb_item_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->_setConnectivityNbItem(m_item_connectivity_index,m_connectivity_nb_item);
+    m_item_connectivity_list->_setConnectivityNbItem(m_item_connectivity_index, m_connectivity_nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -315,7 +314,7 @@ void IncrementalItemConnectivityBase::
 _setMaxNbConnectedItemsInConnectivityList()
 {
   if (m_item_connectivity_list)
-    m_item_connectivity_list->_setMaxNbConnectedItem(m_item_connectivity_index,m_p->m_max_nb_item);
+    m_item_connectivity_list->_setMaxNbConnectedItem(m_item_connectivity_index, m_p->m_max_nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -337,7 +336,7 @@ _notifyConnectivityNbItemChangedFromObservable()
 void IncrementalItemConnectivityBase::
 _setNewMaxNbConnectedItems(Int32 new_max)
 {
-  if (new_max > m_p->m_max_nb_item){
+  if (new_max > m_p->m_max_nb_item) {
     m_p->m_max_nb_item = new_max;
     _setMaxNbConnectedItemsInConnectivityList();
   }
@@ -352,8 +351,8 @@ _computeMaxNbConnectedItem()
   // Force reset to ensure it is updated
   m_p->m_max_nb_item = -1;
   Int32 max_nb_item = 0;
-  for( Int32 x : m_connectivity_nb_item )
-    if (x>max_nb_item)
+  for (Int32 x : m_connectivity_nb_item)
+    if (x > max_nb_item)
       max_nb_item = x;
   _setNewMaxNbConnectedItems(max_nb_item);
 }
@@ -377,7 +376,7 @@ maxNbConnectedItem() const
  * this connectivity is modified.
  */
 void IncrementalItemConnectivityBase::
-setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
+setItemConnectivityList(ItemInternalConnectivityList* ilist, Int32 index)
 {
   info(4) << "setItemConnectivityList name=" << name() << " ilist=" << ilist << " index=" << index;
   m_item_connectivity_list = ilist;
@@ -394,7 +393,7 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 void IncrementalItemConnectivityBase::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
-  if(m_p->isAllocated()){
+  if (m_p->isAllocated()) {
     m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
     m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
     _notifyConnectivityNbItemChanged();
@@ -410,16 +409,16 @@ notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids)
 {
   Int32ArrayView ids = m_connectivity_list;
   const Integer n = ids.size();
-  for( Integer i=0; i<n; ++i )
-    if (ids[i]!=NULL_ITEM_LOCAL_ID)
-      ids[i] = old_to_new_ids[ ids[i] ];
+  for (Integer i = 0; i < n; ++i)
+    if (ids[i] != NULL_ITEM_LOCAL_ID)
+      ids[i] = old_to_new_ids[ids[i]];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemVectorView IncrementalItemConnectivityBase::
-_connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
+_connectedItems(ItemLocalId item, ConnectivityItemVector& con_items) const
 {
   return con_items.resizeAndCopy(_connectedItemsLocalId(item));
 }
@@ -439,7 +438,7 @@ connectivityContainerView() const
 IndexedItemConnectivityViewBase IncrementalItemConnectivityBase::
 connectivityView() const
 {
-  return { connectivityContainerView(), _sourceFamily()->itemKind(), _targetFamily()->itemKind()};
+  return { connectivityContainerView(), _sourceFamily()->itemKind(), _targetFamily()->itemKind() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -448,7 +447,7 @@ connectivityView() const
 IndexedItemConnectivityAccessor IncrementalItemConnectivityBase::
 connectivityAccessor() const
 {
-  return IndexedItemConnectivityAccessor(connectivityView(),_targetFamily());
+  return IndexedItemConnectivityAccessor(connectivityView(), _targetFamily());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -478,15 +477,15 @@ dumpInfos()
 /*---------------------------------------------------------------------------*/
 
 IncrementalItemConnectivity::
-IncrementalItemConnectivity(IItemFamily* source_family,IItemFamily* target_family,
+IncrementalItemConnectivity(IItemFamily* source_family, IItemFamily* target_family,
                             const String& aname)
-: IncrementalItemConnectivityBase(source_family,target_family,aname)
+: IncrementalItemConnectivityBase(source_family, target_family, aname)
 , m_nb_add(0)
 , m_nb_remove(0)
 , m_nb_memcopy(0)
 , m_pre_allocated_size(0)
 {
-  m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name()+"PreallocSize",0);
+  m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name() + "PreallocSize", 0);
   info(4) << "PreallocSize1 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
   // Checks if the null entity needs to be added at the beginning of the list.
@@ -522,10 +521,10 @@ _increaseConnectivityList(Int32 new_lid)
 /*---------------------------------------------------------------------------*/
 
 inline Integer IncrementalItemConnectivity::
-_increaseConnectivityList(Int32 new_lid,Integer nb_value)
+_increaseConnectivityList(Int32 new_lid, Integer nb_value)
 {
   Integer pos_in_list = m_connectivity_list.size();
-  m_p->m_connectivity_list_array.addRange(new_lid,nb_value);
+  m_p->m_connectivity_list_array.addRange(new_lid, nb_value);
   _notifyConnectivityListChanged();
   return pos_in_list;
 }
@@ -545,14 +544,14 @@ _resetConnectivityList()
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-_increaseIndexList(Int32 lid,Integer size,Int32 target_lid)
+_increaseIndexList(Int32 lid, Integer size, Int32 target_lid)
 {
-  Integer added_range = (m_pre_allocated_size>0) ? m_pre_allocated_size : 1;
+  Integer added_range = (m_pre_allocated_size > 0) ? m_pre_allocated_size : 1;
   ++m_nb_memcopy;
   Integer pos_in_index = m_connectivity_index[lid];
-  Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,size+added_range);
-  ArrayView<Int32> current_list(size,&(m_connectivity_list[pos_in_index]));
-  ArrayView<Int32> new_list(size+1,&(m_connectivity_list[new_pos_in_list]));
+  Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID, size + added_range);
+  ArrayView<Int32> current_list(size, &(m_connectivity_list[pos_in_index]));
+  ArrayView<Int32> new_list(size + 1, &(m_connectivity_list[new_pos_in_list]));
   new_list.copy(current_list);
   // Adds the new entity to the end of the connectivity list
   // TODO: look into sorting by increasing uid().
@@ -564,7 +563,7 @@ _increaseIndexList(Int32 lid,Integer size,Int32 target_lid)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
+addConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
   ++m_nb_add;
   const Int32 lid = source_item.localId();
@@ -579,31 +578,31 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   // we copy the previous connectivity to the new location.
   // Naturally, over time the list will always grow
   // because the gaps are not reused.
-  if (m_pre_allocated_size!=0){
+  if (m_pre_allocated_size != 0) {
     // In case of preallocation, we allocate in blocks of size 'm_pre_allocated_size'.
     // We must therefore reallocate if the size is a multiple of m_pre_allocated_size
-    if (size==0){
-      Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
+    if (size == 0) {
+      Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID, m_pre_allocated_size);
       m_connectivity_index[lid] = new_pos_in_list;
       m_connectivity_list[new_pos_in_list] = target_lid;
     }
-    else{
-      if (size<m_pre_allocated_size || (size%m_pre_allocated_size)!=0){
+    else {
+      if (size < m_pre_allocated_size || (size % m_pre_allocated_size) != 0) {
         Integer index = m_connectivity_index[lid];
-        m_connectivity_list[index+size] = target_lid;
+        m_connectivity_list[index + size] = target_lid;
       }
-      else{
-        _increaseIndexList(lid,size,target_lid);
+      else {
+        _increaseIndexList(lid, size, target_lid);
       }
     }
   }
-  else{
-    if (size==0){
+  else {
+    if (size == 0) {
       Integer new_pos_in_list = _increaseConnectivityList(target_lid);
       m_connectivity_index[lid] = new_pos_in_list;
     }
-    else{
-      _increaseIndexList(lid,size,target_lid);
+    else {
+      _increaseIndexList(lid, size, target_lid);
     }
   }
   ++(m_connectivity_nb_item[lid]);
@@ -616,12 +615,12 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
 Integer IncrementalItemConnectivity::
 _computeAllocSize(Integer nb_item)
 {
-  if (m_pre_allocated_size!=0){
+  if (m_pre_allocated_size != 0) {
     // Allocates a multiple of \a m_pre_allocated_size
     Integer alloc_size = nb_item / m_pre_allocated_size;
-    if (alloc_size==0)
+    if (alloc_size == 0)
       return m_pre_allocated_size;
-    if ((nb_item%m_pre_allocated_size)==0)
+    if ((nb_item % m_pre_allocated_size) == 0)
       return nb_item;
     return m_pre_allocated_size * (alloc_size + 1);
   }
@@ -632,14 +631,14 @@ _computeAllocSize(Integer nb_item)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-addConnectedItems(ItemLocalId source_item,Integer nb_item)
+addConnectedItems(ItemLocalId source_item, Integer nb_item)
 {
   const Int32 lid = source_item.localId();
   Integer size = m_connectivity_nb_item[lid];
-  if (size!=0)
+  if (size != 0)
     ARCANE_FATAL("source_item already have connected items");
   Integer alloc_size = _computeAllocSize(nb_item);
-  Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,alloc_size);
+  Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID, alloc_size);
   m_connectivity_index[lid] = new_pos_in_list;
   m_connectivity_nb_item[lid] += nb_item;
   _setNewMaxNbConnectedItems(m_connectivity_nb_item[lid]);
@@ -670,14 +669,14 @@ removeConnectedItems(ItemLocalId source_item)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-removeConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
+removeConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
   ++m_nb_remove;
   Int32 lid = source_item.localId();
   Int32 target_lid = target_item.localId();
   Integer size = m_connectivity_nb_item[lid];
-  Int32* items = &(m_connectivity_list[ m_connectivity_index[lid] ]);
-  mesh_utils::removeItemAndKeepOrder(Int32ArrayView(size,items),target_lid);
+  Int32* items = &(m_connectivity_list[m_connectivity_index[lid]]);
+  mesh_utils::removeItemAndKeepOrder(Int32ArrayView(size, items), target_lid);
   --(m_connectivity_nb_item[lid]);
 }
 
@@ -685,19 +684,19 @@ removeConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-replaceConnectedItem(ItemLocalId source_item,Integer index,ItemLocalId target_item)
+replaceConnectedItem(ItemLocalId source_item, Integer index, ItemLocalId target_item)
 {
   Int32 lid = source_item.localId();
   Int32 target_lid = target_item.localId();
-  ARCANE_CHECK_AT(index,m_connectivity_nb_item[lid]);
-  m_connectivity_list[ m_connectivity_index[lid] + index ] = target_lid;
+  ARCANE_CHECK_AT(index, m_connectivity_nb_item[lid]);
+  m_connectivity_list[m_connectivity_index[lid] + index] = target_lid;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-replaceConnectedItems(ItemLocalId source_item,Int32ConstArrayView target_local_ids)
+replaceConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 {
   Int32 lid = source_item.localId();
   Int32 n = target_local_ids.size();
@@ -721,7 +720,6 @@ hasConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) const
     has_connection = true;
   return has_connection;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -768,7 +766,7 @@ _internalNotifySourceItemsAdded(ConstArrayView<Int32> local_ids)
 void IncrementalItemConnectivity::
 notifyReadFromDump()
 {
-  m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name()+"PreallocSize",0);
+  m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name() + "PreallocSize", 0);
   info(4) << "PreallocSize2 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
   // There is practically nothing to do for the variables because the views are correctly updated via the observables on the variables.
@@ -780,7 +778,7 @@ notifyReadFromDump()
 void IncrementalItemConnectivity::
 setPreAllocatedSize(Integer prealloc_size)
 {
-  if (m_pre_allocated_size<0)
+  if (m_pre_allocated_size < 0)
     throw ArgumentException(A_FUNCINFO,
                             String::format("Invalid prealloc_size v={0}",
                                            prealloc_size));
@@ -790,11 +788,11 @@ setPreAllocatedSize(Integer prealloc_size)
   // NOTE: we could allow it, but that would require rebuilding
   // the connectivity indices. A call to compactConnectivityList()
   // would suffice.
-  if (m_connectivity_nb_item.size()!=0)
+  if (m_connectivity_nb_item.size() != 0)
     return;
 
   m_pre_allocated_size = prealloc_size;
-  _sourceFamily()->properties()->setInteger(name()+"PreallocSize",prealloc_size);
+  _sourceFamily()->properties()->setInteger(name() + "PreallocSize", prealloc_size);
 
   // Even if there are no entities, m_p->m_connectivity_list_array is not
   // empty because we called _checkkAddNulItem() in the constructor. We must
@@ -869,11 +867,11 @@ _checkAddNullItem()
   // (or several if m_pre_allocated_size>0) to contain the null entity.
   // This allows retrieving the list of connectivities for an entity even if
   // it is empty.
-  if (m_connectivity_list.size()==0){
-    if (m_pre_allocated_size>0){
-      _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
+  if (m_connectivity_list.size() == 0) {
+    if (m_pre_allocated_size > 0) {
+      _increaseConnectivityList(NULL_ITEM_LOCAL_ID, m_pre_allocated_size);
     }
-    else{
+    else {
       _increaseConnectivityList(NULL_ITEM_LOCAL_ID);
     }
   }
@@ -908,31 +906,31 @@ compactConnectivityList()
   _checkAddNullItem();
   Integer new_pos_in_list = m_p->m_connectivity_list_array.size();
   Int32 pre_allocated_size = m_pre_allocated_size;
-  for( Integer i=0; i<nb_item; ++i ){
+  for (Integer i = 0; i < nb_item; ++i) {
     Int32 lid = i;
     Int32 nb = m_connectivity_nb_item[lid];
-    if (nb==0){
+    if (nb == 0) {
       m_connectivity_index[lid] = 0;
       continue;
     }
     Int32 index = m_connectivity_index[lid];
-    Int32ConstArrayView con_list(nb,old_connectivity_list.data()+index);
+    Int32ConstArrayView con_list(nb, old_connectivity_list.data() + index);
     Integer alloc_size = _computeAllocSize(nb);
     m_connectivity_index[lid] = new_pos_in_list;
     new_pos_in_list += alloc_size;
     //info() << "NEW_POS_IN_LIST=" << new_pos_in_list << " nb=" << nb << " alloc_size=" << alloc_size;
     // Checks that the position is indeed a multiple of pre_allocated_size.
-    if (pre_allocated_size!=0){
+    if (pre_allocated_size != 0) {
       Int32 pos_modulo = new_pos_in_list % pre_allocated_size;
-      if (pos_modulo!=0)
+      if (pos_modulo != 0)
         ARCANE_FATAL("Bad position i={0} pos={1} pre_alloc_size={2} modulo={3}",
-                     i,new_pos_in_list,pre_allocated_size,pos_modulo);
+                     i, new_pos_in_list, pre_allocated_size, pos_modulo);
     }
     m_p->m_connectivity_list_array.addRange(con_list);
     // If pre-allocation, fill the remaining elements with the null entity..
-    if (alloc_size!=nb)
-      m_p->m_connectivity_list_array.addRange(NULL_ITEM_LOCAL_ID,alloc_size-nb);
-    if (m_pre_allocated_size==0 && nb==0)
+    if (alloc_size != nb)
+      m_p->m_connectivity_list_array.addRange(NULL_ITEM_LOCAL_ID, alloc_size - nb);
+    if (m_pre_allocated_size == 0 && nb == 0)
       m_connectivity_index[lid] = 0;
   }
   _notifyConnectivityListChanged();
@@ -953,9 +951,9 @@ compactConnectivityList()
 /*---------------------------------------------------------------------------*/
 
 OneItemIncrementalItemConnectivity::
-OneItemIncrementalItemConnectivity(IItemFamily* source_family,IItemFamily* target_family,
+OneItemIncrementalItemConnectivity(IItemFamily* source_family, IItemFamily* target_family,
                                    const String& aname)
-: IncrementalItemConnectivityBase(source_family,target_family,aname)
+: IncrementalItemConnectivityBase(source_family, target_family, aname)
 {
   info(4) << "Using fixed OneItem connectivity for name=" << name();
 }
@@ -972,11 +970,11 @@ OneItemIncrementalItemConnectivity::
 /*---------------------------------------------------------------------------*/
 
 void OneItemIncrementalItemConnectivity::
-addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
+addConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
   Int32 lid = source_item.localId();
   Integer size = m_connectivity_nb_item[lid];
-  if (size!=0)
+  if (size != 0)
     ARCANE_FATAL("source_item already have connected items");
   Int32 target_lid = target_item.localId();
   m_connectivity_list[lid] = target_lid;
@@ -998,17 +996,17 @@ removeConnectedItems(ItemLocalId source_item)
 /*---------------------------------------------------------------------------*/
 
 void OneItemIncrementalItemConnectivity::
-removeConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
+removeConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
   Int32 lid = source_item.localId();
   Int32 target_local_id = target_item.localId();
   Integer size = m_connectivity_nb_item[lid];
-  if (size!=1)
+  if (size != 1)
     ARCANE_FATAL("source_item has no connected item");
   Int32 target_lid = m_connectivity_list[lid];
-  if (target_lid!=target_local_id)
+  if (target_lid != target_local_id)
     ARCANE_FATAL("source_item is not connected to item with wanted_lid={0} current_lid={1}",
-                 target_local_id,target_lid);
+                 target_local_id, target_lid);
   m_connectivity_nb_item[lid] = 0;
   m_connectivity_list[lid] = NULL_ITEM_LOCAL_ID;
 }
@@ -1017,9 +1015,9 @@ removeConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
 /*---------------------------------------------------------------------------*/
 
 void OneItemIncrementalItemConnectivity::
-replaceConnectedItem(ItemLocalId source_item,Integer index,ItemLocalId target_item)
+replaceConnectedItem(ItemLocalId source_item, Integer index, ItemLocalId target_item)
 {
-  if (index!=0)
+  if (index != 0)
     ARCANE_FATAL("index has to be '0'");
   Int32 lid = source_item.localId();
   Int32 target_lid = target_item.localId();
@@ -1030,14 +1028,14 @@ replaceConnectedItem(ItemLocalId source_item,Integer index,ItemLocalId target_it
 /*---------------------------------------------------------------------------*/
 
 void OneItemIncrementalItemConnectivity::
-replaceConnectedItems(ItemLocalId source_item,Int32ConstArrayView target_local_ids)
+replaceConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 {
   Int32 lid = source_item.localId();
   Integer n = target_local_ids.size();
-  if (n==0)
+  if (n == 0)
     return;
-  if (n!=1)
-    ARCANE_FATAL("Invalid size for target_list. value={0} (expected 1)",n);
+  if (n != 1)
+    ARCANE_FATAL("Invalid size for target_list. value={0} (expected 1)", n);
   m_connectivity_list[lid] = target_local_ids[0];
 }
 
@@ -1064,10 +1062,10 @@ _checkResizeConnectivityList()
   // as the number of entities.
   Integer wanted_size = m_connectivity_nb_item.size();
   Integer list_size = m_connectivity_list.size();
-  if (list_size==wanted_size)
+  if (list_size == wanted_size)
     return;
   Integer capacity = m_p->m_connectivity_list_array.capacity();
-  if (wanted_size>=capacity){
+  if (wanted_size >= capacity) {
     m_p->m_connectivity_list_array.reserve(m_p->m_connectivity_nb_item_array.capacity());
   }
   m_p->m_connectivity_list_array.resize(wanted_size);
@@ -1133,9 +1131,7 @@ notifyReadFromDump()
 void OneItemIncrementalItemConnectivity::
 dumpStats(std::ostream& out) const
 {
-  size_t allocated_size = m_p->m_connectivity_list_array.capacity()
-  + m_p->m_connectivity_index_array.capacity()
-  + m_p->m_connectivity_nb_item_array.capacity();
+  size_t allocated_size = m_p->m_connectivity_list_array.capacity() + m_p->m_connectivity_index_array.capacity() + m_p->m_connectivity_nb_item_array.capacity();
   allocated_size *= sizeof(Int32);
 
   out << " connectiviy name=" << name()

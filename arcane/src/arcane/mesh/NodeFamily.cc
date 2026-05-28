@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,22 +48,29 @@ class NodeFamily::TopologyModifier
 : public AbstractItemFamilyTopologyModifier
 {
  public:
+
   TopologyModifier(NodeFamily* f)
-  :  AbstractItemFamilyTopologyModifier(f), m_true_family(f){}
+  : AbstractItemFamilyTopologyModifier(f)
+  , m_true_family(f)
+  {}
+
  public:
-  void replaceEdge(ItemLocalId item_lid,Integer index,ItemLocalId new_lid) override
+
+  void replaceEdge(ItemLocalId item_lid, Integer index, ItemLocalId new_lid) override
   {
-    m_true_family->replaceEdge(item_lid,index,new_lid);
+    m_true_family->replaceEdge(item_lid, index, new_lid);
   }
-  void replaceFace(ItemLocalId item_lid,Integer index,ItemLocalId new_lid) override
+  void replaceFace(ItemLocalId item_lid, Integer index, ItemLocalId new_lid) override
   {
-    m_true_family->replaceFace(item_lid,index,new_lid);
+    m_true_family->replaceFace(item_lid, index, new_lid);
   }
-  void replaceCell(ItemLocalId item_lid,Integer index,ItemLocalId new_lid) override
+  void replaceCell(ItemLocalId item_lid, Integer index, ItemLocalId new_lid) override
   {
-    m_true_family->replaceCell(item_lid,index,new_lid);
+    m_true_family->replaceCell(item_lid, index, new_lid);
   }
+
  private:
+
   NodeFamily* m_true_family;
 };
 
@@ -71,11 +78,11 @@ class NodeFamily::TopologyModifier
 /*---------------------------------------------------------------------------*/
 
 NodeFamily::
-NodeFamily(IMesh* mesh,const String& name)
-: ItemFamily(mesh,IK_Node,name)
+NodeFamily(IMesh* mesh, const String& name)
+: ItemFamily(mesh, IK_Node, name)
 {
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SORT_FACE_AND_EDGE_OF_NODE", true)){
-    m_is_sort_connected_faces_and_edges = v.value() !=0;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SORT_FACE_AND_EDGE_OF_NODE", true)) {
+    m_is_sort_connected_faces_and_edges = v.value() != 0;
     info() << "Set sort faces and edges of nodes v?=" << m_is_sort_connected_faces_and_edges;
   }
   _setTopologyModifier(new TopologyModifier(this));
@@ -103,22 +110,21 @@ build()
   if (m_parent_family)
     m_nodes_coords = nullptr;
   else
-    m_nodes_coords = new VariableNodeReal3(VariableBuildInfo(mesh(),"NodeCoord"));
+    m_nodes_coords = new VariableNodeReal3(VariableBuildInfo(mesh(), "NodeCoord"));
 
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(mesh()->faceFamily()));
   m_edge_family = ARCANE_CHECK_POINTER(dynamic_cast<EdgeFamily*>(mesh()->edgeFamily()));
 
   if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
-    m_edge_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,EdgeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->edgeFamily(),connectivityName(this,mesh()->edgeFamily())));
-    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,m_face_family,connectivityName(this,mesh()->faceFamily())));
-    m_cell_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,CellFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->cellFamily(),connectivityName(this,mesh()->cellFamily())));
+    m_edge_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily, EdgeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this, mesh()->edgeFamily(), connectivityName(this, mesh()->edgeFamily())));
+    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily, FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this, m_face_family, connectivityName(this, mesh()->faceFamily())));
+    m_cell_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily, CellFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this, mesh()->cellFamily(), connectivityName(this, mesh()->cellFamily())));
   }
-  else
-  {
-    m_edge_connectivity = new EdgeConnectivity(this,mesh()->edgeFamily(),"NodeEdge");
-    m_face_connectivity = new FaceConnectivity(this,m_face_family,"NodeFace");
-    m_cell_connectivity = new CellConnectivity(this,mesh()->cellFamily(),"NodeCell");
+  else {
+    m_edge_connectivity = new EdgeConnectivity(this, mesh()->edgeFamily(), "NodeEdge");
+    m_face_connectivity = new FaceConnectivity(this, m_face_family, "NodeFace");
+    m_cell_connectivity = new CellConnectivity(this, mesh()->cellFamily(), "NodeCell");
   }
   m_hparent_connectivity = new HParentConnectivity(this, this, "HParentNode");
   m_hchild_connectivity = new HChildConnectivity(this, this, "HChildNode");
@@ -138,7 +144,7 @@ build()
 void NodeFamily::
 preAllocate(Integer nb_item)
 {
-  this->_preAllocate(nb_item,true);
+  this->_preAllocate(nb_item, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,70 +162,70 @@ _endAllocate()
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addCellToNode(Node node,Cell new_cell)
+addCellToNode(Node node, Cell new_cell)
 {
-  _checkValidSourceTargetItems(node,new_cell);
+  _checkValidSourceTargetItems(node, new_cell);
   Int32 cell_lid = new_cell.localId();
-  m_cell_connectivity->addConnectedItem(ItemLocalId(node),ItemLocalId(cell_lid));
+  m_cell_connectivity->addConnectedItem(ItemLocalId(node), ItemLocalId(cell_lid));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addFaceToNode(Node node,Face new_face)
+addFaceToNode(Node node, Face new_face)
 {
   if (m_no_face_connectivity)
     return;
 
-  _checkValidSourceTargetItems(node,new_face);
-  m_face_connectivity->addConnectedItem(ItemLocalId(node),ItemLocalId(new_face));
+  _checkValidSourceTargetItems(node, new_face);
+  m_face_connectivity->addConnectedItem(ItemLocalId(node), ItemLocalId(new_face));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addEdgeToNode(Node node,Edge new_edge)
+addEdgeToNode(Node node, Edge new_edge)
 {
-  if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
+  if (!Connectivity::hasConnectivity(m_mesh_connectivity, Connectivity::CT_NodeToEdge))
     return;
 
-  _checkValidSourceTargetItems(node,new_edge);
-  m_edge_connectivity->addConnectedItem(ItemLocalId(node),ItemLocalId(new_edge));
+  _checkValidSourceTargetItems(node, new_edge);
+  m_edge_connectivity->addConnectedItem(ItemLocalId(node), ItemLocalId(new_edge));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove)
+removeEdgeFromNode(ItemLocalId node, ItemLocalId edge_to_remove)
 {
-  if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
+  if (!Connectivity::hasConnectivity(m_mesh_connectivity, Connectivity::CT_NodeToEdge))
     return;
-  m_edge_connectivity->removeConnectedItem(node,edge_to_remove);
+  m_edge_connectivity->removeConnectedItem(node, edge_to_remove);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove)
+removeFaceFromNode(ItemLocalId node, ItemLocalId face_to_remove)
 {
   if (m_no_face_connectivity)
     return;
 
-  m_face_connectivity->removeConnectedItem(node,face_to_remove);
+  m_face_connectivity->removeConnectedItem(node, face_to_remove);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid)
+removeCellFromNode(Node node, ItemLocalId cell_to_remove_lid)
 {
-	_checkValidItem(node);
-  m_cell_connectivity->removeConnectedItem(ItemLocalId(node),cell_to_remove_lid);
+  _checkValidItem(node);
+  m_cell_connectivity->removeConnectedItem(ItemLocalId(node), cell_to_remove_lid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,12 +234,12 @@ removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid)
 void NodeFamily::
 removeNodeIfNotConnected(Node node)
 {
-	_checkValidItem(node);
-	if (!node.itemBase().isSuppressed()){
-		Integer nb_cell = node.nbCell();
-		if (nb_cell == 0)
-			_removeNode(node);
-	}
+  _checkValidItem(node);
+  if (!node.itemBase().isSuppressed()) {
+    Integer nb_cell = node.nbCell();
+    if (nb_cell == 0)
+      _removeNode(node);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -266,9 +272,9 @@ _removeNode(Node node)
  * that of localId() \a node_lid.
  */
 void NodeFamily::
-replaceCell(ItemLocalId node,Integer index,ItemLocalId cell)
+replaceCell(ItemLocalId node, Integer index, ItemLocalId cell)
 {
-  m_cell_connectivity->replaceItem(node,index,cell);
+  m_cell_connectivity->replaceItem(node, index, cell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -278,9 +284,9 @@ replaceCell(ItemLocalId node,Integer index,ItemLocalId cell)
  * that of localId() \a face_lid.
  */
 void NodeFamily::
-replaceEdge(ItemLocalId node,Integer index,ItemLocalId edge)
+replaceEdge(ItemLocalId node, Integer index, ItemLocalId edge)
 {
-  m_edge_connectivity->replaceItem(node,index,edge);
+  m_edge_connectivity->replaceItem(node, index, edge);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,29 +296,29 @@ replaceEdge(ItemLocalId node,Integer index,ItemLocalId edge)
  * that of localId() \a face_lid.
  */
 void NodeFamily::
-replaceFace(ItemLocalId node,Integer index,ItemLocalId face)
+replaceFace(ItemLocalId node, Integer index, ItemLocalId face)
 {
-  m_face_connectivity->replaceItem(node,index,face);
+  m_face_connectivity->replaceItem(node, index, face);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-setConnectivity(const Integer c) 
+setConnectivity(const Integer c)
 {
   m_mesh_connectivity = c;
-  if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
-    m_edge_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Node,IK_Edge);
-  m_face_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Node,IK_Face);
-  m_cell_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Node,IK_Cell);
+  if (Connectivity::hasConnectivity(m_mesh_connectivity, Connectivity::CT_HasEdge))
+    m_edge_prealloc = Connectivity::getPrealloc(m_mesh_connectivity, IK_Node, IK_Edge);
+  m_face_prealloc = Connectivity::getPrealloc(m_mesh_connectivity, IK_Node, IK_Face);
+  m_cell_prealloc = Connectivity::getPrealloc(m_mesh_connectivity, IK_Node, IK_Cell);
   m_face_connectivity->setPreAllocatedSize(m_face_prealloc);
   m_cell_connectivity->setPreAllocatedSize(m_cell_prealloc);
-  debug() << "Family " << name() << " prealloc " 
-          << m_edge_prealloc << " by edge, " 
+  debug() << "Family " << name() << " prealloc "
+          << m_edge_prealloc << " by edge, "
           << m_face_prealloc << " by face, "
           << m_cell_prealloc << " by cell.";
-  m_no_face_connectivity = !Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToFace);
+  m_no_face_connectivity = !Connectivity::hasConnectivity(m_mesh_connectivity, Connectivity::CT_NodeToFace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -329,7 +335,7 @@ class NodeFamily::ItemCompare2
 
  public:
 
-  bool operator()(Int32 item1,Int32 item2) const
+  bool operator()(Int32 item1, Int32 item2) const
   {
     return m_items.uniqueId(item1) < m_items.uniqueId(item2);
   }
@@ -345,12 +351,19 @@ class NodeFamily::ItemCompare2
 class NodeFamily::ItemCompare3
 {
  public:
-  explicit ItemCompare3(ITraceMng* msg) : m_msg(msg) {}
+
+  explicit ItemCompare3(ITraceMng* msg)
+  : m_msg(msg)
+  {}
+
  public:
+
   ITraceMng* m_msg;
   ItemInternalArrayView m_items;
+
  public:
-  bool operator()(Integer item1,Integer item2) const
+
+  bool operator()(Integer item1, Integer item2) const
   {
     m_msg->info() << "** Compare ptr=" << m_items.data()
                   << " i1=" << item1 << " i2=" << item2
@@ -376,10 +389,10 @@ _sortConnectedItems(IItemFamily* family, IncrementalItemConnectivity* connectivi
   // reproducibility.
   ItemInfoListView items_infos(family->itemInfoListView());
   ItemCompare2 ic_items(items_infos);
-  ENUMERATE_ITEM(iitem,allItems()){
+  ENUMERATE_ITEM (iitem, allItems()) {
     ItemLocalId lid(iitem.itemLocalId());
     Int32ArrayView conn_lids = connectivity->_connectedItemsLocalId(lid);
-    std::sort(std::begin(conn_lids),std::end(conn_lids),ic_items);
+    std::sort(std::begin(conn_lids), std::end(conn_lids), ic_items);
   }
 }
 
@@ -390,16 +403,16 @@ void NodeFamily::
 sortInternalReferences()
 {
   // Sort the cells connected to nodes by increasing uniqueId().
-  _sortConnectedItems(mesh()->cellFamily(),m_cell_connectivity->trueCustomConnectivity());
+  _sortConnectedItems(mesh()->cellFamily(), m_cell_connectivity->trueCustomConnectivity());
 
   // Do the same for faces and edges.
   // For historical reasons, this is not active by default.
-  bool do_sort = properties()->getBoolWithDefault("sort-connected-faces-edges",m_is_sort_connected_faces_and_edges);
-  if (do_sort){
+  bool do_sort = properties()->getBoolWithDefault("sort-connected-faces-edges", m_is_sort_connected_faces_and_edges);
+  if (do_sort) {
     info(4) << "Sorting connected faces and edges family=" << fullName();
-    _sortConnectedItems(m_face_family,m_face_connectivity->trueCustomConnectivity());
-    if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
-      _sortConnectedItems(mesh()->edgeFamily(),m_edge_connectivity->trueCustomConnectivity());
+    _sortConnectedItems(m_face_family, m_face_connectivity->trueCustomConnectivity());
+    if (Connectivity::hasConnectivity(m_mesh_connectivity, Connectivity::CT_NodeToEdge))
+      _sortConnectedItems(mesh()->edgeFamily(), m_edge_connectivity->trueCustomConnectivity());
   }
 }
 

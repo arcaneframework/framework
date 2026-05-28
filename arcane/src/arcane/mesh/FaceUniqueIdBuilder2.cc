@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -138,54 +138,57 @@ class FaceUniqueIdBuilder2
 class FaceUniqueIdBuilder2::NarrowCellFaceInfo
 {
  public:
+
   static const Int64 BITS_CELL_UID = 39;
   static const Int64 BITS_RANK = 20;
   static const Int64 BITS_INDEX = 5;
   static const Int64 ONE_INT64 = 1;
   static const Int64 MASK_CELL_UID = (ONE_INT64 << BITS_CELL_UID) - 1;
   static const Int64 MASK_RANK = ((ONE_INT64 << BITS_RANK) - 1) << BITS_CELL_UID;
-  static const Int64 MASK_INDEX = ((ONE_INT64 << BITS_INDEX) - 1) << (BITS_CELL_UID+BITS_RANK);
-  
+  static const Int64 MASK_INDEX = ((ONE_INT64 << BITS_INDEX) - 1) << (BITS_CELL_UID + BITS_RANK);
+
  public:
+
   NarrowCellFaceInfo()
   {
-    setValue(NULL_ITEM_UNIQUE_ID,-1,-1);
+    setValue(NULL_ITEM_UNIQUE_ID, -1, -1);
   }
+
  public:
 
   bool isMaxValue() const
   {
     Int64 max_id = (MASK_CELL_UID - 1);
-    return cellUid()==max_id;
+    return cellUid() == max_id;
   }
 
   void setMaxValue()
   {
     Int64 max_id = (MASK_CELL_UID - 1);
-    setValue(max_id,-1,-1);
+    setValue(max_id, -1, -1);
   }
 
-  void setValue(Int64 cell_uid,Int32 _rank,Int32 face_local_index)
+  void setValue(Int64 cell_uid, Int32 _rank, Int32 face_local_index)
   {
-    Int64 v_fli = face_local_index+1;
-    Int64 v_rank = _rank+1;
-    Int64 v_uid = cell_uid+1;
-    m_value = v_fli << (BITS_CELL_UID+BITS_RANK);
+    Int64 v_fli = face_local_index + 1;
+    Int64 v_rank = _rank + 1;
+    Int64 v_uid = cell_uid + 1;
+    m_value = v_fli << (BITS_CELL_UID + BITS_RANK);
     m_value += v_rank << (BITS_CELL_UID);
     m_value += v_uid;
-    if (cellUid()!=cell_uid)
-      ARCANE_FATAL("Bad uid expected='{0}' computed='{1}' v={2}",cell_uid,cellUid(),m_value);
-    if (rank()!=_rank)
-      ARCANE_FATAL("Bad rank expected='{0}' computed='{1}'",_rank,rank());
-    if (faceLocalIndex()!=face_local_index)
-      ARCANE_FATAL("Bad local_index expected='{0}' computed='{1}'",face_local_index,faceLocalIndex());
+    if (cellUid() != cell_uid)
+      ARCANE_FATAL("Bad uid expected='{0}' computed='{1}' v={2}", cell_uid, cellUid(), m_value);
+    if (rank() != _rank)
+      ARCANE_FATAL("Bad rank expected='{0}' computed='{1}'", _rank, rank());
+    if (faceLocalIndex() != face_local_index)
+      ARCANE_FATAL("Bad local_index expected='{0}' computed='{1}'", face_local_index, faceLocalIndex());
   }
   Int64 cellUid() const { return (m_value & MASK_CELL_UID) - 1; }
-  Int32 rank() const { return CheckedConvert::toInt32( ((m_value & MASK_RANK) >> BITS_CELL_UID) - 1 ); }
-  Int32 faceLocalIndex() const { return CheckedConvert::toInt32( ((m_value & MASK_INDEX) >> (BITS_CELL_UID+BITS_RANK)) - 1 ); }
+  Int32 rank() const { return CheckedConvert::toInt32(((m_value & MASK_RANK) >> BITS_CELL_UID) - 1); }
+  Int32 faceLocalIndex() const { return CheckedConvert::toInt32(((m_value & MASK_INDEX) >> (BITS_CELL_UID + BITS_RANK)) - 1); }
 
-  bool isValid() const { return cellUid()!=NULL_ITEM_UNIQUE_ID; }
-    
+  bool isValid() const { return cellUid() != NULL_ITEM_UNIQUE_ID; }
+
  private:
 
   Int64 m_value = -1;
@@ -199,20 +202,27 @@ class FaceUniqueIdBuilder2::NarrowCellFaceInfo
 class FaceUniqueIdBuilder2::WideCellFaceInfo
 {
  public:
-  WideCellFaceInfo() : m_cell_uid(NULL_ITEM_UNIQUE_ID), m_rank(-1), m_face_local_index(-1){}
+
+  WideCellFaceInfo()
+  : m_cell_uid(NULL_ITEM_UNIQUE_ID)
+  , m_rank(-1)
+  , m_face_local_index(-1)
+  {}
+
  public:
+
   bool isMaxValue() const
   {
     Int64 max_id = INT64_MAX;
-    return cellUid()==max_id;
+    return cellUid() == max_id;
   }
 
   void setMaxValue()
   {
     Int64 max_id = INT64_MAX;
-    setValue(max_id,-1,-1);
+    setValue(max_id, -1, -1);
   }
-  void setValue(Int64 cell_uid,Int32 rank,Int32 face_local_index)
+  void setValue(Int64 cell_uid, Int32 rank, Int32 face_local_index)
   {
     m_cell_uid = cell_uid;
     m_rank = rank;
@@ -221,8 +231,8 @@ class FaceUniqueIdBuilder2::WideCellFaceInfo
   Int64 cellUid() const { return m_cell_uid; }
   Int32 rank() const { return m_rank; }
   Int32 faceLocalIndex() const { return m_face_local_index; }
-  bool isValid() const { return m_cell_uid!=NULL_ITEM_UNIQUE_ID; }
-    
+  bool isValid() const { return m_cell_uid != NULL_ITEM_UNIQUE_ID; }
+
  private:
 
   Int64 m_cell_uid;
@@ -241,33 +251,39 @@ class FaceUniqueIdBuilder2::WideCellFaceInfo
 class FaceUniqueIdBuilder2::BoundaryFaceInfo
 {
  public:
-  BoundaryFaceInfo() 
-  : m_node0_uid(NULL_ITEM_UNIQUE_ID), m_node1_uid(NULL_ITEM_UNIQUE_ID),
-    m_node2_uid(NULL_ITEM_UNIQUE_ID), m_cell_uid(NULL_ITEM_UNIQUE_ID),
-    m_rank(-1), m_face_local_index(-1)
+
+  BoundaryFaceInfo()
+  : m_node0_uid(NULL_ITEM_UNIQUE_ID)
+  , m_node1_uid(NULL_ITEM_UNIQUE_ID)
+  , m_node2_uid(NULL_ITEM_UNIQUE_ID)
+  , m_cell_uid(NULL_ITEM_UNIQUE_ID)
+  , m_rank(-1)
+  , m_face_local_index(-1)
   {}
   bool hasSameNodes(const BoundaryFaceInfo& fsi) const
   {
-    return fsi.m_node0_uid==m_node0_uid && fsi.m_node1_uid==m_node1_uid
-    && fsi.m_node2_uid==m_node2_uid;
+    return fsi.m_node0_uid == m_node0_uid && fsi.m_node1_uid == m_node1_uid && fsi.m_node2_uid == m_node2_uid;
   }
   void setNodes(Face face)
   {
     Integer nb_node = face.nbNode();
-    if (nb_node>=1)
+    if (nb_node >= 1)
       m_node0_uid = face.node(0).uniqueId();
-    if (nb_node>=2)
+    if (nb_node >= 2)
       m_node1_uid = face.node(1).uniqueId();
-    if (nb_node>=3)
+    if (nb_node >= 3)
       m_node2_uid = face.node(2).uniqueId();
   }
+
  public:
+
   Int64 m_node0_uid;
   Int64 m_node1_uid;
   Int64 m_node2_uid;
   Int64 m_cell_uid;
   Int32 m_rank;
   Int32 m_face_local_index;
+
  public:
 };
 
@@ -287,17 +303,21 @@ class FaceUniqueIdBuilder2::AnyFaceInfo
   AnyFaceInfo() = default;
 
  public:
-  void setCell0(Int64 uid,Int32 rank,Int32 face_local_index)
+
+  void setCell0(Int64 uid, Int32 rank, Int32 face_local_index)
   {
-    m_cell0.setValue(uid,rank,face_local_index);
+    m_cell0.setValue(uid, rank, face_local_index);
   }
-  void setCell1(Int64 uid,Int32 rank,Int32 face_local_index)
+  void setCell1(Int64 uid, Int32 rank, Int32 face_local_index)
   {
-    m_cell1.setValue(uid,rank,face_local_index);
+    m_cell1.setValue(uid, rank, face_local_index);
   }
+
  public:
+
   CellFaceInfo m_cell0;
   CellFaceInfo m_cell1;
+
  public:
 };
 
@@ -308,6 +328,7 @@ class FaceUniqueIdBuilder2::AnyFaceInfo
 class FaceUniqueIdBuilder2::ResendCellInfo
 {
  public:
+
   Int64 m_cell_uid;
   // This field contains both the local index of the face in the cell
   // and the rank of the cell owner.
@@ -331,42 +352,43 @@ class FaceUniqueIdBuilder2::ResendCellInfo
 class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
 {
  public:
-  static bool compareLess(const BoundaryFaceInfo& k1,const BoundaryFaceInfo& k2)
+
+  static bool compareLess(const BoundaryFaceInfo& k1, const BoundaryFaceInfo& k2)
   {
-    if (k1.m_node0_uid<k2.m_node0_uid)
+    if (k1.m_node0_uid < k2.m_node0_uid)
       return true;
-    if (k1.m_node0_uid>k2.m_node0_uid)
+    if (k1.m_node0_uid > k2.m_node0_uid)
       return false;
 
     // k1.node0_uid == k2.node0_uid
-    if (k1.m_node1_uid<k2.m_node1_uid)
+    if (k1.m_node1_uid < k2.m_node1_uid)
       return true;
-    if (k1.m_node1_uid>k2.m_node1_uid)
+    if (k1.m_node1_uid > k2.m_node1_uid)
       return false;
 
     // k1.node1_uid == k2.node1_uid
-    if (k1.m_node2_uid<k2.m_node2_uid)
+    if (k1.m_node2_uid < k2.m_node2_uid)
       return true;
-    if (k1.m_node2_uid>k2.m_node2_uid)
+    if (k1.m_node2_uid > k2.m_node2_uid)
       return false;
 
     // k1.node2_uid == k2.node2_uid
-    return (k1.m_cell_uid<k2.m_cell_uid);
+    return (k1.m_cell_uid < k2.m_cell_uid);
   }
 
-  static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<BoundaryFaceInfo> values)
+  static Parallel::Request send(IParallelMng* pm, Int32 rank, ConstArrayView<BoundaryFaceInfo> values)
   {
     const BoundaryFaceInfo* fsi_base = values.data();
-    return pm->send(ByteConstArrayView(messageSize(values),(const Byte*)fsi_base),rank,false);
+    return pm->send(ByteConstArrayView(messageSize(values), (const Byte*)fsi_base), rank, false);
   }
-  static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<BoundaryFaceInfo> values)
+  static Parallel::Request recv(IParallelMng* pm, Int32 rank, ArrayView<BoundaryFaceInfo> values)
   {
     BoundaryFaceInfo* fsi_base = values.data();
-    return pm->recv(ByteArrayView(messageSize(values),(Byte*)fsi_base),rank,false);
+    return pm->recv(ByteArrayView(messageSize(values), (Byte*)fsi_base), rank, false);
   }
   static Integer messageSize(ConstArrayView<BoundaryFaceInfo> values)
   {
-    return CheckedConvert::toInteger( values.size()*sizeof(BoundaryFaceInfo) );
+    return CheckedConvert::toInteger(values.size() * sizeof(BoundaryFaceInfo));
   }
   static BoundaryFaceInfo maxValue()
   {
@@ -380,7 +402,7 @@ class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
   }
   static bool isValid(const BoundaryFaceInfo& fsi)
   {
-    return fsi.m_cell_uid!=INT64_MAX;
+    return fsi.m_cell_uid != INT64_MAX;
   }
 };
 
@@ -399,37 +421,38 @@ class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
 class FaceUniqueIdBuilder2::AnyFaceBitonicSortTraits
 {
  public:
-  static bool compareLess(const AnyFaceInfo& k1,const AnyFaceInfo& k2)
+
+  static bool compareLess(const AnyFaceInfo& k1, const AnyFaceInfo& k2)
   {
     Int64 k1_cell0_uid = k1.m_cell0.cellUid();
     Int64 k2_cell0_uid = k2.m_cell0.cellUid();
-    if (k1_cell0_uid<k2_cell0_uid)
+    if (k1_cell0_uid < k2_cell0_uid)
       return true;
-    if (k1_cell0_uid>k2_cell0_uid)
+    if (k1_cell0_uid > k2_cell0_uid)
       return false;
 
     Int64 k1_face0_local_index = k1.m_cell0.faceLocalIndex();
     Int64 k2_face0_local_index = k2.m_cell0.faceLocalIndex();
-    if (k1_face0_local_index<k2_face0_local_index)
+    if (k1_face0_local_index < k2_face0_local_index)
       return true;
-    if (k1_face0_local_index>k2_face0_local_index)
+    if (k1_face0_local_index > k2_face0_local_index)
       return false;
 
-    return (k1.m_cell1.cellUid()<k2.m_cell1.cellUid());
+    return (k1.m_cell1.cellUid() < k2.m_cell1.cellUid());
   }
 
-  static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<AnyFaceInfo> values)
+  static Parallel::Request send(IParallelMng* pm, Int32 rank, ConstArrayView<AnyFaceInfo> values)
   {
     const AnyFaceInfo* fsi_base = values.data();
-    Integer message_size = CheckedConvert::toInteger(values.size()*sizeof(AnyFaceInfo));
-    return pm->send(ByteConstArrayView(message_size,(const Byte*)fsi_base),rank,false);
+    Integer message_size = CheckedConvert::toInteger(values.size() * sizeof(AnyFaceInfo));
+    return pm->send(ByteConstArrayView(message_size, (const Byte*)fsi_base), rank, false);
   }
 
-  static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<AnyFaceInfo> values)
+  static Parallel::Request recv(IParallelMng* pm, Int32 rank, ArrayView<AnyFaceInfo> values)
   {
     AnyFaceInfo* fsi_base = values.data();
-    Integer message_size = CheckedConvert::toInteger(values.size()*sizeof(AnyFaceInfo));
-    return pm->recv(ByteArrayView(message_size,(Byte*)fsi_base),rank,false);
+    Integer message_size = CheckedConvert::toInteger(values.size() * sizeof(AnyFaceInfo));
+    return pm->recv(ByteArrayView(message_size, (Byte*)fsi_base), rank, false);
   }
 
   static AnyFaceInfo maxValue()
@@ -480,7 +503,7 @@ FaceUniqueIdBuilder2(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Calculates the unique IDs of each face in parallel.
- */  
+ */
 void FaceUniqueIdBuilder2::
 computeFacesUniqueIdAndOwnerVersion3()
 {
@@ -494,7 +517,7 @@ computeFacesUniqueIdAndOwnerVersion3()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Calculates the unique IDs of each face sequentially.
- */  
+ */
 void FaceUniqueIdBuilder2::
 _computeSequential()
 {
@@ -512,15 +535,15 @@ _computeSequential()
   cells_map.eachItem([&](Cell item) {
     cells.add(item);
   });
-  std::sort(std::begin(cells),std::end(cells),UniqueIdSorter());
+  std::sort(std::begin(cells), std::end(cells), UniqueIdSorter());
 
   // Invalidate uids to ensure they are all positioned.
   _unsetFacesUniqueId();
 
-  for( Integer i=0; i<nb_cell; ++i ){    
+  for (Integer i = 0; i < nb_cell; ++i) {
     Cell cell = cells[i];
-    for( Face face : cell.faces()){
-      if (face.uniqueId()==NULL_ITEM_UNIQUE_ID){
+    for (Face face : cell.faces()) {
+      if (face.uniqueId() == NULL_ITEM_UNIQUE_ID) {
         face.mutableItemBase().setUniqueId(face_unique_id_counter);
         ++face_unique_id_counter;
       }
@@ -532,7 +555,7 @@ _computeSequential()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Calculates the unique IDs of each face in parallel.
- */  
+ */
 void FaceUniqueIdBuilder2::
 _computeParallel()
 {
@@ -566,34 +589,34 @@ _computeParallel()
     ConstArrayView<BoundaryFaceInfo> all_fsi = boundary_faces_info;
     Integer n = all_fsi.size();
     bool is_last_already_done = false;
-    for( Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       const BoundaryFaceInfo& fsi = all_fsi[i];
       Int64 cell_uid0 = fsi.m_cell_uid;
       bool is_inside = false;
       //TODO: handle the case if the previous mesh is on another proc
       // For this, it is necessary to retrieve the last value of the previous proc
       // and check if it corresponds to our first value
-      is_inside = ((i+1)!=n && fsi.hasSameNodes(all_fsi[i+1]));
-      if (is_last_already_done){
+      is_inside = ((i + 1) != n && fsi.hasSameNodes(all_fsi[i + 1]));
+      if (is_last_already_done) {
         is_last_already_done = false;
       }
-      else{
+      else {
         AnyFaceInfo csi;
-        if (is_inside){
-          const BoundaryFaceInfo& next_fsi = all_fsi[i+1];
+        if (is_inside) {
+          const BoundaryFaceInfo& next_fsi = all_fsi[i + 1];
           Int64 cell_uid1 = next_fsi.m_cell_uid;
-          if (cell_uid0<cell_uid1){
-            csi.setCell0(cell_uid0,fsi.m_rank,fsi.m_face_local_index);
-            csi.setCell1(cell_uid1,next_fsi.m_rank,next_fsi.m_face_local_index);
+          if (cell_uid0 < cell_uid1) {
+            csi.setCell0(cell_uid0, fsi.m_rank, fsi.m_face_local_index);
+            csi.setCell1(cell_uid1, next_fsi.m_rank, next_fsi.m_face_local_index);
           }
-          else{
-            csi.setCell0(cell_uid1,next_fsi.m_rank,next_fsi.m_face_local_index);
-            csi.setCell1(cell_uid0,fsi.m_rank,fsi.m_face_local_index);
+          else {
+            csi.setCell0(cell_uid1, next_fsi.m_rank, next_fsi.m_face_local_index);
+            csi.setCell1(cell_uid0, fsi.m_rank, fsi.m_face_local_index);
           }
           is_last_already_done = true;
         }
-        else{
-          csi.setCell0(cell_uid0,fsi.m_rank,fsi.m_face_local_index);
+        else {
+          csi.setCell0(cell_uid0, fsi.m_rank, fsi.m_face_local_index);
         }
         all_face_list.add(csi);
       }
@@ -614,28 +637,28 @@ _computeParallel()
   cells_map.eachItem([&](Cell cell) {
     Integer cell_nb_face = cell.nbFace();
     Int64 cell_uid = cell.uniqueId();
-    for( Integer z=0; z<cell_nb_face; ++z ){
+    for (Integer z = 0; z < cell_nb_face; ++z) {
       Face face = cell.face(z);
-      if (face.nbCell()!=2)
+      if (face.nbCell() != 2)
         continue;
       Cell cell0 = face.cell(0);
       Cell cell1 = face.cell(1);
-      Cell next_cell = (cell0==cell) ? cell1 : cell0;
+      Cell next_cell = (cell0 == cell) ? cell1 : cell0;
       Int64 next_cell_uid = next_cell.uniqueId();
       // Only record if I am the mesh with the smaller uid
-      if (cell_uid<next_cell_uid){
+      if (cell_uid < next_cell_uid) {
         AnyFaceInfo csi;
-        csi.m_cell0.setValue(cell_uid,my_rank,z);
+        csi.m_cell0.setValue(cell_uid, my_rank, z);
         // The face_local_index of mesh 1 will not be used
-        csi.m_cell1.setValue(next_cell_uid,my_rank,-1);
+        csi.m_cell1.setValue(next_cell_uid, my_rank, -1);
         all_face_list.add(csi);
       }
     }
   });
 
-  if (is_verbose){
+  if (is_verbose) {
     Integer n = all_face_list.size();
-    for( Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       const AnyFaceInfo& csi = all_face_list[i];
       info() << "CELL_TO_SORT i=" << i
              << " cell0=" << csi.m_cell0.cellUid()
@@ -644,8 +667,8 @@ _computeParallel()
     }
   }
 
-  info() << "ALL_FACE_LIST memorysize=" << sizeof(AnyFaceInfo)*all_face_list.size();
-  Parallel::BitonicSort<AnyFaceInfo,AnyFaceBitonicSortTraits> all_face_sorter(pm);
+  info() << "ALL_FACE_LIST memorysize=" << sizeof(AnyFaceInfo) * all_face_list.size();
+  Parallel::BitonicSort<AnyFaceInfo, AnyFaceBitonicSortTraits> all_face_sorter(pm);
   all_face_sorter.setNeedIndexAndRank(false);
   Real sort_begin_time = platform::getRealTime();
   all_face_sorter.sort(all_face_list);
@@ -669,7 +692,7 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
   bool is_verbose = m_is_verbose;
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
-  Parallel::BitonicSort<BoundaryFaceInfo,BoundaryFaceBitonicSortTraits> boundary_face_sorter(pm);
+  Parallel::BitonicSort<BoundaryFaceInfo, BoundaryFaceBitonicSortTraits> boundary_face_sorter(pm);
   boundary_face_sorter.setNeedIndexAndRank(false);
 
   //UniqueArray<BoundaryFaceInfo> boundary_face_list;
@@ -677,7 +700,7 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
   faces_map.eachItem([&](Face face) {
     BoundaryFaceInfo fsi;
     Integer nb_cell = face.nbCell();
-    if (nb_cell==2)
+    if (nb_cell == 2)
       return;
 
     fsi.m_rank = my_rank;
@@ -685,8 +708,8 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
     Cell cell = face.cell(0);
     fsi.m_cell_uid = cell.uniqueId();
     Integer face_local_index = 0;
-    for( Integer z=0, zs=cell.nbFace(); z<zs; ++z )
-      if (cell.face(z)==face){
+    for (Integer z = 0, zs = cell.nbFace(); z < zs; ++z)
+      if (cell.face(z) == face) {
         face_local_index = z;
         break;
       }
@@ -694,10 +717,10 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
     boundary_faces_info.add(fsi);
   });
 
-  if (is_verbose){
+  if (is_verbose) {
     ConstArrayView<BoundaryFaceInfo> all_fsi = boundary_faces_info;
     Integer n = all_fsi.size();
-    for( Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       const BoundaryFaceInfo& fsi = all_fsi[i];
       info() << "KEY i=" << i
              << " n0=" << fsi.m_node0_uid
@@ -717,8 +740,8 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
   {
     ConstArrayView<BoundaryFaceInfo> all_bfi = boundary_face_sorter.keys();
     Integer n = all_bfi.size();
-    if (is_verbose){
-      for( Integer i=0; i<n; ++i ){
+    if (is_verbose) {
+      for (Integer i = 0; i < n; ++i) {
         const BoundaryFaceInfo& bfi = all_bfi[i];
         info() << " AFTER KEY i=" << i
                << " n0=" << bfi.m_node0_uid
@@ -732,15 +755,15 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
 
     // As a single node may be present in the previous proc's list, each PE
     // (except 0) sends to the previous process the start of its list which contains the same nodes.
-    
+
     // TODO: merge this code with that of GhostLayerBuilder2
     UniqueArray<BoundaryFaceInfo> end_face_list;
     Integer begin_own_list_index = 0;
-    if (n!=0 && my_rank!=0){
-      if (BoundaryFaceBitonicSortTraits::isValid(all_bfi[0])){
+    if (n != 0 && my_rank != 0) {
+      if (BoundaryFaceBitonicSortTraits::isValid(all_bfi[0])) {
         Int64 node0_uid = all_bfi[0].m_node0_uid;
-        for( Integer i=0; i<n; ++i ){
-          if (all_bfi[i].m_node0_uid!=node0_uid){
+        for (Integer i = 0; i < n; ++i) {
+          if (all_bfi[i].m_node0_uid != node0_uid) {
             begin_own_list_index = i;
             break;
           }
@@ -750,8 +773,8 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
       }
     }
     info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index;
-    if (is_verbose){
-      for( Integer k=0, kn=end_face_list.size(); k<kn; ++k )
+    if (is_verbose) {
+      for (Integer k = 0, kn = end_face_list.size(); k < kn; ++k)
         info() << " SEND n0=" << end_face_list[k].m_node0_uid
                << " n1=" << end_face_list[k].m_node1_uid
                << " n2=" << end_face_list[k].m_node2_uid;
@@ -766,31 +789,30 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
     Int32 nb_rank = pm->commSize();
 
     // First sends and receives the sizes.
-    if (my_rank!=(nb_rank-1)){
-      requests.add(pm->recv(IntegerArrayView(1,&recv_message_size),my_rank+1,false));
+    if (my_rank != (nb_rank - 1)) {
+      requests.add(pm->recv(IntegerArrayView(1, &recv_message_size), my_rank + 1, false));
     }
-    if (my_rank!=0){
-      requests.add(pm->send(IntegerConstArrayView(1,&send_message_size),my_rank-1,false));
+    if (my_rank != 0) {
+      requests.add(pm->send(IntegerConstArrayView(1, &send_message_size), my_rank - 1, false));
     }
-    
+
     pm->waitAllRequests(requests);
     requests.clear();
-    
-    if (recv_message_size!=0){
-      Integer message_size = CheckedConvert::toInteger(recv_message_size/sizeof(BoundaryFaceInfo));
+
+    if (recv_message_size != 0) {
+      Integer message_size = CheckedConvert::toInteger(recv_message_size / sizeof(BoundaryFaceInfo));
       end_face_list_recv.resize(message_size);
-      requests.add(BoundaryFaceBitonicSortTraits::recv(pm,my_rank+1,end_face_list_recv));
+      requests.add(BoundaryFaceBitonicSortTraits::recv(pm, my_rank + 1, end_face_list_recv));
     }
-    if (send_message_size!=0)
-      requests.add(BoundaryFaceBitonicSortTraits::send(pm,my_rank-1,end_face_list));
+    if (send_message_size != 0)
+      requests.add(BoundaryFaceBitonicSortTraits::send(pm, my_rank - 1, end_face_list));
 
     pm->waitAllRequests(requests);
 
     boundary_faces_info.clear();
-    boundary_faces_info.addRange(all_bfi.subConstView(begin_own_list_index,n-begin_own_list_index));
+    boundary_faces_info.addRange(all_bfi.subConstView(begin_own_list_index, n - begin_own_list_index));
     boundary_faces_info.addRange(end_face_list_recv);
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -808,8 +830,8 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 
   Int64 nb_computed_face = all_csi.size();
 
-  if (is_verbose){
-    for( Integer i=0; i<nb_computed_face; ++i ){
+  if (is_verbose) {
+    for (Integer i = 0; i < nb_computed_face; ++i) {
       const AnyFaceInfo& csi = all_csi[i];
       info() << "CELLS_KEY i=" << i
              << " cell0=" << csi.m_cell0.cellUid()
@@ -823,9 +845,9 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 
   // Calculation for each rank of the number of values to send
   // and stores it in nb_info_to_send;
-  IntegerUniqueArray nb_info_to_send(nb_rank,0);
+  IntegerUniqueArray nb_info_to_send(nb_rank, 0);
   {
-    for( Integer i=0; i<nb_computed_face; ++i ){
+    for (Integer i = 0; i < nb_computed_face; ++i) {
       const AnyFaceInfo& csi = all_csi[i];
       Int32 rank0 = csi.m_cell0.rank();
       Int32 rank1 = csi.m_cell1.rank();
@@ -833,7 +855,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
       ++nb_info_to_send[rank0];
 
       // It must only be sent if the rank is different from m_rank0
-      if (csi.m_cell1.isValid() && rank1!=rank0)
+      if (csi.m_cell1.isValid() && rank1 != rank0)
         ++nb_info_to_send[rank1];
     }
   }
@@ -846,10 +868,10 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     // Since this list will be sorted, this corresponds to the uid of the first
     // face of this process.
     Int64 nb_cell_to_sort = all_csi.size();
-    pm->allGather(Int64ConstArrayView(1,&nb_cell_to_sort),all_first_face_uid);
+    pm->allGather(Int64ConstArrayView(1, &nb_cell_to_sort), all_first_face_uid);
 
     Int64 to_add = 0;
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       Int64 next = all_first_face_uid[i];
       all_first_face_uid[i] = to_add;
       to_add += next;
@@ -857,8 +879,8 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
   }
 
   Integer total_nb_to_send = 0;
-  IntegerUniqueArray nb_info_to_send_indexes(nb_rank,0);
-  for( Integer i=0; i<nb_rank; ++i ){
+  IntegerUniqueArray nb_info_to_send_indexes(nb_rank, 0);
+  for (Integer i = 0; i < nb_rank; ++i) {
     nb_info_to_send_indexes[i] = total_nb_to_send;
     total_nb_to_send += nb_info_to_send[i];
   }
@@ -866,7 +888,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 
   UniqueArray<ResendCellInfo> resend_infos(total_nb_to_send);
   {
-    for( Integer i=0; i<nb_computed_face; ++i ){
+    for (Integer i = 0; i < nb_computed_face; ++i) {
       const AnyFaceInfo& csi = all_csi[i];
       Int32 rank0 = csi.m_cell0.rank();
       Int32 rank1 = csi.m_cell1.rank();
@@ -877,7 +899,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
       rci0.m_index_in_rank_list = i;
       ++nb_info_to_send_indexes[rank0];
 
-      if (csi.m_cell1.isValid() && rank1!=rank0){
+      if (csi.m_cell1.isValid() && rank1 != rank0) {
         ResendCellInfo& rci1 = resend_infos[nb_info_to_send_indexes[rank1]];
         rci1.m_cell_uid = csi.m_cell1.cellUid();
         // Even if I am mesh 1, the owner of the face will be mesh 0.
@@ -885,32 +907,31 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
         rci1.m_index_in_rank_list = i;
         ++nb_info_to_send_indexes[rank1];
       }
-
     }
   }
 
   // Perform a single reduce
-  Int64 total_nb_computed_face = pm->reduce(Parallel::ReduceSum,nb_computed_face);
+  Int64 total_nb_computed_face = pm->reduce(Parallel::ReduceSum, nb_computed_face);
   info() << "TOTAL_NB_COMPUTED_FACE=" << total_nb_computed_face;
-  
+
   // Indicates to each PE how many infos I will send to it
   if (is_verbose)
-    for( Integer i=0; i<nb_rank; ++i )
+    for (Integer i = 0; i < nb_rank; ++i)
       info() << "NB_TO_SEND: I=" << i << " n=" << nb_info_to_send[i];
 
-  IntegerUniqueArray nb_info_to_recv(nb_rank,0);
+  IntegerUniqueArray nb_info_to_recv(nb_rank, 0);
   {
-    Timer::SimplePrinter sp(traceMng(),"Sending size with AllToAll");
-    pm->allToAll(nb_info_to_send,nb_info_to_recv,1);
+    Timer::SimplePrinter sp(traceMng(), "Sending size with AllToAll");
+    pm->allToAll(nb_info_to_send, nb_info_to_recv, 1);
   }
 
   if (is_verbose)
-    for( Integer i=0; i<nb_rank; ++i )
+    for (Integer i = 0; i < nb_rank; ++i)
       info() << "NB_TO_RECV: I=" << i << " n=" << nb_info_to_recv[i];
 
   Integer total_nb_to_recv = 0;
-  for( Integer i=0; i<nb_rank; ++i )
-    total_nb_to_recv +=  nb_info_to_recv[i];
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_nb_to_recv += nb_info_to_recv[i];
 
   // It is highly likely that this will not work if the array is too large,
   // it must proceed with arrays that do not exceed 2Go because of the
@@ -925,7 +946,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     Int32UniqueArray recv_indexes(nb_rank);
     Int32 total_send = 0;
     Int32 total_recv = 0;
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       send_counts[i] = (Int32)(nb_info_to_send[i] * vsize);
       recv_counts[i] = (Int32)(nb_info_to_recv[i] * vsize);
       send_indexes[i] = total_send;
@@ -935,23 +956,23 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
     }
     recv_infos.resize(total_nb_to_recv);
 
-    Int64ConstArrayView send_buf(total_nb_to_send*vsize,(Int64*)resend_infos.data());
-    Int64ArrayView recv_buf(total_nb_to_recv*vsize,(Int64*)recv_infos.data());
+    Int64ConstArrayView send_buf(total_nb_to_send * vsize, (Int64*)resend_infos.data());
+    Int64ArrayView recv_buf(total_nb_to_recv * vsize, (Int64*)recv_infos.data());
 
     info() << "BUF_SIZES: send=" << send_buf.size() << " recv=" << recv_buf.size();
     {
-      Timer::SimplePrinter sp(traceMng(),"Send values with AllToAll");
-      pm->allToAllVariable(send_buf,send_counts,send_indexes,recv_buf,recv_counts,recv_indexes);
+      Timer::SimplePrinter sp(traceMng(), "Send values with AllToAll");
+      pm->allToAllVariable(send_buf, send_counts, send_indexes, recv_buf, recv_counts, recv_indexes);
     }
   }
 
   // Invalidates the uids to ensure they will all be positioned.
   _unsetFacesUniqueId();
 
-  if (is_verbose){
+  if (is_verbose) {
     Integer index = 0;
-    for( Int32 rank=0; rank<nb_rank; ++rank ){
-      for( Integer z=0, zs=nb_info_to_recv[rank]; z<zs; ++z ){
+    for (Int32 rank = 0; rank < nb_rank; ++rank) {
+      for (Integer z = 0, zs = nb_info_to_recv[rank]; z < zs; ++z) {
         const ResendCellInfo& rci = recv_infos[index];
         ++index;
 
@@ -965,7 +986,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
                << " face_local_idx=" << face_local_index
                << " owner_rank=" << owner_rank
                << " rank_idx=" << rci.m_index_in_rank_list
-               << " rank="<< rank
+               << " rank=" << rank
                << " first_face_uid=" << all_first_face_uid[rank]
                << " computed_uid=" << face_uid;
       }
@@ -975,9 +996,9 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
   // Positions the uniqueId() and the owner() of the faces.
   {
     Integer index = 0;
-    for( Int32 i=0; i<nb_rank; ++i ){
+    for (Int32 i = 0; i < nb_rank; ++i) {
       Int32 rank = i;
-      for( Integer z=0, zs=nb_info_to_recv[i]; z<zs; ++z ){
+      for (Integer z = 0, zs = nb_info_to_recv[i]; z < zs; ++z) {
         const ResendCellInfo& rci = recv_infos[index];
         ++index;
 
@@ -988,11 +1009,11 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 
         Cell cell = cells_map.tryFind(cell_uid);
         if (cell.null())
-          ARCANE_FATAL("Can not find cell data for '{0}'",cell_uid);
+          ARCANE_FATAL("Can not find cell data for '{0}'", cell_uid);
         Face face = cell.face(face_local_index);
         Int64 face_uid = all_first_face_uid[rank] + rci.m_index_in_rank_list;
         face.mutableItemBase().setUniqueId(face_uid);
-        face.mutableItemBase().setOwner(owner_rank,my_rank);
+        face.mutableItemBase().setOwner(owner_rank, my_rank);
       }
     }
   }
@@ -1032,9 +1053,9 @@ computeFacesUniqueIdAndOwnerVersion5()
     // In parallel, indicates that the owner of this face must be positioned
     // if it is a boundary face.
     Int32 new_rank = my_rank;
-    if (is_parallel && face.nbCell()==1)
+    if (is_parallel && face.nbCell() == 1)
       new_rank = A_NULL_RANK;
-    face.mutableItemBase().setOwner(new_rank,my_rank);
+    face.mutableItemBase().setOwner(new_rank, my_rank);
   });
 }
 
@@ -1064,12 +1085,12 @@ _checkFacesUniqueId()
   Integer nb_error = 0;
   faces_map.eachItem([&](Face face) {
     Int64 face_uid = face.uniqueId();
-    if (face_uid==NULL_ITEM_UNIQUE_ID){
+    if (face_uid == NULL_ITEM_UNIQUE_ID) {
       info() << "Bad face uid cell0=" << face.cell(0).uniqueId();
       ++nb_error;
     }
   });
-  if (nb_error!=0)
+  if (nb_error != 0)
     ARCANE_FATAL("Internal error in face uniqueId computation: nb_invalid={0}", nb_error);
 }
 

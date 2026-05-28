@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -55,16 +55,16 @@ computeExtraItemsToSend()
   Int32ConstArrayView ranks = m_ghost_policy->communicatingRanks();
   m_data_to_send.resize(m_parallel_mng->commSize());
   const Int32 my_rank = m_parallel_mng->commRank();
-  for (Integer i = 0; i < ranks.size(); ++i){
+  for (Integer i = 0; i < ranks.size(); ++i) {
     Integer rank = ranks[i];
     Int32Array& data_to_send = m_data_to_send[rank];
-    Int32SharedArray shared_items = m_ghost_policy->sharedItems(rank,m_connectivity->targetFamily()->name());
-    Int32SharedArray shared_items_connected_items = m_ghost_policy->sharedItemsConnectedItems(rank,m_connectivity->sourceFamily()->name());
-    _getItemToSend(shared_items,shared_items_connected_items, rank);
+    Int32SharedArray shared_items = m_ghost_policy->sharedItems(rank, m_connectivity->targetFamily()->name());
+    Int32SharedArray shared_items_connected_items = m_ghost_policy->sharedItemsConnectedItems(rank, m_connectivity->sourceFamily()->name());
+    _getItemToSend(shared_items, shared_items_connected_items, rank);
     data_to_send.add(shared_items.size());
     data_to_send.addRange(shared_items);
     data_to_send.addRange(shared_items_connected_items);
-    data_to_send.addRange(my_rank,shared_items.size()); // shared item owner
+    data_to_send.addRange(my_rank, shared_items.size()); // shared item owner
   }
 }
 
@@ -72,21 +72,21 @@ computeExtraItemsToSend()
 /*---------------------------------------------------------------------------*/
 
 void ItemConnectivitySynchronizer::
-serializeGhostItems(ISerializer* buffer,Int32ConstArrayView ghost_item_info)
+serializeGhostItems(ISerializer* buffer, Int32ConstArrayView ghost_item_info)
 {
   // Treat ghost item info : split into item_uids, nb_dof_per_item, dof_uids
   Integer nb_shared_item = ghost_item_info[0];
-  Int32ConstArrayView shared_item_lids = ghost_item_info.subConstView(1,nb_shared_item);
-  Int32ConstArrayView shared_item_connected_item_lids = ghost_item_info.subConstView(nb_shared_item+1,nb_shared_item);
-  Int32ConstArrayView shared_item_owners = ghost_item_info.subConstView(2*nb_shared_item+1,nb_shared_item);
+  Int32ConstArrayView shared_item_lids = ghost_item_info.subConstView(1, nb_shared_item);
+  Int32ConstArrayView shared_item_connected_item_lids = ghost_item_info.subConstView(nb_shared_item + 1, nb_shared_item);
+  Int32ConstArrayView shared_item_owners = ghost_item_info.subConstView(2 * nb_shared_item + 1, nb_shared_item);
   // Convert in uids (items must belong to current process)
   Int64SharedArray shared_item_uids(nb_shared_item);
   Int64SharedArray shared_item_connected_item_uids(nb_shared_item);
-  Integer i = 0, j= 0;
-  ENUMERATE_ITEM(item,m_connectivity->targetFamily()->view(shared_item_lids)){
+  Integer i = 0, j = 0;
+  ENUMERATE_ITEM (item, m_connectivity->targetFamily()->view(shared_item_lids)) {
     shared_item_uids[i++] = item->uniqueId().asInt64();
   }
-  ENUMERATE_ITEM(item,m_connectivity->sourceFamily()->view(shared_item_connected_item_lids)){
+  ENUMERATE_ITEM (item, m_connectivity->sourceFamily()->view(shared_item_connected_item_lids)) {
     shared_item_connected_item_uids[j++] = item->uniqueId().asInt64();
   }
 
@@ -110,7 +110,7 @@ serializeGhostItems(ISerializer* buffer,Int32ConstArrayView ghost_item_info)
 /*---------------------------------------------------------------------------*/
 
 void ItemConnectivitySynchronizer::
-addExtraGhostItems (ISerializer* buffer)
+addExtraGhostItems(ISerializer* buffer)
 {
   // Deserialize the buffer and perform a classic addGhost, then establish the connection using the item property
   buffer->setMode(ISerializer::ModeGet);
@@ -126,23 +126,22 @@ addExtraGhostItems (ISerializer* buffer)
   buffer->getSpan(shared_items_owners);
 
   // Remove possible repetition in shared_items and impact owners. Necessary to add these items in the family
-  Int64SharedArray   shared_item_uids_to_add(shared_item_uids);
+  Int64SharedArray shared_item_uids_to_add(shared_item_uids);
   IntegerSharedArray shared_item_owners_to_add(shared_items_owners);
-  _removeDuplicatedValues(shared_item_uids_to_add,shared_item_owners_to_add);
+  _removeDuplicatedValues(shared_item_uids_to_add, shared_item_owners_to_add);
 
   // Add shared items
   Int32SharedArray shared_item_lids_added(shared_item_uids_to_add.size());
-  m_connectivity->targetFamily()->addGhostItems(shared_item_uids_to_add,shared_item_lids_added,shared_item_owners_to_add);
+  m_connectivity->targetFamily()->addGhostItems(shared_item_uids_to_add, shared_item_lids_added, shared_item_owners_to_add);
   m_connectivity->targetFamily()->endUpdate();
 
   // update connectivity
   Int32SharedArray shared_item_lids(nb_shared_items);
   bool do_fatal = true; // shared_items have been adde to the family
-  m_connectivity->targetFamily()  ->itemsUniqueIdToLocalId(shared_item_lids,shared_item_uids,do_fatal);
+  m_connectivity->targetFamily()->itemsUniqueIdToLocalId(shared_item_lids, shared_item_uids, do_fatal);
   // shared_item_connected_item are not compulsory present on the new subdomain where shared_items have been send.
   // Send shared_item_connected_items_uids to GhostPolicy where they will be handled (possibly converted to lid if they are present).
-  m_ghost_policy->updateConnectivity(shared_item_lids,shared_item_connected_items_uids);
-
+  m_ghost_policy->updateConnectivity(shared_item_lids, shared_item_connected_items_uids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,10 +171,9 @@ _getItemToSend(Int32SharedArray& shared_items, Int32SharedArray& shared_items_co
     shared_items_uids[i] = shared_items_view[i].uniqueId().asInt64();
   std::set<Int64>& added_ghost = m_added_ghost[rank];
 
-
- // reverse order to handle index changes due to remove
-  for (Integer i = shared_items_uids.size()-1; i >=0  ; --i ){
-    if (!added_ghost.insert(shared_items_uids[i]).second){
+  // reverse order to handle index changes due to remove
+  for (Integer i = shared_items_uids.size() - 1; i >= 0; --i) {
+    if (!added_ghost.insert(shared_items_uids[i]).second) {
       // check if already added ghost
       shared_items.remove(i);
       shared_items_connected_items.remove(i);
@@ -191,8 +189,8 @@ _removeDuplicatedValues(Int64SharedArray& shared_item_uids, IntegerSharedArray& 
 {
   // Reverse order for the loop : otherwise wrong !! (since elements are removed and thus index are modified)
   std::set<Int64> shared_uids_set;
-  for (Integer i = shared_item_uids.size()-1; i >= 0 ; --i){
-    if (! shared_uids_set.insert(shared_item_uids[i]).second){
+  for (Integer i = shared_item_uids.size() - 1; i >= 0; --i) {
+    if (!shared_uids_set.insert(shared_item_uids[i]).second) {
       // element already in the set, remove it from both arrays.
       shared_item_uids.remove(i);
       shared_item_owners.remove(i);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,9 +14,9 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
-#include "arcane/ItemInfoListView.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemInfoListView.h"
 
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 
@@ -52,21 +52,21 @@ family() const
  * the list \a items
  */
 inline Integer AbstractItemFamilyTopologyModifier::
-_getItemIndex(const Int32* items,Integer nb_item,Int32 local_id)
+_getItemIndex(const Int32* items, Integer nb_item, Int32 local_id)
 {
-  for( Integer i=0; i<nb_item; ++i )
+  for (Integer i = 0; i < nb_item; ++i)
     if (items[i] == local_id)
       return i;
-  ARCANE_FATAL("Can not find item to replace local_id={0}",local_id);
+  ARCANE_FATAL("Can not find item to replace local_id={0}", local_id);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline Integer AbstractItemFamilyTopologyModifier::
-_getItemIndex(ItemVectorView items,Int32 local_id)
+_getItemIndex(ItemVectorView items, Int32 local_id)
 {
-  return _getItemIndex(items.localIds().data(),items.size(),local_id);
+  return _getItemIndex(items.localIds().data(), items.size(), local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ _getItemIndex(ItemVectorView items,Int32 local_id)
 void AbstractItemFamilyTopologyModifier::
 _throwNotSupported()
 {
-  ARCANE_THROW(NotSupportedException,"Connectivity modification not supported for family name={0}",
+  ARCANE_THROW(NotSupportedException, "Connectivity modification not supported for family name={0}",
                m_family->name());
 }
 
@@ -83,7 +83,7 @@ _throwNotSupported()
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceNode(ItemLocalId item_lid,Integer index,ItemLocalId new_node_lid)
+replaceNode(ItemLocalId item_lid, Integer index, ItemLocalId new_node_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -95,7 +95,7 @@ replaceNode(ItemLocalId item_lid,Integer index,ItemLocalId new_node_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceEdge(ItemLocalId item_lid,Integer index,ItemLocalId new_edge_lid)
+replaceEdge(ItemLocalId item_lid, Integer index, ItemLocalId new_edge_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -107,7 +107,7 @@ replaceEdge(ItemLocalId item_lid,Integer index,ItemLocalId new_edge_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceFace(ItemLocalId item_lid,Integer index,ItemLocalId new_face_lid)
+replaceFace(ItemLocalId item_lid, Integer index, ItemLocalId new_face_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -119,7 +119,7 @@ replaceFace(ItemLocalId item_lid,Integer index,ItemLocalId new_face_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceCell(ItemLocalId item_lid,Integer index,ItemLocalId new_cell_lid)
+replaceCell(ItemLocalId item_lid, Integer index, ItemLocalId new_cell_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -131,7 +131,7 @@ replaceCell(ItemLocalId item_lid,Integer index,ItemLocalId new_cell_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceHParent(ItemLocalId item_lid,Integer index,ItemLocalId new_hparent_lid)
+replaceHParent(ItemLocalId item_lid, Integer index, ItemLocalId new_hparent_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -143,7 +143,7 @@ replaceHParent(ItemLocalId item_lid,Integer index,ItemLocalId new_hparent_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-replaceHChild(ItemLocalId item_lid,Integer index,ItemLocalId new_hchild_lid)
+replaceHChild(ItemLocalId item_lid, Integer index, ItemLocalId new_hchild_lid)
 {
   ARCANE_UNUSED(item_lid);
   ARCANE_UNUSED(index);
@@ -202,7 +202,7 @@ findAndReplaceCell(ItemLocalId item_lid, ItemLocalId old_cell_lid,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,15 +39,15 @@ class ARCANE_MESH_EXPORT NodeFamily
   class ItemCompare3;
   class TopologyModifier;
 
-  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex, IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex, IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex, IncrementalItemConnectivity> CellConnectivity;
   typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex, IncrementalItemConnectivity> HParentConnectivity;
   typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex, IncrementalItemConnectivity> HChildConnectivity;
 
  public:
 
-  NodeFamily(IMesh* mesh,const String& name);
+  NodeFamily(IMesh* mesh, const String& name);
   virtual ~NodeFamily(); //<! Releases resources
 
  public:
@@ -73,9 +73,9 @@ class ARCANE_MESH_EXPORT NodeFamily
    */
 
   // IItemFamilyModifier interface
-  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override
+  Item allocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info) override
   {
-    ARCANE_ASSERT((type_id == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
+    ARCANE_ASSERT((type_id == IT_Vertex), ("Creating node with a type not equal to IT_Vertex"));
     ARCANE_UNUSED(type_id);
     ++mesh_info.nbNode();
     return allocOne(uid);
@@ -85,50 +85,50 @@ class ARCANE_MESH_EXPORT NodeFamily
   {
     ItemInternal* item = _allocOne(uid);
     m_item_internal_list->nodes = _itemsInternal();
-    _allocateInfos(item,uid,m_node_type);
+    _allocateInfos(item, uid, m_node_type);
     return item;
   }
 
   // IItemFamilyModifier interface
-  Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override
+  Item findOrAllocOne(Int64 uid, ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override
   {
-    ARCANE_ASSERT((type_id == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
+    ARCANE_ASSERT((type_id == IT_Vertex), ("Creating node with a type not equal to IT_Vertex"));
     ARCANE_UNUSED(type_id);
-    auto node = findOrAllocOne(uid,is_alloc);
+    auto node = findOrAllocOne(uid, is_alloc);
     if (is_alloc)
       ++mesh_info.nbNode();
     return node;
   }
 
-  ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc)
+  ItemInternal* findOrAllocOne(Int64 uid, bool& is_alloc)
   {
-    ItemInternal* item = _findOrAllocOne(uid,is_alloc);
-    if (is_alloc){
+    ItemInternal* item = _findOrAllocOne(uid, is_alloc);
+    if (is_alloc) {
       m_item_internal_list->nodes = _itemsInternal();
-      _allocateInfos(item,uid,m_node_type);
+      _allocateInfos(item, uid, m_node_type);
     }
     return item;
   }
 
   // IItemFamilyModifier interface
-  IItemFamily* family() override {return this;}
+  IItemFamily* family() override { return this; }
 
-  void replaceEdge(ItemLocalId node,Integer index,ItemLocalId edge);
-  void replaceFace(ItemLocalId node,Integer index,ItemLocalId face);
-  void replaceCell(ItemLocalId node,Integer index,ItemLocalId cell);
+  void replaceEdge(ItemLocalId node, Integer index, ItemLocalId edge);
+  void replaceFace(ItemLocalId node, Integer index, ItemLocalId face);
+  void replaceCell(ItemLocalId node, Integer index, ItemLocalId cell);
 
-  void addCellToNode(Node node,Cell new_cell);
-  void addFaceToNode(Node node,Face new_face);
-  void addEdgeToNode(Node node,Edge new_edge);
-  void removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove);
-  void removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove);
-  void removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid);
+  void addCellToNode(Node node, Cell new_cell);
+  void addFaceToNode(Node node, Face new_face);
+  void addEdgeToNode(Node node, Edge new_edge);
+  void removeEdgeFromNode(ItemLocalId node, ItemLocalId edge_to_remove);
+  void removeFaceFromNode(ItemLocalId node, ItemLocalId face_to_remove);
+  void removeCellFromNode(Node node, ItemLocalId cell_to_remove_lid);
   //! Removes the node if it is no longer connected
   void removeNodeIfNotConnected(Node node);
 
   VariableNodeReal3& nodesCoordinates()
   {
-    ARCANE_ASSERT((m_nodes_coords),("NodeFamily::nodesCoordinates is available only on primary meshes"));
+    ARCANE_ASSERT((m_nodes_coords), ("NodeFamily::nodesCoordinates is available only on primary meshes"));
     return *m_nodes_coords;
   }
 
@@ -144,7 +144,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   void _addParentNodeToNode(Node parent_node, Node child_node);
 
  private:
-  
+
   ItemTypeInfo* m_node_type = nullptr; //!< Instance containing the node type
   Integer m_edge_prealloc = 0;
   Integer m_face_prealloc = 0;

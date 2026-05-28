@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate,Int32 version);
+_buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,19 +89,19 @@ addGhostLayers(bool is_allocate)
 {
   Real begin_time = platform::getRealTime();
   Integer version = m_mesh->ghostLayerMng()->builderVersion();
-  if (version==1){
-    throw NotSupportedException(A_FUNCINFO,"Version 1 is no longer supported");
+  if (version == 1) {
+    throw NotSupportedException(A_FUNCINFO, "Version 1 is no longer supported");
   }
-  else if (version==2){
+  else if (version == 2) {
     info() << "Use ghost layer builder version 2";
     _addOneGhostLayerV2();
   }
-  else if (version==3 || version==4){
+  else if (version == 3 || version == 4) {
     info() << "Use GhostLayerBuilder with sort (version " << version << ")";
-    _buildGhostLayerNewVersion(m_mesh,is_allocate,version);
+    _buildGhostLayerNewVersion(m_mesh, is_allocate, version);
   }
   else
-    throw NotSupportedException(A_FUNCINFO,"Bad version number for addGhostLayer");
+    throw NotSupportedException(A_FUNCINFO, "Bad version number for addGhostLayer");
 
   Real end_time = platform::getRealTime();
   Real diff = (Real)(end_time - begin_time);
@@ -115,45 +115,48 @@ class NodeCellList
 {
  public:
  private:
-
- public:
-  NodeCellList() : m_cell_last_index(5000,true) {}
-
  public:
 
-  void add(Int64 node_uid,Int64 cell_uid,Int64 cell_owner)
+  NodeCellList()
+  : m_cell_last_index(5000, true)
+  {}
+
+ public:
+
+  void add(Int64 node_uid, Int64 cell_uid, Int64 cell_owner)
   {
     Int32 current_index = m_cell_indexes.size();
     m_cell_indexes.add(cell_uid);
     m_cell_indexes.add(cell_owner);
     bool is_add = false;
-    HashTableMapT<Int64,Int32>::Data* d = m_cell_last_index.lookupAdd(node_uid,-1,is_add);
+    HashTableMapT<Int64, Int32>::Data* d = m_cell_last_index.lookupAdd(node_uid, -1, is_add);
     m_cell_indexes.add(d->value());
     d->value() = current_index;
   }
 
  public:
+
   Int64UniqueArray m_cell_indexes;
-  HashTableMapT<Int64,Int32> m_cell_last_index;
+  HashTableMapT<Int64, Int32> m_cell_last_index;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder::
-_exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send)
+_exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send)
 {
-  for( BoundaryInfosMapEnumerator i_map(boundary_infos_to_send); ++i_map; ){
+  for (BoundaryInfosMapEnumerator i_map(boundary_infos_to_send); ++i_map;) {
     Int32 sd = i_map.data()->key();
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
   {
-    for( Integer i=0, ns=exchanger->nbSender(); i<ns; ++i ){
+    for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
       ISerializeMessage* sm = exchanger->messageToSend(i);
       Int32 rank = sm->destination().value();
       ISerializer* s = sm->serializer();
-      Int64ConstArrayView infos  = boundary_infos_to_send[rank];
+      Int64ConstArrayView infos = boundary_infos_to_send[rank];
 
       s->setMode(ISerializer::ModeReserve);
       s->reserveArray(infos); // For the elements
@@ -175,14 +178,14 @@ void GhostLayerBuilder::
 _addOneGhostLayerV2()
 {
   info() << "** NEW GHOST LAYER BUILDER V2";
-  if (m_mesh->ghostLayerMng()->nbGhostLayer()!=1)
-    ARCANE_THROW(NotImplementedException,"Only one layer of ghost cells is supported");
+  if (m_mesh->ghostLayerMng()->nbGhostLayer() != 1)
+    ARCANE_THROW(NotImplementedException, "Only one layer of ghost cells is supported");
 
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
-  debug() << " RANK="<< pm->commRank() << " size=" << pm->commSize();
-  if (!pm->isParallel()){
+  debug() << " RANK=" << pm->commRank() << " size=" << pm->commSize();
+  if (!pm->isParallel()) {
     debug() << "NOT PARALLEL";
     return;
   }
@@ -207,7 +210,7 @@ _addOneGhostLayerV2()
   // Iterates over faces and marks boundary nodes, edges, and faces
   faces_map.eachItem([&](Face face) {
     impl::ItemBase face_base = face.itemBase();
-    if (is_verbose){
+    if (is_verbose) {
       ostr() << ItemPrinter(face);
       ostr() << '\n';
     }
@@ -215,16 +218,16 @@ _addOneGhostLayerV2()
     if (face_base.hasFlags(ItemFlags::II_Boundary)) {
       is_sub_domain_boundary_face = true;
     }
-    else{
-      if (face.nbCell()==2 && (face.cell(0).owner()!=my_rank || face.cell(1).owner()!=my_rank))
+    else {
+      if (face.nbCell() == 2 && (face.cell(0).owner() != my_rank || face.cell(1).owner() != my_rank))
         is_sub_domain_boundary_face = true;
     }
-    if (is_sub_domain_boundary_face){
+    if (is_sub_domain_boundary_face) {
       face_base.toMutable().addFlags(shared_and_boundary_flags);
       ++nb_sub_domain_boundary_face;
-      for( Item inode : face.nodes() )
+      for (Item inode : face.nodes())
         inode.mutableItemBase().addFlags(shared_and_boundary_flags);
-      for( Item iedge : face.edges() )
+      for (Item iedge : face.edges())
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
   });
@@ -243,30 +246,29 @@ _addOneGhostLayerV2()
     }
   });
 
-  Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax,my_max_node_uid);
+  Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax, my_max_node_uid);
   debug() << "NB BOUNDARY NODE=" << boundary_nodes_uid_count
-         << " MY_MAX_UID=" << my_max_node_uid
-         << " GLOBAL=" << global_max_node_uid;
+          << " MY_MAX_UID=" << my_max_node_uid
+          << " GLOBAL=" << global_max_node_uid;
 
-  if (is_verbose){
+  if (is_verbose) {
     ostr.reset();
     ostr() << "List of shared cells:\n";
   }
 
-
   //TODO: choose a good value to initialize the table
-  BoundaryInfosMap boundary_infos_to_send(200,true);
-  NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid,nb_rank);
+  BoundaryInfosMap boundary_infos_to_send(200, true);
+  NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid, nb_rank);
 
   cells_map.eachItem([&](Cell cell) {
-    if (is_verbose){
+    if (is_verbose) {
       ostr() << "Send cell " << ItemPrinter(cell) << '\n';
     }
     //info() << " CHECK cell uid=" << cell->uniqueId() << " owner=" << cell->owner();
     //bool add_cell = false;
-    for( Node node : cell.nodes() ){
+    for (Node node : cell.nodes()) {
       //info() << "** CHECK NODE node=" << i_node->uniqueId() << " cell=" << cell->uniqueId();
-      if (node.hasFlags(ItemFlags::II_Shared)){
+      if (node.hasFlags(ItemFlags::II_Shared)) {
         Int64 node_uid = node.uniqueId();
         //info() << "** ADD BOUNDARY CELL node=" << node_uid << " cell=" << cell->uniqueId();
         Int32 dest_rank = uid_to_subdomain_converter.uidToRank(node_uid);
@@ -286,12 +288,12 @@ _addOneGhostLayerV2()
 
   info() << "Number of shared faces: " << nb_sub_domain_boundary_face;
 
-  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
+  auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
 
   if (!platform::getEnvironmentVariable("ARCANE_COLLECTIVE_GHOST_LAYER").null())
     exchanger->setExchangeMode(IParallelExchanger::EM_Collective);
 
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  _exchangeData(exchanger.get(), boundary_infos_to_send);
 
   traceMng()->flush();
   pm->barrier();
@@ -300,7 +302,7 @@ _addOneGhostLayerV2()
     Integer nb_receiver = exchanger->nbReceiver();
     debug() << "NB RECEIVER=" << nb_receiver;
     Int64UniqueArray received_infos;
-    for( Integer i=0; i<nb_receiver; ++i ){
+    for (Integer i = 0; i < nb_receiver; ++i) {
       ISerializeMessage* sm = exchanger->messageToReceive(i);
       //Int32 orig_rank = sm->destSubDomain();
       ISerializer* s = sm->serializer();
@@ -308,19 +310,19 @@ _addOneGhostLayerV2()
       s->getArray(received_infos);
       Int64 nb_info = received_infos.largeSize();
       //info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
-      if ((nb_info % 3)!=0)
-        ARCANE_FATAL("Inconsistent received data v={0}",nb_info);
+      if ((nb_info % 3) != 0)
+        ARCANE_FATAL("Inconsistent received data v={0}", nb_info);
       Int64 nb_info_true = nb_info / 3;
-      for( Int64 z=0; z<nb_info_true; ++z ){
-        Int64 node_uid = received_infos[(z*3)+0];
-        Int64 cell_owner = received_infos[(z*3)+1];
-        Int64 cell_uid = received_infos[(z*3)+2];
-        node_cell_list.add(node_uid,cell_uid,cell_owner);
+      for (Int64 z = 0; z < nb_info_true; ++z) {
+        Int64 node_uid = received_infos[(z * 3) + 0];
+        Int64 cell_owner = received_infos[(z * 3) + 1];
+        Int64 cell_uid = received_infos[(z * 3) + 2];
+        node_cell_list.add(node_uid, cell_uid, cell_owner);
       }
     }
   }
 
-  boundary_infos_to_send = BoundaryInfosMap(1000,true);
+  boundary_infos_to_send = BoundaryInfosMap(1000, true);
 
   {
     Int64ConstArrayView cell_indexes = node_cell_list.m_cell_indexes;
@@ -329,8 +331,8 @@ _addOneGhostLayerV2()
     //info() << "INDEX I=" << i << " V=" << cell_indexes[i];
     Int32UniqueArray ranks;
     Int64UniqueArray cells;
-    for( HashTableMapEnumeratorT<Int64,Int32> i_map(node_cell_list.m_cell_last_index); ++i_map; ){
-      HashTableMapT<Int64,Int32>::Data* d = i_map.data();
+    for (HashTableMapEnumeratorT<Int64, Int32> i_map(node_cell_list.m_cell_last_index); ++i_map;) {
+      HashTableMapT<Int64, Int32>::Data* d = i_map.data();
       Int32 index = d->value();
       Int64 node_uid = d->key();
       //info() << "NODE UID=" << node_uid;
@@ -343,21 +345,21 @@ _addOneGhostLayerV2()
       Int32 node_new_owner = NULL_SUB_DOMAIN_ID;
       Int64 smallest_cell_uid = NULL_ITEM_UNIQUE_ID;
       //TODO add safety by calculating the max number of values
-      while(index!=(-1)){
+      while (index != (-1)) {
         Int64 cell_uid = cell_indexes[index];
-        Int32 cell_owner = CheckedConvert::toInt32(cell_indexes[index+1]);
-        index = CheckedConvert::toInteger(cell_indexes[index+2]);
+        Int32 cell_owner = CheckedConvert::toInt32(cell_indexes[index + 1]);
+        index = CheckedConvert::toInteger(cell_indexes[index + 2]);
         //info() << " CELLS: uid=" << cell_uid << " owner=" << cell_owner;
         ranks.add((Int32)cell_owner);
         cells.add(cell_uid);
-        if (cell_uid<smallest_cell_uid || node_new_owner==NULL_SUB_DOMAIN_ID){
+        if (cell_uid < smallest_cell_uid || node_new_owner == NULL_SUB_DOMAIN_ID) {
           smallest_cell_uid = cell_uid;
           node_new_owner = cell_owner;
         }
       }
       // Sort the ranks then remove duplicates
-      std::sort(std::begin(ranks),std::end(ranks));
-      Integer new_size = CheckedConvert::toInteger(std::unique(std::begin(ranks),std::end(ranks)) - std::begin(ranks));
+      std::sort(std::begin(ranks), std::end(ranks));
+      Integer new_size = CheckedConvert::toInteger(std::unique(std::begin(ranks), std::end(ranks)) - std::begin(ranks));
       ranks.resize(new_size);
       //info() << "NEW_SIZE=" << new_size;
       //for( Integer z=0; z<new_size; ++z )
@@ -365,10 +367,10 @@ _addOneGhostLayerV2()
 
       // If the number of ranks equals 1, it means that the node belongs to only one subdomain
       // and therefore it is a true boundary node. There is no need to transfer its cells.
-      if (new_size==1)
+      if (new_size == 1)
         continue;
       Integer nb_cell = cells.size();
-      for( Integer z=0; z<new_size; ++z ){
+      for (Integer z = 0; z < new_size; ++z) {
         Int32 dest_rank = ranks[z];
         //info() << "NEW_RANK=" << dest_rank;
         Int64Array& v = boundary_infos_to_send.lookupAdd(dest_rank)->value();
@@ -376,26 +378,26 @@ _addOneGhostLayerV2()
         v.add(node_new_owner);
         v.add(new_size);
         v.add(nb_cell);
-        for( Integer z2=0; z2<new_size; ++z2 )
+        for (Integer z2 = 0; z2 < new_size; ++z2)
           v.add(ranks[z2]);
-        for( Integer z2=0; z2<nb_cell; ++z2 )
+        for (Integer z2 = 0; z2 < nb_cell; ++z2)
           v.add(cells[z2]);
       }
     }
   }
 
   exchanger = ParallelMngUtils::createExchangerRef(pm);
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  _exchangeData(exchanger.get(), boundary_infos_to_send);
   debug() << "END OF EXCHANGE";
 
-  typedef HashTableMapT<Int32,SharedArray<Int32> > SubDomainItemMap;
-  SubDomainItemMap cells_to_send(50,true);
+  typedef HashTableMapT<Int32, SharedArray<Int32>> SubDomainItemMap;
+  SubDomainItemMap cells_to_send(50, true);
   {
     Integer nb_receiver = exchanger->nbReceiver();
     debug() << "NB RECEIVER 2 =" << nb_receiver;
     Int64UniqueArray received_infos;
     //HashTableMapT<Int64,Int32> nodes_nb_cell(1000,true);
-    for( Integer i=0; i<nb_receiver; ++i ){
+    for (Integer i = 0; i < nb_receiver; ++i) {
       ISerializeMessage* sm = exchanger->messageToReceive(i);
       //Int32 orig_rank = sm->destSubDomain();
       ISerializer* s = sm->serializer();
@@ -406,32 +408,32 @@ _addOneGhostLayerV2()
       Int64 z = 0;
       Int32UniqueArray ranks;
       Int32UniqueArray cells;
-      while (z<nb_info){
+      while (z < nb_info) {
         Int64 node_uid = received_infos[z];
-        Int32 node_new_owner = CheckedConvert::toInt32(received_infos[z+1]);
-        Int32 nb_rank = CheckedConvert::toInt32(received_infos[z+2]);
-        Int32 nb_cell = CheckedConvert::toInt32(received_infos[z+3]);
+        Int32 node_new_owner = CheckedConvert::toInt32(received_infos[z + 1]);
+        Int32 nb_rank = CheckedConvert::toInt32(received_infos[z + 2]);
+        Int32 nb_cell = CheckedConvert::toInt32(received_infos[z + 3]);
         //info() << "RECEIVE NODE uid="<< node_uid << " nb_rank=" << nb_rank << " nb_cell=" << nb_cell;
         nodes_map.findItem(node_uid).toMutable().setOwner(node_new_owner, my_rank);
         ranks.clear();
         cells.clear();
         z += 4;
-        for( Integer z2=0; z2<nb_rank; ++z2 ){
-          Int32 nrank = (Int32)received_infos[z+z2];
-          if (nrank!=my_rank)
+        for (Integer z2 = 0; z2 < nb_rank; ++z2) {
+          Int32 nrank = (Int32)received_infos[z + z2];
+          if (nrank != my_rank)
             ranks.add(nrank);
         }
         z += nb_rank;
-        for( Integer z2=0; z2<nb_cell; ++z2 ){
-          Int64 cell_uid = received_infos[z+z2];
+        for (Integer z2 = 0; z2 < nb_cell; ++z2) {
+          Int64 cell_uid = received_infos[z + z2];
           impl::ItemBase dcell = cells_map.tryFind(cell_uid);
           if (!dcell.null())
             cells.add(dcell.localId());
         }
-        for( Integer z2=0,zs=ranks.size(); z2<zs; ++z2 ){
+        for (Integer z2 = 0, zs = ranks.size(); z2 < zs; ++z2) {
           SubDomainItemMap::Data* d = cells_to_send.lookupAdd(ranks[z2]);
           SharedArray<Int32> dv = d->value();
-          for( Integer z3=0, zs3=cells.size(); z3<zs3; ++z3 )
+          for (Integer z3 = 0, zs3 = cells.size(); z3 < zs3; ++z3)
             dv.add(cells[z3]);
         }
         z += nb_cell;
@@ -440,7 +442,7 @@ _addOneGhostLayerV2()
   }
 
   // Sends and receives ghost cells
-  _exchangeCells(cells_to_send,false);
+  _exchangeCells(cells_to_send, false);
   m_mesh_builder->printStats();
 }
 
@@ -448,13 +450,13 @@ _addOneGhostLayerV2()
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder::
-_exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags)
+_exchangeCells(HashTableMapT<Int32, SharedArray<Int32>>& cells_to_send, bool with_flags)
 {
   //TODO: merge with GhostLayerBuilder2::_exchangeCells().
-  typedef HashTableMapT<Int32,SharedArray<Int32>> SubDomainItemMap;
+  typedef HashTableMapT<Int32, SharedArray<Int32>> SubDomainItemMap;
   IParallelMng* pm = m_mesh->parallelMng();
-  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
-  for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
+  auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
+  for (SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map;) {
     Int32 sd = i_map.data()->key();
     // TODO: items may contain duplicates and therefore they should be removed
     // to avoid unnecessarily sending the same cell multiple times.
@@ -463,7 +465,7 @@ _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
-  for( Integer i=0, ns=exchanger->nbSender(); i<ns; ++i ){
+  for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
@@ -471,20 +473,20 @@ _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_
     //m_mesh->serializeCells(s,items_to_send,with_flags);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
     s->setMode(ISerializer::ModeReserve);
-    cell_serializer->serializeItems(s,items_to_send);
+    cell_serializer->serializeItems(s, items_to_send);
     s->allocateBuffer();
     s->setMode(ISerializer::ModePut);
-    cell_serializer->serializeItems(s,items_to_send);
+    cell_serializer->serializeItems(s, items_to_send);
   }
   exchanger->processExchange();
   info(4) << "END EXCHANGE CELLS";
-  for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
+  for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
     //m_mesh->addCells(s,with_flags);
     s->setMode(ISerializer::ModeGet);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
-    cell_serializer->deserializeItems(s,nullptr);
+    cell_serializer->deserializeItems(s, nullptr);
   }
 }
 
@@ -497,8 +499,8 @@ addGhostChildFromParent()
   info() << "** AMR GHOST CHILD FROM PARENT BUILDER V1";
 
   IParallelMng* pm = m_mesh->parallelMng();
-  debug() << " RANK="<< pm->commRank() << " size=" << pm->commSize();
-  if (!pm->isParallel()){
+  debug() << " RANK=" << pm->commRank() << " size=" << pm->commSize();
+  if (!pm->isParallel()) {
     debug() << "NOT PARALLEL";
     return;
   }
@@ -510,7 +512,7 @@ addGhostChildFromParent()
   FaceFamily& true_face_family = m_mesh->trueFaceFamily();
 
   //TODO: choose correct value to initialize the table
-  BoundaryInfosMap boundary_infos_to_send(200,true);
+  BoundaryInfosMap boundary_infos_to_send(200, true);
 
   cells_map.eachItem([&](Item cell) {
     ARCANE_ASSERT((cell.owner() != -1), (""));
@@ -523,19 +525,19 @@ addGhostChildFromParent()
   });
 
   // Position the send list
-  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
+  _exchangeData(exchanger.get(), boundary_infos_to_send);
 
   traceMng()->flush();
   pm->barrier();
 
-  typedef HashTableMapT<Int32,SharedArray<Int32> > SubDomainItemMap;
-  SubDomainItemMap cells_to_send(50,true);
+  typedef HashTableMapT<Int32, SharedArray<Int32>> SubDomainItemMap;
+  SubDomainItemMap cells_to_send(50, true);
   {
     Integer nb_receiver = exchanger->nbReceiver();
     debug() << "NB RECEIVER=" << nb_receiver;
     Int64UniqueArray received_infos;
-    for( Integer i=0; i<nb_receiver; ++i ){
+    for (Integer i = 0; i < nb_receiver; ++i) {
       ISerializeMessage* sm = exchanger->messageToReceive(i);
       ISerializer* s = sm->serializer();
       s->setMode(ISerializer::ModeGet);
@@ -543,13 +545,13 @@ addGhostChildFromParent()
       Int64 nb_info = received_infos.size();
       //Int32 orig_rank = sm->destSubDomain();
       //info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
-      if ((nb_info % 2)!=0)
-        ARCANE_FATAL("info size can not be divided by 2 v={0}",nb_info);
+      if ((nb_info % 2) != 0)
+        ARCANE_FATAL("info size can not be divided by 2 v={0}", nb_info);
       Int64 nb_info_true = nb_info / 2;
-      Integer nb_recv_child=0;
-      for( Int64 z=0; z<nb_info_true; ++z ){
-        Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z*2)+0]);
-        Int64 cell_uid = received_infos[(z*2)+1];
+      Integer nb_recv_child = 0;
+      for (Int64 z = 0; z < nb_info_true; ++z) {
+        Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z * 2) + 0]);
+        Int64 cell_uid = received_infos[(z * 2) + 1];
 
         impl::ItemBase cell = cells_map.findItem(cell_uid);
         ARCANE_ASSERT((cell.uniqueId() == cell_uid), (""));
@@ -558,15 +560,15 @@ addGhostChildFromParent()
         UniqueArray<ItemInternal*> cell_family;
         ARCANE_ASSERT((cell.level() == 0), (""));
         ARCANE_ASSERT((cell.owner() != -1), ("CELL"));
-        ARCANE_ASSERT((cell_owner != -1),("CELL"));
-        true_face_family.familyTree(cell_family,cell);
+        ARCANE_ASSERT((cell_owner != -1), ("CELL"));
+        true_face_family.familyTree(cell_family, cell);
         SubDomainItemMap::Data* d = cells_to_send.lookupAdd(cell_owner);
         Int32Array& dv = d->value();
-        const Integer cs=cell_family.size();
-        nb_recv_child +=cs;
-        for(Integer c=1;c<cs;c++){
-          ItemInternal* child= cell_family[c];
-          ARCANE_ASSERT((child->owner() != -1),("CHILD"));
+        const Integer cs = cell_family.size();
+        nb_recv_child += cs;
+        for (Integer c = 1; c < cs; c++) {
+          ItemInternal* child = cell_family[c];
+          ARCANE_ASSERT((child->owner() != -1), ("CHILD"));
           //debug() << child->topHParent()->uniqueId() << " " << cell->uniqueId() << " " << child->topHParent()->owner() << " " << cell->owner();
           //ARCANE_ASSERT((child->topHParent() == cell),("CHILD"));
           dv.add(child->localId());
@@ -577,7 +579,7 @@ addGhostChildFromParent()
     }
   }
   // Sends and receives ghost cells
-  _exchangeCells(cells_to_send,true);
+  _exchangeCells(cells_to_send, true);
   m_mesh_builder->printStats();
 }
 
@@ -592,8 +594,8 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   info() << "** AMR GHOST CHILD FROM PARENT BUILDER V2";
 
   IParallelMng* pm = m_mesh->parallelMng();
-  debug() << " RANK="<< pm->commRank() << " size=" << pm->commSize();
-  if (!pm->isParallel()){
+  debug() << " RANK=" << pm->commRank() << " size=" << pm->commSize();
+  if (!pm->isParallel()) {
     debug() << "NOT PARALLEL";
     return;
   }
@@ -603,7 +605,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
   //TODO: choose correct value to initialize the table
-  BoundaryInfosMap boundary_infos_to_send(200,true);
+  BoundaryInfosMap boundary_infos_to_send(200, true);
   // level 0 cells are not concerned
   // only active cells with level greater than 0 are concerned
   // that cells that have just been refined or def-refined are concerned
@@ -628,13 +630,13 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   traceMng()->flush();
   pm->barrier();
 
-  typedef HashTableMapT<Int32,SharedArray<Int32> > SubDomainItemMap;
-  SubDomainItemMap cells_to_send(50,true);
+  typedef HashTableMapT<Int32, SharedArray<Int32>> SubDomainItemMap;
+  SubDomainItemMap cells_to_send(50, true);
   {
     Integer nb_receiver = exchanger->nbReceiver();
     debug() << "NB RECEIVER=" << nb_receiver;
     Int64UniqueArray received_infos;
-    for( Integer i=0; i<nb_receiver; ++i ){
+    for (Integer i = 0; i < nb_receiver; ++i) {
       ISerializeMessage* sm = exchanger->messageToReceive(i);
       //Int32 orig_rank = sm->destSubDomain();
       ISerializer* s = sm->serializer();
@@ -642,26 +644,26 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
       //info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
       s->getArray(received_infos);
       Int64 nb_info = received_infos.size();
-      if ((nb_info % 2)!=0)
-        ARCANE_FATAL("info size can not be divided by 2 v={0}",nb_info);
+      if ((nb_info % 2) != 0)
+        ARCANE_FATAL("info size can not be divided by 2 v={0}", nb_info);
       Int64 nb_info_true = nb_info / 2;
       Integer nb_recv_child = 0;
-      for( Int64 z=0; z<nb_info_true; ++z ){
-        Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z*2)+0]);
-        Int64 cell_uid = received_infos[(z*2)+1];
+      for (Int64 z = 0; z < nb_info_true; ++z) {
+        Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z * 2) + 0]);
+        Int64 cell_uid = received_infos[(z * 2) + 1];
 
         Cell cell = cells_map.findItem(cell_uid);
-        ARCANE_ASSERT((cell.uniqueId() == cell_uid),(""));
-        ARCANE_ASSERT((cell.owner() != -1),("CELL"));
-        ARCANE_ASSERT((cell_owner != -1),("CELL"));
+        ARCANE_ASSERT((cell.uniqueId() == cell_uid), (""));
+        ARCANE_ASSERT((cell.owner() != -1), ("CELL"));
+        ARCANE_ASSERT((cell_owner != -1), ("CELL"));
 
         SubDomainItemMap::Data* d = cells_to_send.lookupAdd(cell_owner);
         Int32Array& dv = d->value();
 
-        nb_recv_child +=cell.nbHChildren();
-        for(Integer c=0,cs=cell.nbHChildren();c<cs;c++){
-          Cell child= cell.hChild(c);
-          ARCANE_ASSERT((child.owner() != -1),("CHILD"));
+        nb_recv_child += cell.nbHChildren();
+        for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
+          Cell child = cell.hChild(c);
+          ARCANE_ASSERT((child.owner() != -1), ("CHILD"));
           //debug() << child->topHParent()->uniqueId() << " " << cell->uniqueId() << " " << child->topHParent()->owner() << " " << cell->owner();
           //ARCANE_ASSERT((child->topHParent() == cell),("CHILD"));
           dv.add(child.localId());
@@ -672,7 +674,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   }
 
   // Sends and receives ghost cells
-  _exchangeCells(cells_to_send,true);
+  _exchangeCells(cells_to_send, true);
   m_mesh_builder->printStats();
 }
 
@@ -681,25 +683,25 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
 /*---------------------------------------------------------------------------*/
 
 NodeUidToSubDomain::
-NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
+NodeUidToSubDomain(Int64 max_uid, Int32 nb_rank)
 : m_nb_rank(nb_rank)
 , m_modulo(1)
 , m_nb_by_rank(max_uid)
 {
   m_nb_by_rank = max_uid / nb_rank;
-  if (m_nb_by_rank==0)
+  if (m_nb_by_rank == 0)
     m_nb_by_rank = max_uid;
   m_modulo = nb_rank;
   Integer div_value = 1;
-  if (m_nb_rank>4)
+  if (m_nb_rank > 4)
     div_value = 2;
   String s = platform::getEnvironmentVariable("ARCANE_INIT_RANK_GROUP_SIZE");
-  if (!s.null()){
-    bool is_ok = builtInGetValue(div_value,s);
-    if (is_ok){
-      if (div_value<0)
+  if (!s.null()) {
+    bool is_ok = builtInGetValue(div_value, s);
+    if (is_ok) {
+      if (div_value < 0)
         div_value = 1;
-      if (div_value>m_nb_rank)
+      if (div_value > m_nb_rank)
         div_value = m_nb_rank;
     }
   }
@@ -710,3 +712,6 @@ NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

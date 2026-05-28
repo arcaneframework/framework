@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 SubMeshTools::
-SubMeshTools(DynamicMesh * mesh, DynamicMeshIncrementalBuilder * mesh_builder)
+SubMeshTools(DynamicMesh* mesh, DynamicMeshIncrementalBuilder* mesh_builder)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_mesh_builder(mesh_builder)
@@ -73,9 +73,9 @@ void SubMeshTools::
 _updateGroups()
 {
   // Adjust groups by removing entities that are no longer in the mesh
-  for( IItemFamilyCollection::Enumerator i_family(m_mesh->itemFamilies()); ++i_family; ){
+  for (IItemFamilyCollection::Enumerator i_family(m_mesh->itemFamilies()); ++i_family;) {
     IItemFamily* family = *i_family;
-    for( ItemGroupCollection::Enumerator i_group((*i_family)->groups()); ++i_group; ){
+    for (ItemGroupCollection::Enumerator i_group((*i_family)->groups()); ++i_group;) {
       ItemGroup group = *i_group;
       // GG: the following method is equivalent to what is in the OLD define.
       family->partialEndUpdateGroup(group);
@@ -139,12 +139,12 @@ _removeCell(Cell cell)
   NodeFamily& node_family = m_mesh->trueNodeFamily();
 
   ItemLocalId cell_lid(cell);
-  for( Face face : cell.faces() )
-    face_family.removeCellFromFace(face,cell_lid);
-  for( Edge edge : cell.edges() )
-    edge_family.removeCellFromEdge(edge,cell_lid);
-  for( Node node : cell.nodes() )
-    node_family.removeCellFromNode(node,cell_lid);
+  for (Face face : cell.faces())
+    face_family.removeCellFromFace(face, cell_lid);
+  for (Edge edge : cell.edges())
+    edge_family.removeCellFromEdge(edge, cell_lid);
+  for (Node node : cell.nodes())
+    node_family.removeCellFromNode(node, cell_lid);
   cell_family.removeItem(cell);
 }
 
@@ -165,7 +165,7 @@ removeDeadGhostCells()
   _fillGhostItems(&cell_family, items_to_remove);
   ENUMERATE_ (Cell, icell, cell_family.view(items_to_remove)) {
     impl::ItemBase item(icell->itemBase());
-    ARCANE_ASSERT((!item.parentBase(0).isSuppressed()),("SubMesh cell not synchronized with its support group"));
+    ARCANE_ASSERT((!item.parentBase(0).isSuppressed()), ("SubMesh cell not synchronized with its support group"));
 
     // set no_destroy=true => the sub-items will handle the destruction
     if (item.parentBase(0).isSuppressed())
@@ -176,7 +176,7 @@ removeDeadGhostCells()
   ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
     impl::ItemBase item(iface->itemBase());
     if (item.parentBase(0).isSuppressed()) {
-      ARCANE_ASSERT((item.nbCell() == 0),("Cannot remove connected sub-item"));
+      ARCANE_ASSERT((item.nbCell() == 0), ("Cannot remove connected sub-item"));
       face_family.removeFaceIfNotConnected(item);
     }
   }
@@ -186,7 +186,7 @@ removeDeadGhostCells()
   ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
     impl::ItemBase item(iedge->itemBase());
     if (item.parentBase(0).isSuppressed()) {
-      ARCANE_ASSERT((item.nbCell() == 0 && item.nbFace() == 0),("Cannot remove connected sub-item"));
+      ARCANE_ASSERT((item.nbCell() == 0 && item.nbFace() == 0), ("Cannot remove connected sub-item"));
       edge_family.removeEdgeIfNotConnected(item);
     }
   }
@@ -196,7 +196,7 @@ removeDeadGhostCells()
   ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
     impl::ItemBase item(inode->itemBase());
     if (item.parentBase(0).isSuppressed()) {
-      ARCANE_ASSERT((item.nbCell()==0 && item.nbFace()==0 && item.nbEdge()==0),("Cannot remove connected sub-item"));
+      ARCANE_ASSERT((item.nbCell() == 0 && item.nbFace() == 0 && item.nbEdge() == 0), ("Cannot remove connected sub-item"));
       node_family.removeItem(item);
     }
   }
@@ -223,9 +223,8 @@ removeGhostMesh()
   // For now, it works on the tests since I don't have all the IFPEN tests
   // so I prefer to leave it as is.
 
-  
   // The order is important to correctly disconnect the connectivities
-  // The methods are written directly with the primitives of the *Family 
+  // The methods are written directly with the primitives of the *Family
   // because the ready-made methods (like CellFamily::removeCell)
   // do not take into account the particular ghost mechanism of sub-meshing
   // where a sub-item can live without an over-item attached to it
@@ -270,7 +269,7 @@ removeFloatingItems()
   NodeFamily& node_family = m_mesh->trueNodeFamily();
 
   // The order is important to correctly disconnect the connectivities
-  // The methods are written here directly with the primitives of the *Family 
+  // The methods are written here directly with the primitives of the *Family
   // because the ready-made methods (like CellFamily::removeCell)
   // do not take into account the particular ghost mechanism of sub-meshes
   // where a sub-item can live without a super-item attached to it
@@ -310,10 +309,10 @@ updateGhostMesh()
 
   _checkValidItemOwner();
 
-  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node  };
-  Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
-  for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
-    IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
+  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node };
+  Integer nb_kind = sizeof(kinds) / sizeof(eItemKind);
+  for (Integer i_kind = 0; i_kind < nb_kind; ++i_kind) {
+    IItemFamily* family = m_mesh->itemFamily(kinds[i_kind]);
     updateGhostFamily(family);
   }
 
@@ -321,7 +320,7 @@ updateGhostMesh()
   _checkFloatingItems();
   _checkValidItemOwner();
 
-  // The finalization of families and the construction 
+  // The finalization of families and the construction
   // of their synchronizers is delegated externally
 }
 
@@ -329,19 +328,19 @@ updateGhostMesh()
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTools::
-updateGhostFamily(IItemFamily * family)
+updateGhostFamily(IItemFamily* family)
 {
   const eItemKind kind = family->itemKind();
   // IMesh * parent_mesh = m_mesh->parentMesh();
-  IItemFamily * parent_family = family->parentFamily();
+  IItemFamily* parent_family = family->parentFamily();
 
   debug(Trace::High) << "Process ghost on submesh " << m_mesh->name() << " with kind=" << kind;
 
-  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
-  IVariableSynchronizer * synchronizer = parent_family->allItemsSynchronizer();
+  auto exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
+  IVariableSynchronizer* synchronizer = parent_family->allItemsSynchronizer();
   Int32ConstArrayView ranks = synchronizer->communicatingRanks();
-  std::map<Integer, SharedArray<Int64> > to_send_items;
-  for(Integer i=0;i<ranks.size();++i){
+  std::map<Integer, SharedArray<Int64>> to_send_items;
+  for (Integer i = 0; i < ranks.size(); ++i) {
     const Integer rank = ranks[i];
     debug(Trace::High) << "Has " << kind << " comm with " << rank << " : " << i << " / " << ranks.size() << " ranks";
 
@@ -350,10 +349,10 @@ updateGhostFamily(IItemFamily * family)
     ItemVector shared_submesh_items = MeshToMeshTransposer::transpose(parent_family, family, shared_items);
     SharedArray<Int64> current_to_send_items;
 
-    ENUMERATE_ITEM(iitem, shared_submesh_items){
-      if (iitem.localId() != NULL_ITEM_LOCAL_ID){
-        const Item & item = *iitem;
-        ARCANE_ASSERT((item.uniqueId() == item.parent().uniqueId()),("Inconsistent item/parent uid"));
+    ENUMERATE_ITEM (iitem, shared_submesh_items) {
+      if (iitem.localId() != NULL_ITEM_LOCAL_ID) {
+        const Item& item = *iitem;
+        ARCANE_ASSERT((item.uniqueId() == item.parent().uniqueId()), ("Inconsistent item/parent uid"));
         debug(Trace::Highest) << "Send shared submesh item to " << rank << " " << ItemPrinter(item);
         current_to_send_items.add(item.parent().uniqueId());
       }
@@ -362,21 +361,21 @@ updateGhostFamily(IItemFamily * family)
     debug(Trace::High) << "SubMesh ghost comm " << kind << " with " << rank << " : "
                        << shared_items.size() << " / " << current_to_send_items.size();
 
-    // For localized sub-meshes, we only consider the 
+    // For localized sub-meshes, we only consider the
     // recipients where there is something to send
-    if (!current_to_send_items.empty()){
+    if (!current_to_send_items.empty()) {
       exchanger->addSender(rank);
       to_send_items[rank] = current_to_send_items;
     }
   }
 
   exchanger->initializeCommunicationsMessages();
-      
-  for(Integer i=0, ns=exchanger->nbSender(); i<ns; ++i){
+
+  for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     const Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
-    const Int64Array & current_to_send_items = to_send_items[rank];
+    const Int64Array& current_to_send_items = to_send_items[rank];
     s->setMode(ISerializer::ModeReserve);
 
     s->reserveArray(current_to_send_items);
@@ -386,11 +385,11 @@ updateGhostFamily(IItemFamily * family)
 
     s->putArray(current_to_send_items);
   }
-      
+
   to_send_items.clear(); // destruction of temporary data before sending
   exchanger->processExchange();
 
-  for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
+  for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     const Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
@@ -400,7 +399,7 @@ updateGhostFamily(IItemFamily * family)
     Int32UniqueArray lids(uids.size());
     parent_family->itemsUniqueIdToLocalId(lids, uids);
     ItemVectorView new_submesh_ghosts = parent_family->view(lids);
-    ENUMERATE_ITEM(iitem, new_submesh_ghosts){
+    ENUMERATE_ITEM (iitem, new_submesh_ghosts) {
       if (iitem->owner() != rank)
         fatal() << "Bad ghost owner " << ItemPrinter(*iitem) << " : expected owner=" << rank;
       debug(Trace::Highest) << "Add ghost submesh item from " << rank << " : " << FullItemPrinter(*iitem);
@@ -415,22 +414,22 @@ updateGhostFamily(IItemFamily * family)
 void SubMeshTools::
 display(IMesh* mesh, const String msg)
 {
-  ITraceMng * traceMng = mesh->traceMng();
+  ITraceMng* traceMng = mesh->traceMng();
   traceMng->info() << "Display mesh " << mesh->name() << " : " << msg;
-  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node  };
-  Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
-  for(Integer i_kind=0;i_kind<nb_kind;++i_kind){      
+  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node };
+  Integer nb_kind = sizeof(kinds) / sizeof(eItemKind);
+  for (Integer i_kind = 0; i_kind < nb_kind; ++i_kind) {
     IItemFamily* family = mesh->itemFamily(kinds[i_kind]);
     ItemInfoListView items(family);
     Integer count = 0;
-    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z )
+    for (Integer z = 0, zs = family->maxLocalId(); z < zs; ++z)
       if (!items[z].itemBase().isSuppressed())
         ++count;
     traceMng->info() << "\t" << family->itemKind() << " " << count;
 
-    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+    for (Integer z = 0, zs = family->maxLocalId(); z < zs; ++z) {
       Item item = items[z];
-      if (!item.itemBase().isSuppressed()){
+      if (!item.itemBase().isSuppressed()) {
         traceMng->info() << ItemPrinter(item);
       }
     }
@@ -446,21 +445,22 @@ _checkValidItemOwner()
   if (!arcaneIsCheck())
     return;
 
-  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node  };
-  Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
-  for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
-    IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
-    IItemFamily * parent_family = family->parentFamily();
+  eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node };
+  Integer nb_kind = sizeof(kinds) / sizeof(eItemKind);
+  for (Integer i_kind = 0; i_kind < nb_kind; ++i_kind) {
+    IItemFamily* family = m_mesh->itemFamily(kinds[i_kind]);
+    IItemFamily* parent_family = family->parentFamily();
     ItemInfoListView items(family);
-    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+    for (Integer z = 0, zs = family->maxLocalId(); z < zs; ++z) {
       Item item = items[z];
-      if (!item.itemBase().isSuppressed()){
-        if (item.uniqueId() != item.itemBase().parentBase(0).uniqueId()){
-          Int64UniqueArray uids; uids.add(item.uniqueId());
+      if (!item.itemBase().isSuppressed()) {
+        if (item.uniqueId() != item.itemBase().parentBase(0).uniqueId()) {
+          Int64UniqueArray uids;
+          uids.add(item.uniqueId());
           Int32UniqueArray lids(1);
-          parent_family->itemsUniqueIdToLocalId(lids,uids,false);
+          parent_family->itemsUniqueIdToLocalId(lids, uids, false);
           ARCANE_FATAL("Inconsistent parent uid '{0}' now located in '{1}'",
-                       ItemPrinter(item),lids[0]);
+                       ItemPrinter(item), lids[0]);
         }
       }
     }
@@ -474,13 +474,13 @@ void SubMeshTools::
 _checkFloatingItems()
 {
   Integer nerror = 0;
-  eItemKind kinds[] = { IK_Face, IK_Edge, IK_Node  };
-  Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
-  for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
-    IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
+  eItemKind kinds[] = { IK_Face, IK_Edge, IK_Node };
+  Integer nb_kind = sizeof(kinds) / sizeof(eItemKind);
+  for (Integer i_kind = 0; i_kind < nb_kind; ++i_kind) {
+    IItemFamily* family = m_mesh->itemFamily(kinds[i_kind]);
     // Calculation of orphaned cell items
     ItemInfoListView items(family);
-    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+    for (Integer z = 0, zs = family->maxLocalId(); z < zs; ++z) {
       Item item = items[z];
       if (!item.itemBase().isSuppressed() && item.itemBase().nbCell() == 0) {
         error() << "Floating item detected : " << ItemPrinter(item);
@@ -489,13 +489,13 @@ _checkFloatingItems()
     }
   }
   if (nerror)
-    fatal() << "ERROR " << String::plural(nerror,"floating item") << " detected; see above";
+    fatal() << "ERROR " << String::plural(nerror, "floating item") << " detected; see above";
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
