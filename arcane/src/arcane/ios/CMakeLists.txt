@@ -1,4 +1,4 @@
-arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en fonction des versions de VTK
+﻿arcane_find_package(VTKVersionHelper) # To get VTK_PACKAGE_PREFIX, which varies depending on VTK versions
 set(PKGS ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOXdmf2)
 arcane_find_package(${VTK_PACKAGE_PREFIX}IOXML)
 arcane_find_package(${VTK_PACKAGE_PREFIX}IOXdmf2)

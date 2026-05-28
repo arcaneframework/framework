@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmfMeshReader.cc                                            (C) 2000-2010 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format XMF.				                       */
+/* Reading/Writing of a file in XMF format.				                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -70,7 +70,7 @@ using namespace xdmf2;
 /*---------------------------------------------------------------------------*/
  
 /*!
- * \brief Lecteur des fichiers de maillage aux format msh.
+ * \brief Mesh file reader in msh format.
  */
 class XmfMeshReader: public AbstractService, public IMeshReader{
 	public:
@@ -146,10 +146,10 @@ _readMixedTopology(XdmfTopology *Topology,
      case (16): _addThisConnectivity(16, IT_Decaedron16); break;
 		 case (7): _addThisConnectivity(7, IT_HemiHexa7); break;
 		 case (6): _addThisConnectivity(6, IT_HemiHexa6); break;
-       // GG: je commente ces deux cas car dans la version de Oct2015 cela ne compile
-       // pas car IT_AntiWedgetLeft6 vaut 16 et donc la même valeur dans le switch
-       // que pour le IT_Decaedron16. De toute facon, je pense que le case avant ne fonctionnait
-       // pas car la valeur pour 6 noeuds est déjà prise par IT_HemiHexa6.
+       // GG: I comment out these two cases because in the Oct2015 version it does not compile
+       // not because IT_AntiWedgetLeft6 equals 16 and thus the same value in the switch
+       // as for IT_Decaedron16. Anyway, I think the previous case did not work
+       // because the value for 6 nodes is already taken by IT_HemiHexa6.
        //case (IT_AntiWedgeLeft6): _addThisConnectivity(6, IT_AntiWedgeLeft6); break;
        //case (IT_AntiWedgeRight6): _addThisConnectivity(6, IT_AntiWedgeRight6); break;
 		 case (5): _addThisConnectivity(5, IT_HemiHexa5); break;
@@ -495,7 +495,7 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
 			mesh->allocateCells(cells_type.size(), cells_infos, false);
 
 			/**********************************************************************
-          Positionne les propriétaires des noeuds à partir des groupes de noeuds
+          Positions the node owners based on the node groups
 			***********************************************************************/
 			ItemInternalList internalNodes(mesh->itemsInternal(IK_Node));
 			info() << "[XmfMeshReader] internalNodes.size()="<<internalNodes.size();
@@ -553,16 +553,16 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
 				Integer nb_item = xmfGroup->GetNumberOfElements() - 1;
 				Int64UniqueArray unique_ids(nb_item);
 
-				// Les éléments suivant contiennent les uniqueId() des entités du groupe.
+				// The following elements contain the uniqueId() of the group entities.
 				for(XdmfInt64 z=0; z<nb_item; ++z )
 				  unique_ids[z] = xmfGroup->GetValueAsInt32(z+1);
 
-				// Récupère le localId() correspondant.
+				// Retrieves the corresponding localId().
 				Int32UniqueArray local_ids(unique_ids.size());
 				family->itemsUniqueIdToLocalId(local_ids,unique_ids,false);
 				
-				// Tous les entités ne sont pas forcément dans le maillage actuel et
-				// il faut donc les filtrer.
+				// Not all entities are necessarily in the current mesh and
+				// they must therefore be filtered.
 				Int32UniqueArray ids;
 				for(Integer i=0; i<nb_item; ++i )
 				  if (local_ids[i]!=NULL_ITEM_LOCAL_ID)

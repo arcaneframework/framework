@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmfMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Ecriture d'un fichier au format Xmf.                                      */
+/* Writing a file in Xmf format.                                             */
 /*****************************************************************************
 /* TODO: - Work on Precision (="4"), which could be adjusted.
          - Test for new output file
@@ -72,7 +72,7 @@ An XdmfDataItem is a container for data. It is of one of these types :
 
 If not specified in the "ItemType" a Uniform item is assumed.
 A Uniform DataItem is a XdmfDataStructure or an XdmfDataTransform.
-Both XdmfDataStructure and XdmfDataTransform are maintined for backwards compatibility.
+Both XdmfDataStructure and XdmfDataTransform are maintained for backwards compatibility.
 ******************************************************************************
  XML Attribute : Name = Any String, DataItems have an optional name.
  XML Attribute : ItemType = Uniform* | Collection | Tree | HyperSlab | Coordinates | Function
@@ -138,7 +138,7 @@ using namespace xdmf2;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Ecriture des fichiers de maillage aux format xmf.
+ * \brief Writing mesh files in xmf format.
  */
 class XmfMeshWriter
 : public AbstractService
@@ -159,10 +159,10 @@ class XmfMeshWriter
 
 	bool xmfWriteDomainHeader(void);
 	bool xmfWriteDomainFooter(void);
-	
+
 	bool xmfWriteGridHeader(char*, char*);
 	bool xmfWriteGridFooter(void);
-	
+
 	bool xmfWriteTopologyHeader(char*, XdmfInt32);
 	bool xmfWriteTopologyFooter(void);
 
@@ -200,18 +200,18 @@ _switchXmfType(Integer arc_type, Array<Integer>& arcConnectivityArray)
 	 arcConnectivityArray.add(XDMF_NOTOPOLOGY);
 	 return;
   }
-  
+
   switch(arc_type){
   case (IT_NullType): arcConnectivityArray.add(XDMF_NOTOPOLOGY);return;
-	 
+
   case (IT_Vertex):
 	 arcConnectivityArray.add(XDMF_POLYVERTEX);
 	 arcConnectivityArray.add(1ul); return;
-	 
+
   case (IT_Line2):
 	 arcConnectivityArray.add(XDMF_POLYLINE);
 	 arcConnectivityArray.add(2ul); return;
-	 
+
   case (IT_Triangle3): arcConnectivityArray.add(XDMF_TRI); return;
   case (IT_Quad4): arcConnectivityArray.add(XDMF_QUAD);  return;
   case (IT_Pentagon5): arcConnectivityArray.add(XDMF_POLYGON); return;
@@ -223,7 +223,7 @@ _switchXmfType(Integer arc_type, Array<Integer>& arcConnectivityArray)
   case (IT_Pentaedron6): arcConnectivityArray.add(XDMF_WEDGE); return;
   case (IT_Hexaedron8):	arcConnectivityArray.add(XDMF_HEX); return;
   case (IT_Heptaedron10):	arcConnectivityArray.add(XDMF_TET_10); return;
-	 
+
   case (IT_Octaedron12):
 	 arcConnectivityArray.add(XDMF_POLYVERTEX);
 	 arcConnectivityArray.add(12ul); return;
@@ -243,18 +243,18 @@ case (IT_Enneedron14):
   case (IT_AntiWedgeRight6):
 	 arcConnectivityArray.add(XDMF_POLYVERTEX);
 	 arcConnectivityArray.add(6ul); return;
-	 
+
 	 //warning IT_HemiHexa5 and IT_DiTetra5 are merged
   case (IT_HemiHexa5):
-  case (IT_DiTetra5):	
+  case (IT_DiTetra5):
 	 arcConnectivityArray.add(XDMF_POLYVERTEX);
 	 arcConnectivityArray.add(5ul); return;
-	 
+
   case (IT_DualNode):
   case (IT_DualEdge):
   case (IT_DualFace):
   case (IT_DualCell): arcConnectivityArray.add(XDMF_NOTOPOLOGY); return;
-	 
+
   default: arcConnectivityArray.add(XDMF_NOTOPOLOGY);return;
   }
   arcConnectivityArray.add(XDMF_NOTOPOLOGY);
@@ -264,7 +264,7 @@ case (IT_Enneedron14):
 
 
 /**********************************************************************
- * [writeMeshToFile]																	  
+ * [writeMeshToFile]
  **********************************************************************/
 bool XmfMeshWriter::
 writeMeshToFile(IMesh* mesh,const String& file_name)
@@ -305,7 +305,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	info() << "[XmfMeshWriter] Grid initialisation done";
 
 	/****************************************
-	 * XdmfAttribute to save Cells Unique IDs 
+	 * XdmfAttribute to save Cells Unique IDs
 	 ****************************************/
 	XdmfAttribute *xmfCellAttribute=new XdmfAttribute();
 	xmfCellAttribute->SetName("CellsUniqueIDs");
@@ -331,7 +331,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	xmfNodesUniqueIDs->SetNumberType(XDMF_INT32_TYPE);
 	xmfNodesUniqueIDs->SetNumberOfElements(mesh->nbNode());
 	IntegerUniqueArray nodesUniqueIDs; // Unique nodes-IDs array
-	
+
 	/***********************************
 	* XdmfAttribute to save Nodes Owners
 	\***********************************/
@@ -350,7 +350,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	  xmfNodesUniqueIDs->SetValue(nodeIndex, iNode->uniqueId().asInteger());
 	  xmfNodesOwners->SetValue(nodeIndex++, iNode->owner());
 	}
-	
+
 	// Each Grid contains a Topology,
 	info() << "[XmfMeshWriter] Focussing on the topology";
 	XdmfTopology *xmfTopology = xmfGrid->GetTopology();
@@ -387,7 +387,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	// a Geometry,
 	XdmfGeometry *xmfGeometry = xmfGrid->GetGeometry();
 	xmfGeometry->SetGeometryType(XDMF_GEOMETRY_XYZ);
-	//xmfGeometry->SetNumberOfPoints(mesh->nbNode());  
+	//xmfGeometry->SetNumberOfPoints(mesh->nbNode());
 	XdmfArray *xmfNodeGeometryArray= xmfGeometry->GetPoints();
 	String heavyDataForGeometry(h5_file_name+":/XYZ");
 	xmfNodeGeometryArray->SetHeavyDataSetName(heavyDataForGeometry.localstr());
@@ -403,11 +403,11 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	  //info() << "[writeMeshToFile] Adding node[" << iNode->uniqueId() << "]";
 	}
 	info() << "[XmfMeshWriter] Work on Geometry done";
-	xmfDomain->Insert(xmfGrid); 
+	xmfDomain->Insert(xmfGrid);
 
-	
+
 	/*************************
-	 * Fetching Other Groups 
+	 * Fetching Other Groups
 	 * XML Attribute : Name
 	 *	XML Attribute : AttributeType = Scalar* | Vector | Tensor | Tensor6 | Matrix
 	 * XML Attribute : Center = Node* | Cell | Grid | Face | Edge
@@ -438,7 +438,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	xmfGrid->Insert(xmfOwnerAttribute);
 	xmfGrid->Build();
 
-	
+
 	/********************
 	 * Output & cleanup *
 	 ********************/
@@ -451,7 +451,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	delete xmfDomain;
 	delete xmfRoot;
 	delete xmfDom;
-	
+
 	info() << "[XmfMeshWriter] Done";
 	return false;
 }

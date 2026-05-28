@@ -7,8 +7,8 @@
 
 #include "arcane/utils/ArcaneGlobal.h"
 
-// Fichier vide juste pour éviter qu'il n'y ait pas de sources
-// dans la bibliothèque 'arcane_ios' 
+// Empty file just to avoid having no sources
+// in the 'arcane_ios' library 
 extern "C" ARCANE_EXPORT void
 arcaneEmptyIosLibrary()
 {

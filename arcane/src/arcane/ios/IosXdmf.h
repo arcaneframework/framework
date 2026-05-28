@@ -23,7 +23,7 @@
 #define XDMF_QUAD           0x5		  // 4 Edge Polygon
 #define XDMF_TET            0x6		  // 4 Triangular Faces
 #define XDMF_PYRAMID        0x7		  // 4 Triangles, QUADRILATERAL Base
-#define XDMF_WEDGE          0x8		  // 2 Trianges, 2 QUADRILATERAL and QUADRILATERAL Base
+#define XDMF_WEDGE          0x8		  // 2 Triangles, 2 QUADRILATERAL and QUADRILATERAL Base
 #define XDMF_HEX            0x9		  // 6 QUADRILATERAL Faces
 #define XDMF_EDGE_3         0x0022	  // 3 Node High Order Line
 #define XDMF_TRI_6          0x0024	  // 6 Node High Order Triangle

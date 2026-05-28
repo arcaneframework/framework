@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtuMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format VtuMeshWriter.                    */
+/* Reading/Writing a VtuMeshWriter format file.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture des fichiers de maillage au format VTU (de VTK).
+ * \brief Writing mesh files in VTU format (from VTK).
  */
 class VtuMeshWriter
 : public AbstractService
@@ -125,14 +125,14 @@ _writeFieldGroupsFromData(vtkFieldData*fieldData,ItemGroup group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Écrit un maillage.
-	Les données sont stockées selon ARCANE_VTU_DATA_MODE_TO_[ASCII|BINARY],
-	le BINARY étant celui par défaut.
+  \brief Writes a mesh.
+	The data is stored according to ARCANE_VTU_DATA_MODE_TO_[ASCII|BINARY],
+	with BINARY being the default.
 	
-	\param mesh maillage à écrire
-	\param file_name nom du fichier 
-	\retval true pour une erreur
-  \retval false pour un succès	
+	\param mesh mesh to write
+	\param file_name file name
+	\retval true on error
+  \retval false on success	
 */
 bool VtuMeshWriter::
 writeMeshToFile(IMesh* mesh,const String& file_name)
@@ -146,7 +146,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	
 	
 	/*************************\
-	* VTK-side initialisation *
+	* VTK-side initialization *
 	\*************************/
 	vtkPoints* points = vtkPoints::New();
 	points->SetDataTypeToDouble();
@@ -154,7 +154,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	grid->Allocate(mesh_nb_cell, mesh_nb_cell);
 
 	/*************************\
-	* ARC-side initialisation *
+	* ARC-side initialization *
 	\*************************/
 	VariableItemReal3& nodes_coords = PRIMARYMESH_CAST(mesh)->nodesCoordinates();
 	
@@ -250,7 +250,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 			vtk_item = VTK_WEDGE;
       break;
 			
-			// A demander
+			// To be implemented
     case(IT_HemiHexa7):
       info() << "VTK_POLY_VERTEX";
       vtk_item = VTK_POLY_VERTEX;
@@ -277,7 +277,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
       break; 
 			/* Others not yet implemented */
     default:
-      info() << "[writeMeshToFile] Cell type not suported (" << cell.type() << ")";
+      info() << "[writeMeshToFile] Cell type not supported (" << cell.type() << ")";
       throw NotSupportedException(A_FUNCINFO);
 		}
 		grid->InsertNextCell(vtk_item, vtk_point_ids);

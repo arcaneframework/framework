@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtuMeshReader.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format VtuMeshReader.                    */
+/* Reading/Writing a file in VtuMeshReader format.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -99,7 +99,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecteur des fichiers de maillage aux format Vtk.
+ * \brief Reader for mesh files in VTK format.
  */
 class VtuMeshReaderBase
 {
@@ -175,21 +175,21 @@ readGroupsFromFieldData(IMesh* mesh,vtkFieldData* allFieldData,int i)
     return false;
 	vtkLongArrayType* vtk_array =  vtkLongArrayType::SafeDownCast(iFieldData);
 
-  // Le premier élément du tableau contient son type
+  // The first element of the array contains its type
 	eItemKind kind_type = (eItemKind)(vtk_array->GetValue(0));
   IItemFamily* family = mesh->itemFamily(kind_type);
   auto nb_item = nb_tuple - 1;
   Int64UniqueArray unique_ids(nb_item);
-  // Les éléments suivant contiennent les uniqueId() des entités du groupe.
+  // The following elements contain the uniqueId() of the group entities.
   for( Integer z=0; z<nb_item; ++z )
     unique_ids[z] = vtk_array->GetValue(z+1);
 
-  // Récupère le localId() correspondant.
+  // Retrieves the corresponding localId().
   Int32UniqueArray local_ids(unique_ids.size());
   family->itemsUniqueIdToLocalId(local_ids,unique_ids,false);
 
-  // Tous les entités ne sont pas forcément dans le maillage actuel et
-  // il faut donc les filtrer.
+  // Not all entities are necessarily in the current mesh and
+  // they must therefore be filtered.
   Int32UniqueArray ids;
   for( Integer index = 0; index < nb_item; ++index )
     if (local_ids[index]!=NULL_ITEM_LOCAL_ID)
@@ -228,8 +228,8 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 	reader->UpdateInformation();
 	reader->Update();// Force reading
 	vtkUnstructuredGrid *unstructuredGrid = reader->GetOutput();
-  // Avec VTK 7, plus besoin du Update.
-	//unstructuredGrid->Update();// La lecture effective du fichier n'a lieu qu'après l'appel à Update().
+  // With VTK 7, no longer need the Update.
+	//unstructuredGrid->Update();// The actual file reading only takes place after calling Update().
 	auto nbOfCells = unstructuredGrid->GetNumberOfCells();
 	auto nbOfNodes = unstructuredGrid->GetNumberOfPoints();
 
@@ -274,8 +274,8 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 		cellsUidArray = vtkLongArrayType::SafeDownCast(dataCellArray);
 	}
 
-	// Tableau contenant les numéros des propriétaires des noeuds.
-  // Ce tableau est optionnel et est utilisé par le partitionneur
+	// Table containing the owner numbers of the nodes.
+  // This table is optional and is used by the partitioner
   vtkDataArray* data_owner_array = allPointData->GetArray("NodesOwner");
 	vtkIntArray* nodes_owner_array = nullptr;
 	if (data_owner_array){
@@ -319,13 +319,13 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 	for( Integer i=0; i<nbOfCells; ++i )
 		cells_filter[i] = i;
 	
-	// Calcul le nombre de mailles/noeuds
+	// Calculate the number of mesh_nb_cell_node
 	vtkIdType mesh_nb_cell_node = 0;
 	for( Integer j=0, js=cells_filter.size(); j<js; ++j )
 		mesh_nb_cell_node += unstructuredGrid->GetCell(j)->GetNumberOfPoints();
 	m_trace_mng->info() << "Number of mesh_nb_cell_node = "<<mesh_nb_cell_node;
 	
-	// Tableau contenant les infos aux mailles (voir IMesh::allocateMesh())
+	// Table containing the info for the meshes (see IMesh::allocateMesh())
 	Int64UniqueArray cells_infos(mesh_nb_cell_node+cells_filter.size()*2);
 	Integer cells_infos_index = 0;
 
@@ -358,7 +358,7 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 		  else if (mesh->dimension() == 3 && !mesh->meshKind().isMonoDimension()) {arcItemType = IT_Cell3D_Triangle3;}
 		  else {ARCANE_FATAL("VTK_TRIANGLE is not supported in mono-dimension meshes of dimension {0}",mesh->dimension());}
 		  break;
-			// Cas du poly vertex à parser
+			// Case for parsing poly vertex
     case(VTK_POLY_VERTEX):
       switch (cell->GetNumberOfPoints()){
       case (4): arcItemType = IT_Tetraedron4;	break;
@@ -425,10 +425,10 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 		}
 		auto nNodes = cell->GetNumberOfPoints();// Return the number of points in the cell
 
-		// First is cell's TYPE Stocke le type de la maille
+		// First is cell's TYPE Stores the mesh type
 		cells_infos[cells_infos_index++]=arcItemType;
 		
-		// Then comes its UniqueID Stocke le numéro unique de la maille
+		// Then comes its UniqueID Stores the unique mesh ID
 		Integer cell_indirect_id = cells_filter[i_cell];
 		cells_infos[cells_infos_index++] = cellsUidArray->GetValue(cell_indirect_id);
 		
@@ -452,7 +452,7 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 	PRIMARYMESH_CAST(mesh)->allocateCells(cells_filter.size(), cells_infos, false);
 
 
-  // Positionne les propriétaires des noeuds à partir des groupes de noeuds
+  // Positions the node owners from the node groups
 	ItemInternalList internalNodes(mesh->itemsInternal(IK_Node));
 	m_trace_mng->info() << "[readMeshFromVtuFile] internalNodes.size()="<<internalNodes.size();
   if (nodes_owner_array){
@@ -506,7 +506,7 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
    * Now insert coords *
    *******************/
 	m_trace_mng->info() << "[readMeshFromVtuFile] ##  Now insert coords ##";
-	// Remplit la variable contenant les coordonnées des noeuds
+	// Fills the variable containing the node coordinates
 	VariableNodeReal3& nodes_coord_var(PRIMARYMESH_CAST(mesh)->nodesCoordinates());
 	ENUMERATE_NODE(inode,mesh->ownNodes()){
 		nodes_coord_var[inode] = nodes_coords[inode->uniqueId()];
@@ -524,7 +524,7 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
 	reader->Delete();
 	m_trace_mng->info() << "[readMeshFromVtuFile] RTOk";
 
-  // TODO: regarder comment detruire automatiquement
+  // TODO: look into automatic destruction
   if (!dataNodeArray)
     nodesUidArray->Delete();
   if (!dataCellArray)
