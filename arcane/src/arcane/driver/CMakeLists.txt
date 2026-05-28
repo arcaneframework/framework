@@ -1,9 +1,9 @@
 ﻿add_executable(arcane_driver ArcaneDriverMain.cc)
 
-# TODO: regarder à quoi sert 'DRIVER_LIBS'
+# TODO: check what 'DRIVER_LIBS' is used for
 target_link_libraries(arcane_driver PUBLIC arcane_driverlib arcane_full ${DRIVER_LIBS})
 
-# Pour mettre l'executable dans 'lib'
+# To put the executable in 'lib'
 arcane_target_set_standard_path(arcane_driver)
 
 set(_LIB_PATH ${CMAKE_BINARY_DIR}/lib)
