@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,49 +61,49 @@ namespace Arcane
  */
 namespace
 {
-inline void
-check(const char* hypre_func, HYPRE_Int error_code)
-{
-  if (error_code == 0)
-    return;
-  char buf[8192];
-  HYPRE_DescribeError(error_code, buf);
-  cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-       << "\nHYPRE ERROR in function "
-       << hypre_func
-       << "\nError_code=" << error_code
-       << "\nMessage=" << buf
-       << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-       << "\n"
-       << std::flush;
-  throw Exception("HYPRE Check", hypre_func);
-}
+  inline void
+  check(const char* hypre_func, HYPRE_Int error_code)
+  {
+    if (error_code == 0)
+      return;
+    char buf[8192];
+    HYPRE_DescribeError(error_code, buf);
+    cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+         << "\nHYPRE ERROR in function "
+         << hypre_func
+         << "\nError_code=" << error_code
+         << "\nMessage=" << buf
+         << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+         << "\n"
+         << std::flush;
+    throw Exception("HYPRE Check", hypre_func);
+  }
 
-template <typename T>
-inline T*
-_allocHypre(Integer size)
-{
-  size_t s = sizeof(T) * size;
-  return reinterpret_cast<T*>(hypre_TAlloc(char, s, HYPRE_MEMORY_HOST));
-}
+  template <typename T>
+  inline T*
+  _allocHypre(Integer size)
+  {
+    size_t s = sizeof(T) * size;
+    return reinterpret_cast<T*>(hypre_TAlloc(char, s, HYPRE_MEMORY_HOST));
+  }
 
-template <typename T>
-inline T*
-_callocHypre(Integer size)
-{
-  size_t s = sizeof(T) * size;
-  return reinterpret_cast<T*>(hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST));
-}
+  template <typename T>
+  inline T*
+  _callocHypre(Integer size)
+  {
+    size_t s = sizeof(T) * size;
+    return reinterpret_cast<T*>(hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST));
+  }
 
-inline void
-hypreCheck(const char* hypre_func, HYPRE_Int error_code)
-{
-  check(hypre_func, error_code);
-  HYPRE_Int r = HYPRE_GetError();
-  if (r != 0)
-    cout << "HYPRE GET ERROR r=" << r
-         << " error_code=" << error_code << " func=" << hypre_func << '\n';
-}
+  inline void
+  hypreCheck(const char* hypre_func, HYPRE_Int error_code)
+  {
+    check(hypre_func, error_code);
+    HYPRE_Int r = HYPRE_GetError();
+    if (r != 0)
+      cout << "HYPRE GET ERROR r=" << r
+           << " error_code=" << error_code << " func=" << hypre_func << '\n';
+  }
 
 } // namespace
 
@@ -114,6 +114,7 @@ class AlephVectorHypre
 : public IAlephVector
 {
  public:
+
   AlephVectorHypre(ITraceMng* tm, AlephKernel* kernel, Integer index)
   : IAlephVector(tm, kernel, index)
   , jSize(0)
@@ -233,6 +234,7 @@ class AlephVectorHypre
   }
 
  public:
+
   HYPRE_IJVector m_hypre_ijvector = nullptr;
   HYPRE_ParVector m_hypre_parvector = nullptr;
   HYPRE_Int jSize;
@@ -247,6 +249,7 @@ class AlephMatrixHypre
 : public IAlephMatrix
 {
  public:
+
   /******************************************************************************
  AlephMatrixHypre
   *****************************************************************************/
@@ -265,6 +268,7 @@ class AlephMatrixHypre
   }
 
  public:
+
   /******************************************************************************
    * Each submatrix Ap is "owned" by a single process and its first and last row numbers are
    * given by the global indices ilower and iupper in the Create() call below.
@@ -951,14 +955,15 @@ class HypreAlephFactoryImpl
 , public IAlephFactoryImpl
 {
  public:
+
   HypreAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
   ~HypreAlephFactoryImpl()
   {
-    for ( auto* v : m_IAlephVectors )
+    for (auto* v : m_IAlephVectors)
       delete v;
-    for ( auto* v : m_IAlephMatrixs )
+    for (auto* v : m_IAlephMatrixs)
       delete v;
   }
 
@@ -970,7 +975,7 @@ class HypreAlephFactoryImpl
     // HYPRE_Initialize() and test if the initialization
     // has already been done via HYPRE_Initialized().
 #if HYPRE_RELEASE_NUMBER >= 22900
-    if (!HYPRE_Initialized()){
+    if (!HYPRE_Initialized()) {
       info() << "Initializing HYPRE";
       HYPRE_Initialize();
     }
@@ -1016,6 +1021,7 @@ class HypreAlephFactoryImpl
   }
 
  private:
+
   UniqueArray<IAlephVector*> m_IAlephVectors;
   UniqueArray<IAlephMatrix*> m_IAlephMatrixs;
 };
@@ -1023,12 +1029,12 @@ class HypreAlephFactoryImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_APPLICATION_FACTORY(HypreAlephFactoryImpl,IAlephFactoryImpl,HypreAlephFactory);
+ARCANE_REGISTER_APPLICATION_FACTORY(HypreAlephFactoryImpl, IAlephFactoryImpl, HypreAlephFactory);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,14 +12,15 @@
 #include "AlephArcane.h"
 
 #include <map>
-#include "arcane/IMesh.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/ArcaneTypes.h"
 #include "arcane/utils/String.h"
-#include <arcane/IVariable.h>
-#include <arcane/IVariableMng.h>
-#include <arcane/utils/ArcaneGlobal.h>
-#include <arcane/utils/ArcanePrecomp.h>
+#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/ArcanePrecomp.h"
+
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #define ALEPH_INDEX_NOT_USED (-1)
 
@@ -96,7 +97,7 @@ findWhichLidFromMapMap(IVariable* var,
     var_idx_name = var_idx_name + String("_idx");
     VariableItemInt32* var_idx =
     new VariableItemInt32(VariableBuildInfo(var->itemFamily(),
-                                            var_idx_name,IVariable::PSubDomainDepend),
+                                            var_idx_name, IVariable::PSubDomainDepend),
                           var->itemKind());
     // We add the '_idx' variable of this variable to our map
     m_var_map_idx.insert(std::make_pair(var, var_idx));
@@ -129,10 +130,10 @@ Int32 AlephIndexing::get(const VariableRef& variable,
                          const Item& itm)
 {
   IVariable* var = variable.variable();
-  if (m_kernel->isInitialized()){
+  if (m_kernel->isInitialized()) {
     auto x = m_var_map_idx.find(var);
-    if (x==m_var_map_idx.end())
-      ARCANE_FATAL("Can not find variable {0}",var->name());
+    if (x == m_var_map_idx.end())
+      ARCANE_FATAL("Can not find variable {0}", var->name());
     return (*x->second)[itm] - m_kernel->topology()->part()[m_kernel->rank()];
   }
   // We test if we are working on a scalar variable
@@ -255,7 +256,7 @@ AlephIndexing::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

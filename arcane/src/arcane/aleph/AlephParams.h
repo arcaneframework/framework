@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,10 +18,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,6 +31,7 @@ class ARCANE_ALEPH_EXPORT AlephParams
 : public TraceAccessor
 {
  public:
+
   AlephParams();
   AlephParams(ITraceMng*, Real, Integer,
               Integer,
@@ -119,6 +118,7 @@ class ARCANE_ALEPH_EXPORT AlephParams
   TypesSolver::eCriteriaStop getCriteriaStop() const;
 
  private:
+
   Real m_param_epsilon; // convergence epsilon
   Integer m_param_max_iteration; // max number of iterations
   TypesSolver::ePreconditionerMethod m_param_preconditioner_method; // preconditioner used (default DIAG)
@@ -153,7 +153,7 @@ class ARCANE_ALEPH_EXPORT AlephParams
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

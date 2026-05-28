@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,6 +40,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   virtual ~AlephTopology();
 
  public:
+
   void create(Integer);
   void setRowNbElements(IntegerConstArrayView row_nb_element);
   IntegerConstArrayView ptr_low_up_array();
@@ -48,6 +49,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   void rowRange(Integer& min_row, Integer& max_row);
 
  private:
+
   inline void checkForInit()
   {
     if (m_has_been_initialized == false)
@@ -55,6 +57,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   }
 
  public:
+
   Integer rowLocalRange(const Integer);
   AlephKernel* kernel(void) { return m_kernel; }
   Integer nb_row_size(void)
@@ -89,6 +92,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   bool hasSetRowNbElements(void) { return m_has_set_row_nb_elements; }
 
  private:
+
   AlephKernel* m_kernel;
   Integer m_nb_row_size; // Number of matrix rows distributed across the set
   Integer m_nb_row_rank; // Number of matrix rows viewed from my rank
@@ -103,7 +107,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/aleph/IAlephFactory.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/ServiceBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@ namespace Arcane
 class AlephFactory::FactoryImpl
 {
  public:
+
   FactoryImpl(const String& name)
   : m_name(name)
   , m_initialized(false)
@@ -35,6 +36,7 @@ class AlephFactory::FactoryImpl
   }
 
  public:
+
   void setFactory(Ref<IAlephFactoryImpl> factory)
   {
     m_factory = factory;
@@ -43,10 +45,12 @@ class AlephFactory::FactoryImpl
   const String& name() const { return m_name; }
 
  private:
+
   Ref<IAlephFactoryImpl> m_factory;
   String m_name;
 
  public:
+
   bool m_initialized;
 };
 

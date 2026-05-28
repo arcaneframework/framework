@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -135,8 +135,8 @@ initAlgebra()
   // if the number of PE is even
 
   const bool use_is_even = (subDomain()->parallelMng()->commSize() % 2) == 0;
-  const bool use_petsc_args = (underlying_solver==AlephKernel::SOLVER_PETSC && use_is_even);
-  if (use_petsc_args){
+  const bool use_petsc_args = (underlying_solver == AlephKernel::SOLVER_PETSC && use_is_even);
+  if (use_petsc_args) {
     StringList slist1;
     slist1.add("-trmalloc");
     slist1.add("-log_trace");
@@ -382,8 +382,8 @@ initAmrRefineMesh(Integer nb_to_refine)
   }
 
   info() << "now refine";
-	mesh()->modifier()->flagCellToRefine(cells_local_id);
-	mesh()->modifier()->adapt();
+  mesh()->modifier()->flagCellToRefine(cells_local_id);
+  mesh()->modifier()->adapt();
 
   //MESH_MODIFIER_REFINE_ITEMS(mesh());
 
@@ -399,7 +399,7 @@ initAmrRefineMesh(Integer nb_to_refine)
       m_cell_temperature[cells[CELL_H_CHILD(cell, j).localId()]] = m_cell_temperature[cells[lid]];
       auto faces = allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces();
       Integer index = 0;
-      for( Face face : faces ){
+      for (Face face : faces) {
         if (face.isSubDomainBoundary()) {
           //debug() << "\t\t\t[amrRefineMesh] outer face #"<< (*iFace).localId()<<", index="<<iFace.index()<<", T="<<m_face_temperature[cell.face(iFace.index())];
           m_face_temperature[face] = m_face_temperature[cell.face(index)];
@@ -422,7 +422,7 @@ ARCANE_DEFINE_STANDARD_MODULE(AlephTestModule, AlephTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

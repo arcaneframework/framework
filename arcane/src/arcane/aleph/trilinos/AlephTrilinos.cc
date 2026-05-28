@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,9 +28,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -148,6 +145,7 @@ class AlephVectorTrilinos : public IAlephVector
   }
 
  public:
+
   Epetra_Vector* m_trilinos_vector = nullptr;
   Epetra_Comm* m_trilinos_Comm = nullptr;
 };
@@ -162,6 +160,7 @@ class AlephMatrixTrilinos
 : public IAlephMatrix
 {
  public:
+
   /******************************************************************************
  AlephMatrixTrilinos
   *****************************************************************************/
@@ -190,7 +189,7 @@ class AlephMatrixTrilinos
     debug() << "\t\t[AlephMatrixTrilinos::AlephMatrixCreate] TRILINOS MatrixCreate idx:" << m_index;
     Integer ilower = -1;
     Integer iupper = 0;
-    for ( int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
+    for (int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
       if (m_kernel->rank() != m_kernel->solverRanks(m_index)[iCpu])
         continue;
       if (ilower == -1)
@@ -515,6 +514,7 @@ class AlephMatrixTrilinos
   }
 
  private:
+
   Epetra_CrsMatrix* m_trilinos_matrix = nullptr;
   Epetra_Comm* m_trilinos_Comm = nullptr;
 };
@@ -526,6 +526,7 @@ class TrilinosAlephFactoryImpl : public AbstractService
 , public IAlephFactoryImpl
 {
  public:
+
   TrilinosAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   , m_IAlephVectors(0)
@@ -533,13 +534,14 @@ class TrilinosAlephFactoryImpl : public AbstractService
   {}
   ~TrilinosAlephFactoryImpl()
   {
-    for ( auto* v : m_IAlephVectors )
+    for (auto* v : m_IAlephVectors)
       delete v;
-    for ( auto* v : m_IAlephMatrixs )
+    for (auto* v : m_IAlephMatrixs)
       delete v;
   }
 
  public:
+
   virtual void initialize() {}
   virtual IAlephTopology* createTopology(ITraceMng* tm,
                                          AlephKernel* kernel,
@@ -571,6 +573,7 @@ class TrilinosAlephFactoryImpl : public AbstractService
   }
 
  private:
+
   UniqueArray<IAlephVector*> m_IAlephVectors;
   UniqueArray<IAlephMatrix*> m_IAlephMatrixs;
 };
@@ -578,7 +581,7 @@ class TrilinosAlephFactoryImpl : public AbstractService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_APPLICATION_FACTORY(TrilinosAlephFactoryImpl,IAlephFactoryImpl,TrilinosAlephFactory);
+ARCANE_REGISTER_APPLICATION_FACTORY(TrilinosAlephFactoryImpl, IAlephFactoryImpl, TrilinosAlephFactory);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

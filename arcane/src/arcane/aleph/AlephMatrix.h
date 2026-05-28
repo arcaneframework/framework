@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,6 +37,7 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   ~AlephMatrix();
 
  public:
+
   void create(void);
   void create(IntegerConstArrayView, bool = false);
   void create_really(void);
@@ -97,10 +98,12 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   UniqueArray<Real> m_addValue_val;
 
  private: // Arrays of requests
+
   UniqueArray<Parallel::Request> m_aleph_matrix_mpi_data_requests;
   UniqueArray<Parallel::Request> m_aleph_matrix_mpi_results_requests;
 
  private: // Results. Placed here to keep them outside the scope of the functions using them
+
   UniqueArray<Int32> m_aleph_matrix_buffer_n_iteration;
   UniqueArray<Real> m_aleph_matrix_buffer_residual_norm;
 };

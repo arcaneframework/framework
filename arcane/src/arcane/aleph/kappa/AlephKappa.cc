@@ -1,38 +1,37 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephKappa.cc                                                     (C) 2012 */
+/* AlephKappa.cc                                                    (C) 2012 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #include "arcane_packages.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IDirectExecution.h"
-#include "arcane/BasicService.h"
-#include "arcane/ArcaneVersion.h"
-#include "arcane/FactoryService.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/MultiArray2.h"
 #include "arcane/utils/ArgumentException.h"
-
-#include "arcane/Timer.h"
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/aleph/AlephTypesSolver.h"
-#include "arcane/aleph/AlephParams.h"
-
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IProcessorAffinityService.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IApplication.h"
 
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IDirectExecution.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/ArcaneVersion.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IApplication.h"
+
+#include "arcane/aleph/AlephTypesSolver.h"
+#include "arcane/aleph/AlephParams.h"
 #include "arcane/aleph/Aleph.h"
 #include "arcane/aleph/IAlephFactory.h"
 
@@ -41,7 +40,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -343,7 +343,7 @@ execute(void)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

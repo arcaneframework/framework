@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ amrRefine(RealArray& values, const Real trigRefine)
       m_cell_temperature[cells[CELL_H_CHILD(cell, j).localId()]] = m_cell_temperature[cells[lid]];
       auto faces = allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces();
       Integer index = 0;
-      for (Face face : faces){
+      for (Face face : faces) {
         if (face.isSubDomainBoundary()) {
           //debug() << "\t\t\t[amrRefineMesh] outer face #"<< iFace->localId()<<", index="<<iFace.index()<<", T="<<m_face_temperature[cell.face(iFace.index())];
           m_face_temperature[face] = m_face_temperature[cell.face(index)];
@@ -277,7 +277,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     // Now stare at the children to set up new faces' values
     Cell parent = cell;
     //const Cell &parent = cellFamily()->itemsInternal()[parents_to_coarsen_lid[i]];
-    for( Face face : parent.faces()) {
+    for (Face face : parent.faces()) {
       if ((!face.backCell().null()) && (!face.frontCell().null())) {
         debug() << "\t\t\t[FaceAmrCoarsen] FOCUS face #" << face.localId() << ", "
                 << face.backCell().localId() << "->"
@@ -310,7 +310,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
             //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child #"<<neighbour.hChild(j).localId();
 
             auto faces = CELL_H_CHILD(neighbour, j).faces();
-            for (Face face : faces){
+            for (Face face : faces) {
               if (face.backCell().null())
                 continue;
               if (face.frontCell().null())
@@ -420,7 +420,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

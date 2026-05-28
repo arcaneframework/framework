@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,17 +34,20 @@ class AlephIndexTest
 : public ArcaneAlephIndexTestObject
 {
  public:
+
   AlephIndexTest(const ModuleBuildInfo&);
   ~AlephIndexTest(void);
   void init(void);
   void compute(void);
 
  private:
+
   void setValues(const Real, AlephMatrix*);
   void postSolver(const Integer, Real, Array<Real>&, Array<Integer>&);
   static Real geoFaceSurface(Face, VariableItemReal3&);
 
  public:
+
   Integer m_total_nb_cell;
   Integer m_local_nb_cell;
   UniqueArray<Real> m_vector_zeroes;
@@ -335,7 +339,7 @@ ARCANE_DEFINE_STANDARD_MODULE(AlephIndexTest, AlephIndexTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

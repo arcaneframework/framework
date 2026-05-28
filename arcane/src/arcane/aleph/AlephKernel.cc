@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -200,15 +200,15 @@ AlephKernel::
   delete m_indexing;
   delete m_ordering;
 
-  for ( AlephKernelResults* rq : m_results_queue )
+  for (AlephKernelResults* rq : m_results_queue)
     delete rq;
   m_results_queue.clear();
 
-  for ( AlephMatrix* mq : m_matrix_queue )
+  for (AlephMatrix* mq : m_matrix_queue)
     delete mq;
   m_matrix_queue.clear();
 
-  for ( AlephKernelArguments* aq : m_arguments_queue ){
+  for (AlephKernelArguments* aq : m_arguments_queue) {
     // TODO: look into why this is not done in the AlephKernelArguments destructor.
     delete aq->m_x_vector;
     delete aq->m_b_vector;
@@ -217,7 +217,7 @@ AlephKernel::
   }
   m_arguments_queue.clear();
 
-  // PETSc seems not to like this too much but this is needed 
+  // PETSc seems not to like this too much but this is needed
   //for ( IParallelMng* pm : m_sub_parallel_mng_queue )
   //delete pm;
 
