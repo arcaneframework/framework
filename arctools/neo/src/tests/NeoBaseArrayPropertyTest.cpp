@@ -283,10 +283,13 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
   auto mesh_array_property_values = mesh_array_property.view();
   EXPECT_EQ(mesh_array_property_proxy.arrayPropertyData(),mesh_array_property_values.m_ptr);
   EXPECT_EQ(mesh_array_property.view().size(),mesh_array_property_proxy.arrayPropertyDataSize());
-  EXPECT_EQ(mesh_array_property.sizes().size(),mesh_array_property_proxy.arrayPropertyOffsetsSize());
-  EXPECT_EQ(mesh_array_property.size(),mesh_array_property_proxy.arrayPropertyIndexSize()); // todo must be ok !!
+  EXPECT_EQ(mesh_array_property.size(),mesh_array_property_proxy.arrayPropertyIndexSize());
+  EXPECT_EQ(mesh_array_property.sizes().size(), mesh_array_property_proxy.arrayPropertySizesSize());
+  EXPECT_EQ(mesh_array_property.capacity().size(), mesh_array_property_proxy.arrayPropertyOffsetsSize());
   auto mesh_array_property_offsets = mesh_array_property.capacity();
   EXPECT_TRUE(std::equal(mesh_array_property_offsets.begin(), mesh_array_property_offsets.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
+  auto mesh_array_property_sizes = mesh_array_property.sizes();
+  EXPECT_TRUE(std::equal(mesh_array_property_sizes.begin(), mesh_array_property_sizes.end(), mesh_array_property_proxy.arrayPropertySizes()));
   auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
   EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_offsets.m_ptr);
   [[maybe_unused]] auto property_values = mesh_array_property.view();
@@ -329,7 +332,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_new_init) {
 TEST(NeoTestArrayProperty, test_remove_item_values) {
   Neo::MeshArrayPropertyT<Neo::utils::Int32> mesh_array_property{"mesh_array_property_remove_item_values"};
   std::vector<Neo::utils::Int32> sizes{0,1,2,2,0,1};
-  int nb_item = sizes.size();
+  int nb_item = std::accumulate(sizes.begin(), sizes.end(),0);
   std::vector<Neo::utils::Int32> values(nb_item);
   std::iota(values.begin(), values.end(), 0);
   mesh_array_property.init(sizes,values);
@@ -340,6 +343,7 @@ TEST(NeoTestArrayProperty, test_remove_item_values) {
   sizes = {0,0,1,2,0,1};
   removed_value_indexes.init(sizes, {1,0,1,0});
   mesh_array_property.removeValues(removed_value_indexes);
+  mesh_array_property.debugPrint();
   // check sizes
   auto sizes_check = mesh_array_property.sizes();
   std::vector<Neo::utils::Int32> ref_sizes{0,1,1,0,0,0};
