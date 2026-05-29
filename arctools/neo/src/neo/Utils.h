@@ -229,9 +229,24 @@ namespace utils
   using Int32 = std::int32_t;
   using Real = double;
   static constexpr utils::Int32 NULL_ITEM_LID = -1;
+}
 
-  //----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
+inline void checkRange(utils::Int64 index, utils::Int64 size) {
+  if (index < 0 || index >= size)
+    fatal(("Index (" + std::to_string(index) + ") out of range (" + std::to_string(size) + ")").c_str(),__FILE__,__LINE__);
+}
+
+#if defined (NEO_DEBUG) || defined (NEO_CHECK)
+#define NEO_CHECK_AT(index, size) Neo::checkRange(index,size)
+#else
+#define NEO_CHECK_AT(index, size)
+#endif
+
+//----------------------------------------------------------------------------/
+
+namespace utils {
   struct Real3
   {
     double x, y, z;
@@ -276,7 +291,7 @@ namespace utils
     }
   };
 
-  //----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
   /*!
      * \brief View of a data array
@@ -306,12 +321,14 @@ namespace utils
     Span() = default;
 
     T& operator[](int i) {
-      assert(i < m_size);
+      NEO_CHECK_AT(i,m_size);
+      NEO_ASSERT(m_ptr != nullptr, "Span::operator[] called with nullptr");
       return *(m_ptr + i);
     }
 
     T const& operator[](int i) const {
-      assert(i < m_size);
+      NEO_CHECK_AT(i,m_size);
+      NEO_ASSERT(m_ptr != nullptr, "Span::operator[] called with nullptr");
       return *(m_ptr + i);
     }
 
@@ -326,9 +343,11 @@ namespace utils
       return vec;
     }
   };
+}
 
-  //----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
+namespace utils {
   template <typename T>
   struct ConstSpan
   {
@@ -351,7 +370,8 @@ namespace utils
     ConstSpan() = default;
 
     const T& operator[](int i) const {
-      assert(i < m_size);
+      NEO_CHECK_AT(i, m_size);
+      NEO_ASSERT(m_ptr != nullptr, "Span::operator[] called with nullptr");
       return *(m_ptr + i);
     }
 
@@ -388,7 +408,8 @@ namespace utils
     size_type m_dim2_size = 0;
 
     Span<T> operator[](int i) {
-      assert(i < m_dim1_size);
+      NEO_CHECK_AT(i, m_dim1_size);
+      NEO_ASSERT(m_ptr != nullptr, "Span2::operator[] called with nullptr");
       return { m_ptr + i * m_dim2_size, m_dim2_size };
     }
 
@@ -422,7 +443,8 @@ namespace utils
     size_type m_dim2_size = 0;
 
     ConstSpan<T> operator[](int i) const {
-      assert(i < m_dim1_size);
+      NEO_CHECK_AT(i, m_dim1_size);
+      NEO_ASSERT(m_ptr != nullptr, "Span2::operator[] called with nullptr");
       return { m_ptr + i * m_dim2_size, m_dim2_size };
     }
 

@@ -332,8 +332,14 @@ class ArrayPropertyT : public PropertyBase
 
   DataType& back() noexcept { return m_data.back(); }
 
-  DataType& operator[](std::size_t index) { return m_data[index]; }
-  DataType const& operator[](std::size_t index) const { return m_data[index]; }
+  DataType& operator[](std::size_t index) {
+    NEO_CHECK_AT(index,m_data.size());
+    return m_data[index];
+  }
+  DataType const& operator[](std::size_t index) const {
+    NEO_CHECK_AT(index,m_data.size());
+    return m_data[index];
+  }
 
   auto begin() noexcept { return m_data.begin(); }
   auto end() noexcept { return m_data.end(); }
@@ -598,12 +604,18 @@ class MeshArrayPropertyT : public PropertyBase
   utils::Span<DataType> operator[](const utils::Int32 item) {
     NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
     NEO_ASSERT(item >= 0, "Item local id must be >=0 in MeshArrayPropertyT::[item_lid]");
+    NEO_CHECK_AT(item,m_indexes.size());
+    NEO_CHECK_AT(item, m_sizes.size());
+    NEO_CHECK_AT(m_indexes[item], m_data.size());
     return utils::Span<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
   utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
     NEO_ASSERT(item < (int)m_sizes.size(), "Item local id must be < max local id, In MeshArrayPropertyT[item_lid]");
     NEO_ASSERT(item >= 0, "Item local id must be >0 in MeshArrayPropertyT::[item_lid]");
+    NEO_CHECK_AT(item,m_indexes.size());
+    NEO_CHECK_AT(item, m_sizes.size());
+    NEO_CHECK_AT(m_indexes[item], m_data.size());
     return utils::ConstSpan<DataType>{ &m_data[m_indexes[item]], m_sizes[item] };
   }
 
