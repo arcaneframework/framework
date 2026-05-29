@@ -561,8 +561,14 @@ class MeshArrayPropertyT : public PropertyBase
     m_data = std::move(values);
   }
 
+  /*!
+   * @brief Initialize a MeshArrayProperty from its sizes and values arrays. The property is first cleared
+   * @param sizes array contains the number of values for each item.
+   * @param values array contains the flat values for the initialization. values size must be equal to sum_of(sizes)
+   */
   void init(std::vector<int> sizes, std::vector<DataType> values) {
     NEO_ASSERT(values.size() == (std::size_t)std::accumulate(sizes.begin(), sizes.end(), 0), "sizes and values are not compatible");
+    clear();
     if (sizes.empty() || values.empty()) return;
     m_offsets = std::move(sizes);
     _updateIndexes();
