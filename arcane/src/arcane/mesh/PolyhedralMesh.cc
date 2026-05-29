@@ -807,8 +807,8 @@ namespace mesh
                                 // to access connectivity data (for initializing Arcane connectivities) create a proxy on Neo connectivity
                                 auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(neo_connectivity.name());
                                 Neo::MeshArrayPropertyProxyT<Neo::Mesh::ConnectivityPropertyType::PropertyDataType> connectivity_proxy{ connectivity_values };
-                                auto nb_item_data = connectivity_proxy.arrayPropertyOffsets();
-                                auto nb_item_size = connectivity_proxy.arrayPropertyOffsetsSize(); // todo check MeshArrayProperty::size
+                                auto nb_item_data = connectivity_proxy.arrayPropertySizes();
+                                auto nb_item_size = connectivity_proxy.arrayPropertySizesSize();
                                 item_internal_connectivity_list->_setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                         Int32ArrayView{ Integer(nb_item_size), nb_item_data });
                                 auto max_nb_connected_items = connectivity.maxNbConnectedItems();
