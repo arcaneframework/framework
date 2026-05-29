@@ -6,10 +6,10 @@ message(FATAL_ERROR "The component 'arcane_mono' is no longer supported")
 
 set(PKGS MonoEmbed Glib)
 arcane_find_package(MonoEmbed)
-if(NOT MonoEmbed_FOUND)
+if (NOT MonoEmbed_FOUND)
   message(STATUS "Disabling 'arcane_mono' because MonoEmbed is not found")
   return()
-endif()
+endif ()
 
 include(srcs.cmake)
 
@@ -22,13 +22,13 @@ arcane_add_library(arcane_mono
 arcane_add_arccon_packages(arcane_mono PRIVATE ${PKGS})
 
 target_compile_definitions(arcane_mono PRIVATE ARCANE_COMPONENT_arcane_mono)
-# Avec mono 6.0+, si on attache les threads TBB cela provoque des bloquages
-# dans le test 'task2_cs'. Ces bloquaques n'existent pas si on n'attache pas
-# les threads. Il faudrait étudier s'il l'appel à attach est toujours nécessaire.
+# With mono 6.0+, attaching TBB threads causes deadlocks
+# in the 'task2_cs' test. These deadlocks do not occur if we do not attach
+# the threads. It should be studied whether the attach call is still necessary.
 if (MONOEMBEDPKG_VERSION VERSION_GREATER_EQUAL "6.0")
   message(STATUS "[arcane_mono] Do not attach threads")
   target_compile_definitions(arcane_mono PRIVATE ARCANE_MONO_NO_THREAD_ATTACH)
-endif()
+endif ()
 
 target_link_libraries(arcane_mono PRIVATE arcane_utils)
 

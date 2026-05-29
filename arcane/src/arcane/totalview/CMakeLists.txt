@@ -1,4 +1,4 @@
-# Totalview n'est pas disponible sous Windows
+﻿# Totalview is not available on Windows
 if (WIN32)
   return()
 endif()
