@@ -66,7 +66,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   // create nodes
   auto added_nodes = Neo::ItemRange{};
   mesh.addAlgorithm(
-  Neo::MeshKernel::OutProperty{ node_family, node_family.lidPropName() },
+  Neo::MeshKernel::OutProperty{ node_family, node_family.lidPropName() }, "CreateNodes",
   [&node_uids, &added_nodes](Neo::ItemLidsProperty& node_lids_property) {
     std::cout << "Algorithm: create nodes" << std::endl;
     added_nodes = node_lids_property.append(node_uids);
@@ -78,6 +78,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_uids" },
+  "RegisterNodeUids",
   [&node_uids, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                              Neo::MeshScalarPropertyT<Neo::utils::Int64>& node_uids_property) {
     std::cout << "Algorithm: register node uids" << std::endl;
@@ -92,6 +93,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
+  "RegisterNodeCoords",
   [&node_coords, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                                Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
     std::cout << "Algorithm: register node coords" << std::endl;
@@ -107,7 +109,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   // create cells
   auto added_cells = Neo::ItemRange{};
   mesh.addAlgorithm(
-  Neo::MeshKernel::OutProperty{ cell_family, cell_family.lidPropName() },
+  Neo::MeshKernel::OutProperty{ cell_family, cell_family.lidPropName() },"CreateCells",
   [&cell_uids, &added_cells](Neo::ItemLidsProperty& cell_lids_property) {
     std::cout << "Algorithm: create cells" << std::endl;
     added_cells = cell_lids_property.append(cell_uids);
@@ -119,6 +121,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
+  "AddCells",
   [&cell_uids, &added_cells](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
   Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
@@ -138,6 +141,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node2cells" },
+  "RegisterNodeCellsConnectivity",
   [&connected_cell_uids, &nb_cell_per_node, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                                                           Neo::ItemLidsProperty const& cell_lids_property,
                                                           Neo::MeshArrayPropertyT<Neo::utils::Int32>& node2cells) {
@@ -159,6 +163,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
                     Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
                     Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
+                    "RegisterCellNodesConnectivity",
                     [&connected_node_uids, &nb_node_per_cell, &added_cells](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
@@ -178,7 +183,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   // add new cells
   std::vector<Neo::utils::Int64> new_cell_uids{ 10, 11, 12 }; // elles seront toutes rouges
   auto new_cell_added = Neo::ItemRange{};
-  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, cell_family.lidPropName() },
+  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, cell_family.lidPropName() },"AddNewCells",
                     [&new_cell_uids, &new_cell_added](Neo::ItemLidsProperty& cell_lids_property) {
                       std::cout << "Algorithm: add new cells" << std::endl;
                       new_cell_added = cell_lids_property.append(new_cell_uids);
@@ -190,6 +195,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
+  "RegisterNewCellUids",
   [&new_cell_uids, &new_cell_added](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
   Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
@@ -208,6 +214,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
                     Neo::MeshKernel::InProperty{ cell_family, cell_family.lidPropName() },
                     Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
+                    "RegisterNewCellNodeConnectivity",
                     [&new_cell_connected_node_uids, &nb_node_per_new_cell, &new_cell_added](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
@@ -229,6 +236,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::OutProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "internal_end_of_remove_tag" },
+  "RemoveNodes",
   [&removed_node_uids, &removed_nodes, &node_family](
   Neo::ItemLidsProperty& node_lids_property,
   Neo::MeshScalarPropertyT<Neo::utils::Int32>& internal_end_of_remove_tag) {
@@ -247,6 +255,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.addAlgorithm(
   Neo::MeshKernel::InProperty{ node_family, "internal_end_of_remove_tag" },
   Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
+  "UpdateCellNodeConnectivity",
   [&cell_family](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
   Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
@@ -288,6 +297,7 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
 
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
                     Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
+                    "RegisterNodeCoords",
                     //[&node_coords, &node_uids]( // todo
                     [](
                     [[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,

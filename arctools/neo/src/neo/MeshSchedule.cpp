@@ -85,6 +85,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::MeshKernel::InProperty{ source_family, source_family.lidPropName(), PropertyStatus::ExistingProperty },
   Neo::MeshKernel::InProperty{ target_family, target_family.lidPropName(), PropertyStatus::ExistingProperty },
   Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
+  "RegisterConnectivity"+connectivity_unique_name,
   // Neo::MeshKernel::OutProperty{ source_family, isolated_items_property_name }, // todo to remove isolated items
   [connected_item_uids{ std::move(connected_item_uids) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) },
@@ -121,6 +122,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::MeshKernel::InProperty{ target_family, target_family_removed_item_property_name },
   Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
   Neo::MeshKernel::OutProperty{ source_family, isolated_items_property_name },
+  "UpdateConnectivity_"+connectivity_unique_name+"_AfterTargetItemRemoval",
   [&source_family, &target_family,rank(m_rank),this,removed_target_item_index_prop_name](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& target_family_removed_items,
   Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity,
@@ -171,6 +173,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ source_family, source_family_removed_item_property_name },
   Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
+  "UpdateConnectivity_"+connectivity_unique_name+"_AfterSourceItemRemoval",
   [&source_family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& source_family_removed_items,
   Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity) {
@@ -196,6 +199,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::MeshKernel::InProperty{ source_family, isolated_items_property_name },
   Neo::MeshKernel::OutProperty{ source_family, source_family.lidPropName() },
   Neo::MeshKernel::OutProperty { source_family, connectivity_unique_name},
+  "RemoveIsolatedItemsIn"+source_family.name(),
   [&source_family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items,
   Neo::ItemLidsProperty& item_lids_property,
@@ -238,6 +242,7 @@ void Neo::Mesh::_scheduleAddConnectivityOrientation(Neo::Family& source_family, 
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ source_family, source_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ source_family, orientation_property_name },
+  "Compute"+orientation_property_name,
   [source_item_orientation_in_target_item{ std::move(source_item_orientation_in_target_item) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) }, source_items_wrapper,
    &source_family, &target_family,rank(m_rank)](Neo::ItemLidsProperty const& source_family_lids_property,
