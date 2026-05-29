@@ -27,8 +27,8 @@
 #include <assert.h>
 #include <iostream>
 
-// NOTE: à partir de '.Net 6', ces fichiers sont inclus dans le SDK
-// au même endroit que 'libnethost.so'
+// NOTE: starting from '.Net 6', these files are included in the SDK
+// in the same location as 'libnethost.so'
 
 // Provided by the AppHost NuGet package and installed as an SDK pack
 #include <nethost.h>
@@ -102,7 +102,7 @@ using namespace Arcane;
 
 namespace
 {
-// Indique si on affiche les informations de debug
+// Indicates whether debug information is displayed
 int dotnet_verbose = 0;
 
 #ifdef _WINDOWS
@@ -143,7 +143,7 @@ const char* arcane_dotnet_root = ARCANE_DOTNET_ROOT;
 const char* arcane_dotnet_root = nullptr;
 #endif
 Arcane::CoreClrLibInfo lib_info;
-// Utile pour conserver la valeur de la variable d'environnement
+// Utility to save the value of the environment variable
 // DOTNET_ROOT
 std::string arcane_dotnet_root_env_variable;
 
@@ -153,7 +153,7 @@ std::string arcane_dotnet_root_env_variable;
 bool load_hostfxr(const string_t& assembly_name);
 
 // Load and initialize .NET Core and get desired function pointer for scenario
-// (Note: pas utilisé pour l'instant).
+// (Note: not used yet).
 load_assembly_and_get_function_pointer_fn
 getDotnetLoadAssembly(const String& assembly)
 {
@@ -164,7 +164,7 @@ getDotnetLoadAssembly(const String& assembly)
 
   hostfxr_initialize_parameters params;
   params.size = sizeof(params);
-  // TODO: il s'agit du chemin de l'exécutable, pas de l'assembly.
+  // TODO: this is the path of the executable, not the assembly.
   params.host_path = assembly1.c_str(); //get_path_to_the_host_exe(); // Path to the current executable
 
   int rc = lib_info.init_fptr(assembly1.c_str(), &params, &cxt);
@@ -188,7 +188,7 @@ getDotnetLoadAssembly(const String& assembly)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Pour tester le lancement direct. En cours d'étude.
+// To test direct launch. Under study.
 
 int
 _execDirect(const CommandLineArguments& cmd_args,
@@ -209,10 +209,10 @@ _execDirect(const CommandLineArguments& cmd_args,
   params.size = sizeof(params);
   params.host_path = root_path1.c_str();
 #ifdef ARCANE_OS_WIN32
-  // Sous Windows, '.Net' est installé dans un chemin standard
-  // et il ne faut pas spécifier le chemin (cela provoque une erreur
-  // d'argument invalide (a vérifier si c'est parce que 'arcane_dotnet_root'
-  // n'est pas valide ou s'il ne faut rien spécifier).
+  // On Windows, '.Net' is installed in a standard path
+  // and the path should not be specified (this causes an invalid
+  // argument error (to be checked if it's because 'arcane_dotnet_root'
+  // is not valid or if nothing should be specified)).
   params.dotnet_root = nullptr;
 #else
   params.dotnet_root = dotnet_root.c_str();
@@ -249,7 +249,7 @@ _execDirect(const CommandLineArguments& cmd_args,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Point d'entrée de la bibliothèque appelé par 'ArcaneMain.cc'
+ * \brief Library entry point called by 'ArcaneMain.cc'
  */
 
 int
@@ -260,9 +260,9 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
   if (!verbose_str.null())
     dotnet_verbose = 1;
 
-  // Si l'utilisateur a spécifié cette variable, alors on ne surcharge pas
-  // les appels avec la version configurée lors de la compilation.
-  // Le runtime 'coreclr' se charge d'utiliser cette variable d'environnement.
+  // If the user specified this variable, we do not override
+  // the calls with the version configured during compilation.
+  // The 'coreclr' runtime handles using this environment variable.
 
   String dotnet_root_env = platform::getEnvironmentVariable("DOTNET_ROOT");
   if (!dotnet_root_env.null()){
@@ -270,7 +270,7 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
     arcane_dotnet_root = arcane_dotnet_root_env_variable.c_str();
   }
 
-  // TODO: trouver un moyen d'utiliser 'cmd_args'
+  // TODO: find a way to use 'cmd_args'
   PRINT_FORMAT(1,"ARCANE_DOTNET_CORECLR_MAIN assembly_name={0}",orig_assembly_name);
 
   if (orig_assembly_name.empty())
@@ -292,7 +292,7 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
   if (do_direct_exec)
     return _execDirect(cmd_args, orig_assembly_name);
 
-  // NOTE: Cette partie n'est pas utilisée pour l'instant.
+  // NOTE: This part is not used yet.
 
   //
   // STEP 2: Initialize and start the .NET Core runtime
@@ -311,8 +311,8 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
   // <SnippetLoadAndGet>
   // Function pointer to managed delegate
   component_entry_point_fn dll_entry_point_func = nullptr;
-  // ATTENTION: si on passe 'nullptr' comme 'delegate_type_name', alors 'dotnet_type_method'
-  // doit être du type 'int (InpPtr args,int sizeBytes)'.
+  // WARNING: if 'nullptr' is passed as 'delegate_type_name', then 'dotnet_type_method'
+  // must be of type 'int (InpPtr args,int sizeBytes)'.
   int rc = load_assembly_and_get_function_pointer(orig_assembly_name1.c_str(),
                                                   dotnet_type,
                                                   dotnet_type_method,
@@ -341,7 +341,7 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Point d'entrée appelé par ArcaneMain
+// Entry point called by ArcaneMain
 extern "C" ARCANE_EXPORT int
 arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
                            const Arcane::String& orig_assembly_name)
@@ -422,10 +422,10 @@ void* get_export(LibHandle h, const char* name)
 bool
 load_hostfxr(const string_t& assembly_name)
 {
-  // Si 'coreclr' n'est pas installé dans un chemin standard, il est possible
-  // qu'il faille le spécifier. La variable d'environnement DOTNET_ROOT permet
-  // de le faire. Si elle n'est pas positionnée, utilise le chemin trouvée
-  // lors de la configuration.
+  // If 'coreclr' is not installed in a standard path, it is possible
+  // that it needs to be specified. The DOTNET_ROOT environment variable allows
+  // to do so. If it is not set, it uses the path found
+  // during configuration.
   string_t dotnet_root = _toString(String(arcane_dotnet_root));
   get_hostfxr_parameters hostfxr_parameters;
   hostfxr_parameters.size = sizeof(get_hostfxr_parameters);
@@ -442,7 +442,7 @@ load_hostfxr(const string_t& assembly_name)
   // https://github.com/dotnet/runtime/blob/main/docs/design/features/host-error-codes.md
   // Real good value is '0'.
   // Positive values are for warnings
-  // Negative valeurs are for errors
+  // Negative values are for errors
   int rc = get_hostfxr_path(buffer, &buffer_size, &hostfxr_parameters);
   PRINT_FORMAT(1,"Return value of 'get_hostfxr_path' = '{0}'",rc);
   if (rc != 0)
