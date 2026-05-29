@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/CheckedConvert.h"
+
 #include "arcane/core/Directory.h"
 
 // Standard headers
@@ -51,19 +52,19 @@ using string_t = std::basic_string<char_t>;
 
 namespace
 {
-  std::wstring _toString(const Arcane::String& s)
-  {
-    return Arcane::StringUtils::convertToStdWString(s);
-  }
-  char_t* _duplicate(const char_t* x)
-  {
-    return ::_wcsdup(x);
-  }
-  Arcane::String _toArcaneString(const char_t* x)
-  {
-    std::wstring_view wstr_view(x);
-    return Arcane::StringUtils::convertToArcaneString(wstr_view);
-  }
+std::wstring _toString(const Arcane::String& s)
+{
+  return Arcane::StringUtils::convertToStdWString(s);
+}
+char_t* _duplicate(const char_t* x)
+{
+  return ::_wcsdup(x);
+}
+Arcane::String _toArcaneString(const char_t* x)
+{
+  std::wstring_view wstr_view(x);
+  return Arcane::StringUtils::convertToArcaneString(wstr_view);
+}
 } // namespace
 
 #else
@@ -79,18 +80,18 @@ namespace
 typedef char char_t;
 namespace
 {
-  string_t _toString(const Arcane::String& s)
-  {
-    return std::string(s.toStdStringView());
-  }
-  char_t* _duplicate(const char_t* x)
-  {
-    return ::strdup(x);
-  }
-  Arcane::String _toArcaneString(const char_t* x)
-  {
-    return Arcane::String(Arcane::StringView(x));
-  }
+string_t _toString(const Arcane::String& s)
+{
+  return std::string(s.toStdStringView());
+}
+char_t* _duplicate(const char_t* x)
+{
+  return ::strdup(x);
+}
+Arcane::String _toArcaneString(const char_t* x)
+{
+  return Arcane::String(Arcane::StringView(x));
+}
 } // namespace
 
 #endif
@@ -111,7 +112,7 @@ using LibHandle = HMODULE;
 using LibHandle = void*;
 #endif
 
-}
+} // namespace
 
 namespace Arcane
 {
@@ -129,11 +130,11 @@ struct CoreClrLibInfo
   void cleanup();
 };
 
-}
+} // namespace Arcane
 
-#define PRINT_FORMAT(level,str,...)             \
-  if (dotnet_verbose>=level)\
-    std::cout << String::format("[coreclr] " str "\n",__VA_ARGS__);
+#define PRINT_FORMAT(level, str, ...) \
+  if (dotnet_verbose >= level) \
+    std::cout << String::format("[coreclr] " str "\n", __VA_ARGS__);
 
 namespace
 {
@@ -190,9 +191,8 @@ getDotnetLoadAssembly(const String& assembly)
 /*---------------------------------------------------------------------------*/
 // To test direct launch. Under study.
 
-int
-_execDirect(const CommandLineArguments& cmd_args,
-            const String& orig_assembly_name)
+int _execDirect(const CommandLineArguments& cmd_args,
+                const String& orig_assembly_name)
 {
   using const_char_t = const char_t*;
 
@@ -226,8 +226,8 @@ _execDirect(const CommandLineArguments& cmd_args,
   hostfxr_handle host_context_handle;
   int rc = lib_info.init_command_line_fptr(argc, (const char_t**)argv, &params, &host_context_handle);
   std::cerr << "_execDirect init_command_line R = " << rc << "\n";
-  if (rc!=0)
-    ARCANE_FATAL("Can not initialize runtime RC={0}",rc);
+  if (rc != 0)
+    ARCANE_FATAL("Can not initialize runtime RC={0}", rc);
 
 #if TEST
   size_t buffer_used = 0;
@@ -248,13 +248,12 @@ _execDirect(const CommandLineArguments& cmd_args,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Library entry point called by 'ArcaneMain.cc'
  */
-
-int
-_arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
-                           const Arcane::String& orig_assembly_name)
+int _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
+                               const Arcane::String& orig_assembly_name)
 {
   String verbose_str = Arcane::platform::getEnvironmentVariable("ARCANE_DEBUG_DOTNET");
   if (!verbose_str.null())
@@ -265,22 +264,22 @@ _arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
   // The 'coreclr' runtime handles using this environment variable.
 
   String dotnet_root_env = platform::getEnvironmentVariable("DOTNET_ROOT");
-  if (!dotnet_root_env.null()){
+  if (!dotnet_root_env.null()) {
     arcane_dotnet_root_env_variable = dotnet_root_env.toStdStringView();
     arcane_dotnet_root = arcane_dotnet_root_env_variable.c_str();
   }
 
   // TODO: find a way to use 'cmd_args'
-  PRINT_FORMAT(1,"ARCANE_DOTNET_CORECLR_MAIN assembly_name={0}",orig_assembly_name);
+  PRINT_FORMAT(1, "ARCANE_DOTNET_CORECLR_MAIN assembly_name={0}", orig_assembly_name);
 
   if (orig_assembly_name.empty())
     ARCANE_FATAL("No assembly name");
 
-  string_t orig_assembly_name1 =  _toString(orig_assembly_name);
+  string_t orig_assembly_name1 = _toString(orig_assembly_name);
 
   String root_path = Arcane::platform::getFileDirName(orig_assembly_name);
 
-  PRINT_FORMAT(1,"ENTERING CORECLR_MAIN root_path={0}",root_path);
+  PRINT_FORMAT(1, "ENTERING CORECLR_MAIN root_path={0}", root_path);
 
   //
   // STEP 1: Load HostFxr and get exported hosting functions
@@ -347,16 +346,16 @@ arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
                            const Arcane::String& orig_assembly_name)
 {
   int ret = 0;
-  try{
-    ret = _arcaneCoreClrMainInternal(cmd_args,orig_assembly_name);
+  try {
+    ret = _arcaneCoreClrMainInternal(cmd_args, orig_assembly_name);
   }
-  catch(const Exception& ex){
-    ret = arcanePrintArcaneException(ex,nullptr);
+  catch (const Exception& ex) {
+    ret = arcanePrintArcaneException(ex, nullptr);
   }
-  catch(const std::exception& ex){
-    ret = arcanePrintStdException(ex,nullptr);
+  catch (const std::exception& ex) {
+    ret = arcanePrintStdException(ex, nullptr);
   }
-  catch(...){
+  catch (...) {
     ret = arcanePrintAnyException(nullptr);
   }
   return ret;
@@ -381,7 +380,7 @@ LibHandle load_library(const char_t* path)
 {
   HMODULE h = ::LoadLibraryW(path);
   if (!h)
-    ARCANE_FATAL("Can not load library '{0}'",_toArcaneString(path));
+    ARCANE_FATAL("Can not load library '{0}'", _toArcaneString(path));
   return h;
 }
 void free_library(LibHandle h)
@@ -392,7 +391,7 @@ void* get_export(LibHandle h, const char* name)
 {
   void* f = ::GetProcAddress(h, name);
   if (!f)
-    ARCANE_FATAL("Can not get library symbol '{0}'",name);
+    ARCANE_FATAL("Can not get library symbol '{0}'", name);
   return f;
 }
 #else
@@ -400,7 +399,7 @@ LibHandle load_library(const char_t* path)
 {
   void* h = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
   if (!h)
-    ARCANE_FATAL("Can not load library '{0}' error='{1}'",path,dlerror());
+    ARCANE_FATAL("Can not load library '{0}' error='{1}'", path, dlerror());
   return h;
 }
 void free_library(LibHandle h)
@@ -410,17 +409,16 @@ void free_library(LibHandle h)
 void* get_export(LibHandle h, const char* name)
 {
   void* f = dlsym(h, name);
-  PRINT_FORMAT(1,"get_export name={0} f={1}",name,f);
+  PRINT_FORMAT(1, "get_export name={0} f={1}", name, f);
   if (!f)
-    PRINT_FORMAT(0,"Can not get library symbol '{0}'  error='{1}'",name,dlerror());
+    PRINT_FORMAT(0, "Can not get library symbol '{0}'  error='{1}'", name, dlerror());
   return f;
 }
 #endif
 
 // <SnippetLoadHostFxr>
 // Using the nethost library, discover the location of hostfxr and get exports
-bool
-load_hostfxr(const string_t& assembly_name)
+bool load_hostfxr(const string_t& assembly_name)
 {
   // If 'coreclr' is not installed in a standard path, it is possible
   // that it needs to be specified. The DOTNET_ROOT environment variable allows
@@ -432,7 +430,7 @@ load_hostfxr(const string_t& assembly_name)
   hostfxr_parameters.assembly_path = assembly_name.c_str();
   hostfxr_parameters.dotnet_root = dotnet_root.c_str();
 
-  PRINT_FORMAT(1,"Entering load_hostfxr() dotnet_root={0}",arcane_dotnet_root);
+  PRINT_FORMAT(1, "Entering load_hostfxr() dotnet_root={0}", arcane_dotnet_root);
   // Pre-allocate a large buffer for the path to hostfxr
   const int BUF_LEN = 12000;
   char_t buffer[BUF_LEN];
@@ -444,15 +442,15 @@ load_hostfxr(const string_t& assembly_name)
   // Positive values are for warnings
   // Negative values are for errors
   int rc = get_hostfxr_path(buffer, &buffer_size, &hostfxr_parameters);
-  PRINT_FORMAT(1,"Return value of 'get_hostfxr_path' = '{0}'",rc);
+  PRINT_FORMAT(1, "Return value of 'get_hostfxr_path' = '{0}'", rc);
   if (rc != 0)
-    PRINT_FORMAT(0,"Error or warning calling 'get_hostfxr_path' = '{0}'",rc);
+    PRINT_FORMAT(0, "Error or warning calling 'get_hostfxr_path' = '{0}'", rc);
   if (rc < 0)
     return false;
 
   // Load hostfxr and get desired exports
   LibHandle lib = load_library(buffer);
-  PRINT_FORMAT(1,"LIB_PTR={0} path={1}",lib,_toArcaneString(buffer));
+  PRINT_FORMAT(1, "LIB_PTR={0} path={1}", lib, _toArcaneString(buffer));
   lib_info.m_lib_handle = lib;
   lib_info.m_has_valid_lib_handle = true;
   lib_info.init_fptr = (hostfxr_initialize_for_runtime_config_fn)get_export(lib, "hostfxr_initialize_for_runtime_config");
@@ -471,14 +469,17 @@ namespace Arcane
 void CoreClrLibInfo::
 cleanup()
 {
-  if (m_has_valid_lib_handle){
+  if (m_has_valid_lib_handle) {
     free_library(m_lib_handle);
     m_lib_handle = (LibHandle)0;
   }
   m_has_valid_lib_handle = false;
 }
 
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
