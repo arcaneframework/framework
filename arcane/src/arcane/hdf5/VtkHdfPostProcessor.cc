@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtkHdfPostProcessor.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Pos-traitement au format VTK HDF.                                         */
+/* Post-processing in VTK HDF format.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,36 +34,36 @@
 #include "arcane/hdf5/Hdf5Utils.h"
 #include "arcane/hdf5/VtkHdfPostProcessor_axl.h"
 
-// Ce format est décrit sur la page web suivante:
+// This format is described on the following webpage:
 //
 // https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
-// TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
-//       ne change pas. Avec la notion de lien de HDF5, il doit être possible
-//       de mettre cette information ailleurs et de ne sauver le maillage
-//       que s'il évolue.
-// TODO: Regarder la compression
+// TODO: Look into saving uniqueId() (via vtkOriginalCellIds)
+// TODO: Look into how to avoid saving the mesh in every iteration if it
+//       doesn't change. With the concept of HDF5 linking, it should be possible
+//       to store this information elsewhere and only save the mesh
+//       if it evolves.
+// TODO: Look into compression
 
 /*
-  NOTE sur l'implémentation parallèle
+  NOTE on parallel implementation
 
-  L'implémentation actuelle est très basique.
-  Seul le rang maitre (le rang 0 en général) effectue les sorties. Pour
-  chaque dataset, ce rang fait un gather pour récupérer les informations. Cela
-  suppose donc que tout le monde a les mêmes variables et dans le même ordre
-  (normalement c'est toujours le cas car c'est trié par la VariableMng).
+  The current implementation is very basic.
+  Only the master rank (rank 0 generally) performs the outputs. For
+  each dataset, this rank performs a gather to retrieve the information. This
+  therefore assumes that everyone has the same variables and in the same order
+  (normally this is always the case because it is sorted by the VariableMng).
 
-  Cette implémentation fonctionne donc quel que soit le mode d'échange de
-  message utilisé (full MPI, mémoire partagé ou hybride).
+  This implementation therefore works regardless of the message exchange mode
+  used (full MPI, shared memory, or hybrid).
 
-  TODO: Découpler l'écriture de la gestion des variables pour pouvoir utiliser
-  les opérations collectives de HDF5 (si compilé avec MPI). Dans ce cas il
-  faut quand même géré manuellement le mode échange de message en mémoire
-  partagée ou hybride.
+  TODO: Decouple the writing from variable management to be able to use
+  HDF5 collective operations (if compiled with MPI). In this case, it
+  is still necessary to manually manage the message exchange mode in shared memory
+  or hybrid.
 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,19 +99,19 @@ class VtkHdfDataWriter
 
   IMesh* m_mesh;
 
-  //! Liste des groupes à sauver
+  //! List of groups to save
   ItemGroupCollection m_groups;
 
-  //! Liste des temps
+  //! List of times
   UniqueArray<Real> m_times;
 
-  //! Nom du fichier HDF courant
+  //! Current HDF file name
   String m_full_filename;
 
-  //! Répertoire de sortie.
+  //! Output directory.
   String m_directory_name;
 
-  //! Identifiant HDF du fichier
+  //! HDF file identifier
   HFile m_file_id;
 
   HGroup m_cell_data_group;
@@ -182,7 +182,7 @@ beginWrite(const VariableCollection& vars)
   Int32 time_index = m_times.size();
   const bool is_first_call = (time_index < 2);
   if (is_first_call)
-    pwarning() << "L'implémentation au format 'VtkHdf' est expérimentale";
+    pwarning() << "The 'VtkHdf' format implementation is experimental";
 
   String filename = _getFileNameForTimeIndex(time_index);
 
@@ -196,10 +196,10 @@ beginWrite(const VariableCollection& vars)
 
   HGroup top_group;
 
-  // TODO: protéger appels concurrents HDF5
-  // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
-  // - Hdf5 a été compilé avec MPI
-  // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
+  // TODO: protect concurrent HDF5 calls
+  // It is possible to use HDF5 collective mode via MPI-IO in the following cases:
+  // - Hdf5 was compiled with MPI
+  // - we are in pure MPI mode (neither shared memory mode nor hybrid mode)
   m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
@@ -246,8 +246,8 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  // Pour les connectivités, la taille du tableau est égal
-  // au nombre de mailles plus 1.
+  // For connectivities, the array size is equal
+  // to the number of cells plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
@@ -297,7 +297,7 @@ beginWrite(const VariableCollection& vars)
     _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
   }
 
-  // Sauve les uniqueIds, les types et les coordonnées des noeuds.
+  // Save the uniqueIds, types, and coordinates of the nodes.
   {
     UniqueArray<Int64> nodes_uid(nb_node);
     UniqueArray<unsigned char> nodes_ghost_type(nb_node);
@@ -322,21 +322,21 @@ beginWrite(const VariableCollection& vars)
       points[index][2] = pos.z;
     }
 
-    // Sauve l'uniqueId de chaque noeud dans le dataset "GlobalNodeId".
+    // Save the uniqueId of each node in the "GlobalNodeId" dataset.
     _writeDataSet1DCollective<Int64>(m_node_data_group, "GlobalNodeId", nodes_uid);
 
-    // Sauve les informations sur le type de noeud (réel ou fantôme).
+    // Save the information about the node type (real or ghost).
     _writeDataSet1DCollective<unsigned char>(m_node_data_group, "vtkGhostType", nodes_ghost_type);
 
-    // Sauve les coordonnées des noeuds.
+    // Save the coordinates of the nodes.
     _writeDataSet2DCollective<Real>(top_group, "Points", points);
   }
 
-  // Sauve les informations sur le type de maille (réel ou fantôme)
+  // Save the information about the cell type (real or ghost)
   _writeDataSet1DCollective<Int64>(m_cell_data_group, "GlobalCellId", cells_uid);
 
-  // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
-  // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
+  // Save the uniqueId of each cell in the "GlobalCellId" dataset.
+  // The use of the "vtkOriginalCellIds" dataset does not work in Paraview.
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 }
 
@@ -426,7 +426,6 @@ _writeDataSet1DCollectiveWithCollectiveIO(HGroup& group, const String& name, Spa
 
   if (herr < 0)
     ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -622,10 +621,10 @@ endWrite()
   //top_group.close();
   m_file_id.close();
 
-  // Ecrit le fichier contenant les temps (à partir de la version 5.5 de paraview)
+  // Writes the file containing the times (starting from ParaView version 5.5)
   // https://www.paraview.org/Wiki/ParaView_Release_Notes#JSON_based_new_meta_file_format_for_series_added
   //
-  // Exemple:
+  // Example:
   // {
   //   "file-series-version" : "1.0",
   //   "files" : [
@@ -741,7 +740,7 @@ _writeReal3Dataset(HGroup& group, IVariable* var, IData* data)
   ARCANE_CHECK_POINTER(true_data);
   SmallSpan<const Real3> values(true_data->view());
   Int32 nb_value = values.size();
-  // TODO: optimiser cela sans passer par un tableau temporaire
+  // TODO: optimize this without passing through a temporary array
   UniqueArray2<Real> scalar_values;
   scalar_values.resize(nb_value, 3);
   for (Int32 i = 0; i < nb_value; ++i) {
@@ -759,7 +758,7 @@ _writeReal3Dataset(HGroup& group, IVariable* var, IData* data)
 void VtkHdfDataWriter::
 _writeReal2Dataset(HGroup& group, IVariable* var, IData* data)
 {
-  // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
+  // Convert to an array of 3 components where the last one will be 0.
   auto* true_data = dynamic_cast<IArrayDataT<Real2>*>(data);
   ARCANE_CHECK_POINTER(true_data);
   SmallSpan<const Real2> values(true_data->view());
@@ -781,7 +780,7 @@ _writeReal2Dataset(HGroup& group, IVariable* var, IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Post-traitement au format Ensight Hdf.
+ * \brief Post-processing in Ensight Hdf format.
  */
 class VtkHdfPostProcessor
 : public ArcaneVtkHdfPostProcessorObject

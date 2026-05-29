@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Hdf5ReaderWriter.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Outils de lecture/écriture dans un fichier HDF5.                          */
+/* Tools for reading/writing in an HDF5 file.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HDF5_HDF5READERWRITER_H
 #define ARCANE_HDF5_HDF5READERWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IDataReader.h"
-#include "arcane/IDataWriter.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataWriter.h"
 
 #include "arcane/hdf5/Hdf5Utils.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,47 +30,48 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- \brief Lecture/Ecriture au format HDF5.
+ \brief Reading/Writing in HDF5 format.
  
- La version de Hdf5 utilisée est au moins la version 1.4.3.
+ The HDF5 version used is at least version 1.4.3.
 
- En ce qui concerne les réels, on ne supporte que la double précision. Ils sont
- donc stockées sur 8 octets aussi.
+ Regarding real numbers, only double precision is supported. They are
+ therefore stored in 8 bytes as well.
 
- Pour les #Real2, #Real2x2, #Real3 et les #Real3x3, on utilise un type composé.
+ For #Real2, #Real2x2, #Real3, and #Real3x3, a composite type is used.
   
- La structure des informations sauvées est la suivante:
+ The structure of the saved information is as follows:
  <ul>
- <li> * toutes les variables sont sauvées dans un groupe qui s'appelle "Variables" * .</li>
- <li> * pour chaque variable, un sous-groupe du nom de la variable est créé. Ce
- sous groupe contient les attributs et datasets suivants:
+ <li> * all variables are saved in a group called "Variables". * .</li>
+ <li> * for each variable, a subgroup named after the variable is created. This
+ subgroup contains the following attributes and datasets:
  <ul>
- <li> * Un \e attribut de nom "Dims" qui est un tableau de 1 ou 2 éléments de type #Integer
- qui contient les informations sur les tailles et dimensions de la variable. Cet attribut
- est \b toujours présent et sert entre autre à déterminer si les deux autres \e datasets
- sont présents. La première valeur (indice 0) est toujours le nombre d'éléments du tableau.
- Si la variable est un tableau à une dimension, il n'y a pas d'autres valeurs. Si le
- tableau est bi-dimensionnel, la deuxième valeur est égale à la taille de la
- première dimension du tableau, les tailles de la deuxième dimensions étant
- données par l'attribut "Dim2".</li>
- <li> * Un \e dataset de nom "Dim2". Ce \e dataset n'est présent que si la variables est du
- genre tableau à deux dimensions, lorsque la première dimension n'est pas nulle et que
- le nombre d'éléments n'est pas nul.
- Dans ce cas, ce \e dataset est un tableau de type #Integer dont la taille est
- égale à celle de la première dimension de la variable et donc chaque valeur est
- égale à la taille de la deuxième dimension.</li>
- <li> * Un \e dataset de nom "Values" contenant les valeurs de la variables. Ce \e dataset
- n'est pas présent dans le cas d'une variable de genre tableau dont le nombre
- d'éléments est nul ou lorsque la variable est temporaire (propriété IVariable::PNoDump). * </li>
+ <li> * An attribute named "Dims" which is an array of 1 or 2 #Integer
+ elements containing information about the sizes and dimensions of the
+ variable. This attribute is always present and is used, among other
+ things, to determine if the other two datasets are present. The first value
+ (index 0) is always the number of elements in the array. If the variable is a
+ one-dimensional array, there are no other values. If the array is
+ two-dimensional, the second value is equal to the size of the first dimension
+ of the array, while the sizes of the second dimensions are given by the
+ "Dim2" attribute.</li>
+ <li> * A dataset named "Dim2". This dataset is only present if the variable
+ is a two-dimensional array, when the first dimension is not zero and the
+ number of elements is not zero. In this case, this dataset is an array of
+ #Integer type whose size is equal to the size of the first dimension of the
+ variable, and thus each value is equal to the size of the second dimension.
+ </li>
+ <li> * A dataset named "Values" containing the values of the variable. This
+ dataset is not present in the case of an array variable whose number of
+ elements is zero or when the variable is temporary (IVariable::PNoDump
+ property). * </li>
  </ul>
  </li>
  </ul>
  
- \todo sauve/relit la liste des groupes d'entités du maillage.
+ \todo save/read the list of mesh entity groups.
 
- \warning  * La gestion des lecture/ecriture dans ce format est à l'heure actuelle
- au stade expérimental et ne peut pas être utilisée pour assurer une persistence
- à long terme des données.
+ \warning  * The handling of reading/writing in this format is currently at
+ the experimental stage and cannot be used to ensure long-term data persistence.
  */
 class Hdf5ReaderWriter
 : public TraceAccessor
@@ -86,12 +87,13 @@ class Hdf5ReaderWriter
     OpenModeTruncate,
     OpenModeAppend
   };
+
  public:
 
-  Hdf5ReaderWriter(ISubDomain* sd,const String& filename,const String& m_sub_group_name,
+  Hdf5ReaderWriter(ISubDomain* sd, const String& filename, const String& m_sub_group_name,
                    Integer fileset_size,
                    Integer write_index, Integer index_modulo,
-                   eOpenMode om,bool do_verif=false);
+                   eOpenMode om, bool do_verif = false);
   ~Hdf5ReaderWriter();
 
  public:
@@ -112,33 +114,33 @@ class Hdf5ReaderWriter
   virtual void setMetaData(const String& meta_data);
   virtual String metaData();
 
-  virtual void write(IVariable* v,IData* data);
-  virtual void read(IVariable* v,IData* data);
+  virtual void write(IVariable* v, IData* data);
+  virtual void read(IVariable* v, IData* data);
 
  public:
-	
-  herr_t iterateMe(hid_t group_id,const char* member_name);
+
+  herr_t iterateMe(hid_t group_id, const char* member_name);
 
  private:
-	
-  IParallelMng* m_parallel_mng; //!< Gestionnaire du parallélisme;
-  eOpenMode m_open_mode; //!< Mode d'ouverture
-  String m_filename; //!< Nom du fichier.
-  String m_sub_group_name; //!< Nom du fichier.
-  bool m_is_initialized; //!< Vrai si déjà initialisé
+
+  IParallelMng* m_parallel_mng; //!< Parallelism manager;
+  eOpenMode m_open_mode; //!< Open mode
+  String m_filename; //!< Filename.
+  String m_sub_group_name; //!< Subgroup name.
+  bool m_is_initialized; //!< True if already initialized
 
   Hdf5Utils::StandardTypes m_types;
 
-  Hdf5Utils::HFile m_file_id;       //!< Identifiant HDF du fichier 
-  Hdf5Utils::HGroup m_sub_group_id; //!< Identifiant HDF du groupe contenant la protection
-  Hdf5Utils::HGroup m_variable_group_id; //!< Identifiant HDF du groupe contenant les variables
+  Hdf5Utils::HFile m_file_id; //!< HDF file identifier
+  Hdf5Utils::HGroup m_sub_group_id; //!< HDF group identifier containing the protection
+  Hdf5Utils::HGroup m_variable_group_id; //!< HDF group identifier containing the variables
 
-  StringList m_variables_name; //!< Liste des noms des variables sauvées.
+  StringList m_variables_name; //!< List of names of saved variables.
   Timer m_io_timer;
 
  private:
 
-  //! Mode parallèle actif: ATTENTION: en cours de test uniquement
+  //! Active parallel mode: WARNING: for testing only
   bool m_is_parallel;
   Int32 m_my_rank;
   Int32 m_send_rank;
@@ -153,20 +155,20 @@ class Hdf5ReaderWriter
   void _writeVal(const String& var_group_name,
                  const String& sub_group_name,
                  const ISerializedData* sdata,
-                 const Int32 from_rank=0);
-  void _writeValParallel(IVariable* v,const ISerializedData* sdata);
-  void _readVal(IVariable* var,IData* data);
+                 const Int32 from_rank = 0);
+  void _writeValParallel(IVariable* v, const ISerializedData* sdata);
+  void _readVal(IVariable* var, IData* data);
 
   Ref<ISerializedData> _readDim2(IVariable* v);
 
-  void _directReadVal(IVariable* v,IData* data);
-  void _directWriteVal(IVariable* v,IData* data);
+  void _directReadVal(IVariable* v, IData* data);
+  void _directWriteVal(IVariable* v, IData* data);
   void _checkValid();
   String _variableGroupName(IVariable* var);
 
   void _receiveRemoteVariables();
   void _writeRemoteVariable(ISerializer* sb);
-  void _setMetaData(const String& meta_data,const String& sub_group_name);
+  void _setMetaData(const String& meta_data, const String& sub_group_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -177,4 +179,4 @@ class Hdf5ReaderWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,10 +1,10 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
 <service name="VtkHdfPostProcessor" parent-name="PostProcessorWriterBase"
          type="caseoption" type2="subdomain">
   <name lang='fr'>post-processeur-vtk-hdf</name>
   <description>
-    Post Processeur au format VTK HDF (https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats)
+    Post Processor in VTK HDF format (https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats)
   </description>
     
   <interface name="Arcane::IPostProcessorWriter" inherited="false"/>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MEDMeshReaderService.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Lecture d'un maillage au format MED.                                      */
+/* Reading a mesh in MED format.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,10 +41,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecteur de maillages au format MED.
+ * \brief MED format mesh reader.
  *
- * Première version d'un lecteur MED gérant uniquement les maillages 2D, 3D et
- * non structurés.
+ * First version of a MED reader handling only 2D, 3D, and
+ * unstructured meshes.
  */
 class MEDMeshReader
 : public TraceAccessor
@@ -52,10 +52,10 @@ class MEDMeshReader
  public:
 
   /*!
-   * \brief Informations pour passer des types MED aux types Arcane pour les entités.
+   * \brief Information for mapping MED types to Arcane types for entities.
    *
-   * \a indirection() est non nul si la connectivité MED est différente de la
-   * connectivité Arcane, ce qui est le cas pour les entités 2D et 3D.
+   * \a indirection() is non-null if the MED connectivity differs from the
+   * Arcane connectivity, which is the case for 2D and 3D entities.
    */
   class MEDToArcaneItemInfo
   {
@@ -87,7 +87,7 @@ class MEDMeshReader
     const Int32* m_indirection = nullptr;
   };
 
-  //! Information sur une famille d'entité MED
+  //! Information about a MED entity family
   class MEDFamilyInfo
   {
    public:
@@ -98,19 +98,19 @@ class MEDMeshReader
 
    public:
 
-    //! Id de la famille pour MED
+    //! Family ID for MED
     Int32 m_family_id = 0;
-    //! Index dans la liste des groupes Arcane.
+    //! Index in the Arcane group list.
     Int32 m_index = -1;
   };
 
   /*!
-   * \brief Liste des groupes et des entités leur appartenant.
+   * \brief List of groups and the entities belonging to them.
    *
-   * Pour chaque groupe, on peut soit donner la liste des uniqueId()
-   * des entités qui vont être dedans, soit la liste des localId().
-   * Le premier cas est utilisé par les mailles et le second
-   * par les faces et les noeuds
+   * For each group, we can provide either the list of uniqueId()
+   * of the entities inside, or the list of localId().
+   * The first case is used by meshes and the second
+   * by faces and nodes
    */
   class MEDGroupInfo
   {
@@ -122,13 +122,13 @@ class MEDMeshReader
 
    public:
 
-    //! Index du groupe dans la liste des groupes
+    //! Index of the group in the group list
     Int32 m_index = -1;
-    //! Nom des groupes associés
+    //! Associated group names
     UniqueArray<String> m_names;
-    //! Liste des uniqueId() des entités du groupe.
+    //! List of uniqueId() of the group's entities.
     UniqueArray<Int64> m_unique_ids;
-    //! Liste des localId() des entités du groupe.
+    //! List of localId() of the group's entities.
     UniqueArray<Int32> m_local_ids;
   };
 
@@ -151,7 +151,7 @@ class MEDMeshReader
 
  private:
 
-  // Structure pour fermer automatiquement les fichiers MED ouverts
+  // Structure to automatically close open MED files
   struct AutoCloseMED
   {
     explicit AutoCloseMED(med_idt id)
@@ -166,17 +166,17 @@ class MEDMeshReader
     med_idt fid;
   };
 
-  //! Maillage en cours de lecture
+  //! Mesh currently being read
   IPrimaryMesh* m_mesh = nullptr;
-  //! Tableau de conversion entre les types MED et Arcane
+  //! Conversion table between MED and Arcane types
   UniqueArray<MEDToArcaneItemInfo> m_med_to_arcane_types;
-  //! Table des index dans \a m_med_to_arcane_type de chaque geotype
+  //! Table of indices in \a m_med_to_arcane_type for each geotype
   std::unordered_map<med_int, Int32> m_med_geotype_to_arcane_type_index;
-  //! Liste des familles
+  //! List of families
   std::unordered_map<Int32, MEDFamilyInfo> m_med_families_map;
-  //! Liste des informations sur les groupes
+  //! List of group information
   UniqueArray<MEDGroupInfo> m_med_groups;
-  //! Liste des 'geotype' présents dans le maillage
+  //! List of 'geotypes' present in the mesh
   UniqueArray<med_int> m_med_geotypes_in_mesh;
 
  private:
@@ -219,15 +219,15 @@ class MEDMeshReader
 
 namespace
 {
-  // Les conventions de numérotations de MED sont différentes de celles
-  // utilisées dans Arcane. Ces tableaux permettent d'effectuer la renumérotation.
+  // MED numbering conventions are different from those used in Arcane.
+  // These arrays allow for renumbering.
   const Int32 Hexaedron8_indirection[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
   const Int32 Hexaedron20_indirection[] = { 1, 8, 10, 3, 9, 2, 0, 11, 5, 14, 18, 7, 6, 4, 16, 15, 13, 12, 17, 19 };
   const Int32 Pyramid5_indirection[] = { 1, 0, 3, 2, 4 };
   const Int32 Quad4_indirection[] = { 1, 0, 3, 2 };
   const Int32 Quad8_indirection[] = { 1, 0, 3, 2, 4, 7, 6, 5 };
   const Int32 Triangle3_indirection[] = { 1, 0, 2 };
-  // PAS utilisé pour l'instant. À tester.
+  // Not used for now. To be tested.
   const Int32 Tetraedron4_indirection[] = { 1, 0, 2, 3 };
 } // namespace
 
@@ -239,46 +239,46 @@ _initMEDToArcaneTypes()
 {
   m_med_to_arcane_types.clear();
 
-  // TODO: regarder la correspondance de connectivité entre
-  // Arcane et MED pour les éléments quadratiques
-  // Types 1D
+  // TODO: check the connectivity correspondence between
+  // Arcane and MED for quadrilateral elements
+  // 1D Types
   _addTypeInfo(1, 2, MED_SEG2, ITI_Line2);
-  _addTypeInfo(1, 3, MED_SEG3, ITI_Line3); // Non supporté
-  _addTypeInfo(1, 4, MED_SEG4, ITI_NullType); // Non supporté
+  _addTypeInfo(1, 3, MED_SEG3, ITI_Line3); // Not supported
+  _addTypeInfo(1, 4, MED_SEG4, ITI_NullType); // Not supported
 
-  // Types 2D.
+  // 2D Types.
   _addTypeInfo(2, 3, MED_TRIA3, ITI_Triangle3, Triangle3_indirection);
   _addTypeInfo(2, 4, MED_QUAD4, ITI_Quad4, Quad4_indirection);
-  _addTypeInfo(2, 6, MED_TRIA6, ITI_NullType); // Non supporté
-  _addTypeInfo(2, 7, MED_TRIA7, ITI_NullType); // Non supporté
+  _addTypeInfo(2, 6, MED_TRIA6, ITI_NullType); // Not supported
+  _addTypeInfo(2, 7, MED_TRIA7, ITI_NullType); // Not supported
   _addTypeInfo(2, 8, MED_QUAD8, ITI_Quad8, Quad8_indirection);
-  _addTypeInfo(2, 9, MED_QUAD9, ITI_NullType); // Non supporté
+  _addTypeInfo(2, 9, MED_QUAD9, ITI_NullType); // Not supported
 
-  // Types 3D
+  // 3D Types
   _addTypeInfo(3, 4, MED_TETRA4, ITI_Tetraedron4);
   _addTypeInfo(3, 5, MED_PYRA5, ITI_Pyramid5, Pyramid5_indirection);
   _addTypeInfo(3, 6, MED_PENTA6, ITI_Pentaedron6);
   _addTypeInfo(3, 8, MED_HEXA8, ITI_Hexaedron8);
   _addTypeInfo(3, 10, MED_TETRA10, ITI_Tetraedron10);
   _addTypeInfo(3, 12, MED_OCTA12, ITI_Octaedron12);
-  _addTypeInfo(3, 13, MED_PYRA13, ITI_NullType); // Non supporté
-  _addTypeInfo(3, 15, MED_PENTA15, ITI_NullType); // Non supporté
-  _addTypeInfo(3, 18, MED_PENTA18, ITI_NullType); // Non supporté
+  _addTypeInfo(3, 13, MED_PYRA13, ITI_NullType); // Not supported
+  _addTypeInfo(3, 15, MED_PENTA15, ITI_NullType); // Not supported
+  _addTypeInfo(3, 18, MED_PENTA18, ITI_NullType); // Not supported
   _addTypeInfo(3, 20, MED_HEXA20, ITI_Hexaedron20);
-  _addTypeInfo(3, 27, MED_HEXA27, ITI_NullType); // Non supporté
+  _addTypeInfo(3, 27, MED_HEXA27, ITI_NullType); // Not supported
 
-  // Mailles dont la géométrie à une connectivité variable.
-  // Pour l'instant, on ne supporte aucun de ces types dans Arcane.
-  // On traite quand même ces éléments pour afficher une erreur s'ils sont
-  // présents dans le maillage. En mettant la valeur (0) pour le nombre
-  // de noeuds, on signale à _readItems() qu'on ne sait pas traiter ces éléments.
+  // Meshes whose geometry has variable connectivity.
+  // For now, we do not support any of these types in Arcane.
+  // We still process these elements to display an error if they are
+  // present in the mesh. By setting the node count to (0), we signal to _readItems()
+  // that we cannot process these elements.
 
   _addTypeInfo(2, 0, MED_POLYGON, ITI_GenericPolygon);
   _addTypeInfo(2, 0, MED_POLYGON2, ITI_NullType);
   _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_NullType);
 
-  // Mailles dont la géométrie est dynamique (découverte du modèle dans le fichier)
-  // TODO: regarder comment les traiter
+  // Meshes whose geometry is dynamic (model discovery in the file)
+  // TODO: check how to process them
   //#define MED_STRUCT_GEO_INTERNAL 600
   //#define MED_STRUCT_GEO_SUP_INTERNAL 700
 }
@@ -306,7 +306,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
     error() << "ERROR: can not open MED file '" << filename << "'";
     return IMeshReader::RTError;
   }
-  // Pour garantir la fermeture du fichier.
+  // To guarantee file closure.
   AutoCloseMED auto_close_med(fid);
 
   int nb_mesh = MEDnMesh(fid);
@@ -320,10 +320,10 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
     return IMeshReader::RTError;
   }
 
-  // Le maillage qu'on lit est toujours le premier
+  // The mesh we read is always the first one
   int mesh_index = 1;
 
-  // Récupère la dimension d'espace. Cela est nécessaire pour dimensionner axisname eet unitname
+  // Get the space dimension. This is necessary to dimension axisname and unitname
   int nb_axis = MEDmeshnAxis(fid, mesh_index);
   if (nb_axis < 0) {
     error() << "Can not read number of axis (MEDmeshnAxis)";
@@ -372,12 +372,12 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   info() << "MED: nstep=" << nstep;
 
   Int64 nb_node = 0;
-  // Lecture du nombre de noeuds.
+  // Reading the number of nodes.
   {
     med_bool coordinatechangement;
     med_bool geotransformation;
-    // TODO: traiter les informations telles que coordinatechangement
-    // et geotransformation si besoin
+    // TODO: process information such as coordinatechangement
+    // and geotransformation if needed
     med_int med_nb_node = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
                                          MED_COORDINATE, MED_NO_CMODE, &coordinatechangement,
                                          &geotransformation);
@@ -391,36 +391,36 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   mesh->setDimension(mesh_dimension);
 
-  // Les maillages MED peuvent contenir des polygones.
-  // On construit donc les types correspondants.
-  // (NOTE: tous les sous-domaines doivent faire cela)
+  // MED meshes can contain polygons.
+  // We therefore build the corresponding types.
+  // (NOTE: all subdomains must do this)
   mesh->itemTypeMng()->buildPolygonTypes();
 
   IParallelMng* pm = mesh->parallelMng();
   bool is_parallel = pm->isParallel();
   Int32 rank = mesh->meshPartInfo().partRank();
-  // En parallèle, seul le rang 0 lit le maillage
+  // In parallel, only rank 0 reads the mesh
   bool is_read_items = !(is_parallel && rank != 0);
   if (is_read_items) {
     _readAvailableTypes(fid, meshname);
     _readFamilies(fid, meshname);
     _readAndCreateCells(mesh, mesh_dimension, fid, meshname);
   }
-  // La méthode IPrimaryMesh::endAllocate() est collective donc tout
-  // le monde doit l'appeler même si les rangs autres que le rang 0
-  // qui n'ont pas de mailles.
+  // The IPrimaryMesh::endAllocate() method is collective, so everyone
+  // must call it even if ranks other than rank 0
+  // do not have meshes.
   mesh->endAllocate();
 
-  // Liste des noms des groupes de mailles créées
-  // Elle servira à transférer la liste des groupes à tous les rangs.
+  // List of names of created mesh groups
+  // It will be used to transfer the list of groups to all ranks.
   UniqueArray<String> cell_group_names;
   IItemFamily* cell_family = mesh->cellFamily();
   if (is_read_items) {
-    // Maintenant qu'on a créé toutes les mailles, on crée les groupes correspondants
-    // Pour cela, on parcourt toutes les instances de 'm_med_groups' et si une a des entités
-    // alors ce sont des mailles à ajouter à un groupe.
+    // Now that all meshes have been created, we create the corresponding groups
+    // To do this, we iterate through all instances of 'm_med_groups' and if one has entities
+    // then they are meshes to be added to a group.
     // ATTENTION ATTENTION:
-    // NOTE: Les groupes doivent être communs à tous les rangs. Il faut les broadcaster
+    // NOTE: The groups must be common to all ranks. They must be broadcasted
     UniqueArray<Int32> cell_local_ids;
     for (const MEDGroupInfo& g : m_med_groups) {
       Int32 nb_cell_in_group = g.m_unique_ids.size();
@@ -436,11 +436,11 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   }
   _broadcastGroups(cell_group_names, cell_family);
 
-  // Lit les faces
+  // Reading the faces
   if (is_read_items) {
-    // Comme la numérotation des faces n'est pas forcément correcte pour tous
-    // les types d'entités (notamment pour l'ordre 2), on ajoute une option pour
-    // ne pas lire les faces.
+    // Since the face numbering is not necessarily correct for all
+    // entity types (especially for order 2), we add an option to
+    // not read the faces.
     bool is_face_group_disabled = false;
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MED_DISABLE_FACEGROUP", true))
       is_face_group_disabled = (v.value());
@@ -450,7 +450,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   UniqueArray<String> face_group_names;
   IItemFamily* face_family = mesh->faceFamily();
-  // Maintenant ajoute les faces aux groupes.
+  // Now add the faces to the groups.
   if (is_read_items) {
     for (const MEDGroupInfo& g : m_med_groups) {
       Int32 nb_face_in_group = g.m_local_ids.size();
@@ -468,7 +468,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   _broadcastGroups(face_group_names, face_family);
 
   if (is_read_items) {
-    // Lit les coordonnées
+    // Reading the coordinates
     return _readNodesCoordinates(mesh, nb_node, spacedim, fid, meshname);
   }
   return IMeshReader::RTOk;
@@ -477,12 +477,12 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère la liste des types géométriques présents dans le maillage.
+ * \brief Retrieves the list of geometric types present in the mesh.
  */
 void MEDMeshReader::
 _readAvailableTypes(med_idt fid, const char* meshname)
 {
-  // Récupère le nombre de types géométriques
+  // Retrieves the number of geometric types
   med_bool coordinatechangement;
   med_bool geotransformation;
   med_int nb_geo = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, MED_GEO_ALL,
@@ -492,7 +492,7 @@ _readAvailableTypes(med_idt fid, const char* meshname)
     ARCANE_FATAL("Can not read number of geometric entities nb_geo={0}", nb_geo);
   info() << "MED: nb_geotype = " << nb_geo;
 
-  // Boucle sur les types présents
+  // Loop through the present types
   for (med_int it = 1; it <= nb_geo; it++) {
 
     med_geometry_type geotype = MED_GEO_ALL;
@@ -523,9 +523,9 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
 {
   _clearItemsInGroups();
 
-  // A priori il n'y a pas de uniqueId() pour les entités dans MED (TODO: à vérifier)
-  // Donc on numérote les mailles en commencant par zéro et on incrémente à chaque
-  // maille créée.
+  // As a matter of principle, there is no uniqueId() for entities in MED (TODO: to verify)
+  // So we number the meshes starting from zero and increment for each
+  // mesh created.
   Int64 cell_unique_id = 0;
 
   UniqueArray<Int16> polygon_nb_nodes;
@@ -533,15 +533,15 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   UniqueArray<med_int> med_family_values;
 
   ItemTypeMng* itm = mesh->itemTypeMng();
-  // Alloue les mailles types par type.
-  // Parcours les types disponibles et traite ceux qui correspondent à la dimension
-  // du maillage.
+  // Allocates meshes type by type.
+  // Iterates through the available types and processes those that match the dimension
+  // of the mesh.
   for (med_int geotype : m_med_geotypes_in_mesh) {
     Int32 index_in_list = m_med_geotype_to_arcane_type_index[geotype];
     const MEDToArcaneItemInfo& iinfo = m_med_to_arcane_types[index_in_list];
 
     Int32 item_dimension = iinfo.dimension();
-    // On ne traite que les entités de la dimension du maillage.
+    // We only process entities of the mesh dimension.
     if (item_dimension != mesh_dimension)
       continue;
     Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
@@ -551,7 +551,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
     if (arcane_type == IT_NullType) {
-      // Indique un type supporté par MED mais pas par Arcane
+      // Indicates a type supported by MED but not by Arcane
       ARCANE_FATAL("MED type '{0}' is not supported by Arcane", iinfo.medType());
     }
     Int64 cells_infos_index = 0;
@@ -603,7 +603,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
         }
       }
       if (i < nb_family_values) {
-        // Il y a une famille associée à l'entité
+        // There is a family associated with the entity
         med_int f = med_family_values[i];
         auto x = m_med_families_map.find(f);
         if (x == m_med_families_map.end()) {
@@ -623,12 +623,11 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lit les faces.
+ * \brief Reads the faces.
  *
- * Il n'y a pas besoin de créer explicitement les faces car cela est fait
- * automatiquement dans Arcane. On se sert donc des faces de MED uniquement
- * pour ajouter les faces dans les groupes correspondants dans le fichier
- * de maillage.
+ * There is no need to explicitly create the faces because this is done
+ * automatically in Arcane. We therefore use the MED faces only
+ * to add the faces into the corresponding groups in the mesh file.
  */
 void MEDMeshReader::
 _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* meshname)
@@ -643,14 +642,14 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
   UniqueArray<Int16> polygon_nb_nodes;
   UniqueArray<med_int> med_connectivity;
   UniqueArray<med_int> med_family_values;
-  // Parcours les types disponibles et traite ceux qui correspondent à la dimension
-  // du maillage moins 1.
+  // Iterates through the available types and processes those that correspond to the dimension
+  // of the mesh minus 1.
   for (med_int geotype : m_med_geotypes_in_mesh) {
     Int32 index_in_list = m_med_geotype_to_arcane_type_index[geotype];
     const MEDToArcaneItemInfo& iinfo = m_med_to_arcane_types[index_in_list];
 
     Int32 item_dimension = iinfo.dimension();
-    // On ne traite que les entités de la dimension du maillage.
+    // We only process entities of the mesh dimension.
     if (item_dimension != (mesh_dimension - 1))
       continue;
     ItemTypeInfo* iti = itm->typeFromId(iinfo.arcaneType());
@@ -664,7 +663,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
     if (arcane_type == IT_NullType) {
-      // Indique un type supporté par MED mais pas par Arcane
+      // Indicates a type supported by MED but not by Arcane
       ARCANE_FATAL("MED type '{0}' is not supported by Arcane", iinfo.medType());
     }
 
@@ -688,7 +687,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
           cinfo_span[k] = med_cinfo_span[k];
       }
       med_connectivity_index += nb_item_node;
-      // Recherche la face dans le maillage à partir des uniqueId() triés de ses noeuds
+      // Search for the face in the mesh starting from the sorted uniqueIds of its nodes
       nodes_reorderer.reorder(arcane_type, cinfo_span);
       ConstArrayView<Int64> ordered_nodes = nodes_reorderer.sortedNodes();
       //info() << "OrigMedNodes=" << med_cinfo_span;
@@ -711,9 +710,9 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
       }
       //info() << "Face=" << ItemPrinter(face);
 
-      // Ajoute la face dans les groupes correspondants
+      // Add the face to the corresponding groups
       if (i < nb_family_values) {
-        // Il y a une famille associée à l'entité
+        // There is a family associated with the entity
         med_int f = med_family_values[i];
         auto x = m_med_families_map.find(f);
         if (x == m_med_families_map.end()) {
@@ -736,10 +735,10 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
                       med_idt fid, const char* meshname)
 {
   const bool do_verbose = false;
-  // Lit les coordonnées des noeuds et positionne les coordonnées dans Arcane
+  // Reads the node coordinates and positions the coordinates in Arcane
 
-  // La connectivité dans MED commence à 1 et Arcane à 0.
-  // Le premier noeud a donc un pour uniqueId() la valeur
+  // Connectivity in MED starts at 1 and in Arcane at 0.
+  // The first node therefore has the value for uniqueId()
   UniqueArray<Real3> nodes_coordinates(nb_node + 1);
   {
     UniqueArray<med_float> coordinates(nb_node * spacedim);
@@ -770,7 +769,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
       ARCANE_THROW(NotImplementedException, "spacedim!=2 && spacedim!=3");
   }
 
-  // Positionne les coordonnées
+  // Positions the coordinates
   {
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
     ENUMERATE_NODE (inode, mesh->allNodes()) {
@@ -784,18 +783,18 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lit les informations des entités d'un type donné.
+ * \brief Reads information about entities of a given type.
  *
- * Lit les informations des entités dont le type est donné par \a iinfo.
- * Les entités sont  des mailles au sens MED, donc des Edge, Face ou Cell.
- * En retour, indique le nombre d'entités lues.
- * \a connectivity contiendra les connectivités pour les entités lues et
- * \a family_values le tableau pour chaque entité de la famille à laquelle elle
- * appartient. À noter qu'il est possible que \a family_values soit vide s'il n'y
- * a pas de famille associée aux entités.
+ * Reads information about entities whose type is given by \a iinfo.
+ * The entities are meshes in the MED sense, i.e., Edge, Face, or Cell.
+ * Returns the number of entities read.
+ * \a connectivity will contain the connectivities for the entities read and
+ * \a family_values the array for each entity of the family it belongs to. Note
+ * that \a family_values may be empty if there is no family associated with the
+ * entities.
  *
- * Si le type est MED_POLYGON, alors \a polygon_nb_nodes contiendra le nombre
- * de noeuds de chaque polygone.
+ * If the type is MED_POLYGON, then \a polygon_nb_nodes will contain the number
+ * of nodes for each polygon.
  */
 Int32 MEDMeshReader::
 _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
@@ -812,8 +811,8 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
   med_bool geotransformation = {};
   med_int nb_med_item = 0;
   if (iinfo.medType() == MED_POLYGON) {
-    // Pour les polygones, il faut un appel spécifique pour le nombre d'index.
-    // Ce nombre correspond au nombre d'entités plus un.
+    // For polygons, a specific call is needed for the number of indices.
+    // This number corresponds to the number of entities plus one.
     med_int nb_index = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
                                         MED_INDEX_NODE, MED_NODAL, &coordinatechangement,
                                         &geotransformation);
@@ -833,9 +832,9 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
     if (nb_connectivity < 0)
       ARCANE_FATAL("Can not get connectivity size for MED_POLYGON err={0}", nb_connectivity);
 
-    // La table \a indexes contient pour chaque maille l'indice de son premier
-    // noeud dans la connectivité. Le nombre de noeuds de la i-ème entité
-    // est donc égal à (indexes[i+1]-indexes[i]).
+    // The table \a indexes contains for each mesh the index of its first
+    // node in the connectivity. The number of nodes of the i-th entity
+    // is therefore equal to (indexes[i+1]-indexes[i]).
     UniqueArray<med_int> indexes(nb_index);
     connectivity.resize(nb_connectivity);
     info() << "Reading polygons nb_connectivity=" << nb_connectivity;
@@ -861,7 +860,7 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
 
     Int64 nb_node = iinfo.nbNode();
     if (nb_node == 0)
-      // Indique un élément qu'on ne sait pas traiter.
+      // Indicates an element that we do not know how to process.
       ARCANE_THROW(NotImplementedException, "Reading items with MED type '{0}'", med_item_type);
 
     connectivity.resize(nb_node * nb_med_item);
@@ -904,7 +903,7 @@ _readFamilies(med_idt fid, const char* meshname)
 
   info() << "Read families";
 
-  // Récupère le nombre de familles
+  // Retrieves the number of families
   med_int nb_family = MEDnFamily(fid, meshname);
   if (nb_family < 0)
     ARCANE_FATAL("Can not read number of families (error={0})", nb_family);
@@ -918,11 +917,11 @@ _readFamilies(med_idt fid, const char* meshname)
       ARCANE_FATAL("Can not read number of groups for family index={0}", i);
     info() << "MED: family index=" << i << " nb_group=" << nb_group;
 
-    // Lit les groupes de la famille
-    // Même s'il n'y a pas de groupes associés à la famille on continue
-    // le traitement car les entités peuvent référencer des familles sans groupe.
+    // Reads the family groups
+    // Even if there are no groups associated with the family, we continue
+    // the processing because entities may reference families without groups.
 
-    // Dans MED, les groupes ont une taille fixe maximale MED_LNAME_SIZE
+    // In MED, groups have a fixed maximum size MED_LNAME_SIZE
     UniqueArray<char> all_group_names(MED_LNAME_SIZE * nb_group + 1);
     med_int family_number = 0;
     if (MEDfamilyInfo(fid, meshname, i + 1, familyname.data(), &family_number, all_group_names.data()) < 0)
@@ -933,12 +932,12 @@ _readFamilies(med_idt fid, const char* meshname)
     med_family.m_index = group_index;
     MEDGroupInfo med_group(group_index);
 
-    // Récupère les noms des groupes de la famille
+    // Retrieves the names of the family groups
     for (Int32 z = 0; z < nb_group; ++z) {
       //info() << " groupname=" << group_names << " number=" << familynumber;
       SmallSpan<char> med_group_name = all_group_names.smallSpan().subSpan(MED_LNAME_SIZE * z, MED_LNAME_SIZE);
-      // Les groupes dans MED peuvent contenir des caractères non supportés par Arcane.
-      // On les enlève.
+      // Groups in MED may contain characters not supported by Arcane.
+      // We remove them.
       SmallArray<Byte, MED_LNAME_SIZE + 1> valid_name;
       Int32 pos = 0;
       for (; pos < MED_LNAME_SIZE; ++pos) {
@@ -962,9 +961,9 @@ _readFamilies(med_idt fid, const char* meshname)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Broadcast les groupes de \a group_names pour la famille \a family.
+ * \brief Broadcast the groups of \a group_names for the family \a family.
  *
- * La liste des groupes \a group_names est seulement utilisée pour le rang 0.
+ * The list of groups \a group_names is only used for rank 0.
  */
 void MEDMeshReader::
 _broadcastGroups(ConstArrayView<String> group_names, IItemFamily* family)
@@ -972,7 +971,7 @@ _broadcastGroups(ConstArrayView<String> group_names, IItemFamily* family)
   IParallelMng* pm = m_mesh->parallelMng();
 
   Int32 rank = pm->commRank();
-  // S'assure que tous les rangs connaissent les groupes
+  // Ensures that all ranks know the groups
   if (rank == 0) {
     Int32 nb_group = group_names.size();
     pm->broadcast(ArrayView<Int32>(1, &nb_group), 0);
@@ -996,7 +995,7 @@ _broadcastGroups(ConstArrayView<String> group_names, IItemFamily* family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de lecture d'un maillage au format MED.
+ * \brief Service for reading a mesh in MED format.
  */
 class MEDMeshReaderService
 : public BasicService
@@ -1040,7 +1039,7 @@ ARCANE_REGISTER_SERVICE(MEDMeshReaderService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de lecture d'un maillage au format MED depuis le jeu de données.
+ * \brief Service for reading a mesh in MED format from the dataset.
  */
 class MEDCaseMeshReader
 : public AbstractService

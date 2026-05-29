@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Hdf5Utils.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour hdf5.                                          */
+/* Utility functions for hdf5.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_HDF5_HDF5UTILS_H
 #define ARCANE_HDF5_HDF5UTILS_H
@@ -23,8 +23,8 @@
 
 #include "arcane/hdf5/ArcaneHdf5Global.h"
 
-// Cette macro pour MSVC avec les dll, pour eviter des symbols externes
-// indéfinis avec H5T_NATIVE*
+// This macro for MSVC with DLLs, to avoid undefined external symbols
+// undefined with H5T_NATIVE*
 #define _HDF5USEDLL_
 #include <hdf5.h>
 
@@ -33,12 +33,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Il faut au moins hdf5 1.8
-#if (H5_VERS_MAJOR<2) && (H5_VERS_MAJOR==1 && H5_VERS_MINOR<10)
+// At least hdf5 1.8 is required
+#if (H5_VERS_MAJOR < 2) && (H5_VERS_MAJOR == 1 && H5_VERS_MINOR < 10)
 #error "This version of HDF5 is too old. Version 1.10+ is required"
 #endif
 
-// Garde ces macros pour compatibilité mais il faudra les supprimer.
+// Keep these macros for compatibility but they will need to be removed.
 #define ARCANE_HDF5_1_6_AND_AFTER
 #define ARCANE_HDF5_1_8_AND_AFTER
 
@@ -47,22 +47,19 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class IParallelMng;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires pour Hdf5.
+ * \brief Utility functions for Hdf5.
  */
-namespace Hdf5Utils
+namespace Arcane::Hdf5Utils
 {
-extern "C"
-{
-  ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t,const char*,void*);
+extern "C" {
+ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t, const char*, void*);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,9 +103,9 @@ _ArcaneHdf5UtilsMutex();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe servant d'initialiseur pour HDF.
+ * \brief Class serving as an initializer for HDF.
  *
- * Cet objet permet d'initialiser de manière sure HDF5 en mode multi-thread.
+ * This object allows safe initialization of HDF5 in multi-thread mode.
  */
 class ARCANE_HDF5_EXPORT HInit
 {
@@ -118,7 +115,7 @@ class ARCANE_HDF5_EXPORT HInit
 
  public:
 
-  //! Vrai HDF5 est compilé avec le support de MPI
+  //! True HDF5 is compiled with MPI support
   static constexpr bool hasParallelHdf5()
   {
 #ifdef H5_HAVE_PARALLEL
@@ -129,16 +126,16 @@ class ARCANE_HDF5_EXPORT HInit
   }
 
   /*!
-   * \brief Fonction permettant d'activer ou de désactiver les verrous à
-   * chaque appel à HDF5.
-   * \warning La variable d'environnement ARCANE_HDF5_DISABLE_MUTEX est
-   * prioritaire par rapport au paramètre de cette fonction.
-   * \warning En hydride, si utilisation en parallèle d'un parallelMng hybride
-   * et utilisation d'un parallelMng full MPI, et changement régulier du
-   * useMutex(), faire attention à ne pas mélanger les appels HDF5 avec les
-   * deux parallelMngs.
+   * \brief Function allowing activation or deactivation of locks
+   * on each HDF5 call.
+   * \warning The environment variable ARCANE_HDF5_DISABLE_MUTEX is
+   * prioritized over the parameter of this function.
+   * \warning In hydride, if a hybrid parallelMng is used in parallel
+   * and a full MPI parallelMng is used, and useMutex() is changed regularly,
+   * be careful not to mix HDF5 calls with the
+   * two parallelMngs.
    *
-   * \param is_active true si activation des mutex.
+   * \param is_active true if mutexes are activated.
    */
   static void useMutex(bool is_active, IParallelMng* pm);
 };
@@ -146,9 +143,9 @@ class ARCANE_HDF5_EXPORT HInit
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t.
+ * \brief Encapsulates a hid_t.
  *
- * Cette classe n'est pas copiable.
+ * This class is not copyable.
  */
 class ARCANE_HDF5_EXPORT Hid
 {
@@ -162,7 +159,7 @@ class ARCANE_HDF5_EXPORT Hid
 
  protected:
 
-  // Il faudra interdire ce constructeur de recopie à terme
+  // This copy constructor will eventually need to be forbidden
   Hid(const Hid& hid)
   : m_id(hid.id())
   {}
@@ -186,7 +183,7 @@ class ARCANE_HDF5_EXPORT Hid
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour une propriété (H5P*).
+ * \brief Encapsulates a hid_t for a property (H5P*).
  */
 class ARCANE_HDF5_EXPORT HProperty
 : public Hid
@@ -226,11 +223,11 @@ class ARCANE_HDF5_EXPORT HProperty
   }
 
   /*!
-   * \brief Créé une propriété de fichier pour MPIIO.
+   * \brief Creates a file property for MPIIO.
    *
-   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
-   * une exception. Si \a mpi_comm est le communicateur MPI associé
-   * à \a pm, l'appel à cette méthode créé une propriété comme suit:
+   * Only works if HDF5 is compiled with MPI. Otherwise, it throws
+   * an exception. If \a mpi_comm is the MPI communicator associated
+   * with \a pm, calling this method creates a property as follows:
    *
    * \code
    * create(H5P_FILE_ACCESS);
@@ -240,10 +237,10 @@ class ARCANE_HDF5_EXPORT HProperty
   void createFilePropertyMPIIO(IParallelMng* pm);
 
   /*!
-   * \brief Créé une propriété de dataset pour MPIIO.
+   * \brief Creates a dataset property for MPIIO.
    *
-   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
-   * une exception. L'appel à cette méthode créé une propriété comme suit:
+   * Only works if HDF5 is compiled with MPI. Otherwise, it throws
+   * an exception. Calling this method creates a property as follows:
    *
    * \code
    * create(H5P_DATASET_XFER);
@@ -254,10 +251,10 @@ class ARCANE_HDF5_EXPORT HProperty
   void createDatasetTransfertCollectiveMPIIO();
 
   /*!
-   * \brief Créé une propriété de dataset pour MPIIO.
+   * \brief Creates a dataset property for MPIIO.
    *
-   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
-   * une exception. L'appel à cette méthode créé une propriété comme suit:
+   * Only works if HDF5 is compiled with MPI. Otherwise, it throws
+   * an exception. Calling this method creates a property as follows:
    *
    * \code
    * create(H5P_DATASET_XFER);
@@ -271,7 +268,7 @@ class ARCANE_HDF5_EXPORT HProperty
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un fichier.
+ * \brief Encapsulates a hid_t for a file.
  */
 class ARCANE_HDF5_EXPORT HFile
 : public Hid
@@ -318,31 +315,36 @@ class ARCANE_HDF5_EXPORT HFile
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe d'aide pour rechercher un groupe.
+ * \brief Helper class for searching a group.
  */
 class ARCANE_HDF5_EXPORT HGroupSearch
 {
  public:
+
   HGroupSearch(const String& group_name)
   : m_group_name(group_name)
   {
   }
+
  public:
+
   herr_t iterateMe(const char* member_name)
   {
     //cerr << "** ITERATE <" << member_name << ">\n";
-    if (m_group_name==member_name)
+    if (m_group_name == member_name)
       return 1;
     return 0;
   }
+
  private:
+
   String m_group_name;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un groupe.
+ * \brief Encapsulates a hid_t for a group.
  */
 class ARCANE_HDF5_EXPORT HGroup
 : public Hid
@@ -396,7 +398,7 @@ class ARCANE_HDF5_EXPORT HGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un dataspace.
+ * \brief Encapsulates a hid_t for a dataspace.
  */
 class ARCANE_HDF5_EXPORT HSpace
 : public Hid
@@ -439,7 +441,7 @@ class ARCANE_HDF5_EXPORT HSpace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un dataset.
+ * \brief Encapsulates a hid_t for a dataset.
  */
 class ARCANE_HDF5_EXPORT HDataset
 : public Hid
@@ -472,9 +474,9 @@ class ARCANE_HDF5_EXPORT HDataset
 
   void close();
   void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
-  void create(const Hid& loc_id,const String& var,hid_t save_type,
-              const HSpace& space_id,const HProperty& link_plist,
-              const HProperty& creation_plist,const HProperty& access_plist);
+  void create(const Hid& loc_id, const String& var, hid_t save_type,
+              const HSpace& space_id, const HProperty& link_plist,
+              const HProperty& creation_plist, const HProperty& access_plist);
   void recursiveCreate(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
   void open(const Hid& loc_id, const String& var);
   void openIfExists(const Hid& loc_id, const String& var);
@@ -496,7 +498,7 @@ class ARCANE_HDF5_EXPORT HDataset
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un attribute.
+ * \brief Encapsulates a hid_t for an attribute.
  */
 class ARCANE_HDF5_EXPORT HAttribute
 : public Hid
@@ -535,11 +537,10 @@ class ARCANE_HDF5_EXPORT HAttribute
   HSpace getSpace();
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t pour un type.
+ * \brief Encapsulates a hid_t for a type.
  */
 class ARCANE_HDF5_EXPORT HType
 : public Hid
@@ -579,27 +580,27 @@ class ARCANE_HDF5_EXPORT HType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Définition des types standards Arcane pour hdf5.
+ * \brief Definition of standard Arcane types for hdf5.
  *
- * Une instance de cette classe construit des types HDF5 pour faire la
- * conversion entre les types HDF5 et les types Arcane.
+ * An instance of this class constructs HDF5 types to perform the
+ * conversion between HDF5 types and Arcane types.
  *
- * Le constructeur par défaut utilisant des appels HDF5, il n'est pas thread-safe.
- * Si on est en contexte multi-thread, il est préférable d'utiliser
- * StandardTypes(false) et d'appeler init() pour initialiser les types.
+ * The default constructor using HDF5 calls is not thread-safe.
+ * If running in a multi-threaded context, it is preferable to use
+ * StandardTypes(false) and call init() to initialize the types.
  */
 class ARCANE_HDF5_EXPORT StandardTypes
 {
  public:
 
   /*!
-   * \brief Créé une instance en initialisant les types.
+   * \brief Creates an instance by initializing the types.
    *
-   * \warning non thread-safe.
+   * \warning not thread-safe.
    */
   StandardTypes();
 
-  //! Créé une instance sans initialiser les types is \a do_init est faux.
+  //! Creates an instance without initializing the types, i.e., do_init is false.
   explicit StandardTypes(bool do_init);
 
   ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
@@ -611,7 +612,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
  public:
 
-  //! Initialise les types.
+  //! Initializes the types.
   void initialize();
 
  public:
@@ -734,33 +735,33 @@ class ARCANE_HDF5_EXPORT StandardTypes
  private:
 
   /*!
-   * \brief Classe initialisant HDF.
+   * \brief Class initializing HDF.
    *
-   * \warning Cette instance doit toujours être définie avant les membres qui
-   * utilisent HDF5 pour que l'initialisation est lieu en premier et la libération
-   * des ressources en dernier.
+   * \warning This instance must always be defined before members that
+   * use HDF5 so that initialization happens first and resource release
+   * happens last.
    */
   HInit m_init;
 
  public:
 
-  HType m_char_id; //!< Identifiant HDF des charactères
-  HType m_uchar_id; //!< Identifiant HDF des caractères non-signés
-  HType m_schar_id; //!< Identifiant HDF des caractères signés
-  HType m_short_id; //!< Identifiant HDF des entiers signés
-  HType m_ushort_id; //!< Identifiant HDF des entiers long signés
-  HType m_int_id; //!< Identifiant HDF des entiers signés
-  HType m_long_id; //!< Identifiant HDF des entiers long signés
-  HType m_uint_id; //!< Identifiant HDF des entiers non signés
-  HType m_ulong_id; //!< Identifiant HDF des entiers long non signés
-  HType m_real_id; //!< Identifiant HDF des réels
-  HType m_real2_id; //!< Identifiant HDF pour les Real2
-  HType m_real3_id; //!< Identifiant HDF pour les Real3
-  HType m_real2x2_id; //!< Identifiant HDF pour les Real2x2
-  HType m_real3x3_id; //!< Identifiant HDF pour les Real3x3
-  HType m_float16_id; //!< Identifiant HDF pour les Float16
-  HType m_bfloat16_id; //!< Identifiant HDF pour les BFloat16
-  HType m_float32_id; //!< Identifiant HDF pour les Float16
+  HType m_char_id; //!< HDF identifier for characters
+  HType m_uchar_id; //!< HDF identifier for unsigned characters
+  HType m_schar_id; //!< HDF identifier for signed characters
+  HType m_short_id; //!< HDF identifier for signed shorts
+  HType m_ushort_id; //!< HDF identifier for unsigned shorts
+  HType m_int_id; //!< HDF identifier for signed integers
+  HType m_long_id; //!< HDF identifier for signed longs
+  HType m_uint_id; //!< HDF identifier for unsigned integers
+  HType m_ulong_id; //!< HDF identifier for unsigned longs
+  HType m_real_id; //!< HDF identifier for reals
+  HType m_real2_id; //!< HDF identifier for Real2
+  HType m_real3_id; //!< HDF identifier for Real3
+  HType m_real2x2_id; //!< HDF identifier for Real2x2
+  HType m_real3x3_id; //!< HDF identifier for Real3x3
+  HType m_float16_id; //!< HDF identifier for Float16
+  HType m_bfloat16_id; //!< HDF identifier for BFloat16
+  HType m_float32_id; //!< HDF identifier for Float32
 
  private:
 
@@ -770,8 +771,8 @@ class ARCANE_HDF5_EXPORT StandardTypes
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un dataset simple d'un fichier HDF5 qui représente
- * un tableau.
+ * \brief Encapsulates a simple dataset from an HDF5 file that represents
+ * an array.
  */
 class ARCANE_HDF5_EXPORT StandardArray
 {
@@ -783,10 +784,10 @@ class ARCANE_HDF5_EXPORT StandardArray
  public:
 
   /*!
-   * \brief En lecture, positionne le chemin dans \a hfile du dataset contenant les unique_ids.
+   * \brief When reading, positions the path in \a hfile to the dataset containing the unique_ids.
    *
-   * Cet appel est optionnel mais s'il est utilisé, il doit l'être avant
-   * de lire les valeurs.
+   * This call is optional but if used, it must be done before
+   * reading the values.
    */
   void setIdsPath(const String& ids_path);
   void readDim();
@@ -811,47 +812,57 @@ class ARCANE_HDF5_EXPORT StandardArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un dataset simple d'un fichier HDF5 qui représente
- * un tableau.
+ * \brief Encapsulates a simple dataset from an HDF5 file that represents
+ * an array.
  */
-template<typename DataType>
+template <typename DataType>
 class ARCANE_HDF5_EXPORT StandardArrayT
 : public StandardArray
 {
  private:
+
   struct ValueWithUid
   {
    public:
+
     Int64 m_uid;
     Integer m_index;
+
    public:
+
     bool operator<(const ValueWithUid& rhs) const
     {
       return m_uid < rhs.m_uid;
     }
   };
+
  public:
-  StandardArrayT(hid_t hfile,const String& hpath);
+
+  StandardArrayT(hid_t hfile, const String& hpath);
+
  public:
+
   /*!
-   * \brief Lit le dataset d'un tableau 1D.
-   * Cette opération n'est valide qu'après un appel à readDim().
-   * \a buffer doit avoir été alloué.
-   * Pour lire directement, utiliser directRead()
+   * \brief Reads the dataset of a 1D array.
+   * This operation is only valid after calling readDim().
+   * \a buffer must have been allocated.
+   * To read directly, use directRead()
    */
-  void read(StandardTypes& st,ArrayView<DataType> buffer);
+  void read(StandardTypes& st, ArrayView<DataType> buffer);
   /*!
-   * \brief Lit le dataset d'un tableau 1D.
+   * \brief Reads the dataset of a 1D array.
    */
-  void directRead(StandardTypes& st,Array<DataType>& buffer);
-  void parallelRead(IParallelMng* pm,StandardTypes& st,
-                    Array<DataType>& buffer,Int64Array& unique_ids);
-  void write(StandardTypes& st,ConstArrayView<DataType> buffer);
-  void parallelWrite(IParallelMng* pm,StandardTypes& st,
+  void directRead(StandardTypes& st, Array<DataType>& buffer);
+  void parallelRead(IParallelMng* pm, StandardTypes& st,
+                    Array<DataType>& buffer, Int64Array& unique_ids);
+  void write(StandardTypes& st, ConstArrayView<DataType> buffer);
+  void parallelWrite(IParallelMng* pm, StandardTypes& st,
                      ConstArrayView<DataType> buffer,
                      Int64ConstArrayView unique_ids);
+
  private:
-  void _writeSortedValues(ITraceMng* tm,StandardTypes& st,ConstArrayView<DataType> buffer,
+
+  void _writeSortedValues(ITraceMng* tm, StandardTypes& st, ConstArrayView<DataType> buffer,
                           Int64ConstArrayView unique_ids);
 };
 
@@ -859,22 +870,29 @@ class ARCANE_HDF5_EXPORT StandardArrayT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Encapsule un dataset simple d'un fichier HDF5 qui représente un scalaire (éventuellement String).
+ * \brief Encapsulates a simple dataset from an HDF5 file that represents a scalar (possibly String).
  */
-template<typename DataType>
+template <typename DataType>
 class ARCANE_HDF5_EXPORT StandardScalarT
 {
  public:
-  //! Constructeur
-  StandardScalarT(hid_t hfile,const String& hpath) : m_hfile(hfile), m_hpath(hpath) { }
+
+  //! Constructor
+  StandardScalarT(hid_t hfile, const String& hpath)
+  : m_hfile(hfile)
+  , m_hpath(hpath)
+  {}
+
  public:
-  //! Lit une donnée
+
+  //! Reads a data item
   DataType read(Hdf5Utils::StandardTypes& st);
 
-  //! Ecrit une donnée
-  void write(Hdf5Utils::StandardTypes& st, const DataType & t);
+  //! Writes a data item
+  void write(Hdf5Utils::StandardTypes& st, const DataType& t);
 
  protected:
+
   hid_t m_hfile;
   String m_hpath;
 };
@@ -882,14 +900,9 @@ class ARCANE_HDF5_EXPORT StandardScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Hdf5Utils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
+#endif
