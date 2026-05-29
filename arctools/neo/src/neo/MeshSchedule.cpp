@@ -195,11 +195,11 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ source_family, isolated_items_property_name },
   Neo::MeshKernel::OutProperty{ source_family, source_family.lidPropName() },
-  Neo::MeshKernel::OutProperty { source_family, source_family_removed_item_property_name},
+  Neo::MeshKernel::OutProperty { source_family, connectivity_unique_name},
   [&source_family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items,
   Neo::ItemLidsProperty& item_lids_property,
-  Neo::MeshScalarPropertyT<Neo::utils::Int32>& removed_item_property){
+  Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity){
     Neo::printer(rank) << "== Algorithm: remove isolated items in " << source_family.name() << Neo::endline;
     std::vector<utils::Int32> removed_item_lids{};
     removed_item_lids.reserve(source_family.nbElements());
@@ -208,10 +208,20 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
         removed_item_lids.push_back(item);
       }
     }
+    std::sort(removed_item_lids.begin(), removed_item_lids.end());
+    Neo::printer(rank) << "Removed items " << removed_item_lids << Neo::endline;
+    isolated_items.debugPrint();
     auto& item_uids = source_family.getConcreteProperty<MeshScalarPropertyT<utils::Int64>>(uniqueIdPropertyName(source_family.name()));
     auto removed_item_uids = item_uids[removed_item_lids];
     auto removed_items = item_lids_property.remove(removed_item_uids);
-    removed_item_property = isolated_items;
+    // Update connectivity: the item (source family) is isolated, to be removed from connectivity
+    // Cannot be done by targeting the algorithm update connectivity after source family remove items since it leads to a cycle int the DAG
+    ItemRange removed_source_item_range{ ItemLocalIds{ removed_item_lids } };
+    auto zero_sizes = std::vector<int>(removed_item_lids .size(), 0);
+    connectivity.append(removed_source_item_range,{},zero_sizes);
+    connectivity.debugPrint(rank);
+    item_lids_property.debugPrint(rank);
+
   }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
 }
 
