@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshPatchListView.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur une liste de patchs.                                              */
+/* View of a list of patches.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANMESPATCHLISTVIEW_H
 #define ARCANE_CARTESIANMESH_CARTESIANMESPATCHLISTVIEW_H
@@ -25,12 +25,19 @@
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class CartesianPatchGroup;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une liste de patchs.
+ * \brief View of a list of patches.
  *
- * Les instances de cette classe sont invalidées si la liste des patchs évolue.
+ * Instances of this class are invalidated if the list of patches changes.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 {
@@ -39,11 +46,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 
  public:
 
-  //! Sentinelle pour l'itération pour une liste de patchs.
+  //! Sentinel for iteration over a list of patches.
   class Sentinel
   {};
 
-  //! Itérateur pour une liste de patchs.
+  //! Iterator for a list of patches.
   class Iterator
   {
     friend CartesianMeshPatchListView;
@@ -102,7 +109,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 
  private:
 
-  // Constructeur pour 'CartesiaMeshImpl'
+  // Constructor for 'CartesiaMeshImpl'
   explicit CartesianMeshPatchListView(ConstArrayView<ICartesianMeshPatch*> v)
   : m_patches(v)
   {}
@@ -127,5 +134,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

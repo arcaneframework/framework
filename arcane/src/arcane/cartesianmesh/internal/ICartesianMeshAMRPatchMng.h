@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICartesianMeshAMRPatchMng.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface de gestionnaire de l'AMR par patch d'un maillage cartésien.     */
+/* Interface for managing AMR by patch of a Cartesian mesh.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,29 +38,27 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
  public:
 
   /*!
-   * \brief Méthode permettant de raffiner les mailles avec le
-   * flag "II_Refine".
+   * \brief Method allowing mesh refinement using the "II_Refine" flag.
    */
   virtual void refine() = 0;
 
   /*!
-   * \brief Méthode permettant de déraffiner les mailles de niveau 0.
+   * \brief Method allowing coarsening of level 0 meshes.
    *
-   * Un niveau de maille -1 sera créé avec des mailles parentes aux mailles
-   * de niveau 0 puis tous les niveaux seront incrémentés de 1. Le niveau créé
-   * par cette méthode sera donc le nouveau niveau 0.
+   * A mesh level -1 will be created with parent meshes to the level 0 meshes,
+   * and then all levels will be incremented by 1. The level created
+   * by this method will therefore be the new level 0.
    */
   virtual void createSubLevel() = 0;
 
   /*!
-   * \brief Méthode permettant de retirer les mailles marquées avec le
-   * flag "II_Coarsen".
+   * \brief Method allowing removal of meshes marked with the "II_Coarsen" flag.
    *
-   * Les propriétaires des faces et des noeuds ayant des mailles marquées
-   * et des mailles non marquées sont susceptibles d'être mis à jour.
+   * The owners of faces and nodes having marked meshes and unmarked meshes
+   * are likely to be updated.
    *
-   * \param update_parent_flag Si true, alors les flags des parents seront
-   * mis à jour. Cela inclut l'activation des mailles parentes.
+   * \param update_parent_flag If true, the flags of the parents will be
+   * updated. This includes activating the parent meshes.
    */
   virtual void coarsen(bool update_parent_flag) = 0;
 };
@@ -73,4 +71,4 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
+#endif

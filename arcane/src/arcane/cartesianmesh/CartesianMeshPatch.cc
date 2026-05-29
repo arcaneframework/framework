@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshPatch.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Information about an AMR patch of a Cartesian mesh.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemPrinter.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
@@ -51,7 +51,7 @@ CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index, const AMRPatchPos
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshPatch::
-CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
+CartesianMeshPatch(ICartesianMesh* cmesh, Integer patch_index)
 : CartesianMeshPatch(cmesh, patch_index, {})
 {
 }
@@ -62,7 +62,7 @@ CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
 CartesianMeshPatch::
 ~CartesianMeshPatch()
 {
-  for( Integer i=0; i<3; ++i ){
+  for (Integer i = 0; i < 3; ++i) {
     m_cell_directions[i]._internalDestroy();
     m_face_directions[i]._internalDestroy();
     m_node_directions[i]._internalDestroy();
@@ -78,7 +78,7 @@ CartesianMeshPatch::
 CellGroup CartesianMeshPatch::
 cells()
 {
-  // Le groupe de mailles du patch est le même dans toutes les directions.
+  // The mesh group of the patch is the same in all directions.
   return cellDirection(MD_DirX).allCells();
 }
 
@@ -104,37 +104,37 @@ overlapCells()
 /*---------------------------------------------------------------------------*/
 
 /*
- * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
- * pour chaque direction.
+ * \brief Calculates the information about the before/after and left/right nodes of a cell
+ * for each direction.
  */
 void CartesianMeshPatch::
-_computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
+_computeNodeCellInformations2D(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord)
 {
   using Int8 = std::int8_t;
   Int8 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
-  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
+  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE, nodes_indirection_i);
   Int32 nb_node = cell0.nbNode();
-  if (nb_node!=4)
-    ARCANE_FATAL("Number of nodes should be '4' (v={0})",nb_node);
+  if (nb_node != 4)
+    ARCANE_FATAL("Number of nodes should be '4' (v={0})", nb_node);
   Int8 i8_nb_node = 4;
   Real3 cell_coord = cell0_coord;
-  bool is_2d = m_mesh->mesh()->dimension()==2;
+  bool is_2d = m_mesh->mesh()->dimension() == 2;
   if (!is_2d)
     ARCANE_FATAL("Invalid call. This mesh is not a 2D mesh");
 
   // Direction X
   nodes_indirection.fill(-1);
-  for( Int8 i=0; i<i8_nb_node; ++i ){
+  for (Int8 i = 0; i < i8_nb_node; ++i) {
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.x>cell_coord.x){
-      if (node_coord.y>cell_coord.y)
+    if (node_coord.x > cell_coord.x) {
+      if (node_coord.y > cell_coord.y)
         nodes_indirection[CNP_NextLeft] = i;
       else
         nodes_indirection[CNP_NextRight] = i;
     }
-    else{
-      if (node_coord.y>cell_coord.y)
+    else {
+      if (node_coord.y > cell_coord.y)
         nodes_indirection[CNP_PreviousLeft] = i;
       else
         nodes_indirection[CNP_PreviousRight] = i;
@@ -144,17 +144,17 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction Y
   nodes_indirection.fill(-1);
-  for( Int8 i=0; i<i8_nb_node; ++i ){
+  for (Int8 i = 0; i < i8_nb_node; ++i) {
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.y>cell_coord.y){
-      if (node_coord.x>cell_coord.x)
+    if (node_coord.y > cell_coord.y) {
+      if (node_coord.x > cell_coord.x)
         nodes_indirection[CNP_NextRight] = i;
       else
         nodes_indirection[CNP_NextLeft] = i;
     }
-    else{
-      if (node_coord.x>cell_coord.x)
+    else {
+      if (node_coord.x > cell_coord.x)
         nodes_indirection[CNP_PreviousRight] = i;
       else
         nodes_indirection[CNP_PreviousLeft] = i;
@@ -166,52 +166,52 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Calcule les infos sur les noeuds avant/après et gauche/droite d'une maille
- * pour chaque direction.
+ * \brief Calculates the information about the before/after and left/right nodes of a cell
+ * for each direction.
  */
 void CartesianMeshPatch::
-_computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
+_computeNodeCellInformations3D(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord)
 {
   using Int8 = std::int8_t;
   Int8 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
-  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
+  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE, nodes_indirection_i);
   Integer nb_node = cell0.nbNode();
-  if (nb_node!=8)
-    ARCANE_FATAL("Number of nodes should be '8' (v={0})",nb_node);
+  if (nb_node != 8)
+    ARCANE_FATAL("Number of nodes should be '8' (v={0})", nb_node);
   Int8 i8_nb_node = 8;
   Real3 cell_coord = cell0_coord;
-  bool is_3d = m_mesh->mesh()->dimension()==3;
+  bool is_3d = m_mesh->mesh()->dimension() == 3;
   if (!is_3d)
     ARCANE_FATAL("Invalid call. This mesh is not a 3D mesh");
 
   // Direction X
   nodes_indirection.fill(-1);
-  for( Int8 i=0; i<i8_nb_node; ++i ){
+  for (Int8 i = 0; i < i8_nb_node; ++i) {
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.z>cell_coord.z){
-      if (node_coord.x>cell_coord.x){
-        if (node_coord.y>cell_coord.y)
+    if (node_coord.z > cell_coord.z) {
+      if (node_coord.x > cell_coord.x) {
+        if (node_coord.y > cell_coord.y)
           nodes_indirection[CNP_TopNextLeft] = i;
         else
           nodes_indirection[CNP_TopNextRight] = i;
       }
-      else{
-        if (node_coord.y>cell_coord.y)
+      else {
+        if (node_coord.y > cell_coord.y)
           nodes_indirection[CNP_TopPreviousLeft] = i;
         else
           nodes_indirection[CNP_TopPreviousRight] = i;
       }
     }
-    else{
-      if (node_coord.x>cell_coord.x){
-        if (node_coord.y>cell_coord.y)
+    else {
+      if (node_coord.x > cell_coord.x) {
+        if (node_coord.y > cell_coord.y)
           nodes_indirection[CNP_NextLeft] = i;
         else
           nodes_indirection[CNP_NextRight] = i;
       }
-      else{
-        if (node_coord.y>cell_coord.y)
+      else {
+        if (node_coord.y > cell_coord.y)
           nodes_indirection[CNP_PreviousLeft] = i;
         else
           nodes_indirection[CNP_PreviousRight] = i;
@@ -222,32 +222,32 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction Y
   nodes_indirection.fill(-1);
-  for( Int8 i=0; i<i8_nb_node; ++i ){
+  for (Int8 i = 0; i < i8_nb_node; ++i) {
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.z>cell_coord.z){
-      if (node_coord.y>cell_coord.y){
-        if (node_coord.x>cell_coord.x)
+    if (node_coord.z > cell_coord.z) {
+      if (node_coord.y > cell_coord.y) {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_TopNextRight] = i;
         else
           nodes_indirection[CNP_TopNextLeft] = i;
       }
-      else{
-        if (node_coord.x>cell_coord.x)
+      else {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_TopPreviousRight] = i;
         else
           nodes_indirection[CNP_TopPreviousLeft] = i;
       }
     }
-    else{
-      if (node_coord.y>cell_coord.y){
-        if (node_coord.x>cell_coord.x)
+    else {
+      if (node_coord.y > cell_coord.y) {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_NextRight] = i;
         else
           nodes_indirection[CNP_NextLeft] = i;
       }
-      else{
-        if (node_coord.x>cell_coord.x)
+      else {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_PreviousRight] = i;
         else
           nodes_indirection[CNP_PreviousLeft] = i;
@@ -257,32 +257,32 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   cellDirection(MD_DirY).setNodesIndirection(nodes_indirection);
 
   nodes_indirection.fill(-1);
-  for( Int8 i=0; i<i8_nb_node; ++i ){
+  for (Int8 i = 0; i < i8_nb_node; ++i) {
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.y>cell_coord.y){
-      if (node_coord.z>cell_coord.z){
-        if (node_coord.x>cell_coord.x)
+    if (node_coord.y > cell_coord.y) {
+      if (node_coord.z > cell_coord.z) {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_TopNextRight] = i;
         else
           nodes_indirection[CNP_TopNextLeft] = i;
       }
-      else{
-        if (node_coord.x>cell_coord.x)
+      else {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_TopPreviousRight] = i;
         else
           nodes_indirection[CNP_TopPreviousLeft] = i;
       }
     }
-    else{
-      if (node_coord.z>cell_coord.z){
-        if (node_coord.x>cell_coord.x)
+    else {
+      if (node_coord.z > cell_coord.z) {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_NextRight] = i;
         else
           nodes_indirection[CNP_NextLeft] = i;
       }
-      else{
-        if (node_coord.x>cell_coord.x)
+      else {
+        if (node_coord.x > cell_coord.x)
           nodes_indirection[CNP_PreviousRight] = i;
         else
           nodes_indirection[CNP_PreviousLeft] = i;
@@ -296,15 +296,15 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshPatch::
-_internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
+_internalComputeNodeCellInformations(Cell cell0, Real3 cell0_coord, VariableNodeReal3& nodes_coord)
 {
   int dim = m_mesh->mesh()->dimension();
-  if (dim==3)
-    _computeNodeCellInformations3D(cell0,cell0_coord,nodes_coord);
-  else if (dim==2)
-    _computeNodeCellInformations2D(cell0,cell0_coord,nodes_coord);
+  if (dim == 3)
+    _computeNodeCellInformations3D(cell0, cell0_coord, nodes_coord);
+  else if (dim == 2)
+    _computeNodeCellInformations2D(cell0, cell0_coord, nodes_coord);
   else
-    ARCANE_THROW(NotImplementedException,"this method is implemented only for 2D and 3D mesh (dim={0})",dim);
+    ARCANE_THROW(NotImplementedException, "this method is implemented only for 2D and 3D mesh (dim={0})", dim);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -365,33 +365,32 @@ _internalComputeNodeCellInformations()
 void CartesianMeshPatch::
 checkValid() const
 {
-  // Vérifie que toutes les mailles avant/après appartiennent au groupe de
-  // mailles de la direction
+  // Checks that all before/after cells belong to the direction cell group
   Integer nb_dir = m_mesh->mesh()->dimension();
-  for( Integer i=0; i<nb_dir; ++i ){
+  for (Integer i = 0; i < nb_dir; ++i) {
     CellDirectionMng dm = m_cell_directions[i];
     FaceDirectionMng face_dm = m_face_directions[i];
-    std::set<Int32>  cells_ids;
+    std::set<Int32> cells_ids;
     CellGroup dm_cells = dm.allCells();
     info(4) << "PATCH i=" << m_amr_patch_index << " nb_cell=" << dm_cells.size();
-    ENUMERATE_CELL(icell,dm_cells){
+    ENUMERATE_CELL (icell, dm_cells) {
       cells_ids.insert(icell.itemLocalId());
     }
     Int64 nb_null_face_cell = 0;
-    ENUMERATE_CELL(icell,dm_cells){
+    ENUMERATE_CELL (icell, dm_cells) {
       Cell cell = *icell;
       DirCell cc(dm.cell(cell));
       Cell next_cell = cc.next();
-      if (!next_cell.null()){
-        if (cells_ids.find(next_cell.localId())==cells_ids.end())
-          ARCANE_FATAL("Bad next cell dir={0} cell={1} next={2}",i,ItemPrinter(cell),ItemPrinter(next_cell));
+      if (!next_cell.null()) {
+        if (cells_ids.find(next_cell.localId()) == cells_ids.end())
+          ARCANE_FATAL("Bad next cell dir={0} cell={1} next={2}", i, ItemPrinter(cell), ItemPrinter(next_cell));
       }
       Cell previous_cell = cc.previous();
-      if (!previous_cell.null()){
-        if (cells_ids.find(previous_cell.localId())==cells_ids.end())
-          ARCANE_FATAL("Bad previous cell dir={0} cell={1} previous={2}",i,ItemPrinter(cell),ItemPrinter(previous_cell));
+      if (!previous_cell.null()) {
+        if (cells_ids.find(previous_cell.localId()) == cells_ids.end())
+          ARCANE_FATAL("Bad previous cell dir={0} cell={1} previous={2}", i, ItemPrinter(cell), ItemPrinter(previous_cell));
       }
-      // Regarde si les infos des faces sont valides
+      // Check if face infos are valid
 
       DirCellFace cell_face(dm.cellFace(cell));
       Face prev_face = cell_face.previous();

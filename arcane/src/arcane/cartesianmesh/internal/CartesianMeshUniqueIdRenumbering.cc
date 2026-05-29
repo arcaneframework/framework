@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshUniqueIdRenumbering.cc                         (C) 2000-2024 */
 /*                                                                           */
-/* Renumérotation des uniqueId() pour les maillages cartésiens.              */
+/* Renumbering of uniqueId() for Cartesian meshes.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -140,7 +140,7 @@ renumber()
 
   NewUniqueIdList new_uids(mesh);
 
-  // Indique si on utilise le patch par défaut.
+  // Indicates if the default patch is used.
   bool use_default_patch = false;
   CartesianPatch patch0 = m_parent_patch;
   if (patch0.isNull()) {
@@ -149,15 +149,15 @@ renumber()
       use_default_patch = true;
   }
 
-  // TODO: Afficher le numéro du patch.
+  // TODO: Display the patch number.
 
-  // Marque les entités issues de 'm_parent_patch' comme n'étant pas renumérotées.
-  // Si 'm_parent_patch' n'est pas spécifié, on prend les mailles du patch initial.
-  // Marque aussi les mailles parentes du patch comme étant non renumérotées.
-  // NOTE: Cela ne fonctionne bien que si 'm_parent_patch' est le patch initial
-  // ou un patch juste en dessous. Dans l'utilisation actuelle c'est toujours le cas
-  // car on appelle cette méthode avec soit le patch de base, soit le patch issu
-  // du raffinement du patch initial.
+  // Marks entities originating from 'm_parent_patch' as not being renumbered.
+  // If 'm_parent_patch' is not specified, the cells of the initial patch are taken.
+  // Also marks the parent cells of the patch as not being renumbered.
+  // NOTE: This only works well if 'm_parent_patch' is the initial patch
+  // or a patch immediately below it. In the current usage, this is always the case
+  // because this method is called with either the base patch or the patch resulting
+  // from the refinement of the initial patch.
   Int32 patch_level = 0;
   ENUMERATE_ (Cell, icell, patch0.cells()) {
     Cell c{ *icell };
@@ -180,8 +180,8 @@ renumber()
   if (dimension >= 3 && nb_cell_z <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_z);
 
-  // Calcule le nombre de mailles du patch servant de référence.
-  // Suppose qu'on raffine d'un facteur 2 à chaque fois
+  // Calculates the number of cells in the reference patch.
+  // Assumes refinement factor of 2 each time
   info() << "PatchLevel=" << patch_level << " use_default_path=" << use_default_patch;
   Int32 multiplier = 1;
   for (Int32 z = 0; z < patch_level; ++z)
@@ -198,9 +198,9 @@ renumber()
   if (use_default_patch)
     base_adder = 0;
 
-  // On suppose que la patch servant de référence a une numérotation cartésienne d'origine
-  // ce qui veut dire qu'on peut déterminer les coordonnées topologiques de la maille
-  // grâce à son uniqueId()
+  // We assume that the reference patch has an original Cartesian numbering
+  // which means we can determine the topological coordinates of the cell
+  // using its uniqueId()
   if (dimension == 2) {
     CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell_x);
     ENUMERATE_ (Cell, icell, patch0.cells()) {
@@ -212,7 +212,7 @@ renumber()
         info() << "Renumbering: PARENT: cell_uid=" << uid << " I=" << coord_i
                << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
       if (use_default_patch)
-        // Indique qu'on est de niveau 1 pour avoir la même numérotation qu'avec la version 3.9
+        // Indicates that we are at level 1 to have the same numbering as with version 3.9
         level = 1;
       _applyChildrenCell2D(cell, new_uids, coord_i, coord_j, nb_cell_x, nb_cell_y, level, base_adder);
     }
@@ -239,7 +239,7 @@ renumber()
     }
   }
 
-  // TODO: faire une classe pour cela.
+  // TODO: create a class for this.
   //info() << "Change CellFamily";
   //mesh->cellFamily()->notifyItemsUniqueIdChanged();
 
@@ -278,15 +278,15 @@ _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
                      Int64 coord_i, Int64 coord_j,
                      Int64 nb_cell_x, Int64 nb_cell_y, Int32 level, Int64 base_adder)
 {
-  // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 4,
-  // il faudrait prendre le max des nbHChildren()
+  // TODO: to be able to adapt to all refinements, instead of 4,
+  // it would be necessary to take the max of nbHChildren()
 
   if (coord_i >= nb_cell_x)
     ARCANE_FATAL("Bad coordinate X={0} max={1}", coord_i, nb_cell_x);
   if (coord_j >= nb_cell_y)
     ARCANE_FATAL("Bad coordinate Y={0} max={1}", coord_j, nb_cell_y);
 
-  // Suppose qu'on a un pattern 2x2
+  // Assumes we have a 2x2 pattern
   coord_i *= 2;
   coord_j *= 2;
   nb_cell_x *= 2;
@@ -298,11 +298,11 @@ _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
   const Int64 node_adder = base_adder + (nb_node_x * nb_node_y * level);
   const Int64 face_adder = base_adder + (node_adder * 2);
 
-  // Renumérote les noeuds de la maille courante.
-  // Suppose qu'on a 4 noeuds
-  // ATTENTION a priori on ne peut pas conserver facilement l'ordre
-  // des uniqueId() entre l'ancienne et la nouvelle numérotation.
-  // Cela invalide l'orientation des faces qu'il faudra refaire.
+  // Renumbers the nodes of the current cell.
+  // Assumes we have 4 nodes
+  // WARNING: it is not easy to preserve the order
+  // of the uniqueIds() between the old and new numbering.
+  // This invalidates the face orientation, which will need to be redone.
   {
     if (cell.nbNode() != 4)
       ARCANE_FATAL("Invalid number of nodes N={0}, expected=4", cell.nbNode());
@@ -322,8 +322,8 @@ _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
       }
     }
   }
-  // Renumérote les faces
-  // TODO: Vérifier la validité de cette méthode.
+  // Renumbers the faces
+  // TODO: Verify the validity of this method.
   {
     if (cell.nbFace() != 4)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=4", cell.nbFace());
@@ -343,8 +343,8 @@ _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
       }
     }
   }
-  // Renumérote les sous-mailles
-  // Suppose qu'on a 4 mailles enfants comme suit par mailles
+  // Renumbers the sub-cells
+  // Assumes we have 4 child cells as follows by cells
   // -------
   // | 2| 3|
   // -------
@@ -383,8 +383,8 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
   if (coord_k >= current_level_nb_cell_z)
     ARCANE_FATAL("Bad coordinate Z={0} max={1}", coord_k, current_level_nb_cell_z);
 
-  // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 8,
-  // il faudrait prendre le max des nbHChildren()
+  // TODO: to be able to adapt to all refinements, instead of 8,
+  // it would be necessary to take the max of nbHChildren()
 
   const Int64 current_level_nb_node_x = current_level_nb_cell_x + 1;
   const Int64 current_level_nb_node_y = current_level_nb_cell_y + 1;
@@ -394,7 +394,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
   const Int64 current_level_nb_face_y = current_level_nb_cell_y + 1;
   const Int64 current_level_nb_face_z = current_level_nb_cell_z + 1;
 
-  // // Version non récursive pour cell_adder, node_adder et face_adder.
+  // // Non-recursive version for cell_adder, node_adder, and face_adder.
   // cell_adder = 0;
   // node_adder = 0;
   // face_adder = 0;
@@ -417,7 +417,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
   //   level_i_nb_cell_z /= 2;
   // }
 
-  // Renumérote la maille.
+  // Renumbers the mesh.
   {
     Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x + coord_k * current_level_nb_cell_x * current_level_nb_cell_y) + cell_adder;
     if (new_uids.cells[cell] < 0) {
@@ -428,11 +428,11 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumérote les noeuds de la maille courante.
-  // Suppose qu'on a 8 noeuds
-  // ATTENTION a priori on ne peut pas conserver facilement l'ordre
-  // des uniqueId() entre l'ancienne et la nouvelle numérotation.
-  // Cela invalide l'orientation des faces qu'il faudra refaire.
+  // Renumbers the nodes of the current mesh.
+  // Assumes we have 8 nodes
+  // WARNING: initially, we cannot easily preserve the order
+  // of uniqueIds() between the old and new numbering.
+  // This invalidates the face orientation, which will need to be redone.
   {
     if (cell.nbNode() != 8)
       ARCANE_FATAL("Invalid number of nodes N={0}, expected=8", cell.nbNode());
@@ -459,14 +459,14 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumérote les faces
-  // Cet algo n'est pas basé sur l'algo 2D.
-  // Les UniqueIDs générés sont contigües.
-  // Il est aussi possible de retrouver les UniqueIDs des faces
-  // à l'aide de la position de la cellule et la taille du maillage.
-  // De plus, l'ordre des UniqueIDs des faces d'une cellule est toujours le
-  // même (en notation localId Arcane (cell.face(i)) : 0, 3, 1, 4, 2, 5).
-  // Les UniqueIDs générés sont donc les mêmes quelque soit le découpage.
+  // Renumbers the faces
+  // This algorithm is not based on the 2D algorithm.
+  // The generated UniqueIDs are contiguous.
+  // It is also possible to find the UniqueIDs of the faces
+  // using the cell position and the mesh size.
+  // Furthermore, the order of the face UniqueIDs of a cell is always
+  // the same (in Arcane localId notation (cell.face(i)) : 0, 3, 1, 4, 2, 5).
+  // The generated UniqueIDs are therefore the same regardless of the subdivision.
   /*
        x               z
     ┌──►          │ ┌──►
@@ -488,17 +488,17 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
       └────┴────┘ │   3    7   11
                   │
   */
-  // On a un cube décomposé en huit cellules (2x2x2).
-  // Le schéma au-dessus représente les faces des cellules de ce cube avec
-  // les uniqueIDs que l'algorithme génèrera (sans face_adder).
-  // Pour cet algo, on commence par les faces "xy".
-  // On énumère d'abord en x, puis en y, puis en z.
-  // Une fois les faces "xy" numérotées, on fait les faces "yz".
-  // Toujours le même ordre de numérotation.
-  // On termine avec les faces "zx", encore dans le même ordre.
+  // We have a cube decomposed into eight cells (2x2x2).
+  // The diagram above represents the faces of the cells of this cube with
+  // the uniqueIDs that the algorithm will generate (without face_adder).
+  // For this algorithm, we start with the "xy" faces.
+  // We enumerate first in x, then in y, then in z.
+  // Once the "xy" faces are numbered, we do the "yz" faces.
+  // Always the same numbering order.
+  // We finish with the "zx" faces, still in the same order.
   //
-  // Dans l'implémentation ci-dessous, on fait la numérotation
-  // maille par maille.
+  // In the implementation below, we perform the numbering
+  // cell by cell.
   const Int64 total_face_xy = current_level_nb_face_z * current_level_nb_cell_x * current_level_nb_cell_y;
   const Int64 total_face_xy_yz = total_face_xy + current_level_nb_face_x * current_level_nb_cell_y * current_level_nb_cell_z;
   const Int64 total_face_xy_yz_zx = total_face_xy_yz + current_level_nb_face_y * current_level_nb_cell_z * current_level_nb_cell_x;
@@ -507,7 +507,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
       ARCANE_FATAL("Invalid number of faces N={0}, expected=6", cell.nbFace());
     std::array<Int64, 6> face_uids;
 
-    //// Version originale :
+    //// Original version:
     // face_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y)
     //             + (coord_j * current_level_nb_cell_x)
     //             + (coord_i);
@@ -559,8 +559,8 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumérote les sous-mailles
-  // Suppose qu'on a 8 mailles enfants (2x2x2) comme suit par mailles
+  // Renumbers the sub-meshes
+  // Assumes we have 8 child meshes (2x2x2) as follows by meshes
   // -------
   // | 2| 3|
   // -------
@@ -622,13 +622,13 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
   CartesianGridDimension::FaceUniqueIdComputer3D face_uid_computer(grid.getFaceComputer3D(face_adder));
   CartesianGridDimension::NodeUniqueIdComputer3D node_uid_computer(grid.getNodeComputer3D(node_adder));
 
-  // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 8,
-  // il faudrait prendre le max des nbHChildren()
+  // TODO: to be able to adapt to all refinements, instead of 8,
+  // it would be necessary to take the max of nbHChildren()
 
   Int64x3 grid_nb_node = grid.nbNode();
   Int64x3 grid_nb_face = grid.nbFace();
 
-  // Renumérote la maille.
+  // Renumbers the mesh.
   {
     Int64 new_uid = cell_uid_computer.compute(coord_i, coord_j, coord_k);
     if (new_uids.cells[cell] < 0) {
@@ -640,7 +640,7 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
   }
 
   static constexpr Int32 const_cell_nb_node = 8;
-  // Renumérote les noeuds de la maille courante.
+  // Renumbers the nodes of the current mesh.
   {
     std::array<Int64, const_cell_nb_node> node_uids = node_uid_computer.computeForCell(coord_i, coord_j, coord_k);
 
@@ -655,14 +655,14 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumérote les faces
-  // Cet algo n'est pas basé sur l'algo 2D.
-  // Les UniqueIDs générés sont contigües.
-  // Il est aussi possible de retrouver les UniqueIDs des faces
-  // à l'aide de la position de la cellule et la taille du maillage.
-  // De plus, l'ordre des UniqueIDs des faces d'une cellule est toujours le
-  // même (en notation localId Arcane (cell.face(i)) : 0, 3, 1, 4, 2, 5).
-  // Les UniqueIDs générés sont donc les mêmes quelque soit le découpage.
+  // Renumbers the faces
+  // This algorithm is not based on the 2D algorithm.
+  // The generated UniqueIDs are contiguous.
+  // It is also possible to find the UniqueIDs of the faces
+  // using the cell position and the mesh size.
+  // Furthermore, the order of the face UniqueIDs of a cell is always
+  // the same (in Arcane localId notation (cell.face(i)) : 0, 3, 1, 4, 2, 5).
+  // The generated UniqueIDs are therefore the same regardless of the subdivision.
   /*
        x               z
     ┌──►          │ ┌──►
@@ -684,17 +684,17 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
       └────┴────┘ │   3    7   11
                   │
   */
-  // On a un cube décomposé en huit cellules (2x2x2).
-  // Le schéma au-dessus représente les faces des cellules de ce cube avec
-  // les uniqueIDs que l'algorithme génèrera (sans face_adder).
-  // Pour cet algo, on commence par les faces "xy".
-  // On énumère d'abord en x, puis en y, puis en z.
-  // Une fois les faces "xy" numérotées, on fait les faces "yz".
-  // Toujours le même ordre de numérotation.
-  // On termine avec les faces "zx", encore dans le même ordre.
+  // We have a cube decomposed into eight cells (2x2x2).
+  // The diagram above represents the faces of the cells of this cube with
+  // the uniqueIDs that the algorithm will generate (without face_adder).
+  // For this algorithm, we start with the "xy" faces.
+  // We enumerate first in x, then in y, then in z.
+  // Once the "xy" faces are numbered, we do the "yz" faces.
+  // Always the same numbering order.
+  // We finish with the "zx" faces, still in the same order.
   //
-  // Dans l'implémentation ci-dessous, on fait la numérotation
-  // maille par maille.
+  // In the implementation below, we perform the numbering
+  // cell by cell.
   //const Int64 total_face_xy = grid_nb_face.z * current_level_nb_cell_x * current_level_nb_cell_y;
   //const Int64 total_face_xy_yz = total_face_xy + grid_nb_face.x * current_level_nb_cell_y * current_level_nb_cell_z;
   //const Int64 total_face_xy_yz_zx = total_face_xy_yz + grid_nb_face.y * current_level_nb_cell_z * current_level_nb_cell_x;
@@ -719,8 +719,8 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumérote les sous-mailles
-  // Suppose qu'on a 8 mailles enfants (2x2x2) comme suit par mailles
+  // Renumbers the sub-meshes
+  // Assumes we have 8 child meshes (2x2x2) as follows by meshes
   // -------
   // | 2| 3|
   // -------

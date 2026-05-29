@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionSignatureCut.cc                             (C) 2000-2026 */
 /*                                                                           */
-/* Méthodes de découpages de patchs selon leurs signatures.                  */
+/* Patch cutting methods based on their signatures.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 AMRPatchPositionSignatureCut::
-AMRPatchPositionSignatureCut()
-= default;
+AMRPatchPositionSignatureCut() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +51,7 @@ AMRPatchPositionSignatureCut::
 CartCoord AMRPatchPositionSignatureCut::
 _cutDim(ConstArrayView<CartCoord> sig)
 {
-  // Si le découpage produira des patchs trop petits, on retourne -1.
+  // If the cut produces patches that are too small, we return -1.
   if (sig.size() < MIN_SIZE * 2) {
     return -1;
   }
@@ -60,9 +59,9 @@ _cutDim(ConstArrayView<CartCoord> sig)
   CartCoord cut_point = -1;
   CartCoord mid = sig.size() / 2;
 
-  // Partie trou.
-  // On recherche un trou dans la signature.
-  // La signature doit avoir été compressée avant
+  // Hole part.
+  // We search for a hole in the signature.
+  // The signature must have been compressed beforehand
   // (AMRPatchPositionSignature::compress()).
   {
     for (CartCoord i = 0; i < sig.size(); ++i) {
@@ -81,9 +80,8 @@ _cutDim(ConstArrayView<CartCoord> sig)
   }
 
 #if 0
-  // Partie dérivée seconde.
-  // Ne produis pas forcément de meilleurs résultats par rapport à la partie
-  // découpe au milieu.
+  // Second derivative part.
+  // Does not necessarily produce better results compared to the middle cut part.
   {
     UniqueArray<CartCoord> dsec_sig(sig.size(), 0);
 
@@ -106,7 +104,7 @@ _cutDim(ConstArrayView<CartCoord> sig)
   }
 #endif
 
-  // Partie découpe au milieu.
+  // Middle cut part.
   {
     cut_point = mid;
 
@@ -124,18 +122,17 @@ _cutDim(ConstArrayView<CartCoord> sig)
 std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> AMRPatchPositionSignatureCut::
 cut(const AMRPatchPositionSignature& sig)
 {
-  // On découpe sur les trois dimensions.
+  // We cut along the three dimensions.
   CartCoord cut_point_x = _cutDim(sig.sigX());
   CartCoord cut_point_y = _cutDim(sig.sigY());
   CartCoord cut_point_z = (sig.mesh()->mesh()->dimension() == 2 ? -1 : _cutDim(sig.sigZ()));
 
-  // Si il est impossible de découper sur l'une des dimensions.
+  // If it is impossible to cut along one of the dimensions.
   if (cut_point_x == -1 && cut_point_y == -1 && cut_point_z == -1) {
     return {};
   }
 
-  // On ajuste les points de découpes pour les donner à la méthode
-  // AMRPatchPositionSignature::cut().
+  // We adjust the cut points to pass them to the AMRPatchPositionSignature::cut() method.
   if (cut_point_x != -1) {
     cut_point_x += sig.patch().minPoint().x;
   }
@@ -146,14 +143,14 @@ cut(const AMRPatchPositionSignature& sig)
     cut_point_z += sig.patch().minPoint().z;
   }
 
-  // On doit choisir le meilleur point de découpe parmi les trois.
+  // We must choose the best cut point among the three.
   if (cut_point_x != -1 && cut_point_y != -1 && cut_point_z != -1) {
 
-    // Pour choisir, on découpe, on calcule l'efficacité des patchs issus de
-    // la découpe et on choisit la découpe la plus efficace.
-    // TODO : Les méthodes compute() étant des méthodes collectives faisant
-    //        plusieurs petites réductions, il faudrait optimiser cette partie
-    //        en réunissant les reduces.
+    // To choose, we cut, calculate the efficiency of the resulting
+    // patches, and choose the most efficient cut.
+    // TODO: Since the compute() methods are collective methods performing
+    // several small reductions, this part should be optimized by combining
+    // the reductions.
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
     {
@@ -232,7 +229,7 @@ cut(const AMRPatchPositionSignature& sig)
       // }
     }
 
-    // Si la découpe n'améliore pas l'efficacité, on return.
+    // If the cut does not improve the efficiency, we return.
     {
       Real sig_efficacity = sig.efficacity();
       if (sig_efficacity > x_efficacity && sig_efficacity > y_efficacity && sig_efficacity > z_efficacity) {
@@ -240,7 +237,7 @@ cut(const AMRPatchPositionSignature& sig)
       }
     }
 
-    // On retourne la meilleure efficacité.
+    // We return the best efficiency.
     if (x_efficacity >= y_efficacity && x_efficacity >= z_efficacity && x_efficacity != 0) {
       return { fst_x, snd_x };
     }
@@ -253,7 +250,7 @@ cut(const AMRPatchPositionSignature& sig)
     return { fst_z, snd_z };
   }
 
-  // Même principe qu'au-dessus.
+  // Same principle as above.
   if (cut_point_x != -1 && cut_point_y != -1) {
     Real x_efficacity = 0;
     auto [fst_x, snd_x] = sig.cut(MD_DirX, cut_point_x);
@@ -398,11 +395,11 @@ cut(const AMRPatchPositionSignature& sig)
 void AMRPatchPositionSignatureCut::
 cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
 {
-  // On inverse in et out à chaque itération.
+  // We swap in and out at each iteration.
   UniqueArray<AMRPatchPositionSignature> sig_array_b;
   bool a_a_b_b = false;
 
-  // Tant que la découpe est possible.
+  // As long as the cut is possible.
   bool need_cut = true;
   while (need_cut) {
     need_cut = false;
@@ -414,7 +411,7 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
     for (auto& sig : array_in) {
       // sig.mesh()->traceMng()->info() << "Cut() -- i : " << i;
 
-      // Si la découpe est encore possible.
+      // If the cut is still possible.
       if (!sig.stopCut()) {
         if (!sig.isComputed()) {
           sig.compute();
@@ -422,8 +419,7 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
         if (sig.canBeCut()) {
           auto [fst, snd] = cut(sig);
 
-          // Si la découpe est valide, on ajoute les deux nouveau patchs dans
-          // le tableau out.
+          // If the cut is valid, we add the two new patches to the out array.
           if (fst.isValid()) {
             need_cut = true;
             array_out.add(fst);
@@ -434,22 +430,19 @@ cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a)
             // sig.mesh()->traceMng()->info() << "\tmin = " << snd.patch().minPoint() << " -- max = " << snd.patch().maxPoint() << " -- length = " << snd.patch().length();
             continue;
           }
-          // Si la découpe ne produit pas de patch valide, on stop la découpe
-          // pour ce patch.
+          // If the cut does not produce a valid patch, we stop cutting for this patch.
           sig.setStopCut(true);
           // sig.mesh()->traceMng()->info() << "Invalid Signature";
         }
-        // Si le patch ne peut plus être découpé, on stop la découpe de ce
-        // patch.
+        // If the patch can no longer be cut, we stop cutting this patch.
         else {
           sig.setStopCut(true);
         }
       }
       // sig.mesh()->traceMng()->info() << "No Update";
       // sig.mesh()->traceMng()->info() << "\tmin = " << sig.patch().minPoint() << " -- max = " << sig.patch().maxPoint();
-      // Si le patch n'a pas pu être découpé, on le conserve dans le
-      // tableau out.
-      // TODO : Bof
+      // If the patch could not be cut, we keep it in the out array.
+      // TODO: Meh
       if (sig.isValid()) {
         array_out.add(sig);
       }

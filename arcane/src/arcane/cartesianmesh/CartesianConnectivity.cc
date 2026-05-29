@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianConnectivity.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Maillage cartésien.                                                       */
+/* Cartesian mesh.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,10 +44,10 @@ _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * \brief Calcule les infos de connectivité
+ * \brief Calculates connectivity information
  *
- * Pour chaque noeud,détermine les 4 mailles autour en fonction des coordonnées
- * des mailles. Fait de même pour les quatres noeuds d'une maille.
+ * For each node, determines the 4 surrounding cells based on the cell
+ * coordinates. Does the same for the four nodes of a cell.
  */
 void CartesianConnectivity::
 _computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord,
@@ -160,7 +160,7 @@ _computeInfos2D(ICartesianMesh* cmesh)
     Int64 cells_around[nb_cell_around_node_max];
     ArrayView av_cells_around(nb_cell_around_node_max, cells_around);
 
-    // Le CartesianMeshNumberingMng nous donne toujours les mailles autour du noeud dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the cells around the node in the same order:
     //
     // |2|3|
     //   .
@@ -200,7 +200,7 @@ _computeInfos2D(ICartesianMesh* cmesh)
     Int64 nodes_in_cell[nb_node_in_cell_max];
     ArrayView av_nodes_in_cell(nb_node_in_cell_max, nodes_in_cell);
 
-    // Le CartesianMeshNumberingMng nous donne toujours les noeuds de la maille dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the nodes of the cell in the same order:
     //
     // |3|2|
     //   .
@@ -350,7 +350,7 @@ _computeInfos3D(ICartesianMesh* cmesh)
     Int64 cells_around[nb_cell_around_node_max];
     ArrayView av_cells_around(nb_cell_around_node_max, cells_around);
 
-    // Le CartesianMeshNumberingMng nous donne toujours les mailles autour du noeud dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the cells around the node in the same order:
     //
     // z = 0 | z = 1
     // |2|3| | |6|7|
@@ -391,7 +391,7 @@ _computeInfos3D(ICartesianMesh* cmesh)
     Int64 nodes_in_cell[nb_node_in_cell_max];
     ArrayView av_nodes_in_cell(nb_node_in_cell_max, nodes_in_cell);
 
-    // Le CartesianMeshNumberingMng nous donne toujours les noeuds de la maille dans le même ordre :
+    // The CartesianMeshNumberingMng always gives us the nodes of the cell in the same order:
     //
     // z = 0 | z = 1
     // |3|2| | |7|6|
@@ -433,9 +433,9 @@ _computeInfos3D(ICartesianMesh* cmesh)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calcule les permutations des 8 ePosition pour chaque direction.
+ * \brief Calculates the permutations of the 8 ePosition for each direction.
  *
- * La direction de référence est X.
+ * The reference direction is X.
  */
 void CartesianConnectivity::Permutation::
 compute()

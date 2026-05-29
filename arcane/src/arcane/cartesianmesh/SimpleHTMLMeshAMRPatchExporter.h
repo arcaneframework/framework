@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleHTMLMeshAMRPatchExporter.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Écrivain d'un maillage au format HTML, avec un SVG.                       */
+/* HTML mesh writer, with an SVG.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H
 #define ARCANE_CARTESIANMESH_SIMPLEHTMLMESHAMRPATCHEXPORTER_H

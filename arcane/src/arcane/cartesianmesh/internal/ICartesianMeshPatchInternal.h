@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICartesianMeshPatchInternal.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur un patch AMR d'un maillage cartésien.                    */
+/* Information about an AMR patch of a Cartesian mesh.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H
 #define ARCANE_CARTESIANMESH_ICARTESIANMESHPATCHINTERNAL_H

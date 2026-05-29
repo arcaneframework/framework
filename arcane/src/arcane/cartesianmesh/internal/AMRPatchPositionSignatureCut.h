@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionSignatureCut.h                              (C) 2000-2026 */
 /*                                                                           */
-/* Méthodes de découpages de patchs selon leurs signatures.                  */
+/* Patch cutting methods based on their signatures.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
 #define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURECUT_H
@@ -27,34 +27,34 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de découper un patch en plusieurs petits patchs.
+ * \brief Class allowing a patch to be cut into several smaller patches.
  */
 class AMRPatchPositionSignatureCut
 {
  public:
+
   AMRPatchPositionSignatureCut();
   ~AMRPatchPositionSignatureCut();
 
  public:
 
   /*!
-  * \brief Méthode permettant de chercher le meilleur point pour effectuer
-  * une découpe.
-  * \param sig La signature sur laquelle la recherche doit se faire.
-  * \return Le meilleur point pour la découpe (-1 si problème).
+  * \brief Method allowing searching for the best point to perform a cut.
+  * \param sig The signature on which the search must be performed.
+  * \return The best point for the cut (-1 if problem).
   */
   static CartCoord _cutDim(ConstArrayView<CartCoord> sig);
 
   /*!
-  * \brief Méthode permettant de découper un patch en deux.
-  * \param sig Le patch à découper.
-  * \return Les deux patchs resultant de la découpe.
+  * \brief Method allowing a patch to be cut into two.
+  * \param sig The patch to be cut.
+  * \return The two patches resulting from the cut.
   */
   static std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(const AMRPatchPositionSignature& sig);
 
   /*!
-  * \brief Méthode permettant de découper le ou les patchs du tableau \a sig_array_a.
-  * \param sig_array_a [IN/OUT] Le tableau de patchs.
+  * \brief Method allowing the patch or patches in the array \a sig_array_a to be cut.
+  * \param sig_array_a [IN/OUT] The array of patches.
   */
   static void cut(UniqueArray<AMRPatchPositionSignature>& sig_array_a);
 };
@@ -67,5 +67,4 @@ class AMRPatchPositionSignatureCut
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

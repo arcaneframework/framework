@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
+/* Info on the meshes of an X, Y, or Z direction of a structured mesh.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,7 +37,9 @@ class CellDirectionMng::Impl
 {
  public:
 
-  Impl() : m_infos(platform::getDefaultDataAllocator()){}
+  Impl()
+  : m_infos(platform::getDefaultDataAllocator())
+  {}
 
  public:
 
@@ -64,7 +66,7 @@ CellDirectionMng()
 , m_next_face_index(-1)
 , m_previous_face_index(-1)
 {
-  for( Integer i=0; i<MAX_NB_NODE; ++i )
+  for (Integer i = 0; i < MAX_NB_NODE; ++i)
     m_nodes_indirection[i] = (-1);
 }
 
@@ -72,7 +74,7 @@ CellDirectionMng()
 /*---------------------------------------------------------------------------*/
 
 void CellDirectionMng::
-_internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index)
+_internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index)
 {
   if (m_p)
     ARCANE_FATAL("Initialisation already done");
@@ -111,7 +113,7 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
   Int32UniqueArray inner_lids;
   Int32UniqueArray outer_lids;
   IItemFamily* family = items.itemFamily();
-  ENUMERATE_ITEM(iitem,items){
+  ENUMERATE_ITEM (iitem, items) {
     Int32 lid = iitem.itemLocalId();
     Int32 i1 = m_infos_view[lid].m_next_lid;
     Int32 i2 = m_infos_view[lid].m_previous_lid;
@@ -121,11 +123,11 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
       inner_lids.add(lid);
   }
   int dir = (int)m_direction;
-  String base_group_name = String("Direction")+dir;
-  if (m_p->m_patch_index>=0)
-    base_group_name = base_group_name + String("AMRPatch")+m_p->m_patch_index;
-  m_p->m_inner_all_items = family->createGroup(String("AllInner")+base_group_name,inner_lids,true);
-  m_p->m_outer_all_items = family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
+  String base_group_name = String("Direction") + dir;
+  if (m_p->m_patch_index >= 0)
+    base_group_name = base_group_name + String("AMRPatch") + m_p->m_patch_index;
+  m_p->m_inner_all_items = family->createGroup(String("AllInner") + base_group_name, inner_lids, true);
+  m_p->m_outer_all_items = family->createGroup(String("AllOuter") + base_group_name, outer_lids, true);
   m_p->m_all_items = items;
   m_cells = CellInfoListView(family);
 
@@ -226,13 +228,13 @@ outerCells() const
 void CellDirectionMng::
 setNodesIndirection(ConstArrayView<Int8> nodes_indirection)
 {
-  for( Integer i=0; i<MAX_NB_NODE; ++i )
+  for (Integer i = 0; i < MAX_NB_NODE; ++i)
     m_nodes_indirection[i] = nodes_indirection[i];
 
   ITraceMng* tm = m_p->m_cartesian_mesh->traceMng();
 
   tm->info(4) << "Set computed indirection dir=" << (int)m_direction;
-  for( Integer i=0; i<MAX_NB_NODE; ++i ){
+  for (Integer i = 0; i < MAX_NB_NODE; ++i) {
     tm->info(5) << "Indirection i=" << i << " v=" << (int)m_nodes_indirection[i];
   }
 }

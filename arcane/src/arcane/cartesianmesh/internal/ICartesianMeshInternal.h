@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICartesianMeshInternal.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Partie interne à Arcane de ICartesianMesh.                                */
+/* Internal part of ICartesianMesh in Arcane.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_INTERNAL_ICARTESIANMESHINTERNAL_H
 #define ARCANE_CARTESIANMESH_INTERNAL_ICARTESIANMESHINTERNAL_H
@@ -35,7 +35,7 @@ class CartesianPatchGroup;
 
 /*!
  * \internal
- * \brief Partie interne de ICartesianMesh.
+ * \brief Internal part of ICartesianMesh.
  */
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
 {
@@ -46,46 +46,46 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
  public:
 
   /*!
-   * \brief Créé une instance pour gérer le déraffinement du maillage (V2).
+   * \brief Creates an instance to manage mesh coarsening (V2).
    * \warning Experimental method !
    */
   virtual Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() = 0;
 
   /*!
-   * \brief Créé un patch avec tous les enfants des mailles \a parent_cells_local_id
+   * \brief Creates a patch with all children of the meshes \a parent_cells_local_id
    *
-   * \a parent_cells_local_id est la liste des localId() des mailles parentes.
-   * Les mailles filles de \a parent_cells doivent déjà avoir été créées.
+   * \a parent_cells_local_id is the list of localIds() of the parent meshes.
+   * The child meshes of \a parent_cells must have already been created.
    */
   virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
 
   /*!
-   * \brief Méthode permettant de créer une instance de CartesianMeshAMRPatchMng.
+   * \brief Method allowing the creation of a CartesianMeshAMRPatchMng instance.
    */
   virtual void initCartesianMeshAMRPatchMng() = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer l'instance de CartesianMeshAMRPatchMng.
+   * \brief Method allowing retrieval of the CartesianMeshAMRPatchMng instance.
    */
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 
   /*!
-   * \brief Méthode permettant de créer une instance de CartesianMeshNumberingMngInternal.
+   * \brief Method allowing the creation of a CartesianMeshNumberingMngInternal instance.
    */
   virtual void initCartesianMeshNumberingMngInternal() = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer l'instance de CartesianMeshNumberingMngInternal.
+   * \brief Method allowing retrieval of the CartesianMeshNumberingMngInternal instance.
    */
   virtual Ref<ICartesianMeshNumberingMngInternal> cartesianMeshNumberingMngInternal() = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer le CartesianPatchGroup.
+   * \brief Method allowing retrieval of the CartesianPatchGroup.
    */
   virtual CartesianPatchGroup& cartesianPatchGroup() = 0;
 
   /*!
-   * \brief Méthode permettant de lancer la sauvegarde pour reprise.
+   * \brief Method allowing saving information for resumption.
    */
   virtual void saveInfosInProperties() = 0;
 };

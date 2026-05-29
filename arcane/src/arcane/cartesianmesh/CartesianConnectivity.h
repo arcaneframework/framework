@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianConnectivity.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Informations de connectivité d'un maillage cartésien.                     */
+/* Connectivity information of a Cartesian mesh.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CARTESIANCONNECTIVITY_H
 #define ARCANE_CARTESIANMESH_CARTESIANCONNECTIVITY_H
@@ -29,43 +29,43 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Informations de connectivité d'un maillage cartésien.
+ * \brief Connectivity information of a Cartesian mesh.
  *
- * Comme tous les objets liés au maillage cartésien, ces instances ne
- * sont valides que tant que la topologie du maillage n'évolue pas.
+ * Like all objects related to the Cartesian mesh, these instances are only
+ * valid as long as the mesh topology does not change.
  *
- * Cette classe sert à la fois pour les connectivités 2D et les connectivités
- * 3D. Les méthodes qui commencent par topZ ne sont valides que en 3D.
+ * This class serves for both 2D connectivities and 3D connectivities. Methods
+ * starting with topZ are only valid in 3D.
  *
- * Le nom des méthodes suit la nomenclature suivante:
- * - topZ/.: pour la direction Z
- * - upper/lower: pour la direction Y
- * - left/right: pour la direction X
+ * The method names follow the following nomenclature:
+ * - topZ/.: for the Z direction
+ * - upper/lower: for the Y direction
+ * - left/right: for the X direction
  *
- * Pour la connectivité des noeuds autour d'une maille de coordonnées (X0,Y0,Z0),
- * le noeud de coordonnées (X,Y,Z) se récupère comme suit:
- * - En 3D, topZ si Z>Z0, sinon pas de préfixe. en 2D, jamais de préfixe.
- * - upper si Y>Y0, lower sinon,
- * - right si X>X0, left sinon,
+ * For the connectivity of nodes around a coordinate cell (X0,Y0,Z0),
+ * the coordinate node (X,Y,Z) is retrieved as follows:
+ * - In 3D, topZ if Z>Z0, otherwise no prefix. In 2D, never a prefix.
+ * - upper if Y>Y0, lower otherwise,
+ * - right if X>X0, left otherwise,
  *
- * Donc par exemple, si Z>Z0, Y<Y0 et X>X0, le nom de la méthode est topZLowerRight().
- * Si Z<Z0, Y>Y0 et X>X0, le nom est upperRight().
+ * So for example, if Z>Z0, Y<Y0 and X>X0, the method name is topZLowerRight().
+ * If Z<Z0, Y>Y0 and X>X0, the name is upperRight().
  *
- * Le fonctionnement est le même pour les connectivités des mailles autour d'un noeud.
+ * The functionality is the same for the connectivities of cells around a node.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 {
-  // NOTE: Pour l'instant, on doit conserver par entité les entités connectées par
-  // direction, car la numérotation ne permet pas de les retrouver simplement.
-  // À terme, on pourra le déduire directement.
+  // NOTE: For now, we must keep the connected entities by
+  // direction, because the numbering does not allow them to be easily retrieved.
+  // Eventually, we will be able to deduce it directly.
 
   friend class CartesianConnectivityLocalId;
   friend class CartesianMeshImpl;
 
   /*!
-   * \brief Type énuméré indiquant la position.
-   * \warning Les valeurs exactes ne doivent pas être utilisées car elles sont
-   * susceptibles de changer.
+   * \brief Enumerated type indicating the position.
+   * \warning The exact values should not be used because they are
+   * susceptible to change.
    */
   enum ePosition
   {
@@ -82,7 +82,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
  private:
 
-  //! Liste des 8 entités autout d'une autre entité
+  //! List of the 8 entities around another entity
   struct Index
   {
     friend class CartesianConnectivity;
@@ -93,7 +93,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
     Int32 v[8];
   };
 
-  //! Permutation dans Index pour chaque direction
+  //! Permutation in Index for each direction
   struct Permutation
   {
     friend class CartesianConnectivity;
@@ -109,120 +109,120 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
  public:
 
-  //! Maille en haut à gauche du noeud \a n
+  //! Cell top left of node \a n
   Cell upperLeft(Node n) const { return _nodeToCell(n, P_UpperLeft); }
-  //! Maille en haut à droite du noeud \a n
+  //! Cell top right of node \a n
   Cell upperRight(Node n) const { return _nodeToCell(n, P_UpperRight); }
-  //! Maille en bas à droite du noeud \a n
+  //! Cell bottom right of node \a n
   Cell lowerRight(Node n) const { return _nodeToCell(n, P_LowerRight); }
-  //! Maille en bas à gauche du noeud \a n
+  //! Cell bottom left of node \a n
   Cell lowerLeft(Node n) const { return _nodeToCell(n, P_LowerLeft); }
 
-  //! Maille en haut à gauche du noeud \a n
+  //! Cell top left of node \a n
   ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperLeft); }
-  //! Maille en haut à droite du noeud \a n
+  //! Cell top right of node \a n
   ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperRight); }
-  //! Maille en bas à droite du noeud \a n
+  //! Cell bottom right of node \a n
   ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerRight); }
-  //! Maille en bas à gauche du noeud \a n
+  //! Cell bottom left of node \a n
   ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerLeft); }
 
-  //! Maille en haut à gauche du noeud \a n pour la direction \a dir
+  //! Cell top left of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_UpperLeft); }
-  //! Maille en haut à droite du noeud \a n pour la direction \a dir
+  //! Cell top right of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_UpperRight); }
-  //! Maille en bas à droite du noeud \a n pour la direction \a dir
+  //! Cell bottom right of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_LowerRight); }
-  //! Maille en bas à gauche du noeud \a n pour la direction \a dir
+  //! Cell bottom left of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_LowerLeft); }
 
-  //! En 3D, maille en haut à gauche du noeud \a n
+  //! In 3D, cell top left of node \a n
   Cell topZUpperLeft(Node n) const { return _nodeToCell(n, P_TopZUpperLeft); }
-  //! En 3D, maille en haut à droite du noeud \a n
+  //! In 3D, cell top right of node \a n
   Cell topZUpperRight(Node n) const { return _nodeToCell(n, P_TopZUpperRight); }
-  //! En 3D, maille en bas à droite du noeud \a n
+  //! In 3D, cell bottom right of node \a n
   Cell topZLowerRight(Node n) const { return _nodeToCell(n, P_TopZLowerRight); }
-  //! En 3D, maille en bas à gauche du noeud \a n
+  //! In 3D, cell bottom left of node \a n
   Cell topZLowerLeft(Node n) const { return _nodeToCell(n, P_TopZLowerLeft); }
 
-  //! En 3D, maille en haut à gauche du noeud \a n
+  //! In 3D, cell top left of node \a n
   ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperLeft); }
-  //! En 3D, maille en haut à droite du noeud \a n
+  //! In 3D, cell top right of node \a n
   ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperRight); }
-  //! En 3D, maille en bas à droite du noeud \a n
+  //! In 3D, cell bottom right of node \a n
   ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerRight); }
-  //! En 3D, maille en bas à gauche du noeud \a n
+  //! In 3D, cell bottom left of node \a n
   ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerLeft); }
 
-  //! En 3D, maille en haut à gauche du noeud \a n pour la direction \a dir
+  //! In 3D, cell top left of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZUpperLeft); }
-  //! En 3D, maille en haut à droite du noeud \a n pour la direction \a dir
+  //! In 3D, cell top right of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZUpperRight); }
-  //! En 3D, maille en bas à droite du noeud \a n pour la direction \a dir
+  //! In 3D, cell bottom right of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZLowerRight); }
-  //! En 3D, maille en bas à gauche du noeud \a n pour la direction \a dir
+  //! In 3D, cell bottom left of node \a n for direction \a dir
   ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZLowerLeft); }
 
-  //! Noeud en haut à gauche de la maille \a c
+  //! Node top left of cell \a c
   Node upperLeft(Cell c) const { return _cellToNode(c, P_UpperLeft); }
-  //! Noeud en haut à droite de la maille \a c
+  //! Node top right of cell \a c
   Node upperRight(Cell c) const { return _cellToNode(c, P_UpperRight); }
-  //! Noeud en bas à droite de la maille \a c
+  //! Node bottom right of cell \a c
   Node lowerRight(Cell c) const { return _cellToNode(c, P_LowerRight); }
-  //! Noeud en bad à gauche de la maille \a c
+  //! Node bottom left of cell \a c
   Node lowerLeft(Cell c) const { return _cellToNode(c, P_LowerLeft); }
 
-  //! Noeud en haut à gauche de la maille \a c
+  //! Node top left of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperLeft); }
-  //! Noeud en haut à droite de la maille \a c
+  //! Node top right of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperRight); }
-  //! Noeud en bas à droite de la maille \a c
+  //! Node bottom right of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerRight); }
-  //! Noeud en bad à gauche de la maille \a c
+  //! Node bottom left of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerLeft); }
 
-  //! Noeud en haut à gauche de la maille \a c pour la direction \a dir
+  //! Node top left of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_UpperLeft); }
-  //! Noeud en haut à droite de la maille \a c pour la direction \a dir
+  //! Node top right of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_UpperRight); }
-  //! Noeud en bas à droite de la maille \a c pour la direction \a dir
+  //! Node bottom right of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_LowerRight); }
-  //! Noeud en bad à gauche de la maille \a c pour la direction \a dir
+  //! Node bottom left of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_LowerLeft); }
 
-  //! En 3D, noeud au dessus en haut à gauche de la maille \a c
+  //! In 3D, node above top left of cell \a c
   Node topZUpperLeft(Cell c) const { return _cellToNode(c, P_TopZUpperLeft); }
-  //! En 3D, noeud au dessus en haut à droite de la maille \a c
+  //! In 3D, node above top right of cell \a c
   Node topZUpperRight(Cell c) const { return _cellToNode(c, P_TopZUpperRight); }
-  //! En 3D, noeud au dessus en bas à droite de la maille \a c
+  //! In 3D, node above bottom right of cell \a c
   Node topZLowerRight(Cell c) const { return _cellToNode(c, P_TopZLowerRight); }
-  //! En 3D, noeud au dessus en bas à gauche de la maille \a c
+  //! In 3D, node above bottom left of cell \a c
   Node topZLowerLeft(Cell c) const { return _cellToNode(c, P_TopZLowerLeft); }
 
-  //! En 3D, noeud au dessus en haut à gauche de la maille \a c
+  //! In 3D, node above top left of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperLeft); }
-  //! En 3D, noeud au dessus en haut à droite de la maille \a c
+  //! In 3D, node above top right of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperRight); }
-  //! En 3D, noeud au dessus en bas à droite de la maille \a c
+  //! In 3D, node above bottom right of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerRight); }
-  //! En 3D, noeud au dessus en bas à gauche de la maille \a c
+  //! In 3D, node above bottom left of cell \a c
   ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerLeft); }
 
-  //! En 3D, noeud au dessus en haut à gauche de la maille \a c pour la direction \a dir
+  //! In 3D, node above top left of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZUpperLeft); }
-  //! En 3D, noeud au dessus en haut à droite de la maille \a c pour la direction \a dir
+  //! In 3D, node above top right of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZUpperRight); }
-  //! En 3D, noeud au dessus en bas à droite de la maille \a c pour la direction \a dir
+  //! In 3D, node above bottom right of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZLowerRight); }
-  //! En 3D, noeud au dessus en bas à gauche de la maille \a c pour la direction \a dir
+  //! In 3D, node above bottom left of cell \a c for direction \a dir
   ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZLowerLeft); }
 
  private:
 
-  //! Calcule les infos de connectivité.
+  //! Calculates the connectivity information.
   void _computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
   void _computeInfos(ICartesianMesh* cmesh);
-  //! Positionne les tableaux contenant les infos de connectivité
+  //! Positions the arrays containing the connectivity information
   void _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node,
                    const Permutation* permutation);
 
@@ -251,7 +251,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
  private:
 
-  // Ces deux méthodes sont pour les tests
+  // These two methods are for testing
   Index& _index(Node n) { return m_nodes_to_cell[n.localId()]; }
   Index& _index(Cell c) { return m_cells_to_node[c.localId()]; }
 
@@ -274,7 +274,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe d'accès aux connectivités cartésiennes.
+ * \brief Class for accessing Cartesian connectivities.
  *
  * \sa CartesianConnectivity.
  */
@@ -301,5 +301,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivityLocalId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

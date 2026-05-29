@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionSignature.h                                 (C) 2000-2026 */
 /*                                                                           */
-/* Calcul des signatures d'une position de patch.                            */
+/* Calculation of patch position signatures.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURE_H
 #define ARCANE_CARTESIANMESH_INTERNAL_AMRPATCHPOSITIONSIGNATURE_H
@@ -30,13 +30,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de gérer les signatures d'un patch.
+ * \brief Class for managing patch signatures.
  *
- * La signature d'un patch dans une dimension correspond au nombre de mailles
- * à raffiner dans l'autre dimension (ou dans les deux autres dimensions en
+ * The signature of a patch in one dimension corresponds to the number of meshes
+ * to refine in the other dimension (or in the other two dimensions in
  * 3D).
- * Exemple : pour la signature en X, pour chaque Xn, pour tout Yn et pour tout Zn,
- * on compte le nombre de mailles à raffiner en (Xn, Yn, Zn).
+ * Example: for the X signature, for each Xn, for all Yn and for all Zn,
+ * we count the number of meshes to refine at (Xn, Yn, Zn).
  */
 class AMRPatchPositionSignature
 {
@@ -51,92 +51,92 @@ class AMRPatchPositionSignature
 
   AMRPatchPositionSignature(const AMRPatchPosition& patch, ICartesianMesh* cmesh, Int32 nb_cut);
 
-public:
+ public:
 
   AMRPatchPositionSignature& operator=(const AMRPatchPositionSignature&) = default;
 
  public:
 
   /*!
-  * \brief Méthode permettant de retirer les 0 au début et à la fin des
+  * \brief Method for removing zeros at the beginning and end of the
   * signatures.
-  * \note Méthode appelée par \a compute().
-  * \warning La méthode \a fillSig() doit avoir été appelée avant.
+  * \note Method called by \a compute().
+  * \warning The method \a fillSig() must have been called before.
   */
   void compress();
 
   /*!
-  * \brief Méthode permettant de calculer les signatures.
-  * \note Méthode appelée par \a compute().
-  * Méthode collective.
+  * \brief Method for calculating the signatures.
+  * \note Method called by \a compute().
+  * Collective method.
   */
   void fillSig();
 
   /*!
-  * \brief Méthode permettant de savoir si les signatures sont valides.
+  * \brief Method for determining if the signatures are valid.
   */
   bool isValid() const;
 
   /*!
-  * \brief Méthode permettant de savoir si le patch peut être découpé en deux
-  * via la méthode \a cut().
+  * \brief Method for determining if the patch can be cut into two
+  * via the \a cut() method.
   */
   bool canBeCut() const;
 
   /*!
-  * \brief Méthode permettant de calculer les signatures d'un patch.
-  * Cette méthode doit être appelée après construction.
+  * \brief Method for calculating the signatures of a patch.
+  * This method must be called after construction.
   */
   void compute();
 
   /*!
-  * \brief Méthode permettant de connaitre l'efficacité du patch.
+  * \brief Method to determine the patch's efficiency.
   */
   Real efficacity() const;
 
   /*!
-  * \brief Méthode permettant de découper le patch.
-  * Le patch n'est pas modifié.
-  * \param dim La dimension du \a cut_point.
-  * \param cut_point La position de la découpe.
-  * \return Les deux patchs résultant de la découpe.
+  * \brief Method for cutting the patch.
+  * The patch is not modified.
+  * \param dim The dimension of the \a cut_point.
+  * \param cut_point The position of the cut.
+  * \return The two patches resulting from the cut.
   */
   std::pair<AMRPatchPositionSignature, AMRPatchPositionSignature> cut(Integer dim, CartCoord cut_point) const;
 
   /*!
-  * \brief Méthode permettant de récupérer la signature X.
+  * \brief Method for retrieving the X signature.
   */
   ConstArrayView<CartCoord> sigX() const;
 
   /*!
-  * \brief Méthode permettant de récupérer la signature Y.
+  * \brief Method for retrieving the Y signature.
   */
   ConstArrayView<CartCoord> sigY() const;
 
   /*!
-  * \brief Méthode permettant de récupérer la signature Z.
+  * \brief Method for retrieving the Z signature.
   */
   ConstArrayView<CartCoord> sigZ() const;
 
   /*!
-  * \brief Méthode permettant de récupérer une copie du patch.
+  * \brief Method for retrieving a copy of the patch.
   */
   AMRPatchPosition patch() const;
 
   ICartesianMesh* mesh() const;
 
   /*!
-  * \brief Méthode permettant de savoir si le patch peut encore être découpé.
+  * \brief Method for determining if the patch can still be cut.
   */
   bool stopCut() const;
 
   /*!
-  * \brief Méthode permettant de définir si le patch peut encore être découpé.
+  * \brief Method for defining whether the patch can still be cut.
   */
   void setStopCut(bool stop_cut);
 
   /*!
-  * \brief Méthode permettant de savoir si la méthode \a compute() a déjà été appelée.
+  * \brief Method for determining whether the \a compute() method has already been called.
   */
   bool isComputed() const;
 

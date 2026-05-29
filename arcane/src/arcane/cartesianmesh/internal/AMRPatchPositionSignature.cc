@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchPositionSignature.cc                                (C) 2000-2026 */
 /*                                                                           */
-/* Calcul des signatures d'une position de patch.                            */
+/* Calculation of signatures for a patch position.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,10 +34,10 @@
 namespace Arcane
 {
 
-// On peut jouer avec ces paramètres pour avoir un meilleur raffinement.
-// TODO : Fixer ça n'est peut-être pas la meilleur façon de faire. Les patchs
-//        créés aujourd'hui sont trop nombreux et trop petits mais conviennent
-//        dans la majorité des cas de figures.
+// We can play with these parameters to achieve better refinement.
+// TODO: Fixing this might not be the best way to do it. The patches
+//        created today are too numerous and too small but are suitable
+//        in the majority of cases.
 namespace
 {
   constexpr Integer MIN_SIZE = 1;
@@ -102,7 +102,7 @@ compress()
     return;
   }
 
-  // On cherche la première position où il n'y a plus de zéro.
+  // We are looking for the first position where there is no longer zero.
   CartCoord reduce_x_min = 0;
   if (m_sig_x[0] == 0) {
     for (; reduce_x_min < m_sig_x.size(); ++reduce_x_min) {
@@ -128,8 +128,8 @@ compress()
     }
   }
 
-  // On cherche la première position où il n'y a plus de zéro en partant de la
-  // fin.
+  // We are looking for the first position where there is no longer zero starting from the
+  // end.
   CartCoord reduce_x_max = m_sig_x.size() - 1;
   if (m_sig_x[reduce_x_max] == 0) {
     for (; reduce_x_max >= 0; --reduce_x_max) {
@@ -155,9 +155,9 @@ compress()
     }
   }
 
-  // Si une réduction de taille doit avoir lieu en X.
-  if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size()-1) {
-    // Le patch ne peut pas être "plat".
+  // If a size reduction must occur in X.
+  if (reduce_x_min != 0 || reduce_x_max != m_sig_x.size() - 1) {
+    // The patch cannot be "flat".
     if (reduce_x_max < reduce_x_min) {
       ARCANE_FATAL("Bad patch X : no refine cell");
     }
@@ -172,7 +172,7 @@ compress()
     m_patch.setMaxPoint(patch_max);
   }
 
-  if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size()-1) {
+  if (reduce_y_min != 0 || reduce_y_max != m_sig_y.size() - 1) {
     if (reduce_y_max < reduce_y_min) {
       ARCANE_FATAL("Bad patch Y : no refine cell");
     }
@@ -213,10 +213,10 @@ fillSig()
   m_sig_y.fill(0);
   m_sig_z.fill(0);
 
-  // Le calcul de la signature se fait en deux fois.
-  // D'abord, on calcule la signature avec les flags II_Refine.
-  // Chaque sous-domaine calcule sa signature locale et une réduction est
-  // faite à la fin.
+  // The signature calculation is done in two steps.
+  // First, we calculate the signature using the II_Refine flags.
+  // Each subdomain calculates its local signature and a reduction is
+  // done at the end.
   ENUMERATE_ (Cell, icell, m_mesh->mesh()->ownLevelCells(m_patch.level())) {
     if (!icell->hasFlags(ItemFlags::II_Refine)) {
       continue;
@@ -232,7 +232,7 @@ fillSig()
     m_sig_z[pos.z - m_patch.minPoint().z]++;
   }
 
-  // Compresser un patch vide ne fonctionnera pas.
+  // Compressing an empty patch will not work.
   m_have_cells = m_mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, m_have_cells);
 
   if (m_have_cells) {
@@ -317,14 +317,14 @@ Real AMRPatchPositionSignature::
 efficacity() const
 {
   if (!m_is_computed) {
-    // Sans compression, pas terrible.
+    // Without compression, not great.
     m_mesh->traceMng()->warning() << "Need to be computed";
   }
 
-  // On base le calcul de l'efficacité sur deux choses :
-  // - le ratio maille à raffiner dans le patch sur nombre de mailles du patch,
-  // - la taille de chaque dimension par rapport à la taille cible.
-  // TODO : À peaufiner/réécrire.
+  // We base the efficiency calculation on two things:
+  // - the ratio of cells to refine in the patch to the number of cells in the patch,
+  // - the size of each dimension compared to the target size.
+  // TODO: To be refined/rewritten.
 
   Int32 sum = 0;
   for (const Int32 elem : m_sig_x) {
@@ -341,8 +341,8 @@ efficacity() const
   if (m_sig_x.size() <= TARGET_SIZE) {
     eff_xy = static_cast<Real>(m_sig_x.size()) / TARGET_SIZE;
   }
-  else if (m_sig_x.size() < TARGET_SIZE*2) {
-    Real size_x = math::abs(m_sig_x.size() - TARGET_SIZE*2);
+  else if (m_sig_x.size() < TARGET_SIZE * 2) {
+    Real size_x = math::abs(m_sig_x.size() - TARGET_SIZE * 2);
     eff_xy = size_x / TARGET_SIZE;
   }
 
@@ -371,7 +371,7 @@ efficacity() const
   }
   eff_xy *= TARGET_SIZE_WEIGHT_IN_EFFICACITY;
 
-  return (eff+eff_xy)/(1+TARGET_SIZE_WEIGHT_IN_EFFICACITY);
+  return (eff + eff_xy) / (1 + TARGET_SIZE_WEIGHT_IN_EFFICACITY);
 }
 
 /*---------------------------------------------------------------------------*/

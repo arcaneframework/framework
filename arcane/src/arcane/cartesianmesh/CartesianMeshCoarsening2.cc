@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshCoarsening.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Déraffinement d'un maillage cartésien.                                    */
+/* Coarsening of a Cartesian mesh.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,7 +56,7 @@ CartesianMeshCoarsening2(ICartesianMesh* m)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Retourne le max des uniqueId() des entités de \a group
+//! Returns the max of uniqueId() of entities in a group
 Int64 CartesianMeshCoarsening2::
 _getMaxUniqueId(const ItemGroup& group)
 {
@@ -92,10 +92,9 @@ _writeMeshSVG(const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Double la couche de mailles fantômes du maillage initial.
+ * \brief Doubles the ghost layer of the initial mesh.
  *
- * Cela permettra ensuite d'avoir la bonne valeur de couches de mailles
- * fantômes pour le maillage final grossier.
+ * This will then allow for the correct ghost layer value for the final coarse mesh.
  */
 void CartesianMeshCoarsening2::
 _doDoubleGhostLayers()
@@ -103,8 +102,8 @@ _doDoubleGhostLayers()
   IMesh* mesh = m_cartesian_mesh->mesh();
   IMeshModifier* mesh_modifier = mesh->modifier();
   IGhostLayerMng* gm = mesh->ghostLayerMng();
-  // Il faut au moins utiliser la version 3 pour pouvoir supporter
-  // plusieurs couches de mailles fantômes
+  // We must at least use version 3 to support
+  // multiple ghost layers
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
@@ -112,13 +111,13 @@ _doDoubleGhostLayers()
   gm->setNbGhostLayer(nb_ghost_layer * 2);
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
-  // Remet le nombre initial de couches de mailles fantômes
+  // Restores the initial number of ghost layers
   gm->setNbGhostLayer(nb_ghost_layer);
 
-  // Comme le nombre d'entités a été modifié, il faut recalculer les directions
+  // Since the number of entities has been modified, we must recalculate the directions
   m_cartesian_mesh->computeDirections();
 
-  // Écrit le nouveau maillage
+  // Writes the new mesh
   _writeMeshSVG("double_ghost");
 }
 
@@ -159,7 +158,7 @@ createCoarseCells()
 
   _writeMeshSVG("orig");
 
-  // Double la couche de mailles fantômes
+  // Doubles the ghost layer
   _doDoubleGhostLayers();
 
   if (is_verbose) {
@@ -181,10 +180,10 @@ createCoarseCells()
     }
   }
 
-  // Calcul l'offset pour la création des uniqueId().
-  // On prend comme offset le max des uniqueId() des faces et des mailles.
-  // A terme avec la numérotation cartésienne partout, on pourra déterminer
-  // directement cette valeur
+  // Calculate the offset for creating uniqueIds().
+  // We take the max of the uniqueIds() of faces and cells as the offset.
+  // Eventually, with Cartesian numbering everywhere, we will be able to determine
+  // this value directly
   Int64 max_cell_uid = _getMaxUniqueId(mesh->allCells());
   Int64 max_face_uid = _getMaxUniqueId(mesh->allFaces());
   const Int64 coarse_grid_cell_offset = 1 + pm->reduce(Parallel::ReduceMax, math::max(max_cell_uid, max_face_uid));
@@ -209,26 +208,26 @@ createCoarseCells()
 
   _recomputeMeshGenerationInfo();
 
-  // Affiche les statistiques du nouveau maillage
+  // Displays the statistics of the new mesh
   {
     MeshStats ms(traceMng(), mesh, mesh->parallelMng());
     ms.dumpStats();
   }
 
-  //! Créé le patch avec les mailles filles
+  //! Creates the patch with the child cells
   {
     CellGroup parent_cells = mesh->allLevelCells(0);
     m_cartesian_mesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
   }
 
-  // Recalcule les informations de synchronisation
-  // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées
-  // lors du raffinement mais comme on ne sais pas si on va faire du raffinement
-  // après il est préférable de calculer ces informations dans tous les cas.
+  // Recalculates the synchronization information
+  // This is not necessary for AMR because this information will be recalculated
+  // during refinement, but since we don't know if we will refine
+  // afterwards, it is better to calculate this information in all cases.
   mesh->computeSynchronizeInfos();
 
-  // Il faut recalculer les nouvelles directions après les modifications
-  // et l'ajout de patch.
+  // We must recalculate the new directions after the modifications
+  // and the addition of the patch.
   m_cartesian_mesh->computeDirections();
 
   _writeMeshSVG("coarse");
@@ -257,17 +256,17 @@ _createCoarseCells2D()
   CartesianGridDimension::CellUniqueIdComputer2D coarse_cell_uid_computer(coarse_grid_dim.getCellComputer2D(m_first_own_cell_unique_id_offset));
   CartesianGridDimension::FaceUniqueIdComputer2D coarse_face_uid_computer(coarse_grid_dim.getFaceComputer2D(m_first_own_cell_unique_id_offset));
 
-  // Pour les mailles et faces grossières, les noeuds existent déjà
-  // On ne peut donc pas utiliser la connectivité cartésienne de la grille grossière
-  // pour eux (on pourra le faire lorsque l'AMR par patch avec duplication sera active)
-  // En attendant on utilise la numérotation de la grille raffinée.
+  // For the coarse cells and faces, the nodes already exist
+  // Therefore, we cannot use the Cartesian connectivity of the coarse grid
+  // for them (we can do this when patch-based AMR with duplication is active)
+  // For now, we use the numbering of the refined grid.
 
-  // TODO: Calculer en avance le nombre de faces et de mailles et allouer en conséquence.
+  // TODO: Calculate the number of faces and cells in advance and allocate accordingly.
   UniqueArray<Int64> faces_infos;
   UniqueArray<Int64> cells_infos;
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
-  //! Liste de la première fille de chaque maille grossière
+  //! List of the first child of each coarse cell
   UniqueArray<Cell> first_child_cells;
 
   UniqueArray<Int64> refined_cells_lids;
@@ -280,11 +279,11 @@ _createCoarseCells2D()
     Int64x3 cell_xy = refined_cell_uid_computer.compute(cell_uid);
     const Int64 cell_x = cell_xy.x;
     const Int64 cell_y = cell_xy.y;
-    // Nécessaire pour le recalcul des mailles fantômes. On considère ces
-    // mailles comme si elles venaient juste d'être raffinées.
+    // Necessary for recalculating ghost cells. We consider these
+    // cells as if they were just refined.
     cell.mutableItemBase().addFlags(ItemFlags::II_JustRefined);
-    // Comme on déraffine par 2, ne prend que les mailles dont les coordoonnées
-    // topologiques sont paires
+    // Since we coarsen by 2, we only take cells whose topological coordinates
+    // are even
     if ((cell_x % 2) != 0 || (cell_y % 2) != 0)
       continue;
     if (is_verbose)
@@ -302,7 +301,7 @@ _createCoarseCells2D()
       info() << "CELLNodes uid=" << node_uids;
     std::array<Int64, 4> coarse_face_uids = coarse_face_uid_computer.computeForCell(coarse_cell_x, coarse_cell_y);
     const ItemTypeInfo* cell_type = cell.typeInfo();
-    // Ajoute les 4 faces
+    // Adds the 4 faces
     for (Int32 z = 0; z < 4; ++z) {
       ItemTypeInfo::LocalFace lface = cell_type->localFace(z);
       faces_infos.add(IT_Line2);
@@ -318,7 +317,7 @@ _createCoarseCells2D()
       faces_infos.add(node_uid1);
       ++nb_coarse_face;
     }
-    // Ajoute la maille
+    // Adds the cell
     {
       cells_infos.add(IT_Quad4);
       Int64 coarse_cell_uid = coarse_cell_uid_computer.compute(coarse_cell_x, coarse_cell_y);
@@ -331,16 +330,16 @@ _createCoarseCells2D()
       ++nb_coarse_cell;
       first_child_cells.add(cell);
     }
-    // A partir de la première sous-maille, on peut connaitre les 3 autres
-    // car elles sont respectivement à droite, en haut à droite et en haut.
+    // From the first sub-cell, we can know the other 3
+    // because they are respectively to the right, upper right, and upper.
     {
       std::array<Int32, 4> sub_cell_lids_container;
       ArrayView<Int32> sub_lids(sub_cell_lids_container);
       Cell cell1 = cdm_x[cell].next();
-      // Vérifie la validité des sous-mailles.
-      // Normalement il ne devrait pas y avoir de problèmes sauf si le
-      // nombre de mailles dans chaque direction du sous-domaine
-      // n'est pas un nombre pair.
+      // Checks the validity of the sub-cells.
+      // Normally there should be no problems unless the
+      // number of cells in each direction of the sub-domain
+      // is not an even number.
       if (cell1.null())
         ARCANE_FATAL("Bad right cell for cell {0}", ItemPrinter(cell));
       Cell cell2 = cdm_y[cell1].next();
@@ -353,9 +352,9 @@ _createCoarseCells2D()
       sub_lids[1] = cell1.localId();
       sub_lids[2] = cell2.localId();
       sub_lids[3] = cell3.localId();
-      // Il faudra donner un propriétaire aux faces.
-      // Ces nouvelles faces auront le même propriétaire que les faces raffinées
-      // auquelles elles correspondent
+      // We must assign an owner to the faces.
+      // These new faces will have the same owner as the refined faces
+      // they correspond to
       //info() << "CELL_NB_FACE=" << cell.nbFace() << " " << cell1.nbFace() << " " << cell2.nbFace() << " " << cell3.nbFace();
       coarse_faces_owner.add(cell.face(0).owner());
       coarse_faces_owner.add(cell1.face(1).owner());
@@ -366,13 +365,13 @@ _createCoarseCells2D()
     }
   }
 
-  // Construit les faces
+  // Builds the faces
   UniqueArray<Int32> faces_local_ids(nb_coarse_face);
   mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
 
-  // Construit les mailles
-  // Indique qu'on n'a pas le droit de construire à la volée les faces.
-  // Normalement elles ont toutes été ajoutées via addFaces();
+  // Builds the cells
+  // Indicates that we are not allowed to build the faces on the fly.
+  // Normally they have all been added via addFaces();
   UniqueArray<Int32> cells_local_ids(nb_coarse_cell);
   MeshModifierAddCellsArgs add_cells_args(nb_coarse_cell, cells_infos, cells_local_ids);
   add_cells_args.setAllowBuildFaces(false);
@@ -380,8 +379,8 @@ _createCoarseCells2D()
 
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Maintenant que les mailles grossières sont créées, il faut indiquer
-  // qu'elles sont parentes.
+  // Now that the coarse meshes are created, we must indicate
+  // that they are parent cells.
   using mesh::CellFamily;
   CellInfoListView cells(mesh->cellFamily());
   CellFamily* true_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(cell_family));
@@ -391,8 +390,8 @@ _createCoarseCells2D()
     Int32 coarse_cell_lid = cells_local_ids[i];
     Cell coarse_cell = cells[coarse_cell_lid];
     Cell first_child_cell = first_child_cells[i];
-    // A partir de la première sous-maille, on peut connaitre les 3 autres
-    // car elles sont respectivement à droite, en haut à droite et en haut.
+    // Starting from the first sub-mesh, we can know the other 3
+    // because they are respectively to the right, upper right, and upper.
     sub_cell_lids[0] = first_child_cell.localId();
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
     sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
@@ -409,7 +408,7 @@ _createCoarseCells2D()
     true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
   }
 
-  // Positionne les propriétaires des nouvelles mailles et faces
+  // Positions the owners of the new meshes and faces
   {
     IItemFamily* face_family = mesh->faceFamily();
     Int32 index = 0;
@@ -453,17 +452,17 @@ _createCoarseCells3D()
   CartesianGridDimension::CellUniqueIdComputer3D coarse_cell_uid_computer(coarse_grid_dim.getCellComputer3D(m_first_own_cell_unique_id_offset));
   CartesianGridDimension::FaceUniqueIdComputer3D coarse_face_uid_computer(coarse_grid_dim.getFaceComputer3D(m_first_own_cell_unique_id_offset));
 
-  // Pour les mailles et faces grossières, les noeuds existent déjà
-  // On ne peut donc pas utiliser la connectivité cartésienne de la grille grossière
-  // pour eux (on pourra le faire lorsque l'AMR par patch avec duplication sera active)
-  // En attendant on utilise la numérotation de la grille raffinée.
+  // For the coarse meshes and faces, the nodes already exist
+  // Therefore, we cannot use the Cartesian connectivity of the coarse grid
+  // for them (we can do that when AMR by patch with duplication is active)
+  // For now, we use the numbering of the refined grid.
 
-  // TODO: Calculer en avance le nombre de faces et de mailles et allouer en conséquence.
+  // TODO: Calculate the number of faces and meshes in advance and allocate accordingly.
   UniqueArray<Int64> faces_infos;
   UniqueArray<Int64> cells_infos;
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
-  //! Liste de la première fille de chaque maille grossière
+  //! List of the first child of each coarse mesh
   UniqueArray<Cell> first_child_cells;
 
   UniqueArray<Int64> refined_cells_lids;
@@ -475,9 +474,9 @@ _createCoarseCells3D()
   static constexpr Int32 const_cell_nb_sub_cell = 8;
   static constexpr Int32 const_face_nb_node = 4;
 
-  // Liste des uniqueId() des noeuds des faces créées
+  // List of uniqueId() of nodes of created faces
   SmallArray<Int64, const_face_nb_node> face_node_uids(const_face_nb_node);
-  // Liste ordonnée des noeuds des faces créées
+  // Ordered list of nodes of created faces
   SmallArray<Int64, const_face_nb_node> face_sorted_node_uids(const_face_nb_node);
   ENUMERATE_ (Cell, icell, mesh->allCells()) {
     Cell cell = *icell;
@@ -486,11 +485,11 @@ _createCoarseCells3D()
     const Int64 cell_x = cell_xyz.x;
     const Int64 cell_y = cell_xyz.y;
     const Int64 cell_z = cell_xyz.z;
-    // Nécessaire pour le recalcul des mailles fantômes. On considère ces
-    // mailles comme si elles venaient juste d'être raffinées.
+    // Necessary for ghost mesh recalculation. We consider these
+    // meshes as if they have just been refined.
     cell.mutableItemBase().addFlags(ItemFlags::II_JustRefined);
-    // Comme on déraffine par 2, ne prend que les mailles dont les coordoonnées
-    // topologiques sont paires
+    // Since we refine by 2, only take meshes whose topological coordinates
+    // are even
     if ((cell_x % 2) != 0 || (cell_y % 2) != 0 || (cell_z % 2) != 0)
       continue;
     if (is_verbose)
@@ -514,7 +513,7 @@ _createCoarseCells3D()
     std::array<Int64, const_cell_nb_face> coarse_face_uids = coarse_face_uid_computer.computeForCell(coarse_cell_x, coarse_cell_y, coarse_cell_z);
     const ItemTypeInfo* cell_type = cell.typeInfo();
 
-    // Ajoute les 6 faces
+    // Add the 6 faces
     for (Int32 z = 0; z < const_cell_nb_face; ++z) {
       ItemTypeInfo::LocalFace lface = cell_type->localFace(z);
       faces_infos.add(IT_Quad4);
@@ -528,7 +527,7 @@ _createCoarseCells3D()
       ++nb_coarse_face;
     }
 
-    // Ajoute la maille
+    // Add the mesh
     {
       cells_infos.add(IT_Hexaedron8);
       Int64 coarse_cell_uid = coarse_cell_uid_computer.compute(coarse_cell_x, coarse_cell_y, coarse_cell_z);
@@ -542,17 +541,17 @@ _createCoarseCells3D()
       first_child_cells.add(cell);
     }
 
-    // A partir de la première sous-maille, on peut connaitre les 7 autres
-    // car elles sont respectivement à droite, en haut à droite et en haut,
-    // au dessus, au dessus à droit, au dessus en haut à droit et .
+    // Starting from the first sub-mesh, we can know the other 7
+    // because they are respectively to the right, upper right, and upper,
+    // above, above right, above upper right and .
     {
       std::array<Int32, const_cell_nb_sub_cell> sub_cell_lids_container;
       ArrayView<Int32> sub_lids(sub_cell_lids_container);
       Cell cell1 = cdm_x[cell].next();
-      // Vérifie la validité des sous-mailles.
-      // Normalement il ne devrait pas y avoir de problèmes sauf si le
-      // nombre de mailles dans chaque direction du sous-domaine
-      // n'est pas un nombre pair.
+      // Checks the validity of the sub-meshes.
+      // Normally there should be no problems unless the
+      // number of meshes in each direction of the sub-domain
+      // is not an even number.
       if (cell1.null())
         ARCANE_FATAL("Bad right cell for cell {0}", ItemPrinter(cell));
       Cell cell2 = cdm_y[cell1].next();
@@ -584,9 +583,9 @@ _createCoarseCells3D()
       sub_lids[5] = cell5.localId();
       sub_lids[6] = cell6.localId();
       sub_lids[7] = cell7.localId();
-      // Il faudra donner un propriétaire aux faces.
-      // Ces nouvelles faces auront le même propriétaire que les faces raffinées
-      // auquelles elles correspondent
+      // We need to assign an owner to the faces.
+      // These new faces will have the same owner as the refined faces
+      // they correspond to
       //info() << "CELL_NB_FACE=" << cell.nbFace() << " " << cell1.nbFace() << " " << cell2.nbFace() << " " << cell3.nbFace();
       coarse_faces_owner.add(cell.face(0).owner());
       coarse_faces_owner.add(cell1.face(1).owner());
@@ -601,13 +600,13 @@ _createCoarseCells3D()
     }
   }
 
-  // Construit les faces
+  // Constructs the faces
   UniqueArray<Int32> faces_local_ids(nb_coarse_face);
   mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
 
-  // Construit les mailles
-  // Indique qu'on n'a pas le droit de construire à la volée les faces.
-  // Normalement elles ont toutes été ajoutées via addFaces();
+  // Constructs the meshes
+  // Indicates that we do not have the right to build faces on the fly.
+  // Normally they have all been added via addFaces();
   UniqueArray<Int32> cells_local_ids(nb_coarse_cell);
   MeshModifierAddCellsArgs add_cells_args(nb_coarse_cell, cells_infos, cells_local_ids);
   add_cells_args.setAllowBuildFaces(false);
@@ -615,8 +614,8 @@ _createCoarseCells3D()
 
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Maintenant que les mailles grossières sont créées, il faut indiquer
-  // qu'elles sont parentes.
+  // Now that the coarse meshes are created, we must indicate
+  // that they are parent cells.
   using mesh::CellFamily;
   CellInfoListView cells(mesh->cellFamily());
   CellFamily* true_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(cell_family));
@@ -626,8 +625,8 @@ _createCoarseCells3D()
     Int32 coarse_cell_lid = cells_local_ids[i];
     Cell coarse_cell = cells[coarse_cell_lid];
     Cell first_child_cell = first_child_cells[i];
-    // A partir de la première sous-maille, on peut connaitre les 3 autres
-    // car elles sont respectivement à droite, en haut à droite et en haut.
+    // Starting from the first sub-mesh, we can know the other 3
+    // because they are respectively to the right, upper right, and upper.
     sub_cell_lids[0] = first_child_cell.localId();
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
     sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
@@ -651,7 +650,7 @@ _createCoarseCells3D()
     true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
   }
 
-  // Positionne les propriétaires des nouvelles mailles et faces
+  // Positions the owners of the new meshes and faces
   {
     IItemFamily* face_family = mesh->faceFamily();
     Int32 index = 0;
@@ -673,7 +672,7 @@ _createCoarseCells3D()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recalcule les informations sur le nombre de mailles par direction.
+ * \brief Recalculates the information about the number of meshes per direction.
  */
 void CartesianMeshCoarsening2::
 _recomputeMeshGenerationInfo()
@@ -683,7 +682,7 @@ _recomputeMeshGenerationInfo()
   if (!cmgi)
     return;
 
-  // Coefficient de dé-raffinement
+  // Refinement coefficient
   const Int32 cf = 2;
 
   {
@@ -722,7 +721,7 @@ removeRefinedCells()
   if (is_verbose)
     info() << "CoarseCells=" << m_coarse_cells_uid;
 
-  // Supprime toutes les mailles raffinées ainsi que toutes les mailles fantômes
+  // Remove all refined meshes as well as all ghost meshes
   {
     std::unordered_set<Int64> coarse_cells_set;
     for (Int64 cell_uid : m_coarse_cells_uid)
@@ -740,17 +739,17 @@ removeRefinedCells()
     mesh_modifier->endUpdate();
   }
 
-  // Reconstruit les mailles fantômes
+  // Reconstruct ghost meshes
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
-  // Affiche les statistiques du nouveau maillage
+  // Display statistics of the new mesh
   {
     MeshStats ms(traceMng(), mesh, mesh->parallelMng());
     ms.dumpStats();
   }
 
-  // Il faut recalculer les nouvelles directions
+  // We must recalculate the new directions
   m_cartesian_mesh->computeDirections();
 }
 

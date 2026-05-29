@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshAMRMng.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de l'AMR pour un maillage cartésien.                         */
+/* AMR Manager for a Cartesian Mesh.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ coarseZone(const AMRZonePosition& position) const
 void CartesianMeshAMRMng::
 beginAdaptMesh(Int32 max_nb_levels, Int32 level_to_refine_first)
 {
-  // On calcule le nombre de mailles de recouvrements pour chaque level.
+  // We calculate the number of overlap cells for each level.
   m_cmesh->_internalApi()->cartesianPatchGroup().beginAdaptMesh(max_nb_levels, level_to_refine_first);
 }
 
@@ -183,17 +183,17 @@ void CartesianMeshAMRMng::
 createSubLevel() const
 {
   auto amr_type = m_cmesh->mesh()->meshKind().meshAMRKind();
-  if(amr_type == eMeshAMRKind::Cell) {
+  if (amr_type == eMeshAMRKind::Cell) {
     Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cmesh);
     coarser->createCoarseCells();
   }
-  else if(amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+  else if (amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_cmesh->_internalApi()->cartesianPatchGroup().updateLevelsAndAddGroundPatch();
   }
-  else if(amr_type == eMeshAMRKind::Patch) {
+  else if (amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
-  else{
+  else {
     ARCANE_FATAL("AMR is not enabled");
   }
   m_cmesh->_internalApi()->saveInfosInProperties();

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshNumberingMng.cc                                (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
-/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
+/* Cartesian mesh numbering manager. The numbering used here is the same as  */
+/* that used in V2 renumbering.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

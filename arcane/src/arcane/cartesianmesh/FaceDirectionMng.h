@@ -7,17 +7,17 @@
 /*---------------------------------------------------------------------------*/
 /* FaceDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Infos sur les faces d'une direction X Y ou Z d'un maillage structuré.     */
+/* Info on the faces of a structure mesh in X, Y, or Z direction.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_FACEDIRECTIONMNG_H
 #define ARCANE_CARTESIANMESH_FACEDIRECTIONMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/ItemEnumerator.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
@@ -32,9 +32,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Infos sur maille avant et après une face suivant une direction.
+ * \brief Info on the mesh before and after a face along a direction.
  *
- * Les instances de cette classe sont temporaires et construites via
+ * Instances of this class are temporary and constructed via
  * FaceDirectionMng::face().
  */
 class ARCANE_CARTESIANMESH_EXPORT DirFace
@@ -43,17 +43,20 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 
  private:
 
-  DirFace(Cell n,Cell p) : m_previous(p), m_next(n){}
+  DirFace(Cell n, Cell p)
+  : m_previous(p)
+  , m_next(n)
+  {}
 
  public:
 
- //! Maille avant
+  //! Previous mesh
   Cell previousCell() const { return m_previous; }
-  //! Maille avant
+  //! Previous mesh
   CellLocalId previousCellId() const { return m_previous.itemLocalId(); }
-  //! Maille après
+  //! Next mesh
   Cell nextCell() const { return m_next; }
-  //! Maille après
+  //! Next mesh
   CellLocalId nextCellId() const { return m_next.itemLocalId(); }
 
  private:
@@ -66,9 +69,9 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Infos sur maille avant et après une face suivant une direction.
+ * \brief Info on the mesh before and after a face along a direction.
  *
- * Les instances de cette classe sont temporaires et construites via
+ * Instances of this class are temporary and constructed via
  * FaceDirectionMng::dirFaceId().
  */
 class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
@@ -84,13 +87,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
 
  public:
 
-  //! Maille avant
+  //! Previous mesh
   ARCCORE_HOST_DEVICE CellLocalId previousCell() const { return m_previous; }
-  //! Maille avant
+  //! Previous mesh
   ARCCORE_HOST_DEVICE CellLocalId previousCellId() const { return m_previous; }
-  //! Maille après
+  //! Next mesh
   ARCCORE_HOST_DEVICE CellLocalId nextCell() const { return m_next; }
-  //! Maille après
+  //! Next mesh
   ARCCORE_HOST_DEVICE CellLocalId nextCellId() const { return m_next; }
 
  private:
@@ -103,8 +106,8 @@ class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Infos sur les face d'une direction spécifique X,Y ou Z
- * d'un maillage structuré.
+ * \brief Info on the faces of a specific direction X, Y, or Z
+ * of a structured mesh.
  */
 class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 {
@@ -119,38 +122,38 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
  public:
 
   /*!
-   * \brief Créé une instance vide.
+   * \brief Creates an empty instance.
    *
-   * L'instance n'est pas valide tant que _internalInit() n'a pas été appelé.
+   * The instance is not valid until _internalInit() has been called.
    */
   FaceDirectionMng();
 
  public:
 
-  //! Face direction correspondant à la face \a f.
+  //! Direction face corresponding to face \a f.
   DirFace face(Face f) const
   {
     return _face(f.localId());
   }
-  //! Face direction correspondant à la face \a f.
+  //! Direction face corresponding to face \a f.
   DirFace face(FaceLocalId f) const
   {
     return _face(f.localId());
   }
 
-  //! Face direction correspondant à la face \a f.
+  //! Direction face corresponding to face \a f.
   ARCCORE_HOST_DEVICE DirFaceLocalId dirFaceId(FaceLocalId f) const
   {
     return _dirFaceId(f);
   }
 
-  //! Groupe de toutes les faces dans la direction.
+  //! Group of all faces in the direction.
   FaceGroup allFaces() const;
 
   /*!
-   * \brief Groupe de toutes les faces de recouvrement dans la direction.
+   * \brief Group of all overlap faces in the direction.
    *
-   * Ce sont toutes les faces qui ont deux mailles de recouvrement autour.
+   * These are all faces that have two overlap meshes around them.
    *
    *   0   1  2  3  4
    * ┌───┬──┬──┬──┬──┐
@@ -160,69 +163,68 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 et 2 : Mailles de recouvrements (overlapCells)
-   * 3 : Mailles externes (outerCells)
-   * 4 : Mailles internes (innerCells)
+   * 1 and 2 : Overlap meshes (overlapCells)
+   * 3 : Outer meshes (outerCells)
+   * 4 : Inner meshes (innerCells)
    *
-   * La couche de mailles de recouvrements désigne la couche de mailles de même
-   * niveau autour du patch. Ces mailles peuvent appartenir à un ou plusieurs
-   * patchs.
+   * The layer of overlap meshes refers to the layer of meshes of the same
+   * level around the patch. These meshes may belong to one or more
+   * patches.
    */
   FaceGroup overlapFaces() const;
 
   /*!
-   * \brief Groupe de toutes les faces du patch dans la direction.
+   * \brief Group of all faces within the patch in the direction.
    *
-   * Ce sont toutes les faces qui n'ont pas deux mailles de recouvrement.
-   * (`innerFaces() + outerFaces()` ou simplement `!overlapFaces()`)
+   * These are all faces that do not have two overlap meshes.
+   * (`innerFaces() + outerFaces()` or simply `!overlapFaces()`)
    *
-   * \warning Les faces au bord du domaine (ayant donc une seule
-   * maille "outer") sont incluses dans ce groupe. Il ne faut donc pas supposer
-   * qu'il y a deux mailles autour de chaque face de ce groupe (pour ça, il
-   * faut rester avec le groupe innerFaces()).
+   * \warning Faces at the domain boundary (thus having only one
+   * "outer" mesh) are included in this group. Therefore, one must not assume
+   * that there are two meshes around every face in this group (for that,
+   * one must stick with the innerFaces() group).
    */
   FaceGroup inPatchFaces() const;
 
   /*!
-   * \brief Groupe de toutes les faces internes dans la direction.
+   * \brief Group of all internal faces in the direction.
    *
-   * Une face est considérée comme interne si sa maille
-   * devant et derrière n'est pas nulle et n'est pas une maille de
-   * recouvrement.
+   * A face is considered internal if its mesh
+   * in front and behind is not null and is not an overlap mesh.
    */
   FaceGroup innerFaces() const;
 
   /*!
-   * \brief Groupe de toutes les faces externes dans la direction.
+   * \brief Group of all external faces in the direction.
    *
-   * Une face est considérée comme externe si sa maille
-   * devant ou derrière est de recouvrement ou est nulle (si l'on est au bord
-   * du domaine ou s'il n'y a pas de couches de mailles de recouvrements).
+   * A face is considered external if its mesh
+   * in front or behind is an overlap mesh or is null (if at the domain
+   * boundary or if there are no layers of overlap meshes).
    *
-   * \note Les faces entre patchs ne sont pas dupliquées. Donc certaines faces
-   * de ce groupe peuvent être aussi dans un outerFaces() d'un autre patch.
+   * \note Faces between patches are not duplicated. Therefore, some faces
+   * in this group may also be in an outerFaces() of another patch.
    */
   FaceGroup outerFaces() const;
 
-  //! Face direction correspondant à la face \a f.
+  //! Direction face corresponding to face \a f.
   DirFace operator[](Face f) const
   {
     return _face(f.localId());
   }
 
-  //! Face direction correspondant à la face \a f.
+  //! Direction face corresponding to face \a f.
   DirFace operator[](FaceLocalId f) const
   {
     return _face(f.localId());
   }
 
-  //! Face direction correspondant à l'itérateur de la face \a iface
+  //! Direction face corresponding to the face iterator \a iface
   DirFace operator[](FaceEnumerator iface) const
   {
     return _face(iface.itemLocalId());
   }
 
-  //! Valeur de la direction
+  //! Direction value
   eMeshDirection direction() const
   {
     return m_direction;
@@ -230,14 +232,14 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
  private:
 
-  //! Face direction correspondant à la face de numéro local \a local_id
+  //! Direction face corresponding to local face number \a local_id
   DirFace _face(Int32 local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
     return DirFace(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
   }
 
-  //! Face direction correspondant à la face de numéro local \a local_id
+  //! Direction face corresponding to local face number \a local_id
   ARCCORE_HOST_DEVICE DirFaceLocalId _dirFaceId(FaceLocalId local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
@@ -248,9 +250,9 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
   /*!
    * \internal
-   * \brief Calcule les informations sur les faces associées aux mailles de
-   * la direction \a cell_dm.
-   * Suppose que _internalInit() a été appelé.
+   * \brief Calculates the information on faces associated with the meshes
+   * in the direction \a cell_dm.
+   * Assumes that _internalInit() has been called.
    */
   void _internalComputeInfos(const CellDirectionMng& cell_dm,
                              const VariableCellReal3& cells_center,
@@ -260,20 +262,20 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
   /*!
    * \internal
-   * Initialise l'instance.
+   * Initializes the instance.
    */
   void _internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index);
 
   /*!
    * \internal
-   * Détruit les ressources associées à l'instance.
+   * Destroys the resources associated with the instance.
    */
   void _internalDestroy();
 
   /*!
-   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   * \brief Resizes the container holding the \a ItemDirectionInfo.
    *
-   * Cela invalide les instances courantes de FaceDirectionMng.
+   * This invalidates current instances of FaceDirectionMng.
    */
   void _internalResizeInfos(Int32 new_size);
 
@@ -299,5 +301,4 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
