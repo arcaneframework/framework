@@ -66,17 +66,17 @@ class HybridParallelMngContainer
 : public ParallelMngContainerBase
 {
  public:
-  HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
+
+  HybridParallelMngContainer(IApplication* app, Int32 nb_local_rank,
                              MP::Communicator mpi_comm, MP::Communicator mpi_machine_comm,
                              IParallelMngContainerFactory* factory,
-                             Parallel::IStat* stat,MpiLock* mpi_lock);
+                             Parallel::IStat* stat, MpiLock* mpi_lock);
   ~HybridParallelMngContainer() override;
-
 
  public:
 
   void build();
-  Ref<IParallelMng> _createParallelMng(Int32 local_rank,ITraceMng* tm) override;
+  Ref<IParallelMng> _createParallelMng(Int32 local_rank, ITraceMng* tm) override;
 
  public:
 
@@ -110,10 +110,10 @@ class HybridParallelMngContainer
 /*---------------------------------------------------------------------------*/
 
 HybridParallelMngContainer::
-HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
+HybridParallelMngContainer(IApplication* app, Int32 nb_local_rank,
                            MP::Communicator mpi_comm, MP::Communicator mpi_machine_comm,
                            IParallelMngContainerFactory* factory,
-                           Parallel::IStat* stat,MpiLock* mpi_lock)
+                           Parallel::IStat* stat, MpiLock* mpi_lock)
 : m_application(app)
 , m_stat(stat)
 , m_thread_mng(new SharedMemoryThreadMng())
@@ -174,14 +174,14 @@ _setMPICommunicator()
 {
   MPI_Comm comm = static_cast<MPI_Comm>(m_mpi_communicator);
 
-  if (comm==MPI_COMM_NULL)
-    ARCANE_THROW(ArgumentException,"Null MPI Communicator");
+  if (comm == MPI_COMM_NULL)
+    ARCANE_THROW(ArgumentException, "Null MPI Communicator");
   m_mpi_communicator = comm;
 
   int rank = 0;
-  MPI_Comm_rank(m_mpi_communicator,&rank);
+  MPI_Comm_rank(m_mpi_communicator, &rank);
   int size = 0;
-  MPI_Comm_size(m_mpi_communicator,&size);
+  MPI_Comm_size(m_mpi_communicator, &size);
 
   m_mpi_comm_rank = rank;
   m_mpi_comm_size = size;
@@ -191,11 +191,11 @@ _setMPICommunicator()
 /*---------------------------------------------------------------------------*/
 
 Ref<IParallelMng> HybridParallelMngContainer::
-_createParallelMng(Int32 local_rank,ITraceMng* tm)
+_createParallelMng(Int32 local_rank, ITraceMng* tm)
 {
-  if (local_rank<0 || local_rank>=m_local_nb_rank)
-    ARCANE_THROW(ArgumentException,"Bad value '{0}' for local_rank (max={1})",
-                 local_rank,m_local_nb_rank);
+  if (local_rank < 0 || local_rank >= m_local_nb_rank)
+    ARCANE_THROW(ArgumentException, "Bad value '{0}' for local_rank (max={1})",
+                 local_rank, m_local_nb_rank);
 
   // This method is not reentrant.
   Mutex::ScopedLock sl(m_internal_create_mutex);
@@ -254,22 +254,31 @@ class HybridParallelMngContainerFactory
 , public IParallelMngContainerFactory
 {
  public:
+
   HybridParallelMngContainerFactory(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_application(sbi.application()){}
+  : AbstractService(sbi)
+  , m_application(sbi.application())
+  {}
+
  public:
+
   Ref<IParallelMngContainer>
   _createParallelMngBuilder(Int32 nb_rank, MP::Communicator mpi_communicator,
                             MP::Communicator mpi_machine_communicator) override
   {
     auto x = new HybridParallelMngContainer(m_application, nb_rank, mpi_communicator,
                                             mpi_machine_communicator,
-                                            this,m_stat,m_mpi_lock);
+                                            this, m_stat, m_mpi_lock);
     x->build();
     return makeRef<IParallelMngContainer>(x);
   }
+
  private:
+
   IApplication* m_application;
+
  public:
+
   MpiLock* m_mpi_lock = nullptr;
   Parallel::IStat* m_stat = nullptr;
 };
@@ -278,7 +287,7 @@ class HybridParallelMngContainerFactory
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(HybridParallelMngContainerFactory,
-                        ServiceProperty("HybridParallelMngContainerFactory",ST_Application),
+                        ServiceProperty("HybridParallelMngContainerFactory", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelMngContainerFactory));
 
 /*---------------------------------------------------------------------------*/
@@ -311,7 +320,7 @@ class HybridParallelSuperMng
   MP::Communicator communicator() const override { return m_communicator; }
   Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) override;
   void tryAbort() override;
-  bool isMasterIO() const override { return commRank()==0; }
+  bool isMasterIO() const override { return commRank() == 0; }
   Integer masterIORank() const override { return 0; }
   Integer nbLocalSubDomain() override { return m_container->m_local_nb_rank; }
   void barrier() override;
@@ -390,7 +399,7 @@ build()
   if (!arcaneHasThread())
     ARCANE_FATAL("Can not create HybridParallelSuperMng because threads are disabled");
 
-  Request::setNullRequest(Request(0,nullptr,MPI_REQUEST_NULL));
+  Request::setNullRequest(Request(0, nullptr, MPI_REQUEST_NULL));
   Communicator::setNullCommunicator(Communicator(MPI_COMM_NULL));
 
   int rank, size;
@@ -417,21 +426,21 @@ build()
   int thread_provided = 0;
 
   Real start_time = platform::getRealTime();
-  arcaneInitializeMPI(argc,argv,thread_wanted);
+  arcaneInitializeMPI(argc, argv, thread_wanted);
   Real end_time = platform::getRealTime();
   MPI_Query_thread(&thread_provided);
 
   if (thread_provided < MPI_THREAD_MULTIPLE) {
-    if (thread_provided>=MPI_THREAD_SERIALIZED)
+    if (thread_provided >= MPI_THREAD_SERIALIZED)
       need_serialize = true;
-    else{
+    else {
       // The required thread level is not available.
       // Launch a fatal error but only on a single processor.
       int my_rank = 0;
-      MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
-      if (my_rank!=0)
+      MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+      if (my_rank != 0)
         ARCANE_FATAL("MPI thread level provided!=wanted ({0}!={1})",
-                     thread_provided,thread_wanted);
+                     thread_provided, thread_wanted);
     }
   }
 
@@ -441,10 +450,10 @@ build()
   if (need_serialize)
     m_mpi_lock = new MpiLock();
 
-  MPI_Comm_dup(MPI_COMM_WORLD,&m_mpi_communicator);
+  MPI_Comm_dup(MPI_COMM_WORLD, &m_mpi_communicator);
   m_communicator = Communicator(m_mpi_communicator);
-  MPI_Comm_rank(m_mpi_communicator,&rank);
-  MPI_Comm_size(m_mpi_communicator,&size);
+  MPI_Comm_rank(m_mpi_communicator, &rank);
+  MPI_Comm_size(m_mpi_communicator, &size);
 
   m_mpi_comm_rank = rank;
   m_mpi_comm_size = size;
@@ -458,16 +467,16 @@ build()
   m_error_handler.registerHandler(m_mpi_communicator);
 
   Integer n = app->applicationBuildInfo().nbSharedMemorySubDomain();
-  if (n==0)
+  if (n == 0)
     ARCANE_FATAL("Number of shared memory sub-domains is not defined");
   m_local_nb_rank = n;
 
-  if (rank==0){
+  if (rank == 0) {
     ITraceMng* tm = app->traceMng();
     tm->info() << "MPI has non blocking collective";
     tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
     tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
-    tm->info() << "MPI: init_time (seconds)=" << (end_time-start_time);
+    tm->info() << "MPI: init_time (seconds)=" << (end_time - start_time);
   }
 
   /*cout << "ThreadSuperParallelMng: nb_sub_domain=" << m_local_nb_rank
@@ -477,13 +486,13 @@ build()
 
   ITraceMng* tm = app->traceMng();
   m_datatype_list = new MpiDatatypeList(false);
-  auto* adapter = new MpiAdapter(tm,m_stat->toArccoreStat(),m_communicator,nullptr);
+  auto* adapter = new MpiAdapter(tm, m_stat->toArccoreStat(), m_communicator, nullptr);
   m_mpi_adapter = adapter;
-  auto c = createBuiltInDispatcher<Byte>(tm,nullptr,m_mpi_adapter,m_datatype_list);
-  auto i32 = createBuiltInDispatcher<Int32>(tm,nullptr,m_mpi_adapter,m_datatype_list);
-  auto i64 = createBuiltInDispatcher<Int64>(tm,nullptr,m_mpi_adapter,m_datatype_list);
-  auto r = createBuiltInDispatcher<Real>(tm,nullptr,m_mpi_adapter,m_datatype_list);
-  _setDispatchers(c,i32,i64,r);
+  auto c = createBuiltInDispatcher<Byte>(tm, nullptr, m_mpi_adapter, m_datatype_list);
+  auto i32 = createBuiltInDispatcher<Int32>(tm, nullptr, m_mpi_adapter, m_datatype_list);
+  auto i64 = createBuiltInDispatcher<Int64>(tm, nullptr, m_mpi_adapter, m_datatype_list);
+  auto r = createBuiltInDispatcher<Real>(tm, nullptr, m_mpi_adapter, m_datatype_list);
+  _setDispatchers(c, i32, i64, r);
 
   ServiceBuilder<IParallelMngContainerFactory> sb(m_application);
   String service_name = "HybridParallelMngContainerFactory";
@@ -505,23 +514,23 @@ build()
 Ref<IParallelMng> HybridParallelSuperMng::
 internalCreateWorldParallelMng(Int32 local_rank)
 {
-  if (local_rank<0 || local_rank>=m_local_nb_rank)
-    throw ArgumentException(A_FUNCINFO,"Bad value for local_rank");
-  
+  if (local_rank < 0 || local_rank >= m_local_nb_rank)
+    throw ArgumentException(A_FUNCINFO, "Bad value for local_rank");
+
   Int32 current_global_rank = local_rank + m_local_nb_rank * commRank();
   ITraceMng* app_tm = m_application->traceMng();
   app_tm->info() << "Create SharedMemoryParallelMng rank=" << current_global_rank;
 
   ITraceMng* tm = nullptr;
-  if (local_rank==0){
+  if (local_rank == 0) {
     // The first created subdomain uses the default traceMng().
     tm = app_tm;
   }
-  else{
-    tm = m_application->createAndInitializeTraceMng(app_tm,String::fromNumber(current_global_rank));
+  else {
+    tm = m_application->createAndInitializeTraceMng(app_tm, String::fromNumber(current_global_rank));
   }
 
-  Ref<IParallelMng> pm = m_container->_createParallelMng(local_rank,tm);
+  Ref<IParallelMng> pm = m_container->_createParallelMng(local_rank, tm);
   return pm;
 }
 
@@ -532,7 +541,7 @@ void HybridParallelSuperMng::
 tryAbort()
 {
   m_application->traceMng()->flush();
-  MPI_Abort(m_communicator,2);
+  MPI_Abort(m_communicator, 2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -548,12 +557,12 @@ barrier()
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(HybridParallelSuperMng,
-                        ServiceProperty("HybridParallelSuperMng",ST_Application),
+                        ServiceProperty("HybridParallelSuperMng", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
 // Old name
 ARCANE_REGISTER_SERVICE(HybridParallelSuperMng,
-                        ServiceProperty("MpiThreadParallelSuperMng",ST_Application),
+                        ServiceProperty("MpiThreadParallelSuperMng", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
 /*---------------------------------------------------------------------------*/
@@ -572,10 +581,11 @@ class MpiSharedMemoryParallelSuperMng
 : public SharedMemoryParallelSuperMng
 {
  public:
+
   explicit MpiSharedMemoryParallelSuperMng(const ServiceBuildInfo& sbi)
-  : SharedMemoryParallelSuperMng(sbi,Parallel::Communicator(MPI_COMM_WORLD),true)
+  : SharedMemoryParallelSuperMng(sbi, Parallel::Communicator(MPI_COMM_WORLD), true)
   {
-    Request::setNullRequest(Request(0,nullptr,MPI_REQUEST_NULL));
+    Request::setNullRequest(Request(0, nullptr, MPI_REQUEST_NULL));
     Communicator::setNullCommunicator(Communicator(MPI_COMM_NULL));
   }
 
@@ -594,7 +604,7 @@ class MpiSharedMemoryParallelSuperMng
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(MpiSharedMemoryParallelSuperMng,
-                        ServiceProperty("MpiSharedMemoryParallelSuperMng",ST_Application),
+                        ServiceProperty("MpiSharedMemoryParallelSuperMng", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
 /*---------------------------------------------------------------------------*/

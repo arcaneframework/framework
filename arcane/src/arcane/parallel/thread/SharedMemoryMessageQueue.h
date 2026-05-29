@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,8 +19,8 @@
 
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/Parallel.h"
 
 #include <algorithm>
 
@@ -54,21 +54,24 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 
  public:
 
-  SharedMemoryMessageQueue() : m_nb_thread(0), m_atomic_request_id(0){}
+  SharedMemoryMessageQueue()
+  : m_nb_thread(0)
+  , m_atomic_request_id(0)
+  {}
   ~SharedMemoryMessageQueue() override;
 
  public:
 
   void init(Int32 nb_thread) override;
   void waitAll(ArrayView<Request> requests) override;
-  void waitSome(Int32 rank,ArrayView<Request> requests,ArrayView<bool> requests_done,
+  void waitSome(Int32 rank, ArrayView<Request> requests, ArrayView<bool> requests_done,
                 bool is_non_blockign) override;
-  void setTraceMng(Int32 rank,ITraceMng* tm) override;
+  void setTraceMng(Int32 rank, ITraceMng* tm) override;
 
  public:
 
-  Request addReceive(const PointToPointMessageInfo& message,ReceiveBufferInfo buf) override;
-  Request addSend(const PointToPointMessageInfo& message,SendBufferInfo buf) override;
+  Request addReceive(const PointToPointMessageInfo& message, ReceiveBufferInfo buf) override;
+  Request addSend(const PointToPointMessageInfo& message, SendBufferInfo buf) override;
 
  public:
 
@@ -107,13 +110,17 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
 {
  public:
+
   class SortFunctor
   {
    public:
-    explicit SortFunctor(Int32 nb_thread) : m_nb_thread(nb_thread){}
-    bool operator()(SharedMemoryMessageRequest* r1,SharedMemoryMessageRequest* r2) const
+
+    explicit SortFunctor(Int32 nb_thread)
+    : m_nb_thread(nb_thread)
+    {}
+    bool operator()(SharedMemoryMessageRequest* r1, SharedMemoryMessageRequest* r2) const
     {
-      if (!r1){
+      if (!r1) {
         if (!r2)
           return true;
         else
@@ -125,13 +132,13 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
         return true;
       if (!r1->isRecv() && r2->isRecv())
         return false;
-      Int32 i1 = _getQueueIndex(r1->orig(),r1->dest());
-      Int32 i2 = _getQueueIndex(r2->orig(),r2->dest());
-      if (i1==i2)
+      Int32 i1 = _getQueueIndex(r1->orig(), r1->dest());
+      Int32 i2 = _getQueueIndex(r2->orig(), r2->dest());
+      if (i1 == i2)
         return r1->id() < r2->id();
       return i1 < i2;
     }
-    Int32 _getQueueIndex(MessageRank thread1,MessageRank thread2) const
+    Int32 _getQueueIndex(MessageRank thread1, MessageRank thread2) const
     {
       if (thread1.isNull())
         ARCANE_FATAL("Null rank for thread1");
@@ -142,24 +149,40 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
     }
     Int32 m_nb_thread;
   };
+
  public:
+
   using SubQueue = SharedMemoryMessageQueue::SubQueue;
+
  public:
+
   //! Create a send request
-  SharedMemoryMessageRequest(SubQueue* queue,Int64 request_id,MessageRank orig,
-                             MessageRank dest,MessageTag tag,ReceiveBufferInfo buf)
-  : m_queue(queue), m_request_id(request_id), m_is_recv(true)
-  , m_orig(orig), m_dest(dest), m_tag(tag), m_receive_buffer_info(buf)
+  SharedMemoryMessageRequest(SubQueue* queue, Int64 request_id, MessageRank orig,
+                             MessageRank dest, MessageTag tag, ReceiveBufferInfo buf)
+  : m_queue(queue)
+  , m_request_id(request_id)
+  , m_is_recv(true)
+  , m_orig(orig)
+  , m_dest(dest)
+  , m_tag(tag)
+  , m_receive_buffer_info(buf)
   {
   }
   //! Create a receive request
-  SharedMemoryMessageRequest(SubQueue* queue,Int64 request_id,MessageRank orig,
-                             MessageRank dest,MessageTag tag,SendBufferInfo buf)
-  : m_queue(queue), m_request_id(request_id), m_is_recv(false)
-  , m_orig(orig), m_dest(dest), m_tag(tag), m_send_buffer_info(buf)
+  SharedMemoryMessageRequest(SubQueue* queue, Int64 request_id, MessageRank orig,
+                             MessageRank dest, MessageTag tag, SendBufferInfo buf)
+  : m_queue(queue)
+  , m_request_id(request_id)
+  , m_is_recv(false)
+  , m_orig(orig)
+  , m_dest(dest)
+  , m_tag(tag)
+  , m_send_buffer_info(buf)
   {
   }
+
  public:
+
   MessageRank orig() { return m_orig; }
   MessageRank dest() { return m_dest; }
   MessageTag tag() { return m_tag; }
@@ -185,6 +208,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
   void setMatchingSendRequest(SharedMemoryMessageRequest* r) { m_matching_send_request = r; }
 
  private:
+
   SubQueue* m_queue;
   Int64 m_request_id;
   bool m_is_recv;

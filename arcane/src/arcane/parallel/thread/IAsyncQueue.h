@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,19 +32,24 @@ namespace Arcane::MessagePassing
 class IAsyncQueue
 {
  public:
+
   virtual ~IAsyncQueue() = default;
+
  public:
+
   //! Adds \a v to the queue.
-  virtual void push(void* v) =0;
+  virtual void push(void* v) = 0;
   /*!
    * \brief Retrieves the first value from the queue and blocks if there are none.
    */
-  virtual void* pop() =0;
+  virtual void* pop() = 0;
   /*!
    * \brief Retrieves the first value if available. Returns `nullptr` otherwise.
    */
-  virtual void* tryPop() =0;
+  virtual void* tryPop() = 0;
+
  public:
+
   static IAsyncQueue* createQueue();
 };
 

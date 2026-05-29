@@ -15,7 +15,7 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/impl/ArcaneMain.h"
-#include "arcane/ApplicationBuildInfo.h"
+#include "arcane/core/ApplicationBuildInfo.h"
 
 #include <iostream>
 
@@ -44,7 +44,7 @@ arcaneIsCudaAwareMPI()
   // to indicate that MPIX_Query_cuda_support() is available.
 #if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_CUDA_AWARE_SUPPORT) || defined(MPIX_GPU_SUPPORT_CUDA)
-  is_aware =  (MPIX_Query_cuda_support()==1);
+  is_aware = (MPIX_Query_cuda_support() == 1);
 #endif
 #endif
   return is_aware;
@@ -61,18 +61,18 @@ arcaneIsHipAwareMPI()
 #if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_GPU_SUPPORT_HIP)
   // CRAY MPICH
-#  if defined(CRAY_MPICH_VERSION)
+#if defined(CRAY_MPICH_VERSION)
   int is_supported = 0;
-  MPIX_GPU_query_support(MPIX_GPU_SUPPORT_HIP,&is_supported);
-  is_aware = (is_supported!=0);
-#  else
-  is_aware =  (MPIX_Query_hip_support()==1);
-#  endif
+  MPIX_GPU_query_support(MPIX_GPU_SUPPORT_HIP, &is_supported);
+  is_aware = (is_supported != 0);
+#else
+  is_aware = (MPIX_Query_hip_support() == 1);
+#endif
 #endif
 
   // OpenMPI:
 #if defined(MPIX_ROCM_AWARE_SUPPORT)
-  is_aware =  (MPIX_Query_rocm_support()==1);
+  is_aware = (MPIX_Query_rocm_support() == 1);
 #endif
 #endif
   return is_aware;
@@ -102,12 +102,12 @@ class MpiAutoInit
 
  public:
 
-  void initialize(int* argc,char*** argv,int wanted_thread_level)
+  void initialize(int* argc, char*** argv, int wanted_thread_level)
   {
     int is_init = 0;
     MPI_Initialized(&is_init);
 
-    if (is_init!=0)
+    if (is_init != 0)
       return;
 
     int thread_provided = 0;
@@ -117,7 +117,7 @@ class MpiAutoInit
 
   void finalize()
   {
-    if (m_need_finalize){
+    if (m_need_finalize) {
       MPI_Finalize();
       m_need_finalize = false;
     }
@@ -135,6 +135,7 @@ class AutoDetecterMPI
 : public IApplicationBuildInfoVisitor
 {
  public:
+
   void visit(ApplicationBuildInfo& app_build_info) override;
 };
 
@@ -157,7 +158,7 @@ visit(ApplicationBuildInfo& app_build_info)
 {
   String message_passing_service = app_build_info.messagePassingService();
   bool need_init = message_passing_service != "SequentialParallelSuperMng";
-  bool has_shared_memory_message_passing = app_build_info.nbSharedMemorySubDomain()>0;
+  bool has_shared_memory_message_passing = app_build_info.nbSharedMemorySubDomain() > 0;
 
   // If MPI has not been initialized, we do it here.
   // We choose the thread level based on the number of
@@ -170,26 +171,26 @@ visit(ApplicationBuildInfo& app_build_info)
   int comm_size = 0;
 
   // We do not initialize if the requested service is 'Sequential'.
-  if (need_init){
+  if (need_init) {
     // TODO: use the correct arguments.
     int* argc = nullptr;
     char*** argv = nullptr;
-    arcaneInitializeMPI(argc,argv,thread_wanted);
+    arcaneInitializeMPI(argc, argv, thread_wanted);
 
-    MPI_Comm_size(MPI_COMM_WORLD,&comm_size);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
   }
 
   // Sets the default exchange service.
   // Note that this will not be used if the user
   // has specified a service themselves
   message_passing_service = "Sequential";
-  if (comm_size>1){
+  if (comm_size > 1) {
     if (has_shared_memory_message_passing)
       message_passing_service = "Hybrid";
     else
       message_passing_service = "Mpi";
   }
-  else{
+  else {
     if (has_shared_memory_message_passing)
       message_passing_service = "MpiSharedMemory";
     else
@@ -205,10 +206,10 @@ visit(ApplicationBuildInfo& app_build_info)
 
 namespace
 {
-MpiAutoInit global_mpi_auto_init;
-AutoDetecterMPI global_autodetecter_mpi;
-bool global_already_added = false;
-}
+  MpiAutoInit global_mpi_auto_init;
+  AutoDetecterMPI global_autodetecter_mpi;
+  bool global_already_added = false;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -222,9 +223,9 @@ arcaneAutoDetectMessagePassingServiceMPI()
 }
 
 extern "C++" ARCANE_MPI_EXPORT void
-arcaneInitializeMPI(int* argc,char*** argv,int wanted_thread_level)
+arcaneInitializeMPI(int* argc, char*** argv, int wanted_thread_level)
 {
-  global_mpi_auto_init.initialize(argc,argv,wanted_thread_level);
+  global_mpi_auto_init.initialize(argc, argv, wanted_thread_level);
 }
 
 extern "C++" ARCANE_MPI_EXPORT void

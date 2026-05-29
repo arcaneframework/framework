@@ -27,7 +27,7 @@ namespace Arcane
 {
 class SerializeBuffer;
 class MpiParallelMng;
-}
+} // namespace Arcane
 
 namespace Arcane::MessagePassing
 {
@@ -47,6 +47,7 @@ class HybridSerializeMessageList;
 struct HybridParallelMngBuildInfo
 {
  public:
+
   Int32 local_rank = -1;
   Int32 local_nb_rank = -1;
   MpiParallelMng* mpi_parallel_mng = nullptr;
@@ -79,8 +80,8 @@ class HybridParallelMng
 
   explicit HybridParallelMng(const HybridParallelMngBuildInfo& bi);
   ~HybridParallelMng() override;
-  
-  bool isParallel()  const override { return m_is_parallel; }
+
+  bool isParallel() const override { return m_is_parallel; }
   Int32 commRank() const override { return m_global_rank; }
   Int32 commSize() const override { return m_global_nb_rank; }
   void* getMPICommunicator() override;
@@ -94,27 +95,27 @@ class HybridParallelMng
   IIOMng* ioMng() const override { return m_io_mng; }
 
   void initialize() override;
-  bool isMasterIO() const override { return commRank()==0; }
+  bool isMasterIO() const override { return commRank() == 0; }
   Int32 masterIORank() const override { return 0; }
 
   ITimerMng* timerMng() const override { return m_timer_mng; }
 
   IParallelMng* sequentialParallelMng() override;
   Ref<IParallelMng> sequentialParallelMngRef() override;
-  void sendSerializer(ISerializer* values,Int32 rank) override;
-  Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
+  void sendSerializer(ISerializer* values, Int32 rank) override;
+  Request sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
 
-  void recvSerializer(ISerializer* values,Int32 rank) override;
+  void recvSerializer(ISerializer* values, Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
 
   void freeRequests(ArrayView<Request> requests) override;
 
-  void broadcastSerializer(ISerializer* values,Int32 rank) override;
+  void broadcastSerializer(ISerializer* values, Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
-  Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
-  Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
+  Request sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) override;
 
   void printStats() override;
   void barrier() override;
@@ -125,12 +126,12 @@ class HybridParallelMng
   void build() override;
 
  public:
-  
+
   Int32 localRank() const { return m_local_rank; }
   Int32 localNbRank() const { return m_local_nb_rank; }
   MpiParallelMng* mpiParallelMng() { return m_mpi_parallel_mng; }
   //! Constructs a message with destination \a dest
-  PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
+  PointToPointMessageInfo buildMessage(Int32 dest, MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& message);
 
  public:
@@ -138,7 +139,7 @@ class HybridParallelMng
   IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  protected:
-  
+
   IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() override;
   ITransferValuesParallelOperation* createTransferValuesOperation() override;
   IParallelExchanger* createExchanger() override;
@@ -163,7 +164,7 @@ class HybridParallelMng
   }
 
  private:
-  
+
   ITraceMng* m_trace;
   IThreadMng* m_thread_mng;
   IParallelMng* m_world_parallel_mng;

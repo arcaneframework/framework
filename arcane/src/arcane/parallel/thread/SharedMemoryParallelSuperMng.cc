@@ -58,7 +58,8 @@ class SharedMemoryParallelMngContainer
 : public ParallelMngContainerBase
 {
  public:
-  SharedMemoryParallelMngContainer(IApplication* app,Int32 nb_local_rank,
+
+  SharedMemoryParallelMngContainer(IApplication* app, Int32 nb_local_rank,
                                    MP::Communicator mpi_comm,
                                    IParallelMngContainerFactory* factory);
   ~SharedMemoryParallelMngContainer() override;
@@ -66,7 +67,7 @@ class SharedMemoryParallelMngContainer
  public:
 
   void build();
-  Ref<IParallelMng> _createParallelMng(Int32 local_rank,ITraceMng* tm) override;
+  Ref<IParallelMng> _createParallelMng(Int32 local_rank, ITraceMng* tm) override;
 
  public:
 
@@ -89,10 +90,11 @@ class SharedMemoryParallelMngContainer
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryParallelMngContainer::
-SharedMemoryParallelMngContainer(IApplication* app,Int32 nb_local_rank,
+SharedMemoryParallelMngContainer(IApplication* app, Int32 nb_local_rank,
                                  MP::Communicator mpi_comm,
                                  IParallelMngContainerFactory* factory)
-: m_application(app), m_nb_local_rank(nb_local_rank)
+: m_application(app)
+, m_nb_local_rank(nb_local_rank)
 , m_thread_mng(new SharedMemoryThreadMng())
 , m_sub_factory_builder(factory)
 , m_communicator(mpi_comm)
@@ -138,11 +140,11 @@ build()
 /*---------------------------------------------------------------------------*/
 
 Ref<IParallelMng> SharedMemoryParallelMngContainer::
-_createParallelMng(Int32 local_rank,ITraceMng* tm)
+_createParallelMng(Int32 local_rank, ITraceMng* tm)
 {
-  if (local_rank<0 || local_rank>=m_nb_local_rank)
-    ARCANE_THROW(ArgumentException,"Bad value '{0}' for local_rank (max={1})",
-                 local_rank,m_nb_local_rank);
+  if (local_rank < 0 || local_rank >= m_nb_local_rank)
+    ARCANE_THROW(ArgumentException, "Bad value '{0}' for local_rank (max={1})",
+                 local_rank, m_nb_local_rank);
 
   // This method is not reentrant.
   Mutex::ScopedLock sl(m_internal_create_mutex);
@@ -163,7 +165,7 @@ _createParallelMng(Int32 local_rank,ITraceMng* tm)
   build_info.window_creator = m_window_creator;
   // Only rank 0 positions the eventual communicator, otherwise all PEs
   // will end up with the same MPI rank
-  if (local_rank==0)
+  if (local_rank == 0)
     build_info.communicator = m_communicator;
 
   IParallelMng* pm = new SharedMemoryParallelMng(build_info);
@@ -180,17 +182,24 @@ class SharedMemoryParallelMngContainerFactory
 , public IParallelMngContainerFactory
 {
  public:
+
   SharedMemoryParallelMngContainerFactory(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_application(sbi.application()){}
+  : AbstractService(sbi)
+  , m_application(sbi.application())
+  {}
+
  public:
+
   Ref<IParallelMngContainer> _createParallelMngBuilder(Int32 nb_rank, MP::Communicator comm, MP::Communicator machine_comm) override
   {
     ARCANE_UNUSED(machine_comm);
-    auto x = new SharedMemoryParallelMngContainer(m_application,nb_rank,comm,this);
+    auto x = new SharedMemoryParallelMngContainer(m_application, nb_rank, comm, this);
     x->build();
     return makeRef<IParallelMngContainer>(x);
   }
+
  private:
+
   IApplication* m_application;
 };
 
@@ -198,7 +207,7 @@ class SharedMemoryParallelMngContainerFactory
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(SharedMemoryParallelMngContainerFactory,
-                        ServiceProperty("SharedMemoryParallelMngContainerFactory",ST_Application),
+                        ServiceProperty("SharedMemoryParallelMngContainerFactory", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelMngContainerFactory));
 
 /*---------------------------------------------------------------------------*/
@@ -206,7 +215,7 @@ ARCANE_REGISTER_SERVICE(SharedMemoryParallelMngContainerFactory,
 
 SharedMemoryParallelSuperMng::
 SharedMemoryParallelSuperMng(const ServiceBuildInfo& sbi)
-: SharedMemoryParallelSuperMng(sbi,MP::Communicator(),false)
+: SharedMemoryParallelSuperMng(sbi, MP::Communicator(), false)
 {
 }
 
@@ -214,7 +223,7 @@ SharedMemoryParallelSuperMng(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryParallelSuperMng::
-SharedMemoryParallelSuperMng(const ServiceBuildInfo& sbi,MP::Communicator comm,
+SharedMemoryParallelSuperMng(const ServiceBuildInfo& sbi, MP::Communicator comm,
                              bool has_mpi_init)
 : m_application(sbi.application())
 , m_stat(nullptr)
@@ -253,14 +262,14 @@ build()
 
   // If initialized with MPI, null requests and the null communicator
   // have already been positioned.
-  if (!m_has_mpi_init){
-    Request::setNullRequest(Request(0,nullptr,0));
+  if (!m_has_mpi_init) {
+    Request::setNullRequest(Request(0, nullptr, 0));
     Parallel::Communicator::setNullCommunicator(Parallel::Communicator((void*)nullptr));
   }
 
-  m_is_parallel  = true;
+  m_is_parallel = true;
   Int32 n = m_application->applicationBuildInfo().nbSharedMemorySubDomain();
-  if (n==0)
+  if (n == 0)
     ARCANE_FATAL("Number of shared memory sub-domains is not defined");
 
   ITraceMng* app_tm = m_application->traceMng();
@@ -282,21 +291,21 @@ Ref<IParallelMng> SharedMemoryParallelSuperMng::
 internalCreateWorldParallelMng(Int32 local_rank)
 {
   Int32 max_rank = nbLocalSubDomain();
-  if (local_rank<0 || local_rank>=max_rank)
-    ARCANE_THROW(ArgumentException,"Bad value '{0}' for local_rank (max={1})",
-                 local_rank,max_rank);
+  if (local_rank < 0 || local_rank >= max_rank)
+    ARCANE_THROW(ArgumentException, "Bad value '{0}' for local_rank (max={1})",
+                 local_rank, max_rank);
 
   ITraceMng* tm = nullptr;
   ITraceMng* app_tm = m_application->traceMng();
-  if (local_rank==0){
+  if (local_rank == 0) {
     // The first created subdomain uses the default traceMng().
     tm = app_tm;
   }
-  else{
-    tm = m_application->createAndInitializeTraceMng(app_tm,String::fromNumber(local_rank));
+  else {
+    tm = m_application->createAndInitializeTraceMng(app_tm, String::fromNumber(local_rank));
   }
 
-  Ref<IParallelMng> pm = m_container->_createParallelMng(local_rank,tm);
+  Ref<IParallelMng> pm = m_container->_createParallelMng(local_rank, tm);
   return pm;
 }
 
@@ -314,7 +323,7 @@ tryAbort()
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelSuperMng::
-broadcast(ByteArrayView send_buf,Int32 process_id)
+broadcast(ByteArrayView send_buf, Int32 process_id)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(process_id);
@@ -324,7 +333,7 @@ broadcast(ByteArrayView send_buf,Int32 process_id)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelSuperMng::
-broadcast(Int32ArrayView send_buf,Int32 process_id)
+broadcast(Int32ArrayView send_buf, Int32 process_id)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(process_id);
@@ -334,7 +343,7 @@ broadcast(Int32ArrayView send_buf,Int32 process_id)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelSuperMng::
-broadcast(Int64ArrayView send_buf,Int32 process_id)
+broadcast(Int64ArrayView send_buf, Int32 process_id)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(process_id);
@@ -344,7 +353,7 @@ broadcast(Int64ArrayView send_buf,Int32 process_id)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelSuperMng::
-broadcast(RealArrayView send_buf,Int32 process_id)
+broadcast(RealArrayView send_buf, Int32 process_id)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(process_id);
@@ -372,12 +381,12 @@ nbLocalSubDomain()
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(SharedMemoryParallelSuperMng,
-                        ServiceProperty("SharedMemoryParallelSuperMng",ST_Application),
+                        ServiceProperty("SharedMemoryParallelSuperMng", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
 // Old name
 ARCANE_REGISTER_SERVICE(SharedMemoryParallelSuperMng,
-                        ServiceProperty("ThreadParallelSuperMng",ST_Application),
+                        ServiceProperty("ThreadParallelSuperMng", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
 /*---------------------------------------------------------------------------*/
