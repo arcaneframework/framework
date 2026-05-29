@@ -1,26 +1,26 @@
-arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en fonction des versions de VTK
+﻿arcane_find_package(VTKVersionHelper) # To get VTK_PACKAGE_PREFIX, which varies depending on VTK versions
 set(PKGS ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOXdmf2)
 arcane_find_package(${VTK_PACKAGE_PREFIX}IOXML)
 arcane_find_package(${VTK_PACKAGE_PREFIX}IOXdmf2)
 
 include(srcs.cmake)
 
-if(${VTK_PACKAGE_PREFIX}IOXdmf2_FOUND)
+if (${VTK_PACKAGE_PREFIX}IOXdmf2_FOUND)
   if (${VTK_VERSION} VERSION_LESS_EQUAL "8.90.0")
     list(APPEND ARCANE_SOURCES
       XmfMeshWriter.cc
       XmfMeshReader.cc
     )
-    set (VTK_HAS_XDMF TRUE PARENT_SCOPE)
+    set(VTK_HAS_XDMF TRUE PARENT_SCOPE)
   endif ()
-endif()
+endif ()
 
-if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
+if (${VTK_PACKAGE_PREFIX}IOXML_FOUND)
   list(APPEND ARCANE_SOURCES
     VtuMeshReader.cc
     VtuMeshWriter.cc
-    )
-endif()
+  )
+endif ()
 
 arcane_add_library(arcane_ios
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
