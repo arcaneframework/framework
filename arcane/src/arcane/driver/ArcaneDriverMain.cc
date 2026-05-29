@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneDriverMain.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Programme principal par défaut.                                           */
+/* Default main program.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,13 +22,12 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-int
-_mainHelper(int argc,char* argv[])
+int _mainHelper(int argc, char* argv[])
 {
   ApplicationInfo& app_info = ArcaneMain::defaultApplicationInfo();
-  app_info.setCommandLineArguments(CommandLineArguments(&argc,&argv));
+  app_info.setCommandLineArguments(CommandLineArguments(&argc, &argv));
   app_info.setCodeName("ArcaneDriver");
-  app_info.setCodeVersion(VersionInfo(1,0,0));
+  app_info.setCodeVersion(VersionInfo(1, 0, 0));
   app_info.addDynamicLibrary("arcane_mpi");
   app_info.addDynamicLibrary("arcane_ios");
   app_info.addDynamicLibrary("arcane_std");
@@ -39,12 +38,11 @@ _mainHelper(int argc,char* argv[])
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-int
-main(int argc,char* argv[])
+int main(int argc, char* argv[])
 {
   int r = 0;
-  int r2 = arcaneCallFunctionAndCatchException([&](){ r = _mainHelper(argc,argv); });
-  if (r2!=0)
+  int r2 = arcaneCallFunctionAndCatchException([&]() { r = _mainHelper(argc, argv); });
+  if (r2 != 0)
     return r2;
   return r;
 }
