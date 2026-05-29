@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 <module name="AlephIndexTest" version="1.0" namespace-name="ArcaneTest">
-  <description>Module de test d'Aleph+index</description>
+  <description>Aleph+index test module</description>
 
   <entry-points>
     <entry-point method-name="init" name="init" where="init" property="none" />
@@ -17,35 +17,35 @@
   </variables> 
 
   <options>
-	 <!-- Nombre d'itérations à faire -->
+	 <!-- Number of iterations to perform -->
     <simple name="iterations" type="integer" default="8">
       <description>Max number of solver iteration</description>
     </simple>
 
- 	 <!-- Nombre de résolutions à effectuer -->
+ 	 <!-- Number of solvers to perform -->
     <simple name="aleph-number-of-solvers" type="integer" default="1">
-      <description>Nombre de résolutions à effectuer</description>
+      <description>Number of solvers to perform</description>
     </simple>
 
 	 <!-- Delta T -->
-    <!-- Pas de temps hard-codé, devrait être 'piloté' -->
+    <!-- Time step hard-coded, should be 'controlled' -->
 	 <simple name="deltaT" type="real" default="0.005">
- 		<description>Pas de temps utilisé pour le schéma</description>
+ 		<description>Time step used for the scheme</description>
 	 </simple>
 
-	 <!-- Température initiale des mailles -->
+	 <!-- Initial temperature of the meshes -->
 	 <simple name="init-temperature" type="real" default="200">
-		<description>Température initiale dans tout le maillage</description>
+		<description>Initial temperature throughout the mesh</description>
 	 </simple>
 
-	 <!-- Conditions limites -->
+	 <!-- Boundary conditions -->
     <complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
-  		<description>Condition aux limites</description>
+  		<description>Boundary condition</description>
       <extended name="surface" type="Arcane::FaceGroup">
-        <description>Surface sur laquelle s'applique la condition aux limites</description>
+        <description>Surface on which the boundary condition applies</description>
       </extended>
       <simple name="value" type="real">
-        <description>Valeur de la composante a fixer</description>
+        <description>Value of the component to be fixed</description>
       </simple>
     </complex> 
  </options>

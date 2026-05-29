@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur l'environnement parallèle.
+ * \brief Information about the parallel environment.
  */
 class ARCANE_ALEPH_EXPORT AlephTopology
 : public TraceAccessor
@@ -40,6 +40,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   virtual ~AlephTopology();
 
  public:
+
   void create(Integer);
   void setRowNbElements(IntegerConstArrayView row_nb_element);
   IntegerConstArrayView ptr_low_up_array();
@@ -48,6 +49,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   void rowRange(Integer& min_row, Integer& max_row);
 
  private:
+
   inline void checkForInit()
   {
     if (m_has_been_initialized == false)
@@ -55,6 +57,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   }
 
  public:
+
   Integer rowLocalRange(const Integer);
   AlephKernel* kernel(void) { return m_kernel; }
   Integer nb_row_size(void)
@@ -89,12 +92,13 @@ class ARCANE_ALEPH_EXPORT AlephTopology
   bool hasSetRowNbElements(void) { return m_has_set_row_nb_elements; }
 
  private:
+
   AlephKernel* m_kernel;
-  Integer m_nb_row_size; // Nombre de lignes de la matrice réparties sur l'ensemble
-  Integer m_nb_row_rank; // Nombre de lignes de la matrice vue de mon rang
-  UniqueArray<AlephInt> m_gathered_nb_row; // Indices des lignes par CPU
-  UniqueArray<AlephInt> m_gathered_nb_row_elements; // nombre d'éléments par ligne
-  UniqueArray<AlephInt> m_gathered_nb_setValued; // nombre d'éléments setValué par CPU
+  Integer m_nb_row_size; // Number of matrix rows distributed across the set
+  Integer m_nb_row_rank; // Number of matrix rows viewed from my rank
+  UniqueArray<AlephInt> m_gathered_nb_row; // Row indices per CPU
+  UniqueArray<AlephInt> m_gathered_nb_row_elements; // Number of elements per row
+  UniqueArray<AlephInt> m_gathered_nb_setValued; // Number of setValued elements per CPU
   bool m_created;
   bool m_has_set_row_nb_elements;
   bool m_has_been_initialized;
@@ -103,7 +107,7 @@ class ARCANE_ALEPH_EXPORT AlephTopology
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ AlephTopology(ITraceMng* tm,
     return;
   }
 
-  debug() << "\33[1;32m\t[AlephTopology::AlephTopology] Nous nous échangeons les indices locaux des lignes de la matrice"
+  debug() << "\33[1;32m\t[AlephTopology::AlephTopology] We exchange the local row indices of the matrix"
           << "\33[0m";
   UniqueArray<Integer> all_rows;
   UniqueArray<Integer> gathered_nb_row(m_kernel->size());
@@ -138,7 +138,7 @@ create(Integer setValue_idx)
     return;
   }
 
-  // Nous allons nous échanger tous les setValue_idx
+  // We are going to exchange all setValue_idx
   UniqueArray<AlephInt> all;
   all.add(setValue_idx);
   m_kernel->parallel()->allGather(all, m_gathered_nb_setValued);
@@ -154,9 +154,9 @@ create(Integer setValue_idx)
 
 /******************************************************************************
  * 1b264c6c
- * Ce row_nb_element est positionné afin d'aider à la construction de la matrice
- * lors des :
- *     - 'init_length' de Sloop
+ * This row_nb_element is positioned to help with matrix construction
+ * during the:
+ *     - 'init_length' of Sloop
  *     - HYPRE_IJMatrixSetRowSizes
  *     - Trilinos Epetra_CrsMatrix
  *****************************************************************************/
@@ -173,7 +173,7 @@ setRowNbElements(IntegerConstArrayView row_nb_element)
   debug() << "\33[1;32m\t\t\t[AlephTopology::setRowNbElements]"
           << "\33[0m";
 
-  // Nous allons nous échanger les nombre d'éléments par lignes
+  // We are going to exchange the number of elements per row
   debug() << "\33[1;32m\t\t\t[AlephTopology::setRowNbElements] resize m_gathered_nb_row_elements to " << m_nb_row_size << "\33[0m";
   m_gathered_nb_row_elements.resize(m_nb_row_size);
 

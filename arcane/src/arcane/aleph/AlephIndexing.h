@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,21 +13,24 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Gestionaire d'indexing
+ * \brief Indexing Manager
  */
 class ARCANE_ALEPH_EXPORT AlephIndexing : public TraceAccessor
 {
  public:
+
   AlephIndexing(AlephKernel*);
   ~AlephIndexing();
 
  public:
+
   Int32 updateKnownItems(VariableItemInt32*, const Item&);
   Int32 findWhichLidFromMapMap(IVariable*, const Item&);
   Integer get(const VariableRef&, const ItemEnumerator&);
@@ -36,9 +39,11 @@ class ARCANE_ALEPH_EXPORT AlephIndexing : public TraceAccessor
   void nowYouCanBuildTheTopology(AlephMatrix*, AlephVector*, AlephVector*);
 
  private:
+
   Integer localKnownItems(void);
 
  private:
+
   AlephKernel* m_kernel;
   ISubDomain* m_sub_domain;
   Integer m_current_idx;
@@ -51,7 +56,7 @@ class ARCANE_ALEPH_EXPORT AlephIndexing : public TraceAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

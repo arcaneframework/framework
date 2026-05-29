@@ -1,4 +1,4 @@
-message(STATUS "Looking for SuperLU")
+﻿message(STATUS "Looking for SuperLU")
 
 find_path(SUPERLU_INCLUDE_DIRS superlu_defs.h)
 find_library(SUPERLU_LIBRARIES superlu_dist_4.2)

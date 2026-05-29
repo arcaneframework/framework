@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/aleph/AlephArcane.h"
-#include "arcane/MeshVariableScalarRef.h"
+#include "arcane/core/MeshVariableScalarRef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,9 +37,9 @@ AlephMatrix(AlephKernel* kernel)
     debug() << "\33[1;32m[AlephMatrix::AlephMatrix] New Aleph matrix, but kernel is not initialized!\33[0m";
     return;
   }
-  // Récupération des rangs utilisés pour cette résolution
+  // Retrieving the ranks used for this resolution
   m_ranks = kernel->solverRanks(m_index);
-  // Booléen pour savoir si on participe ou pas
+  // Boolean to know if we participate or not
   m_participating_in_solver = kernel->subParallelMng(m_index) != NULL;
   debug() << "\33[1;32m[AlephMatrix::AlephMatrix] New Aleph matrix\33[0m";
   if (!m_participating_in_solver) {
@@ -50,7 +50,7 @@ AlephMatrix(AlephKernel* kernel)
           << m_kernel->subParallelMng(m_index)->commSize()
           << " @"
           << m_kernel->subParallelMng(m_index)->commRank() << "\33[0m";
-  // On va chercher une matrice depuis la factory qui fait l'interface aux bibliothèques externes
+  // We are going to look for a matrix from the factory which provides the interface to external libraries
   m_implementation = m_kernel->factory()->GetMatrix(m_kernel, m_index);
   traceMng()->flush();
 }
@@ -68,27 +68,27 @@ AlephMatrix::
 }
 
 /******************************************************************************
- * Matrix 'create' avec l'API 'void'
+ * Matrix 'create' with the 'void' API
  * BaseForm[Hash["AlephMatrix::create(void)", "CRC32"], 16] = fff06e2
  *****************************************************************************/
 void AlephMatrix::create(void)
 {
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::create");
   debug() << "\33[1;32m[AlephMatrix::create(void)]\33[0m";
-  // Si le kernel n'est pas initialisé, on a rien à faire
+  // If the kernel is not initialized, we have nothing to do
   if (!m_kernel->isInitialized())
     return;
-  // S'il y a des 'autres' et qu'on en fait pas partie,
-  // on broadcast qu'un 'create' est à faire
+  // If there are 'others' and we are not part of them,
+  // we broadcast that a 'create' needs to be done
   if (m_kernel->thereIsOthers() && !m_kernel->isAnOther())
     m_kernel->world()->broadcast(UniqueArray<unsigned long>(1, 0xfff06e2l).view(), 0);
-  // On flush en prévision du remplissage, il faut le faire même étant configuré
-  // Par contre, on ne flush pas celui du addValue
+  // We flush in anticipation of filling, it must be done even if configured
+  // However, we do not flush the one for addValue
   m_setValue_idx = 0;
 }
 
 /******************************************************************************
- * Matrix 'create' avec l'API qui spécifie le nombre d'éléments non nuls pas lignes
+ * Matrix 'create' with the API that specifies the number of non-zero elements per row
  * BaseForm[Hash["AlephMatrix::create(IntegerConstArrayView,bool)", "CRC32"], 16] = 5c3111b1
  *****************************************************************************/
 void AlephMatrix::
@@ -101,7 +101,7 @@ create(IntegerConstArrayView row_nb_element, bool has_many_elements)
 }
 
 /*!
- * \brief reset pour flusher les tableaux des [set&add]Value
+ * \brief reset to flush the [set&add]Value arrays
  */
 void AlephMatrix::
 reset(void)
@@ -113,7 +113,7 @@ reset(void)
 }
 
 /*!
- * \brief addValue à partir d'arguments en IVariables, Items et Real
+ * \brief addValue from arguments in IVariables, Items, and Real
  *****************************************************************************/
 void AlephMatrix::
 addValue(const VariableRef& rowVar, const ItemEnumerator& rowItm,
@@ -147,7 +147,7 @@ updateKnownRowCol(Integer row,
   m_addValue_col.add(col);
   m_addValue_val.add(val);
   m_addValue_idx += 1;
-  // On fait de même coté 'set' pour avoir la bonne taille
+  // We do the same on the 'set' side to have the correct size
   m_setValue_row.add(row);
   m_setValue_col.add(col);
   m_setValue_val.add(0.);
@@ -159,8 +159,8 @@ rowMapMapCol(Integer row,
              Real val)
 {
   rowColMap::const_iterator iRowMap = m_row_col_map.find(row);
-  // Si la row n'est même pas encore connue
-  // On rajoute une entrée map(map(m_addValue_idx))
+  // If the row is not even known yet
+  // We add a map entry (map(m_addValue_idx))
   if (iRowMap == m_row_col_map.end()) {
     colMap* jMap = new colMap();
     /*debug()<<"\33[1;32m[AlephMatrix::rowMapMapCol] row "
@@ -171,11 +171,11 @@ rowMapMapCol(Integer row,
     updateKnownRowCol(row, col, val);
     return;
   }
-  // On focus sur la seconde dimension
+  // We focus on the second dimension
   colMap* jMap = iRowMap->second;
   colMap::const_iterator iColMap = jMap->find(col);
-  // Si cet col n'est pas connue de cette row
-  // On rajoute une entrée
+  // If this column is not known for this row
+  // We add an entry
   if (iColMap == jMap->end()) {
     /*debug()<<"\33[1;32m[AlephMatrix::rowMapMapCol] col "
           <<col<<" inconue, m_addValue_idx="
@@ -184,14 +184,14 @@ rowMapMapCol(Integer row,
     updateKnownRowCol(row, col, val);
     return;
   }
-  // Sinon on ajoute
+  // Otherwise we add
   //debug()<<"\33[1;32m[AlephMatrix::rowMapMapCol] hit\33[0m";
   //debug()<<"[AlephMatrix::rowMapMapCol] += for ["<<row<<","<<col<<"]="<<val; traceMng()->flush();
   m_addValue_val[iColMap->second] += val;
 }
 
 /*!
- * \brief addValue standard en (i,j,val)
+ * \brief standard addValue in (i,j,val)
  */
 void AlephMatrix::
 addValue(Integer row, Integer col, Real val)
@@ -199,12 +199,12 @@ addValue(Integer row, Integer col, Real val)
   //debug()<<"\33[32m[AlephMatrix::addValue] addValue("<<row<<","<<col<<")="<<val<<"\33[0m";
   row = m_kernel->ordering()->swap(row);
   col = m_kernel->ordering()->swap(col);
-  // Recherche de la case (row,j) si elle existe déjà
+  // Search for the cell (row,j) if it already exists
   rowMapMapCol(row, col, val);
 }
 
 /*!
- * \brief setValue à partir d'arguments en IVariables, ItemEnumerator et Real
+ * \brief setValue from arguments in IVariables, ItemEnumerator, and Real
  */
 void AlephMatrix::
 setValue(const VariableRef& rowVar, const ItemEnumerator& rowItm,
@@ -215,7 +215,7 @@ setValue(const VariableRef& rowVar, const ItemEnumerator& rowItm,
 }
 
 /*!
- * \brief setValue à partir d'arguments en IVariables, Items et Real
+ * \brief setValue from arguments in IVariables, Items, and Real
  */
 void AlephMatrix::
 setValue(const VariableRef& rowVar, const Item& rowItm,
@@ -234,16 +234,16 @@ setValue(const VariableRef& rowVar, const Item& rowItm,
 }
 
 /*!
- * \brief setValue standard à partir d'arguments (row,col,val)
+ * \brief standard setValue from arguments (row,col,val)
  */
 void AlephMatrix::
 setValue(Integer row, Integer col, Real val)
 {
-  // Re-ordering si besoin
+  // Re-ordering if necessary
   row = m_kernel->ordering()->swap(row);
   col = m_kernel->ordering()->swap(col);
-  // Si le kernel a déjà été configuré,
-  // on s'assure que la 'géométrie/support' n'a pas changée entre les résolutions
+  // If the kernel has already been configured,
+  // we ensure that the 'geometry/support' has not changed between resolutions
   if (m_kernel->configured()) {
     if ((m_setValue_row[m_setValue_idx] != row) ||
         (m_setValue_col[m_setValue_idx] != col))
@@ -261,7 +261,7 @@ setValue(Integer row, Integer col, Real val)
 }
 
 /*!
- * \brief reIdx recherche la correspondance de l'AlephIndexing
+ * \brief reIdx searches for the correspondence of the AlephIndexing
  */
 Int32 AlephMatrix::
 reIdx(Integer ij,
@@ -271,7 +271,7 @@ reIdx(Integer ij,
 }
 
 /*!
- * \brief reSetValuesIn rejoue les setValue avec les indexes calculés via l'AlephIndexing
+ * \brief reSetValuesIn re-plays the setValue with the indexes calculated via the AlephIndexing
  */
 void AlephMatrix::
 reSetValuesIn(AlephMatrix* thisMatrix,
@@ -285,7 +285,7 @@ reSetValuesIn(AlephMatrix* thisMatrix,
 }
 
 /*!
- * \brief reAddValuesIn rejoue les addValue avec les indexes calculés via l'AlephIndexing
+ * \brief reAddValuesIn re-plays the addValue with the indexes calculated via the AlephIndexing
  */
 void AlephMatrix::
 reAddValuesIn(AlephMatrix* thisMatrix,
@@ -300,27 +300,27 @@ reAddValuesIn(AlephMatrix* thisMatrix,
 }
 
 /*!
- * \brief assemble les matrices avant résolution
+ * \brief assemble the matrices before resolution
  */
 void AlephMatrix::
 assemble(void)
 {
   ItacFunction(AlephMatrix);
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::assemble");
-  // Si le kernel n'est pas initialisé, on ne fait toujours rien
+  // If the kernel is not initialized, we still do nothing
   if (!m_kernel->isInitialized()) {
     debug() << "\33[1;32m[AlephMatrix::assemble] Trying to assemble a matrix"
             << "from an uninitialized kernel!\33[0m";
     return;
   }
-  // Si aucun [set|add]Value n'a été perçu, ce n'est pas normal
+  // If no [set|add]Value has been received, this is not normal
   if (m_addValue_idx != 0 && m_setValue_idx != 0)
     throw FatalErrorException("AlephMatrix::assemble", "Still exclusives [add||set]Value required!");
-  // Si des addValue ont été captés, il faut les 'rejouer'
-  // Attention: pour l'instant les add et les set sont disjoints!
+  // If addValue have been captured, they must be 're-played'
+  // Warning: for now, adds and sets are disjoint!
   if (m_addValue_idx != 0) {
     debug() << "\33[1;32m[AlephMatrix::assemble] m_addValue_idx!=0\33[0m";
-    // On flush notre index des setValues
+    // We flush our setValues index
     m_setValue_idx = 0;
     Timer::Action ta(m_kernel->subDomain(), "Flatenning addValues");
     debug() << "\t\33[32m[AlephMatrix::assemble] Flatenning addValues size=" << m_addValue_row.size() << "\33[0m";
@@ -333,37 +333,37 @@ assemble(void)
       m_setValue_idx += 1;
     }
   }
-  // S'il y a des 'autres' et qu'on en fait pas parti, on les informe de l'assemblage
+  // If there are 'others' and we are not part of them, we inform them of the assembly
   if (m_kernel->thereIsOthers() && !m_kernel->isAnOther()) {
-    debug() << "\33[1;32m[AlephMatrix::assemble] On informe les autres kappa que l'on assemble"
+    debug() << "\33[1;32m[AlephMatrix::assemble] We inform the other kappas that we are assembling"
             << "\33[0m";
     m_kernel->world()->broadcast(UniqueArray<unsigned long>(1, 0x74f253cal).view(), 0);
-    // Et on leur donne l'info du m_setValue_idx
+    // And we give them the info of m_setValue_idx
     m_kernel->world()->broadcast(UniqueArray<Integer>(1, m_setValue_idx).view(), 0);
   }
-  // On initialise la topologie si cela n'a pas été déjà fait
+  // We initialize the topology if it has not already been done
   if (!m_kernel->isAnOther()) {
     debug() << "\33[1;32m[AlephMatrix::assemble] Initializing topology"
             << "\33[0m";
     ItacRegion(topology->create, AlephMatrix);
     m_kernel->topology()->create(m_setValue_idx);
   }
-  // Si on a pas déjà calculé le nombre d'éléments non nuls par lignes
-  // c'est le moment de le déclencher
+  // If we have not already calculated the number of non-zero elements per row
+  // it is time to trigger it
   debug() << "\33[1;32m[AlephMatrix::assemble] Updating row_nb_element"
           << "\33[0m";
   if (!m_kernel->topology()->hasSetRowNbElements()) {
     UniqueArray<Integer> row_nb_element;
     row_nb_element.resize(m_kernel->topology()->nb_row_rank());
     row_nb_element.fill(0);
-    // Quand on est pas un Autre, il faut mettre à jour le row_nb_element si cela n'a pas été spécifié lors du matrice->create
+    // When we are not an Other, we must update row_nb_element if it was not specified during matrix->create
     if (m_kernel->thereIsOthers() && !m_kernel->isAnOther()) {
       debug() << "\33[1;32m[AlephMatrix::assemble] Kernel's topology has not set its nb_row_elements, now doing it!"
               << "\33[0m";
       const Integer row_offset = m_kernel->topology()->part()[m_kernel->rank()];
       debug() << "\33[1;32m[AlephMatrix::assemble] row_offset=" << row_offset << "\33[0m";
       debug() << "\33[1;32m[AlephMatrix::assemble] filled, row_nb_element.size=" << row_nb_element.size() << "\33[0m";
-      // On le fait pour l'instant en une passe pour avoir une borne max
+      // We are doing it in one pass for now to get a maximum bound
       for (Integer i = 0, iMx = m_setValue_row.size(); i < iMx; ++i)
         row_nb_element[m_setValue_row.at(i) - row_offset] += 1;
     }
@@ -371,7 +371,7 @@ assemble(void)
     debug() << "\33[1;32m[AlephMatrix::assemble] done hasSetRowNbElements"
             << "\33[0m";
   }
-  // Dans le cas //, le solveur se prépare à récupérer les parties de matrices venant des autres
+  // In the case //, the solver prepares to retrieve matrix parts from others
   debug() << "\33[1;32m[AlephMatrix::assemble] Récupération des parties de matrices"
           << "\33[0m";
   if (m_participating_in_solver && (!m_kernel->configured())) {
@@ -393,20 +393,20 @@ assemble(void)
       m_aleph_matrix_buffer_vals.resize(nbValues);
     }
   }
-  // Si on est pas en //, on a rien d'autre à faire
+  // If we are not in //, there is nothing else to do
   if (!m_kernel->isParallel())
     return;
-  // Si je participe à la résolution, je reçois les contributions des autres participants
+  // If I participate in the solution, I receive contributions from other participants
   if (m_participating_in_solver) {
     ItacRegion(iRecv, AlephMatrix);
     debug() << "\33[1;32m[AlephMatrix::assemble] I am part of the solver, let's iRecv"
             << "\33[0m";
-    // Si je suis le solveur, je recv le reste des matrices provenant soit des autres coeurs, soit de moi-même
+    // If I am the solver, I receive the rest of the matrices from either other cores or myself
     for (Integer iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
-      // Sauf de moi-même
+      // Except from myself
       if (iCpu == m_kernel->rank())
         continue;
-      // Sauf de ceux qui ne participent pas
+      // Except from those who do not participate
       if (m_kernel->rank() != m_ranks[iCpu])
         continue;
       debug() << "\33[1;32m[AlephMatrix::assemble] "
@@ -414,14 +414,14 @@ assemble(void)
               << " <= " << iCpu
               << " size=" << m_aleph_matrix_buffer_cols[iCpu].size() << "\33[0m";
       m_aleph_matrix_mpi_data_requests.add(m_kernel->world()->recv(m_aleph_matrix_buffer_vals[iCpu], iCpu, false));
-      // Une fois configuré, nous connaissons tous les (i,j): pas besoin de les renvoyer
+      // Once configured, we know all the (i,j): no need to send them back
       if (!m_kernel->configured()) {
         m_aleph_matrix_mpi_data_requests.add(m_kernel->world()->recv(m_aleph_matrix_buffer_rows[iCpu], iCpu, false));
         m_aleph_matrix_mpi_data_requests.add(m_kernel->world()->recv(m_aleph_matrix_buffer_cols[iCpu], iCpu, false));
       }
     }
   }
-  // Si je suis un rang Arcane qui a des données à envoyer, je le fais
+  // If I am an Arcane rank that has data to send, I do it
   if ((m_kernel->rank() != m_ranks[m_kernel->rank()]) && (!m_kernel->isAnOther())) {
     ItacRegion(iSend, AlephMatrix);
     debug() << "\33[1;32m[AlephMatrix::assemble]"
@@ -439,7 +439,7 @@ assemble(void)
 }
 
 /*!
- * \brief create_really transmet l'ordre de création à la bibliothèque externe
+ * \brief create_really transmits the creation order to the external library
  */
 void AlephMatrix::
 create_really(void)
@@ -448,17 +448,17 @@ create_really(void)
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::create_really");
   debug() << "\33[1;32m[AlephMatrix::create_really]"
           << "\33[0m";
-  // Il nous faut alors dans tous les cas une matrice de travail
+  // We need a working matrix in all cases
   debug() << "\33[1;32m[AlephMatrix::create_really] new MATRIX"
           << "\33[0m";
-  // et on déclenche la création au sein de l'implémentation
+  // and we trigger the creation within the implementation
   m_implementation->AlephMatrixCreate();
   debug() << "\33[1;32m[AlephMatrix::create_really] done"
           << "\33[0m";
 }
 
 /*!
- * \brief assemble_waitAndFill attend que les requètes précédemment postées aient été traitées
+ * \brief assemble_waitAndFill waits for the previously posted requests to be processed
  */
 void AlephMatrix::
 assemble_waitAndFill(void)
@@ -481,21 +481,21 @@ assemble_waitAndFill(void)
               << "\33[0m";
     }
   }
-  // Si je ne participe pas, je ne participe pas
+  // If I do not participate, I do not participate
   if (!m_participating_in_solver)
     return;
-  // Sinon, on prend le temps de construire la matrice, les autres devraient le faire aussi
+  // Otherwise, we take the time to build the matrix; others should do the same
   if (!m_kernel->configured()) {
     ItacRegion(Create, AlephMatrix);
     debug() << "\33[1;32m[AlephMatrix::assemble_waitAndFill] solver " << m_index << " create_really"
             << "\33[0m";
     create_really();
   }
-  // Et on enchaîne alors avec le remplissage de la matrice
+  // And then we proceed with filling the matrix
   {
     ItacRegion(Fill, AlephMatrix);
     if (m_kernel->configured())
-      m_implementation->AlephMatrixSetFilled(false); // Activation de la protection de remplissage
+      m_implementation->AlephMatrixSetFilled(false); // Activation of fill protection
     debug() << "\33[1;32m[AlephMatrix::assemble_waitAndFill] " << m_index << " fill"
             << "\33[0m";
     AlephInt* bfr_row_implem;
@@ -524,9 +524,9 @@ assemble_waitAndFill(void)
       }
     }
   }
-  { // On déclare alors la matrice comme remplie, et on lance la configuration
+  { // We then declare the matrix as filled, and we start the configuration
     ItacRegion(Cfg, AlephMatrix);
-    m_implementation->AlephMatrixSetFilled(true); // Désactivation de la protection de remplissage
+    m_implementation->AlephMatrixSetFilled(true); // Deactivation of fill protection
     if (!m_kernel->configured()) {
       debug() << "\33[1;32m[AlephMatrix::assemble_waitAndFill] " << m_index << " MATRIX ASSEMBLE"
               << "\33[0m";
@@ -541,7 +541,7 @@ assemble_waitAndFill(void)
 }
 
 /*!
-  \brief 'Poste' le solver au scheduler de façon asynchrone ou pas
+  \brief 'Post' the solver to the scheduler asynchronously or not
 */
 void AlephMatrix::
 solve(AlephVector* x,
@@ -555,7 +555,7 @@ solve(AlephVector* x,
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::solve");
   debug() << "\33[1;32m[AlephMatrix::solve] Queuing solver " << m_index << "\33[0m";
   m_kernel->postSolver(solver_param, this, x, b);
-  // Si on nous a spécifié le post, on ne déclenche pas le mode synchrone
+  // If the post was specified to us, we do not trigger synchronous mode
   if (async)
     return;
   debug() << "\33[1;32m[AlephMatrix::solve] SYNCHRONOUS MODE has been requested, syncing!"
@@ -565,13 +565,13 @@ solve(AlephVector* x,
 }
 
 /*!
- * \brief Résout le système linéraire
- * \param x solution du système Ax=b (en sortie)
- * \param b second membre du système (en entrée)
- * \param nb_iteration nombre d'itérations du système (en sortie)
- * \param residual_norm résidu de convergence du système (en sortie)
- * \param info parametres de l'application parallele (en entrée)
- * \param solver_param Parametres du Solveur du solveur Ax=b (en entrée)
+ * \brief Solves the linear system
+ * \param x solution of the system Ax=b (output)
+ * \param b right-hand side of the system (input)
+ * \param nb_iteration number of system iterations (output)
+ * \param residual_norm convergence residual of the system (output)
+ * \param info parameters of the parallel application (input)
+ * \param solver_param Parameters of the solver for the system Ax=b (input)
  */
 void AlephMatrix::
 solveNow(AlephVector* x,
@@ -583,10 +583,10 @@ solveNow(AlephVector* x,
 {
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::solveNow");
   const bool dump_to_compare =
-  (m_index == 0) && // Si on est à la première résolution
-  (m_kernel->rank() == 0) && // et qu'on est le 'master'
-  (params->writeMatrixToFileErrorStrategy()) && // et qu'on a demandé un write_matrix !
-  (m_kernel->subDomain()->commonVariables().globalIteration() == 1) && // et la première itération ou la deuxième
+  (m_index == 0) && // If we are at the first solution
+  (m_kernel->rank() == 0) && // and we are the 'master'
+  (params->writeMatrixToFileErrorStrategy()) && // and we requested a write_matrix!
+  (m_kernel->subDomain()->commonVariables().globalIteration() == 1) && // and the first or second iteration
   (m_kernel->nbRanksPerSolver() == 1);
   ItacFunction(AlephMatrix);
   if (!m_participating_in_solver) {
@@ -604,7 +604,7 @@ solveNow(AlephVector* x,
     writeToFile(mtxFilename.localstr());
     b->writeToFile(rhsFilename.localstr());
   }
-  // Déclenche la résolution au sein de la bibliothèque externe
+  // Triggers the solution within the external library
   m_implementation->AlephMatrixSolve(x, b, tmp,
                                      nb_iteration,
                                      residual_norm,
@@ -625,7 +625,7 @@ solveNow(AlephVector* x,
 }
 
 /*!
- *\brief Déclenche l'ordre de récupération des résultats
+ *\brief Triggers the order of retrieving results
  */
 void AlephMatrix::
 reassemble(Integer& nb_iteration,
@@ -633,7 +633,7 @@ reassemble(Integer& nb_iteration,
 {
   ItacFunction(AlephMatrix);
   Timer::Action ta(m_kernel->subDomain(), "AlephMatrix::reassemble");
-  // Si on est pas en mode parallèle, on en a finit pour le solve
+  // If we are not in parallel mode, we are done with the solve
   if (!m_kernel->isParallel())
     return;
   m_aleph_matrix_buffer_n_iteration.resize(1);
@@ -643,7 +643,7 @@ reassemble(Integer& nb_iteration,
   m_aleph_matrix_buffer_residual_norm[1] = residual_norm[1];
   m_aleph_matrix_buffer_residual_norm[2] = residual_norm[2];
   m_aleph_matrix_buffer_residual_norm[3] = residual_norm[3];
-  // Il faut recevoir des données
+  // We must receive data
   if (m_kernel->rank() != m_ranks[m_kernel->rank()] && !m_kernel->isAnOther()) {
     debug() << "\33[1;32m[AlephMatrix::REassemble] " << m_kernel->rank()
             << "<=" << m_ranks[m_kernel->rank()] << "\33[0m";
@@ -670,7 +670,7 @@ reassemble(Integer& nb_iteration,
 }
 
 /*!
- *\brief Synchronise les réceptions des résultats
+ *\brief Synchronizes the reception of results
  */
 void AlephMatrix::
 reassemble_waitAndFill(Integer& nb_iteration, Real* residual_norm)
@@ -696,7 +696,7 @@ reassemble_waitAndFill(Integer& nb_iteration, Real* residual_norm)
 }
 
 /*!
- *\brief Permet de spécifier le début d'une phase de remplissage
+ *\brief Allows specifying the start of a filling phase
  */
 void AlephMatrix::
 startFilling()
@@ -708,7 +708,7 @@ startFilling()
 }
 
 /*!
- *\brief Déclenche l'écriture de la matrice dans un fichier
+ *\brief Triggers the writing of the matrix to a file
  */
 void AlephMatrix::
 writeToFile(const String file_name)

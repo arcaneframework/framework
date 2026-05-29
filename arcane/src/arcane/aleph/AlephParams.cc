@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,15 +9,14 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "AlephArcane.h"
+
+#include "arcane/aleph/AlephArcane.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,13 +59,13 @@ AlephParams()
 
 AlephParams::
 AlephParams(ITraceMng* tm,
-            Real epsilon, // epsilon de convergence
-            Integer max_iteration, // nb max iterations
-            TypesSolver::ePreconditionerMethod preconditioner_method, //  préconditionnement utilisé (defaut DIAG)
-            TypesSolver::eSolverMethod solver_method, // méthode de résolution par defaut PCG
-            Integer gamma, // destine au parametrage des préconditionnements
-            Real alpha, // destine au parametrage des préconditionnements
-            bool xo_user, // permet a l'utilisateur d'initialiser le PGC avec un Xo different de zero
+            Real epsilon, // convergence epsilon
+            Integer max_iteration, // max number of iterations
+            TypesSolver::ePreconditionerMethod preconditioner_method, // preconditioner used (default DIAG)
+            TypesSolver::eSolverMethod solver_method, // default solution method PCG
+            Integer gamma, // intended for preconditioner parameterization
+            Real alpha, // intended for preconditioner parameterization
+            bool xo_user, // allows the user to initialize PGC with an Xo different from zero
             bool check_real_residue,
             bool print_real_residue,
             bool debug_info,
@@ -364,7 +363,7 @@ bool AlephParams::printCpuTimeResolution() const
 int AlephParams::amgCoarseningMethod() const
 {
   return m_param_amg_coarsening_method;
-} // -1 pour Sloop
+} // -1 for Sloop
 int AlephParams::getOutputLevel() const
 {
   return m_param_output_level;
@@ -409,7 +408,7 @@ TypesSolver::eCriteriaStop AlephParams::getCriteriaStop() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vecteur d'un système linéaire.
+ * \brief Vector of a linear system.
  */
 class ARCANE_ALEPH_EXPORT AlephVector
 : public TraceAccessor
@@ -69,7 +69,7 @@ class ARCANE_ALEPH_EXPORT AlephVector
 
  private:
 
-  // Buffers utilisés dans le cas où nous sommes le solveur
+  // Buffers used when we are the solver
   UniqueArray<AlephInt> m_aleph_vector_buffer_idxs;
   UniqueArray<Real> m_aleph_vector_buffer_vals;
   UniqueArray<AlephInt> m_aleph_vector_buffer_idx;

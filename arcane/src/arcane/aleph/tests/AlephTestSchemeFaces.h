@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,7 +17,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class CaseOptionsAlephTestModule;
 
@@ -29,10 +33,12 @@ using namespace Arcane;
 class AlephTestSchemeFaces : public ArcaneAlephTestSchemeFacesObject
 {
  public:
+
   AlephTestSchemeFaces(const ServiceBuildInfo&);
   ~AlephTestSchemeFaces(void);
 
  public:
+
   virtual void boundaries(ArcaneTest::CaseOptionsAlephTestModule*);
   virtual void preFetchNumElementsForEachRow(IntegerArray&, const Integer);
   virtual void setValues(const Real, AlephMatrix*);
@@ -43,9 +49,9 @@ class AlephTestSchemeFaces : public ArcaneAlephTestSchemeFacesObject
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ALEPH_TEST_SCHEME_FACES_H
+#endif

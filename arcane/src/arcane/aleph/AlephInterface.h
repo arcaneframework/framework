@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -180,10 +180,9 @@ class IAlephFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'une fabrique d'implémentation pour Aleph.
+ * \brief Interface of an implementation factory for Aleph.
  *
- * Cette interface est utilisée par AlephFactory pour choisir la
- * bibliothèque d'algèbre linéaire sous-jacente (par exemple sloop, hypre,...)
+ * This interface is used by AlephFactory to choose the underlying linear algebra library (for example, sloop, hypre,...)
  */
 class IAlephFactoryImpl
 {
@@ -204,4 +203,4 @@ class IAlephFactoryImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // _I_ALEPH_INTERFACE_H_
+#endif

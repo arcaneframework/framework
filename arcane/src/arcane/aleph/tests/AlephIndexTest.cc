@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AlephIndexTest.cc                                           (C) 2000-2015 */
 /*                                                                           */
-/* Service du test du service Aleph+Index.                                   */
+/* Test service for the Aleph+Index service.                                 */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ScopedPtr.h"
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,17 +34,20 @@ class AlephIndexTest
 : public ArcaneAlephIndexTestObject
 {
  public:
+
   AlephIndexTest(const ModuleBuildInfo&);
   ~AlephIndexTest(void);
   void init(void);
   void compute(void);
 
  private:
+
   void setValues(const Real, AlephMatrix*);
   void postSolver(const Integer, Real, Array<Real>&, Array<Integer>&);
   static Real geoFaceSurface(Face, VariableItemReal3&);
 
  public:
+
   Integer m_total_nb_cell;
   Integer m_local_nb_cell;
   UniqueArray<Real> m_vector_zeroes;
@@ -92,30 +96,30 @@ init(void)
   m_aleph_sol.resize(m_nb_solver);
   m_aleph_params.resize(m_nb_solver);
 
-  // On set notre pas de temps
+  // Set our time step
   m_global_deltat = 1.0;
 
-  // initialisation de la temperature sur toutes les mailles et faces
+  // initialization of temperature on all meshes and faces
   m_cell_temperature.fill(options()->initTemperature());
   m_face_temperature.fill(options()->initTemperature());
 
-  // initialisation de la température aux limites, boucle sur les conditions aux limites
+  // initialization of boundary temperature, loop over boundary conditions
   for (int i = options()->boundaryCondition.size() - 1; i >= 0; --i) {
     Real temperature = options()->boundaryCondition[i]->value();
     FaceGroup face_group = options()->boundaryCondition[i]->surface();
-    // boucle sur les faces de la surface
+    // loop over faces of the surface
     ENUMERATE_FACE (iFace, face_group)
       m_face_temperature[iFace] = temperature;
   }
   mesh()->checkValidMeshFull();
 
-  // On instancie un kernel minimaliste qui va prendre en charge l'init à notre place
-  // L'AlephKernel(subDomain(),0,0); semble poser soucis, mais pas le 2,0, ni le 0,1:
-  // problème d'initialisation de topologie pre-kernel?
-  // La valeur 2 correspond au Kernel pour Hypre.
+  // We instantiate a minimalistic kernel that will handle the initialization for us
+  // AlephKernel(subDomain(),0,0); seems to cause issues, but 2,0, or 0,1 do not:
+  // pre-kernel topology initialization problem?
+  // The value 2 corresponds to the Kernel for Hypre.
   m_aleph_kernel = new AlephKernel(subDomain(), 2, 1);
 
-  // Encore une initialisation des indices des vecteurs
+  // Another initialization of vector indices
   ENUMERATE_CELL (cell, ownCells()) {
     m_vector_zeroes.add(0.0);
   }
@@ -156,12 +160,12 @@ compute(void)
   }
   m_get_solution_idx %= m_nb_solver;
 
-  // Sinon, on recopie les résultats
+  // Otherwise, we copy the results
   debug() << "[AlephIndexTest::compute] Now get our results";
   ENUMERATE_CELL (cell, ownCells())
     m_cell_temperature[cell] = values[m_get_solution_idx][m_aleph_kernel->indexing()->get(m_cell_temperature, *cell)];
 
-  // Si on a atteint notre maximum d'itérations, on sort
+  // If we have reached our maximum number of iterations, we exit
   if (subDomain()->commonVariables().globalIteration() >= options()->iterations)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 
@@ -176,19 +180,19 @@ postSolver(const Integer i, Real optionDeltaT,
            Array<Real>& values,
            Array<Integer>& indexs)
 {
-  // On force les deltaT à être différents pour avoir des temps de calculs que l'on pourra ordonnancer
+  // We force the deltaTs to be different to have calculation times that can be scheduled
   Real deltaT = (1.0 + (Real)i) * optionDeltaT;
   Integer fake_nb_iteration = 0;
   Real fake_residual_norm[4];
 
   m_aleph_params[i] = new AlephParams(traceMng(),
-                                      1.0e-10, // m_param_epsilon epsilon de convergence
-                                      2000, // m_param_max_iteration nb max iterations
-                                      TypesSolver::AMG, // m_param_preconditioner_method préconditionnement: DIAGONAL, AMG, IC
-                                      TypesSolver::PCG, // m_param_solver_method méthode de résolution
+                                      1.0e-10, // m_param_epsilon convergence epsilon
+                                      2000, // m_param_max_iteration max iterations
+                                      TypesSolver::AMG, // m_param_preconditioner_method preconditioning: DIAGONAL, AMG, IC
+                                      TypesSolver::PCG, // m_param_solver_method solving method
                                       -1, // m_param_gamma
                                       -1.0, // m_param_alpha
-                                      false, // m_param_xo_user par défaut Xo n'est pas égal à 0
+                                      false, // m_param_xo_user by default Xo is not equal to 0
                                       false, // m_param_check_real_residue
                                       false, // m_param_print_real_residue
                                       false, // m_param_debug_info
@@ -200,9 +204,9 @@ postSolver(const Integer i, Real optionDeltaT,
                                       false, // m_param_listing_output
                                       0., // m_param_threshold
                                       false, // m_param_print_cpu_time_resolution
-                                      0, // m_param_amg_coarsening_method: par défault celui de Sloop,
+                                      0, // m_param_amg_coarsening_method: by default Sloop's,
                                       0, // m_param_output_level
-                                      1, // m_param_amg_cycle: 1-cycle amg en V, 2= cycle amg en W, 3=cycle en Full Multigrid V
+                                      1, // m_param_amg_cycle: 1-cycle amg in V, 2= amg cycle in W, 3=cycle in Full Multigrid V
                                       1, // m_param_amg_solver_iterations
                                       1, // m_param_amg_smoother_iterations
                                       TypesSolver::SymHybGSJ_smoother, // m_param_amg_smootherOption
@@ -212,8 +216,8 @@ postSolver(const Integer i, Real optionDeltaT,
                                       false, // m_param_sequential_solver
                                       TypesSolver::RB); // m_param_criteria_stop
 
-  // Remplissage du second membre: conditions limites + second membre
-  debug() << "[AlephIndexTest::compute] Resize (" << m_vector_zeroes.size() << ") + remplissage du second membre";
+  // Filling the right-hand side: boundary conditions + right-hand side
+  debug() << "[AlephIndexTest::compute] Resize (" << m_vector_zeroes.size() << ") + filling the right-hand side";
   values.resize(m_vector_zeroes.size());
   indexs.resize(m_vector_zeroes.size());
   ENUMERATE_CELL (cell, ownCells()) {
@@ -230,7 +234,7 @@ postSolver(const Integer i, Real optionDeltaT,
     deltaT * (m_face_temperature[iFace]) / geoFaceSurface(*iFace, nodesCoordinates());
   }
 
-  // Création de la matrice MatVec et des besoins Aleph
+  // Creation of the MatVec matrix and Aleph requirements
   m_aleph_mat[i] = m_aleph_kernel->createSolverMatrix();
   m_aleph_rhs[i] = m_aleph_kernel->createSolverVector(); // First vector returned IS the rhs
   m_aleph_sol[i] = m_aleph_kernel->createSolverVector(); // Next one IS the solution
@@ -240,7 +244,7 @@ postSolver(const Integer i, Real optionDeltaT,
   m_aleph_sol[i]->create();
   m_aleph_mat[i]->reset();
 
-  // Remplissage de la matrice et assemblage
+  // Filling the matrix and assembly
   setValues(deltaT, m_aleph_mat[i]);
   m_aleph_mat[i]->assemble();
 
@@ -262,7 +266,7 @@ postSolver(const Integer i, Real optionDeltaT,
                         fake_nb_iteration,
                         &fake_residual_norm[0],
                         m_aleph_params[i],
-                        true); // On souhaite poster de façon asynchrone
+                        true); // We wish to post asynchronously
   debug() << "[AlephIndexTest::job] done with Aleph solve";
   traceMng()->flush();
 }
@@ -272,10 +276,10 @@ postSolver(const Integer i, Real optionDeltaT,
  ***************************************************************************/
 void AlephIndexTest::setValues(const Real deltaT, AlephMatrix* aleph_mat)
 {
-  // On flush les coefs
+  // Flush the coefficients
   ENUMERATE_CELL (iCell, ownCells())
     m_cell_coefs[iCell] = 0.;
-  // Faces 'inner'
+  // 'inner' faces
   debug() << "[AlephIndexTest::setValues] inner-faces";
   ENUMERATE_FACE (iFace, allCells().innerFaceGroup()) {
     if (iFace->backCell().isOwn()) {
@@ -299,7 +303,7 @@ void AlephIndexTest::setValues(const Real deltaT, AlephMatrix* aleph_mat)
       continue;
     m_cell_coefs[iFace->cell(0)] += 1.0 / geoFaceSurface(*iFace, nodesCoordinates());
   }
-  debug() << "[AlephIndexTest::setValues] diagonale";
+  debug() << "[AlephIndexTest::setValues] diagonal";
   ENUMERATE_CELL (cell, ownCells()) {
     aleph_mat->setValue(m_cell_temperature, cell,
                         m_cell_temperature, cell,
@@ -335,7 +339,7 @@ ARCANE_DEFINE_STANDARD_MODULE(AlephIndexTest, AlephIndexTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

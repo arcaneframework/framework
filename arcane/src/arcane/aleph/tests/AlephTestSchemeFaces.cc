@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,17 +42,17 @@ AlephTestSchemeFaces::~AlephTestSchemeFaces(void)
 }
 
 /***************************************************************************
- * Application des conditions aux limites propres au schéma
+ * Application of scheme-specific boundary conditions
  ***************************************************************************/
 void AlephTestSchemeFaces::
 boundaries(ArcaneTest::CaseOptionsAlephTestModule* module_options)
 {
   ItacFunction(AlephTestSchemeFaces);
-  // boucle sur les conditions aux limites
+  // loop over the boundary conditions
   for (int i = module_options->boundaryCondition.size() - 1; i >= 0; --i) {
     Real temperature = module_options->boundaryCondition[i]->value();
     FaceGroup face_group = module_options->boundaryCondition[i]->surface();
-    // boucle sur les faces de la surface
+    // loop over the faces of the surface
     ENUMERATE_FACE (iFace, face_group) {
       m_face_temperature[iFace] = temperature;
     }
@@ -60,7 +60,7 @@ boundaries(ArcaneTest::CaseOptionsAlephTestModule* module_options)
 }
 
 /***************************************************************************
- * On compte le nombre d'éléments non nuls par ligne de la matrice
+ * Count the number of non-zero elements per matrix row
  ***************************************************************************/
 void AlephTestSchemeFaces::
 preFetchNumElementsForEachRow(IntegerArray& rows_nb_element,
@@ -69,11 +69,11 @@ preFetchNumElementsForEachRow(IntegerArray& rows_nb_element,
   ItacFunction(AlephTestSchemeFaces);
   debug() << "\33[37m\t[AlephTestSchemeFaces::preFetchNumElementsForEachRow]"
           << "\33[0m";
-  // On comptabilise les termes de la diagonale
+  // Count the diagonal terms
   rows_nb_element.fill(1);
 
-  // Et on rajoute les couplages par faces
-  // Attention, il faut bien parcourir toutes les mailles et filtrer les faces des fantômes
+  // And add the face couplings
+  // Note: We must iterate over all meshes and filter ghost faces
   ENUMERATE_FACE (iFace, INNER_ACTIVE_FACE_GROUP(allCells())) {
     if (iFace->backCell().isOwn())
       rows_nb_element[m_cell_matrix_idx[iFace->backCell()] - rank_row_offset] += 1;
@@ -88,7 +88,7 @@ preFetchNumElementsForEachRow(IntegerArray& rows_nb_element,
 void AlephTestSchemeFaces::
 setValues(const Real deltaT, AlephMatrix* aleph_mat)
 {
-  // On flush les coefs
+  // Flush the coefficients
   ENUMERATE_CELL (iCell, MESH_OWN_ACTIVE_CELLS(mesh()))
     m_cell_coefs[iCell] = 0.;
   // Faces 'inner'
@@ -179,7 +179,7 @@ amrRefine(RealArray& values, const Real trigRefine)
       m_cell_temperature[cells[CELL_H_CHILD(cell, j).localId()]] = m_cell_temperature[cells[lid]];
       auto faces = allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces();
       Integer index = 0;
-      for (Face face : faces){
+      for (Face face : faces) {
         if (face.isSubDomainBoundary()) {
           //debug() << "\t\t\t[amrRefineMesh] outer face #"<< iFace->localId()<<", index="<<iFace.index()<<", T="<<m_face_temperature[cell.face(iFace.index())];
           m_face_temperature[face] = m_face_temperature[cell.face(index)];
@@ -217,7 +217,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   Int32UniqueArray faces_to_attach;
   Int32UniqueArray lids_to_be_attached;
 
-  // Scan sur toutes les mailles, actives ET non actives
+  // Scan over all meshes, active AND inactive
   ENUMERATE_CELL (iCell, allCells()) {
     Cell cell = *iCell;
     //onst Real Tp=m_cell_temperature[iCell];
@@ -228,12 +228,12 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 
     //debug()<<"true="<<true<<", false="<<false;
     if (cell.level() == 1)
-      continue; // On évite de travailler sur les feuilles
+      continue; // Avoid working on leaves
 
     if (!CELL_HAS_H_CHILDREN(cell))
-      continue; // On évite les mailles qui n'ont pas d'enfants
+      continue; // Avoid meshes that do not have children
 
-    // On scrute pour voir si tous les enfants sont bien actifs
+    // Check if all children are active
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j)
       coarsit &= CELL_H_CHILD(cell, j).isActive();
     if (coarsit == false)
@@ -250,7 +250,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     if (coarsit == false)
       continue;
 
-    // on regarde les écarts entre enfants
+    // Check the differences between children
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j)
       coarsit &= (ECART_RELATIF(newTs[j], newTs[(j + 1) % 4]) < trigCoarsen);
     if (coarsit == false)
@@ -258,17 +258,17 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 
     debug() << "\n\t\t\t\t\t\t[FaceAmrCoarsen] parent cell to COARSE #" << cell.localId();
 
-    // On rajoute l'lid du parent au pool de cells à coarsener
+    // Add the parent's lid to the pool of cells to coarsen
     parents_to_coarsen_lid.add((*iCell).localId());
 
-    // Et on la tag comme Active
+    // And tag it as Active
     (*iCell).mutableItemBase().removeFlags(ItemInternal::II_CoarsenInactive);
     ARCANE_ASSERT(((*iCell).isActive()), ("Parent not active!"));
 
-    // On set la nouvell valeure de la maille
+    // Set the new value of the mesh
     m_cell_temperature[iCell] = sumTs / 4.0;
 
-    // On rajoute les lids des enfants pour les remover par la suite
+    // Add the children's lids to remove them later
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j) {
       children_to_coarsen_lid.add(CELL_H_CHILD(cell, j).localId());
       CELL_H_CHILD(cell, j).mutableItemBase().setFlags(CELL_H_CHILD(cell, j).itemBase().flags() | ItemInternal::II_Inactive); //II_Coarsen
@@ -277,19 +277,19 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     // Now stare at the children to set up new faces' values
     Cell parent = cell;
     //const Cell &parent = cellFamily()->itemsInternal()[parents_to_coarsen_lid[i]];
-    for( Face face : parent.faces()) {
+    for (Face face : parent.faces()) {
       if ((!face.backCell().null()) && (!face.frontCell().null())) {
         debug() << "\t\t\t[FaceAmrCoarsen] FOCUS face #" << face.localId() << ", "
                 << face.backCell().localId() << "->"
                 << face.frontCell().localId();
-        // Maintenant on va ratacher les voisins à notre parent
+        // Now we are going to attach the neighbors to our parent
         const Cell& neighbour = (face.backCell().localId() == parent.localId()) ? face.frontCell() : face.backCell();
         debug() << "\t\t\t[FaceAmrCoarsen] neighbour #" << neighbour.localId() << ", level=" << neighbour.level();
 
-        // Le voisin du parent doit être un parent
+        // The parent's neighbor must be a parent
         ARCANE_ASSERT((neighbour.level() == 0), ("Wrong neighbour level!"));
 
-        // Si le voisin est actif, la face en cours est celle qui doit être utilisée
+        // If the neighbor is active, the current face is the one that must be used
         if (neighbour.isActive()) {
           debug() << "\t\t\t[FaceAmrCoarsen] neighbour is ACTIVE";
           debug() << "\t\t\t[FaceAmrCoarsen] hit: face_" << face.localId() << ": " << neighbour.localId() << "->" << parent.localId();
@@ -305,12 +305,12 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
           int iFound = 0;
           bool found[2];
           found[0] = found[1] = false;
-          // Sinon, on racroche les faces des enfants de notre voisin vers notre parent
+          // Otherwise, we reattach the faces of our neighbor's children to our parent
           for (Integer j = 0, js = CELL_NB_H_CHILDREN(neighbour); j < js; ++j) {
             //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child #"<<neighbour.hChild(j).localId();
 
             auto faces = CELL_H_CHILD(neighbour, j).faces();
-            for (Face face : faces){
+            for (Face face : faces) {
               if (face.backCell().null())
                 continue;
               if (face.frontCell().null())
@@ -319,7 +319,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
               Cell other = (face.frontCell().localId() == CELL_H_CHILD(neighbour, j).localId()) ? face.backCell() : face.frontCell();
               //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child face #"<<face.localId()<<", "<< face.backCell().localId()<<"->"<< face.frontCell().localId();
 
-              // Si l''autre' est un parent, c'est pas ce que l'on cherche
+              // If the other is a parent, that is not what we are looking for
               if (other.level() == 0)
                 continue;
 
@@ -349,14 +349,14 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     }
   }
 
-  // S'il n'y a rien à faire, on exit
+  // If there is nothing to do, we exit
   if (parents_to_coarsen_lid.size() == 0)
     return false;
 
   CellInfoListView cells_view(mesh()->cellFamily());
   FaceInfoListView faces_view(mesh()->faceFamily());
 
-  // On remove les mailles
+  // Remove the meshes
   for (Integer j = 0, js = children_to_coarsen_lid.size(); j < js; ++j) {
     //const Cell &cell=cellFamily()->itemsInternal()[children_to_coarsen_lid[j]];
     //debug()<<"\t\t[FaceAmrCoarsen] REMOVING CELL_"<<children_to_coarsen_lid[j];
@@ -369,7 +369,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   }
   //mesh()->modifier()->endUpdate();
 
-  // On ré-attache les faces
+  // Re-attach the faces
   for (Integer j = 0, js = faces_to_attach.size(); j < js; ++j) {
     Face face = faces_view[faces_to_attach[j]];
     if (face.itemBase().flags() & ItemInternal::II_HasBackCell) {
@@ -386,7 +386,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   }
   //faceFamily()->endUpdate();
 
-  // On met à jour nos changements
+  // Update our changes
   mesh()->modifier()->endUpdate();
 
   debug() << "\t\t[FaceAmrCoarsen] nbCell=" << MESH_ALL_ACTIVE_CELLS(mesh()).size();
@@ -412,7 +412,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 	 }
 	 }*/
 
-  // Et on informe l'appellant comme quoi il y a eu des changements
+  // And inform the caller that there were changes
   debug() << "[AlephTestModule::FaceAmrCoarsen] done";
   return true;
 }
@@ -420,7 +420,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

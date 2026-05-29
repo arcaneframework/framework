@@ -1,29 +1,41 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AlephMultiTest.cc                                           (C) 2000-2015 */
 /*                                                                           */
-/* Service du test du service Aleph+Multi.                                   */
+/* Aleph+Multi service test.                                                 */
 /*---------------------------------------------------------------------------*/
 #include "arcane/aleph/tests/AlephTest.h"
 #include "arcane/aleph/tests/AlephMultiTest_axl.h"
 #include "arcane/aleph/tests/AlephMultiTest.h"
 
-ARCANETEST_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace ArcaneTest
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // ****************************************************************************
-// * Classe 'solver' qui va mimer ce qui est fait à plus haut niveau
+// * 'solver' class which will mimic what is done at a higher level
 // ****************************************************************************
 class AlephSolver
 : public TraceAccessor
 , public MeshAccessor
 {
  public:
+
   AlephSolver(ITraceMng* traceMng,
               ISubDomain* subDomain,
               Integer numberOfResolutionsPerSolvers,
@@ -37,7 +49,7 @@ class AlephSolver
   , m_delta_t(deltaT)
   , m_aleph_params(new AlephParams())
   ,
-  // On instancie un kernel minimaliste qui va prendre en charge l'init à notre place
+  // We instantiate a minimalist kernel that will handle the initialization for us
   m_aleph_kernel(new AlephKernel(subDomain, underlyingSolver, numberOfCores))
   , m_aleph_mat(0)
   , m_aleph_rhs(0)
@@ -58,7 +70,7 @@ class AlephSolver
 
   ~AlephSolver()
   {
-    info() << Trace::Color::cyan() << "[AlephSolver] Delet solver";
+    info() << Trace::Color::cyan() << "[AlephSolver] Delete solver";
     delete m_aleph_kernel;
     delete m_aleph_params;
   }
@@ -97,7 +109,7 @@ class AlephSolver
       m_get_solution_idx += 1;
     }
     m_get_solution_idx %= m_aleph_number_of_resolutions_per_solvers;
-    // Sinon, on recopie les résultats
+    // Otherwise, we copy the results
     debug() << Trace::Color::cyan() << "[AlephSolver::launchResolutions] Now get our results";
     ENUMERATE_CELL (cell, ownCells())
       cell_temperature[cell] =
@@ -115,15 +127,15 @@ class AlephSolver
                             Array<Real>& values,
                             Array<Integer>& indexs)
   {
-    // On force les deltaT à être différents pour avoir des temps de calculs que l'on pourra ordonnancer
+    // We force the deltaTs to be different to have calculation times that can be scheduled
     Real deltaT = (1.0 + (Real)i) * optionDeltaT;
     Integer fake_nb_iteration = 0;
     Real fake_residual_norm[4];
 
-    // Remplissage du second membre: conditions limites + second membre
+    // Filling the right-hand side: boundary conditions + right-hand side
     debug() << Trace::Color::cyan()
             << "[AlephSolver::postSingleResolution] Resize (" << m_vector_zeroes.size()
-            << ") + remplissage du second membre";
+            << ") + filling the right-hand side";
     values.resize(m_vector_zeroes.size());
     indexs.resize(m_vector_zeroes.size());
     ENUMERATE_CELL (cell, ownCells()) {
@@ -141,7 +153,7 @@ class AlephSolver
       deltaT * (face_temperature[iFace]) / geoFaceSurface(*iFace, nodesCoordinates());
     }
 
-    // Création de la matrice MatVec et des besoins Aleph
+    // Creation of the MatVec matrix and Aleph requirements
     m_aleph_mat.setAt(i, m_aleph_kernel->createSolverMatrix());
     m_aleph_rhs.setAt(i, m_aleph_kernel->createSolverVector()); // First vector returned IS the rhs
     m_aleph_sol.setAt(i, m_aleph_kernel->createSolverVector()); // Next one IS the solution
@@ -151,7 +163,7 @@ class AlephSolver
     m_aleph_sol.at(i)->create();
     m_aleph_mat.at(i)->reset();
 
-    // Remplissage de la matrice et assemblage
+    // Filling the matrix and assembly
     setValues(cell_temperature, face_temperature, deltaT, m_aleph_mat.at(i));
     m_aleph_mat.at(i)->assemble();
 
@@ -170,7 +182,7 @@ class AlephSolver
                              fake_nb_iteration,
                              &fake_residual_norm[0],
                              m_aleph_params,
-                             true); // On souhaite poster de façon asynchrone
+                             true); // We wish to post asynchronously
   }
 
   // ****************************************************************************
@@ -181,7 +193,7 @@ class AlephSolver
                  const Real deltaT, AlephMatrix* aleph_mat)
   {
     VariableCellReal coefs(VariableBuildInfo(m_sub_domain->defaultMesh(), "cellCoefs"));
-    // On flush les coefs
+    // We flush the coefficients
     ENUMERATE_CELL (cell, ownCells())
       coefs[cell] = 0.;
     // Faces 'inner'
@@ -208,7 +220,7 @@ class AlephSolver
         continue;
       coefs[iFace->cell(0)] += 1.0 / geoFaceSurface(*iFace, nodesCoordinates());
     }
-    debug() << Trace::Color::cyan() << "[AlephSolver::setValues] diagonale";
+    debug() << Trace::Color::cyan() << "[AlephSolver::setValues] diagonal";
     ENUMERATE_CELL (cell, ownCells()) {
       aleph_mat->setValue(cell_temperature, cell,
                           cell_temperature, cell,
@@ -218,6 +230,7 @@ class AlephSolver
   }
 
  private:
+
   // ****************************************************************************
   // * geoFaceSurface
   // ****************************************************************************
@@ -238,6 +251,7 @@ class AlephSolver
   }
 
  private:
+
   ISubDomain* m_sub_domain;
   Integer m_aleph_number_of_resolutions_per_solvers;
   Real m_delta_t;
@@ -251,7 +265,7 @@ class AlephSolver
 };
 
 // ****************************************************************************
-// * Classe AlephMultiTest + deletes
+// * AlephMultiTest class + deletes
 // ****************************************************************************
 AlephMultiTest::
 AlephMultiTest(const ModuleBuildInfo& mbi)
@@ -262,7 +276,7 @@ AlephMultiTest(const ModuleBuildInfo& mbi)
 AlephMultiTest::
 ~AlephMultiTest(void)
 {
-  // NOTE: il ne faut pas détruire les éléments de \a m_posted_solvers
+  // NOTE: the elements of m_posted_solvers must not be destroyed
   delete m_aleph_factory;
   debug() << Trace::Color::cyan() << "[AlephMultiTest::AlephMultiTest] Delete";
   for (Integer i = 0, n = m_global_aleph_solver.size(); i < n; ++i)
@@ -270,7 +284,7 @@ AlephMultiTest::
 }
 
 // ****************************************************************************
-// * Point d'entrée d'initialisations
+// * Initialization entry point
 // ****************************************************************************
 void AlephMultiTest::
 init(void)
@@ -278,9 +292,9 @@ init(void)
   ISubDomain* sd = subDomain();
   m_aleph_factory = new AlephFactory(sd->application(), sd->traceMng());
 
-  // Initialisation du pas de temps
+  // Time step initialization
   m_global_deltat = options()->deltaT;
-  // Initialisation des temperatures des mailles et des faces extérieures
+  // Initialization of mesh and outer face temperatures
   m_cell_temperature.fill(options()->iniTemperature());
 
   ENUMERATE_FACE (iFace, outerFaces()) {
@@ -288,7 +302,7 @@ init(void)
   }
   mesh()->checkValidMeshFull();
 
-  // Initialisation des solveurs globaux
+  // Initialization of global solvers
   for (Integer i = 0; i < options()->alephNumberOfSuccessiveSolvers(); ++i) {
     SolverBuildInfo sbi;
     Integer underlying_solver = (options()->alephUnderlyingSolver >> (4ul * i)) & 0xFul;
@@ -304,7 +318,7 @@ init(void)
     m_solvers_build_info.add(sbi);
   }
 
-  // Initialisation des solveurs globaux
+  // Initialization of global solvers
   for (Integer i = 0, n = m_solvers_build_info.size(); i < n; ++i) {
     const SolverBuildInfo& sbi = m_solvers_build_info[i];
     m_global_aleph_solver.add(new AlephSolver(traceMng(), subDomain(),
@@ -316,16 +330,16 @@ init(void)
 }
 
 // ****************************************************************************
-// * Point d'entrée de la boucle de calcul
+// * Computation loop entry point
 // ****************************************************************************
 void AlephMultiTest::
 compute(void)
 {
-  // Pour chaque solver, on lance les résolutions
+  // For each solver, we launch the resolutions
   for (Integer i = 0, n = m_solvers_build_info.size(); i < n; ++i) {
     const SolverBuildInfo& sbi = m_solvers_build_info[i];
-    // Création et lancement des solveurs locaux les options shiftées
-    // Ceci afin de tester les deletes
+    // Creation and launch of local solvers with shifted options
+    // This is in order to test the deletes
     AlephSolver* s = new AlephSolver(traceMng(), subDomain(),
                                      sbi.m_number_of_resolution_per_solvers,
                                      sbi.m_underliying_solver,
@@ -333,17 +347,27 @@ compute(void)
                                      options()->deltaT);
     m_posted_solvers.add(s);
     s->launchResolutions(m_cell_temperature, m_face_temperature);
-    // Lancement des solveurs globaux
+    // Launching global solvers
     m_global_aleph_solver.at(i)->launchResolutions(m_cell_temperature, m_face_temperature);
   }
 
-  // Si on a atteint notre maximum d'itérations, on quitte
+  // If we have reached our maximum iterations, we exit
   if (subDomain()->commonVariables().globalIteration() >= options()->iterations)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // ****************************************************************************
 // * REGISTER + NAMESPACE
 // ****************************************************************************
 ARCANE_DEFINE_STANDARD_MODULE(AlephMultiTest, AlephMultiTest);
-ARCANETEST_END_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace ArcaneTest
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

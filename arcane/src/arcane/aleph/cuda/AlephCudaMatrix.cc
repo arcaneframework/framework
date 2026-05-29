@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,295 +42,338 @@
 #include "arcane/aleph/AlephArcane.h"
 #include "arcane/aleph/cuda/AlephCuda.h"
 
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
 
+namespace Arcane
+{
 
-ARCANE_BEGIN_NAMESPACE
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
 
 //---------------------------------------------------------------------------//
 
-CNC_Matrix::CNC_Matrix(long m, long n, Storage storage) {
-  storage_ = NONE ;
-  allocate(m,n,storage,false) ;
+CNC_Matrix::CNC_Matrix(long m, long n, Storage storage)
+{
+  storage_ = NONE;
+  allocate(m, n, storage, false);
 }
 
 //---------------------------------------------------------------------------//
 
-CNC_Matrix::CNC_Matrix(long n, Storage storage, bool symmetric_storage) {
-  storage_ = NONE ;
-  allocate(n,n,storage,symmetric_storage) ;
+CNC_Matrix::CNC_Matrix(long n, Storage storage, bool symmetric_storage)
+{
+  storage_ = NONE;
+  allocate(n, n, storage, symmetric_storage);
 }
 
 //---------------------------------------------------------------------------//
 
-CNC_Matrix::CNC_Matrix( long n ) {
-  m_ = 0 ;
-  n_ = 0 ;
-  diag_size_ = 0 ;
-  
-  row_ = NULL ;
-  column_ = NULL ;
-  diag_ = NULL ;
-  
-  storage_ = ROWS ;
-  allocate(n,n,storage_,false) ;
+CNC_Matrix::CNC_Matrix(long n)
+{
+  m_ = 0;
+  n_ = 0;
+  diag_size_ = 0;
+
+  row_ = NULL;
+  column_ = NULL;
+  diag_ = NULL;
+
+  storage_ = ROWS;
+  allocate(n, n, storage_, false);
 }
 
 //---------------------------------------------------------------------------//
 
-CNC_Matrix::~CNC_Matrix() {
-  deallocate() ;
+CNC_Matrix::~CNC_Matrix()
+{
+  deallocate();
 }
 
 //---------------------------------------------------------------------------//
 
-CNC_Matrix::CNC_Matrix() {
-  m_ = 0 ;
-  n_ = 0 ;
-  diag_size_ = 0 ;
-  
-  row_ = NULL ;
-  column_ = NULL ;
-  diag_ = NULL ;
-  
-  storage_ = NONE ;
-  rows_are_stored_ = false ;
-  columns_are_stored_ = false ;
-  symmetric_storage_ = false ;
-  symmetric_tag_ = false ;
+CNC_Matrix::CNC_Matrix()
+{
+  m_ = 0;
+  n_ = 0;
+  diag_size_ = 0;
+
+  row_ = NULL;
+  column_ = NULL;
+  diag_ = NULL;
+
+  storage_ = NONE;
+  rows_are_stored_ = false;
+  columns_are_stored_ = false;
+  symmetric_storage_ = false;
+  symmetric_tag_ = false;
 }
 
 //---------------------------------------------------------------------------//
 
-long CNC_Matrix::m() const {return m_ ;  }
+long CNC_Matrix::m() const
+{
+  return m_;
+}
 
-long CNC_Matrix::n() const {return n_ ;  }
+long CNC_Matrix::n() const
+{
+  return n_;
+}
 
-long CNC_Matrix::diag_size() const {return diag_size_ ;}
+long CNC_Matrix::diag_size() const
+{
+  return diag_size_;
+}
 
-
-long CNC_Matrix::nnz() const {
-  long result = 0 ;
-  if(rows_are_stored()) {
-    for(long i=0; i<m(); i++) {
-      result += row(i).nb_coeffs() ;
+long CNC_Matrix::nnz() const
+{
+  long result = 0;
+  if (rows_are_stored()) {
+    for (long i = 0; i < m(); i++) {
+      result += row(i).nb_coeffs();
     }
-  } else if(columns_are_stored()) {
-    for(long j=0; j<n(); j++) {
-      result += column(j).nb_coeffs() ;
-    }
-  } else {
   }
-  return result ;
+  else if (columns_are_stored()) {
+    for (long j = 0; j < n(); j++) {
+      result += column(j).nb_coeffs();
+    }
+  }
+  else {
+  }
+  return result;
 }
 
+bool CNC_Matrix::rows_are_stored() const
+{
+  return rows_are_stored_;
+}
 
-bool CNC_Matrix::rows_are_stored() const {
-    return rows_are_stored_ ;
-  }
+bool CNC_Matrix::columns_are_stored() const
+{
+  return columns_are_stored_;
+}
 
-bool CNC_Matrix::columns_are_stored() const {
-    return columns_are_stored_ ;
-  }
+CNC_Matrix::Storage CNC_Matrix::storage() const
+{
+  return storage_;
+}
 
-CNC_Matrix::Storage CNC_Matrix::storage() const {
-    return storage_ ;
-  }
+bool CNC_Matrix::has_symmetric_storage() const
+{
+  return symmetric_storage_;
+}
 
-bool CNC_Matrix::has_symmetric_storage() const {
-    return symmetric_storage_ ;
-  }
+bool CNC_Matrix::is_square() const
+{
+  return (m_ == n_);
+}
 
-bool CNC_Matrix::is_square() const {
-    return (m_ == n_) ;
-  }
+bool CNC_Matrix::is_symmetric() const
+{
+  return (symmetric_storage_ || symmetric_tag_);
+}
 
-bool CNC_Matrix::is_symmetric() const {
-    return (symmetric_storage_ || symmetric_tag_) ;
-  }
-
-  /**
+/**
    * For symmetric matrices that are not stored in symmetric mode,
    * one may want to give a hint that the matrix is symmetric.
    */
-void CNC_Matrix::set_symmetric_tag(bool x) {
-    symmetric_tag_ = x ;
-  }
+void CNC_Matrix::set_symmetric_tag(bool x)
+{
+  symmetric_tag_ = x;
+}
 
-  /**
+/**
    * storage should be one of ROWS, ROWS_AND_COLUMNS
    * @param i index of the row, in the range [0, m-1]
    */
-CNCSparseRowColumn& CNC_Matrix::row(long i) {
-    return row_[i] ;
-  }
+CNCSparseRowColumn& CNC_Matrix::row(long i)
+{
+  return row_[i];
+}
 
-  /**
+/**
    * storage should be one of ROWS, ROWS_AND_COLUMNS
    * @param i index of the row, in the range [0, m-1]
    */
-const CNCSparseRowColumn& CNC_Matrix::row(long i) const {
-    return row_[i] ;
-  }
+const CNCSparseRowColumn& CNC_Matrix::row(long i) const
+{
+  return row_[i];
+}
 
-  /**
+/**
    * storage should be one of COLUMN, ROWS_AND_COLUMNS
    * @param i index of the column, in the range [0, n-1]
    */
-CNCSparseRowColumn& CNC_Matrix::column(long j) {
-    return column_[j] ;
-  }
+CNCSparseRowColumn& CNC_Matrix::column(long j)
+{
+  return column_[j];
+}
 
-  /**
+/**
    * storage should be one of COLUMNS, ROWS_AND_COLUMNS
    * @param i index of the column, in the range [0, n-1]
    */
-const CNCSparseRowColumn& CNC_Matrix::column(long j) const {
-    return column_[j] ;
-  }
-        
-  /**
+const CNCSparseRowColumn& CNC_Matrix::column(long j) const
+{
+  return column_[j];
+}
+
+/**
    * returns aii.
    */
-double CNC_Matrix::diag(long i) const {
-    return diag_[i] ;
+double CNC_Matrix::diag(long i) const
+{
+  return diag_[i];
 }
 
 /**
  * aij <- aij + val
  */
-void CNC_Matrix::add(long i, long j, double val) {
-  if(symmetric_storage_ && j > i) {
-    return ;
+void CNC_Matrix::add(long i, long j, double val)
+{
+  if (symmetric_storage_ && j > i) {
+    return;
   }
-  if(i == j) {
-    diag_[i] += val ;
-  } 
-  if(rows_are_stored_) {
-    row(i).add(j, val) ;
+  if (i == j) {
+    diag_[i] += val;
   }
-  if(columns_are_stored_) {
-    column(j).add(i, val) ;
+  if (rows_are_stored_) {
+    row(i).add(j, val);
   }
-}
-
-//---------------------------------------------------------------------------//
-
-void CNC_Matrix::sort() {
-  if(rows_are_stored_) {
-    for(long i=0; i<m_; i++) {
-      row(i).sort() ;
-    }
-  }
-  if(columns_are_stored_) {
-    for(long j=0; j<n_; j++) {
-      column(j).sort() ;
-    }
+  if (columns_are_stored_) {
+    column(j).add(i, val);
   }
 }
 
 //---------------------------------------------------------------------------//
 
-void CNC_Matrix::zero() {
-  if(rows_are_stored_) {
-    for(long i=0; i<m_; i++) {
-      row(i).zero() ;
+void CNC_Matrix::sort()
+{
+  if (rows_are_stored_) {
+    for (long i = 0; i < m_; i++) {
+      row(i).sort();
     }
   }
-  if(columns_are_stored_) {
-    for(long j=0; j<n_; j++) {
-      column(j).zero() ;
+  if (columns_are_stored_) {
+    for (long j = 0; j < n_; j++) {
+      column(j).sort();
     }
-  }
-  for(long i=0; i<diag_size_; i++) {
-    diag_[i] = 0.0 ;
   }
 }
 
 //---------------------------------------------------------------------------//
 
-void CNC_Matrix::clear() {
-  if(rows_are_stored_) {
-    for(long i=0; i<m_; i++) {
-      row(i).clear() ;
+void CNC_Matrix::zero()
+{
+  if (rows_are_stored_) {
+    for (long i = 0; i < m_; i++) {
+      row(i).zero();
     }
   }
-  if(columns_are_stored_) {
-    for(long j=0; j<n_; j++) {
-      column(j).clear() ;
+  if (columns_are_stored_) {
+    for (long j = 0; j < n_; j++) {
+      column(j).zero();
     }
   }
-  for(long i=0; i<diag_size_; i++) {
-    diag_[i] = 0.0 ;
+  for (long i = 0; i < diag_size_; i++) {
+    diag_[i] = 0.0;
   }
 }
 
 //---------------------------------------------------------------------------//
-        
-void CNC_Matrix::deallocate() {
-  m_ = 0 ;
-  n_ = 0 ;
-  diag_size_ = 0 ;
-  
-  if ( row_ != NULL ) delete[] row_ ;
-  if ( column_ != NULL ) delete[] column_ ;
-  if ( diag_ != NULL ) delete[] diag_ ;
-  row_ = NULL ;
-  column_ = NULL ;
-  diag_ = NULL ;
-  
-  storage_ = NONE ;
-  rows_are_stored_    = false ;
-  columns_are_stored_ = false ;
-  symmetric_storage_  = false ;
+
+void CNC_Matrix::clear()
+{
+  if (rows_are_stored_) {
+    for (long i = 0; i < m_; i++) {
+      row(i).clear();
+    }
+  }
+  if (columns_are_stored_) {
+    for (long j = 0; j < n_; j++) {
+      column(j).clear();
+    }
+  }
+  for (long i = 0; i < diag_size_; i++) {
+    diag_[i] = 0.0;
+  }
 }
 
 //---------------------------------------------------------------------------//
 
-void CNC_Matrix::allocate(long m, long n, Storage storage, bool symmetric_storage){
-  m_ = m ;
-  n_ = n ;
-  diag_size_ = (m<n)?(m):(n) ;
-  symmetric_storage_ = symmetric_storage ;
-  symmetric_tag_ = false ;
-  storage_ = storage ;
-  switch(storage) {
+void CNC_Matrix::deallocate()
+{
+  m_ = 0;
+  n_ = 0;
+  diag_size_ = 0;
+
+  if (row_ != NULL)
+    delete[] row_;
+  if (column_ != NULL)
+    delete[] column_;
+  if (diag_ != NULL)
+    delete[] diag_;
+  row_ = NULL;
+  column_ = NULL;
+  diag_ = NULL;
+
+  storage_ = NONE;
+  rows_are_stored_ = false;
+  columns_are_stored_ = false;
+  symmetric_storage_ = false;
+}
+
+//---------------------------------------------------------------------------//
+
+void CNC_Matrix::allocate(long m, long n, Storage storage, bool symmetric_storage)
+{
+  m_ = m;
+  n_ = n;
+  diag_size_ = (m < n) ? (m) : (n);
+  symmetric_storage_ = symmetric_storage;
+  symmetric_tag_ = false;
+  storage_ = storage;
+  switch (storage) {
   case NONE:
-    break ;
+    break;
   case ROWS:
-    rows_are_stored_    = true ;
-    columns_are_stored_ = false ;
-    break ;
+    rows_are_stored_ = true;
+    columns_are_stored_ = false;
+    break;
   case COLUMNS:
-    rows_are_stored_    = false ;
-    columns_are_stored_ = true ;
-    break ;
+    rows_are_stored_ = false;
+    columns_are_stored_ = true;
+    break;
   case ROWS_AND_COLUMNS:
-    rows_are_stored_    = true ;
-    columns_are_stored_ = true ;
-    break ;
+    rows_are_stored_ = true;
+    columns_are_stored_ = true;
+    break;
   }
-  diag_ = new double[diag_size_] ;
-  for(long i=0; i<diag_size_; i++) {
-    diag_[i] = 0.0 ;
-  }
-
-  if(rows_are_stored_) {
-    row_ = new CNCSparseRowColumn[m] ;
-  } else {
-    row_ = NULL ;
+  diag_ = new double[diag_size_];
+  for (long i = 0; i < diag_size_; i++) {
+    diag_[i] = 0.0;
   }
 
-  if(columns_are_stored_) {
-    column_ = new CNCSparseRowColumn[n] ;
-  } else {
-    column_ = NULL ;
+  if (rows_are_stored_) {
+    row_ = new CNCSparseRowColumn[m];
+  }
+  else {
+    row_ = NULL;
+  }
+
+  if (columns_are_stored_) {
+    column_ = new CNCSparseRowColumn[n];
+  }
+  else {
+    column_ = NULL;
   }
 }
 
+//---------------------------------------------------------------------------//
+//---------------------------------------------------------------------------//
 
-
-ARCANE_END_NAMESPACE
-
+} // namespace Arcane
 
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,19 +18,19 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ITiedInterface.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ItemArrayEnumerator.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/BasicModule.h"
-#include "arcane/SharedVariable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ITiedInterface.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/ItemArrayEnumerator.h"
+#include "arcane/core/ItemPairEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/BasicModule.h"
+#include "arcane/core/SharedVariable.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/ItemRefinement.h"
