@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryThreadMng.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de IThreadMng pour la mémoire partagée.                    */
+/* Implementation of IThreadMng for shared memory.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYTHREADMNG_H
 #define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYTHREADMNG_H
@@ -54,4 +54,4 @@ class SharedMemoryThreadMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelDispatch.cc                                      (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant les threads et MPI.                */
+/* Parallelism manager using threads and MPI.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,7 +47,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: Fusionner avec ce qui est possible dans SharedMemoryParallelDispatch
+//TODO: Merge with what is possible in SharedMemoryParallelDispatch
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,11 +69,11 @@ HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* pm,HybridMessageQueue* m
 {
   m_reduce_infos.m_index = 0;
 
-  // Ce tableau a été dimensionné par le créateur de cette instance.
-  // Il faut juste mettre à jour la valeur correspondant à son rang
+  // This array was sized by the creator of this instance.
+  // We just need to update the value corresponding to its rank
   m_all_dispatchs[m_local_rank] = this;
 
-  // Récupère le dispatcher MPI pour ce type.
+  // Retrieves the MPI dispatcher for this type.
   MpiParallelMng* mpi_pm = pm->mpiParallelMng();
   IParallelDispatchT<Type>* pd = mpi_pm->dispatcher((Type*)nullptr);
   if (!pd)
@@ -243,8 +243,8 @@ computeMinMaxSum(ConstArrayView<Type> values,
                  ArrayView<Int32> min_ranks,
                  ArrayView<Int32> max_ranks)
 {
-  // Implémentation sous-optimale qui ne vectorise pas le calcul
-  // (c'est actuellement un copier-coller d'au-dessus mis dans une boucle)
+  // Sub-optimal implementation that does not vectorize the calculation
+  // (it is currently a copy-paste of the above put into a loop)
   typedef typename _ThreadIntegralType<Type>::IsIntegral IntegralType;
   Integer n = values.size();
   for(Integer i=0;i<n;++i) {
@@ -291,9 +291,9 @@ broadcast(Span<Type> send_buf,Int32 rank)
   FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank),m_local_nb_rank);
   int mpi_rank = fri.mpiRankValue();
   if (m_mpi_rank==mpi_rank){
-    // J'ai le meme rang MPI que celui qui fait le broadcast
+    // I have the same MPI rank as the one doing the broadcast
     if (m_global_rank==rank){
-      //TODO: passage 64bit.
+      //TODO: 64bit passage.
       m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(),mpi_rank);
     }
     else{
@@ -302,7 +302,7 @@ broadcast(Span<Type> send_buf,Int32 rank)
   }
   else{
     if (m_local_rank==0){
-      //TODO: passage 64bit.
+      //TODO: 64bit passage.
       m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(),mpi_rank);
     }
   }
@@ -320,7 +320,7 @@ broadcast(Span<Type> send_buf,Int32 rank)
 template<class Type> void HybridParallelDispatch<Type>::
 allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 {
-  //TODO: fusionner avec allGatherVariable()
+  //TODO: merge with allGatherVariable()
   m_const_view = send_buf;
   _collectiveBarrier();
   Int64 total_size = 0;
@@ -424,7 +424,7 @@ scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 
   _collectiveBarrier();
 
-  // On calcule le nombre d'élément que veut tous les threads de notre processus.
+  // We calculate the number of elements that all threads in our process want.
   Int64 total_size = 0;
   for (Integer i = 0; i < m_local_nb_rank; ++i) {
     total_size += m_all_dispatchs[i]->m_recv_view.size();
@@ -432,25 +432,25 @@ scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 
   _collectiveBarrier();
 
-  // Les échanges MPI s'effectuent uniquement par les threads leaders des processus.
+  // MPI exchanges are performed only by the leader threads of the processes.
   if (m_local_rank == 0) {
     FullRankInfo fri(FullRankInfo::compute(MessageRank(root), m_local_nb_rank));
 
     UniqueArray<Type> local_recv_buf(total_size);
 
-    // Si le thread "root" est dans notre processus.
+    // If the "root" thread is in our process.
     if (m_mpi_rank == fri.mpiRankValue()) {
-      // Le thread leader s'occupe de l'échange.
+      // The leader thread handles the exchange.
       m_parallel_mng->mpiParallelMng()->scatterVariable(m_all_dispatchs[fri.localRankValue()]->m_const_view.smallView(),
                                                         local_recv_buf, fri.mpiRankValue());
     }
-    // Les autres threads leaders mettent leurs buffers d'envoi (qu'importe ce
-    // qu'ils contiennent, c'est un scatter).
+    // The other leader threads provide their send buffers (it doesn't matter what
+    // they contain, it's a scatter).
     else {
       m_parallel_mng->mpiParallelMng()->scatterVariable(m_const_view.smallView(), local_recv_buf, fri.mpiRankValue());
     }
 
-    // On a plus qu'à répartir les données reçues entre les threads.
+    // We just need to distribute the received data among the threads.
     Integer compt = 0;
     for (Integer i = 0; i < m_local_nb_rank; ++i) {
       Int64 size = m_all_dispatchs[i]->m_recv_view.size();
@@ -507,8 +507,8 @@ allToAllVariable(Span<const Type> g_send_buf,
 
   UniqueArray<Type> tmp_recv_buf;
 
-  // PREMIERE IMPLEMENTATION
-  // Le proc de rang local 0 fait tout le travail.
+  // FIRST IMPLEMENTATION
+  // Local rank 0 process does all the work.
 
   if (m_local_rank==0){
 
@@ -529,7 +529,7 @@ allToAllVariable(Span<const Type> g_send_buf,
     UniqueArray<Type> tmp_send_buf(total_send_size);
     tmp_recv_buf.resize(total_recv_size);
 
-    // Calcule le nombre d'éléments à envoyer et recevoir pour chaque proc.
+    // We calculate the number of elements to send and receive for each proc.
     for( Integer i=0; i<m_local_nb_rank; ++i ){
       const AllToAllVariableInfo& vinfo = m_all_dispatchs[i]->m_alltoallv_infos;
 
@@ -850,7 +850,7 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   ++m_reduce_infos.m_index;
   Int64 buf_size = send_buf.size();
   UniqueArray<Type> ret(buf_size);
-  // Valeurs du rang MPI précédent (utilisé uniquement en mode Scan)
+  // Values from the previous MPI rank (used only in Scan mode)
   UniqueArray<Type> previous_rank_ret;
   MpiParallelMng* mpi_pm = m_parallel_mng->mpiParallelMng();
   Int32 my_mpi_rank = mpi_pm->commRank();
@@ -876,8 +876,8 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
       ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span[j];
     _applyReduceOperator(op, ret, m_all_dispatchs, 1, nb_local_rank - 1);
     if (is_scan) {
-      // Pour le scan, on a besoin de savoir la valeur du scan du rang qui nous précéde.
-      // On utilise ensuite cette valeur et on applique notre opérateur.
+      // For scan, we need to know the scan value of the preceding rank.
+      // We then use this value and apply our operator.
       mpi_pm->scan(op, ret);
       previous_rank_ret.resize(buf_size);
       UniqueArray<Request> requests;
@@ -887,13 +887,13 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
         requests.add(mpi_pm->send(ret, my_mpi_rank + 1, false));
       mpi_pm->waitAllRequests(requests);
       if (my_mpi_rank != 0) {
-        // Applique le scan à mes valeurs.
+        // Apply the scan to my values.
         _applyReduceOperator(op, previous_rank_ret, m_all_dispatchs, 0, 0);
         send_buf.copy(previous_rank_ret);
       }
       else {
-        // Je suis le premier rang local et MPI. J'ai déja les bonnes valeurs
-        // dans \a send_buf.
+        // I am the first local and MPI rank. I already have the correct values
+        // in \a send_buf.
       }
     }
     else {
@@ -908,11 +908,11 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
     if (m_local_rank != 0) {
       Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
       ret.copy(global_buf);
-      // Le scan pour le rank local 0 a déjà été appliqué
+      // The scan for local rank 0 has already been applied
       _applyReduceOperator(op, ret, m_all_dispatchs, 1, m_local_rank);
     }
-    // TODO: On pourrait éviter cette barrière si on copiait les valeurs de 'send_buf'
-    // avant de les modifier.
+    // TODO: We could avoid this barrier if we copied the values of 'send_buf'
+    // before modifying them.
     _collectiveBarrier();
 
     if (m_local_rank != 0) {

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryContigMachineShMemWinBaseInternal.h             (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée.                                        */
+/* Class allowing the creation of a memory window for all subdomains in      */
+/* shared memory.                                                            */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYCONTIGMACHINESHMEMWINBASEINTERNAL_H

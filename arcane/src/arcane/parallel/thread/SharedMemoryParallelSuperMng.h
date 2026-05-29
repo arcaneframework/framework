@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelSuperMng.h                              (C) 2000-2020 */
 /*                                                                           */
-/* Implémentation de 'IParallelSuperMng' mode mémoire partagé.               */
+/* Implementation of 'IParallelSuperMng' shared memory mode.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELSUPERMNG_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELSUPERMNG_H
@@ -32,8 +32,9 @@ class SharedMemoryParallelMngContainer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur du parallélisme utilisant les threads
+ * \brief Parallelism supervisor using threads
  */
 class ARCANE_THREAD_EXPORT SharedMemoryParallelSuperMng
 : public IParallelSuperMng
@@ -72,9 +73,9 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelSuperMng
 
  public:
 
-  IApplication* m_application; //!< Gestionnaire principal
-  Parallel::IStat* m_stat; //! Statistiques
-  bool m_is_parallel;  //!< \a true si on est en mode parallèle
+  IApplication* m_application; //!< Main manager
+  Parallel::IStat* m_stat; //! Statistics
+  bool m_is_parallel;  //!< \a true if running in parallel mode
   SharedMemoryParallelMngContainer* m_container = nullptr;
   Ref<IParallelMngContainerFactory> m_builder_factory;
   Ref<IParallelMngContainer> m_main_builder;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryMessageQueue.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une file de messages en mémoire partagée.                */
+/* Implementation of a shared memory message queue.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@
 
 #include "arcane/core/ISerializeMessage.h"
 
-// Macro pour afficher des messages pour debug
+// Macro to display messages for debugging
 #define TRACE_DEBUG(format_str,...)             \
   if (m_is_debug && m_trace_mng){                                 \
     m_trace_mng->info() << String::format(format_str,__VA_ARGS__);  \
@@ -40,15 +40,15 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie dans le message de réception les informations du message
- * d'envoi.
+ * \brief Copies the sender message information into the receive message.
  *
- * Si un 'ISerializer' est disponible, l'utilise. Sinon, il s'agit d'une
- * zone mémoire et on recopie directement les valeurs.
+ * If an 'ISerializer' is available, it uses it. Otherwise, it is a
+ * memory area and the values are copied directly.
  *
- * \note Il serait possible si on connait l'origine de la zone mémoire
- * d'éviter une recopie en passant juste le pointeur.
+ * \note It would be possible, if we knew the origin of the memory area,
+ * to avoid copying by just passing the pointer.
  */
 void SharedMemoryMessageRequest::
 copyFromSender(SharedMemoryMessageRequest* sender)
@@ -85,15 +85,16 @@ destroy()
   if (m_is_destroyed)
     ARCANE_FATAL("Request already destroyed");
   m_is_destroyed = true;
-  // Commenter pour debug.
+  // Comment out for debug.
   delete this;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \a File asynchrone.
+ * \a Asynchronous queue.
  */
 class RequestAsyncQueue
 {
@@ -126,16 +127,16 @@ class RequestAsyncQueue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief File pour les messages d'un rang en mémoire partagée.
+ * \brief File for messages from a rank in shared memory.
  *
- * Utilise une file asynchrone pour conserver les messages.
+ * Uses an asynchronous queue to store messages.
  *
- * \note Les méthodes de cette classe ne sont pas thread-safe ce qui
- * signifie que deux threads différents ne peuvent pas poster des messages
- * issus du même rang sans synchronisation préalable. Rendre cette classe
- * thread-safe permettrait d'avoir un comportement similaire à celui de
- * MPI en mode MPI_THREAD_MULTIPLE.
+ * \note The methods of this class are not thread-safe, which means that two
+ * different threads cannot post messages from the same rank without prior
+ * synchronization. Making this class thread-safe would allow for behavior
+ * similar to MPI in MPI_THREAD_MULTIPLE mode.
  */
 class SharedMemoryMessageQueue::SubQueue
 {
@@ -252,9 +253,9 @@ addReceive(Int64 request_id,const PointToPointMessageInfo& message,ReceiveBuffer
     MessageRank dest = si.rank();
     MessageTag tag = si.tag();
 
-    // On connait la requête 'send' qui matche celle ci. Il faut donc
-    // la positionner dès maintenant dans \a tmr pour être sur qu'on utilisera la bonne.
-    // Pour cela, cherche le send correspondant à l'id de notre requête
+    // We know the 'send' request that matches this one. We must therefore
+    // position it in \a tmr now to ensure that the correct one is used.
+    // To do this, search for the send corresponding to the ID of our request
     Int64 req_id = (size_t)message_id;
     SharedMemoryMessageRequest* send_request = nullptr;
     for( Integer i=0, n=m_send_requests.size(); i<n; ++i )
@@ -311,10 +312,11 @@ _checkRequestDone(SharedMemoryMessageRequest* tmr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Nettoyage de la requête \a tmr si elle est finie.
+ * \brief Cleans up the request \a tmr if it is finished.
  *
- * Si la requête est effectuée, la supprime de la liste des requêtes.
+ * If the request is completed, it is removed from the list of requests.
  */
 void SharedMemoryMessageQueue::SubQueue::
 _cleanupRequestIfDone(SharedMemoryMessageRequest* tmr)
@@ -352,7 +354,7 @@ _testOrWaitRequestAvailable(bool is_blocking)
 void SharedMemoryMessageQueue::SubQueue::
 waitRequestAvailable()
 {
-  // Bloque tant qu'on n'a pas recu de message.
+  // Blocks until a message is received.
   _testOrWaitRequestAvailable(true);
 }
 
@@ -380,7 +382,7 @@ wait(SharedMemoryMessageRequest* tmr)
     _checkRequestDone(tmr);
 
     if (!tmr->isDone()){
-      // Bloque tant qu'on n'a pas recu de message.
+      // Blocks until a message is received.
       waitRequestAvailable();
     }
   }
@@ -434,18 +436,18 @@ _checkSendDone(SharedMemoryMessageRequest* tmr_send)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Vérifie qu'un message d'envoie correspond à la requête \a tmr_recv.
+ * \brief Checks if a send message matches the request \a tmr_recv.
  *
- * Regarde si une requête dans la liste des messages envoyés correspond à
- * \a tmr_recv. Cela est le cas si le couple origine/destination convient
- * ou si la destination est A_NULL_RANK (ce qui correspond à MPI_ANY_SOURCE
- * dans le cas MPI).
- * Il est important de prendre les requêtes dans l'ordre d'arrivée pour se
- * conformer à la norme MPI.
+ * Checks if a request in the list of sent messages matches
+ * \a tmr_recv. This is the case if the source/destination pair is suitable
+ * or if the destination is A_NULL_RANK (which corresponds to MPI_ANY_SOURCE
+ * in the MPI case).
+ * It is important to process requests in order of arrival to comply with the MPI standard.
  *
- * \retval true si une requête correspondante a été trouvée.
- * \retval false sinon.
+ * \retval true if a matching request was found.
+ * \retval false otherwise.
  */
 SharedMemoryMessageRequest* SharedMemoryMessageQueue::SubQueue::
 _getMatchingSendRequest(MessageRank recv_dest,MessageRank recv_orig,MessageTag tag)
@@ -477,8 +479,8 @@ _getMatchingSendRequest(MessageRank recv_dest,MessageRank recv_orig,MessageTag t
 bool SharedMemoryMessageQueue::SubQueue::
 _checkRecvDone(SharedMemoryMessageRequest* tmr_recv)
 {
-  // Regarde si le send est déjà associé à notre requête. C'est le cas
-  // si on a utiliser un appel à probe().
+  // Checks if the send is already associated with our request. This is the case
+  // if we used a probe() call.
   auto* tmr_send = tmr_recv->matchingSendRequest();
   if (!tmr_send)
     tmr_send = _getMatchingSendRequest(tmr_recv->dest(),tmr_recv->orig(),tmr_recv->tag());
@@ -526,18 +528,17 @@ waitSome(ArrayView<Request> requests,ArrayView<bool> requests_done,
       }
       has_valid_request = true;
     }
-    // Si au moins une requête est terminée, sort de la boucle.
+    // If at least one request is completed, exit the loop.
     if (one_request_done)
       break;
-    // Si ici, aucune requête n'a abouti. On bloque jusqu'à ce qu'il y ait
-    // un message dans la file sauf s'il n'y a aucune requête valide
-    // (Ceci est possible si toutes les requêtes de la liste sont des
-    // requêtes nulles).
+    // If not, no request succeeded. We block until there is
+    // a message in the queue unless there are no valid requests
+    // (This is possible if all requests in the list are null requests).
     if (!has_valid_request)
       break;
-    // En mode non bloquant, on a déjà testé en début de boucle si
-    // une requête est disponible. Si on est ici on peut sortir directement
-    // sinon on va bloquer.
+    // In non-blocking mode, we already tested at the beginning of the loop if
+    // a request is available. If we are here, we can exit directly
+    // otherwise we will block.
     if (is_non_blocking)
       break;
     TRACE_DEBUG("** WAIT REQUEST AVAILABLE rank={0}",m_rank);
@@ -556,7 +557,7 @@ probe(const MP::PointToPointMessageInfo& message)
   if (!message.isValid())
     return MessageId();
 
-  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  // The message must be initialized with a (rank/tag) pair.
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
@@ -566,23 +567,22 @@ probe(const MP::PointToPointMessageInfo& message)
   if (is_blocking)
     ARCANE_THROW(NotImplementedException,"blocking probe");
 
-  // TODO: regarder pour mettre une sécurité anti-bouclage
-  // TODO: il faudrait vérifier que si on appelle deux fois cette
-  // méthode avec les mêmes informations on ne récupère pas le même message.
-  // Lorsque ce sera aussi le cas il faudra modifier legacyProbe() en
-  // conséquence.
+  // TODO: look into adding anti-loop safety
+  // TODO: we should check that if this
+  // method is called twice with the same information, the same message is not retrieved.
+  // When that is the case, legacyProbe() will need to be modified accordingly.
   for(;;){
     _testOrWaitRequestAvailable(is_blocking);
     auto* req = _getMatchingSendRequest(rank,m_rank,tag);
     if (req){
-      // TODO: Vérifier que la réquête est bien avec un buffer et pas un
+      // TODO: Verify that the request has a buffer and not an
       // 'ISerializer'.
       Int64 send_size = req->sendBufferInfo().memoryBuffer().size();
       MessageId::SourceInfo si(req->orig(),req->tag(),send_size);
       return MessageId(si,(size_t)req->id());
     }
     if (!is_blocking)
-      // En non bloquant, sort de la boucle même si on n'a pas de requête.
+      // In non-blocking mode, exit the loop even if no request is found.
       break;
   }
   return {};
@@ -594,9 +594,9 @@ probe(const MP::PointToPointMessageInfo& message)
 MP::MessageSourceInfo SharedMemoryMessageQueue::SubQueue::
 legacyProbe(const MP::PointToPointMessageInfo& message)
 {
-  // Fait un probe normal mais ne conserve pas l'information du message.
-  // NOTE: cela fonctionne car probe() peut retourner plusieurs fois le même
-  // message. Lorsque ce ne sera plus le cas il faudra modifier cela.
+  // Performs a normal probe but does not retain message information.
+  // NOTE: this works because probe() can return the same
+  // message multiple times. When that is no longer the case, this will need to be modified.
   MP::MessageId message_id = probe(message);
   if (message_id.isValid())
     return message_id.sourceInfo();
@@ -662,8 +662,8 @@ void SharedMemoryMessageQueue::
 waitAll(ArrayView<Request> requests)
 {
   Integer nb_request = requests.size();
-  // Pour ne pas que cela bloque, il faut que les requêtes soient faites
-  // par ordre croissant des files, et les 'receive' D'ABORD !!
+  // To prevent blocking, the requests must be processed
+  // in ascending order of queues, and 'receive' FIRST!!
   UniqueArray<SharedMemoryMessageRequest*> sorted_requests(nb_request);
   for( Integer i=0; i<nb_request; ++i ){
     sorted_requests[i] = (SharedMemoryMessageRequest*)requests[i].requestAsVoidPtr();

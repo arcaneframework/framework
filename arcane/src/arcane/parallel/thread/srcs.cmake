@@ -1,4 +1,4 @@
-set(ARCANE_SOURCES
+﻿set(ARCANE_SOURCES
   ArcaneThread.h
   ArcaneThreadMisc.h
 
@@ -26,8 +26,7 @@ set(ARCANE_SOURCES
   internal/SharedMemoryMachineShMemWinBaseInternalCreator.cc
   internal/SharedMemoryMachineShMemWinBaseInternalCreator.h
 
-  # TODO: les fichiers suivants sont gardés pour des raisons
-  # de compatibilité avec l'existant. Il faudra les supprimer
+  # TODO: the following files are kept for compatibility with the existing system. They must be removed
   IThreadMessageQueue.h
   ThreadMessageQueue2.h
   ThreadParallelMng.h

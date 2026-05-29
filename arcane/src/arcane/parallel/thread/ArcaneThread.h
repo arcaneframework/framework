@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneThread.h                                              (C) 2000-2020 */
 /*                                                                           */
-/* Fichier d'en-tête pour les threads.                                       */
+/* Header file for threads.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_ARCANETHREAD_H
 #define ARCANE_PARALLEL_THREAD_ARCANETHREAD_H
@@ -36,5 +36,4 @@ using MessageId = MP::MessageId;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

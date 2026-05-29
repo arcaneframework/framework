@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* HybridContigMachineShMemWinBaseInternal.cc                  (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* Class allowing the creation of a memory window for all subdomains in      */
+/* shared memory of processes on the same node.                              */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
@@ -74,7 +74,7 @@ segmentView(Int32 rank)
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
 
-  // Si le rang est un thread de notre processus.
+  // If the rank is a thread of our process.
   if (fri.mpiRankValue() == m_my_rank_mpi) {
     const Span<std::byte> segment_proc = m_mpi_window->segmentView();
     const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[fri.localRankValue()];
@@ -123,7 +123,7 @@ segmentConstView(Int32 rank) const
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
 
-  // Si le rang est un thread de notre processus.
+  // If the rank is a thread of our process.
   if (fri.mpiRankValue() == m_my_rank_mpi) {
     const Span<const std::byte> segment_proc = m_mpi_window->segmentConstView();
     const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[fri.localRankValue()];

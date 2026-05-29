@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryMessageQueue.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation d'une file de messages en mémoire partagée.                */
+/* Implementation of a message queue in shared memory.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYMESSAGEQUEUE_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYMESSAGEQUEUE_H
@@ -41,8 +41,9 @@ using MessageTag = MP::MessageTag;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief File de messages entre les rangs partagés par un SharedMemoryParallelMng.
+ * \brief Message queue between ranks shared by a SharedMemoryParallelMng.
  */
 class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 : public ISharedMemoryMessageQueue
@@ -97,10 +98,11 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Message entre SharedMemoryMessageQueue.
+ * \brief Message within SharedMemoryMessageQueue.
  *
- * Cette classe gère à la fois les messages d'envoi et de réception.
+ * This class handles both send and receive messages.
  */
 class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
 {
@@ -135,7 +137,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
         ARCANE_FATAL("Null rank for thread1");
       if (thread2.isNull())
         ARCANE_FATAL("Null rank for thread2");
-      // TODO: gérer dest()==A_NULL_RANK.
+      // TODO: handle dest()==A_NULL_RANK.
       return thread1.value() + (thread2.value() * m_nb_thread);
     }
     Int32 m_nb_thread;
@@ -143,14 +145,14 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
  public:
   using SubQueue = SharedMemoryMessageQueue::SubQueue;
  public:
-  //! Créé une requête d'envoie
+  //! Create a send request
   SharedMemoryMessageRequest(SubQueue* queue,Int64 request_id,MessageRank orig,
                              MessageRank dest,MessageTag tag,ReceiveBufferInfo buf)
   : m_queue(queue), m_request_id(request_id), m_is_recv(true)
   , m_orig(orig), m_dest(dest), m_tag(tag), m_receive_buffer_info(buf)
   {
   }
-  //! Créé une requête de réception
+  //! Create a receive request
   SharedMemoryMessageRequest(SubQueue* queue,Int64 request_id,MessageRank orig,
                              MessageRank dest,MessageTag tag,SendBufferInfo buf)
   : m_queue(queue), m_request_id(request_id), m_is_recv(false)
@@ -172,13 +174,13 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
   void destroy();
   ISerializer* recvSerializer() { return m_receive_buffer_info.serializer(); }
   const ISerializer* sendSerializer() { return m_send_buffer_info.serializer(); }
-  // Dans le cas ou dest()==A_NULL_RANK, positionne une fois le message recu le rang d'origine.
+  // In the case where dest()==A_NULL_RANK, sets the original rank once the message is received.
   void setSource(MessageRank s)
   {
     if (isRecv())
       m_dest = s;
   }
-  //! Requête associée dans le cas où c'est un `receive` issu d'un `probe`
+  //! Associated request in the case it is a `receive` resulting from a `probe`
   SharedMemoryMessageRequest* matchingSendRequest() { return m_matching_send_request; }
   void setMatchingSendRequest(SharedMemoryMessageRequest* r) { m_matching_send_request = r; }
 
@@ -204,5 +206,4 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiBlockVariableSynchronizeDispatcher.cc                    (C) 2000-2025 */
 /*                                                                           */
-/* Gestion spécifique MPI des synchronisations des variables.                */
+/* MPI-specific variable synchronization management.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,13 +27,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette implémentation découpe la synchronisation en bloc de taille fixe.
- * Tout le mécanisme est dans _endSynchronize().
- * L'algorithme est le suivant:
+ * This implementation divides the synchronization into fixed-size blocks.
+ * The entire mechanism is in _endSynchronize().
+ * The algorithm is as follows:
  *
- * 1. Recopie dans les buffers d'envoi les valeurs à envoyer.
- * 2. Boucle sur Irecv/ISend/WaitAll tant que qu'il y a au moins une partie non vide.
- * 3. Recopie depuis les buffers de réception les valeurs des variables.
+ * 1. Copy the values to be sent into the send buffers.
+ * 2. Loop over Irecv/ISend/WaitAll as long as there is at least one non-empty part.
+ * 3. Copy the variable values from the receive buffers.
 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,13 +44,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation par block pour MPI de la synchronisation.
+ * \brief Block implementation for MPI synchronization.
  *
- * Les messages sont envoyés par bloc d'une taille fixe.
+ * Messages are sent in fixed-size blocks.
  *
- * NOTE: cette optimisation respecte la norme MPI qui dit qu'on ne doit
- * plus toucher à la zone mémoire d'un message tant que celui-ci n'est
- * pas fini.
+ * NOTE: This optimization respects the MPI standard which states that the
+ * memory area of a message must not be touched until it is finished.
  */
 class MpiBlockVariableSynchronizerDispatcher
 : public AbstractDataSynchronizeImplementation
@@ -144,16 +143,16 @@ _isSkipRank(Int32 rank, Int32 sequence) const
 void MpiBlockVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  // Ne fait rien au niveau MPI dans cette partie car cette implémentation
-  // ne supporte pas l'asyncrhonisme.
-  // On se contente de recopier les valeurs des variables dans le buffer d'envoi
-  // pour permettre ensuite de modifier les valeurs de la variable entre
-  // le _beginSynchronize() et le _endSynchronize().
+  // Does nothing at the MPI level in this part because this implementation
+  // does not support asynchronous operations.
+  // We only copy the variable values into the send buffer to allow the
+  // variable values to be modified between _beginSynchronize() and
+  // _endSynchronize().
 
   double send_copy_time = 0.0;
   {
     MpiTimeInterval tit(&send_copy_time);
-    // Recopie les buffers d'envoi
+    // Copy send buffers
     vs_buf->copyAllSend();
   }
   Int64 total_share_size = vs_buf->totalSendSize();
@@ -189,7 +188,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
         MpiTimeInterval tit(&prepare_time);
         m_request_list->clear();
 
-        // Poste les messages de réception
+        // Post receive messages
         for (Integer i = 0; i < nb_message; ++i) {
           Int32 target_rank = vs_buf->targetRank(i);
           if (_isSkipRank(target_rank, isequence))
@@ -203,7 +202,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
           }
         }
 
-        // Poste les messages d'envoi en mode non bloquant.
+        // Post send messages in non-blocking mode.
         for (Integer i = 0; i < nb_message; ++i) {
           Int32 target_rank = vs_buf->targetRank(i);
           if (_isSkipRank(my_rank, isequence))
@@ -218,11 +217,11 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
         }
       }
 
-      // Si aucune requête alors on a fini notre synchronisation
+      // If no requests, we are done with our synchronization
       if (m_request_list->size() == 0)
         break;
 
-      // Attend que les messages soient terminés
+      // Wait for messages to finish
       {
         MpiTimeInterval tit(&wait_time);
         m_request_list->wait(Parallel::WaitAll);
@@ -232,7 +231,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
     }
   }
 
-  // Recopie les valeurs recues
+  // Copy received values
   {
     MpiTimeInterval tit(&copy_time);
     vs_buf->copyAllReceive();

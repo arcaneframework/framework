@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMachineShMemWinBaseInternalCreator.cc                 (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des objets de type                             */
-/* HybridContigMachineShMemWinBaseInternal. Une instance de cet objet doit   */
-/* être partagée par tous les threads d'un processus.                        */
+/* Class allowing the creation of objects of type                            */
+/* HybridContigMachineShMemWinBaseInternal. An instance of this object must  */
+/* be shared by all threads of a process.                                    */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
@@ -52,7 +52,7 @@ initializeMpiWindowCreator(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mn
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
   Int32 my_rank_local_proc = my_fri.localRankValue();
   if (my_rank_local_proc == 0) {
-    // mpi_parallel_mng->adapter()->initializeWindowCreator(mpi_parallel_mng->machineCommunicator()); // Géré par le MpiParallelMng
+    // mpi_parallel_mng->adapter()->initializeWindowCreator(mpi_parallel_mng->machineCommunicator()); // Managed by MpiParallelMng
     _buildMachineRanksArray(mpi_parallel_mng->adapter()->windowCreator()->machineRanks());
   }
 }
@@ -63,10 +63,10 @@ initializeMpiWindowCreator(Int32 my_rank_global, MpiParallelMng* mpi_parallel_mn
 HybridContigMachineShMemWinBaseInternal* HybridMachineShMemWinBaseInternalCreator::
 createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
-  // On est dans un contexte où chaque processus doit avoir plusieurs segments, un par thread.
-  // Pour que chaque processus puisse avoir accès à toutes les positions des segments de tous les
-  // threads de tous les processus, chaque processus doit partager les positions de ces segments avec
-  // les autres processus. Pour faire ça, on utilise des fenêtres mémoire MPI.
+  // We are in a context where each process must have several segments, one per thread.
+  // For each process to have access to all segment positions from all threads of all processes,
+  // each process must share the positions of these segments with the other processes.
+  // To do this, we use MPI memory windows.
 
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
   Int32 my_rank_local_proc = my_fri.localRankValue();
@@ -77,13 +77,15 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   if (my_rank_local_proc == 0) {
     mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
 
-    // Le nombre d'éléments de chaque segment. Cette fenêtre fera une taille de nb_thread * nb_proc_sur_le_même_noeud.
+    // The number of elements in each segment. This window will be sized
+    // nb_thread * nb_proc_on_the_same_node.
     m_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
     m_sum_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
   }
   m_barrier->wait();
 
-  // nb_elem est le segment de notre processus (qui contient les segments de tous nos threads).
+  // nb_elem is the segment of our process (which contains the
+  // segments of all our threads).
   Span<Int64> sizeof_sub_segments = asSpan<Int64>(m_sizeof_sub_segments->segmentView());
 
   sizeof_sub_segments[my_rank_local_proc] = sizeof_segment;
@@ -108,7 +110,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   auto* window_obj = new HybridContigMachineShMemWinBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_sizeof_sub_segments, m_sum_sizeof_sub_segments, m_window, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridContigMachineShMemWinBaseInternal.
+  // These arrays must be deleted by HybridContigMachineShMemWinBaseInternal.
   if (my_rank_local_proc == 0) {
     m_sizeof_sub_segments.reset();
     m_sum_sizeof_sub_segments.reset();
@@ -148,7 +150,7 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   auto* window_obj = new HybridMachineShMemWinBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_windows, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridMachineShMemWinBaseInternal.
+  // These arrays must be deleted by HybridMachineShMemWinBaseInternal.
   if (my_rank_local_proc == 0) {
     m_windows.reset();
   }

@@ -31,7 +31,7 @@ target_link_libraries(arcane_mpi PUBLIC arcane_impl Arccore::arccore_message_pas
 
 arcane_register_library(arcane_mpi)
 
-# Pour NCCL
+# For NCCL
 if (TARGET Arccore::arccore_accelerator_cuda)
   arcane_find_package(NCCL)
   if (NCCL_FOUND)
@@ -47,4 +47,3 @@ endif()
 # indent-tabs-mode: nil
 # coding: utf-8-with-signature
 # End:
-

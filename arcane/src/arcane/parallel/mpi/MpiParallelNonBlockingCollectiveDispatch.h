@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelNonBlockingCollectiveDispatch.h                  (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation MPI des collectives non bloquantes pour un type donné.     */
+/* MPI implementation of non-blocking collectives for a given type.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIPARALLELNONBLOCKINGCOLLECTIVEDISPATCH_H
 #define ARCANE_PARALLEL_MPI_MPIPARALLELNONBLOCKINGCOLLECTIVEDISPATCH_H
@@ -33,8 +33,9 @@ class IParallelNonBlockingCollective;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation MPI des collectives non bloquantes pour le type \a Type.
+ * \brief MPI implementation of non-blocking collectives for the type \a Type.
  */
 template<class Type>
 class MpiParallelNonBlockingCollectiveDispatchT
@@ -84,5 +85,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelMng.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages en mode mémoire partagé.                      */
+/* Implementation of messages in shared memory mode.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELMNG_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELMNG_H
@@ -38,8 +38,9 @@ class SharedMemoryAllDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un SharedMemoryParallelMng.
+ * \brief Info to construct a SharedMemoryParallelMng.
  */
 struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 {
@@ -73,8 +74,9 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant les threads.
+ * \brief Thread-based parallelism manager.
  */
 class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 : public ParallelMngDispatcher
@@ -149,7 +151,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
  public:
 
-  //! Construit un message avec pour destinataire \a dest
+  //! Constructs a message with destination \a dest
   PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& orig_message);
 
@@ -185,9 +187,9 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IIOMng* m_io_mng;
   ISharedMemoryMessageQueue* m_message_queue;
   bool m_is_parallel;
-  Int32 m_rank; //!< Rang de l'instance
-  Int32 m_nb_rank; //!< Nombre de rangs
-  bool m_is_initialized; //!< \a true si déjà initialisé
+  Int32 m_rank; //!< Rank of the instance
+  Int32 m_nb_rank; //!< Number of ranks
+  bool m_is_initialized; //!< \a true if already initialized
   Parallel::IStat* m_stat;
   IThreadBarrier* m_thread_barrier;
   SharedMemoryAllDispatcher* m_all_dispatchers;

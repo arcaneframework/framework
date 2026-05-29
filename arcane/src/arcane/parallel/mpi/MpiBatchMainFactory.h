@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiBatchMainFactory.h                                       (C) 2000-2016 */
 /*                                                                           */
-/* Fabrique principale pour 'MPI'.                                           */
+/* Main factory for 'MPI'.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIBATCHMAINFACTORY_H
 #define ARCANE_PARALLEL_MPI_MPIBATCHMAINFACTORY_H
@@ -33,8 +33,8 @@ class ARCANE_MPI_EXPORT MpiBatchMainFactory
 
   virtual IArcaneMain* createArcaneMain(const ApplicationInfo& app_info);
 	/*!
-	 * \brief Exécute l'application spécifiée par \a app_info en utilisant
-	 * MPI comme gestionnaire de parallélisme.
+	 * \brief Executes the application specified by \a app_info using
+	 * MPI as the parallelism manager.
 	 */
 	static int exec(const ApplicationInfo& app_info);
 };
@@ -47,4 +47,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

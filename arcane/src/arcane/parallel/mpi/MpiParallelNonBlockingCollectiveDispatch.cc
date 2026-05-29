@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelNonBlockingCollectiveDispatch.cc                 (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation MPI des collectives non bloquantes pour un type donné.     */
+/* MPI implementation of non-blocking collectives for a given type.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,8 +47,8 @@ MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm, IParallelNonBlockingCol
 , m_adapter(adapter)
 , m_datatype(nullptr)
 {
-  // Récupérer le datatype via le dispatcher MpiParallelDispatch
-  // TODO: créer un type pour contenir tous les MpiDatatype.
+  // Get the datatype via the MpiParallelDispatch dispatcher
+  // TODO: create a type to hold all MpiDatatype.
   auto pmd = dynamic_cast<ParallelMngDispatcher*>(m_parallel_mng);
   if (!pmd)
     ARCANE_FATAL("Bad parallelMng()");
@@ -66,8 +66,8 @@ MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm, IParallelNonBlockingCol
 template <class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
 ~MpiParallelNonBlockingCollectiveDispatchT()
 {
-  // NOTE: m_datatype est géré par MpiParallelDispatch et ne doit pas être
-  // détruit ici.
+  // NOTE: m_datatype is managed by MpiParallelDispatch and should not be
+  // destroyed here.
   finalize();
 }
 
@@ -159,10 +159,10 @@ scatterVariable(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Integer
   int my_buf_count = static_cast<int>(nb_elem);
   ConstArrayView<int> count_r(1,&my_buf_count);
 
-  // Récupère le nombre d'éléments de chaque processeur
+  // Get the number of elements from each processor
   m_parallel_mng->allGather(count_r,recv_counts);
 
-  // Remplit le tableau des index
+  // Fill the index array
   int index = 0;
   for( Integer i=0, is=comm_size; i<is; ++i ){
     recv_indexes[i] = index;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiDatatyes.h                                               (C) 2000-2020 */
 /*                                                                           */
-/* Gère les MPI_Datatype associées aux types Arcane.                         */
+/* Manages the MPI_Datatypes associated with Arcane types.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIDATATYPELIST_H
 #define ARCANE_PARALLEL_MPI_MPIDATATYPELIST_H
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gère les MPI_Datatype associées aux types Arcane.
+ * \brief Manages the MPI_Datatypes associated with Arcane types.
  */
 class ARCANE_MPI_EXPORT MpiDatatypeList
 {
@@ -96,4 +96,4 @@ class ARCANE_MPI_EXPORT MpiDatatypeList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

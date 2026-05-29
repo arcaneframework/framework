@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiDatatypeList.cc                                          (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -224,8 +224,8 @@ _init()
   m_long_long = new MpiDatatype(MPI_LONG_LONG);
   m_unsigned_long_long = new MpiDatatype(MPI_UNSIGNED_LONG_LONG);
 
-  // Si on veut une reduction ordonnée, il faut redéfinir l'opérateur de réduction
-  // pour les flottants
+  // If we want an ordered reduction, we must redefine the reduction operator
+  // for floats
   if (is_commutative){
     m_double = new MpiDatatype(MPI_DOUBLE,true,new StdMpiReduceOperator<double>(is_commutative));
     m_long_double = new MpiDatatype(MPI_LONG_DOUBLE,true,new StdMpiReduceOperator<long double>(is_commutative));

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelSuperMng.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,8 +42,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur du parallélisme utilisant MPI.
+ * \brief MPI-based parallelism supervisor.
  */
 class MpiParallelSuperMng
 : public ParallelSuperMngDispatcher
@@ -77,23 +78,23 @@ class MpiParallelSuperMng
 
  public:
 
-  IApplication* m_application; //!< Gestionnaire principal
+  IApplication* m_application; //!< Main manager
   IThreadMng* m_thread_mng;
-  Parallel::IStat* m_stat; //! Statistiques
-  bool m_is_parallel;  //!< \a true si on est en mode parallèle
-  Int32 m_rank; //!< Rang MPI dans le communicateur global de ce processus
-  Int32 m_nb_rank; //!< Nombre de processus MPI dans le communicateur global
-  Int32 m_nb_local_sub_domain; //!< Nombre de sous-domaines locaux
-  MPI_Comm m_mpi_main_communicator; //!< Communicateur MPI
-  MP::Communicator m_main_communicator; //!< Communicateur MPI
-  MP::Communicator m_machine_communicator; //!< Communicateur MPI Machine
+  Parallel::IStat* m_stat; //! Statistics
+  bool m_is_parallel;  //!< \a true if running in parallel mode
+  Int32 m_rank; //!< MPI rank in the global communicator of this process
+  Int32 m_nb_rank; //!< Number of MPI processes in the global communicator
+  Int32 m_nb_local_sub_domain; //!< Number of local sub-domains
+  MPI_Comm m_mpi_main_communicator; //!< MPI Communicator
+  MP::Communicator m_main_communicator; //!< MPI Communicator
+  MP::Communicator m_machine_communicator; //!< MPI Machine Communicator
   MpiErrorHandler m_error_handler;
   MpiAdapter* m_adapter;
   MpiDatatypeList* m_datatype_list;
 
  private:
   
-  // Handler d'erreur
+  // Error handler
   static void _ErrorHandler(MPI_Comm *, int *, ...);
 };
 
@@ -174,13 +175,13 @@ initMPI(IApplication* app)
   argv = app_args.commandLineArgv();
 
   // TODO:
-  // Pouvoir utiliser un autre communicateur que MPI_COMM_WORLD
+  // Be able to use a communicator other than MPI_COMM_WORLD
   int thread_wanted = MPI_THREAD_SERIALIZED;
   int thread_provided = 0;
   arcaneInitializeMPI(argc,argv,thread_wanted);
 
 #ifndef ARCANE_USE_MPC
-  // MPC (v 2.4.1) ne connait pas cette fonction
+  // MPC (v 2.4.1) does not know this function
   MPI_Query_thread(&thread_provided);
 #else
   thread_provided = MPI_THREAD_MULTIPLE;
@@ -188,7 +189,7 @@ initMPI(IApplication* app)
 
   if (thread_provided < thread_wanted) {
     int my_rank = 0;
-    // Affiche un message mais seulement un seul processeur.
+    // Display a message but only on one processor.
     MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
     if (my_rank==0)
       app->traceMng()->info() << "WARNING: MPI thread level provided!=wanted ("
@@ -225,7 +226,7 @@ build()
 {
   ITraceMng* tm = m_application->traceMng();
 
-  // TODO: Regarder s'il faut faire une réduction sur tous les temps.
+  // TODO: Check if a reduction needs to be done over all times.
   Real start_time = platform::getRealTime();
   initMPI(m_application);
   Real end_time = platform::getRealTime();
@@ -325,10 +326,11 @@ barrier()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur en mode MPI avec un seul process alloué pour
- * se comporter comme en séqentiel mais avec un communicateur MPI qui
- * existe car on est compilé avec MPI.
+ * \brief MPI mode supervisor with a single allocated process to
+ * behave as if it were sequential but with an existing MPI communicator
+ * because we are compiled with MPI.
  */
 class MpiSequentialParallelSuperMng
 : public SequentialParallelSuperMng

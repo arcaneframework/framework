@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelMng.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des messages avec MPI.                                     */
+/* Implementation of messages using MPI.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIPARALLELMNG_H
 #define ARCANE_PARALLEL_MPI_MPIPARALLELMNG_H
@@ -38,7 +38,7 @@ class ArcaneMpiSerializeMessageList;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour construire un MpiParallelMng.
+ * \brief Info to construct an MpiParallelMng.
  */
 struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 {
@@ -75,8 +75,9 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant MPI.
+ * \brief Parallelism manager using MPI.
  */
 class ARCANE_MPI_EXPORT MpiParallelMng
 : public ParallelMngDispatcher
@@ -192,9 +193,9 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   MpiDatatypeList* m_datatype_list = nullptr;
   MpiAdapter* m_adapter = nullptr;
   bool m_is_parallel = false;
-  Int32 m_comm_rank = A_NULL_RANK; //!< Numéro du processeur actuel
-  Int32 m_comm_size = 0; //!< Nombre de sous-domaines
-  bool m_is_initialized = false; //!< \a true si déjà initialisé
+  Int32 m_comm_rank = A_NULL_RANK; //!< Current processor number
+  Int32 m_comm_size = 0; //!< Number of subdomains
+  bool m_is_initialized = false; //!< \a true if already initialized
   Parallel::IStat* m_stat = nullptr;
   MPI_Comm m_communicator = MPI_COMM_NULL;
   MPI_Comm m_machine_communicator = MPI_COMM_NULL;
@@ -220,4 +221,4 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

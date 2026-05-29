@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiNeighborVariableSynchronizeDispatcher.cc                 (C) 2000-2025 */
 /*                                                                           */
-/* Synchronisations des variables via MPI_Neighbor_alltoallv.                */
+/* Variable synchronizations via MPI_Neighbor_alltoallv.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,9 +30,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette implémentation utilise la fonction MPI_Neighbor_alltoallv pour
- * les synchronisations. Cette fonction est disponible dans la version 3.1
- * de MPI.
+ * This implementation uses the MPI_Neighbor_alltoallv function for
+ * synchronizations. This function is available in version 3.1
+ * of MPI.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,8 +42,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Implémentation de la synchronisations des variables via
+ * \brief Implementation of variable synchronization via
  * MPI_Neighbor_alltoallv().
  */
 class MpiNeighborVariableSynchronizerDispatcher
@@ -122,17 +123,17 @@ MpiNeighborVariableSynchronizerDispatcher(Factory* f)
 void MpiNeighborVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* buf)
 {
-  // Ne fait rien au niveau MPI dans cette partie car cette implémentation
-  // ne supporte pas encore l'asynchronisme.
-  // On se contente de recopier les valeurs des variables dans le buffer d'envoi
-  // pour permettre ensuite de modifier les valeurs de la variable entre
-  // le beginSynchronize() et le endSynchronize().
+  // Does nothing at the MPI level in this part because this implementation
+  // does not yet support asynchronous operations.
+  // We simply copy the variable values into the send buffer
+  // to allow the variable values to be modified between
+  // beginSynchronize() and endSynchronize().
 
   double send_copy_time = 0.0;
   {
     MpiTimeInterval tit(&send_copy_time);
 
-    // Recopie les buffers d'envoi
+    // Copies the send buffers
     buf->copyAllSend();
   }
   Int64 total_share_size = buf->totalSendSize();
@@ -184,7 +185,7 @@ endSynchronize(IDataSynchronizeBuffer* buf)
                            communicator);
   }
 
-  // Recopie les valeurs recues
+  // Copies the received values
   {
     MpiTimeInterval tit(&copy_time);
     buf->copyAllReceive();
@@ -211,9 +212,9 @@ compute()
 
   const Int32 nb_message = sync_info->size();
 
-  // Certaines versions de OpenMPI (avant la 4.1) plantent s'ils n'y a pas
-  // de messages et qu'un des tableaux suivant est vide. Pour contourner
-  // ce problème on alloue un tableau de taille 1.
+  // Some versions of OpenMPI (before 4.1) crash if there are no
+  // messages and one of the following arrays is empty. To bypass
+  // this problem, we allocate an array of size 1.
   Int32 size = nb_message;
   if (size==0)
     size = 1;

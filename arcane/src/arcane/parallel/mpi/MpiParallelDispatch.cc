@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelDispatch.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -122,8 +122,8 @@ _MinMaxSumOperator(void* a,void* b, int* len,MPI_Datatype* type)
   for(Integer i=0;i<n;++i) {
     MinMaxSumInfo& ma = va[i];
     MinMaxSumInfo& mb = vb[i];
-    // Il faut bien etre certain qu'en cas de valeurs egales
-    // le rang retourne est le meme pour tout le monde
+    // It must be certain that in case of equal values
+    // the returned rank is the same for everyone
     if (ma.m_min_value==mb.m_min_value){
       mb.m_min_rank = math::min(mb.m_min_rank,ma.m_min_rank);
     }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GlibThreadImplementation.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des threads utilisant la glib.                             */
+/* Implementation of threads using glib.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des threads utilisant Glib.
+ * \brief Implementation of threads using Glib.
  */
 class ArcaneGlibThreadImplementation
 : public Arccore::GlibThreadImplementation

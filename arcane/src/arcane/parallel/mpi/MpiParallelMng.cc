@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelMng.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,7 +77,7 @@ extern "C++" IIOMng*
 arcaneCreateIOMng(IParallelMng* psm);
 
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
-// Défini dans MpiNeighborVariableSynchronizeDispatcher
+// Defined in MpiNeighborVariableSynchronizeDispatcher
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
                                                    Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator);
@@ -127,7 +127,7 @@ MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Communicateur spécifique créé via MPI_Dist_graph_create_adjacent.
+ * \brief Specific communicator created via MPI_Dist_graph_create_adjacent.
  */
 class VariableSynchronizerMpiCommunicator
 : public IVariableSynchronizerMpiCommunicator
@@ -166,8 +166,8 @@ class VariableSynchronizerMpiCommunicator
     if (r!=MPI_SUCCESS)
       ARCANE_FATAL("Error '{0}' in MPI_Dist_graph_create",r);
 
-    // Vérifie que l'ordre des rangs pour l'implémentation MPI est le même que celui qu'on a dans
-    // le VariableSynchronizer.
+    // Checks that the rank order for the MPI implementation is the same as the one we have in
+    // the VariableSynchronizer.
     {
       int indegree = 0;
       int outdegree = 0;
@@ -216,10 +216,10 @@ class VariableSynchronizerMpiCommunicator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Synchronizer spécifique MPI.
+ * \brief Specific MPI synchronizer.
  *
- * Cette classe surcharge VariableSynchronizer::compute() pour calculer
- * un communicateur spécifique.
+ * This class overrides VariableSynchronizer::compute() to calculate
+ * a specific communicator.
  */
 class MpiVariableSynchronizer
 : public VariableSynchronizer
@@ -236,7 +236,7 @@ class MpiVariableSynchronizer
   void compute() override
   {
     VariableSynchronizer::compute();
-    // Si non nul, calcule la topologie
+    // If not null, calculate the topology
     if (m_topology_info.get())
       m_topology_info->compute(this);
   }
@@ -302,8 +302,8 @@ class MpiParallelMngUtilsFactory
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     ITraceMng* tm = pm->traceMng();
     Ref<IDataSynchronizeImplementationFactory> generic_factory;
-    // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
-    // plusieurs fois le même message.
+    // Only displays information for the group of all meshes to avoid displaying
+    // the same message multiple times.
     bool do_print = (group.isAllItems() && group.itemKind()==IK_Cell);
     if (m_synchronizer_version == 2){
       if (do_print)
@@ -397,7 +397,7 @@ class MpiParallelMng::Impl
         m_shmem_available = 1;
         return true;
       }
-      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      // Problem with MPI. May occur if MPICH is compiled in ch3:sock mode.
       m_shmem_available = 2;
       return false;
     }
@@ -435,9 +435,9 @@ class MpiParallelMng::Impl
   MpiParallelMng* m_parallel_mng;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 
-  // 0 = Attribut non initialisé
-  // 1 = Mémoire partagée dispo
-  // 2 = Mémoire partagée non dispo
+  // 0 = Attribute not initialized
+  // 1 = Shared memory available
+  // 2 = Shared memory not available
   Int8 m_shmem_available = 0;
 };
 
@@ -503,7 +503,7 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Classe pour créer les différents dispatchers
+// Class to create the different dispatchers
 class DispatchCreator
 {
  public:
@@ -558,7 +558,7 @@ build()
     m_is_timer_owned = true;
   }
 
-  // Créé le gestionnaire séquentiel associé.
+  // Created the associated sequential manager.
   {
     SequentialParallelMngBuildInfo bi(timerMng(),worldParallelMng());
     bi.setTraceMng(traceMng());
@@ -567,8 +567,8 @@ build()
     m_sequential_parallel_mng = arcaneCreateSequentialParallelMngRef(bi);
   }
 
-  // Indique que les reduces doivent être fait dans l'ordre des processeurs
-  // afin de garantir une exécution déterministe
+  // Indicates that reduces must be performed in processor order
+  // in order to guarantee deterministic execution
   bool is_ordered_reduce = false;
   if (platform::getEnvironmentVariable("ARCANE_ORDERED_REDUCE")=="TRUE")
     is_ordered_reduce = true;
@@ -580,11 +580,11 @@ build()
   m_adapter = adapter;
   auto mpm = _messagePassingMng();
 
-  // NOTE: cette instance sera détruite par le ParallelMngDispatcher
+  // NOTE: this instance will be destroyed by the ParallelMngDispatcher
   auto* control_dispatcher = new ControlDispatcherDecorator(this,m_adapter);
   _setControlDispatcher(control_dispatcher);
 
-  // NOTE: cette instance sera détruite par le ParallelMngDispatcher
+  // NOTE: this instance will be destroyed by the ParallelMngDispatcher
   auto* serialize_dispatcher = new MpiSerializeDispatcher(m_adapter, mpm);
   m_mpi_serialize_dispatcher = serialize_dispatcher;
   _setSerializeDispatcher(serialize_dispatcher);
@@ -617,6 +617,7 @@ initialize()
     return;
   }
 
+  // Initialization of MpiParallelMng
   m_trace->info() << "Initialisation de MpiParallelMng";
   m_sequential_parallel_mng->initialize();
 
@@ -912,7 +913,7 @@ setReplication(IParallelReplication* v)
 IParallelMng* MpiParallelMng::
 _createSubParallelMng(MPI_Comm sub_communicator)
 {
-  // Si nul, ce rang ne fait pas partie du sous-communicateur
+  // If null, this rank is not part of the sub-communicator
   if (sub_communicator==MPI_COMM_NULL)
     return nullptr;
 
@@ -974,12 +975,13 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de MpiRequestList pour MpiParallelMng.
+ * \brief Specialization of MpiRequestList for MpiParallelMng.
  *
- * Cette classe fait juste en sorte d'appeler _checkFinishedSubRequests();
- * après les wait. Elle ne sera plus utile lorsqu'on utilisera l'implémentation
- * 'SerializeMessageList' de message_passing.
+ * This class just ensures that _checkFinishedSubRequests() is called after waits.
+ * It will no longer be useful when the 'SerializeMessageList' implementation
+ * from message_passing is used.
  */
 class MpiParallelMng::RequestList
 : public MpiRequestList

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMessageQueue.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* File de messages pour une implémentation MPI/Thread.                      */
+/* Message file for an MPI/Thread implementation.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Macro pour afficher des messages pour debug
+// Macro to display messages for debug
 #define TRACE_DEBUG(needed_debug_level,format_str,...) \
   if (m_debug_level>=needed_debug_level){ \
     info() << String::format("Hybrid " format_str,__VA_ARGS__);\
@@ -114,7 +114,7 @@ _buildMPIMessage(const PointToPointMessageInfo& message,
 void HybridMessageQueue::
 waitAll(ArrayView<Request> requests)
 {
-  // TODO: fusionner ce qui est possible avec waitSome.
+  // TODO: merge what is possible with waitSome.
   Integer nb_request = requests.size();
   UniqueArray<Request> mpi_requests;
   UniqueArray<Request> thread_requests;
@@ -137,7 +137,7 @@ waitAll(ArrayView<Request> requests)
   if (thread_requests.size()!=0)
     m_thread_queue->waitAll(thread_requests);
 
-  // On remet à zero toutes les requetes pour pouvoir rappeler les fonctions Wait !
+  // We reset all requests to be able to call the Wait functions!
   for( Request r : requests )
     r.reset();
 }
@@ -168,12 +168,12 @@ _testOrWaitSome(Int32 rank,ArrayView<Request> requests,ArrayView<bool> requests_
   Integer nb_request = requests.size();
   TRACE_DEBUG(2,"Hybrid: wait some rank={0} requests n={1}",rank,nb_request);
 
-  // Il faut séparer les requêtes MPI des requêtes en mémoire partagée.
-  // TODO: avec la notion de requête généralisé de MPI, il serait peut-être
-  // possible de fusionner cela.
+  // We must separate MPI requests from shared memory requests.
+  // TODO: with the notion of generalized MPI requests, it might be
+  // possible to merge this.
   UniqueArray<Request> mpi_requests;
   UniqueArray<Request> shm_requests;
-  // Indice des requêtes dans la liste globale \a requests
+  // Index of requests in the global list \a requests
   UniqueArray<Integer> mpi_requests_index;
   UniqueArray<Integer> shm_requests_index;
 
@@ -198,21 +198,22 @@ _testOrWaitSome(Int32 rank,ArrayView<Request> requests,ArrayView<bool> requests_
   TRACE_DEBUG(2,"Hybrid: wait some rank={0} nb_mpi={1} nb_shm={2}",
               rank,mpi_requests.size(),shm_requests.size());
 
-  // S'il n'y a aucune requête valide, inutile d'aller plus loin.
-  // Il ne faut cependant pas retourner '0' car on doit faire
-  // la différence entre aucune requête disponible pour le mode 'is_non_blocking'
-  // et aucune requête valide.
+  // If there are no valid requests, there is no need to proceed.
+  // However, we must not return '0' because we must make
+  // the difference between no requests available for the 'is_non_blocking'
+  // mode
+  // and no valid requests.
   if (mpi_requests.size()==0 && shm_requests.size()==0)
     return (-1);
 
-  // Même en mode waitSome, il faut utiliser le mode non bloquant car
-  // on ne sait pas entre les threads et MPI quelles seront les requêtes
-  // qui sont disponibles
+  // Even in waitSome mode, we must use non-blocking mode because
+  // we do not know between threads and MPI which requests will be
+  // available
 
-  // Les requêtes ont pu être modifiées si elles ne sont pas terminées.
-  // Il faut donc les remettre dans la liste \a requests. Dans notre
-  // cas il suffit uniquement de recopier la nouvelle valeur dans
-  // l'instance correspondante de HybridMessageRequest.
+  // The requests may have been modified if they are not finished.
+  // Therefore, they must be put back into the \a requests list. In our
+  // case, it is enough to only copy the new value into
+  // the corresponding instance of HybridMessageRequest.
   UniqueArray<bool> mpi_done_indexes;
   Integer nb_mpi_request = mpi_requests.size();
 
@@ -264,11 +265,11 @@ _testOrWaitSome(Int32 rank,ArrayView<Request> requests,ArrayView<bool> requests_
 Request HybridMessageQueue::
 _addReceiveRankTag(const PointToPointMessageInfo& message,ReceiveBufferInfo buf_info)
 {
-  // On ne supporte pas les réceptions avec ANY_RANK car on ne sait pas
-  // s'il faut faire un 'receive' avec MPI ou en mémoire partagée.
-  // Dans ce cas, l'utilisateur doit plutôt utiliser probe()
-  // pour savoir ce qui est disponible et envoyer faire un addReceive()
-  // avec un MessageId.
+  // We do not support receives with ANY_RANK because we do not know
+  // whether we need to perform a 'receive' with MPI or in shared memory.
+  // In this case, the user must instead use probe()
+  // to know what is available and send an addReceive()
+  // with a MessageId.
   if (message.destinationRank().isNull())
     ARCANE_THROW(NotSupportedException,"Receive with any rank. Use probe() and MessageId instead");
 
@@ -295,7 +296,7 @@ _addReceiveRankTag(const PointToPointMessageInfo& message,ReceiveBufferInfo buf_
     TRACE_DEBUG(1,"** MPITMQ THREAD ADD RECV B queue={0} message={1} size={2} same_mpi?={3}",
                 this,message,size,fri.isSameMpiRank());
 
-    //TODO: utiliser le vrai MPI_Datatype
+    //TODO: use the real MPI_Datatype
     MPI_Datatype char_data_type = MpiBuiltIn::datatype(char());
     MessageTag mpi_tag = m_rank_tag_builder.tagForReceive(message.tag(),fri);
     Request r = m_mpi_adapter->directRecv(buf.data(),size,fri.destination().mpiRankValue(),sizeof(char),
@@ -340,7 +341,7 @@ _addReceiveMessageId(const PointToPointMessageInfo& message,ReceiveBufferInfo bu
     ByteSpan buf = buf_info.memoryBuffer();
     Int64 size = buf.size();
 
-    // TODO: utiliser le vrai MPI_Datatype
+    // TODO: use the real MPI_Datatype
     MPI_Datatype char_data_type = MpiBuiltIn::datatype(char());
     MessageId mpi_message(message_id);
     MessageId::SourceInfo mpi_si(si);
@@ -386,14 +387,14 @@ addSend(const PointToPointMessageInfo& message,SendBufferInfo buf_info)
 
   SourceDestinationFullRankInfo fri = _getFullRankInfo(message);
 
-  // Même rang donc envoie via la file en mémoire partagée.
+  // Same rank, so send via the shared memory queue.
   if (fri.isSameMpiRank()){
     TRACE_DEBUG(1,"** MPITMQ SHM ADD SEND S queue={0} message={1}",this,message);
     PointToPointMessageInfo p2p_message(_buildSharedMemoryMessage(message,fri));
     return m_thread_queue->addSend(p2p_message,buf_info);
   }
 
-  // Envoie via MPI
+  // Send via MPI
   MessageTag mpi_tag = m_rank_tag_builder.tagForSend(message.tag(),fri);
   const ISerializer* serializer = buf_info.serializer();
   if (serializer){
@@ -407,9 +408,9 @@ addSend(const PointToPointMessageInfo& message,SendBufferInfo buf_info)
     ByteConstSpan buf = buf_info.memoryBuffer();
     Int64 size = buf.size();
 
-    // TODO: utiliser m_mpi_parallel_mng mais il faut faire attention
-    // d'utiliser le mode bloquant
-    // TODO: utiliser le vrai MPI_Datatype
+    // TODO: use m_mpi_parallel_mng but must be careful
+    // to use blocking mode
+    // TODO: use the real MPI_Datatype
     MPI_Datatype char_data_type = MpiBuiltIn::datatype(char());
 
     TRACE_DEBUG(1,"** MPITMQ MPI ADD SEND B queue={0} message={1} size={2} mpi_tag={3} mpi_rank={4}",
@@ -436,7 +437,7 @@ probe(const MP::PointToPointMessageInfo& message)
   if (!message.isValid())
     return MessageId();
 
-  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  // The message must be initialized with a (rank/tag) pair.
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
@@ -455,25 +456,25 @@ probe(const MP::PointToPointMessageInfo& message)
   if (dest.isNull() && !m_is_allow_null_rank_for_any_source)
     ARCANE_FATAL("Can not use probe() with null rank. Use MessageRank::anySourceRank() instead");
   if (is_any_source) {
-    // Comme on ne sait pas de qui on va recevoir, il faut tester à la
-    // fois la file de thread et via MPI.
+    // Since we don't know who we will receive from, we must
+    // test both the thread queue and via MPI.
     MP::PointToPointMessageInfo p2p_message(message);
     p2p_message.setEmiterRank(orig_fri.localRank());
     message_id = m_thread_queue->probe(p2p_message);
     if (message_id.isValid()){
-      // On a trouvé un message dans la liste de thread.
-      // Comme on est dans notre liste de thread, le
-      // rang global est notre rang MPI + le rang local trouvé.
+      // We found a message in the thread list.
+      // Since we are in our thread list, the global rank is our
+      // MPI rank + the found local rank.
       found_dest = orig_fri.mpiRankValue()*m_local_nb_rank + message_id.sourceInfo().rank().value();
       TRACE_DEBUG(2,"Probe with null_rank (thread) orig={0} found_dest={1} tag={2}",
                   orig,found_dest,user_tag);
     }
     else{
-      // Recherche via MPI.
-      // La difficulté est que le rang local du PE originaire du message
-      // est codé dans le tag et qu'on ne connait pas le PE originaire.
-      // Il faut donc tester tous les tag potentiels. Leur nombre est
-      // égal à 'm_nb_local_rank'.
+      // Search via MPI.
+      // The difficulty is that the local rank of the originating PE of the message
+      // is encoded in the tag and we do not know the originating PE.
+      // Therefore, we must test all potential tags. Their number is
+      // equal to 'm_nb_local_rank'.
       for( Integer z=0, zn=m_local_nb_rank; z<zn; ++z ){
         MP::PointToPointMessageInfo mpi_message(message);
         MessageTag mpi_tag = m_rank_tag_builder.tagForReceive(user_tag,orig_fri.localRank(),MessageRank(z));
@@ -481,8 +482,8 @@ probe(const MP::PointToPointMessageInfo& message)
         TRACE_DEBUG(2,"Probe with null_rank orig={0} dest={1} tag={2}",orig,dest,mpi_tag);
         message_id = m_mpi_adapter->probeMessage(mpi_message);
         if (message_id.isValid()){
-          // On a trouvé un message MPI. Il faut extraire du tag le
-          // rang local. Le rang MPI est celui dans le message.
+          // We found an MPI message. We must extract the local rank
+          // from the tag. The MPI rank is the one in the message.
           MessageRank mpi_rank = message_id.sourceInfo().rank();
           MessageTag ret_tag = message_id.sourceInfo().tag();
           Int32 local_rank = m_rank_tag_builder.getReceiveRankFromTag(ret_tag);
@@ -495,8 +496,8 @@ probe(const MP::PointToPointMessageInfo& message)
     }
   }
   else{
-    // Il faut convertir le rang `dest` en le rang attendu par la file de thread
-    // ou par MPI.
+    // The rank `dest` must be converted to the rank expected by the thread queue
+    // or by MPI.
     if (orig_fri.mpiRank()==dest_fri.mpiRank()){
       MP::PointToPointMessageInfo p2p_message(message);
       p2p_message.setDestinationRank(MP::MessageRank(dest_fri.localRank()));
@@ -513,8 +514,8 @@ probe(const MP::PointToPointMessageInfo& message)
     }
   }
   if (message_id.isValid()){
-    // Il faut transformer le rang local retourné par les méthodes précédentes
-    // en un rang global
+    // The local rank returned by the previous methods must be transformed
+    // into a global rank
     MessageId::SourceInfo si = message_id.sourceInfo();
     si.setRank(MessageRank(found_dest));
     message_id.setSourceInfo(si);
@@ -538,7 +539,7 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
   if (!message.isValid())
     return {};
 
-  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  // The message must be initialized with a (rank/tag) pair.
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
@@ -557,25 +558,25 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
   if (dest.isNull() && !m_is_allow_null_rank_for_any_source)
     ARCANE_FATAL("Can not use legacyProbe() with null rank. Use MessageRank::anySourceRank() instead");
   if (is_any_source) {
-    // Comme on ne sait pas de qui on va recevoir, il faut tester à la
-    // fois la file de thread et via MPI.
+    // Since we don't know who we will receive from, we must test
+    // both the thread queue and via MPI.
     MP::PointToPointMessageInfo p2p_message(message);
     p2p_message.setEmiterRank(orig_fri.localRank());
     message_source_info = m_thread_queue->legacyProbe(p2p_message);
     if (message_source_info.isValid()){
-      // On a trouvé un message dans la liste de thread.
-      // Comme on est dans notre liste de thread, le
-      // rang global est notre rang MPI + le rang local trouvé.
+      // We found a message in the thread list.
+      // Since we are in our thread list, the global rank is our
+      // MPI rank + the found local rank.
       found_dest = orig_fri.mpiRankValue()*m_local_nb_rank + message_source_info.rank().value();
       TRACE_DEBUG(2,"LegacyProbe with null_rank (thread) orig={0} found_dest={1} tag={2}",
                   orig,found_dest,user_tag);
     }
     else{
-      // Recherche via MPI.
-      // La difficulté est que le rang local du PE originaire du message
-      // est codé dans le tag et qu'on ne connait pas le PE originaire.
-      // Il faut donc tester tous les tag potentiels. Leur nombre est
-      // égal à 'm_nb_local_rank'.
+      // Search via MPI.
+      // The difficulty is that the local rank of the originating PE of the message
+      // is encoded in the tag and we do not know the originating PE.
+      // Therefore, we must test all potential tags. Their number is
+      // equal to 'm_nb_local_rank'.
       for( Integer z=0, zn=m_local_nb_rank; z<zn; ++z ){
         MP::PointToPointMessageInfo mpi_message(message);
         MessageTag mpi_tag = m_rank_tag_builder.tagForReceive(user_tag,orig_fri.localRank(),MessageRank(z));
@@ -583,15 +584,15 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
         TRACE_DEBUG(2,"LegacyProbe with null_rank orig={0} dest={1} tag={2}",orig,dest,mpi_tag);
         message_source_info = m_mpi_adapter->legacyProbeMessage(mpi_message);
         if (message_source_info.isValid()){
-          // On a trouvé un message MPI. Il faut extraire du tag le
-          // rang local. Le rang MPI est celui dans le message.
+          // We found an MPI message. We must extract the local rank
+          // from the tag. The MPI rank is the one in the message.
           MessageRank mpi_rank = message_source_info.rank();
           MessageTag ret_tag = message_source_info.tag();
           Int32 local_rank = m_rank_tag_builder.getReceiveRankFromTag(ret_tag);
           found_dest = mpi_rank.value()*m_local_nb_rank + local_rank;
           TRACE_DEBUG(2,"LegacyProbe null rank found mpi_rank={0} local_rank={1} tag={2}",
                       ret_tag,mpi_rank,local_rank,ret_tag);
-          // Remet le tag d'origine pour pouvoir faire un receive avec.
+          // Restore the original tag to be able to perform a receive with it.
           message_source_info.setTag(user_tag);
           break;
         }
@@ -599,8 +600,8 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
     }
   }
   else{
-    // Il faut convertir le rang `dest` en le rang attendu par la file de thread
-    // ou par MPI.
+    // The rank `dest` must be converted to the rank expected by the thread queue
+    // or by MPI.
     if (orig_fri.mpiRank()==dest_fri.mpiRank()){
       MP::PointToPointMessageInfo p2p_message(message);
       p2p_message.setDestinationRank(MP::MessageRank(dest_fri.localRank()));
@@ -616,14 +617,13 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
       TRACE_DEBUG(2,"LegacyProbe MPI orig={0} dest={1} mpi_tag={2} user_tag={3}",orig,dest,mpi_tag,user_tag);
       message_source_info = m_mpi_adapter->legacyProbeMessage(mpi_message);
       if (message_source_info.isValid()){
-        // Remet le tag d'origine pour pouvoir faire un receive avec.
+        // Restore the original tag to be able to perform a receive with it.
         message_source_info.setTag(user_tag);
       }
     }
   }
   if (message_source_info.isValid()){
-    // Il faut transformer le rang local retourné par les méthodes précédentes
-    // en un rang global
+    // The local rank returned by the previous methods must be transformed into a global rank
     message_source_info.setRank(MessageRank(found_dest));
   }
   TRACE_DEBUG(2,"LegacyProbe has matched message? = {0}",message_source_info.isValid());

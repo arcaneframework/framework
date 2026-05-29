@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMpi.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations globales pour la partie MPI de Arcane.                       */
+/* Global declarations for the MPI part of Arcane.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_ARCANEMPI_H
 #define ARCANE_PARALLEL_MPI_ARCANEMPI_H
@@ -37,9 +37,8 @@ namespace MpiBuiltIn = MessagePassing::Mpi::MpiBuiltIn;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Mécanisme pour initialiser automatiquement MPI et les
- * services d'échange de messages de Arcane en fonction des paramètres
- * de ApplicationBuildInfo.
+ * \brief Mechanism to automatically initialize MPI and Arcane's message
+ * exchange services based on ApplicationBuildInfo parameters.
  */
 extern "C" ARCANE_MPI_EXPORT void
 arcaneAutoDetectMessagePassingServiceMPI();
@@ -47,19 +46,19 @@ arcaneAutoDetectMessagePassingServiceMPI();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Indique si le runtime actuel de MPI a le support de CUDA.
+ * \brief Indicates if the current MPI runtime supports CUDA.
  *
- * Si l'implémentation MPI supporte CUDA cela permet à MPI d'accéder
- * directement à la mémoire du GPU.
+ * If the MPI implementation supports CUDA, it allows MPI to directly access
+ * GPU memory.
  */
 extern "C++" ARCANE_MPI_EXPORT bool
 arcaneIsCudaAwareMPI();
 
 /*!
- * \brief Indique si le runtime actuel de MPI a le support des accélérateurs.
+ * \brief Indicates if the current MPI runtime supports accelerators.
  *
- * Si l'implémentation MPI supporte CUDA ou HIP cela permet à MPI d'accéder
- * directement à la mémoire du GPU.
+ * If the MPI implementation supports CUDA or HIP, it allows MPI to directly
+ * access GPU memory.
  */
 extern "C++" ARCANE_MPI_EXPORT bool
 arcaneIsAcceleratorAwareMPI();
@@ -83,5 +82,4 @@ arcaneFinalizeMPI();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

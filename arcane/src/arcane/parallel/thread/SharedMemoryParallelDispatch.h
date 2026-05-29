@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelDispatch.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation des messages en mémoire partagée.                          */
+/* Implementation of messages in shared memory.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELDISPATCH_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELDISPATCH_H
@@ -77,7 +77,7 @@ class SharedMemoryAllDispatcher
 {
  public:
 
-  //! Informations nécessaires pour créer un sous-parallelMng().
+  //! Information required to create a sub-parallelMng().
   class CreateSubParallelMngInfo
   {
    public:
@@ -118,8 +118,9 @@ class SharedMemoryAllDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base commune à SharedMemoryParallelDispatch
+ * \brief Base class common to SharedMemoryParallelDispatch
  */
 class SharedMemoryParallelDispatchBase
 : public TraceAccessor
@@ -210,8 +211,9 @@ class SharedMemoryParallelDispatchBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for type \a Type
  */
 template <class Type>
 class SharedMemoryParallelDispatch
@@ -395,5 +397,4 @@ class SharedMemoryParallelDispatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

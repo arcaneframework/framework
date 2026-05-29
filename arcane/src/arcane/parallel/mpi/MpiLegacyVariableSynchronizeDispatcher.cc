@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2025 */
 /*                                                                           */
-/* Gestion spécifique MPI des synchronisations des variables.                */
+/* Specific MPI management for variable synchronization.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,14 +33,14 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation optimisée pour MPI de la synchronisation.
+ * \brief Optimized implementation for MPI synchronization.
  *
- * Cette classe implémente la version historique de la synchronisation qui existe
- * dans les versions de Arcane antérieures à la 3.2.
+ * This class implements the historical version of synchronization that exists
+ * in Arcane versions prior to 3.2.
  *
- * Par rapport à la version de base, cette implémentation fait un MPI_Waitsome
- * (au lieu d'un Waitall) et recopie dans le buffer de destination
- * dès qu'un message arrive.
+ * Compared to the base version, this implementation uses MPI_Waitsome
+ * (instead of Waitall) and copies into the destination buffer
+ * as soon as a message arrives.
  */
 class MpiLegacyVariableSynchronizerDispatcher
 : public AbstractDataSynchronizeImplementation
@@ -131,7 +131,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   MPI_Datatype byte_dt = dtlist->datatype(Byte())->datatype();
 
   //SyncBuffer& sync_buffer = this->m_1d_buffer;
-  // Envoie les messages de réception en mode non bloquant
+  // Send receive messages in non-blocking mode
   m_recv_requests.resize(nb_message);
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
@@ -147,8 +147,8 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
       //trace->info() << "POST RECV " << vsi.m_target_rank;
     }
     else{
-      // Il n'est pas nécessaire d'envoyer un message vide.
-      // Considère le message comme terminé
+      // It is not necessary to send an empty message.
+      // Consider the message as finished
       m_recv_requests[i] = MPI_Request();
         m_recv_requests_done[i] = true;
     }
@@ -156,7 +156,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   vs_buf->copyAllSend();
 
-  // Envoie les messages d'envoi en mode non bloquant.
+  // Send send messages in non-blocking mode.
   for( Integer i=0; i<nb_message; ++i ){
     Int32 target_rank = vs_buf->targetRank(i);
     auto share_local_buffer = vs_buf->sendBuffer(i).bytes().smallView();
@@ -221,7 +221,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
       double end_time = MPI_Wtime();
       wait_time += (end_time-begin_time);
     }
-    // Pour chaque requête terminée, effectue la copie
+    // For each completed request, perform the copy
     for( int z=0; z<nb_completed_request; ++z ){
       int mpi_request_index = completed_requests[z];
       Integer index = m_remaining_recv_request_indexes[mpi_request_index];
@@ -233,17 +233,17 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
         copy_time += (end_time - begin_time);
       }
       //trace->info() << "Mark finish index = " << index << " mpi_request_index=" << mpi_request_index;
-      m_recv_requests_done[index] = true; // Pour indiquer que c'est fini
+      m_recv_requests_done[index] = true; // To indicate that it is finished
     }
   }
 
   //trace->info() << "Wait all begin: n=" << m_send_requests.size();
-  // Attend que les envois se terminent
+  // Wait for sends to finish
   mpi_status.resize(m_send_requests.size());
   m_mpi_parallel_mng->adapter()->getMpiProfiling()->waitAll(m_send_requests.size(),m_send_requests.data(),
                                                             mpi_status.data());
 
-  // S'assure que les copies des buffers sont bien terminées
+  // Ensure buffer copies are complete
   vs_buf->barrier();
 
   //trace->info() << "Wait all end";

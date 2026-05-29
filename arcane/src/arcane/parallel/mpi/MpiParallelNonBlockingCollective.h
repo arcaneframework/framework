@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelNonBlockingCollective.h                          (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation des collectives non bloquantes avec MPI.                   */
+/* Implementation of non-blocking collectives with MPI.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIPARALLELNONBLOCKINGCOLLECTIVE_H
 #define ARCANE_PARALLEL_MPI_MPIPARALLELNONBLOCKINGCOLLECTIVE_H
@@ -29,7 +29,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionnaire du parallélisme utilisant MPI.
+ * \brief Parallelism manager using MPI.
  */
 class ARCANE_MPI_EXPORT MpiParallelNonBlockingCollective
 : public ParallelNonBlockingCollectiveDispatcher
@@ -59,5 +59,4 @@ class ARCANE_MPI_EXPORT MpiParallelNonBlockingCollective
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

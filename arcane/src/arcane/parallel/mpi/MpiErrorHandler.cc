@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiErrorHandler.cc                                          (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire d'erreur pour MPI.                                           */
+/* Error handler for MPI.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ registerHandler(MPI_Comm comm)
   if (m_has_err_handler)
     ARCANE_FATAL("Handler already registered");
 
-  // Regarder s'il faut le rendre optionnel.
+  // Check if it should be made optional.
   MPI_Comm_create_errhandler(&MpiErrorHandler::_ErrorHandler,&m_err_handler);
   MPI_Comm_set_errhandler(comm,m_err_handler);
   m_has_err_handler = true;

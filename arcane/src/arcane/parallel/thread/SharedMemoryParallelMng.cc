@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelMng.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages en mode mémoire partagé.                      */
+/* Implementation of messages in shared memory mode.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,8 +61,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de IRequestList pour SharedMemoryParallelMng.
+ * \brief Implementation of IRequestList for SharedMemoryParallelMng.
  */
 class SharedMemoryParallelMng::RequestList
 : public Arccore::MessagePassing::internal::RequestListBase
@@ -202,7 +203,7 @@ SharedMemoryParallelMng::
 
 namespace
 {
-// Classe pour créer les différents dispatchers
+// Class to create the different dispatchers
 class DispatchCreator
 {
  public:
@@ -318,8 +319,8 @@ createSendSerializer(Int32 rank)
 void SharedMemoryParallelMng::
 broadcastSerializer(ISerializer* values,Int32 rank)
 {
-  // Implementation basique pour l'instant.
-  // Le rank qui broadcast envoie le message à tout le monde.
+  // Basic implementation for now.
+  // The rank that broadcasts sends the message to everyone.
   if (m_rank==rank){
     UniqueArray<Parallel::Request> requests;
     for( Int32 i=0; i<m_nb_rank; ++i ){
@@ -499,9 +500,10 @@ IParallelMng* SharedMemoryParallelMng::
 _createSubParallelMng(Int32ConstArrayView kept_ranks)
 {
   ARCANE_UNUSED(kept_ranks);
-  // On ne peut pas implémenter cette méthode car on passe par
-  // IParallelMngContainer::_createParallelMng() qui créé obligatoirement
-  // un 'Ref<IParallelMng>'.
+  // We cannot implement this method because we go through
+  // IParallelMngContainer::_createParallelMng() which obligatorily
+  // creates
+  // a 'Ref<IParallelMng>'.
   ARCANE_THROW(NotSupportedException,"Use createSubParallelMngRef() instead");
 }
 
@@ -518,8 +520,8 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   Ref<IParallelMngContainer> builder;
   Int32 nb_rank = kept_ranks.size();
 
-  // Regarde si je suis dans les listes des rangs conservés et si oui
-  // détermine mon rang dans le IParallelMng créé
+  // Check if I am in the list of kept ranks and if so
+  // determine my rank in the created IParallelMng
   Int32 my_new_rank = (-1);
   for( Integer i=0; i<nb_rank; ++i )
     if (kept_ranks[i]==m_rank){
@@ -528,10 +530,10 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
     }
 
   barrier();
-  // Le rang 0 créé le builder
+  // Rank 0 creates the builder
   if (m_rank==0){
     builder = m_sub_builder_factory->_createParallelMngBuilder(nb_rank, m_mpi_communicator, m_mpi_communicator);
-    // Positionne le builder pour tout le monde
+    // Positions the builder for everyone
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }
   barrier();
@@ -547,10 +549,10 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
     //new_sm->m_mpi_communicator = m_mpi_communicator;
   }
   barrier();
-  // Ici, tout le monde a créé son IParallelMng. On peut donc
-  // supprimer la référence au builder.
-  // TODO: il faudra ajouter un compteur de référence sur le builder
-  // sinon il ne sera jamais détruit.
+  // Here, everyone has created their IParallelMng. We can therefore
+  // delete the reference to the builder.
+  // TODO: a reference counter must be added to the builder
+  // otherwise it will never be destroyed.
   if (m_rank==0){
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder.reset();
   }

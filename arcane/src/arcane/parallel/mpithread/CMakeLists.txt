@@ -1,4 +1,4 @@
-set(PKGS MPI)
+﻿set(PKGS MPI)
 if (NOT TARGET arcane_mpi)
   message(STATUS "Disabling 'arcane_mpithread' because 'arcane_mpi' is not available")
   return()

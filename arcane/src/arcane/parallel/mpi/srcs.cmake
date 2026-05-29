@@ -1,4 +1,4 @@
-set( ARCANE_SOURCES
+﻿set( ARCANE_SOURCES
   ArcaneMpi.cc
   ArcaneMpi.h
   IVariableSynchronizerMpiCommunicator.h

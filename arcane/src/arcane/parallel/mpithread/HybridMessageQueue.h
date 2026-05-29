@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMessageQueue.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* File de messages pour une implémentation hybride MPI/Mémoire partagée.    */
+/* Message file for a hybrid MPI/Shared Memory implementation.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_HYBRIDMESSAGEQUEUE_H
 #define ARCANE_PARALLEL_THREAD_HYBRIDMESSAGEQUEUE_H
@@ -35,8 +35,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations de correspondances entre les différents rangs
- * d'un communicateur.
+ * \brief Correspondence information between the different ranks
+ * of a communicator.
  */
 class FullRankInfo
 {
@@ -55,30 +55,30 @@ class FullRankInfo
 
  public:
 
-  //! Rang local dans les threads
+  //! Local rank within the threads
   MP::MessageRank localRank() const { return m_local_rank; }
   Int32 localRankValue() const { return m_local_rank.value(); }
-  //! Rang global dans le communicateur
+  //! Global rank within the communicator
   MP::MessageRank globalRank() const { return m_global_rank; }
   Int32 globalRankValue() const { return m_global_rank.value(); }
-  //! Rang MPI du 
+  //! Associated MPI rank
   MP::MessageRank mpiRank() const { return m_mpi_rank; }
   Int32 mpiRankValue() const { return m_mpi_rank.value(); }
 
  private:
 
-  //! Rang local dans les threads
+  //! Local rank within the threads
   MP::MessageRank m_local_rank;
-  //! Rang global dans le communicateur
+  //! Global rank within the communicator
   MP::MessageRank m_global_rank;
-  //! Rang MPI associé
+  //! Associated MPI rank
   MP::MessageRank m_mpi_rank;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule les informations source/destination.
+ * \brief Encapsulates source/destination information.
  */
 class SourceDestinationFullRankInfo
 {
@@ -105,33 +105,32 @@ class SourceDestinationFullRankInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe pour calculer à partir d'un tag utilisateur un
- * tag contenant les informations de l'envoyeur et du réceptionneur.
+ * \brief Class to calculate a tag containing sender and receiver information
+ * from a user tag.
  *
- * Pour le calcul du tag, il faut intégrer au tag MPI les informations
- * sur le rang local d'origine et de destination sinon il n'est pas possible
- * de savoir à qui recevoir/envoyer. Pour ce calcul, on utilise
- * les bits de poids supérieur à MAX_USER_TAG_BIT pour conserver
- * à la fois le rang de la source et de la destination. Comme il existe
- * une limite aux valeurs possibles pour les tags MPI, la valeur
- * de MAX_USER_TAG_BIT doit être relativement faible. Il faut que
- * ((1<<MAX_USER_TAG_BIT) * n * n) soit inférieur à la valeur
- * maximale des tags MPI autorisés (avec \a n le nombre de threads locaux).
+ * For tag calculation, the tag must include information about the original
+ * and destination local ranks in the MPI tag, otherwise it is not possible
+ * to know who to receive/send to. For this calculation, we use the higher
+ * bits of MAX_USER_TAG_BIT to preserve both the source and destination ranks.
+ * Since there is a limit to possible MPI tag values, the value
+ * of MAX_USER_TAG_BIT must be relatively small. It must be that
+ * ((1<<MAX_USER_TAG_BIT) * n * n) is less than the maximum allowed MPI tag
+ * value (where n is the number of local threads).
  */
 class RankTagBuilder
 {
  public:
-  //! On autorise 2^14 tags soit 16384.
-  // NOTE: en théorie on peut calculer dynamiquement cette valeur en prenant
-  // en compte le max valide pour MPI (via MPI_Comm_get_attribute(MPI_TAG_UB))
-  // et le nombre de threads locaux maximun. Cependant, cela rendrait
-  // le code trop dépendant de l'implémentation.
-  // A noter que dans la norme MPI, il est possible de n'avoir que
-  // 2^15 (32767) valeurs pour les tag.
+  //! We allow 2^14 tags, i.e., 16384.
+  // NOTE: theoretically, this value can be calculated dynamically by taking
+  // into account the max valid value for MPI (via MPI_Comm_get_attribute(MPI_TAG_UB))
+  // and the maximum number of local threads. However, this would make
+  // the code too dependent on the implementation.
+  // Note that in the MPI standard, it is possible to have only
+  // 2^15 (32767) values for tags.
   static constexpr Int32 MAX_USER_TAG_BIT = 14;
   static constexpr Int32 MAX_USER_TAG =  1 << MAX_USER_TAG_BIT;
  public:
-  //! Construit une instance pour \a nb_rank locaux.
+  //! Constructs an instance for \a local_nb_rank.
   RankTagBuilder(Int32 nb_rank) : m_nb_rank(nb_rank) {}
   Int32 nbLocalRank() const { return m_nb_rank; }
   FullRankInfo rank(MessageRank user_rank) const
@@ -164,7 +163,7 @@ class RankTagBuilder
   {
     return tagForReceive(user_tag,fri.source(),fri.destination());
   }
-  //! Récupère le rang à partir du tag. Il s'agit de l'opération inverse de _tag()
+  //! Retrieves the rank from the tag. This is the inverse operation of _tag()
   Int32 getReceiveRankFromTag(MessageTag internal_tag) const
   {
     Int32 t = internal_tag.value() >> MAX_USER_TAG_BIT;
@@ -188,9 +187,10 @@ class RankTagBuilder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une file de messages avec les threads.
- * \warning Toutes les méthodes de cette classe doivent être thread-safe.
+ * \brief Interface for a message queue with threads.
+ * \warning All methods of this class must be thread-safe.
  */
 class HybridMessageQueue
 : public TraceAccessor
@@ -252,4 +252,4 @@ class HybridMessageQueue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

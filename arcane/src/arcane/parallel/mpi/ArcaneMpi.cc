@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMpi.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations globales pour la partie MPI de Arcane.                       */
+/* Global declarations for the MPI part of Arcane.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,9 +19,9 @@
 
 #include <iostream>
 
-// Ce fichier est utilisé par OpenMpi pour définir des extensions
-// La page https://www.open-mpi.org/faq/?category=runcuda
-// indique comment détecter si on est CUDA-AWARE.
+// This file is used by OpenMpi to define extensions
+// The page https://www.open-mpi.org/faq/?category=runcuda
+// indicates how to detect if we are CUDA-AWARE.
 
 #if __has_include(<mpi-ext.h>)
 #include <mpi-ext.h>
@@ -40,8 +40,8 @@ extern "C++" ARCANE_MPI_EXPORT bool
 arcaneIsCudaAwareMPI()
 {
   bool is_aware = false;
-  // OpenMPI définit MPIX_CUDA_AWARE_SUPPORT et mpich définit MPIX_GPU_SUPPORT_CUDA
-  // pour indiquer que MPIX_Query_cuda_support() est disponible.
+  // OpenMPI defines MPIX_CUDA_AWARE_SUPPORT and mpich defines MPIX_GPU_SUPPORT_CUDA
+  // to indicate that MPIX_Query_cuda_support() is available.
 #if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_CUDA_AWARE_SUPPORT) || defined(MPIX_GPU_SUPPORT_CUDA)
   is_aware =  (MPIX_Query_cuda_support()==1);
@@ -54,8 +54,8 @@ extern "C++" ARCANE_MPI_EXPORT bool
 arcaneIsHipAwareMPI()
 {
   bool is_aware = false;
-  // OpenMPI définit MPIX_HIP_AWARE_SUPPORT et mpich définit MPIX_GPU_SUPPORT_HIP
-  // pour indiquer que MPIX_Query_hip_support() est disponible.
+  // OpenMPI defines MPIX_HIP_AWARE_SUPPORT and mpich defines MPIX_GPU_SUPPORT_HIP
+  // to indicate that MPIX_Query_hip_support() is available.
 
   // MPICH
 #if defined(ARCANE_OS_LINUX)
@@ -90,9 +90,9 @@ arcaneIsAcceleratorAwareMPI()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe singleton pour appeler automatiquement MPI_Init et
- * MPI_Finalize si besoin.
- * On appelle MPI_Finalize que si on a nous même fait l'init.
+ * \brief Singleton class to automatically call MPI_Init and
+ * MPI_Finalize if necessary.
+ * MPI_Finalize is only called if we performed the init ourselves.
  */
 class MpiAutoInit
 {
@@ -141,17 +141,16 @@ class AutoDetecterMPI
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplit les valeurs par défaut pour les services d'échange de message.
+ * \brief Fills default values for message passing services.
  *
- * Pour connaitre le service à utiliser pour l'échange de message, il est
- * nécessaire de connaitre le nombre de processus MPI disponible.
- * Malheureusement, cela n'est pas possible sans initialiser MPI, et
- * l'initialisation de MPI est dépendante du niveau de multi-threading
- * qu'on souhaite. Pour connaitre ce dernier, il faut savoir si on veut
- * avoir des sous-domaines en mémoire partagé. Si c'est le cas, alors on
- * essaie l'init avec MPI_THREAD_MULTIPLE. Sinon, on utilise MPI_THREAD_SERIALIZED.
- * Le gestionnaire de parallélisme ser chargera de vérifier si le niveau
- * de thread disponible est suffisant (via MPI_Query_thread).
+ * To know which service to use for message passing, it is
+ * necessary to know the number of available MPI processes.
+ * Unfortunately, this is not possible without initializing MPI, and
+ * MPI initialization depends on the desired multi-threading level. To know this,
+ * we must know if we want shared memory subdomains. If so, we try
+ * init with MPI_THREAD_MULTIPLE. Otherwise, we use MPI_THREAD_SERIALIZED.
+ * The parallelism manager will be responsible for checking if the available thread
+ * level is sufficient (via MPI_Query_thread).
  */
 void AutoDetecterMPI::
 visit(ApplicationBuildInfo& app_build_info)
@@ -160,19 +159,19 @@ visit(ApplicationBuildInfo& app_build_info)
   bool need_init = message_passing_service != "SequentialParallelSuperMng";
   bool has_shared_memory_message_passing = app_build_info.nbSharedMemorySubDomain()>0;
 
-  // Si MPI n'a pas été initialisé, on le fait ici.
-  // On choisit le niveau de thread en fonction du nombre de
-  // sous-domaines en mémoire partagée spécifié. Si pas de mémoire
-  // partagée, prend MPI_THREAD_SERIALIZED.
+  // If MPI has not been initialized, we do it here.
+  // We choose the thread level based on the number of
+  // shared memory subdomains specified. If there is no memory
+  // shared, it takes MPI_THREAD_SERIALIZED.
   int thread_wanted = MPI_THREAD_SERIALIZED;
   if (has_shared_memory_message_passing)
     thread_wanted = MPI_THREAD_MULTIPLE;
 
   int comm_size = 0;
 
-  // On ne fait pas l'initialisation si le service demandé est 'Sequential'.
+  // We do not initialize if the requested service is 'Sequential'.
   if (need_init){
-    // TODO: utiliser les bons arguments.
+    // TODO: use the correct arguments.
     int* argc = nullptr;
     char*** argv = nullptr;
     arcaneInitializeMPI(argc,argv,thread_wanted);
@@ -180,9 +179,9 @@ visit(ApplicationBuildInfo& app_build_info)
     MPI_Comm_size(MPI_COMM_WORLD,&comm_size);
   }
 
-  // Positionne le service d'échange par défaut.
-  // A noter que ce ne sera pas utilisé si l'utilisateur
-  // a lui même spécifié un service
+  // Sets the default exchange service.
+  // Note that this will not be used if the user
+  // has specified a service themselves
   message_passing_service = "Sequential";
   if (comm_size>1){
     if (has_shared_memory_message_passing)
@@ -197,7 +196,7 @@ visit(ApplicationBuildInfo& app_build_info)
       message_passing_service = "MpiSequential";
   }
   message_passing_service = message_passing_service + "ParallelSuperMng";
-  // Change le service par défaut.
+  // Changes the default service.
   app_build_info.internalSetDefaultMessagePassingService(message_passing_service);
 }
 

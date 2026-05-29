@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiTimerMng.h                                               (C) 2000-2006 */
 /*                                                                           */
-/* Gestionnaire de timer utilisant MPI_Wtime.                                */
+/* Timer manager using MPI_Wtime.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPITIMERMNG_H
 #define ARCANE_PARALLEL_MPI_MPITIMERMNG_H
@@ -23,12 +23,13 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de timer utisant la bibliothèque MPI.
+ * \brief Timer manager using the MPI library.
  *
- * Ce timer fonctionne de la même manière que celui de la classe de base TimerMng
- * sauf pour la manière de calculer le temps réel, qui utilise la
- * fonction MPI_Wtime().
+ * This timer functions the same way as the base class TimerMng
+ * except for how it calculates real time, which uses the
+ * MPI_Wtime() function.
  *
  \since 0.8.0
  \author Gilles Grospellier
@@ -39,7 +40,7 @@ class MpiTimerMng
 {
  public:
 
-  //! Construit un timer lié au sous-domaine \a mng
+  //! Constructs a timer linked to the subdomain \a mng
   MpiTimerMng(ITraceMng* trace);
 
  public:
@@ -60,5 +61,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

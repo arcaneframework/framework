@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridParallelDispatch.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation des messages en mode hybride MPI/Mémoire partagée..        */
+/* Implementation of messages in hybrid MPI/Shared Memory mode..             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_HYBRIDPARALLELDISPATCH_H
 #define ARCANE_PARALLEL_THREAD_HYBRIDPARALLELDISPATCH_H
@@ -57,7 +57,7 @@ class MpiThreadAllDispatcher
 : public ArcaneDataTypeContainer<MpiThreadDispatcherContainerTraits>
 {
  public:
-  //! Informations nécessaires pour créer un sous-parallelMng().
+  //! Information needed to create a sub-parallelMng().
   class CreateSubParallelMngInfo
   {
    public:
@@ -93,8 +93,9 @@ class MpiThreadAllDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for type \a Type
  */
 template<class Type>
 class HybridParallelDispatch
@@ -268,4 +269,4 @@ class HybridParallelDispatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

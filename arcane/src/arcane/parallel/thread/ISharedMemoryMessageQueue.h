@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISharedMemoryMessageQueue.h                                 (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'une file de messages en mémoire partagée.                     */
+/* Interface of a shared memory message queue.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_ISHAREDMEMORYMESSAGEQUEUE_H
 #define ARCANE_PARALLEL_THREAD_ISHAREDMEMORYMESSAGEQUEUE_H
@@ -33,10 +33,11 @@ using ByteConstSpan = Arccore::ByteConstSpan;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations des buffers d'envoie.
+ * \brief Send buffer information.
  *
- * Contient soit un ByteConstSpan, soit un ISerializer.
+ * Contains either a ByteConstSpan or an ISerializer.
  */
 class ARCANE_THREAD_EXPORT SendBufferInfo
 {
@@ -57,10 +58,11 @@ class ARCANE_THREAD_EXPORT SendBufferInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations des buffers de réception.
+ * \brief Receive buffer information.
  *
- * Contient soit un ByteSpan, soit un ISerializer.
+ * Contains either a ByteSpan or an ISerializer.
  */
 class ARCANE_THREAD_EXPORT ReceiveBufferInfo
 {
@@ -80,9 +82,10 @@ class ARCANE_THREAD_EXPORT ReceiveBufferInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une file de messages avec les threads.
+ * \brief Interface of a message queue with threads.
  */
 class ARCANE_THREAD_EXPORT ISharedMemoryMessageQueue
 : public IRequestCreator
@@ -119,4 +122,4 @@ class ARCANE_THREAD_EXPORT ISharedMemoryMessageQueue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

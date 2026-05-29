@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelDispatch.cc                             (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des messages en mémoire partagée.                          */
+/* Implementation of shared memory messages.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,12 +45,10 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: pour simplifier le debug lorsqu'il y a un décalage des appels
- * collectifs entre les threads, il faudrait faire un type de barrière
- * par type d'appel collectif alors qu'actuellement tous les appels
- * collectifs utilisent la même barrière (via _collectiveBarrier()).
- * A cause de cela, des problèmes peuvent survenir qui ne sont pas
- * facilement détectable. Par exemple:
+ * TODO: To simplify debugging when there is a timing skew of collective calls
+ * between threads, a barrier should be implemented per collective call type,
+ * whereas currently all collective calls use the same barrier (via _collectiveBarrier()).
+ * Because of this, problems can occur that are not easily detectable. For example:
  *
  *  Thread1:
  * allGather();
@@ -61,9 +59,9 @@ namespace Arcane::MessagePassing
  * allGather();
  * allReduce();
  *
- * Dans ce cas, le code ne plantera pas mais les valeurs des collectives ne
- * seront pas bonnes.
+ * In this case, the code will not crash, but the collective values will not be correct.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -97,7 +95,7 @@ _genericAllToAll(ConstMemoryView send_buf,MutableMemoryView recv_buf,Int32 count
 {
   Int32 nb_rank = m_nb_rank;
 
-  //TODO: Faire une version sans allocation
+  //TODO: Implement a version without allocation
   Int32UniqueArray send_count(nb_rank,count);
   Int32UniqueArray recv_count(nb_rank,count);
 
@@ -226,7 +224,7 @@ _genericSend(ConstMemoryView send_buffer,const PointToPointMessageInfo& message2
     return r;
   }
   if (message.isMessageId()){
-    // Le send avec un MessageId n'existe pas.
+    // The send with a MessageId does not exist.
     ARCCORE_THROW(NotSupportedException,"Invalid generic send with MessageId");
   }
   ARCCORE_THROW(NotSupportedException,"Invalid message_info");
@@ -408,8 +406,8 @@ computeMinMaxSum(ConstArrayView<Type> values,
                  ArrayView<Int32> min_ranks,
                  ArrayView<Int32> max_ranks)
 {
-  // Implémentation sous-optimale qui ne vectorise pas le calcul 
-  // (c'est actuellement un copier-coller d'au-dessus mis dans une boucle)
+  // Suboptimal implementation that does not vectorize the calculation 
+  // (it is currently a copy-paste from above put into a loop)
   typedef typename _ThreadIntegralType<Type>::IsIntegral IntegralType;
   Integer n = values.size();
   for(Integer i=0;i<n;++i) {
@@ -774,7 +772,7 @@ scan(eReduceType op,ArrayView<Type> send_buf)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 waitAll()
 {
-  // TEMPORAIRE: a priori pas utilisé
+  // TEMPORARY: not used for now
   throw NotImplementedException(A_FUNCINFO);
 }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelNonBlockingCollective.cc                         (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des collectives non bloquantes avec MPI.                   */
+/* Implementation of non-blocking collectives with MPI.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -91,8 +91,8 @@ hasValidReduceForDerivedType() const
   bool is_valid = true;
 
 #if defined(OMPI_MAJOR_VERSION) && defined(OMPI_MINOR_VERSION) && defined(OMPI_RELEASE_VERSION)
-  // Pour l'instant toutes les versions connues de OpenMPI (jusqu'à la 1.8.4)
-  // ont un bug pour les reduce sur les types dérivés.
+  // For now, all known versions of OpenMPI (up to 1.8.4)
+  // have a bug for reduces on derived types.
   is_valid = false;
 #endif
 

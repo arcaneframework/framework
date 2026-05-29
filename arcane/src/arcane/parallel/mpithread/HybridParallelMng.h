@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridParallelMng.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages hybrides MPI/Mémoire partagée.                */
+/* Implementation of hybrid MPI/Shared Memory messages.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_HYBRIDPARALLELMNG_H
 #define ARCANE_PARALLEL_THREAD_HYBRIDPARALLELMNG_H
@@ -40,8 +40,9 @@ class HybridSerializeMessageList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un HybridParallelMng.
+ * \brief Info for constructing a HybridParallelMng.
  */
 struct HybridParallelMngBuildInfo
 {
@@ -63,8 +64,9 @@ struct HybridParallelMngBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant les threads.
+ * \brief Thread-based parallelism manager.
  */
 class HybridParallelMng
 : public ParallelMngDispatcher
@@ -127,7 +129,7 @@ class HybridParallelMng
   Int32 localRank() const { return m_local_rank; }
   Int32 localNbRank() const { return m_local_nb_rank; }
   MpiParallelMng* mpiParallelMng() { return m_mpi_parallel_mng; }
-  //! Construit un message avec pour destinataire \a dest
+  //! Constructs a message with destination \a dest
   PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& message);
 
@@ -171,11 +173,11 @@ class HybridParallelMng
   IParallelReplication* m_replication;
   HybridMessageQueue* m_message_queue;
   bool m_is_parallel;
-  Int32 m_global_rank; //!< Numéro du processeur actuel
-  Int32 m_global_nb_rank; //!< Nombre de rangs globaux
-  Int32 m_local_rank; //!< Rang local du processeur actuel
-  Int32 m_local_nb_rank; //!< Nombre de rang locaux
-  bool m_is_initialized; //!< \a true si déjà initialisé
+  Int32 m_global_rank; //!< Current processor number
+  Int32 m_global_nb_rank; //!< Total number of global ranks
+  Int32 m_local_rank; //!< Local rank of the current processor
+  Int32 m_local_nb_rank; //!< Number of local ranks
+  bool m_is_initialized; //!< \a true if already initialized
   Parallel::IStat* m_stat = nullptr;
   IThreadBarrier* m_thread_barrier = nullptr;
   MpiParallelMng* m_mpi_parallel_mng = nullptr;
@@ -199,4 +201,4 @@ class HybridParallelMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

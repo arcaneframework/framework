@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiDirectSendrecvVariableSynchronizeDispatcher.cc           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion spécifique MPI des synchronisations des variables.                */
+/* Specific MPI management of variable synchronizations.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de la synchronisation via MPI_Sendrecv.
+ * \brief Implementation of synchronization via MPI_Sendrecv.
  */
 class MpiDirectSendrecvVariableSynchronizerDispatcher
 : public AbstractDataSynchronizeImplementation

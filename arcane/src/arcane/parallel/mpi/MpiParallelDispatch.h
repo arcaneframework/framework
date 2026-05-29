@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiParallelDispatch.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des messages avec MPI.                                     */
+/* Implementation of messages with MPI.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIPARALLELDISPATCH_H
 #define ARCANE_PARALLEL_MPI_MPIPARALLELDISPATCH_H
@@ -40,7 +40,7 @@ namespace MP = ::Arccore::MessagePassing;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for type \a Type
  */
 template<class Type>
 class MpiParallelDispatchT
@@ -161,5 +161,4 @@ createBuiltInDispatcher(ITraceMng* tm,IMessagePassingMng* pm,MpiAdapter* adapter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

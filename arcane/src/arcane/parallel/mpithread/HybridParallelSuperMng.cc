@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridParallelSuperMng.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI et mémoire partagée.           */
+/* Parallelism manager using MPI and shared memory.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,8 +58,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur des informations du gestionnaire de message en mode hybride
+ * \brief Container of information for the hybrid mode message manager
  */
 class HybridParallelMngContainer
 : public ParallelMngContainerBase
@@ -79,15 +80,15 @@ class HybridParallelMngContainer
 
  public:
 
-  IApplication* m_application; //!< Gestionnaire principal
-  Parallel::IStat* m_stat = nullptr; //! Statistiques
+  IApplication* m_application; //!< Main manager
+  Parallel::IStat* m_stat = nullptr; //! Statistics
   IThreadMng* m_thread_mng = nullptr;
   MpiLock* m_mpi_lock = nullptr;
   ISharedMemoryMessageQueue* m_message_queue = nullptr;
   IThreadBarrier* m_thread_barrier = nullptr;
   Int32 m_local_nb_rank = -1;
   MpiThreadAllDispatcher* m_all_dispatchers = nullptr;
-  // Cet objet est partagé par tous les HybridParallelMng.
+  // This object is shared by all HybridParallelMngs.
   UniqueArray<HybridParallelMng*>* m_parallel_mng_list = nullptr;
   Mutex* m_internal_create_mutex = nullptr;
   IParallelMngContainerFactory* m_sub_builder_factory = nullptr;
@@ -95,10 +96,10 @@ class HybridParallelMngContainer
 
  private:
 
-  MPI_Comm m_mpi_communicator; //!< Communicateur MPI
-  Int32 m_mpi_comm_rank = -1; //!< Numéro du processeur actuel
-  Int32 m_mpi_comm_size = -1; //!< Nombre de processeurs
-  MPI_Comm m_mpi_machine_communicator; //!< Communicateur MPI
+  MPI_Comm m_mpi_communicator; //!< MPI Communicator
+  Int32 m_mpi_comm_rank = -1; //!< Current processor number
+  Int32 m_mpi_comm_size = -1; //!< Number of processors
+  MPI_Comm m_mpi_machine_communicator; //!< MPI Communicator
 
  private:
 
@@ -132,7 +133,7 @@ HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
 HybridParallelMngContainer::
 ~HybridParallelMngContainer()
 {
-  // TODO: regarder s'il faut détruire le communicateur
+  // TODO: check if the communicator needs to be destroyed
   m_thread_barrier->destroy();
   delete m_message_queue;
   delete m_thread_mng;
@@ -196,13 +197,13 @@ _createParallelMng(Int32 local_rank,ITraceMng* tm)
     ARCANE_THROW(ArgumentException,"Bad value '{0}' for local_rank (max={1})",
                  local_rank,m_local_nb_rank);
 
-  // Cette méthode n'est pas réentrante.
+  // This method is not reentrant.
   Mutex::ScopedLock sl(m_internal_create_mutex);
 
   Int32 nb_process = m_mpi_comm_size;
   bool is_parallel = nb_process > 1;
 
-  // Le communicateur passé en argument reste notre propriété.
+  // The communicator passed as an argument remains our property.
   MpiParallelMngBuildInfo bi(m_mpi_communicator, m_mpi_machine_communicator);
   bi.is_parallel = is_parallel;
   bi.stat = m_stat;
@@ -234,7 +235,7 @@ _createParallelMng(Int32 local_rank,ITraceMng* tm)
   build_info.container = makeRef<IParallelMngContainer>(this);
   build_info.window_creator = m_window_creator;
 
-  // NOTE: Cette instance sera détruite par l'appelant de cette méthode
+  // NOTE: This instance will be destroyed by the caller of this method
   HybridParallelMng* pm = new HybridParallelMng(build_info);
   pm->build();
   (*m_parallel_mng_list)[local_rank] = pm;
@@ -285,8 +286,9 @@ ARCANE_REGISTER_SERVICE(HybridParallelMngContainerFactory,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur du parallélisme utilisant MPI et Threads
+ * \brief Supervisor of parallelism using MPI and Threads
  */
 class HybridParallelSuperMng
 : public ParallelSuperMngDispatcher
@@ -320,10 +322,10 @@ class HybridParallelSuperMng
   Ref<IParallelMngContainerFactory> m_builder_factory;
   Ref<IParallelMngContainer> m_main_builder;
 
-  IApplication* m_application; //!< Gestionnaire principal
-  Parallel::IStat* m_stat; //! Statistiques
-  Int32 m_mpi_comm_rank = -1; //!< Numéro du processeur actuel
-  Int32 m_mpi_comm_size = -1; //!< Nombre de processeurs
+  IApplication* m_application; //!< Main manager
+  Parallel::IStat* m_stat; //! Statistics
+  Int32 m_mpi_comm_rank = -1; //!< Current processor number
+  Int32 m_mpi_comm_size = -1; //!< Number of processors
   MPI_Comm m_mpi_communicator;
   MP::Communicator m_communicator;
   MP::Communicator m_machine_communicator;
@@ -402,15 +404,15 @@ build()
 
   bool need_serialize = false;
 
-  // Essaie avec MPI_THREAD_MULTIPLE
-  // ce qui permet d'appeler MPI depuis plusieurs threads en même temps
-  // Si ce niveau n'existe pas, il faut au moins le niveau
-  // MPI_THREAD_SERIALIZED ce qui permet d'appeler MPI depuis plusieurs
-  // threads mais un seul à la fois. Il faut donc dans ce cas mettre
-  // des verrous autour des appels MPI. Dans notre cas, les verrous
-  // ne sont utiliser que pour les communications point à point car
-  // pour les opérations collectives il n'y a qu'un seul thread qui les fait
-  // à la fois.
+  // Try with MPI_THREAD_MULTIPLE
+  // which allows calling MPI from multiple threads simultaneously
+  // If this level is not available, at least the
+  // MPI_THREAD_SERIALIZED level is required, which allows calling MPI from multiple
+  // threads but only one at a time. Therefore, in this case, locks
+  // must be used around MPI calls. In our case, locks
+  // are only used for point-to-point communications because
+  // for collective operations, only one thread performs them
+  // at a time.
   int thread_wanted = MPI_THREAD_MULTIPLE;
   int thread_provided = 0;
 
@@ -423,8 +425,8 @@ build()
     if (thread_provided>=MPI_THREAD_SERIALIZED)
       need_serialize = true;
     else{
-      // Le niveau de thread requis n'est pas disponible.
-      // Lance un fatal mais seulement un seul processeur.
+      // The required thread level is not available.
+      // Launch a fatal error but only on a single processor.
       int my_rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
       if (my_rank!=0)
@@ -433,7 +435,7 @@ build()
     }
   }
 
-  // decommenter pour forcer l'usage des verrous pour test.
+  // Uncomment to force the use of locks for testing.
   // need_serialize = true;
 
   if (need_serialize)
@@ -512,7 +514,7 @@ internalCreateWorldParallelMng(Int32 local_rank)
 
   ITraceMng* tm = nullptr;
   if (local_rank==0){
-    // Le premier sous-domaine créé utilise le traceMng() par défaut.
+    // The first created subdomain uses the default traceMng().
     tm = app_tm;
   }
   else{
@@ -549,7 +551,7 @@ ARCANE_REGISTER_SERVICE(HybridParallelSuperMng,
                         ServiceProperty("HybridParallelSuperMng",ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
 
-// Ancien nom
+// Old name
 ARCANE_REGISTER_SERVICE(HybridParallelSuperMng,
                         ServiceProperty("MpiThreadParallelSuperMng",ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
@@ -559,11 +561,12 @@ ARCANE_REGISTER_SERVICE(HybridParallelSuperMng,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur en mémoire partagé avec initialisation MPI.
+ * \brief Shared memory supervisor with MPI initialization.
  *
- * Cela permet de se comporter comme en mode mémoire partagé mais avec
- * mais avec un communicateur MPI qui existe.
+ * This allows behaving like shared memory mode but with
+ * but with an existing MPI communicator.
  */
 class MpiSharedMemoryParallelSuperMng
 : public SharedMemoryParallelSuperMng

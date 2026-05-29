@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiErrorHandler.h                                           (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire d'erreur pour MPI.                                           */
+/* Error handler for MPI.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIERRORHANDLER_H
 #define ARCANE_PARALLEL_MPI_MPIERRORHANDLER_H
@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for the \a Type
  */
 class ARCANE_MPI_EXPORT MpiErrorHandler
 {
@@ -43,7 +43,7 @@ class ARCANE_MPI_EXPORT MpiErrorHandler
 
  private:
 
-  // Handler d'erreur
+  // Error handler
   static void _ErrorHandler(MPI_Comm *, int *, ...);
 };
 
@@ -55,4 +55,4 @@ class ARCANE_MPI_EXPORT MpiErrorHandler
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
