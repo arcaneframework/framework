@@ -380,7 +380,53 @@ TEST(NeoTestArrayProperty, test_remove_item_values) {
   removed_value_indexes.init(sizes, {0});
   mesh_array_property.removeValues(removed_value_indexes);
   EXPECT_EQ(mesh_array_property.cumulatedSize(),0);
-    EXPECT_EQ(values_ref.size(),values_after_remove.size());
+  EXPECT_EQ(values_ref.size(),values_after_remove.size());
+  mesh_array_property.debugPrint();
+  // Refill the property with 2 elements having each 3 values
+  sizes = {3,3};
+  nb_item = sizes.size();
+  mesh_array_property.init(sizes,values);
+  mesh_array_property.debugPrint();
+  removed_value_indexes.init({1,2}, {0,0,1});
+  mesh_array_property.debugPrint();
+  mesh_array_property.removeValues(removed_value_indexes);
+  auto property_offsets = mesh_array_property.capacity();
+  auto property_sizes = mesh_array_property.sizes();
+  EXPECT_TRUE(std::equal(property_offsets.begin(),property_offsets.end(),sizes.begin()));
+  values_ref = {1,2,5};
+  values_after_remove.clear();
+  for (auto item : Neo::ItemRange{Neo::ItemLocalIds{{},0,nb_item}}) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_after_remove.push_back(item_value);
+    }
+  }
+  Neo::printer() << "values after remove " << values_after_remove << Neo::endline;
+  Neo::printer() << "values ref " << values_ref << Neo::endline;
+  EXPECT_TRUE(std::equal(values_ref.begin(),values_ref.end(),values_after_remove.begin()));
+  removed_value_indexes.init({2,0}, {0,1});
+  mesh_array_property.removeValues(removed_value_indexes);
+  values_ref = {5};
+  values_after_remove.clear();
+  for (auto item : Neo::ItemRange{Neo::ItemLocalIds{{},0,nb_item}}) {
+    for (auto item_value : mesh_array_property[item]) {
+      values_after_remove.push_back(item_value);
+    }
+  }
+  Neo::printer() << "values after remove " << values_after_remove << Neo::endline;
+  Neo::printer() << "values ref " << values_ref << Neo::endline;
+  EXPECT_TRUE(std::equal(values_ref.begin(),values_ref.end(),values_after_remove.begin()));
+  // Remove last value
+  removed_value_indexes.init({0,1}, {0});
+  mesh_array_property.removeValues(removed_value_indexes);
+  mesh_array_property.debugPrint();
+  EXPECT_EQ(mesh_array_property.cumulatedSize(),0);
+  // Offsets have not been changed
+  auto property_offsets_after_remove = mesh_array_property.capacity();
+  EXPECT_TRUE(std::equal(property_offsets.begin(),property_offsets.end(),property_offsets_after_remove.begin()));
+  // sizes is now empty
+  auto sizes_after_remove = mesh_array_property.sizes();
+  auto sizes_ref = {0,0};
+  EXPECT_TRUE(std::equal(sizes_after_remove.begin(),sizes_after_remove.end(),sizes_ref.begin()));
 }
 
 /*-----------------------------------------------------------------------------*/
