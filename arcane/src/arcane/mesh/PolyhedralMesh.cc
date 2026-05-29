@@ -651,9 +651,14 @@ namespace mesh
                                 // debug check lid matching.
                                 if (!arcane_items.size() == added_items.new_items.size())
                                   arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo, nb items Neo "
-                                                                          << added_items.new_items.size() << " nb items Arcane " << arcane_items.size();
-                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin()))
-                                  arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
+                                  << added_items.new_items.size() << " nb items Arcane " << arcane_items.size();
+                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin())) {
+                                  arcane_item_family->traceMng()->info() << "Arcane Items " << arcane_items;
+                                  std::cout << "Neo Items ";
+                                  std::ranges::copy(neo_items,std::ostream_iterator<int>(std::cout," "));
+                                  std::cout << "\n";
+                                  arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo in ItemFamily " << arcane_item_family->name();
+                                }
                               });
     }
 
