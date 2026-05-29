@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoGraphTest.cpp                                (C) 2000-2025             */
+/* NeoGraphTest.cpp                                (C) 2000-2026             */
 /*                                                                           */
 /* Test dag plug in Neo AlgorithmPropertyGraph                                             */
 /*---------------------------------------------------------------------------*/
@@ -714,6 +714,67 @@ TEST(NeoGraphTest,PropertyStatusRemovalBugTest) {
   mesh.applyAndKeepAlgorithms(Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmExecutionOrder::DAG);
   EXPECT_FALSE(algo1_is_called);
   EXPECT_TRUE(algo2_is_called);
+}
+
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,AlgoSignatureTest) {
+  // Exhaustive test of all available algorithm signatures
+  // only check all algos are called
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  // Add property
+  cell_family.addScalarProperty<Neo::utils::Int32>("prop1");
+  cell_family.addScalarProperty<Neo::utils::Int32>("prop2");
+  cell_family.addScalarProperty<Neo::utils::Int32>("prop3");
+  cell_family.addScalarProperty<Neo::utils::Int32>("prop4");
+  auto algo_count = 0;
+  // addAlgo(Out)
+  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, "prop1" },
+                    "AlgoOut",
+                    [&algo_count](Neo::ScalarPropertyT<Neo::utils::Int32>& ) {
+                      Neo::printer() << "== Algorithm AlgoOut " << Neo::endline;
+                      ++algo_count;
+                    }
+  );
+  // addAlgo(In,Out)
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1" },Neo::MeshKernel::OutProperty{ cell_family, "prop3" },
+                    "AlgoInOut",
+                    [&algo_count](Neo::ScalarPropertyT<Neo::utils::Int32> const&,Neo::ScalarPropertyT<Neo::utils::Int32> & ) {
+                      Neo::printer() << "== Algorithm AlgoInOut " << Neo::endline;
+                      ++algo_count;
+                    }
+  );
+  // addAlgo(In,In,Out)
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1" },Neo::MeshKernel::InProperty{ cell_family, "prop2" ,Neo::PropertyStatus::ExistingProperty},
+                    Neo::MeshKernel::OutProperty{ cell_family, "prop3" },
+                    "AlgoInInOut",
+                  [&algo_count](Neo::ScalarPropertyT<Neo::utils::Int32> const&,Neo::ScalarPropertyT<Neo::utils::Int32> const&,
+                                     Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+                    Neo::printer() << "== Algorithm AlgoInInOut" << Neo::endline;
+                      ++algo_count;
+                    }
+  );
+  // addAlgo(In,Out,Out)
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "prop1" },
+         Neo::MeshKernel::OutProperty{ cell_family, "prop3" }, Neo::MeshKernel::OutProperty{ cell_family, "prop4" },
+                    "AlgoInOutOut",
+                  [&algo_count](Neo::ScalarPropertyT<Neo::utils::Int32> const&,
+                                     Neo::ScalarPropertyT<Neo::utils::Int32> &, Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+                      Neo::printer() << "== Algorithm AlgoInOutOut" << Neo::endline;
+                      ++algo_count;
+                    }
+  );
+  // addAlgo(Out,Out)
+  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, "prop3" }, Neo::MeshKernel::OutProperty{ cell_family, "prop4" },
+                    "AlgoOutOut",
+                  [&algo_count](Neo::ScalarPropertyT<Neo::utils::Int32> &, Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+                      Neo::printer() << "== Algorithm AlgoOutOut" << Neo::endline;
+                      ++algo_count;
+                    }
+  );
+  mesh.applyAndKeepAlgorithms(Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmExecutionOrder::DAG);
+  EXPECT_EQ(5,algo_count);
 }
 
 //----------------------------------------------------------------------------/
