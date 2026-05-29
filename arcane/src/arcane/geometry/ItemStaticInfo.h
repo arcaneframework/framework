@@ -41,7 +41,6 @@ class ItemStaticInfo
 
   static const Int32 __MAX_CELL2_EDGE = 6;
 
-
   //! Maximum number of nodes per cell
   static const Int32 __MAX_CELL_NODE = 12; // 8
 

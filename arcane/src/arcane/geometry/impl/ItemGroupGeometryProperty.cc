@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,14 +12,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-NUMERICS_BEGIN_NAMESPACE
+namespace Arcane::Numerics
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ItemGroupGeometryProperty::
 ItemGroupGeometryProperty()
-  : defined(0), 
-    computed(0), 
-    delegated(0)
+: defined(0)
+, computed(0)
+, delegated(0)
 {
   ;
 }
@@ -30,16 +33,15 @@ ItemGroupGeometryProperty::
   // Automatic destruction by AutoRef's
 }
 
-bool
-ItemGroupGeometryProperty::
-hasProperty(const IGeometryProperty::eProperty p) const 
+bool ItemGroupGeometryProperty::
+hasProperty(const IGeometryProperty::eProperty p) const
 {
   return (defined & p) == p;
 }
 
 Integer
 ItemGroupGeometryProperty::
-getStorage(const IGeometryProperty::eProperty p) const 
+getStorage(const IGeometryProperty::eProperty p) const
 {
   StorageInfos::const_iterator ifinder = storages.find(p);
   if (ifinder == storages.end())
@@ -48,21 +50,21 @@ getStorage(const IGeometryProperty::eProperty p) const
     return ifinder->second.storageType;
 }
 
-void
-ItemGroupGeometryProperty::
+void ItemGroupGeometryProperty::
 resetFlags()
 {
   computed = 0;
   delegated = 0;
-  for (StorageInfos::iterator i = storages.begin(); i != storages.end(); ++i)
-    {
-      i->second.usageVarCount = 0;
-      i->second.usageMapCount = 0;
-    }
+  for (StorageInfos::iterator i = storages.begin(); i != storages.end(); ++i) {
+    i->second.usageVarCount = 0;
+    i->second.usageMapCount = 0;
+  }
 }
 
-NUMERICS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Numerics
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -37,8 +37,12 @@ using namespace Arcane;
 class CellConnectivity
 {
  public:
-  CellConnectivity(Integer nb_node,Integer nb_edge,Integer nb_face,GeomType cell_type)
-  : m_nb_node(nb_node), m_nb_edge(nb_edge), m_nb_face(nb_face), m_cell_type(cell_type)
+
+  CellConnectivity(Integer nb_node, Integer nb_edge, Integer nb_face, GeomType cell_type)
+  : m_nb_node(nb_node)
+  , m_nb_edge(nb_edge)
+  , m_nb_face(nb_face)
+  , m_cell_type(cell_type)
   {
   }
 
@@ -77,7 +81,7 @@ class CellConnectivity
   Integer m_edge_node_sub_zone_id[3];
   Integer m_face_node_sub_zone_id[3];
   //! Connectic for edges
-  Integer m_edge_direct_connectic[ItemStaticInfo::MAX_CELL_EDGE*2];
+  Integer m_edge_direct_connectic[ItemStaticInfo::MAX_CELL_EDGE * 2];
 
  protected:
 
@@ -103,15 +107,22 @@ class NullConnectivity
 : public CellConnectivity
 {
  public:
+
   NullConnectivity()
-  : CellConnectivity(0,0,0,GeomType::NullType)
-  { _init(); }
+  : CellConnectivity(0, 0, 0, GeomType::NullType)
+  {
+    _init();
+  }
+
  public:
+
   Integer nbNode() const { return 0; }
   Integer nbEdge() const { return 0; }
   Integer nbFace() const { return 0; }
+
  public:
  private:
+
   void _init();
 };
 

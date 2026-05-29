@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,28 +13,37 @@
 #include <arcane/geometry/IGeometryMng.h>
 #include <arcane/geometry/euclidian/Euclidian3Geometry.h>
 
-namespace Arcane { }
+namespace Arcane
+{
+}
 using namespace Arcane;
 
 #include "arcane/geometry/euclidian/Euclidian3Geometry_axl.h"
 #include "arcane/geometry/impl/GeometryServiceBase.h"
 
-ARCANE_BEGIN_NAMESPACE
-NUMERICS_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-class Euclidian3GeometryService :
-  public ArcaneEuclidian3GeometryObject,
-  public GeometryServiceBase
+namespace Arcane::Numerics
 {
-public:
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class Euclidian3GeometryService : public ArcaneEuclidian3GeometryObject
+, public GeometryServiceBase
+{
+ public:
+
   /** Constructor of the class */
-  Euclidian3GeometryService(const Arcane::ServiceBuildInfo & sbi);
-  
+  Euclidian3GeometryService(const Arcane::ServiceBuildInfo& sbi);
+
   /** Destructor of the class */
   virtual ~Euclidian3GeometryService();
-  
-public:
-    //! Initialization
+
+ public:
+
+  //! Initialization
   void init();
 
   //@{ @name property management by group
@@ -44,13 +53,14 @@ public:
 
   //! Reset property for an ItemGroup
   void reset(ItemGroup group);
-  
+
   //@}
 
   //! Get underlying geometry
-  IGeometry * geometry();
+  IGeometry* geometry();
 
  public:
+
   //@{ Extended interface for GeometryServiceBase
 
   //! Access to traceMng
@@ -64,11 +74,17 @@ public:
 
   //@}
 
- private: 
-  Euclidian3Geometry * m_geometry;
+ private:
+
+  Euclidian3Geometry* m_geometry;
 };
 
-NUMERICS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#endif /* ARCGEOSIM_GEOMETRY_EUCLIDIAN3GEOMETRYSERVICE_H */
+} // namespace Arcane::Numerics
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

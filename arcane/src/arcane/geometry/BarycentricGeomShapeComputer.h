@@ -52,10 +52,10 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
  public:
 
   //! Calculates the information for the mesh \a cell
-  static void computeAll(GeomShapeMutableView elem,const VariableNodeReal3& coords,Cell cell);
+  static void computeAll(GeomShapeMutableView elem, const VariableNodeReal3& coords, Cell cell);
 
   //! Calculates the information for the meshes in the group \a cells
-  static void computeAll(GeomShapeMng& shape_mng,VariableNodeReal3& coords,const CellGroup& cells);
+  static void computeAll(GeomShapeMng& shape_mng, VariableNodeReal3& coords, const CellGroup& cells);
 
   /*!
    * \name Calculation of the center and face centers by mesh type
@@ -91,39 +91,38 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
    BarycentricGeomShapeComputer::compute<GeomType::Quad4>(shape_view);
    \endcode
    */
-  template<GeomType ItemType> static
-  void compute(GeomShapeMutableView elem);
+  template <GeomType ItemType> static void compute(GeomShapeMutableView elem);
 
   //! Fills the node information of the mesh \a cell with the coordinates of \a node_coord.
-  static void setNodes(GeomShapeMutableView elem,const VariableNodeReal3& node_coord,Cell cell)
+  static void setNodes(GeomShapeMutableView elem, const VariableNodeReal3& node_coord, Cell cell)
   {
     Integer nb_node = cell.nbNode();
-    for( Integer node_id=0; node_id<nb_node; ++node_id){
-      elem.setNode(node_id,node_coord[cell.node(node_id)]);
+    for (Integer node_id = 0; node_id < nb_node; ++node_id) {
+      elem.setNode(node_id, node_coord[cell.node(node_id)]);
     }
   }
 
  private:
 
   inline static void
-  _setFace3D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2,Integer id3,Integer id4)
+  _setFace3D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2, Integer id3, Integer id4)
   {
-    elem.setFace(fid, 0.25 * ( elem.node(id1) + elem.node(id2) + elem.node(id3) + elem.node(id4) ));
+    elem.setFace(fid, 0.25 * (elem.node(id1) + elem.node(id2) + elem.node(id3) + elem.node(id4)));
   }
 
   inline static void
-  _setFace3D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2,Integer id3)
+  _setFace3D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2, Integer id3)
   {
-    elem.setFace(fid, (1.0/3.0) * ( elem.node(id1) + elem.node(id2) + elem.node(id3) ));
+    elem.setFace(fid, (1.0 / 3.0) * (elem.node(id1) + elem.node(id2) + elem.node(id3)));
   }
 
   inline static void
-  _setFace2D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2)
+  _setFace2D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2)
   {
     elem.setFace(fid,
-                 Real3( 0.5 * ( elem.node(id1).x + elem.node(id2).x ),
-                        0.5 * ( elem.node(id1).y + elem.node(id2).y ),
-                        0.0));
+                 Real3(0.5 * (elem.node(id1).x + elem.node(id2).x),
+                       0.5 * (elem.node(id1).y + elem.node(id2).y),
+                       0.0));
   }
 };
 

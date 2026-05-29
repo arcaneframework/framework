@@ -32,19 +32,19 @@ namespace Arcane::geometric
 inline void CellConnectivity::
 _setEdgeDirectConnectic()
 {
-  if (m_edge_connectic){
+  if (m_edge_connectic) {
     // 3D case
-    for( Integer i=0, n=nbEdge(); i<n; ++i ){
-      m_edge_direct_connectic[(i*2)] = m_edge_connectic[i].node(0);
-      m_edge_direct_connectic[(i*2)+1] = m_edge_connectic[i].node(1);
+    for (Integer i = 0, n = nbEdge(); i < n; ++i) {
+      m_edge_direct_connectic[(i * 2)] = m_edge_connectic[i].node(0);
+      m_edge_direct_connectic[(i * 2) + 1] = m_edge_connectic[i].node(1);
     }
   }
-  else{
+  else {
     // 2D case.
     // In this case, the edges are numbered based on nodes.
-    for( Integer i=0, n=nbEdge(); i<n; ++i ){
-      m_edge_direct_connectic[(i*2)] = i;
-      m_edge_direct_connectic[(i*2)+1] = (i+1) % n;
+    for (Integer i = 0, n = nbEdge(); i < n; ++i) {
+      m_edge_direct_connectic[(i * 2)] = i;
+      m_edge_direct_connectic[(i * 2) + 1] = (i + 1) % n;
     }
   }
 }
@@ -162,9 +162,9 @@ _init()
   m_edge_connectic = tetra_edge_connectic;
   m_face_connectic = tetra_face_connectic;
   m_node_association = tetra_node_association;
-  
+
   m_svc_face_connectic = tetra_svc_face_connectic;
-  m_nb_svc_face = sizeof(tetra_svc_face_connectic) /sizeof(tetra_svc_face_connectic[0]);
+  m_nb_svc_face = sizeof(tetra_svc_face_connectic) / sizeof(tetra_svc_face_connectic[0]);
   m_edge_node_sub_zone_id[0] = 1;
   m_edge_node_sub_zone_id[1] = 3;
   m_edge_node_sub_zone_id[2] = 4;
@@ -208,7 +208,7 @@ _init()
   m_edge_connectic = wedge8_edge_connectic;
   m_face_connectic = wedge8_face_connectic;
   m_node_association = wedge8_node_association;
-      
+
   m_svc_face_connectic = wedge8_svc_face_connectic;
   m_nb_svc_face = sizeof(wedge8_svc_face_connectic) / sizeof(wedge8_svc_face_connectic[0]);
   m_edge_node_sub_zone_id[0] = 1;
@@ -231,9 +231,9 @@ _init()
   m_edge_connectic = 0;
   m_face_connectic = quad_face_connectic;
   m_node_association = quad_node_association;
-      
+
   m_svc_face_connectic = quad_svc_face_connectic;
-  m_nb_svc_face = sizeof(quad_svc_face_connectic) /sizeof(quad_svc_face_connectic[0]);
+  m_nb_svc_face = sizeof(quad_svc_face_connectic) / sizeof(quad_svc_face_connectic[0]);
   m_edge_node_sub_zone_id[0] = 0;
   m_edge_node_sub_zone_id[1] = 0;
   m_edge_node_sub_zone_id[2] = 0;
@@ -254,9 +254,9 @@ _init()
   m_edge_connectic = 0;
   m_face_connectic = triangle_face_connectic;
   m_node_association = triangle_node_association;
-      
+
   m_svc_face_connectic = triangle_svc_face_connectic;
-  m_nb_svc_face = sizeof(triangle_svc_face_connectic)/sizeof(triangle_svc_face_connectic[0]);
+  m_nb_svc_face = sizeof(triangle_svc_face_connectic) / sizeof(triangle_svc_face_connectic[0]);
   m_edge_node_sub_zone_id[0] = 0;
   m_edge_node_sub_zone_id[1] = 0;
   m_edge_node_sub_zone_id[2] = 0;

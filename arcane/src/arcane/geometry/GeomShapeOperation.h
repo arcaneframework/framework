@@ -28,6 +28,7 @@ namespace Arcane::geometric
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneGeometric
  * \brief Template class to apply specific operations to a geometric shape view.
@@ -59,11 +60,12 @@ namespace Arcane::geometric
  * cells.applyOperation(&op);
  \endcode
  */
-template<typename OperationFunction>
+template <typename OperationFunction>
 class GeomShapeOperation
 : public AbstractItemOperationByBasicType
 {
  public:
+
   /*!
    * \brief Constructs the operator.
    *
@@ -73,20 +75,20 @@ class GeomShapeOperation
    *
    * \a shape_mng must have been initialized before operations can be applied.
    */
-  template<typename ... BuildArgs>
-  GeomShapeOperation(GeomShapeMng& shape_mng,BuildArgs ... compute_function_args)
-  : m_shape_mng(shape_mng),
-    m_operation_function(compute_function_args ...)
+  template <typename... BuildArgs>
+  GeomShapeOperation(GeomShapeMng& shape_mng, BuildArgs... compute_function_args)
+  : m_shape_mng(shape_mng)
+  , m_operation_function(compute_function_args...)
   {
   }
 
-  template<typename ShapeType>
+  template <typename ShapeType>
   void apply(ItemVectorView cells)
   {
     ShapeType generic;
-    ENUMERATE_CELL(i_cell,cells){
+    ENUMERATE_CELL (i_cell, cells) {
       Cell cell = *i_cell;
-      m_shape_mng.initShape(generic,cell);
+      m_shape_mng.initShape(generic, cell);
       m_operation_function.apply(generic);
     }
   }
@@ -134,12 +136,14 @@ class GeomShapeOperation
   }
 
  public:
+
   //! Operator instance
   OperationFunction& operation() { return m_operation_function; }
   //! Associated manager
   GeomShapeMng& cellShapeMng() { return m_shape_mng; }
+
  private:
-  
+
   GeomShapeMng m_shape_mng;
   OperationFunction m_operation_function;
 };

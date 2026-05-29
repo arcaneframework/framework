@@ -56,11 +56,11 @@ class ARCANE_GEOMETRY_EXPORT GeomShape
   friend class GeomShapeView;
 
  public:
-  
+
   //! Modifiable view of this instance.
   GeomShapeMutableView toMutableView()
   {
-    return GeomShapeMutableView((Real3*)m_node_ptr,(Real3*)m_face_ptr,(Real3*)&m_center);
+    return GeomShapeMutableView((Real3*)m_node_ptr, (Real3*)m_face_ptr, (Real3*)&m_center);
   }
 
   //! Initializes the shape with a hexahedron \a hexa and returns a view of it.
@@ -73,7 +73,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShape
 
   void _setArray(GeomShapeView& shape)
   {
-    shape._setArray((Real3*)m_node_ptr,(Real3*)m_face_ptr,(Real3*)&m_center);
+    shape._setArray((Real3*)m_node_ptr, (Real3*)m_face_ptr, (Real3*)&m_center);
   }
 
  private:

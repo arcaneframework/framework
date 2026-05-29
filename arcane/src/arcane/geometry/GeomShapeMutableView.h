@@ -56,15 +56,21 @@ class GeomShapeMutableView
  public:
 
   GeomShapeMutableView()
-  : m_node_ptr(0), m_face_ptr(0), m_center_ptr(0){}
+  : m_node_ptr(0)
+  , m_face_ptr(0)
+  , m_center_ptr(0)
+  {}
 
  private:
 
-  GeomShapeMutableView(Real3* node_ptr,Real3* face_ptr,Real3* center_ptr)
-  : m_node_ptr(node_ptr), m_face_ptr(face_ptr), m_center_ptr(center_ptr){}
+  GeomShapeMutableView(Real3* node_ptr, Real3* face_ptr, Real3* center_ptr)
+  : m_node_ptr(node_ptr)
+  , m_face_ptr(face_ptr)
+  , m_center_ptr(center_ptr)
+  {}
 
  public:
-  
+
   inline const Real3 node(Integer id) const
   {
     return m_node_ptr[id];
@@ -80,12 +86,12 @@ class GeomShapeMutableView
     return *m_center_ptr;
   }
 
-  inline void setNode(Integer id,const Real3& v)
+  inline void setNode(Integer id, const Real3& v)
   {
     m_node_ptr[id] = v;
   }
 
-  inline void setFace(Integer id,const Real3& v)
+  inline void setFace(Integer id, const Real3& v)
   {
     m_face_ptr[id] = v;
   }
@@ -103,7 +109,7 @@ class GeomShapeMutableView
 
  private:
 
-  inline void _setArray(Real3* node_ptr,Real3* face_ptr,Real3* center_ptr)
+  inline void _setArray(Real3* node_ptr, Real3* face_ptr, Real3* center_ptr)
   {
     m_node_ptr = node_ptr;
     m_face_ptr = face_ptr;

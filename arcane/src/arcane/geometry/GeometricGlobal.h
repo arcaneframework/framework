@@ -16,8 +16,10 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
-#define GEOMETRIC_BEGIN_NAMESPACE  namespace geometric {
-#define GEOMETRIC_END_NAMESPACE    }
+#define GEOMETRIC_BEGIN_NAMESPACE \
+  namespace geometric \
+  {
+#define GEOMETRIC_END_NAMESPACE }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

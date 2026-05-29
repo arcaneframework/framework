@@ -24,11 +24,11 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 
 GeomShapeMng::
-GeomShapeMng(IMesh* mesh,const String& cell_shape_name)
+GeomShapeMng(IMesh* mesh, const String& cell_shape_name)
 : m_name(cell_shape_name)
-, m_cell_shape_nodes(VariableBuildInfo(mesh,cell_shape_name,IVariable::PNoDump))
-, m_cell_shape_faces(VariableBuildInfo(mesh,cell_shape_name+"Face",IVariable::PNoDump))
-, m_cell_shape_centers(VariableBuildInfo(mesh,cell_shape_name+"Center",IVariable::PNoDump))
+, m_cell_shape_nodes(VariableBuildInfo(mesh, cell_shape_name, IVariable::PNoDump))
+, m_cell_shape_faces(VariableBuildInfo(mesh, cell_shape_name + "Face", IVariable::PNoDump))
+, m_cell_shape_centers(VariableBuildInfo(mesh, cell_shape_name + "Center", IVariable::PNoDump))
 {
 }
 
@@ -38,9 +38,9 @@ GeomShapeMng(IMesh* mesh,const String& cell_shape_name)
 GeomShapeMng::
 GeomShapeMng(IMesh* mesh)
 : m_name("GenericElement")
-, m_cell_shape_nodes(VariableBuildInfo(mesh,"GenericElement",IVariable::PNoDump))
-, m_cell_shape_faces(VariableBuildInfo(mesh,"GenericElementFace",IVariable::PNoDump))
-, m_cell_shape_centers(VariableBuildInfo(mesh,"GenericElementCenter",IVariable::PNoDump))
+, m_cell_shape_nodes(VariableBuildInfo(mesh, "GenericElement", IVariable::PNoDump))
+, m_cell_shape_faces(VariableBuildInfo(mesh, "GenericElementFace", IVariable::PNoDump))
+, m_cell_shape_centers(VariableBuildInfo(mesh, "GenericElementCenter", IVariable::PNoDump))
 {
 }
 
@@ -69,13 +69,13 @@ initialize()
   //TODO: we must use the globalConnectivity() of IItemFamily
   // but for now this is not calculated correctly
   // during init.
-  if (mesh->dimension()==2){
+  if (mesh->dimension() == 2) {
     // In 2D, we do not have meshes containing more nodes than quads
     m_cell_shape_nodes.resize(4);
     //TODO: Check if this is necessary.
     m_cell_shape_faces.resize(4);
   }
-  else{
+  else {
     m_cell_shape_nodes.resize(ItemStaticInfo::MAX_CELL_NODE);
     m_cell_shape_faces.resize(ItemStaticInfo::MAX_CELL_FACE);
   }

@@ -38,6 +38,7 @@ class GeomShapeConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneGeometric
  * \brief Constant view on a geometric shape GeomShape.
@@ -62,7 +63,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   friend class GeomShapeConnectivity;
 
  private:
-  
+
   static CellConnectivity* global_cell_connectivity[NB_BASIC_ITEM_TYPE];
   static GeomShapeConnectivity* global_connectivity;
 
@@ -71,11 +72,13 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   static void initializeConnectivity();
 
  public:
-  
+
   GeomShapeView()
-  : m_node_ptr(0), m_face_ptr(0), m_center_ptr(0),
-    m_cell_connectivity(global_cell_connectivity[IT_NullType]),
-    m_item_internal(ItemInternal::nullItem())
+  : m_node_ptr(0)
+  , m_face_ptr(0)
+  , m_center_ptr(0)
+  , m_cell_connectivity(global_cell_connectivity[IT_NullType])
+  , m_item_internal(ItemInternal::nullItem())
   {
   }
 
@@ -93,11 +96,11 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   /*!
    * \deprecated Use GeomShape::initFromHexaedron8() instead.
    */
-  ARCANE_DEPRECATED_122 void initFromHexa(HexaElementConstView hexa,GeomShape& geom_cell);
+  ARCANE_DEPRECATED_122 void initFromHexa(HexaElementConstView hexa, GeomShape& geom_cell);
   /*!
    * \deprecated Use GeomShape::initFromQuad4() instead.
    */
-  ARCANE_DEPRECATED_122 void initFromQuad(QuadElementConstView hexa,GeomShape& geom_cell);
+  ARCANE_DEPRECATED_122 void initFromQuad(QuadElementConstView hexa, GeomShape& geom_cell);
 
  public:
 
@@ -110,7 +113,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   {
     return m_node_ptr[i];
   }
-  
+
   //! Position of the center of the \a i-th face of the shape
   const Real3 face(Integer i) const
   {
@@ -126,7 +129,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   //! Position of the center of the \a i-th edge of the shape
   inline const Real3 edge(Integer i) const
   {
-    return 0.5 * (node(m_cell_connectivity->m_edge_direct_connectic[(i*2)]) + node(m_cell_connectivity->m_edge_direct_connectic[(i*2)+1]));
+    return 0.5 * (node(m_cell_connectivity->m_edge_direct_connectic[(i * 2)]) + node(m_cell_connectivity->m_edge_direct_connectic[(i * 2) + 1]));
   }
   //@}
 
@@ -139,7 +142,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
  protected:
 
-  void _setArray(const Real3* node_ptr,const Real3* face_ptr,const Real3* center_ptr)
+  void _setArray(const Real3* node_ptr, const Real3* face_ptr, const Real3* center_ptr)
   {
     m_node_ptr = node_ptr;
     m_face_ptr = face_ptr;
@@ -163,8 +166,6 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
  public:
 
-
- public:
   /*!
    * \name Connectivity Information.
    */
@@ -248,9 +249,6 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
     m_item_internal = ItemInternal::nullItem();
     m_cell_connectivity = global_cell_connectivity[item_type];
   }
-
- private:
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -266,8 +264,11 @@ class GeomShape2DView
 : public GeomShapeView
 {
  public:
-  GeomShape2DView(){}
-  explicit GeomShape2DView(const GeomShapeView& rhs) : GeomShapeView(rhs){}
+
+  GeomShape2DView() {}
+  explicit GeomShape2DView(const GeomShapeView& rhs)
+  : GeomShapeView(rhs)
+  {}
 };
 
 /*!
@@ -278,8 +279,11 @@ class GeomShape3DView
 : public GeomShapeView
 {
  public:
-  GeomShape3DView(){}
-  explicit GeomShape3DView(const GeomShapeView& rhs) : GeomShapeView(rhs){}
+
+  GeomShape3DView() {}
+  explicit GeomShape3DView(const GeomShapeView& rhs)
+  : GeomShapeView(rhs)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -293,7 +297,7 @@ class GeomShape3DView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::geometric
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

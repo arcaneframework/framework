@@ -96,9 +96,9 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeMng
   // between the different instances.
 
  public:
-  
+
   //! Initializes for the mesh \a mesh with the name \a name
-  GeomShapeMng(IMesh* mesh,const String& name);
+  GeomShapeMng(IMesh* mesh, const String& name);
   //! Initializes for the mesh \a mesh with the default name \a GenericElement
   GeomShapeMng(IMesh* mesh);
   //! Copy constructor.
@@ -107,7 +107,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeMng
  public:
 
   //! Indicates if the instance is initialized.
-  bool isInitialized() const { return m_cell_shape_nodes.arraySize()!=0; }
+  bool isInitialized() const { return m_cell_shape_nodes.arraySize() != 0; }
 
   /*!
    * \brief Initializes the instance.
@@ -117,16 +117,16 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeMng
   void initialize();
 
   //! Initializes the view \a ge with the information of the cell \a cell
-  void initShape(GeomShapeView& ge,Cell cell) const
+  void initShape(GeomShapeView& ge, Cell cell) const
   {
-    ge._setArray(m_cell_shape_nodes[cell].data(),m_cell_shape_faces[cell].data(),&m_cell_shape_centers[cell]);
+    ge._setArray(m_cell_shape_nodes[cell].data(), m_cell_shape_faces[cell].data(), &m_cell_shape_centers[cell]);
     ge._setItem(cell);
   }
 
   //! Returns a mutable view on the GeomShape of the cell \a cell
   GeomShapeMutableView mutableShapeView(Cell cell)
   {
-    return GeomShapeMutableView(m_cell_shape_nodes[cell].data(),m_cell_shape_faces[cell].data(),&m_cell_shape_centers[cell]);
+    return GeomShapeMutableView(m_cell_shape_nodes[cell].data(), m_cell_shape_faces[cell].data(), &m_cell_shape_centers[cell]);
   }
 
   //! Manager name.

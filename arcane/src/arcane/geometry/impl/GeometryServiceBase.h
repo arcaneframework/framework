@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,26 +13,37 @@
 #include "arcane/geometry/IGeometryMng.h"
 #include "arcane/geometry/impl/ItemGroupGeometryProperty.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
-  class ISubDomain;
+class ISubDomain;
 }
 
-ARCANE_BEGIN_NAMESPACE
-NUMERICS_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-class GeometryServiceBase 
-  : public IGeometryMng
+namespace Arcane::Numerics
 {
-public:
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class GeometryServiceBase
+: public IGeometryMng
+{
+ public:
+
   /** Class constructor */
   GeometryServiceBase();
 
   /** Class destructor */
   virtual ~GeometryServiceBase();
-  
-public:
-  //@{ @name Geometric property management for ItemGroup 
+
+ public:
+
+  //@{ @name Geometric property management for ItemGroup
 
   //! Set geometric properties on an ItemGroup
   void addItemGroupProperty(ItemGroup group, Integer property, Integer storage = IGeometryProperty::PVariable);
@@ -56,10 +67,10 @@ public:
 
   //@{ @name Access to geometric values
   //! Get geometric property values for a Real field
-  const RealVariable & getRealVariableProperty(ItemGroup group, IGeometryProperty::eProperty property);
+  const RealVariable& getRealVariableProperty(ItemGroup group, IGeometryProperty::eProperty property);
 
   //! Get geometric property values for a Real3 field
-  const Real3Variable & getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property);
+  const Real3Variable& getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property);
   //@}
 
   //@{ @name property management by group and properties
@@ -69,7 +80,7 @@ public:
 
   //! Reset property for an ItemGroup
   void reset(ItemGroup group, Integer property);
-  
+
   //@}
 
   //@{ @name property management by group
@@ -79,55 +90,65 @@ public:
 
   //! Reset property for an ItemGroup
   virtual void reset(ItemGroup group) = 0;
-  
+
   //@}
 
-  //@{ @name global property management 
+  //@{ @name global property management
 
   //! Update property values for all ItemGroups
   void update();
 
   //! Reset property for all ItemGroups
   void reset();
-  
+
   //@}
 
-protected:
+ protected:
+
   //@{ Local extension of the interface
 
   //! Access to traceMng
-  virtual ITraceMng * traceMng() = 0;
+  virtual ITraceMng* traceMng() = 0;
 
   //! Access to mesh
-  virtual IMesh * mesh() = 0;
+  virtual IMesh* mesh() = 0;
 
-  template<typename GeometryT>
-  void updateGroup(ItemGroup group,GeometryT & geometry);
+  template <typename GeometryT>
+  void updateGroup(ItemGroup group, GeometryT& geometry);
 
   //! Name of instantiated class
-  virtual const char * className() const = 0;
+  virtual const char* className() const = 0;
 
   //@}
 
-protected:
+ protected:
+
   typedef std::map<ItemGroupImpl*, ItemGroupGeometryProperty> PropertyMap;
   PropertyMap m_group_property_map;
   String m_suffix; //!< suffix for internal variable names
 
   //! Return ItemGroupGeometryProperty if requested property and storage are available
-  ItemGroupGeometryProperty::StorageInfo & _checkItemGroupProperty(ItemGroupImpl* group,
-                                                                   IGeometryProperty::eProperty property,
-                                                                   IGeometryProperty::eStorage storage);
+  ItemGroupGeometryProperty::StorageInfo& _checkItemGroupProperty(ItemGroupImpl* group,
+                                                                  IGeometryProperty::eProperty property,
+                                                                  IGeometryProperty::eStorage storage);
   void _resetComputeFlags();
   void _checkItemGroupUsage();
   /*! Using setSuffix allows defining a known extension for internal variable names.
    *  At this level, the user is responsible for name collision management */
-  void setSuffix(const String & suffix) { m_suffix = suffix; }
+  void setSuffix(const String& suffix) { m_suffix = suffix; }
 };
 
-NUMERICS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Numerics
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "GeometryServiceBaseT.h"
 
-#endif /* ARCGEOSIM_GEOMETRY_GEOMETRYSERVICEBASE_H */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

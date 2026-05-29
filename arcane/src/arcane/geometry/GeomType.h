@@ -25,9 +25,6 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 // Doxygen does not support (in 1.8.7) documentation for enum classes.
 // We therefore use a fake class to maintain the same concept
 
@@ -45,7 +42,8 @@ class GeomType
 {
  public:
 
-  enum{
+  enum
+  {
     //! Null element
     NullType = IT_NullType,
     //! Vertex
@@ -110,19 +108,19 @@ enum class GeomType
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_CHECK
-#define ARCANE_GEOMETRIC_CHECKTYPE(a,b) ::Arcane::geometric::_arcaneCheckType(a,b);
+#define ARCANE_GEOMETRIC_CHECKTYPE(a, b) ::Arcane::geometric::_arcaneCheckType(a, b);
 #else
-#define ARCANE_GEOMETRIC_CHECKTYPE(a,b)
+#define ARCANE_GEOMETRIC_CHECKTYPE(a, b)
 #endif
 
 extern "C++" void
-_arcaneBadType(GeomType type,GeomType wanted_type);
+_arcaneBadType(GeomType type, GeomType wanted_type);
 
 inline void
-_arcaneCheckType(GeomType type,GeomType wanted_type)
+_arcaneCheckType(GeomType type, GeomType wanted_type)
 {
-  if (type!=wanted_type)
-    _arcaneBadType(type,wanted_type);
+  if (type != wanted_type)
+    _arcaneBadType(type, wanted_type);
 }
 
 /*---------------------------------------------------------------------------*/
