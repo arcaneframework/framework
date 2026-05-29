@@ -422,7 +422,7 @@ void
 Euclidian3Geometry::ComputeGenericVolume::
 computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real3 & center)
 {
-  // Choix d'un point arbitraire d'étoilement, mais "proche" du centre
+  // Choice of an arbitrary star point, but "close" to the center
   Real3 vcenter(0,0,0);
   for(Integer i=0;i<item.nbNode();++i) {
     vcenter += m_coords[item.node(i)];
@@ -432,7 +432,7 @@ computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real
   Real volume = 0;
   center = Real3(0,0,0);
 
-  // Etoilement des faces puis du volume en tétraèdres
+  // Starring the faces and then the volume into tetrahedrons
   const Cell cell = item.toCell();  
   for(Integer i=0;i<cell.nbFace();++i)
     {
@@ -450,7 +450,7 @@ computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real
                                               vcenter);
         volume += v;
       } else if (face.nbNode() == 4) {
-        // Le tableau contient le modulo ...
+        // The array contains the modulo ...
         const Real3 coords[5] = { m_coords[face.node(0)], 
                                   m_coords[face.node(1)], 
                                   m_coords[face.node(2)], 

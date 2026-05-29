@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomElementView.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Vues sur les éléments géométriques.                                       */
+/* Views on geometric elements.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMELEMENTVIEW_H
 #define ARCANE_GEOMETRIC_GEOMELEMENTVIEW_H
@@ -28,11 +28,11 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Classe de base des vues constantes sur des éléments géométriques.
+ * \brief Base class for constant views on geometric elements.
  *
- * Les vues de ce type ne sont valides que tant que l'instance dont
- * elles sont issues existe. Par conséquent, les vues sont surtout
- * utilisées pour le passage d'argument et ne doivent pas être conservées.
+ * The views of this type are only valid as long as the instance
+ * they originate from exists. Consequently, these views are primarily
+ * used for argument passing and should not be retained.
  */
 class GeomElementConstViewBase
 {
@@ -42,15 +42,15 @@ class GeomElementConstViewBase
 
  public:
 
-  //! Récupère la valeur du \a ième noeud
+  //! Retrieves the value of the i-th node
   inline const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x,m_s[i].y,m_s[i].z);
   }
 
   /*!
-   * \brief Récupère la valeur du \a ième noeud.
-   * \deprecated Utiliser operator[] à la place.
+   * \brief Retrieves the value of the i-th node.
+   * \deprecated Use operator[] instead.
    */
   //ARCANE_DEPRECATED inline const Real3 s(Integer i) const
   inline const Real3 s(Integer i) const
@@ -67,11 +67,11 @@ class GeomElementConstViewBase
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Classe de base des vues modifiables sur des éléments géométriques.
+ * \brief Base class for modifiable views on geometric elements.
  *
- * Les vues de ce type ne sont valides que tant que l'instance dont
- * elles sont issues existe. Par conséquent, les vues sont surtout
- * utilisées pour le passage d'argument et ne doivent pas être conservées.
+ * The views of this type are only valid as long as the instance
+ * they originate from exists. Consequently, these views are primarily
+ * used for argument passing and should not be retained.
  */
 class GeomElementViewBase
 {
@@ -81,13 +81,13 @@ class GeomElementViewBase
 
  public:
 
-  //! Récupère la valeur du \a ième noeud
+  //! Retrieves the value of the i-th node
   const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x,m_s[i].y,m_s[i].z);
   }
 
-  //! Position la valeur du \a i-ème noeud à \a v.
+  //! Sets the value of the i-th node to v.
   void setValue(Integer i,Real3 v)
   {
     m_s[i].x = v.x;

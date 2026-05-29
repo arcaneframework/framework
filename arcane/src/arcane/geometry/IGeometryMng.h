@@ -30,10 +30,10 @@ class IGeometry;
 /*! Some of them are contextual. 
  *  For example, the PMeasure of a 3D cell is its PVolume.
  * 
- *  Technical notes: A external container given by the user cannot
+ *  Technical notes: An external container given by the user cannot
  *  be used for anything except the given property.
  *  An internal ItemGroupMap cannot be allocated for a group different 
- *  of the group wished by the used.
+ *  of the group desired by the user.
  */
 struct ARCANE_GEOMETRY_EXPORT IGeometryProperty 
 {
@@ -47,7 +47,7 @@ struct ARCANE_GEOMETRY_EXPORT IGeometryProperty
       PCenter             = (1 << 4),
       PNormal             = (1 << 5),
       PVolumeSurfaceRatio = (1 << 6),
-      PEnd                = (1 << 7) //! Marqueur de dernier type
+      PEnd                = (1 << 7) //! Marker for last type
     };
 
   enum eStorage
@@ -113,7 +113,7 @@ struct ARCANE_GEOMETRY_EXPORT IGeometryProperty
   }
 };
 /*!
- * \brief Gestionnaire des calculs gÃ©omÃ©triques.
+ * \brief Geometric calculation manager.
  */
 class ARCANE_GEOMETRY_EXPORT IGeometryMng
 {
@@ -122,25 +122,25 @@ class ARCANE_GEOMETRY_EXPORT IGeometryMng
   typedef VariableItemReal3 Real3Variable;
 
  public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   IGeometryMng() {}
   
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IGeometryMng() {};
   
 public:
-  //! Initialisation
+  //! Initialization
   virtual void init() = 0;
 
   //@{ @name Geometric property management for ItemGroup 
 
-  //! Set geometric properties on a ItemGroup
+  //! Set geometric properties on an ItemGroup
   virtual void addItemGroupProperty(ItemGroup group, Integer property, Integer storage = IGeometryProperty::PVariable) = 0;
 
-  //! Set geometric properties on a ItemGroup with an external container (real field)
+  //! Set geometric properties on an ItemGroup with an external container (real field)
   virtual void addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, RealVariable var) = 0;
 
-  //! Set geometric properties on a ItemGroup with an external container (real3 field)
+  //! Set geometric properties on an ItemGroup with an external container (real3 field)
   virtual void addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Real3Variable var) = 0;
 
   //! Get set of properties of an ItemGroup

@@ -77,7 +77,7 @@ addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Rea
   storage.storageType |= IGeometryProperty::PVariable;
   storage.externStorage |= IGeometryProperty::PVariable;
   // #ifndef NO_USER_WARNING
-  // #warning "Ne plus allouer d'ItemGroupMap implicitement"
+  // #warning "No longer allocate ItemGroupMap implicitly"
   // #endif /* NO_USER_WARNING */
   //   storage.realMap.reset(new RealGroupMap(group));
   //   storage.storageType |= IGeometryProperty::PItemGroupMap;
@@ -102,7 +102,7 @@ addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Rea
   storage.storageType |= IGeometryProperty::PVariable;
   storage.externStorage |= IGeometryProperty::PVariable;
   // #ifndef NO_USER_WARNING
-  // #warning "Ne plus allouer d'ItemGroupMap implicitement"
+  // #warning "No longer allocate ItemGroupMap implicitly"
   // #endif /* NO_USER_WARNING */
   //   storage.real3Map.reset(new Real3GroupMap(group));
   //   storage.storageType |= IGeometryProperty::PItemGroupMap;
@@ -214,7 +214,7 @@ update()
             const IGeometryProperty::eProperty property = iprop->first;
             ItemGroupGeometryProperty::StorageInfo& storage = group_property.storages[property];
 
-            if (property & all_group_property.defined) // propriétés communes avec allItemGroup
+            if (property & all_group_property.defined) // properties common with allItemGroup
             {
               // Is a scalar property
               if (IGeometryProperty::isScalar(property)) {
@@ -290,7 +290,7 @@ update()
     }
   }
 
-  // Mise à jour des autres propriétés
+  // Update other properties
   for (PropertyMap::iterator iprop = m_group_property_map.begin(); iprop != m_group_property_map.end(); ++iprop) {
     update(iprop->first);
   }

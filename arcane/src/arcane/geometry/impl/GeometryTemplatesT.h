@@ -56,7 +56,7 @@ public:
   template<typename ComputeLineFunctor>
   void applyLineTemplate(ItemVectorView group)
   {
-    // Utilise des tableaux locaux plutot qu'une spécialisation par type de propriété (moins de code, plus de souplesse)
+    // Uses local arrays instead of specialization by property type (less code, more flexibility)
     UniqueArray<Real3> centers(group.size());
     UniqueArray<Real3> orientations(group.size());
 
@@ -77,7 +77,7 @@ public:
   template<typename ComputeSurfaceFunctor>
   void applySurfaceTemplate(ItemVectorView group)
   {
-    // Utilise des tableaux locaux plutot qu'une spécialisation par type de propriété (moins de code, plus de souplesse)
+    // Uses local arrays instead of specialization by property type (less code, more flexibility)
     UniqueArray<Real3> centers(group.size());
     UniqueArray<Real3> normals(group.size());
 
@@ -98,7 +98,7 @@ public:
   template<typename ComputeVolumeFunctor>
   void applyVolumeTemplate(ItemVectorView group)
   {
-    // Utilise des tableaux locaux plutot qu'une spécialisation par type de propriété (moins de code, plus de souplesse)
+    // Uses local arrays instead of specialization by property type (less code, more flexibility)
     UniqueArray<Real3> centers(group.size());
     UniqueArray<Real> volumes(group.size());
 

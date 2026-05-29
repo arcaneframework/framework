@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeMng.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant les GeomShape d'un maillage.                                */
+/* Class managing the GeomShapes of a mesh.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,13 +66,13 @@ void GeomShapeMng::
 initialize()
 {
   IMesh* mesh = m_cell_shape_nodes.variable()->meshHandle().mesh();
-  //TODO: il faut utiliser le globalConnectivity() de IItemFamily
-  // mais pour l'instant celui-ci n'est pas correctement calculé
-  // lors de l'init.
+  //TODO: we must use the globalConnectivity() of IItemFamily
+  // but for now this is not calculated correctly
+  // during init.
   if (mesh->dimension()==2){
-    // En 2D, on n'a pas des mailles contenant plus de noeuds que les quads
+    // In 2D, we do not have meshes containing more nodes than quads
     m_cell_shape_nodes.resize(4);
-    //TODO: Verifier si on a besoin de cela.
+    //TODO: Check if this is necessary.
     m_cell_shape_faces.resize(4);
   }
   else{
@@ -88,4 +88,3 @@ initialize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

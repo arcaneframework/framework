@@ -1,11 +1,11 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 
 /*!
- * \defgroup ArcaneGeometric Eléments géométriques.
+ * \defgroup ArcaneGeometric Geometric elements.
  *
- * Ensemble des classes assurant la gestion des éléments géométriques
+ * Set of classes ensuring the management of geometric elements
  *
- * Pour plus de renseignements, se reporter à la page \ref
+ * For more information, refer to the page \ref
  * arcanedoc_entities_geometric.
  */
 
@@ -13,8 +13,7 @@
 /*!
  * \namespace geometric
  *
- * \brief Ensemble des classes assurant la gestion des éléments géométriques
+ * \brief Set of classes ensuring the management of geometric elements
  *
- * Pour plus de renseignements, se reporter à la page \ref arcanedoc_entities_geometric.
+ * For more information, refer to the page \ref arcanedoc_entities_geometric.
  */
- 

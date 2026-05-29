@@ -27,7 +27,7 @@ ItemGroupGeometryProperty()
 ItemGroupGeometryProperty::
 ~ItemGroupGeometryProperty()
 {
-  // Destruction automatique par les AutoRef's
+  // Automatic destruction by AutoRef's
 }
 
 bool

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeView.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des formes géométriques 2D et 3D.                                 */
+/* Management of 2D and 3D geometric shapes.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,10 +23,11 @@
 
 namespace Arcane::geometric
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * TODO: Verifier que les IT_* correspondents aux énumérations de GeomType.
+ * TODO: Verify that the IT_* correspond to the GeomType enumerations.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -155,12 +156,10 @@ initFromQuad(QuadElementConstView quad,GeomShape& geom_cell)
 }
 
 /*---------------------------------------------------------------------------*/
-/*----- Définition des sous volumes de contrôle -----------------------------*/
+/*----- Definition of control sub-volumes -----------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*--------------- En 2D -----------------------------------------------------*/
+/*--------------- In 2D -----------------------------------------------------*/
 
 void GeomShapeView::
 fillSubZoneElement(Quad4ElementView sub_zone, Integer id)
@@ -343,14 +342,14 @@ fillSubZoneOctaedron12(HexaElementView sub_zone,Integer i)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief En 3D, calcule les psoitions à partir de l'hexaèdre \a hexa.
+ * \brief In 3D, calculates the positions from the hexahedron \a hexa.
  */
 void GeomShapeStdBuilder::
 computeNodePositionFromHexa(HexaElementConstView hexa)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
 
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
 
   for( Integer i = 0; i<8; ++i ){
@@ -360,7 +359,7 @@ computeNodePositionFromHexa(HexaElementConstView hexa)
 
   setCenter(0.125 * c);
 
-  // Calcul la position des centres des faces.
+  // Calculates the face center positions.
   _addFaceD(  0 , 0 , 3 , 2 , 1 );
   _addFaceD(  1 , 0 , 4 , 7 , 3 );
   _addFaceD(  2 , 0 , 1 , 5 , 4 );
@@ -372,14 +371,14 @@ computeNodePositionFromHexa(HexaElementConstView hexa)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief En 2D, calcule les positions à partir du quad \a quad.
+ * \brief In 2D, calculates the positions from the quad \a quad.
  */
 void GeomShapeStdBuilder::
 computeNodePositionFromQuad(QuadElementConstView quad)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
 
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
 
   for( Integer i = 0; i<4; ++i )
@@ -390,7 +389,7 @@ computeNodePositionFromQuad(QuadElementConstView quad)
 
   setCenter(0.25 * c);
 
-  // Calcul la position des centres des faces.
+  // Calculates the face center positions.
   _addFace2D(  0 , 0 , 1  );
   _addFace2D(  1 , 1 , 2  );
   _addFace2D(  2 , 2 , 3  );

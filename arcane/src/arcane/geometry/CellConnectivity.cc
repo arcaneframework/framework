@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellConnectivity.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur la connectivité d'une maille.                            */
+/* Mesh connectivity information.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,15 +33,15 @@ inline void CellConnectivity::
 _setEdgeDirectConnectic()
 {
   if (m_edge_connectic){
-    // Cas 3D
+    // 3D case
     for( Integer i=0, n=nbEdge(); i<n; ++i ){
       m_edge_direct_connectic[(i*2)] = m_edge_connectic[i].node(0);
       m_edge_direct_connectic[(i*2)+1] = m_edge_connectic[i].node(1);
     }
   }
   else{
-    // Cas 2D.
-    // Dans ce cas les arêtes sont numérotés en fonction des noeuds.
+    // 2D case.
+    // In this case, the edges are numbered based on nodes.
     for( Integer i=0, n=nbEdge(); i<n; ++i ){
       m_edge_direct_connectic[(i*2)] = i;
       m_edge_direct_connectic[(i*2)+1] = (i+1) % n;

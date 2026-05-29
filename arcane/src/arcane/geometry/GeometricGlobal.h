@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricGlobal.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations globales pour la composante géométrique.                     */
+/* Global declarations for the geometric component.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMETRICGLOBAL_H
 #define ARCANE_GEOMETRIC_GEOMETRICGLOBAL_H
@@ -94,4 +94,4 @@ typedef Octaedron12Element Wedge8Element;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

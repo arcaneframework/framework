@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomType.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Enumération spécifiant le type de polygone ou polyèdre.                   */
+/* Enumeration specifying the type of polygon or polyhedron.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMTYPE_H
 #define ARCANE_GEOMETRIC_GEOMTYPE_H
@@ -28,16 +28,16 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Doxygen ne comprend pas (dans la 1.8.7) la documentation des enum class.
-// On fait donc une fausse classe pour avoir la même notion
+// Doxygen does not support (in 1.8.7) documentation for enum classes.
+// We therefore use a fake class to maintain the same concept
 
 /*!
  * \ingroup ArcaneGeometric
- * \brief Enumération spécifiant le type de polygone ou polyèdre associé
- * à un élément ou une forme géométrique.
+ * \brief Enumeration specifying the type of polygon or polyhedron associated
+ * with a geometric element or shape.
  *
- * NOTE: Les valeurs de cette énumération doivent correspondre à 
- * celles des IT_* définis dans ArcaneTypes.h
+ * NOTE: The values of this enumeration must correspond to 
+ * those of IT_* defined in ArcaneTypes.h
  */
 
 #ifdef DOXYGEN_DOC
@@ -46,62 +46,62 @@ class GeomType
  public:
 
   enum{
-    //! Élément nul
+    //! Null element
     NullType = IT_NullType,
-    //! Sommet
+    //! Vertex
     Vertex = IT_Vertex,
-    //! Ligne
+    //! Line
     Line2 = IT_Line2,
     //! Triangle
     Triangle3 = IT_Triangle3,
     //! Quadrangle
     Quad4 = IT_Quad4,
-    //! Pentagone
+    //! Pentagon
     Pentagon5 = IT_Pentagon5,
-    //! Hexagone
+    //! Hexagon
     Hexagon6 = IT_Hexagon6,
-    //! Tétraèdre
+    //! Tetrahedron
     Tetraedron4 = IT_Tetraedron4,
-    //! Pyramide
+    //! Pyramid
     Pyramid5 = IT_Pyramid5,
-    //! Prisme
+    //! Prism
     Pentaedron6 = IT_Pentaedron6,
-    //! Hexaèdre
+    //! Hexahedron
     Hexaedron8 = IT_Hexaedron8,
-    //! Prisme à base pentagonale
+    //! Pentagonal prism
     Heptaedron10 = IT_Heptaedron10,
-    //! Prisme à base hexagonale
+    //! Hexagonal prism
     Octaedron12 = IT_Octaedron12
   }
 };
 #else
 enum class GeomType
 {
-  //! Élément nul
+  //! Null element
   NullType = IT_NullType,
-  //! Sommet
+  //! Vertex
   Vertex = IT_Vertex,
-  //! Ligne
+  //! Line
   Line2 = IT_Line2,
   //! Triangle
   Triangle3 = IT_Triangle3,
   //! Quadrangle
   Quad4 = IT_Quad4,
-  //! Pentagone
+  //! Pentagon
   Pentagon5 = IT_Pentagon5,
-  //! Hexagone
+  //! Hexagon
   Hexagon6 = IT_Hexagon6,
-  //! Tétraèdre
+  //! Tetrahedron
   Tetraedron4 = IT_Tetraedron4,
-  //! Pyramide
+  //! Pyramid
   Pyramid5 = IT_Pyramid5,
-  //! Prisme
+  //! Prism
   Pentaedron6 = IT_Pentaedron6,
-  //! Hexaèdre
+  //! Hexahedron
   Hexaedron8 = IT_Hexaedron8,
-  //! Prisme à base pentagonale
+  //! Pentagonal prism
   Heptaedron10 = IT_Heptaedron10,
-  //! Prisme à base hexagonale
+  //! Hexagonal prism
   Octaedron12 = IT_Octaedron12
 };
 #endif
@@ -133,5 +133,4 @@ _arcaneCheckType(GeomType type,GeomType wanted_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

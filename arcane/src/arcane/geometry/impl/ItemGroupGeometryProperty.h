@@ -22,10 +22,10 @@ NUMERICS_BEGIN_NAMESPACE
 class ItemGroupGeometryProperty
 {
 public:
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ItemGroupGeometryProperty();
 
-  /** Destructeur de la classe */  
+  /** Destructor of the class */  
   virtual ~ItemGroupGeometryProperty();
 public:
 
@@ -56,7 +56,7 @@ public:
 
 
 
-//! Modéle générique (vide) des accès de StorageInfo par type de stockage
+//! Generic (empty) model for accessing StorageInfo by storage type
 template<typename T>
 class ContainerAccessorT { };
 
@@ -74,7 +74,7 @@ struct ContainerAccessorT<Real3> {
   typedef IGeometryMng::Real3Variable RealTVariable;
   //typedef IGeometryMng::Real3GroupMap RealTGroupMap;
   inline static std::shared_ptr<RealTVariable> & getVarContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Var; }
-  //inline static boost::shared_ptr<RealTGroupMap> & getMapContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Map; }
+  //inline static boost::shared_ptr<IGeometryMng::Real3GroupMap> & getMapContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Map; }
 };
 
 NUMERICS_END_NAMESPACE

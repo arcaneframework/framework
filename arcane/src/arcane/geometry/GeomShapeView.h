@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeView.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des formes géométriques 2D et 3D.                                 */
+/* Handling of 2D and 3D geometric shapes.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMSHAPEVIEW_H
 #define ARCANE_GEOMETRIC_GEOMSHAPEVIEW_H
@@ -40,19 +40,19 @@ class GeomShapeConnectivity;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue constante sur une forme géométrique GeomShape.
+ * \brief Constant view on a geometric shape GeomShape.
  *
- * Une vue sur une forme géométrique permet de récupérer de manière
- * optimisée la position des noeuds, des faces et des arêtes (en 3D)
- * d'un objet géométrique.
+ * A view on a geometric shape allows for the optimized retrieval of
+ * the position of nodes, faces, and edges (in 3D)
+ * of a geometric object.
  *
- * Cette classe gère une vue sur une forme géométrique. Il existe deux
- * manières d'initialiser une vue:
- * - en récupérant la vue associée à une maille du maillage via l'appel
- * à GeomShapeMng::initShape(). Dans ce cas, il est possible de
- * récupérer la maille associée via la méthode cell().
- * - à partir d'une instance temporaire de GeomShape
- * via une des deux méthodes initFromHexa() ou initFromQuad().
+ * This class manages a view on a geometric shape. There are two
+ * ways to initialize a view:
+ * - by retrieving the view associated with a mesh element via the call
+ * to GeomShapeMng::initShape(). In this case, it is possible to
+ * retrieve the associated mesh element via the cell() method.
+ * - from a temporary instance of GeomShape
+ * via one of the two methods initFromHexa() or initFromQuad().
  *
  */
 class ARCANE_GEOMETRY_EXPORT GeomShapeView
@@ -85,56 +85,56 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
  public:
 
-  //! Remplit \a hexa avec les informations du \a i-ème sous-volume de contrôle
+  //! Fills \a hexa with the information of the \a i-th sub-control volume
   void fillSubZoneElement(HexaElementView hexa, Integer i);
-  //! Remplit \a quad avec les informations du \a i-ème sous-volume de contrôle
+  //! Fills \a quad with the information of the \a i-th sub-control volume
   void fillSubZoneElement(QuadElementView quad, Integer i);
 
   /*!
-   * \deprecated Utiliser GeomShape::initFromHexaedron8() à la place.
+   * \deprecated Use GeomShape::initFromHexaedron8() instead.
    */
   ARCANE_DEPRECATED_122 void initFromHexa(HexaElementConstView hexa,GeomShape& geom_cell);
   /*!
-   * \deprecated Utiliser GeomShape::initFromQuad4() à la place.
+   * \deprecated Use GeomShape::initFromQuad4() instead.
    */
   ARCANE_DEPRECATED_122 void initFromQuad(QuadElementConstView hexa,GeomShape& geom_cell);
 
  public:
 
   /*!
-   * \name Récupération des coordonnées.
+   * \name Coordinate Retrieval.
    */
   //@{
-  //! Position du \a ième noeud de la forme
+  //! Position of the \a i-th node of the shape
   const Real3 node(Integer i) const
   {
     return m_node_ptr[i];
   }
   
-  //! Position du centre de la \a ième face de la forme
+  //! Position of the center of the \a i-th face of the shape
   const Real3 face(Integer i) const
   {
     return m_face_ptr[i];
   }
 
-  //! Position du centre de la forme
+  //! Position of the center of the shape
   const Real3 center() const
   {
     return *m_center_ptr;
   }
 
-  //! Position du centre de la \a i-ème arête de la forme
+  //! Position of the center of the \a i-th edge of the shape
   inline const Real3 edge(Integer i) const
   {
     return 0.5 * (node(m_cell_connectivity->m_edge_direct_connectic[(i*2)]) + node(m_cell_connectivity->m_edge_direct_connectic[(i*2)+1]));
   }
   //@}
 
-  //! Entité associée (null si aucune)
+  //! Associated entity (null if none)
   Item item() const { return Item(m_item_internal); }
-  //! Maille associée (null si aucune)
+  //! Associated mesh element (null if none)
   Cell cell() const { return Cell(m_item_internal); }
-  //! Face associée (null si aucune)
+  //! Associated face (null if none)
   Face face() const { return Face(m_item_internal); }
 
  protected:
@@ -151,14 +151,14 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   ARCANE_RESTRICT const Real3* m_node_ptr;
   ARCANE_RESTRICT const Real3* m_face_ptr;
   ARCANE_RESTRICT const Real3* m_center_ptr;
-  //! Informations sur la connectivité
+  //! Connectivity information
   CellConnectivity* m_cell_connectivity;
-  //! Information sur l'entité d'origine (ItemInternal::nullItem() si aucune)
+  //! Information about the original entity (ItemInternal::nullItem() if none)
   ItemInternal* m_item_internal;
 
  protected:
 
-  //TODO: A SUPPRIMER
+  //TODO: TO BE REMOVED
   const Real3POD* _nodeView() const { return (Real3POD*)m_node_ptr; }
 
  public:
@@ -166,40 +166,40 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
  public:
   /*!
-   * \name Informations sur la connectivité.
+   * \name Connectivity Information.
    */
   //@{
-  //! Informations de connectivité aux noeuds.
+  //! Node connectivity information.
   const NodeConnectic& nodeConnectic(Integer i) const
   {
     return m_cell_connectivity->nodeConnectic()[i];
   }
 
-  //! Informations de connectivité aux arêtes.
+  //! Edge connectivity information.
   const EdgeConnectic& edgeConnectic(Integer i) const
   {
     return m_cell_connectivity->edgeConnectic()[i];
   }
 
-  //! Informations de connectivité aux faces
+  //! Face connectivity information
   const FaceConnectic& faceConnectic(Integer i) const
   {
     return m_cell_connectivity->faceConnectic()[i];
   }
 
-  //! Nombre de sous volume de controle
+  //! Number of sub-control volumes
   Integer nbSubZone() const
   {
     return m_cell_connectivity->nbSubZone();
   }
 
-  //! Nombre de sous faces internes SVC
+  //! Number of internal SVC faces
   Integer nbSvcFace() const
   {
     return m_cell_connectivity->nbSubZoneFace();
   }
 
-  //! Numéro local du sommet associé au sous volume de controle
+  //! Local number of the vertex associated with the sub-control volume
   Integer nodeAssociation(Integer i) const
   {
     return m_cell_connectivity->nodeAssociation()[i];
@@ -210,7 +210,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
     return m_cell_connectivity->SCVFaceConnectic()[i];
   }
 
-  //! Numéro locaux dans le sous-volumes de contrôle
+  //! Local numbers within the sub-control volumes
   Integer edgeNodeSubZoneId(Integer i) const
   {
     return m_cell_connectivity->m_edge_node_sub_zone_id[i];
@@ -223,12 +223,12 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
   //@}
 
   /*!
-   * \brief Type géométrique de la forme.
+   * \brief Geometric type of the shape.
    *
-   * Si la forme est assossiée à une entité (récupérable via item()),
-   * il s'agit aussi du type de l'entité.
+   * If the shape is associated with an entity (retrievable via item()),
+   * it is also the type of the entity.
    *
-   * Retourne \a GeomType::NullType si l'instance n'est pas initialisée.
+   * Returns \a GeomType::NullType if the instance is not initialized.
    */
   GeomType geomType() const
   {
@@ -255,12 +255,12 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//TODO: Utiliser des Traits pour le nombre de noeuds et le nom du SVC.
+//TODO: Use Traits for the number of nodes and the SVC name.
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue sur forme géométrique 2D.
+ * \brief View on 2D geometric shape.
  */
 class GeomShape2DView
 : public GeomShapeView
@@ -272,7 +272,7 @@ class GeomShape2DView
 
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue sur forme géométrique 3D.
+ * \brief View on 3D geometric shape.
  */
 class GeomShape3DView
 : public GeomShapeView
@@ -298,7 +298,7 @@ class GeomShape3DView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! A supprimer à terme
+//! To be removed eventually
 #include "arcane/geometry/GeomShape.h"
 
 /*---------------------------------------------------------------------------*/

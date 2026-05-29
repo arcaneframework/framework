@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemStaticInfo.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Informations statiques sur les entités.                                   */
+/* Static information about entities.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_ITEMSTATICINFO_H
 #define ARCANE_GEOMETRIC_ITEMSTATICINFO_H
@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Prise en compte des prismes a 7 et 8 faces.
+//! Support for 7 and 8-faced prisms.
 #ifndef __ARCANE_HAS_WEDGE_MESH_ELEMENT__
 #define __ARCANE_HAS_WEDGE_MESH_ELEMENT__
 #endif
@@ -42,47 +42,47 @@ class ItemStaticInfo
   static const Int32 __MAX_CELL2_EDGE = 6;
 
 
-  //! Nombre maximum de noeuds par maille
+  //! Maximum number of nodes per cell
   static const Int32 __MAX_CELL_NODE = 12; // 8
 
-  //! Nombre maximum de sommets par face
+  //! Maximum number of vertices per face
   static const Int32 __MAX_FACE_NODE = 6; // 4
 
-  //! Nombre maximum de faces par maille
+  //! Maximum number of faces per cell
   static const Int32 __MAX_CELL_FACE = 8; // 6
 
-  //! Nombre maximum d'arêtes par maille
+  //! Maximum number of edges per cell
   static const Int32 __MAX_CELL_EDGE = 18; //  12
 #else
 
   static const Int32 __MAX_CELL2_EDGE = 4;
 
-  //! Nombre maximum de noeuds par maille
+  //! Maximum number of nodes per cell
   static const Int32 __MAX_CELL_NODE = 8;
 
-  //! Nombre maximum de sommets par face
+  //! Maximum number of vertices per face
   static const Int32 __MAX_FACE_NODE = 4;
 
-  //! Nombre maximum de faces par maille
+  //! Maximum number of faces per cell
   static const Int32 __MAX_CELL_FACE = 6;
 
-  //! Nombre maximum d'arêtes par maille
+  //! Maximum number of edges per cell
   static const Int32 __MAX_CELL_EDGE = 12;
 #endif
 
-  //! Nombre de type d'éléments
+  //! Number of element types
   static const Integer NB_TYPE = NB_BASIC_ITEM_TYPE;
 
-  //! Nombre maximum de noeuds par maille
+  //! Maximum number of nodes per cell
   static const Integer MAX_CELL_NODE = __MAX_CELL_NODE;
 
-  //! Nombre maximum de sommets par face
+  //! Maximum number of vertices per face
   static const Integer MAX_FACE_NODE = __MAX_FACE_NODE;
 
-  //! Nombre maximum de faces par maille
+  //! Maximum number of faces per cell
   static const Integer MAX_CELL_FACE = __MAX_CELL_FACE;
 
-  //! Nombre maximum d'arêtes par maille
+  //! Maximum number of edges per cell
   static const Integer MAX_CELL_EDGE = __MAX_CELL_EDGE;
 };
 

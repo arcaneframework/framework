@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricConnectic.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Connectiques des élements 2D/3D.                                          */
+/* Connectivities of 2D/3D elements.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMETRICCONNECTIC_H
@@ -34,46 +34,46 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Structure de connectique locale
+ * \brief Local connectivity structure
  *
- * Ces trois tableaux permettent de repérer les voisins des éléments
- * de base des mailles pour la numérotation locale.
+ * These three arrays allow locating the neighbors of the base mesh elements
+ * for local numbering.
  *
- * Pour une maille quadrangulaire :
+ * For a quadrilateral mesh:
  * -----------------------------
  *
- * Définition de NodeConnectic2D
+ * Definition of NodeConnectic2D
  *
- *	-> le sommet 0 appartient aux faces 0,1,2
- *	-> le sommet 1 appartient aux faces 0,2,4
+ *	-> vertex 0 belongs to faces 0,1,2
+ *	-> vertex 1 belongs to faces 0,2,4
  *
- *	and so on.... et bien sûr, le tout dans "l'ordre".
+ *	and so on.... and of course, everything is "in order".
  *
- * Définition de FaceConnectic2D
+ * Definition of FaceConnectic2D
  *
- *	-> la face 0 est constituée des sommets 0,3
- *	-> la face 1 est constituée des sommets 0,4
+ *	-> face 0 is composed of vertices 0,3
+ *	-> face 1 is composed of vertices 0,4
  *
- *	l'ordre des sommets définissent la direction de la normale
- *	extèrieure à la maille à travers la face.
+ *	the order of vertices defines the direction of the normal
+ *	external to the mesh through the face.
  *
- * Définition de SVCFaceConnectic2D
+ * Definition of SVCFaceConnectic2D
  *
- *      -> la face interne a la maille  du sous volume de contrôle est constituée 
- *         du centre, du centre d'une face
- *         Elle intervient positivement sur un noeud et negativement sur un autre
+ *      -> the internal face of the control volume sub-domain is composed 
+ *         of the center, the center of a face
+ *         It contributes positively to one node and negatively to another
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief	Structures de connectique locale des mailles 
+ * \brief	Local mesh connectivity structures 
  *
- *	renvoie le num local dans la maille des sommets de la face
+ *	returns the local number in the mesh of the face vertices
  *
- *	les sommets sont numérotés de sorte qu'ils définissent la
- *	normale extérieure à la maille.
+ *	the vertices are numbered such that they define the
+ *	normal external to the mesh.
  *
  */
 struct FaceConnectic
@@ -137,16 +137,16 @@ struct FaceConnectic
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Structures de connectique locale des mailles.
+ * \brief Local mesh connectivity structures.
  *
- * renvoie le num local dans la maille des sommets de l'arete
- * et le numéro local des faces de la maille qui s'appuient sur l'arête.
+ * returns the local number in the mesh of the edge vertices
+ * and the local number of the mesh faces supported by the edge.
  *
- * la numérotation des faces est telle que la surface définie par
- * (c1,m,c2,bQ) --- où c1 et c2 représentent les milieux de la
- * première et de la seconde face, m le milieu de l'arête, et bQ
- * le barycentre de la maille --- soit orienté positivement de s1
- * vers s2.
+ * the face numbering is such that the surface defined by
+ * (c1,m,c2,bQ) --- where c1 and c2 represent the midpoints of the
+ * first and second face, m the midpoint of the edge, and bQ
+ * the barycenter of the mesh --- is oriented positively from s1
+ * to s2.
  */
 struct EdgeConnectic
 {
@@ -178,10 +178,10 @@ struct EdgeConnectic
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief	Structures de connectique locale des mailles 
+ * \brief Local mesh connectivity structures 
  *
- *	renvoie le num local dans la maille des 3 aretes et des 3 faces 
- *	connectees au sommet et de la definition du triedre associe (n0,n1,n2,n3)
+ *	returns the local number in the mesh of the 3 edges and 3 faces 
+ *	connected to the vertex and the definition of the associated triad (n0,n1,n2,n3)
  */
 struct NodeConnectic
 {
@@ -225,11 +225,11 @@ struct NodeConnectic
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Structures de connectique locale des mailles et svc
+ * \brief Local mesh and svc connectivity structures
  *
- * Renvoie la definition d'une face interne (faces des svc(s) non
- * contenues dans les faces de la maille) ainsi que les deux noeuds
- * separes par cette face
+ * Returns the definition of an internal face (faces of the svc(s) not
+ * contained in the faces of the mesh) as well as the two nodes
+ * separated by this face
  */
 struct SVCFaceConnectic
 {
@@ -274,13 +274,13 @@ struct SVCFaceConnectic
 /*---------------------------------------------------------------------------*/
 
 
-// tableaux de constantes pour les hexaèdres
+// constant arrays for hexahedrons
 //------------------------------------------
 
-// noeuds de l'hexaèdre
+// hexahedron node association
 const Integer hexa_node_association[8]={0,1,2,3,4,5,6,7};
 
-// pour chaque noeud, on donne les 3 arêtes et les 3 faces auxquelles il est connecté
+// for each node, we give the 3 edges and 3 faces it is connected to
 const NodeConnectic hexa_node_connectic[8] ARCANE_UNUSED_ATTRIBUTE =
 {
    NodeConnectic( /* Edges */ 0,  3,  4, /* Faces */ 0, 1, 2, /* Nodes */ 0, 1, 3, 4),
@@ -293,7 +293,7 @@ const NodeConnectic hexa_node_connectic[8] ARCANE_UNUSED_ATTRIBUTE =
    NodeConnectic( /* Edges */ 10, 11, 7, /* Faces */ 3, 1, 5, /* Nodes */ 7, 6, 4, 3)
 };
 
-// pour chaque arête, on donne les 2 noeuds qui la composent et les 2 faces auxquelles elle est connectée
+// for each edge, we give the 2 nodes that compose it and the 2 faces it is connected to
 const EdgeConnectic hexa_edge_connectic[12] ARCANE_UNUSED_ATTRIBUTE =
 {
   EdgeConnectic(0,1,0,2),EdgeConnectic(1,2,0,4),EdgeConnectic(2,3,0,5),EdgeConnectic(3,0,0,1),
@@ -301,7 +301,7 @@ const EdgeConnectic hexa_edge_connectic[12] ARCANE_UNUSED_ATTRIBUTE =
   EdgeConnectic(4,5,2,3),EdgeConnectic(5,6,4,3),EdgeConnectic(6,7,5,3),EdgeConnectic(7,4,1,3)
 };
 
-// pour chaque face, on donne les noeuds qui la composent
+// for each face, we give the nodes that compose it
 const FaceConnectic hexa_face_connectic[6] ARCANE_UNUSED_ATTRIBUTE =
 {
   FaceConnectic(0,3,2,1),FaceConnectic(0,4,7,3),FaceConnectic(0,1,5,4),
@@ -325,7 +325,7 @@ const SVCFaceConnectic hexa_svc_face_connectic[12] ARCANE_UNUSED_ATTRIBUTE =
  SVCFaceConnectic(3, 8, 2, 4, 5 )
 };
 
-// tableaux de constantes pour les pyramides
+// constant arrays for pyramids
 //------------------------------------------
 
 const Integer pyra_node_association[8]={0,1,2,3,4,4,4,4};
@@ -383,7 +383,7 @@ const SVCFaceConnectic pyra_svc_face_connectic[8] ARCANE_UNUSED_ATTRIBUTE =
 };
 
 
-// tableaux de constantes pour les pentaèdres
+// constant tables for pentadra
 //-------------------------------------------
 
 const Integer penta_node_association[6]={0,1,2,3,4,5};
@@ -427,7 +427,7 @@ const SVCFaceConnectic penta_svc_face_connectic[9] ARCANE_UNUSED_ATTRIBUTE =
 };
 
 
-// tableaux de constantes pour les tétraèdres
+// constant tables for tetrahedra
 //-------------------------------------------
 
 const Integer tetra_node_association[4]={0,1,2,3};
@@ -463,7 +463,7 @@ const SVCFaceConnectic tetra_svc_face_connectic[6] ARCANE_UNUSED_ATTRIBUTE =
  SVCFaceConnectic(3, 1, 0, 1, 2 )
 };
 
-// tableaux de constantes pour les prismes à base pentagonale
+// constant tables for pentagonal prisms
 //-----------------------------------------------------------
 
 const Integer wedge7_node_association[10]={0,1,2,3,4,5,6,7,8,9};
@@ -517,7 +517,7 @@ const SVCFaceConnectic wedge7_svc_face_connectic[15] ARCANE_UNUSED_ATTRIBUTE =
  SVCFaceConnectic(5, 3, 0, 3, 4 )
 };
 
-// tableaux de constantes pour les prismes à base hexagonale
+// constant tables for hexagonal prisms
 //-----------------------------------------------------------
 
 const Integer wedge8_node_association[12]={0,1,2,3,4,5,6,7,8,9,10,11};
@@ -582,13 +582,13 @@ const SVCFaceConnectic wedge8_svc_face_connectic[18] ARCANE_UNUSED_ATTRIBUTE =
  SVCFaceConnectic(3, 14, 4, 2, 8 )
 };
 
-// tableaux de constantes pour les quadrangles
+// constant tables for quadrangles
 //---------------------------------------------
 
-// noeuds du quadrangle
+// nodes of the quadrangle
 const Integer quad_node_association[4]={0,1,2,3};
 
-// pour chaque noeud, on donne les 2 faces auxquelles il est connecté
+// for each node, the 2 faces it is connected to are given
 const NodeConnectic quad_node_connectic[4] ARCANE_UNUSED_ATTRIBUTE =
 {
    NodeConnectic(  /* Faces */ 0, 3, /* Nodes */ 0, 1, 3),
@@ -597,7 +597,7 @@ const NodeConnectic quad_node_connectic[4] ARCANE_UNUSED_ATTRIBUTE =
    NodeConnectic(  /* Faces */ 3, 2, /* Nodes */ 3, 0, 2),
 };
 
-// pour chaque face, on donne les 2 noeuds qui la composent 
+// for each face, the 2 nodes that compose it are given 
 const FaceConnectic quad_face_connectic[4] ARCANE_UNUSED_ATTRIBUTE =
 {
   FaceConnectic(0,1),FaceConnectic(1,2),FaceConnectic(2,3),FaceConnectic(3,0)
@@ -611,7 +611,7 @@ const SVCFaceConnectic quad_svc_face_connectic[4] ARCANE_UNUSED_ATTRIBUTE =
   SVCFaceConnectic(2, 2, 3 ),
   SVCFaceConnectic(3, 3, 0 ),
 };
-// tableaux de constantes pour les triangles
+// constant tables for triangles
 //------------------------------------------
 
 const Integer triangle_node_association[4]={0,1,2,0};
@@ -647,8 +647,8 @@ const SVCFaceConnectic triangle_svc_face_connectic[4] ARCANE_UNUSED_ATTRIBUTE =
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tableau de 12 éléments de type réel. Utilisé pour la pondération des
- *        des noeuds des mailles (la plus grosse ayant 12 noeuds)
+ * \brief Table of 12 real-type elements. Used for weighting
+ *        the nodes of the meshes (the largest having 12 nodes)
  */
 struct LocalCellNodeReal
 {

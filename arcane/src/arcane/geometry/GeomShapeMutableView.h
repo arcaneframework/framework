@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeMutableView.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Vue modifiable sur un GeomShape.                                          */
+/* Mutable view on a GeomShape.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMSHAPEMUTABLEVIEW_H
 #define ARCANE_GEOMETRIC_GEOMSHAPEMUTABLEVIEW_H
@@ -38,13 +38,13 @@ class GeomShapeConnectivity;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue modifiable sur un GeomShape.
+ * \brief Mutable view on a GeomShape.
  *
- * Une instance de cette classe permet de modifier les coordonnées
- * des noeuds, des faces et du centre d'un GeomShape.
+ * An instance of this class allows modification of the coordinates
+ * of nodes, faces, and the center of a GeomShape.
  *
- * Pour récupérer une instance de cet objet, il faut appeler
- * GeomShapeMng::mutableShapeView() ou GeomShape::toMutableView().
+ * To retrieve an instance of this object, you must call
+ * GeomShapeMng::mutableShapeView() or GeomShape::toMutableView().
  */
 class GeomShapeMutableView
 {

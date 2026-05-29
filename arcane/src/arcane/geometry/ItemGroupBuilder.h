@@ -24,18 +24,17 @@ using namespace Arcane;
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-//! Macro de construction d'un nom d'objet
-/*! Sert généralement à nommer des groupes pour ItemGroupBuilder */
+//! Macro for object name construction
+/*! Generally used to name groups for ItemGroupBuilder */
 #define IMPLICIT_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__),false)
 #define IMPLICIT_UNIQ_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__),true)
 
 /*
  * \internal
- * \brief Outil de construction assisté de groupe
+ * \brief Assisted group building tool
  *
- * L'unicité des éléments du groupe est garantie par construction. Il
- * est possible d'utiliser la macro IMPLICIT_NAME pour nommer nom de
- * groupe.
+ * The uniqueness of the group elements is guaranteed by construction. It
+ * is possible to use the IMPLICIT_NAME macro to name the group.
  */
 template<typename T>
 class ItemGroupBuilder
@@ -46,15 +45,15 @@ class ItemGroupBuilder
   String m_group_name;
   
  public:
-  //! Constructeur
+  //! Constructor
   ItemGroupBuilder(IMesh* mesh,const String& groupName)
   : m_mesh(mesh), m_group_name(groupName) {}
 
-  //! Destructeur
+  //! Destructor
   virtual ~ItemGroupBuilder() {}
 
  public:
-  //! Ajout d'un ensemble d'item fourni par un énumérateur
+  //! Add a set of items provided by an enumerator
   void add(ItemEnumeratorT<T> enumerator) 
     { 
       while(enumerator.hasNext()) 
@@ -64,7 +63,7 @@ class ItemGroupBuilder
         }
     }
 
-  //! Ajout d'un ensemble d'item fourni par un énumérateur
+  //! Add a set of items provided by an enumerator
   void add(ItemGroupRangeIteratorT<T> enumerator) 
     { 
       while(enumerator.hasNext())
@@ -74,13 +73,13 @@ class ItemGroupBuilder
         }
     }
 
-  //! Ajout d'un item unique
+  //! Add a unique item
   void add(const T & item) 
     { 
       m_ids.insert(item.localId());
     }
 
-  //! Constructeur du nouveau group
+  //! Constructor for the new group
   ItemGroupT<T> buildGroup() 
     {
       Int32UniqueArray localIds(m_ids.size());
@@ -101,12 +100,12 @@ class ItemGroupBuilder
 
       newGroup.clear();
       newGroup.setItems(localIds);
-      // newGroup.setLocalToSubDomain(true); // Force le nouveau a être local : non transférer en cas de rééquilibrage
+      // newGroup.setLocalToSubDomain(true); // Forces the new group to be local: do not transfer in case of rebalancing
 
       return newGroup;
     }
 
-  //! Nom du groupe
+  //! Group name
   String getName() const 
     { 
       return m_group_name; 

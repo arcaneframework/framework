@@ -27,14 +27,14 @@ class Euclidian3GeometryService :
   public GeometryServiceBase
 {
 public:
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   Euclidian3GeometryService(const Arcane::ServiceBuildInfo & sbi);
   
-  /** Destructeur de la classe */
+  /** Destructor of the class */
   virtual ~Euclidian3GeometryService();
   
 public:
-    //! Initialisation
+    //! Initialization
   void init();
 
   //@{ @name property management by group

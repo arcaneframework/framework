@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomElement.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Eléments géométriques.                                                    */
+/* Geometric Elements.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMELEMENT_H
 #define ARCANE_GEOMETRIC_GEOMELEMENT_H
@@ -28,47 +28,47 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Classe de base des éléments géométriques.
+ * \brief Base class for geometric elements.
  *
- * Un élément géométrique contient les coordoonnées des \a NbNode noeuds qui
- * composent cet élément.
+ * A geometric element contains the coordinates of the \a NbNode nodes that
+ * compose this element.
  *
- * Pour des raisons de performance, le constructeur
- * par défaut n'initialise pas les coordonnées.
+ * For performance reasons, the default constructor
+ * does not initialize the coordinates.
  *
- * Pour récupérer les coordonnées du i-ème noeud de l'élément géométrique,
- * il suffit d'utiliser l'opérateur []. La modification se fait via
+ * To retrieve the coordinates of the i-th node of the geometric element,
+ * simply use the [] operator. Modification is done via
  * setItem().
  */
 template<int NbNode>
 class GeomElementBase
 {
  public:
-  //! Constructeur vide.
+  //! Empty constructor.
   GeomElementBase(){}
-  //! Constructeur à partir des coordonnées \a coords des noeuds de l'entité \a item
+  //! Constructor from the coordinates \a coords of the nodes of the entity \a item
   GeomElementBase(const VariableNodeReal3& coords,ItemWithNodes item)
   {
     init(coords,item);
   }
-  //! Constructeur à partir des coordonnées \a coords.
+  //! Constructor from the coordinates \a coords.
   GeomElementBase(Real3ConstArrayView coords)
   {
     for( Integer i=0; i<NbNode; ++i )
       setItem(i,coords[i]);
   }
 
-  //! Récupère la valeur du \a ième noeud
+  //! Retrieves the value of the i-th node
   inline const Real3 s(Integer i) const { return Real3(m_s[i].x,m_s[i].y,m_s[i].z); }
-  //! Récupère la valeur du \a ième noeud
+  //! Retrieves the value of the i-th node
   inline const Real3 operator[](Integer i) const { return Real3(m_s[i].x,m_s[i].y,m_s[i].z); }
-  //! Positionne la valeur du \a ième noeud à \a v
+  //! Positions the value of the i-th node at \a v
   inline void setItem(Integer i,const Real3& v) { m_s[i] = v; }
-  //! Positionne la valeur du \a ième noeud à Real3(\a x,\a y,\a z)
+  //! Positions the value of the i-th node at Real3(\a x,\a y,\a z)
   inline void setItem(Integer i,Real x,Real y,Real z) { m_s[i] = Real3(x,y,z); }
 
   /*!
-   * \brief Remplit la vue \a view avec les coordonnéees de l'instance.
+   * \brief Fills the view \a view with the coordinates of the instance.
    */
   void fillView(Real3ArrayView view) const
   {
@@ -77,7 +77,7 @@ class GeomElementBase
   }
 
   /*!
-   * \brief Initialise les coordonnées avec celles des noeuds d'entité \a item
+   * \brief Initializes the coordinates with those of the nodes of the entity \a item
    */
   void init(const VariableNodeReal3& coords,ItemWithNodes item)
   {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Euclidian3Geometry.h                                        (C) 2000-2020 */
 /*                                                                           */
-/* Calculs géométriques en 3D Euclidienne.                                   */
+/* Euclidean geometric calculations in 3D.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRY_EUCLIDIAN_EUCLIDIAN3GEOMETRY_H
@@ -40,39 +40,39 @@ public:
   
   //@{ @name Inherited methods from IGeometry
 
-  //! Calcul du centre de masse
+  //! Calculation of the center of mass
   Real3 computeCenter(const ItemWithNodes & item);
 
-  //! Calcul de la mesure orientée
-  /*! Dans le cas d'un élément plan, ceci correspond à 
-   *  la normale moyenne unitaire * mesure de l'élément
-   *  et dans le cas d'un simple élément volumique nous obtenons
-   *  volume * z (ou z=(0,0,1))
+  //! Calculation of the oriented measure
+  /*! In the case of a planar element, this corresponds to 
+   *  the unit average normal * measure of the element
+   *  and in the case of a simple volumetric element we obtain
+   *  volume * z (or z=(0,0,1))
    */
   Real3 computeOrientedMeasure(const ItemWithNodes & item);
 
-  //! Calcul de la mesure (sans orientation)
+  //! Calculation of the measure (without orientation)
   Real  computeMeasure(const ItemWithNodes & item);
 
-  //! Calcul de la longueyr
-  /*! Uniquement pour les Items linéïques */
+  //! Calculation of the length
+  /*! Only for linear items */
   Real  computeLength(const ItemWithNodes & item);
 
-  //! Calcul de l'aire 
-  /*! Uniquement pour les Items surfaciques */
+  //! Calculation of the area 
+  /*! Only for surface items */
   Real  computeArea(const ItemWithNodes & item);
 
-  //! Calcul du volume
-  /*! Uniquement pour les Items volumiques */
+  //! Calculation of the volume
+  /*! Only for volumetric items */
   Real  computeVolume(const ItemWithNodes & item);
 
-  //! Calcul du centre
+  //! Calculation of the center
   Real3 computeSurfaceCenter(Integer n, const Real3 * coords);
 
-  //! Calcul de l'aire orientée (ie normale)
+  //! Calculation of the oriented area (i.e., normal)
   Real3 computeOrientedArea(Integer n, const Real3 * coords);
 
-  //! Calcul de longueur d'un segment défini par deux points
+  //! Calculation of the length of a segment defined by two points
   Real computeLength(const Real3& m, const Real3& n);
 
   //@}

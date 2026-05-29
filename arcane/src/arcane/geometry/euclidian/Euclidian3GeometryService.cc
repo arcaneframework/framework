@@ -19,18 +19,18 @@ using namespace Arcane;
 ARCANE_BEGIN_NAMESPACE
 NUMERICS_BEGIN_NAMESPACE
 
-/* Few words about possible optimisations:
+/* A few words about possible optimizations:
  * Next possible optimizations (when necessary) are:
  * - Compute common properties on maximal group 
- *   (instead of re-computing the same property on all groups with shared items)
- * - Different properties may use the same computation. Then, maximal group factorisation
- *   may consider by a system of "what properties may compute this kernel" even if not
+   (instead of re-computing the same property on all groups with shared items)
+ * - Different properties may use the same computation. Then, maximal group factorization
+ *   may be considered by a system of "what properties may compute this kernel" even if not
  *   shared by alls group in a maximal set.
  * - Mandatory storage parameter in addItemGroupProperty (up to now, this is optional)
  * - Geometry computations by constraints
- *   ex: for volume computations, we need face center on Quad4. This center is computed twice 
- *       for each shared face. Moreover, this computation may be also wished by the used.
- *  The idea is to define requirements for each geometry computations by kind and type.
+   e.g.: for volume computations, we need face center on Quad4. This center is computed twice 
+       for each shared face. Moreover, this computation may also be needed by the user.
+ *  The idea is to define requirements for each geometry computation by kind and type.
  *  Then computations are done following the order of the weakest constraints.
  */
 
@@ -66,7 +66,7 @@ init()
       return;
     }
 
-  // L'implémentation actuelle se construit sur le maillage par défaut
+  // The current implementation is built upon the default mesh
   m_geometry = new Euclidian3Geometry(PRIMARYMESH_CAST(this->mesh())->nodesCoordinates());
 
   if (options()->variableSuffix.size() > 0)

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BarycentricGeomShapeComputer.cc                             (C) 2000-2026 */
 /*                                                                           */
-/* Calcul des GeomShape en utilisant les barycentres.                        */
+/* Calculation of GeomShapes using barycenters.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,14 +27,14 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille quadrangulaire.
+ * \brief Calculates the positions of the nodes of a quadrilateral mesh.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Quad4>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
 
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
       
   for( Integer i = 0; i<4; ++i ){
@@ -42,7 +42,7 @@ compute<GeomType::Quad4>(GeomShapeMutableView elem)
   }
   elem.setCenter(0.25 * c);
 
-  // Calcul la position des centres des faces.
+  // Calculates the position of the face centers.
   _setFace2D(0, elem, 0 , 1);
   _setFace2D(1, elem, 1 , 2);
   _setFace2D(2, elem, 2 , 3);
@@ -50,7 +50,7 @@ compute<GeomType::Quad4>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille quadrangulaire.
+ * \brief Calculates the positions of the nodes of a quadrilateral mesh.
  */
 void BarycentricGeomShapeComputer::
 computeQuad4(GeomShapeMutableView elem)
@@ -61,9 +61,9 @@ computeQuad4(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille triangulaire.
+ * \brief Calculates the positions of the nodes of a triangular mesh.
  *
- * Elle est considérée comme un quadrangle dégénéré.
+ * It is considered a degenerate quadrangle.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Triangle3>(GeomShapeMutableView elem)
@@ -72,13 +72,13 @@ compute<GeomType::Triangle3>(GeomShapeMutableView elem)
 
   Real3 c = nul_vector;      
 
-  // Calcule la position du centre.
+  // Calculates the center position.
   for( Integer i = 0; i<3; ++i )
     c += elem.node(i);
   
   elem.setCenter(c / 3.0);
 
-  // Calcul la position des barycentres des faces.
+  // Calculates the position of the face barycenters.
   _setFace2D(0, elem, 0 , 1);
   _setFace2D(1, elem, 1 , 2);
   _setFace2D(2, elem, 2 , 0);
@@ -87,9 +87,9 @@ compute<GeomType::Triangle3>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille triangulaire.
+ * \brief Calculates the positions of the nodes of a triangular mesh.
  *
- * Elle est considérée comme un quadrangle dégénéré.
+ * It is considered a degenerate quadrangle.
  */
 void BarycentricGeomShapeComputer::
 computeTriangle3(GeomShapeMutableView elem)
@@ -100,14 +100,14 @@ computeTriangle3(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille hexaédrique.
+ * \brief Calculates the positions of the nodes of a hexahedral mesh.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Hexaedron8>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
 
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
       
   for( Integer i = 0; i<8; ++i )
@@ -115,7 +115,7 @@ compute<GeomType::Hexaedron8>(GeomShapeMutableView elem)
       
   elem.setCenter(0.125 * c);
       
-  // Calcul la position des centres des faces.
+  // Calculates the position of the face centers.
   _setFace3D(0, elem, 0 , 3 , 2 , 1);
   _setFace3D(1, elem, 0 , 4 , 7 , 3);
   _setFace3D(2, elem, 0 , 1 , 5 , 4);
@@ -125,7 +125,7 @@ compute<GeomType::Hexaedron8>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille hexaédrique.
+ * \brief Calculates the positions of the nodes of a hexahedral mesh.
  */
 void BarycentricGeomShapeComputer::
 computeHexaedron8(GeomShapeMutableView elem)
@@ -136,33 +136,33 @@ computeHexaedron8(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille pyramidale.
+ * \brief Calculates the positions of the nodes of a pyramidal mesh.
  */
 template<> void BarycentricGeomShapeComputer::
 compute<GeomType::Pyramid5>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
       
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
 
   for( Integer i = 0; i<5; ++i )
     c += elem.node(i);
   elem.setCenter(0.2 * c);
   
-  // Calcul la position des barycentres des faces.
+  // Calculates the position of the face barycenters.
   _setFace3D(0, elem, 0, 3, 2, 1);
   _setFace3D(1, elem, 0, 4, 3);
   _setFace3D(2, elem, 0, 1, 4);
   _setFace3D(3, elem, 1, 2, 4);
   _setFace3D(4, elem, 2, 3, 4);
       
-  // Pour compatibilite avec pyra_face_connectic
+  // For compatibility with pyra_face_connectic
   elem.setFace(5, elem.node(4));
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille pyramidale.
+ * \brief Calculates the positions of the nodes of a pyramidal mesh.
  */
 void BarycentricGeomShapeComputer::
 computePyramid5(GeomShapeMutableView elem)
@@ -173,14 +173,14 @@ computePyramid5(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille pentaédrique.
+ * \brief Calculates the positions of the nodes of a pentahedral mesh.
  */
 template<> void BarycentricGeomShapeComputer::
 compute<GeomType::Pentaedron6>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
       
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
 
   for( Integer i = 0; i<6; ++i )
@@ -196,7 +196,7 @@ compute<GeomType::Pentaedron6>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille pentaédrique.
+ * \brief Calculates the positions of the nodes of a pentahedral mesh.
  */
 void BarycentricGeomShapeComputer::
 computePentaedron6(GeomShapeMutableView elem)
@@ -207,14 +207,14 @@ computePentaedron6(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille tétraédrique.
+ * \brief Calculates the positions of the nodes of a tetrahedral mesh.
  */
 template<> void BarycentricGeomShapeComputer::
 compute<GeomType::Tetraedron4>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
       
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
       
   for( Integer i = 0; i<4; ++i ){
@@ -230,7 +230,7 @@ compute<GeomType::Tetraedron4>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille tétraédrique.
+ * \brief Calculates the positions of the nodes of a tetrahedral mesh.
  */
 void BarycentricGeomShapeComputer::
 computeTetraedron4(GeomShapeMutableView elem)
@@ -241,14 +241,14 @@ computeTetraedron4(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille prismatique à base pentagonale.
+ * \brief Calculates the positions of the nodes of a prismatic mesh with a pentagonal base.
  */
 template<> void BarycentricGeomShapeComputer::
 compute<GeomType::Heptaedron10>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
       
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
       
   for( Integer i = 0; i<10; ++i )
@@ -268,7 +268,7 @@ compute<GeomType::Heptaedron10>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille prismatique à base pentagonale.
+ * \brief Calculates the positions of the nodes of a prismatic mesh with a pentagonal base.
  */
 void BarycentricGeomShapeComputer::
 computeHeptaedron10(GeomShapeMutableView elem)
@@ -279,14 +279,14 @@ computeHeptaedron10(GeomShapeMutableView elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des positions des noeuds d'une maille prismatique à base hexagonale.
+ * \brief Calculates the positions of the nodes of a prismatic mesh with a hexagonal base.
  */
 template<> void BarycentricGeomShapeComputer::
 compute<GeomType::Octaedron12>(GeomShapeMutableView elem)
 {
   const Real3 nul_vector = Real3(0.,0.,0.);
       
-  // Calcule la position du centre.
+  // Calculates the center position.
   Real3 c = nul_vector;
       
   for( Integer i = 0; i<12; ++i ){
@@ -306,7 +306,7 @@ compute<GeomType::Octaedron12>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calcul des positions des noeuds d'une maille prismatique à base hexagonale.
+ * \brief Calculates the positions of the nodes of a prismatic mesh with a hexagonal base.
  */
 void BarycentricGeomShapeComputer::
 computeOctaedron12(GeomShapeMutableView elem)
@@ -440,4 +440,3 @@ computeAll(GeomShapeMng& shape_mng,VariableNodeReal3& coords,const CellGroup& ce
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

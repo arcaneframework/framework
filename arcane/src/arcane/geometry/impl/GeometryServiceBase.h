@@ -25,31 +25,31 @@ class GeometryServiceBase
   : public IGeometryMng
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   GeometryServiceBase();
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GeometryServiceBase();
   
 public:
   //@{ @name Geometric property management for ItemGroup 
 
-  //! Set geometric properties on a ItemGroup
+  //! Set geometric properties on an ItemGroup
   void addItemGroupProperty(ItemGroup group, Integer property, Integer storage = IGeometryProperty::PVariable);
 
-  //! Set geometric properties on a ItemGroup with an external container (real field)
+  //! Set geometric properties on an ItemGroup with an external container (real field)
   void addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, RealVariable var);
 
-  //! Set geometric properties on a ItemGroup with an external container (real3 field)
+  //! Set geometric properties on an ItemGroup with an external container (real3 field)
   void addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Real3Variable var);
 
   //! Get set of properties of an ItemGroup
   Integer getItemGroupProperty(ItemGroup group);
 
-  //! Check is a property is activated on an ItemGroup
+  //! Check if a property is activated on an ItemGroup
   bool hasItemGroupProperty(ItemGroup group, Integer property);
 
-  //! Check if a storage is available on an ItemGroup
+  //! Check if storage is available on an ItemGroup
   Integer getItemGroupPropertyStorage(ItemGroup group, IGeometryProperty::eProperty property);
 
   //@}
@@ -104,7 +104,7 @@ protected:
   template<typename GeometryT>
   void updateGroup(ItemGroup group,GeometryT & geometry);
 
-  //! Name of instancied class
+  //! Name of instantiated class
   virtual const char * className() const = 0;
 
   //@}
@@ -120,8 +120,8 @@ protected:
                                                                    IGeometryProperty::eStorage storage);
   void _resetComputeFlags();
   void _checkItemGroupUsage();
-  /*! Using setSuffix allow to define a known extension for internal variable name.
-   *  At this level, the user is responsible to the collision management of names */
+  /*! Using setSuffix allows defining a known extension for internal variable names.
+   *  At this level, the user is responsible for name collision management */
   void setSuffix(const String & suffix) { m_suffix = suffix; }
 };
 

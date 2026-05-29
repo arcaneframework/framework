@@ -81,7 +81,7 @@ updateGroup(ItemGroup group, GeometryT & geometry)
     group.applyOperation(&updater);
   }
 
-  /*** L'affectation générale est désormais faite dans GeometryTemplatesT ***/
+  /*** The general assignment is now handled in GeometryTemplatesT ***/
   for(typename ItemGroupGeometryProperty::StorageInfos::iterator i = properties.storages.begin(); i != properties.storages.end(); ++i) 
     {
       IGeometryProperty::eProperty property = i->first;
