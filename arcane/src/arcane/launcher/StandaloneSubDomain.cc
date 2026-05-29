@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneSubDomain.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation autonome d'un sous-domaine.                                */
+/* Standalone implementation of a subdomain.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ class StandaloneSubDomain::Impl
   Impl() = default;
   ~Impl()
   {
-    arcaneCallFunctionAndCatchException([&]{ dumpStats(); });
+    arcaneCallFunctionAndCatchException([&] { dumpStats(); });
     StandaloneSubDomain::_notifyRemoveStandaloneSubDomain();
   }
 

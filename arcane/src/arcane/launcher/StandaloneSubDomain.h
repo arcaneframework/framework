@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StandaloneSubDomain.h                                       (C) 2000-2023 */
 /*                                                                           */
-/* Implémentation autonome d'un sous-domaine.                                */
+/* Standalone implementation of a sub-domain.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_STANDALONESUBDOMAIN_H
 #define ARCANE_LAUNCHER_STANDALONESUBDOMAIN_H
@@ -17,7 +17,7 @@
 #include "arcane/launcher/LauncherGlobal.h"
 
 #include "arcane/utils/Ref.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,15 +27,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation autonome d'un sous-domaine.
+ * \brief Standalone implementation of a sub-domain.
  *
- * L'instance de cette classe doit être créée par
+ * The instance of this class must be created by
  * ArcaneLauncher::createStandaloneSubDomain().
  *
- * Une seule instance est autorisée.
+ * Only one instance is allowed.
  *
- * Cette classe utilise une sémantique par référence.
+ * This class uses a reference semantics.
  */
 class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
 {
@@ -44,15 +45,15 @@ class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
 
  public:
 
-  //! Constructeur non initialisé.
+  //! Uninitialized constructor.
   StandaloneSubDomain();
 
  public:
 
-  //! Gestionnaire de trace associé.
+  //! Associated trace manager.
   ITraceMng* traceMng();
 
-  //! Sous-domaine.
+  //! Sub-domain.
   ISubDomain* subDomain();
 
  private:
@@ -65,7 +66,7 @@ class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
 
  private:
 
-  // Pour ArcaneLauncher.
+  // For ArcaneLauncher.
   void _initUniqueInstance(const String& case_file_name);
   bool _isValid();
   static void _notifyRemoveStandaloneSubDomain();

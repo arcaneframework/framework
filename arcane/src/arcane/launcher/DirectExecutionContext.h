@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DirectExecutionContext.h                                    (C) 2000-2021 */
 /*                                                                           */
-/* Contexte d'exécution directe.                                             */
+/* Direct execution context.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_DIRECTEXECUTIONCONTEXT_H
 #define ARCANE_LAUNCHER_DIRECTEXECUTIONCONTEXT_H
@@ -27,25 +27,30 @@ class IDirectExecutionContext;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Contexte d'exécution directe.
+ * \brief Direct execution context.
  */
 class ARCANE_LAUNCHER_EXPORT DirectExecutionContext
 {
  public:
+
   DirectExecutionContext(IDirectExecutionContext* ctx);
   DirectExecutionContext(const DirectExecutionContext&) = delete;
   DirectExecutionContext& operator=(const DirectExecutionContext&) = delete;
+
  public:
+
   /*!
-   * \brief Créé un sous-domaine en séquentiel sans jeu de données
+   * \brief Creates a sequential sub-domain without a dataset
    */
   ISubDomain* createSequentialSubDomain();
   /*!
-   * \brief Créé un sous-domaine en séquentiel avec le fichier de
-   * jeu de données ayant pour nom \a case_file_name.
+   * \brief Creates a sequential sub-domain with the dataset file named
+   * case_file_name.
    */
   ISubDomain* createSequentialSubDomain(const String& case_file_name);
+
  private:
+
   IDirectExecutionContext* m_p;
 };
 
@@ -57,4 +62,4 @@ class ARCANE_LAUNCHER_EXPORT DirectExecutionContext
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

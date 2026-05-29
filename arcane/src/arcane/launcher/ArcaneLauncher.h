@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneLauncher.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant l'exécution.                                                */
+/* Class managing execution.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_LAUNCHER_ARCANELAUNCHER_H
 #define ARCANE_LAUNCHER_ARCANELAUNCHER_H
@@ -16,9 +16,9 @@
 
 #include "arcane/launcher/LauncherGlobal.h"
 
-// Les fichiers suivants ne sont pas directement utilisés dans ce '.h'
-// mais sont ajoutés pour que le code utilisateur n'ait besoin d'inclure
-// que 'ArcaneLauncher.h'.
+// The following files are not directly used in this '.h'
+// but are added so that user code only needs to include
+// 'ArcaneLauncher.h'.
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
 
@@ -43,29 +43,29 @@ class IMainFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de gestion de l'exécution.
+ * \brief Execution management class.
  *
- * Il existe deux modes d'utilisation d'%Arcane : le mode classique et le mode
- * autonome.
+ * There are two modes of using %Arcane: classic mode and standalone mode.
  *
- * Quel que soit le mode retenu, la première chose à faire est d'initialiser %Arcane en
- * positionnant les arguments via la méthode init() car certains paramètres de la
- * ligne de commande sont utilisés pour remplir les propriétés
- * de applicationInfo() et dotNetRuntimeInitialisationInfo().
+ * Regardless of the mode chosen, the first thing to do is initialize %Arcane by
+ * setting the arguments via the init() method, because certain command-line
+ * parameters are used to populate the properties of applicationInfo() and
+ * dotNetRuntimeInitialisationInfo().
  *
- * La page \ref arcanedoc_execution_launcher donne des exemples d'usage.
+ * The page \ref arcanedoc_execution_launcher provides usage examples.
  *
- * Les deux modes d'éxécutions sont:
- * - le mode classique qui utilise une boucle en temps et donc l'exécution
- *   complète sera gérée par %Arcane. Dans mode il suffit d'appeler
- *   la méthode run() sans arguments.
- * - le mode autonome qui permet d'utiliser %Arcane sous la forme d'une bibliothèque.
- *   Pour ce mode il faut utiliser la méthode createStandaloneSubDomain()
- *   ou createStandaloneAcceleratorMng(). La page \ref arcanedoc_execution_direct_execution
- *   décrit comment utiliser ce mécanisme.
+ * The two execution modes are:
+ * - classic mode, which uses a time loop, and thus the entire execution
+ *   will be managed by %Arcane. In this mode, you simply call the run() method
+ *   without arguments.
+ * - standalone mode, which allows %Arcane to be used as a library.
+ *   For this mode, you must use the createStandaloneSubDomain()
+ *   or createStandaloneAcceleratorMng() method. The page
+ *   \ref arcanedoc_execution_direct_execution describes how to use this mechanism.
  *
- * L'usage classique est le suivant:
+ * The classic usage is as follows:
  *
  * \code
  * int main(int* argc,char* argv[])
@@ -77,8 +77,6 @@ class IMainFactory;
  *   return ArcaneLauncher::run();
  * }
  * \endcode
- *
- * L
  */
 class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 {
@@ -87,148 +85,147 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
  public:
 
   /*!
-   * \brief Positionne les informations à partir des arguments de la ligne
-   * de commande et initialise le lanceur.
+   * \brief Positions information from command-line arguments and initializes
+   * the launcher.
    *
-   * Cette méthode remplit les valeurs non initialisées
-   * de applicationInfo() et dotNetRuntimeInitialisationInfo() avec
-   * les paramètres spécifiés dans \a args.
+   * This method fills the uninitialized values of applicationInfo() and
+   * dotNetRuntimeInitialisationInfo() with the parameters specified in \a args.
    *
-   * Il ne faut appeler cette méthode qu'une seule fois. Les appels supplémentaires
-   * génèrent une exception FatalErrorException.
+   * This method must only be called once. Additional calls generate a
+   * FatalErrorException.
    */
   static void init(const CommandLineArguments& args);
 
   /*!
-   * \brief Indique si init() a déjà été appelé.
+   * \brief Indicates if init() has already been called.
    */
   static bool isInitialized();
 
   /*!
-   * \brief Point d'entrée de l'exécutable dans Arcane.
+   * \brief Entry point of the executable in Arcane.
    *
-   * Cette méthode appelle initialise l'application, lit le jeu de données
-   * et exécute le code suivant la boucle en temps spécifiée dans le jeu de donnée.
+   * This method initializes the application, reads the dataset, and executes
+   * the code according to the time loop specified in the dataset.
    *
-   * \retval 0 en cas de succès
-   * \return une valeur différente de 0 en cas d'erreur.
+   * \retval 0 upon success
+   * \return a value different from 0 in case of error.
    */
   static int run();
 
- /*!
-   * \brief Exécution directe.
+  /*!
+   * \brief Direct execution.
    *
-   * Initialise l'application et appelle la fonction \a func après l'initialisation
-   * Cette méthode ne doit être appelée qu'en exécution séquentielle.
+   * Initializes the application and calls the function \a func after
+   * initialization.
+   * This method must only be called in sequential execution.
    */
   static int run(std::function<int(DirectExecutionContext&)> func);
 
- /*!
-   * \brief Exécution directe avec création de sous-domaine.
+  /*!
+   * \brief Direct execution with subdomain creation.
    *
-   * Initialise l'application et créé le ou les sous-domaines et appelle
-   * la fonction \a func après.
-   * Cette méthode permet d'exécuter du code sans passer par les mécanismes
-   * de la boucle en temps.
-   * Cette méthode permet de gérer automatiquement la création des sous-domaines
-   * en fonction des paramètres de lancement (exécution parallèle MPI, multithreading, ...).
+   * Initializes the application and creates the subdomain(s) and calls
+   * the function \a func afterward.
+   * This method allows executing code without going through the time loop
+   * mechanisms.
+   * This method automatically manages the creation of subdomains
+   * based on launch parameters (MPI parallel execution, multithreading, ...).
    */
   static int run(std::function<int(DirectSubDomainExecutionContext&)> func);
 
   /*!
-   * \brief Positionne la fabrique par défaut pour créer les différents gestionnaires
+   * \brief Positions the default factory for creating the different managers
    *
-   * Cette méthode doit être appelée avant run(). L'instance passée en argument doit
-   * rester valide durant l'exécution de run(). L'appelant reste propriétaire
-   * de l'instance.
+   * This method must be called before run(). The instance passed as an argument
+   * must remain valid during the execution of run(). The caller remains the owner
+   * of the instance.
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 
- /*!
-   * \brief Informations sur l'application.
+  /*!
+   * \brief Application information.
    *
-   * Cette méthode permet de récupérer l'instance de `ApplicationInfo`
-   * qui sera utilisée lors de l'appel à run().
+   * This method allows retrieving the `ApplicationInfo` instance
+   * that will be used when calling run().
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à runDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or runDirect().
    */
   static ApplicationInfo& applicationInfo();
 
- /*!
-   * \brief Informations sur les paramêtre d'exécutions de l'application.
+  /*!
+   * \brief Application execution parameter information.
    *
-   * Cette méthode permet de récupérer l'instance de `ApplicationBuildInfo`
-   * qui sera utilisée lors de l'appel à run().
+   * This method allows retrieving the `ApplicationBuildInfo` instance
+   * that will be used when calling run().
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à runDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or runDirect().
    */
   static ApplicationBuildInfo& applicationBuildInfo();
 
   /*!
-   * \brief Informations pour l'initialisation du runtime '.Net'.
+   * \brief Information for '.Net' runtime initialization.
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à rundDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or rundDirect().
    */
   static DotNetRuntimeInitialisationInfo& dotNetRuntimeInitialisationInfo();
 
   /*!
-   * \brief Informations pour l'initialisation des accélerateurs.
+   * \brief Information for accelerator initialization.
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à rundDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or rundDirect().
    */
   static AcceleratorRuntimeInitialisationInfo& acceleratorRuntimeInitialisationInfo();
 
-  //! Nom complet du répertoire où se trouve l'exécutable
+  //! Full name of the directory where the executable is located
   static String getExeDirectory();
 
   /*!
-   * \brief Créé une implémentation autonome pour gérer les accélérateurs.
+   * \brief Creates a standalone implementation to manage accelerators.
    *
-   * Il faut appeler init() avant d'appeler cette méthode. Le choix du
-   * runtime (Arcane::Accelerator::eExecutionPolicy) est déterminé
-   * par les arguments utilisés lors de l'appel à init() ou spécifiés via
-   * acceleratorRuntimeInitialisationInfo() (voir
-   * \ref arcanedoc_parallel_accelerator_exec pour plus d'informations)
+   * You must call init() before calling this method. The choice of
+   * runtime (Arcane::Accelerator::eExecutionPolicy) is determined
+   * by the arguments used when calling init() or specified via
+   * acceleratorRuntimeInitialisationInfo() (see
+   * \ref arcanedoc_parallel_accelerator_exec for more information)
    */
   static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
 
   /*!
-   * \brief Créé une implémentation autonome pour gérer un sous-domaine.
+   * \brief Creates a standalone implementation to manage a subdomain.
    *
-   * Une seule instance de StandaloneSubDomain est autorisée. Si on
-   * appelle cette méthode plus d'une fois cela génère une exception.
+   * Only one instance of StandaloneSubDomain is allowed. Calling this
+   * method more than once generates an exception.
    *
-   * Il faut appeler init() avant d'appeler cette méthode.
+   * You must call init() before calling this method.
    *
-   * Si on appelle cette méthode il ne faut pas appeler d'autres méthodes
-   * d'exécution de ArcaneLauncher (par exemple ArcaneLauncher::run()).
+   * If this method is called, you must not call other ArcaneLauncher execution
+   * methods (for example ArcaneLauncher::run()).
    *
-   * \a case_file_name est le nom du fichier contenant le jeu de données
-   * Si nul, alors il n'y a pas de jeu de données.
+   * \a case_file_name is the name of the file containing the dataset. If null,
+   * there is no dataset.
    */
   static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
 
   /*!
-   * \brief Demande d'aide avec l'option "--help" ou "-h".
+   * \brief Requests help with the "--help" or "-h" option.
    *
-   * Méthode permettant de savoir si l'utilisateur a demandé l'aide
-   * avec l'option "--help" ou "-h".
+   * Method allowing to know if the user requested help with the "--help" or "-h" option.
    *
-   * \return true si l'aide a été demandée.
+   * \return true if help was requested.
    */
   static bool needHelp();
 
   /*!
-   * \brief Affichage de l'aide générique Arcane.
+   * \brief Display of generic Arcane help.
    *
-   * Méthode permettant d'afficher l'aide générique Arcane si
-   * l'utilisateur l'a demandée avec l'option "--help" ou "-h".
+   * Method allowing to display generic Arcane help if the user requested it with
+   * the "--help" or "-h" option.
    *
-   * \return true si l'aide a été demandée.
+   * \return true if help was requested.
    */
   static bool printHelp();
 
@@ -263,4 +260,4 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
