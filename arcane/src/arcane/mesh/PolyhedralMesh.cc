@@ -872,7 +872,12 @@ namespace mesh
               isolated_item_lids.push_back(iitem->localId());
             }
           }
-          arcane_source_item_family->removeItems(isolated_item_lids); }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
+          std::sort(isolated_item_lids.begin(), isolated_item_lids.end());
+          arcane_source_item_family->traceMng()->info() << "Remove isolated in Arcane for family "
+            << " lids : " << isolated_item_lids;
+            isolated_items_lids_property.debugPrint();
+          arcane_source_item_family->removeItems(isolated_item_lids);
+        }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
     }
 
     /*---------------------------------------------------------------------------*/
