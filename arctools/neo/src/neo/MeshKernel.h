@@ -349,6 +349,7 @@ namespace MeshKernel
     using ProducingAlgoArray = std::vector<AlgoPtr>;
     using ConsumingAlgoArray = std::vector<AlgoPtr>;
     using PropertyRef = std::reference_wrapper<const PropertyHolder>;
+    using GraphType = SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder>;
 #ifndef _MSC_VER
     static inline auto m_prop_holder_less_comparator = [](PropertyHolder const& a, PropertyHolder const& b) { return a.uniqueName() < b.uniqueName(); };
     using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
@@ -356,7 +357,7 @@ namespace MeshKernel
     PropertyHolderLessComparator  m_prop_holder_less_comparator;
 #endif
     std::map<PropertyHolder, std::pair<ProducingAlgoArray, ConsumingAlgoArray>, PropertyHolderLessComparator> m_property_algorithms{m_prop_holder_less_comparator };
-    SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder> m_dag;
+    GraphType m_dag;
     std::list<AlgoPtr> m_kept_in_out_algos;
     std::list<AlgoPtr> m_kept_out_algos;
     std::list<AlgoPtr> m_kept_dual_out_algos;
@@ -483,7 +484,9 @@ namespace MeshKernel
           auto sorted_graph = m_dag.topologicalSort();
           std::for_each(sorted_graph.begin(), sorted_graph.end(), [](auto& algo) { (*algo.get())(); });
         }
-        catch (std::runtime_error& error) {
+        catch (GraphType::CycleDetection& error) {
+          AlgoPtr algo_leading_to_cycle = error.vertexCreatingCycle();
+          Neo::printer(m_rank) << "Cycle detected in the graph: " << algo_leading_to_cycle->name() << Neo::endline;
           if (!do_keep_algorithms)
             removeAlgorithms();
           throw error;
@@ -576,11 +579,15 @@ namespace MeshKernel
         auto& [producing_property_array, consuming_property_array] = property_algos;
         for (auto& producing_algo : producing_property_array) {
           // Add each producing algo in graph: it may have no consuming algo
-          if (!is_removed_algo(producing_algo))
+          if (!is_removed_algo(producing_algo)) {
             m_dag.addVertex(producing_algo);
+            Neo::printer(m_rank) << "Adding vertex " << producing_algo->name() << Neo::endline;
+          }
           for (auto& consuming_algo : consuming_property_array) {
-            if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
+            if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo)) {
               m_dag.addEdge(producing_algo, consuming_algo, property);
+            Neo::printer(m_rank) << "Adding edge between " << producing_algo->name() << " and " << consuming_algo->name() << Neo::endline;
+            }
           }
         }
       }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectedAcyclicGraph                                        (C) 2000-2025 */
+/* DirectedAcyclicGraph                                        (C) 2000-2026 */
 /*                                                                           */
 /* Basic Implementation of a directed acyclic graph                          */
 /*---------------------------------------------------------------------------*/
@@ -94,6 +94,18 @@ class DirectedAcyclicGraph
   using SortedVertexSet = SortedElementSet<typename Base::VertexTypeRefArray>;
   using VertexLevelMap = std::map<typename Base::VertexTypeConstRef, int, typename Base::VertexLessComparator>;
   using EdgeLevelMap = std::map<typename Base::EdgeTypeConstRef, int, typename Base::EdgeLessComparator>;
+
+  class CycleDetection : public std::runtime_error
+  {
+  private:
+    VertexType const& m_vertex_creating_cycle;
+    public:
+    CycleDetection(std::string const& message, VertexType const& vertex_creating_cyle)
+    : std::runtime_error(message)
+    , m_vertex_creating_cycle(vertex_creating_cyle){}
+
+    VertexType const& vertexCreatingCycle() const { return m_vertex_creating_cycle; }
+  };
 
  private:
   std::set<typename Base::VertexTypeConstRef, typename Base::VertexLessComparator> m_colored_vertices{ Base::m_vertex_less_comparator };
@@ -204,7 +216,7 @@ class DirectedAcyclicGraph
 
  private:
   void _computeVertexLevels() {
-    // Current algo cannot update vertex level ; need to clear the map.
+    // Current algo cannot update vertex level; need to clear the map.
     m_vertex_level_map.clear();
     // compute vertex level
     for (auto vertex_entry : this->m_adjacency_list) {
@@ -218,7 +230,7 @@ class DirectedAcyclicGraph
   void _computeVertexLevel(VertexType const& vertex, int level) {
     // Check for cycles
     if (!m_colored_vertices.insert(std::cref(vertex)).second)
-      throw std::runtime_error("Cycle in graph. Exiting");
+      throw CycleDetection{"Cycle in graph. Exiting",vertex};
 
     // Try to insert vertex at the given level
     bool update_children = true;
