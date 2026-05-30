@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiParallelDispatch.cc                                      (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant les threads et MPI.                */
+/* Parallelism manager using threads and MPI.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,11 +26,11 @@
 #include "arcane/utils/IThreadBarrier.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/MeshVariableRef.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IBase.h"
+#include "arcane/core/MeshVariableRef.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IBase.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridParallelMng.h"
@@ -47,13 +47,13 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: Fusionner avec ce qui est possible dans SharedMemoryParallelDispatch
+//TODO: Merge with what is possible in SharedMemoryParallelDispatch
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> HybridParallelDispatch<Type>::
-HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* pm,HybridMessageQueue* message_queue,
+template <class Type> HybridParallelDispatch<Type>::
+HybridParallelDispatch(ITraceMng* tm, HybridParallelMng* pm, HybridMessageQueue* message_queue,
                        ArrayView<HybridParallelDispatch<Type>*> all_dispatchs)
 : TraceAccessor(tm)
 , m_parallel_mng(pm)
@@ -69,11 +69,11 @@ HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* pm,HybridMessageQueue* m
 {
   m_reduce_infos.m_index = 0;
 
-  // Ce tableau a été dimensionné par le créateur de cette instance.
-  // Il faut juste mettre à jour la valeur correspondant à son rang
+  // This array was sized by the creator of this instance.
+  // We just need to update the value corresponding to its rank
   m_all_dispatchs[m_local_rank] = this;
 
-  // Récupère le dispatcher MPI pour ce type.
+  // Retrieves the MPI dispatcher for this type.
   MpiParallelMng* mpi_pm = pm->mpiParallelMng();
   IParallelDispatchT<Type>* pd = mpi_pm->dispatcher((Type*)nullptr);
   if (!pd)
@@ -87,16 +87,16 @@ HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* pm,HybridMessageQueue* m
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> HybridParallelDispatch<Type>::
+template <class Type> HybridParallelDispatch<Type>::
 ~HybridParallelDispatch()
 {
   finalize();
 }
 
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/ 
+/*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
+template <class Type> void HybridParallelDispatch<Type>::
 finalize()
 {
 }
@@ -104,20 +104,22 @@ finalize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class _ThreadIntegralType
 {
  public:
+
   typedef FalseType IsIntegral;
 };
 
-#define ARCANE_DEFINE_INTEGRAL_TYPE(datatype)\
-template<>\
-class _ThreadIntegralType<datatype>\
-{\
- public:\
-  typedef TrueType IsIntegral;\
-}
+#define ARCANE_DEFINE_INTEGRAL_TYPE(datatype) \
+  template <> \
+  class _ThreadIntegralType<datatype> \
+  { \
+   public: \
+\
+    typedef TrueType IsIntegral; \
+  }
 
 ARCANE_DEFINE_INTEGRAL_TYPE(long long);
 ARCANE_DEFINE_INTEGRAL_TYPE(long);
@@ -134,84 +136,85 @@ ARCANE_DEFINE_INTEGRAL_TYPE(HPReal);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace{
-
-template<class Type> void 
- _computeMinMaxSum2(ArrayView<HybridParallelDispatch<Type>*> all_dispatchs,
-                    Int32 my_rank,Type& min_val,Type& max_val,Type& sum_val,
-                    Int32& min_rank,Int32& max_rank,Int32 nb_rank,FalseType)
+namespace
 {
-  ARCANE_UNUSED(all_dispatchs);
-  ARCANE_UNUSED(my_rank);
-  ARCANE_UNUSED(min_val);
-  ARCANE_UNUSED(max_val);
-  ARCANE_UNUSED(sum_val);
-  ARCANE_UNUSED(min_rank);
-  ARCANE_UNUSED(max_rank);
-  ARCANE_UNUSED(nb_rank);
 
-  throw NotImplementedException(A_FUNCINFO);
-}
+  template <class Type> void
+  _computeMinMaxSum2(ArrayView<HybridParallelDispatch<Type>*> all_dispatchs,
+                     Int32 my_rank, Type& min_val, Type& max_val, Type& sum_val,
+                     Int32& min_rank, Int32& max_rank, Int32 nb_rank, FalseType)
+  {
+    ARCANE_UNUSED(all_dispatchs);
+    ARCANE_UNUSED(my_rank);
+    ARCANE_UNUSED(min_val);
+    ARCANE_UNUSED(max_val);
+    ARCANE_UNUSED(sum_val);
+    ARCANE_UNUSED(min_rank);
+    ARCANE_UNUSED(max_rank);
+    ARCANE_UNUSED(nb_rank);
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class Type> void 
- _computeMinMaxSum2(ArrayView<HybridParallelDispatch<Type>*> all_dispatchs,
-                    Int32 my_rank,Type& min_val,Type& max_val,Type& sum_val,
-                    Int32& min_rank,Int32& max_rank,Int32 nb_rank,TrueType)
-{
-  ARCANE_UNUSED(my_rank);
-
-  HybridParallelDispatch<Type>* mtpd0 = all_dispatchs[0];
-  Type cval0 = mtpd0->m_reduce_infos.reduce_value;
-  Type _min_val = cval0;
-  Type _max_val = cval0;
-  Type _sum_val = cval0;
-  Integer _min_rank = 0;
-  Integer _max_rank = 0;
-  for( Integer i=1; i<nb_rank; ++i ){
-    HybridParallelDispatch<Type>* mtpd = all_dispatchs[i];
-    Type cval = mtpd->m_reduce_infos.reduce_value;
-    Int32 grank = mtpd->globalRank();
-    if (cval<_min_val){
-      _min_val = cval;
-      _min_rank = grank;
-    }
-    if (_max_val<cval){
-      _max_val = cval;
-      _max_rank = grank;
-    }
-    _sum_val = (Type)(_sum_val + cval);
+    throw NotImplementedException(A_FUNCINFO);
   }
-  min_val = _min_val;
-  max_val = _max_val;
-  sum_val = _sum_val;
-  min_rank = _min_rank;
-  max_rank = _max_rank;
-}
 
-}
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  template <class Type> void
+  _computeMinMaxSum2(ArrayView<HybridParallelDispatch<Type>*> all_dispatchs,
+                     Int32 my_rank, Type& min_val, Type& max_val, Type& sum_val,
+                     Int32& min_rank, Int32& max_rank, Int32 nb_rank, TrueType)
+  {
+    ARCANE_UNUSED(my_rank);
+
+    HybridParallelDispatch<Type>* mtpd0 = all_dispatchs[0];
+    Type cval0 = mtpd0->m_reduce_infos.reduce_value;
+    Type _min_val = cval0;
+    Type _max_val = cval0;
+    Type _sum_val = cval0;
+    Integer _min_rank = 0;
+    Integer _max_rank = 0;
+    for (Integer i = 1; i < nb_rank; ++i) {
+      HybridParallelDispatch<Type>* mtpd = all_dispatchs[i];
+      Type cval = mtpd->m_reduce_infos.reduce_value;
+      Int32 grank = mtpd->globalRank();
+      if (cval < _min_val) {
+        _min_val = cval;
+        _min_rank = grank;
+      }
+      if (_max_val < cval) {
+        _max_val = cval;
+        _max_rank = grank;
+      }
+      _sum_val = (Type)(_sum_val + cval);
+    }
+    min_val = _min_val;
+    max_val = _max_val;
+    sum_val = _sum_val;
+    min_rank = _min_rank;
+    max_rank = _max_rank;
+  }
+
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-computeMinMaxSum(Type val,Type& min_val,Type& max_val,Type& sum_val,
-                 Int32& min_rank,Int32& max_rank)
+template <class Type> void HybridParallelDispatch<Type>::
+computeMinMaxSum(Type val, Type& min_val, Type& max_val, Type& sum_val,
+                 Int32& min_rank, Int32& max_rank)
 {
   typedef typename _ThreadIntegralType<Type>::IsIntegral IntegralType;
   m_reduce_infos.reduce_value = val;
   _collectiveBarrier();
-  _computeMinMaxSum2(m_all_dispatchs,m_global_rank,min_val,max_val,sum_val,min_rank,max_rank,m_local_nb_rank,IntegralType());
-  if (m_local_rank==0){
+  _computeMinMaxSum2(m_all_dispatchs, m_global_rank, min_val, max_val, sum_val, min_rank, max_rank, m_local_nb_rank, IntegralType());
+  if (m_local_rank == 0) {
     /*pinfo() << "COMPUTE_MIN_MAX_SUM_B rank=" << m_global_rank
             << " min_rank=" << min_rank
             << " max_rank=" << max_rank
             << " min_val=" << min_val
             << " max_val=" << max_val
             << " sum_val=" << sum_val;*/
-    m_mpi_dispatcher->computeMinMaxSumNoInit(min_val,max_val,sum_val,min_rank,max_rank);
+    m_mpi_dispatcher->computeMinMaxSumNoInit(min_val, max_val, sum_val, min_rank, max_rank);
     /*pinfo() << "COMPUTE_MIN_MAX_SUM_A rank=" << m_global_rank
             << " min_rank=" << min_rank
             << " max_rank=" << max_rank;*/
@@ -235,7 +238,7 @@ computeMinMaxSum(Type val,Type& min_val,Type& max_val,Type& sum_val,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
+template <class Type> void HybridParallelDispatch<Type>::
 computeMinMaxSum(ConstArrayView<Type> values,
                  ArrayView<Type> min_values,
                  ArrayView<Type> max_values,
@@ -243,22 +246,22 @@ computeMinMaxSum(ConstArrayView<Type> values,
                  ArrayView<Int32> min_ranks,
                  ArrayView<Int32> max_ranks)
 {
-  // Implémentation sous-optimale qui ne vectorise pas le calcul
-  // (c'est actuellement un copier-coller d'au-dessus mis dans une boucle)
+  // Sub-optimal implementation that does not vectorize the calculation
+  // (it is currently a copy-paste of the above put into a loop)
   typedef typename _ThreadIntegralType<Type>::IsIntegral IntegralType;
   Integer n = values.size();
-  for(Integer i=0;i<n;++i) {
+  for (Integer i = 0; i < n; ++i) {
     m_reduce_infos.reduce_value = values[i];
     _collectiveBarrier();
-    _computeMinMaxSum2(m_all_dispatchs,m_global_rank,min_values[i],max_values[i],sum_values[i],min_ranks[i],max_ranks[i],m_local_nb_rank,IntegralType());
-    if (m_local_rank==0){
+    _computeMinMaxSum2(m_all_dispatchs, m_global_rank, min_values[i], max_values[i], sum_values[i], min_ranks[i], max_ranks[i], m_local_nb_rank, IntegralType());
+    if (m_local_rank == 0) {
       /*pinfo() << "COMPUTE_MIN_MAX_SUM_B rank=" << m_global_rank
         << " min_rank=" << min_rank
         << " max_rank=" << max_rank
         << " min_val=" << min_val
         << " max_val=" << max_val
         << " sum_val=" << sum_val;*/
-      m_mpi_dispatcher->computeMinMaxSumNoInit(min_values[i],max_values[i],sum_values[i],min_ranks[i],max_ranks[i]);
+      m_mpi_dispatcher->computeMinMaxSumNoInit(min_values[i], max_values[i], sum_values[i], min_ranks[i], max_ranks[i]);
       /*pinfo() << "COMPUTE_MIN_MAX_SUM_A rank=" << m_global_rank
         << " min_rank=" << min_rank
         << " max_rank=" << max_rank;*/
@@ -283,32 +286,32 @@ computeMinMaxSum(ConstArrayView<Type> values,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-broadcast(Span<Type> send_buf,Int32 rank)
+template <class Type> void HybridParallelDispatch<Type>::
+broadcast(Span<Type> send_buf, Int32 rank)
 {
   m_broadcast_view = send_buf;
   _collectiveBarrier();
-  FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank),m_local_nb_rank);
+  FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_local_nb_rank);
   int mpi_rank = fri.mpiRankValue();
-  if (m_mpi_rank==mpi_rank){
-    // J'ai le meme rang MPI que celui qui fait le broadcast
-    if (m_global_rank==rank){
-      //TODO: passage 64bit.
-      m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(),mpi_rank);
+  if (m_mpi_rank == mpi_rank) {
+    // I have the same MPI rank as the one doing the broadcast
+    if (m_global_rank == rank) {
+      //TODO: 64bit passage.
+      m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(), mpi_rank);
     }
-    else{
+    else {
       m_all_dispatchs[m_local_rank]->m_broadcast_view.copy(m_all_dispatchs[fri.localRankValue()]->m_broadcast_view);
     }
   }
-  else{
-    if (m_local_rank==0){
-      //TODO: passage 64bit.
-      m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(),mpi_rank);
+  else {
+    if (m_local_rank == 0) {
+      //TODO: 64bit passage.
+      m_parallel_mng->mpiParallelMng()->broadcast(send_buf.smallView(), mpi_rank);
     }
   }
   _collectiveBarrier();
-  if (m_mpi_rank!=mpi_rank){
-    if (m_local_rank!=0)
+  if (m_mpi_rank != mpi_rank) {
+    if (m_local_rank != 0)
       m_all_dispatchs[m_local_rank]->m_broadcast_view.copy(m_all_dispatchs[0]->m_broadcast_view);
   }
   _collectiveBarrier();
@@ -317,33 +320,33 @@ broadcast(Span<Type> send_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-allGather(Span<const Type> send_buf,Span<Type> recv_buf)
+template <class Type> void HybridParallelDispatch<Type>::
+allGather(Span<const Type> send_buf, Span<Type> recv_buf)
 {
-  //TODO: fusionner avec allGatherVariable()
+  //TODO: merge with allGatherVariable()
   m_const_view = send_buf;
   _collectiveBarrier();
   Int64 total_size = 0;
-  for( Int32 i=0; i<m_local_nb_rank; ++i ){
+  for (Int32 i = 0; i < m_local_nb_rank; ++i) {
     total_size += m_all_dispatchs[i]->m_const_view.size();
   }
-  if (m_local_rank==0){
+  if (m_local_rank == 0) {
     Int64 index = 0;
     UniqueArray<Type> local_buf(total_size);
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       Span<const Type> view = m_all_dispatchs[i]->m_const_view;
       Int64 size = view.size();
-      for( Int64 j=0; j<size; ++j )
-        local_buf[j+index] = view[j];
+      for (Int64 j = 0; j < size; ++j)
+        local_buf[j + index] = view[j];
       index += size;
     }
     IParallelMng* pm = m_parallel_mng->mpiParallelMng();
     //TODO: 64bit
-    pm->allGather(local_buf,recv_buf.smallView());
+    pm->allGather(local_buf, recv_buf.smallView());
     m_const_view = recv_buf;
   }
   _collectiveBarrier();
-  if (m_local_rank!=0){
+  if (m_local_rank != 0) {
     Span<const Type> view = m_all_dispatchs[0]->m_const_view;
     recv_buf.copy(view);
   }
@@ -353,45 +356,45 @@ allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root_rank)
+template <class Type> void HybridParallelDispatch<Type>::
+gather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root_rank)
 {
   UniqueArray<Type> tmp_buf;
-  if (m_global_rank==root_rank)
-    allGather(send_buf,recv_buf);
-  else{
+  if (m_global_rank == root_rank)
+    allGather(send_buf, recv_buf);
+  else {
     tmp_buf.resize(send_buf.size() * m_global_nb_rank);
-    allGather(send_buf,tmp_buf);
+    allGather(send_buf, tmp_buf);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
+template <class Type> void HybridParallelDispatch<Type>::
+allGatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf)
 {
   m_const_view = send_buf;
   _collectiveBarrier();
   Int64 total_size = 0;
-  for( Integer i=0; i<m_local_nb_rank; ++i ){
+  for (Integer i = 0; i < m_local_nb_rank; ++i) {
     total_size += m_all_dispatchs[i]->m_const_view.size();
   }
-  if (m_local_rank==0){
+  if (m_local_rank == 0) {
     Int64 index = 0;
     UniqueArray<Type> local_buf(total_size);
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       Span<const Type> view = m_all_dispatchs[i]->m_const_view;
       Int64 size = view.size();
-      for( Int64 j=0; j<size; ++j )
-        local_buf[j+index] = view[j];
+      for (Int64 j = 0; j < size; ++j)
+        local_buf[j + index] = view[j];
       index += size;
     }
-    m_parallel_mng->mpiParallelMng()->allGatherVariable(local_buf,recv_buf);
+    m_parallel_mng->mpiParallelMng()->allGatherVariable(local_buf, recv_buf);
     m_const_view = recv_buf.constView();
   }
   _collectiveBarrier();
-  if (m_local_rank!=0){
+  if (m_local_rank != 0) {
     Span<const Type> view = m_all_dispatchs[0]->m_const_view;
     recv_buf.resize(view.size());
     recv_buf.copy(view);
@@ -402,14 +405,14 @@ allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 root_rank)
+template <class Type> void HybridParallelDispatch<Type>::
+gatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf, Int32 root_rank)
 {
   UniqueArray<Type> tmp_buf;
-  if (m_global_rank==root_rank)
-    allGatherVariable(send_buf,recv_buf);
+  if (m_global_rank == root_rank)
+    allGatherVariable(send_buf, recv_buf);
   else
-    allGatherVariable(send_buf,tmp_buf);
+    allGatherVariable(send_buf, tmp_buf);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -424,7 +427,7 @@ scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 
   _collectiveBarrier();
 
-  // On calcule le nombre d'élément que veut tous les threads de notre processus.
+  // We calculate the number of elements that all threads in our process want.
   Int64 total_size = 0;
   for (Integer i = 0; i < m_local_nb_rank; ++i) {
     total_size += m_all_dispatchs[i]->m_recv_view.size();
@@ -432,25 +435,25 @@ scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 
   _collectiveBarrier();
 
-  // Les échanges MPI s'effectuent uniquement par les threads leaders des processus.
+  // MPI exchanges are performed only by the leader threads of the processes.
   if (m_local_rank == 0) {
     FullRankInfo fri(FullRankInfo::compute(MessageRank(root), m_local_nb_rank));
 
     UniqueArray<Type> local_recv_buf(total_size);
 
-    // Si le thread "root" est dans notre processus.
+    // If the "root" thread is in our process.
     if (m_mpi_rank == fri.mpiRankValue()) {
-      // Le thread leader s'occupe de l'échange.
+      // The leader thread handles the exchange.
       m_parallel_mng->mpiParallelMng()->scatterVariable(m_all_dispatchs[fri.localRankValue()]->m_const_view.smallView(),
                                                         local_recv_buf, fri.mpiRankValue());
     }
-    // Les autres threads leaders mettent leurs buffers d'envoi (qu'importe ce
-    // qu'ils contiennent, c'est un scatter).
+    // The other leader threads provide their send buffers (it doesn't matter what
+    // they contain, it's a scatter).
     else {
       m_parallel_mng->mpiParallelMng()->scatterVariable(m_const_view.smallView(), local_recv_buf, fri.mpiRankValue());
     }
 
-    // On a plus qu'à répartir les données reçues entre les threads.
+    // We just need to distribute the received data among the threads.
     Integer compt = 0;
     for (Integer i = 0; i < m_local_nb_rank; ++i) {
       Int64 size = m_all_dispatchs[i]->m_recv_view.size();
@@ -467,34 +470,33 @@ scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
+template <class Type> void HybridParallelDispatch<Type>::
+allToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
 {
   Int32 global_nb_rank = m_global_nb_rank;
   //TODO: Faire une version sans allocation
-  Int32UniqueArray send_count(global_nb_rank,count);
-  Int32UniqueArray recv_count(global_nb_rank,count);
+  Int32UniqueArray send_count(global_nb_rank, count);
+  Int32UniqueArray recv_count(global_nb_rank, count);
 
   Int32UniqueArray send_indexes(global_nb_rank);
   Int32UniqueArray recv_indexes(global_nb_rank);
-  for( Integer i=0; i<global_nb_rank; ++i ){
+  for (Integer i = 0; i < global_nb_rank; ++i) {
     send_indexes[i] = count * i;
     recv_indexes[i] = count * i;
   }
-  this->allToAllVariable(send_buf,send_count,send_indexes,recv_buf,recv_count,recv_indexes);
+  this->allToAllVariable(send_buf, send_count, send_indexes, recv_buf, recv_count, recv_indexes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
+template <class Type> void HybridParallelDispatch<Type>::
 allToAllVariable(Span<const Type> g_send_buf,
                  Int32ConstArrayView g_send_count,
                  Int32ConstArrayView g_send_index,
                  Span<Type> g_recv_buf,
                  Int32ConstArrayView g_recv_count,
-                 Int32ConstArrayView g_recv_index
-                 )
+                 Int32ConstArrayView g_recv_index)
 {
   m_alltoallv_infos.send_buf = g_send_buf;
   m_alltoallv_infos.send_count = g_send_count;
@@ -507,10 +509,10 @@ allToAllVariable(Span<const Type> g_send_buf,
 
   UniqueArray<Type> tmp_recv_buf;
 
-  // PREMIERE IMPLEMENTATION
-  // Le proc de rang local 0 fait tout le travail.
+  // FIRST IMPLEMENTATION
+  // Local rank 0 process does all the work.
 
-  if (m_local_rank==0){
+  if (m_local_rank == 0) {
 
     Int32UniqueArray tmp_send_count(m_mpi_nb_rank);
     tmp_send_count.fill(0);
@@ -520,7 +522,7 @@ allToAllVariable(Span<const Type> g_send_buf,
     Int64 total_send_size = 0;
     Int64 total_recv_size = 0;
 
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       const AllToAllVariableInfo& vinfo = m_all_dispatchs[i]->m_alltoallv_infos;
       total_send_size += vinfo.send_buf.size();
       total_recv_size += vinfo.recv_buf.size();
@@ -529,13 +531,13 @@ allToAllVariable(Span<const Type> g_send_buf,
     UniqueArray<Type> tmp_send_buf(total_send_size);
     tmp_recv_buf.resize(total_recv_size);
 
-    // Calcule le nombre d'éléments à envoyer et recevoir pour chaque proc.
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    // We calculate the number of elements to send and receive for each proc.
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       const AllToAllVariableInfo& vinfo = m_all_dispatchs[i]->m_alltoallv_infos;
 
-      for( Integer z=0; z<m_global_nb_rank; ++z ){
+      for (Integer z = 0; z < m_global_nb_rank; ++z) {
 
-        FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z),m_local_nb_rank));
+        FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z), m_local_nb_rank));
         Int32 fri_mpi_rank = fri.mpiRankValue();
 
         Int32 nb_send = vinfo.send_count[z];
@@ -561,17 +563,17 @@ allToAllVariable(Span<const Type> g_send_buf,
     Int32UniqueArray tmp_recv_index(m_mpi_nb_rank);
     tmp_send_index[0] = 0;
     tmp_recv_index[0] = 0;
-    for( Integer k=1, nmpi=m_mpi_nb_rank; k<nmpi; ++k ){
-      tmp_send_index[k] = tmp_send_index[k-1] + tmp_send_count[k-1];
-      tmp_recv_index[k] = tmp_recv_index[k-1] + tmp_recv_count[k-1];
+    for (Integer k = 1, nmpi = m_mpi_nb_rank; k < nmpi; ++k) {
+      tmp_send_index[k] = tmp_send_index[k - 1] + tmp_send_count[k - 1];
+      tmp_recv_index[k] = tmp_recv_index[k - 1] + tmp_recv_count[k - 1];
     }
 
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       const AllToAllVariableInfo& vinfo = m_all_dispatchs[i]->m_alltoallv_infos;
 
-      for( Integer z=0; z<m_global_nb_rank; ++ z){
+      for (Integer z = 0; z < m_global_nb_rank; ++z) {
 
-        FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z),m_local_nb_rank));
+        FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z), m_local_nb_rank));
         Int32 fri_mpi_rank = fri.mpiRankValue();
 
         Integer nb_send = vinfo.send_count[z];
@@ -579,23 +581,19 @@ allToAllVariable(Span<const Type> g_send_buf,
 
           Integer tmp_current_index = tmp_send_index[fri_mpi_rank];
           Integer local_current_index = vinfo.send_index[z];
-          for( Integer j=0; j<nb_send; ++j )
-            tmp_send_buf[j+tmp_current_index] = vinfo.send_buf[j+local_current_index];
+          for (Integer j = 0; j < nb_send; ++j)
+            tmp_send_buf[j + tmp_current_index] = vinfo.send_buf[j + local_current_index];
           tmp_send_index[fri_mpi_rank] += nb_send;
         }
-
-
       }
     }
 
     tmp_send_index[0] = 0;
     tmp_recv_index[0] = 0;
-    for( Integer k=1, nmpi=m_mpi_nb_rank; k<nmpi; ++k ){
-      tmp_send_index[k] = tmp_send_index[k-1] + tmp_send_count[k-1];
-      tmp_recv_index[k] = tmp_recv_index[k-1] + tmp_recv_count[k-1];
+    for (Integer k = 1, nmpi = m_mpi_nb_rank; k < nmpi; ++k) {
+      tmp_send_index[k] = tmp_send_index[k - 1] + tmp_send_count[k - 1];
+      tmp_recv_index[k] = tmp_recv_index[k - 1] + tmp_recv_count[k - 1];
     }
-
-
 
     /*    Integer send_index = 0;
     for( Integer i=0; i<m_local_nb_rank; ++i ){
@@ -628,9 +626,9 @@ allToAllVariable(Span<const Type> g_send_buf,
     }
 #endif
 
-    m_parallel_mng->mpiParallelMng()->allToAllVariable(tmp_send_buf,tmp_send_count,
-                                                       tmp_send_index,tmp_recv_buf,
-                                                       tmp_recv_count,tmp_recv_index);
+    m_parallel_mng->mpiParallelMng()->allToAllVariable(tmp_send_buf, tmp_send_count,
+                                                       tmp_send_index, tmp_recv_buf,
+                                                       tmp_recv_count, tmp_recv_index);
 
 #if 0
     for( Integer i=0; i<tmp_recv_buf.size(); ++i )
@@ -648,18 +646,17 @@ allToAllVariable(Span<const Type> g_send_buf,
 
     m_const_view = tmp_recv_buf.constView();
 
-
-    for( Integer z=0; z<m_global_nb_rank; ++ z){
-      FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z),m_local_nb_rank));
+    for (Integer z = 0; z < m_global_nb_rank; ++z) {
+      FullRankInfo fri(FullRankInfo::compute(MP::MessageRank(z), m_local_nb_rank));
       Int32 fri_mpi_rank = fri.mpiRankValue();
 
-      for( Integer i=0; i<m_local_nb_rank; ++i ){
+      for (Integer i = 0; i < m_local_nb_rank; ++i) {
         AllToAllVariableInfo& vinfo = m_all_dispatchs[i]->m_alltoallv_infos;
         Span<Type> my_buf = vinfo.recv_buf;
         Int64 recv_size = vinfo.recv_count[z];
         Int64 recv_index = tmp_recv_index[fri_mpi_rank];
-        
-        Span<const Type> recv_view = tmp_recv_buf.span().subSpan(recv_index,recv_size);
+
+        Span<const Type> recv_view = tmp_recv_buf.span().subSpan(recv_index, recv_size);
 
         Int64 my_recv_index = vinfo.recv_index[z];
 
@@ -668,8 +665,8 @@ allToAllVariable(Span<const Type> g_send_buf,
 
         tmp_recv_index[fri_mpi_rank] = CheckedConvert::toInt32(tmp_recv_index[fri_mpi_rank] + recv_size);
 
-        for( Int64 j=0; j<recv_size; ++j )
-          my_buf[j+my_recv_index] = recv_view[j];
+        for (Int64 j = 0; j < recv_size; ++j)
+          my_buf[j + my_recv_index] = recv_view[j];
 
         //for( Integer j=0; j<recv_size; ++j )
         //info() << "V=" << recv_view[j];
@@ -677,7 +674,6 @@ allToAllVariable(Span<const Type> g_send_buf,
         my_recv_index += recv_size;
       }
     }
-
   }
   _collectiveBarrier();
 
@@ -689,46 +685,46 @@ allToAllVariable(Span<const Type> g_send_buf,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> auto HybridParallelDispatch<Type>::
-send(Span<const Type> send_buffer,Int32 rank,bool is_blocked) -> Request
+template <class Type> auto HybridParallelDispatch<Type>::
+send(Span<const Type> send_buffer, Int32 rank, bool is_blocked) -> Request
 {
   eBlockingType block_mode = (is_blocked) ? MP::Blocking : MP::NonBlocking;
-  PointToPointMessageInfo p2p_message(MessageRank(rank),block_mode);
-  return send(send_buffer,p2p_message);
+  PointToPointMessageInfo p2p_message(MessageRank(rank), block_mode);
+  return send(send_buffer, p2p_message);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-send(ConstArrayView<Type> send_buf,Int32 rank)
+template <class Type> void HybridParallelDispatch<Type>::
+send(ConstArrayView<Type> send_buf, Int32 rank)
 {
-  send(send_buf,rank,true);
+  send(send_buf, rank, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request HybridParallelDispatch<Type>::
-receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked)
+template <class Type> Parallel::Request HybridParallelDispatch<Type>::
+receive(Span<Type> recv_buffer, Int32 rank, bool is_blocked)
 {
   eBlockingType block_mode = (is_blocked) ? MP::Blocking : MP::NonBlocking;
-  PointToPointMessageInfo p2p_message(MessageRank(rank),block_mode);
-  return receive(recv_buffer,p2p_message);
+  PointToPointMessageInfo p2p_message(MessageRank(rank), block_mode);
+  return receive(recv_buffer, p2p_message);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
-send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
+template <class Type> Request HybridParallelDispatch<Type>::
+send(Span<const Type> send_buffer, const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
   bool is_blocking = message.isBlocking();
   message.setEmiterRank(MessageRank(m_global_rank));
   Request r = m_message_queue->addSend(message, ConstMemoryView(send_buffer));
-  if (is_blocking){
-    m_message_queue->waitAll(ArrayView<MP::Request>(1,&r));
+  if (is_blocking) {
+    m_message_queue->waitAll(ArrayView<MP::Request>(1, &r));
     return Request();
   }
   return r;
@@ -737,15 +733,15 @@ send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
-receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
+template <class Type> Request HybridParallelDispatch<Type>::
+receive(Span<Type> recv_buffer, const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
   message.setEmiterRank(MessageRank(m_global_rank));
   bool is_blocking = message.isBlocking();
-  Request r = m_message_queue->addReceive(message,ReceiveBufferInfo(MutableMemoryView(recv_buffer)));
-  if (is_blocking){
-    m_message_queue->waitAll(ArrayView<Request>(1,&r));
+  Request r = m_message_queue->addReceive(message, ReceiveBufferInfo(MutableMemoryView(recv_buffer)));
+  if (is_blocking) {
+    m_message_queue->waitAll(ArrayView<Request>(1, &r));
     return Request();
   }
   return r;
@@ -754,17 +750,17 @@ receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-recv(ArrayView<Type> recv_buffer,Integer rank)
+template <class Type> void HybridParallelDispatch<Type>::
+recv(ArrayView<Type> recv_buffer, Integer rank)
 {
-  recv(recv_buffer,rank,true);
+  recv(recv_buffer, rank, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-sendRecv(ConstArrayView<Type> send_buffer,ArrayView<Type> recv_buffer,Integer proc)
+template <class Type> void HybridParallelDispatch<Type>::
+sendRecv(ConstArrayView<Type> send_buffer, ArrayView<Type> recv_buffer, Integer proc)
 {
   ARCANE_UNUSED(send_buffer);
   ARCANE_UNUSED(recv_buffer);
@@ -775,32 +771,32 @@ sendRecv(ConstArrayView<Type> send_buffer,ArrayView<Type> recv_buffer,Integer pr
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Type HybridParallelDispatch<Type>::
-allReduce(eReduceType op,Type send_buf)
+template <class Type> Type HybridParallelDispatch<Type>::
+allReduce(eReduceType op, Type send_buf)
 {
   m_reduce_infos.reduce_value = send_buf;
   //pinfo() << "ALL REDUCE BEGIN RANK=" << m_global_rank << " TYPE=" << (int)op << " MY=" << send_buf;
   cout.flush();
   _collectiveBarrier();
-  if (m_local_rank==0){
+  if (m_local_rank == 0) {
     Type ret = m_all_dispatchs[0]->m_reduce_infos.reduce_value;
-    switch(op){
+    switch (op) {
     case Parallel::ReduceMin:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
-        ret = math::min(ret,m_all_dispatchs[i]->m_reduce_infos.reduce_value);
+      for (Integer i = 1; i < m_local_nb_rank; ++i)
+        ret = math::min(ret, m_all_dispatchs[i]->m_reduce_infos.reduce_value);
       break;
     case Parallel::ReduceMax:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
-        ret = math::max(ret,m_all_dispatchs[i]->m_reduce_infos.reduce_value);
+      for (Integer i = 1; i < m_local_nb_rank; ++i)
+        ret = math::max(ret, m_all_dispatchs[i]->m_reduce_infos.reduce_value);
       break;
     case Parallel::ReduceSum:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
+      for (Integer i = 1; i < m_local_nb_rank; ++i)
         ret = (Type)(ret + m_all_dispatchs[i]->m_reduce_infos.reduce_value);
       break;
     default:
       ARCANE_FATAL("Bad reduce type");
     }
-    ret = m_parallel_mng->mpiParallelMng()->reduce(op,ret);
+    ret = m_parallel_mng->mpiParallelMng()->reduce(op, ret);
     m_all_dispatchs[0]->m_reduce_infos.reduce_value = ret;
     //pinfo() << "ALL REDUCE RANK=" << m_local_rank << " TYPE=" << (int)op << " MY=" << send_buf << " GLOBAL=" << ret << '\n';
   }
@@ -843,14 +839,14 @@ _applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
+template <class Type> void HybridParallelDispatch<Type>::
 _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
 {
   m_reduce_infos.reduce_buf_span = send_buf;
   ++m_reduce_infos.m_index;
   Int64 buf_size = send_buf.size();
   UniqueArray<Type> ret(buf_size);
-  // Valeurs du rang MPI précédent (utilisé uniquement en mode Scan)
+  // Values from the previous MPI rank (used only in Scan mode)
   UniqueArray<Type> previous_rank_ret;
   MpiParallelMng* mpi_pm = m_parallel_mng->mpiParallelMng();
   Int32 my_mpi_rank = mpi_pm->commRank();
@@ -861,23 +857,23 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   _collectiveBarrier();
   {
     Integer index0 = m_all_dispatchs[0]->m_reduce_infos.m_index;
-    for( Integer i=0; i<m_local_nb_rank; ++i ){
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
       Integer indexi = m_all_dispatchs[i]->m_reduce_infos.m_index;
-      if (index0!=m_all_dispatchs[i]->m_reduce_infos.m_index){
+      if (index0 != m_all_dispatchs[i]->m_reduce_infos.m_index) {
         ARCANE_FATAL("INTERNAL: incoherent all reduce i0={0} in={1} n={2}",
-                     index0,indexi,i);
+                     index0, indexi, i);
       }
     }
   }
 
-  if (m_local_rank==0){
+  if (m_local_rank == 0) {
     const Int32 nb_local_rank = m_local_nb_rank;
-    for( Integer j=0; j<buf_size; ++j )
+    for (Integer j = 0; j < buf_size; ++j)
       ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span[j];
     _applyReduceOperator(op, ret, m_all_dispatchs, 1, nb_local_rank - 1);
     if (is_scan) {
-      // Pour le scan, on a besoin de savoir la valeur du scan du rang qui nous précéde.
-      // On utilise ensuite cette valeur et on applique notre opérateur.
+      // For scan, we need to know the scan value of the preceding rank.
+      // We then use this value and apply our operator.
       mpi_pm->scan(op, ret);
       previous_rank_ret.resize(buf_size);
       UniqueArray<Request> requests;
@@ -887,13 +883,13 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
         requests.add(mpi_pm->send(ret, my_mpi_rank + 1, false));
       mpi_pm->waitAllRequests(requests);
       if (my_mpi_rank != 0) {
-        // Applique le scan à mes valeurs.
+        // Apply the scan to my values.
         _applyReduceOperator(op, previous_rank_ret, m_all_dispatchs, 0, 0);
         send_buf.copy(previous_rank_ret);
       }
       else {
-        // Je suis le premier rang local et MPI. J'ai déja les bonnes valeurs
-        // dans \a send_buf.
+        // I am the first local and MPI rank. I already have the correct values
+        // in \a send_buf.
       }
     }
     else {
@@ -908,11 +904,11 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
     if (m_local_rank != 0) {
       Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
       ret.copy(global_buf);
-      // Le scan pour le rank local 0 a déjà été appliqué
+      // The scan for local rank 0 has already been applied
       _applyReduceOperator(op, ret, m_all_dispatchs, 1, m_local_rank);
     }
-    // TODO: On pourrait éviter cette barrière si on copiait les valeurs de 'send_buf'
-    // avant de les modifier.
+    // TODO: We could avoid this barrier if we copied the values of 'send_buf'
+    // before modifying them.
     _collectiveBarrier();
 
     if (m_local_rank != 0) {
@@ -941,8 +937,8 @@ allReduce(eReduceType op, Span<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
-nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
+template <class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf)
 {
   ARCANE_UNUSED(op);
   ARCANE_UNUSED(send_buf);
@@ -952,7 +948,7 @@ nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_bu
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
 {
   ARCANE_UNUSED(send_buf);
@@ -963,7 +959,7 @@ nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 nonBlockingBroadcast(Span<Type> send_buf, Int32 rank)
 {
   ARCANE_UNUSED(send_buf);
@@ -974,7 +970,7 @@ nonBlockingBroadcast(Span<Type> send_buf, Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank)
 {
   ARCANE_UNUSED(send_buf);
@@ -986,7 +982,7 @@ nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
 {
   ARCANE_UNUSED(send_buf);
@@ -998,7 +994,7 @@ nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                             ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                             ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index)
@@ -1015,8 +1011,8 @@ nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> sen
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Type HybridParallelDispatch<Type>::
-scan(eReduceType op,Type send_buf)
+template <class Type> Type HybridParallelDispatch<Type>::
+scan(eReduceType op, Type send_buf)
 {
   ARCANE_UNUSED(op);
   ARCANE_UNUSED(send_buf);
@@ -1026,8 +1022,8 @@ scan(eReduceType op,Type send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-scan(eReduceType op,ArrayView<Type> send_buf)
+template <class Type> void HybridParallelDispatch<Type>::
+scan(eReduceType op, ArrayView<Type> send_buf)
 {
   _allReduceOrScan(op, send_buf, true);
 }
@@ -1035,7 +1031,7 @@ scan(eReduceType op,ArrayView<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Request HybridParallelDispatch<Type>::
+template <class Type> Request HybridParallelDispatch<Type>::
 gather(Arccore::MessagePassing::GatherMessageInfo<Type>&)
 {
   throw NotImplementedException(A_FUNCINFO);
@@ -1044,7 +1040,7 @@ gather(Arccore::MessagePassing::GatherMessageInfo<Type>&)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
+template <class Type> void HybridParallelDispatch<Type>::
 _collectiveBarrier()
 {
   m_parallel_mng->getThreadBarrier()->wait();

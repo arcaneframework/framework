@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridParallelMng.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages hybrides MPI/Mémoire partagée.                */
+/* Implementation of hybrid MPI/Shared Memory messages.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_HYBRIDPARALLELMNG_H
 #define ARCANE_PARALLEL_THREAD_HYBRIDPARALLELMNG_H
@@ -27,7 +27,7 @@ namespace Arcane
 {
 class SerializeBuffer;
 class MpiParallelMng;
-}
+} // namespace Arcane
 
 namespace Arcane::MessagePassing
 {
@@ -40,12 +40,14 @@ class HybridSerializeMessageList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un HybridParallelMng.
+ * \brief Info for constructing a HybridParallelMng.
  */
 struct HybridParallelMngBuildInfo
 {
  public:
+
   Int32 local_rank = -1;
   Int32 local_nb_rank = -1;
   MpiParallelMng* mpi_parallel_mng = nullptr;
@@ -63,8 +65,9 @@ struct HybridParallelMngBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant les threads.
+ * \brief Thread-based parallelism manager.
  */
 class HybridParallelMng
 : public ParallelMngDispatcher
@@ -77,8 +80,8 @@ class HybridParallelMng
 
   explicit HybridParallelMng(const HybridParallelMngBuildInfo& bi);
   ~HybridParallelMng() override;
-  
-  bool isParallel()  const override { return m_is_parallel; }
+
+  bool isParallel() const override { return m_is_parallel; }
   Int32 commRank() const override { return m_global_rank; }
   Int32 commSize() const override { return m_global_nb_rank; }
   void* getMPICommunicator() override;
@@ -92,27 +95,27 @@ class HybridParallelMng
   IIOMng* ioMng() const override { return m_io_mng; }
 
   void initialize() override;
-  bool isMasterIO() const override { return commRank()==0; }
+  bool isMasterIO() const override { return commRank() == 0; }
   Int32 masterIORank() const override { return 0; }
 
   ITimerMng* timerMng() const override { return m_timer_mng; }
 
   IParallelMng* sequentialParallelMng() override;
   Ref<IParallelMng> sequentialParallelMngRef() override;
-  void sendSerializer(ISerializer* values,Int32 rank) override;
-  Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
+  void sendSerializer(ISerializer* values, Int32 rank) override;
+  Request sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
 
-  void recvSerializer(ISerializer* values,Int32 rank) override;
+  void recvSerializer(ISerializer* values, Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
 
   void freeRequests(ArrayView<Request> requests) override;
 
-  void broadcastSerializer(ISerializer* values,Int32 rank) override;
+  void broadcastSerializer(ISerializer* values, Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
-  Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
-  Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
+  Request sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) override;
 
   void printStats() override;
   void barrier() override;
@@ -123,12 +126,12 @@ class HybridParallelMng
   void build() override;
 
  public:
-  
+
   Int32 localRank() const { return m_local_rank; }
   Int32 localNbRank() const { return m_local_nb_rank; }
   MpiParallelMng* mpiParallelMng() { return m_mpi_parallel_mng; }
-  //! Construit un message avec pour destinataire \a dest
-  PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
+  //! Constructs a message with destination \a dest
+  PointToPointMessageInfo buildMessage(Int32 dest, MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& message);
 
  public:
@@ -136,7 +139,7 @@ class HybridParallelMng
   IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  protected:
-  
+
   IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() override;
   ITransferValuesParallelOperation* createTransferValuesOperation() override;
   IParallelExchanger* createExchanger() override;
@@ -161,7 +164,7 @@ class HybridParallelMng
   }
 
  private:
-  
+
   ITraceMng* m_trace;
   IThreadMng* m_thread_mng;
   IParallelMng* m_world_parallel_mng;
@@ -171,11 +174,11 @@ class HybridParallelMng
   IParallelReplication* m_replication;
   HybridMessageQueue* m_message_queue;
   bool m_is_parallel;
-  Int32 m_global_rank; //!< Numéro du processeur actuel
-  Int32 m_global_nb_rank; //!< Nombre de rangs globaux
-  Int32 m_local_rank; //!< Rang local du processeur actuel
-  Int32 m_local_nb_rank; //!< Nombre de rang locaux
-  bool m_is_initialized; //!< \a true si déjà initialisé
+  Int32 m_global_rank; //!< Current processor number
+  Int32 m_global_nb_rank; //!< Total number of global ranks
+  Int32 m_local_rank; //!< Local rank of the current processor
+  Int32 m_local_nb_rank; //!< Number of local ranks
+  bool m_is_initialized; //!< \a true if already initialized
   Parallel::IStat* m_stat = nullptr;
   IThreadBarrier* m_thread_barrier = nullptr;
   MpiParallelMng* m_mpi_parallel_mng = nullptr;
@@ -199,4 +202,4 @@ class HybridParallelMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelDispatch.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation des messages en mémoire partagée.                          */
+/* Implementation of messages in shared memory.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELDISPATCH_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELDISPATCH_H
@@ -31,6 +31,9 @@
 
 namespace Arcane::MessagePassing
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class SharedMemoryParallelMng;
 class ISharedMemoryMessageQueue;
@@ -77,7 +80,7 @@ class SharedMemoryAllDispatcher
 {
  public:
 
-  //! Informations nécessaires pour créer un sous-parallelMng().
+  //! Information required to create a sub-parallelMng().
   class CreateSubParallelMngInfo
   {
    public:
@@ -118,14 +121,16 @@ class SharedMemoryAllDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base commune à SharedMemoryParallelDispatch
+ * \brief Base class common to SharedMemoryParallelDispatch
  */
 class SharedMemoryParallelDispatchBase
 : public TraceAccessor
 , public ReferenceCounterImpl
 {
   ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  protected:
 
   template <typename DataType> friend class SharedMemoryParallelDispatch;
@@ -210,8 +215,9 @@ class SharedMemoryParallelDispatchBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for type \a Type
  */
 template <class Type>
 class SharedMemoryParallelDispatch
@@ -395,5 +401,4 @@ class SharedMemoryParallelDispatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

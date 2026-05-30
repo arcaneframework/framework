@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiDirectSendrecvVariableSynchronizeDispatcher.cc           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion spécifique MPI des synchronisations des variables.                */
+/* Specific MPI management of variable synchronizations.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de la synchronisation via MPI_Sendrecv.
+ * \brief Implementation of synchronization via MPI_Sendrecv.
  */
 class MpiDirectSendrecvVariableSynchronizerDispatcher
 : public AbstractDataSynchronizeImplementation
@@ -124,7 +125,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   {
     MpiTimeInterval tit(&sync_wait_time);
-    for( Integer i=0; i<nb_message; ++i ){
+    for (Integer i = 0; i < nb_message; ++i) {
       Int32 target_rank = vs_buf->targetRank(i);
       auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
       auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
@@ -140,9 +141,9 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
     vs_buf->copyAllReceive();
   }
 
-  pm->stat()->add("SyncCopySend",sync_copy_send_time,1);
-  pm->stat()->add("SyncWait",sync_wait_time,1);
-  pm->stat()->add("SyncCopyRecv",sync_copy_recv_time,1);
+  pm->stat()->add("SyncCopySend", sync_copy_send_time, 1);
+  pm->stat()->add("SyncWait", sync_wait_time, 1);
+  pm->stat()->add("SyncCopyRecv", sync_copy_recv_time, 1);
 }
 
 /*---------------------------------------------------------------------------*/

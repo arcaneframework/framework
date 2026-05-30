@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMachineShMemWinBaseInternalCreator.h                  (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des objets de type                             */
-/* HybridContigMachineShMemWinBaseInternal. Une instance de cet objet doit   */
-/* être partagée par tous les threads d'un processus.                        */
+/* Class allowing the creation of objects of type                            */
+/* HybridContigMachineShMemWinBaseInternal. An instance of this object must  */
+/* be shared by all threads of a process.                                    */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNALCREATOR_H

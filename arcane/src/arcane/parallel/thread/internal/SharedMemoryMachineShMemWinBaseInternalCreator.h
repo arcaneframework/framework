@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryMachineShMemWinBaseInternalCreator.h            (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des objets de type                             */
-/* SharedMemoryContigMachineShMemWinBaseInternal. Une instance de cet objet  */
-/* doit être partagée par tous les threads.                                  */
+/* Class allowing the creation of objects of type                            */
+/* SharedMemoryContigMachineShMemWinBaseInternal. An instance of this object */
+/* must be shared by all threads.                                            */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINESHMEMWINBASEINTERNALCREATOR_H

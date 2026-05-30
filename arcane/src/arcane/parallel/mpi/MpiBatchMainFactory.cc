@@ -1,16 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiBatchMainFactory.cc                                      (C) 2000-2005 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
@@ -24,35 +23,36 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" IArcaneMain*
-createArcaneMainBatch(const ApplicationInfo& app_info,IMainFactory*);
+createArcaneMainBatch(const ApplicationInfo& app_info, IMainFactory*);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IArcaneMain* MpiBatchMainFactory::
 createArcaneMain(const ApplicationInfo& app_info)
-{ 
-	return createArcaneMainBatch(app_info,this);
+{
+  return createArcaneMainBatch(app_info, this);
 }
 
 int MpiBatchMainFactory::
 exec(const ApplicationInfo& app_info)
 {
-	MpiBatchMainFactory pbmf;
-	int r = Arcane::ArcaneMain::arcaneMain(app_info,&pbmf);
-	return r;
+  MpiBatchMainFactory pbmf;
+  int r = Arcane::ArcaneMain::arcaneMain(app_info, &pbmf);
+  return r;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

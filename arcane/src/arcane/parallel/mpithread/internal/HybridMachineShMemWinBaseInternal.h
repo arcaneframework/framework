@@ -7,10 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMachineShMemWinBaseInternal.h                         (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
-/* sous-domaines en mémoire partagée des processus du même noeud.            */
-/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
-/* être redimensionnés.                                                      */
+/* Class enabling the creation of memory windows for all subdomains in the   */
+/* shared memory of processes on the same node.                              */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINESHMEMWINBASEINTERNAL_H

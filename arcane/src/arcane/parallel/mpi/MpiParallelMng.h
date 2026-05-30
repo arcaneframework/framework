@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiParallelMng.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des messages avec MPI.                                     */
+/* Implementation of messages using MPI.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIPARALLELMNG_H
 #define ARCANE_PARALLEL_MPI_MPIPARALLELMNG_H
@@ -17,7 +17,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/ParallelMngDispatcher.h"
+#include "arcane/core/ParallelMngDispatcher.h"
 
 #include "arcane/parallel/mpi/ArcaneMpi.h"
 
@@ -38,50 +38,67 @@ class ArcaneMpiSerializeMessageList;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour construire un MpiParallelMng.
+ * \brief Info to construct an MpiParallelMng.
  */
 struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 {
  public:
+
   MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm);
+
  public:
+
   Int32 commRank() const { return comm_rank; }
   Int32 commSize() const { return comm_nb_rank; }
   MPI_Comm mpiComm() const { return mpi_comm; }
   MPI_Comm mpiMachineComm() const { return mpi_machine_comm; }
   Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
   Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
+
  public:
+
   bool is_parallel;
+
  private:
+
   Int32 comm_rank;
   Int32 comm_nb_rank;
+
  public:
+
   Parallel::IStat* stat = nullptr;
   ITraceMng* trace_mng = nullptr;
   ITimerMng* timer_mng = nullptr;
   IThreadMng* thread_mng = nullptr;
   IParallelMng* world_parallel_mng = nullptr;
+
  private:
+
   MPI_Comm mpi_comm;
   MPI_Comm mpi_machine_comm;
+
  public:
+
   bool is_mpi_comm_owned;
   MpiLock* mpi_lock = nullptr;
+
  private:
+
   Ref<MP::Dispatchers> m_dispatchers_ref;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant MPI.
+ * \brief Parallelism manager using MPI.
  */
 class ARCANE_MPI_EXPORT MpiParallelMng
 : public ParallelMngDispatcher
 {
  public:
+
   friend ArcaneMpiSerializeMessageList;
   class RequestList;
   class Impl;
@@ -90,8 +107,8 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
   explicit MpiParallelMng(const MpiParallelMngBuildInfo& bi);
   ~MpiParallelMng() override;
-  
-  bool isParallel()  const override { return m_is_parallel; }
+
+  bool isParallel() const override { return m_is_parallel; }
   Int32 commRank() const override { return m_comm_rank; }
   Int32 commSize() const override { return m_comm_size; }
   void* getMPICommunicator() override { return &m_communicator; }
@@ -103,25 +120,25 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   IIOMng* ioMng() const override { return m_io_mng; }
 
   void initialize() override;
-  bool isMasterIO() const override { return commRank()==0; }
+  bool isMasterIO() const override { return commRank() == 0; }
   Integer masterIORank() const override { return 0; }
 
   ITimerMng* timerMng() const override { return m_timer_mng; }
 
-  void sendSerializer(ISerializer* values,Int32 rank) override;
-  Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
+  void sendSerializer(ISerializer* values, Int32 rank) override;
+  Request sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
 
-  void recvSerializer(ISerializer* values,Int32 rank) override;
+  void recvSerializer(ISerializer* values, Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
 
   void freeRequests(ArrayView<Parallel::Request> requests) override;
 
-  void broadcastSerializer(ISerializer* values,Int32 rank) override;
+  void broadcastSerializer(ISerializer* values, Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
-  Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
-  Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
+  Request sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) override;
 
   void printStats() override;
   IParallelMng* sequentialParallelMng() override;
@@ -130,9 +147,9 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   void waitAllRequests(ArrayView<Request> requests) override;
   UniqueArray<Integer> waitSomeRequests(ArrayView<Request> requests) override;
   UniqueArray<Integer> testSomeRequests(ArrayView<Request> requests) override;
-  ARCANE_DEPRECATED_260 Real reduceRank(eReduceType rt,Real v,Int32* rank)
+  ARCANE_DEPRECATED_260 Real reduceRank(eReduceType rt, Real v, Int32* rank)
   {
-    Real rv = reduce(rt,v);
+    Real rv = reduce(rt, v);
     if (rank)
       *rank = 0;
     return rv;
@@ -143,7 +160,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   void build() override;
 
  public:
-  
+
   MpiAdapter* adapter() { return m_adapter; }
   Communicator communicator() const override { return Communicator(m_communicator); }
   Communicator machineCommunicator() const override { return Communicator(m_machine_communicator); }
@@ -192,9 +209,9 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   MpiDatatypeList* m_datatype_list = nullptr;
   MpiAdapter* m_adapter = nullptr;
   bool m_is_parallel = false;
-  Int32 m_comm_rank = A_NULL_RANK; //!< Numéro du processeur actuel
-  Int32 m_comm_size = 0; //!< Nombre de sous-domaines
-  bool m_is_initialized = false; //!< \a true si déjà initialisé
+  Int32 m_comm_rank = A_NULL_RANK; //!< Current processor number
+  Int32 m_comm_size = 0; //!< Number of subdomains
+  bool m_is_initialized = false; //!< \a true if already initialized
   Parallel::IStat* m_stat = nullptr;
   MPI_Comm m_communicator = MPI_COMM_NULL;
   MPI_Comm m_machine_communicator = MPI_COMM_NULL;
@@ -220,4 +237,4 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,10 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryMachineShMemWinBaseInternal.h                   (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
-/* sous-domaines en mémoire partagée.                                        */
-/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
-/* être redimensionnés.                                                      */
+/* Class allowing the creation of memory windows for all subdomains in       */
+/* shared memory.                                                            */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINESHMEMWINBASEINTERNAL_H

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* HybridContigMachineShMemWinBaseInternal.h                   (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* Class allowing the creation of a memory window for all sub-domains in     */
+/* shared memory of processes on the same node.                              */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDCONTIGMACHINESHMEMWINBASEINTERNAL_H

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* NCCLVariableSynchronizeDispatcher.cc                        (C) 2000-2025 */
 /*                                                                           */
-/* Gestion spécifique des synchronisations des variables via NCCL.           */
+/* Specific management of variable synchronizations via NCCL.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,10 +45,11 @@ namespace Accelerator::Cuda
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation NCCL de la synchronisation.
+ * \brief NCCL implementation of synchronization.
  *
- * NCCL ne supporte qu'un seul GPU par rang.
+ * NCCL only supports one GPU per rank.
  */
 class NCCLVariableSynchronizeDispatcher
 : public AbstractDataSynchronizeImplementation
@@ -114,8 +115,8 @@ NCCLVariableSynchronizeDispatcher(Factory* f)
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
 
-  // TODO: Il faudrait vérifier qu'on a bien un GPU par rang MPI
-  // car NCCL ne supporte pas qu'il y ait plusieurs rangs sur le même GPU.
+  // TODO: We should verify that there is exactly one MPI rank per GPU
+  // because NCCL does not support multiple ranks on the same GPU.
 
   ncclUniqueId my_id;
   ARCCORE_CHECK_NCCL(ncclGetUniqueId(&my_id));
@@ -140,17 +141,17 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
   double prepare_time = 0.0;
   cudaStream_t stream = 0;
 
-  // Si le IParallelMng a une RunQueue Cuda, on l'utilise.
+  // If IParallelMng has a CUDA RunQueue, we use it.
   RunQueue pm_queue = pm->_internalApi()->queue();
   if (pm_queue.executionPolicy() == Accelerator::eExecutionPolicy::CUDA)
     stream = Accelerator::AcceleratorUtils::toCudaNativeStream(pm_queue);
-;
+  ;
   ARCCORE_CHECK_NCCL(ncclGroupStart());
   {
-    // Recopie les buffers d'envoi dans \a var_values
+    // Recopy the send buffers into \a var_values
     ds_buf->copyAllSend();
 
-    // Poste les messages de réception
+    // Post the receive messages
     for (Integer i = 0; i < nb_message; ++i) {
       Int32 target_rank = ds_buf->targetRank(i);
       auto buf = ds_buf->receiveBuffer(i).bytes();
@@ -159,7 +160,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
       }
     }
 
-    // Poste les messages d'envoi
+    // Post the send messages
     for (Integer i = 0; i < nb_message; ++i) {
       auto buf = ds_buf->sendBuffer(i).bytes();
       Int32 target_rank = ds_buf->targetRank(i);
@@ -168,7 +169,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
       }
     }
   }
-  // Bloque jusqu'à ce que tous les messages soient terminés
+  // Blocks until all messages are finished
   ARCCORE_CHECK_NCCL(ncclGroupEnd());
 
   tm->info() << "End begin synchronize";
@@ -187,7 +188,7 @@ endSynchronize(IDataSynchronizeBuffer* ds_buf)
   double wait_time = 0.0;
   ds_buf->copyAllReceive();
 
-  // S'assure que les copies des buffers sont bien terminées
+  // Ensures that buffer copies are properly finished
   ds_buf->barrier();
 
   Int64 total_ghost_size = ds_buf->totalReceiveSize();

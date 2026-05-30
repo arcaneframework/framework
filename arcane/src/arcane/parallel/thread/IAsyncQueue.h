@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IAsyncQueue.h                                               (C) 2000-2019 */
 /*                                                                           */
-/* File asynchrone permettant d'échanger des informations entre threads.     */
+/* Asynchronous queue allowing the exchange of information between threads.  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_IASYNCQUEUE_H
 #define ARCANE_PARALLEL_THREAD_IASYNCQUEUE_H
@@ -24,26 +24,32 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief File asynchrone permettant d'échanger des informations entre threads
+ * \brief Asynchronous queue allowing the exchange of information between threads
  */
 class IAsyncQueue
 {
  public:
+
   virtual ~IAsyncQueue() = default;
+
  public:
-  //! Ajoute \a v dans la file.
-  virtual void push(void* v) =0;
+
+  //! Adds \a v to the queue.
+  virtual void push(void* v) = 0;
   /*!
-   * \brief Récupère la première valeur de la file et bloque s'il n'y en a pas.
+   * \brief Retrieves the first value from the queue and blocks if there are none.
    */
-  virtual void* pop() =0;
+  virtual void* pop() = 0;
   /*!
-   * \brief Récupère la première valeur s'il y en. Retourne `nullptr` sinon.
+   * \brief Retrieves the first value if available. Returns `nullptr` otherwise.
    */
-  virtual void* tryPop() =0;
+  virtual void* tryPop() = 0;
+
  public:
+
   static IAsyncQueue* createQueue();
 };
 
@@ -55,5 +61,4 @@ class IAsyncQueue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

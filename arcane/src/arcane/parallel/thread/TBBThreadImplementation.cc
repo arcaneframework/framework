@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TBBThreadImplementation.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
+/* Implementation of threads using TBB (Intel Threads Building Blocks).      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,9 +28,9 @@
 #include <new>
 
 // NOTE:
-// Cette implémentation n'est plus l'implémentation par défaut depuis fin 2025.
-// L'implémentation par défaut est maintenant celle utilise la STL.
-// Si tout est OK on pourra supprimer cette implémentation fin 2026 par exemple.
+// This implementation has not been the default implementation since the end of 2025.
+// The default implementation now uses the STL.
+// If everything is okay, we can delete this implementation at the end of 2026, for example.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,10 +43,10 @@ namespace Arcane
 
 typedef std::thread::id ThreadId;
 typedef std::thread ThreadType;
-// Essaie de convertir un std::thread::id en un 'Int64'.
-// Il n'existe pas de moyen portable de le faire donc on fait quelque
-// chose de pas forcément propre. A terme il serait préférable de supprimer
-// la méthode IThreadImplementation::currentThread().
+// Attempts to convert a std::thread::id into an 'Int64'.
+// There is no portable way to do this, so we are doing something
+// that is not necessarily clean. In the long run, it would be preferable to remove
+// the IThreadImplementation::currentThread() method.
 inline Int64 arcaneGetThisThreadId()
 {
   Int64 v = static_cast<Int64>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
@@ -59,6 +59,7 @@ inline Int64 arcaneGetThisThreadId()
 class TBBMutexImpl
 {
  public:
+
   void lock()
   {
     m_mutex.lock();
@@ -67,7 +68,9 @@ class TBBMutexImpl
   {
     m_mutex.unlock();
   }
+
  private:
+
   std::mutex m_mutex;
 };
 
@@ -97,15 +100,15 @@ class TBBBarrier
     if (remaining_thread > 0) {
 
       int count = 1;
-      while (m_timestamp==ts){
+      while (m_timestamp == ts) {
         arcaneDoCPUPause(count);
-        if (count<200)
+        if (count < 200)
           count *= 2;
-        else{
+        else {
           //count = 0;
           //__TBB_Yield();
-          //TODO: peut-être rendre la main (__TBB_Yield()) si trop
-        // d'itérations.
+          //TODO: maybe make the main (__TBB_Yield()) if too
+          // iterations.
         }
       }
     }
@@ -128,8 +131,9 @@ createGlibThreadBarrier();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des threads utilisant TBB (Intel Threads Building Blocks).
+ * \brief Implementation of threads using TBB (Intel Threads Building Blocks).
  */
 class TBBThreadImplementation
 : public IThreadImplementation
@@ -183,7 +187,7 @@ class TBBThreadImplementation
   }
 
  public:
-  
+
   ThreadImpl* createThread(IFunctor* f) override
   {
     return reinterpret_cast<ThreadImpl*>(new ThreadType(StartFunc(f)));
@@ -204,20 +208,20 @@ class TBBThreadImplementation
     void* addr = spin_lock_addr;
     new (addr) tbb::spin_mutex();
   }
-  void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  void lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override
   {
     auto* s = reinterpret_cast<tbb::spin_mutex*>(spin_lock_addr);
     auto* sl = new (scoped_spin_lock_addr) tbb::spin_mutex::scoped_lock();
     sl->acquire(*s);
   }
-  void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  void unlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override
   {
     ARCANE_UNUSED(spin_lock_addr);
     auto* s = reinterpret_cast<tbb::spin_mutex::scoped_lock*>(scoped_spin_lock_addr);
     s->release();
-    //TODO: detruire le scoped_lock.
+    //TODO: destroy the scoped_lock.
   }
-  
+
   MutexImpl* createMutex() override
   {
     auto* m = new TBBMutexImpl();
@@ -247,10 +251,10 @@ class TBBThreadImplementation
 
   IThreadBarrier* createBarrier() override
   {
-    // Il faut utiliser les TBB uniquement si demandé, car il utilise
-    // l'attente active ce qui peut vite mettre la machine à genoux
-    // si le nombre de threads total est supérieur au nombre de cœurs
-    // de la machine.
+    // We must use TBB only if requested, because it uses
+    // active waiting which can quickly bring the machine to its knees
+    // if the total number of threads exceeds the number of cores
+    // of the machine.
     if (m_use_tbb_barrier)
       return new TBBBarrier();
     return m_std_thread_implementation->createBarrier();
@@ -276,7 +280,9 @@ class TBBThreadImplementationService
  public:
 
   void build() {}
+
  public:
+
   Ref<IThreadImplementation> createImplementation() override
   {
     return makeRef<IThreadImplementation>(new TBBThreadImplementation());

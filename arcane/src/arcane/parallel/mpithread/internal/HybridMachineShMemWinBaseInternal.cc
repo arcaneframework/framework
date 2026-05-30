@@ -7,10 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* HybridMachineShMemWinBaseInternal.cc                        (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
-/* sous-domaines en mémoire partagée des processus du même noeud.            */
-/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
-/* être redimensionnés.                                                      */
+/* Class allowing the creation of memory windows for all the shared memory   */
+/* subdomains of processes on the same node.                                 */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"

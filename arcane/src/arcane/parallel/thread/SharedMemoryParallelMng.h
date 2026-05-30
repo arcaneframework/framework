@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryParallelMng.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages en mode mémoire partagé.                      */
+/* Implementation of messages in shared memory mode.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELMNG_H
 #define ARCANE_PARALLEL_THREAD_SHAREDMEMORYPARALLELMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ParallelMngDispatcher.h"
+#include "arcane/core/ParallelMngDispatcher.h"
 
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -28,7 +28,7 @@ namespace Arcane
 {
 class SerializeBuffer;
 class IParallelTopology;
-}
+} // namespace Arcane
 
 namespace Arcane::MessagePassing
 {
@@ -38,12 +38,14 @@ class SharedMemoryAllDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un SharedMemoryParallelMng.
+ * \brief Info to construct a SharedMemoryParallelMng.
  */
 struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 {
  public:
+
   SharedMemoryParallelMngBuildInfo()
   : rank(-1)
   , nb_rank(0)
@@ -56,6 +58,7 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
   {}
 
  public:
+
   Int32 rank;
   Int32 nb_rank;
   ITraceMng* trace_mng;
@@ -73,13 +76,15 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme utilisant les threads.
+ * \brief Thread-based parallelism manager.
  */
 class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 : public ParallelMngDispatcher
 {
  public:
+
   class RequestList;
   class Impl;
 
@@ -87,8 +92,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
   explicit SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info);
   ~SharedMemoryParallelMng() override;
-  
-  bool isParallel()  const override { return m_is_parallel; }
+
+  bool isParallel() const override { return m_is_parallel; }
   Int32 commRank() const override { return m_rank; }
   Int32 commSize() const override { return m_nb_rank; }
   void* getMPICommunicator() override { return m_mpi_communicator.communicatorAddress(); }
@@ -99,7 +104,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   ITraceMng* traceMng() const override { return m_trace.get(); }
   IThreadMng* threadMng() const override { return m_thread_mng; }
   void initialize() override;
-  bool isMasterIO() const override { return commRank()==0; }
+  bool isMasterIO() const override { return commRank() == 0; }
   Integer masterIORank() const override { return 0; }
   IIOMng* ioMng() const override { return m_io_mng; }
   IParallelMng* worldParallelMng() const override { return m_world_parallel_mng; }
@@ -107,28 +112,28 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
   IParallelMng* sequentialParallelMng() override;
   Ref<IParallelMng> sequentialParallelMngRef() override;
-  void sendSerializer(ISerializer* values,Int32 rank) override;
-  Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
+  void sendSerializer(ISerializer* values, Int32 rank) override;
+  Request sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
 
-  void recvSerializer(ISerializer* values,Int32 rank) override;
+  void recvSerializer(ISerializer* values, Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
 
   void freeRequests(ArrayView<Parallel::Request> requests) override;
 
-  void broadcastSerializer(ISerializer* values,Int32 rank) override;
+  void broadcastSerializer(ISerializer* values, Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
-  Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
-  Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
+  Request sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) override;
 
   void printStats() override;
   void barrier() override;
   void waitAllRequests(ArrayView<Request> requests) override;
 
-  ARCANE_DEPRECATED_260  Real reduceRank(eReduceType rt,Real v,Int32* rank)
+  ARCANE_DEPRECATED_260 Real reduceRank(eReduceType rt, Real v, Int32* rank)
   {
-    Real rv = reduce(rt,v);
+    Real rv = reduce(rt, v);
     if (rank)
       *rank = 0;
     return rv;
@@ -141,7 +146,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  public:
-  
+
   IThreadBarrier* getThreadBarrier()
   {
     return m_thread_barrier;
@@ -149,16 +154,16 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
  public:
 
-  //! Construit un message avec pour destinataire \a dest
-  PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
+  //! Constructs a message with destination \a dest
+  PointToPointMessageInfo buildMessage(Int32 dest, MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& orig_message);
 
  protected:
-  
+
   IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() override;
   ITransferValuesParallelOperation* createTransferValuesOperation() override;
   IParallelTopology* createTopology() override;
-  IParallelExchanger* createExchanger() override; 
+  IParallelExchanger* createExchanger() override;
   IVariableSynchronizer* createSynchronizer(IItemFamily* family) override;
   IVariableSynchronizer* createSynchronizer(const ItemGroup& group) override;
   Parallel::IStat* stat() override { return m_stat; }
@@ -175,7 +180,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   bool _isAcceleratorAware() const override { return true; }
 
  private:
-  
+
   ReferenceCounter<ITraceMng> m_trace;
   IThreadMng* m_thread_mng;
   Ref<IParallelMng> m_sequential_parallel_mng;
@@ -185,9 +190,9 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IIOMng* m_io_mng;
   ISharedMemoryMessageQueue* m_message_queue;
   bool m_is_parallel;
-  Int32 m_rank; //!< Rang de l'instance
-  Int32 m_nb_rank; //!< Nombre de rangs
-  bool m_is_initialized; //!< \a true si déjà initialisé
+  Int32 m_rank; //!< Rank of the instance
+  Int32 m_nb_rank; //!< Number of ranks
+  bool m_is_initialized; //!< \a true if already initialized
   Parallel::IStat* m_stat;
   IThreadBarrier* m_thread_barrier;
   SharedMemoryAllDispatcher* m_all_dispatchers;

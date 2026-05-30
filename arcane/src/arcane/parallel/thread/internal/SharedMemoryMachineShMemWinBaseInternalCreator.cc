@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryMachineShMemWinBaseInternalCreator.cc           (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des objets de type                             */
-/* SharedMemoryContigMachineShMemWinBaseInternal. Une instance de cet objet  */
-/* doit être partagée par tous les threads.                                  */
+/* Class allowing the creation of objects of type                            */
+/* SharedMemoryContigMachineShMemWinBaseInternal. An instance of this object */
+/* must be shared by all threads.                                            */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/parallel/thread/internal/SharedMemoryMachineShMemWinBaseInternalCreator.h"
@@ -66,7 +66,7 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   auto* window_obj = new SharedMemoryContigMachineShMemWinBaseInternal(my_rank, m_nb_rank, m_ranks, sizeof_type, m_window, m_sizeof_segments, m_sum_sizeof_segments, m_sizeof_window, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par SharedMemoryContigMachineShMemWinBaseInternal.
+  // These arrays must be deleted by SharedMemoryContigMachineShMemWinBaseInternal.
   if (my_rank == 0) {
     m_sizeof_segments.reset();
     m_sum_sizeof_segments.reset();
@@ -95,7 +95,7 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   auto* window_obj = new SharedMemoryMachineShMemWinBaseInternal(my_rank, m_ranks, sizeof_type, m_windows, m_target_segments, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par SharedMemoryMachineShMemWinBaseInternal.
+  // These arrays must be deleted by SharedMemoryMachineShMemWinBaseInternal.
   if (my_rank == 0) {
     m_windows.reset();
     m_target_segments.reset();

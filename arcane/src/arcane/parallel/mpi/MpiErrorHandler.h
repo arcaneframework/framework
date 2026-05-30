@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiErrorHandler.h                                           (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire d'erreur pour MPI.                                           */
+/* Error handler for MPI.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPIERRORHANDLER_H
 #define ARCANE_PARALLEL_MPI_MPIERRORHANDLER_H
@@ -24,13 +24,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for the \a Type
  */
 class ARCANE_MPI_EXPORT MpiErrorHandler
 {
  public:
-  
+
   MpiErrorHandler();
   ~MpiErrorHandler();
   void removeHandler();
@@ -43,8 +44,8 @@ class ARCANE_MPI_EXPORT MpiErrorHandler
 
  private:
 
-  // Handler d'erreur
-  static void _ErrorHandler(MPI_Comm *, int *, ...);
+  // Error handler
+  static void _ErrorHandler(MPI_Comm*, int*, ...);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -55,4 +56,4 @@ class ARCANE_MPI_EXPORT MpiErrorHandler
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

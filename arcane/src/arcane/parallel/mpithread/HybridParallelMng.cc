@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HybridParallelMng.cc                                        (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant un mixte MPI/Threads.              */
+/* Parallelism manager using a mix of MPI/Threads.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,18 +63,24 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Cette classe n'est plus utilisée. Elle reste pour référence
-// et sera supprimée ultérieurement
+// NOTE: This class is no longer used. It remains for reference
+// and will be removed later
 class HybridSerializeMessageList
 : public ISerializeMessageList
 {
  public:
+
   class HybridSerializeMessageRequest
   {
    public:
-    HybridSerializeMessageRequest(ISerializeMessage* message,Request request)
-    : m_message(message), m_request(request){}
+
+    HybridSerializeMessageRequest(ISerializeMessage* message, Request request)
+    : m_message(message)
+    , m_request(request)
+    {}
+
    public:
+
     ISerializeMessage* m_message = nullptr;
     Request m_request;
   };
@@ -82,7 +88,8 @@ class HybridSerializeMessageList
  public:
 
   explicit HybridSerializeMessageList(HybridParallelMng* mpm)
-  : m_parallel_mng(mpm), m_trace(mpm->traceMng())
+  : m_parallel_mng(mpm)
+  , m_trace(mpm->traceMng())
   {
   }
 
@@ -91,7 +98,6 @@ class HybridSerializeMessageList
   void addMessage(ISerializeMessage* msg) override
   {
     m_messages_to_process.add(msg);
-
   }
   void processPendingMessages() override
   {
@@ -99,17 +105,17 @@ class HybridSerializeMessageList
 
   Integer waitMessages(Parallel::eWaitType wait_type) override
   {
-    switch(wait_type){
+    switch (wait_type) {
     case Parallel::WaitAll:
-      // Pour l'instant seul le mode bloquant est supporté.
+      // Currently, only the blocking mode is supported.
       //m_parallel_mng->processMessages(m_messages_to_process);
       _wait(Parallel::WaitAll);
       m_messages_to_process.clear();
       return (-1);
     case Parallel::WaitSome:
-      ARCANE_THROW(NotImplementedException,"WaitSome");
+      ARCANE_THROW(NotImplementedException, "WaitSome");
     case Parallel::WaitSomeNonBlocking:
-      ARCANE_THROW(NotImplementedException,"WaitSomeNonBlocking");
+      ARCANE_THROW(NotImplementedException, "WaitSomeNonBlocking");
     }
     return (-1);
   }
@@ -132,28 +138,28 @@ _wait(Parallel::eWaitType wait_mode)
 {
   m_trace->info() << "BEGIN PROCESS MESSAGES";
 
-  // TODO: gérer la memoire sans faire de new.
+  // TODO: manage memory without using new.
   ConstArrayView<ISerializeMessage*> messages = m_messages_to_process;
   HybridMessageQueue* message_queue = m_parallel_mng->m_message_queue;
   UniqueArray<Request> all_requests;
   MessageTag HYBRID_MESSAGE_TAG(511);
-  for( ISerializeMessage* sm : messages ){
+  for (ISerializeMessage* sm : messages) {
     ISerializer* s = sm->serializer();
     MessageRank orig(sm->source());
     MessageRank dest(sm->destination());
-    PointToPointMessageInfo message_info(orig,dest,HYBRID_MESSAGE_TAG,Parallel::NonBlocking);
+    PointToPointMessageInfo message_info(orig, dest, HYBRID_MESSAGE_TAG, Parallel::NonBlocking);
     Request r;
     if (sm->isSend())
-      r = message_queue->addSend(message_info,SendBufferInfo(s));
+      r = message_queue->addSend(message_info, SendBufferInfo(s));
     else
-      r = message_queue->addReceive(message_info,ReceiveBufferInfo(s));
+      r = message_queue->addReceive(message_info, ReceiveBufferInfo(s));
     all_requests.add(r);
   }
 
-  if (wait_mode==Parallel::WaitAll)
+  if (wait_mode == Parallel::WaitAll)
     message_queue->waitAll(all_requests);
 
-  for( ISerializeMessage* sm : messages )
+  for (ISerializeMessage* sm : messages)
     sm->setFinished(true);
 }
 
@@ -206,7 +212,7 @@ class HybridParallelMng::Impl
         m_shmem_available = 1;
         return true;
       }
-      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      // Issue with MPI. May occur if MPICH is compiled in ch3:sock mode.
       m_shmem_available = 2;
       return false;
     }
@@ -245,9 +251,9 @@ class HybridParallelMng::Impl
   HybridMachineShMemWinBaseInternalCreator* m_window_creator;
   Ref<MachineShMemWinMemoryAllocator> m_alloc;
 
-  // 0 = Attribut non initialisé
-  // 1 = Mémoire partagée dispo
-  // 2 = Mémoire partagée non dispo
+  // 0 = Not initialized attribute
+  // 1 = Shared memory available
+  // 2 = Shared memory not available
   Int8 m_shmem_available = 0;
 };
 
@@ -259,14 +265,14 @@ class HybridParallelMng::Impl
 
 HybridParallelMng::
 HybridParallelMng(const HybridParallelMngBuildInfo& bi)
-: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.local_rank,bi.local_nb_rank))
+: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.local_rank, bi.local_nb_rank))
 , m_trace(bi.trace_mng)
 , m_thread_mng(bi.thread_mng)
 , m_world_parallel_mng(bi.world_parallel_mng)
 , m_io_mng(nullptr)
 , m_timer_mng(nullptr)
 , m_replication(new ParallelReplication())
-, m_message_queue(new HybridMessageQueue(bi.message_queue,bi.mpi_parallel_mng,bi.local_nb_rank))
+, m_message_queue(new HybridMessageQueue(bi.message_queue, bi.mpi_parallel_mng, bi.local_nb_rank))
 , m_is_initialized(false)
 , m_stat(Parallel::createDefaultStat())
 , m_thread_barrier(bi.thread_barrier)
@@ -280,8 +286,8 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
 
-  // TODO: vérifier que tous les autres HybridParallelMng ont bien
-  // le même nombre de rang locaux (m_local_nb_rank)
+  // TODO: verify that all other HybridParallelMng have the same
+  // number of local ranks (m_local_nb_rank)
   m_local_rank = bi.local_rank;
   m_local_nb_rank = bi.local_nb_rank;
 
@@ -291,7 +297,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
   m_global_rank = m_local_rank + mpi_rank * m_local_nb_rank;
   m_global_nb_rank = mpi_size * m_local_nb_rank;
 
-  m_is_parallel = m_global_nb_rank!=1;
+  m_is_parallel = m_global_nb_rank != 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -315,28 +321,35 @@ HybridParallelMng::
 
 namespace
 {
-// Classe pour créer les différents dispatchers
-class DispatchCreator
-{
- public:
-  DispatchCreator(ITraceMng* tm,HybridParallelMng* mpm,HybridMessageQueue* message_queue,MpiThreadAllDispatcher* all_dispatchers)
-  : m_tm(tm), m_mpm(mpm), m_message_queue(message_queue), m_all_dispatchers(all_dispatchers){}
- public:
-  template<typename DataType> HybridParallelDispatch<DataType>*
-  create()
+  // Class to create the different dispatchers
+  class DispatchCreator
   {
-    HybridMessageQueue* tmq = m_message_queue;
-    MpiThreadAllDispatcher* ad = m_all_dispatchers;
-    auto field = ad->instance((DataType*)nullptr).view();
-    return new HybridParallelDispatch<DataType>(m_tm,m_mpm,tmq,field);
-  }
+   public:
 
-  ITraceMng* m_tm;
-  HybridParallelMng* m_mpm;
-  HybridMessageQueue* m_message_queue;
-  MpiThreadAllDispatcher* m_all_dispatchers;
-};
-}
+    DispatchCreator(ITraceMng* tm, HybridParallelMng* mpm, HybridMessageQueue* message_queue, MpiThreadAllDispatcher* all_dispatchers)
+    : m_tm(tm)
+    , m_mpm(mpm)
+    , m_message_queue(message_queue)
+    , m_all_dispatchers(all_dispatchers)
+    {}
+
+   public:
+
+    template <typename DataType> HybridParallelDispatch<DataType>*
+    create()
+    {
+      HybridMessageQueue* tmq = m_message_queue;
+      MpiThreadAllDispatcher* ad = m_all_dispatchers;
+      auto field = ad->instance((DataType*)nullptr).view();
+      return new HybridParallelDispatch<DataType>(m_tm, m_mpm, tmq, field);
+    }
+
+    ITraceMng* m_tm;
+    HybridParallelMng* m_mpm;
+    HybridMessageQueue* m_message_queue;
+    MpiThreadAllDispatcher* m_all_dispatchers;
+  };
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -352,16 +365,16 @@ build()
 
   m_timer_mng = new TimerMng(tm);
 
-  // Créé le gestionnaire séquentiel associé.
+  // Created the associated sequential manager.
   {
-    SequentialParallelMngBuildInfo bi(timerMng(),worldParallelMng());
+    SequentialParallelMngBuildInfo bi(timerMng(), worldParallelMng());
     bi.setTraceMng(traceMng());
     bi.setCommunicator(communicator());
     bi.setThreadMng(threadMng());
     m_sequential_parallel_mng = arcaneCreateSequentialParallelMngRef(bi);
   }
 
-  DispatchCreator creator(m_trace,this,m_message_queue,m_all_dispatchers);
+  DispatchCreator creator(m_trace, this, m_message_queue, m_all_dispatchers);
   this->createDispatchers(creator);
   m_io_mng = arcaneCreateIOMng(this);
 
@@ -377,8 +390,8 @@ build()
 void HybridParallelMng::
 initialize()
 {
-  Trace::Setter mci(m_trace,"Thread");
-  if (m_is_initialized){
+  Trace::Setter mci(m_trace, "Thread");
+  if (m_is_initialized) {
     m_trace->warning() << "HybridParallelMng already initialized";
     return;
   }
@@ -394,14 +407,14 @@ _castSerializer(ISerializer* serializer)
 {
   auto sbuf = dynamic_cast<SerializeBuffer*>(serializer);
   if (!sbuf)
-    ARCANE_THROW(ArgumentException,"can not cast 'ISerializer' to 'SerializeBuffer'");
+    ARCANE_THROW(ArgumentException, "can not cast 'ISerializer' to 'SerializeBuffer'");
   return sbuf;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IGetVariablesValuesParallelOperation*  HybridParallelMng::
+IGetVariablesValuesParallelOperation* HybridParallelMng::
 createGetVariablesValuesOperation()
 {
   return m_utils_factory->createGetVariablesValuesOperation(this)._release();
@@ -426,22 +439,22 @@ createExchanger()
 /*---------------------------------------------------------------------------*/
 
 void HybridParallelMng::
-sendSerializer(ISerializer* s,Int32 rank)
+sendSerializer(ISerializer* s, Int32 rank)
 {
-  auto p2p_message = buildMessage(rank,Parallel::NonBlocking);
-  Request r = m_message_queue->addSend(p2p_message,s);
-  m_message_queue->waitAll(ArrayView<Request>(1,&r));
+  auto p2p_message = buildMessage(rank, Parallel::NonBlocking);
+  Request r = m_message_queue->addSend(p2p_message, s);
+  m_message_queue->waitAll(ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 auto HybridParallelMng::
-sendSerializer(ISerializer* s,Int32 rank,ByteArray& bytes) -> Request
+sendSerializer(ISerializer* s, Int32 rank, ByteArray& bytes) -> Request
 {
   ARCANE_UNUSED(bytes);
-  auto p2p_message = buildMessage(rank,Parallel::NonBlocking);
-  return m_message_queue->addSend(p2p_message,s);
+  auto p2p_message = buildMessage(rank, Parallel::NonBlocking);
+  return m_message_queue->addSend(p2p_message, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -457,31 +470,31 @@ createSendSerializer(Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void HybridParallelMng::
-broadcastSerializer(ISerializer* values,Int32 rank)
+broadcastSerializer(ISerializer* values, Int32 rank)
 {
-  Timer::Phase tphase(timeStats(),TP_Communication);
+  Timer::Phase tphase(timeStats(), TP_Communication);
   SerializeBuffer* sbuf = _castSerializer(values);
 
-  bool is_broadcaster = (rank==commRank());
+  bool is_broadcaster = (rank == commRank());
 
-  // Effectue l'envoie en deux phases. Envoie d'abord le nombre d'éléments
-  // puis envoie les éléments.
-  // TODO: il serait possible de le faire en une fois pour les messages
-  // ne dépassant pas une certaine taille.
+  // Send in two phases. First send the number of elements
+  // then send the elements.
+  // TODO: it would be possible to do it in one go for messages
+  // not exceeding a certain size.
 
   IMessagePassingMng* mpm = this->messagePassingMng();
-  if (is_broadcaster){
+  if (is_broadcaster) {
     Int64 total_size = sbuf->totalSize();
     Span<Byte> bytes = sbuf->globalBuffer();
-    this->broadcast(Int64ArrayView(1,&total_size),rank);
-    mpBroadcast(mpm,bytes,rank);
+    this->broadcast(Int64ArrayView(1, &total_size), rank);
+    mpBroadcast(mpm, bytes, rank);
   }
-  else{
+  else {
     Int64 total_size = 0;
-    this->broadcast(Int64ArrayView(1,&total_size),rank);
+    this->broadcast(Int64ArrayView(1, &total_size), rank);
     sbuf->preallocate(total_size);
     Span<Byte> bytes = sbuf->globalBuffer();
-    mpBroadcast(mpm,bytes,rank);
+    mpBroadcast(mpm, bytes, rank);
     sbuf->setFromSizes();
   }
 }
@@ -490,11 +503,11 @@ broadcastSerializer(ISerializer* values,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void HybridParallelMng::
-recvSerializer(ISerializer* s,Int32 rank)
+recvSerializer(ISerializer* s, Int32 rank)
 {
-  auto p2p_message = buildMessage(rank,Parallel::NonBlocking);
-  Request r = m_message_queue->addReceive(p2p_message,ReceiveBufferInfo(s));
-  m_message_queue->waitAll(ArrayView<Request>(1,&r));
+  auto p2p_message = buildMessage(rank, Parallel::NonBlocking);
+  Request r = m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(s));
+  m_message_queue->waitAll(ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -542,20 +555,20 @@ legacyProbe(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 
 Request HybridParallelMng::
-sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
+sendSerializer(const ISerializer* s, const PointToPointMessageInfo& message)
 {
   auto p2p_message = buildMessage(message);
-  return m_message_queue->addSend(p2p_message,s);
+  return m_message_queue->addSend(p2p_message, s);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request HybridParallelMng::
-receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message)
+receiveSerializer(ISerializer* s, const PointToPointMessageInfo& message)
 {
   auto p2p_message = buildMessage(message);
-  return m_message_queue->addReceive(p2p_message,ReceiveBufferInfo(s));
+  return m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(s));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -575,7 +588,7 @@ void HybridParallelMng::
 barrier()
 {
   m_thread_barrier->wait();
-  if (m_local_rank==0)
+  if (m_local_rank == 0)
     m_mpi_parallel_mng->barrier();
   m_thread_barrier->wait();
 }
@@ -597,7 +610,7 @@ _createSerializeMessageList()
 IVariableSynchronizer* HybridParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  return m_utils_factory->createSynchronizer(this,family)._release();
+  return m_utils_factory->createSynchronizer(this, family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -606,7 +619,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* HybridParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  return m_utils_factory->createSynchronizer(this,group)._release();
+  return m_utils_factory->createSynchronizer(this, group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -657,32 +670,41 @@ sequentialParallelMngRef()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de IRequestList pour HybridParallelMng.
+ * \brief Implementation of IRequestList for HybridParallelMng.
  */
 class HybridParallelMng::RequestList
 : public Arccore::MessagePassing::internal::RequestListBase
 {
   using Base = Arccore::MessagePassing::internal::RequestListBase;
+
  public:
+
   RequestList(HybridParallelMng* pm)
-  : m_parallel_mng(pm), m_message_queue(pm->m_message_queue),
-    m_local_rank(m_parallel_mng->localRank()) {}
+  : m_parallel_mng(pm)
+  , m_message_queue(pm->m_message_queue)
+  , m_local_rank(m_parallel_mng->localRank())
+  {}
+
  public:
+
   void _wait(Parallel::eWaitType wait_type) override
   {
-    switch(wait_type){
+    switch (wait_type) {
     case Parallel::WaitAll:
       m_parallel_mng->m_message_queue->waitAll(_requests());
       break;
     case Parallel::WaitSome:
-      m_message_queue->waitSome(m_local_rank,_requests(),_requestsDone(),false);
+      m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), false);
       break;
     case Parallel::WaitSomeNonBlocking:
-      m_message_queue->waitSome(m_local_rank,_requests(),_requestsDone(),true);
+      m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), true);
     }
   }
+
  private:
+
   HybridParallelMng* m_parallel_mng;
   HybridMessageQueue* m_message_queue;
   Int32 m_local_rank;
@@ -749,9 +771,9 @@ buildMessage(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 
 PointToPointMessageInfo HybridParallelMng::
-buildMessage(Int32 dest,Parallel::eBlockingType blocking_mode)
+buildMessage(Int32 dest, Parallel::eBlockingType blocking_mode)
 {
-  return buildMessage({MessageRank(dest),blocking_mode});
+  return buildMessage({ MessageRank(dest), blocking_mode });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -761,7 +783,7 @@ IParallelMng* HybridParallelMng::
 _createSubParallelMng(Int32ConstArrayView kept_ranks)
 {
   ARCANE_UNUSED(kept_ranks);
-  ARCANE_THROW(NotSupportedException,"Use createSubParallelMngRef() instead");
+  ARCANE_THROW(NotSupportedException, "Use createSubParallelMngRef() instead");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -770,8 +792,8 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
 Ref<IParallelMng> HybridParallelMng::
 createSubParallelMngRef(Int32ConstArrayView kept_ranks)
 {
-  // ATTENTION: Cette méthode est appelée simultanément par tous les threads
-  // partageant cet HybridParallelMng.
+  // ATTENTION: This method is called simultaneously by all threads
+  // sharing this HybridParallelMng.
 
   if (kept_ranks.empty())
     ARCANE_FATAL("kept_ranks is empty");
@@ -780,53 +802,53 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   m_trace->info() << "CREATE SUB_PARALLEL_MNG_REF";
 
   /*
-    Il existe plusieurs possibilités:
-    1. on réduit juste le nombre de rangs en mémoire partagé pour chaque
-    processus MPI -< on créé un HybridParallelMng
-    2. On ne garde que le rang maitre de chaque processus MPI -> on créé un MpiParallelMng.
-    3. On ne garde que les rangs d'un même processus -> on créé un SharedMemoryParallelMng
-    4. On ne garde qu'un seul rang: on crée un MpiSequentialParallelMng.
+    There are several possibilities:
+    1. We just reduce the number of ranks in shared memory for each
+    MPI process - we create a HybridParallelMng
+    2. We only keep the master rank of each MPI process -> we create an MpiParallelMng.
+    3. We only keep the ranks of the same process -> we create a SharedMemoryParallelMng
+    4. We only keep a single rank: we create an MpiSequentialParallelMng.
   */
-  // Pour l'instant, on ne supporte que le cas 1 et 2.
+  // For now, we only support cases 1 and 2.
   Int32 nb_kept_rank = kept_ranks.size();
 
-  // Détermine le nouveau nombre de rangs locaux par rang MPI.
+  // Determines the new number of local ranks per MPI rank.
 
-  // Regarde si je suis dans les listes des rangs conservés et si oui
-  // détermine mon rang dans le IParallelMng créé
+  // Checks if I am in the list of kept ranks and, if so,
+  // determines my rank in the created IParallelMng
   Int32 first_global_rank_in_this_mpi = m_global_rank - m_local_rank;
   Int32 last_global_rank_in_this_mpi = first_global_rank_in_this_mpi + m_local_nb_rank - 1;
-  // Mon nouveau rang local. Négatif si je ne suis pas dans le nouveau communicateur
+  // My new global rank. Negative if I am not in the new communicator
   Int32 my_new_global_rank = (-1);
   Int32 new_local_nb_rank = 0;
   Int32 my_new_local_rank = (-1);
-  for( Integer i=0; i<nb_kept_rank; ++i ){
+  for (Integer i = 0; i < nb_kept_rank; ++i) {
     Int32 kept_rank = kept_ranks[i];
-    if (kept_rank>=first_global_rank_in_this_mpi && kept_rank<last_global_rank_in_this_mpi)
+    if (kept_rank >= first_global_rank_in_this_mpi && kept_rank < last_global_rank_in_this_mpi)
       ++new_local_nb_rank;
-    if (kept_rank==m_global_rank){
+    if (kept_rank == m_global_rank) {
       my_new_global_rank = i;
       my_new_local_rank = new_local_nb_rank - 1;
     }
   }
   bool has_new_rank = (my_new_global_rank != (-1));
 
-  // Calcule le min, le max et la somme sur tous les rangs du nombre de nouveaux.
-  // Deux cas peuvent se présenter:
-  // 1. Le min et le max sont égaux et supérieurs ou égaux à 2: Dans ce cas on créé
-  //    un HybridParallelMng.
-  // 2. Le max vaut 1. Dans ce cas on créé un nouveau IParallelMng via le MpiParallelMng.
-  //    Les rangs actuels pour lequels 'new_local_nb_rank' vaut 0 ne seront pas dans ce
-  //    nouveau communicateur. Ce cas concerne aussi le cas où il ne reste plus qu'un
-  //    seul rang à la fin.
+  // Calculates the min, max, and sum of the new number.
+  // Two cases can occur:
+  // 1. The min and max are equal and greater than or equal to 2: In this case, we create
+  //    a HybridParallelMng.
+  // 2. The max is 1. In this case, we create a new IParallelMng via the MpiParallelMng.
+  //    The current ranks for which 'new_local_nb_rank' is 0 will not be in this
+  //    new communicator. This case also applies when only one rank remains
+  //    at the end.
 
   Int32 min_new_local_nb_rank = -1;
   Int32 max_new_local_nb_rank = -1;
   Int32 sum_new_local_nb_rank = -1;
   Int32 min_rank = A_NULL_RANK;
   Int32 max_rank = A_NULL_RANK;
-  computeMinMaxSum(new_local_nb_rank,min_new_local_nb_rank,max_new_local_nb_rank,
-                   sum_new_local_nb_rank,min_rank,max_rank);
+  computeMinMaxSum(new_local_nb_rank, min_new_local_nb_rank, max_new_local_nb_rank,
+                   sum_new_local_nb_rank, min_rank, max_rank);
 
   m_trace->info() << "CREATE SUB_PARALLEL_MNG_REF new_local_nb_rank=" << new_local_nb_rank
                   << " min=" << min_new_local_nb_rank
@@ -834,39 +856,39 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
                   << " sum=" << sum_new_local_nb_rank
                   << " new_global_rank=" << my_new_global_rank;
 
-  // S'il ne reste qu'un seul rang local, alors on construit uniquement un MpiParallelMng.
-  // Seul le PE qui a un nouveau rang est concerné et fait cela
-  if (max_new_local_nb_rank==1){
+  // If only one local rank remains, then we only build an MpiParallelMng.
+  // Only the PE that has a new rank is concerned and does this
+  if (max_new_local_nb_rank == 1) {
     Integer nb_mpi_rank = m_mpi_parallel_mng->commSize();
-    // Il faut calculer les nouveaux rangs MPI.
-    // Si 'min_new_local_nb_rank' vaut 1, alors c'est simple car cela signifie qu'on garde
-    // tous les rangs MPI actuels (on fait l'équivalent d'un MPI_Comm_dup). Sinon, on
-    // récupère pour chaque rang MPI s'il sera dans le nouveau communicateur et on construit
-    // la liste des rangs conservés en fonction de cela.
-    // NOTE: dans tous les cas il faut faire attention qu'un seul thread utilise le
+    // We must calculate the new MPI ranks.
+    // If 'min_new_local_nb_rank' is 1, it's simple because it means we keep
+    // all current MPI ranks (equivalent to an MPI_Comm_dup). Otherwise, we
+    // retrieve for each MPI rank whether it will be in the new communicator and
+    // build the list of kept ranks based on that.
+    // NOTE: in all cases, we must ensure that only one thread uses the
     // 'm_mpi_parallel_mng'.
     UniqueArray<Int32> kept_mpi_ranks;
-    //! Indique cela qui va faire les appels MPI
+    //! Indicates who will make the MPI calls
     bool do_mpi_call = false;
-    if (min_new_local_nb_rank==1){
-      if (has_new_rank){
+    if (min_new_local_nb_rank == 1) {
+      if (has_new_rank) {
         do_mpi_call = true;
         kept_mpi_ranks.resize(nb_mpi_rank);
-        for( Int32 x=0; x<nb_mpi_rank; ++x )
+        for (Int32 x = 0; x < nb_mpi_rank; ++x)
           kept_mpi_ranks[x] = x;
       }
     }
-    else{
-      // Si je ne suis pas dans le nouveau communicateur, c'est le rang local 0 qui
-      // faut le 'gather'.
+    else {
+      // If I am not in the new communicator, local rank 0 must
+      // 'gather'.
       UniqueArray<Int16> gathered_ranks(nb_mpi_rank);
-      if (has_new_rank || m_local_rank==0){
+      if (has_new_rank || m_local_rank == 0) {
         do_mpi_call = true;
         Int16 v = (has_new_rank) ? 1 : 0;
-        m_mpi_parallel_mng->allGather(ArrayView<Int16>(1,&v),gathered_ranks);
+        m_mpi_parallel_mng->allGather(ArrayView<Int16>(1, &v), gathered_ranks);
       }
-      for( Int32 x=0; x<nb_mpi_rank; ++x )
-        if (gathered_ranks[x]==1)
+      for (Int32 x = 0; x < nb_mpi_rank; ++x)
+        if (gathered_ranks[x] == 1)
           kept_mpi_ranks.add(x);
     }
     if (do_mpi_call)
@@ -875,47 +897,47 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
       return Ref<IParallelMng>();
   }
 
-  if (max_new_local_nb_rank!=new_local_nb_rank)
+  if (max_new_local_nb_rank != new_local_nb_rank)
     ARCANE_FATAL("Not same number of new local ranks on every MPI processus: current={0} max={1}",
-                 new_local_nb_rank,max_new_local_nb_rank);
+                 new_local_nb_rank, max_new_local_nb_rank);
 
-  if (max_new_local_nb_rank<2)
-    ARCANE_FATAL("number of local ranks is too low current={0} minimum=2",new_local_nb_rank);
+  if (max_new_local_nb_rank < 2)
+    ARCANE_FATAL("number of local ranks is too low current={0} minimum=2", new_local_nb_rank);
 
-  // Met une barrière locale pour être sur que tout le monde attend ici.
+  // Wait a local barrier to ensure everyone waits here.
   m_thread_barrier->wait();
 
-  // NOTE: Le builder contient les parties communes aux IParallelMng créés. Il faut
-  // donc que ces derniers gardent une référence dessus sinon il sera détruit à la fin
-  // de cette méthode.
+  // NOTE: The builder contains the common parts of the created IParallelMngs. It must
+  // therefore be referenced by them, otherwise it will be destroyed at the end
+  // of this method.
   Ref<IParallelMngContainer> builder;
 
-  // Le rang 0 créé le builder
-  if (m_local_rank==0){
-    // Suppose qu'on à le même nombre de rangs MPI qu'avant donc on utilise
-    // le communicateur MPI qu'on a déjà.
+  // Rank 0 creates the builder
+  if (m_local_rank == 0) {
+    // Assuming we have the same number of MPI ranks as before, we use
+    // the MPI communicator we already have.
     MP::Communicator c = communicator();
     MP::Communicator mc = machineCommunicator();
     builder = m_sub_builder_factory->_createParallelMngBuilder(new_local_nb_rank, c, mc);
-    // Positionne le builder pour tout le monde
+    // Position the builder for everyone
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder = builder;
   }
-  // Attend pour être sur que tous les threads voit le bon builder.
+  // Wait to ensure all threads see the correct builder.
   m_thread_barrier->wait();
 
   builder = m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder;
   ARCANE_CHECK_POINTER(builder.get());
 
   Ref<IParallelMng> new_parallel_mng;
-  if (my_new_local_rank>=0){
-    new_parallel_mng = builder->_createParallelMng(my_new_local_rank,traceMng());
+  if (my_new_local_rank >= 0) {
+    new_parallel_mng = builder->_createParallelMng(my_new_local_rank, traceMng());
   }
   m_thread_barrier->wait();
 
-  // Ici, tout le monde a créé son IParallelMng. On peut donc
-  // supprimer la référence au builder. Les IParallelMng créés gardent
-  // une référence au builder
-  if (m_local_rank==0){
+  // Here, everyone has created their IParallelMng. We can therefore
+  // release the reference to the builder. The created IParallelMngs keep
+  // a reference to the builder
+  if (m_local_rank == 0) {
     m_all_dispatchers->m_create_sub_parallel_mng_info.m_builder.reset();
   }
   m_thread_barrier->wait();

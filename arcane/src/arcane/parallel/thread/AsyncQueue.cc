@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AsyncQueue.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation d'une file de messages en mémoire partagée.                */
+/* Implementation of a shared memory message queue.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,10 +36,11 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation basique d'une file multi-thread.
+ * \brief Basic implementation of a multi-threaded queue.
  *
- * Utilise un mutex pour protéger les appels.
+ * Uses a mutex to protect calls.
  */
 class SharedMemoryBasicAsyncQueue
 : public IAsyncQueue
@@ -50,11 +51,11 @@ class SharedMemoryBasicAsyncQueue
   {
     std::unique_lock<std::mutex> lg(m_mutex);
     m_shared_queue.push(v);
-    // NOTE: normalement il n'y a pas besoin d'avoir le verrou actif
-    // lors de l'appel à 'notify_one()' mais cela génère des avertissements
-    // avec helgrind (valgrind). Du coup on laisse le verrou pour éviter cela.
-    // Il faudrait vérifier si cela à des effets sur les performances (dans
-    // les tests Arcane du CI ce n'est pas le cas).
+    // NOTE: normally it is not necessary to have the lock active
+    // when calling 'notify_one()' but this generates warnings
+    // with helgrind (valgrind). So we leave the lock to avoid this.
+    // It should be checked if this has any performance effects (in
+    // Arcane CI tests, this is not the case).
     m_conditional_variable.notify_one();
   }
   void* pop() override
@@ -127,9 +128,9 @@ class TBBAsyncQueue
 IAsyncQueue* IAsyncQueue::
 createQueue()
 {
-  // Par défaut n'utilise pas l'attente active car il n'y a pas de différence
-  // notable de performance  et cela évite des contentions lorsque le nombre
-  // de coeurs disponibles est inférieure au nombre de threads.
+  // By default, active waiting is not used because there is no
+  // notable difference in performance and it avoids contention when the number
+  // of available cores is less than the number of threads.
   [[maybe_unused]] bool use_active_queue = false;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_ACTIVE_SHM_QUEUE", true))
     use_active_queue = (v.value() != 0);
@@ -142,9 +143,6 @@ createQueue()
     queue = new SharedMemoryBasicAsyncQueue();
   return queue;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
