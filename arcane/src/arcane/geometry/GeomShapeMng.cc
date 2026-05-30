@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeMng.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant les GeomShape d'un maillage.                                */
+/* Class managing the GeomShapes of a mesh.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,11 +24,11 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 
 GeomShapeMng::
-GeomShapeMng(IMesh* mesh,const String& cell_shape_name)
+GeomShapeMng(IMesh* mesh, const String& cell_shape_name)
 : m_name(cell_shape_name)
-, m_cell_shape_nodes(VariableBuildInfo(mesh,cell_shape_name,IVariable::PNoDump))
-, m_cell_shape_faces(VariableBuildInfo(mesh,cell_shape_name+"Face",IVariable::PNoDump))
-, m_cell_shape_centers(VariableBuildInfo(mesh,cell_shape_name+"Center",IVariable::PNoDump))
+, m_cell_shape_nodes(VariableBuildInfo(mesh, cell_shape_name, IVariable::PNoDump))
+, m_cell_shape_faces(VariableBuildInfo(mesh, cell_shape_name + "Face", IVariable::PNoDump))
+, m_cell_shape_centers(VariableBuildInfo(mesh, cell_shape_name + "Center", IVariable::PNoDump))
 {
 }
 
@@ -38,9 +38,9 @@ GeomShapeMng(IMesh* mesh,const String& cell_shape_name)
 GeomShapeMng::
 GeomShapeMng(IMesh* mesh)
 : m_name("GenericElement")
-, m_cell_shape_nodes(VariableBuildInfo(mesh,"GenericElement",IVariable::PNoDump))
-, m_cell_shape_faces(VariableBuildInfo(mesh,"GenericElementFace",IVariable::PNoDump))
-, m_cell_shape_centers(VariableBuildInfo(mesh,"GenericElementCenter",IVariable::PNoDump))
+, m_cell_shape_nodes(VariableBuildInfo(mesh, "GenericElement", IVariable::PNoDump))
+, m_cell_shape_faces(VariableBuildInfo(mesh, "GenericElementFace", IVariable::PNoDump))
+, m_cell_shape_centers(VariableBuildInfo(mesh, "GenericElementCenter", IVariable::PNoDump))
 {
 }
 
@@ -66,16 +66,16 @@ void GeomShapeMng::
 initialize()
 {
   IMesh* mesh = m_cell_shape_nodes.variable()->meshHandle().mesh();
-  //TODO: il faut utiliser le globalConnectivity() de IItemFamily
-  // mais pour l'instant celui-ci n'est pas correctement calculé
-  // lors de l'init.
-  if (mesh->dimension()==2){
-    // En 2D, on n'a pas des mailles contenant plus de noeuds que les quads
+  //TODO: we must use the globalConnectivity() of IItemFamily
+  // but for now this is not calculated correctly
+  // during init.
+  if (mesh->dimension() == 2) {
+    // In 2D, we do not have meshes containing more nodes than quads
     m_cell_shape_nodes.resize(4);
-    //TODO: Verifier si on a besoin de cela.
+    //TODO: Check if this is necessary.
     m_cell_shape_faces.resize(4);
   }
-  else{
+  else {
     m_cell_shape_nodes.resize(ItemStaticInfo::MAX_CELL_NODE);
     m_cell_shape_faces.resize(ItemStaticInfo::MAX_CELL_FACE);
   }
@@ -88,4 +88,3 @@ initialize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

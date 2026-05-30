@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BarycentricGeomShapeComputer.h                              (C) 2000-2026 */
 /*                                                                           */
-/* Calcul des GeomShape en utilisant les barycentres.                        */
+/* Calculation of GeomShapes using barycenters.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_BARYCENTRICGEOMSHAPECOMPUTER_H
 #define ARCANE_GEOMETRIC_BARYCENTRICGEOMSHAPECOMPUTER_H
@@ -23,45 +23,44 @@
 
 namespace Arcane::geometric
 {
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneGeometric
- * \brief Calcul des GeomShape en utilisant les barycentres.
+ * \brief Calculates GeomShapes using barycenters.
  *
- * Cette classe permet de mettre à jour les coordonnées des noeuds
- * d'un GeomShape et de calculer son centre et le centre de ses faces
- * en utilisant la formule du barycentre. Ces coordonnées doivent
- * être remises à jour dès qu'un des noeuds du maillage se déplace.
+ * This class allows updating the coordinates of the nodes
+ * of a GeomShape and calculating its center and the center of its faces
+ * using the barycenter formula. These coordinates must
+ * be updated as soon as one of the mesh nodes moves.
  *
- * Toutes les méthodes de cette classe sont statiques et il n'est donc
- * pas utile de créer des instances.
+ * All methods of this class are static and it is therefore
+ * not useful to create instances.
  *
- * Il existe plusieurs manières de mettre à jour:
+ * There are several ways to update:
  * - via computeAll(GeomShapeMng& shape_mng,VariableNodeReal3& coords,const CellGroup& cells),
- * auquel cas tous les GeomShape des mailles de \a cells sont mise à jour. C'est
- * la méthode la plus performante si on doit mettre à jour un grand nombre de
- * mailles.
+ * in which case all GeomShapes of the meshes in \a cells are updated. This is
+ * the most performant method if a large number of
+ * meshes must be updated.
  * - via computeAll(GeomShapeMutableView elem,const VariableNodeReal3& coords,Cell cell)
- * si on souhaite mettre à jour maille par maille.
+ * if you wish to update mesh by mesh.
  */
 class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
 {
  public:
 
-  //! Calcul les informations pour la maille \a cell
-  static void computeAll(GeomShapeMutableView elem,const VariableNodeReal3& coords,Cell cell);
+  //! Calculates the information for the mesh \a cell
+  static void computeAll(GeomShapeMutableView elem, const VariableNodeReal3& coords, Cell cell);
 
-  //! Calcul les informations pour les mailles du groupe \a cells
-  static void computeAll(GeomShapeMng& shape_mng,VariableNodeReal3& coords,const CellGroup& cells);
+  //! Calculates the information for the meshes in the group \a cells
+  static void computeAll(GeomShapeMng& shape_mng, VariableNodeReal3& coords, const CellGroup& cells);
 
   /*!
-   * \name Calcul du centre et des centres des faces par type de maille
+   * \name Calculation of the center and face centers by mesh type
    *
-   * Les coordonnées des noeuds de \a elem doivent déjà avoir été positionnées.
+   * The coordinates of the nodes of \a elem must already have been positioned.
    */
   ///@{
   static void computeTriangle3(GeomShapeMutableView elem);
@@ -75,17 +74,16 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
   ///@}
 
   /*!
-   * \brief Méthode template.
+   * \brief Template method.
    *
-   * Le paramètre template \a ItemType doit correspondre à un des types
-   * suivants: GeomType::Triangle3, GeomType::Quad4, GeomType::Tetraedron4, GeomType::Pyramid5,
+   * The template parameter \a ItemType must correspond to one of the following types: GeomType::Triangle3, GeomType::Quad4, GeomType::Tetraedron4, GeomType::Pyramid5,
    * GeomType::Pentaedron6, GeomType::Hexaedron8, GeomType::Heptaedron10, GeomType::Octaedron12.
    *
-   * Les coordonnées des noeuds de \a elem doivent déjà avoir été positionnées,
-   * par exemple via l'appel à setNodes().
+   * The coordinates of the nodes of \a elem must already have been positioned,
+   * for example via the call to setNodes().
    *
-   * L'appel se fait en spécifiant le type de maille tel que défini dans ArcaneTypes.h.
-   * Par exemple, pour un Quad4:
+   * The call is made by specifying the mesh type as defined in ArcaneTypes.h.
+   * For example, for a Quad4:
    \code
    Cell cell = ...;
    GeomShapeMng shape_mng = ...;
@@ -93,39 +91,38 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
    BarycentricGeomShapeComputer::compute<GeomType::Quad4>(shape_view);
    \endcode
    */
-  template<GeomType ItemType> static
-  void compute(GeomShapeMutableView elem);
+  template <GeomType ItemType> static void compute(GeomShapeMutableView elem);
 
-  //! Remplit les informations des noeuds de la maille \a cell avec les coordonnées de \a node_coord.
-  static void setNodes(GeomShapeMutableView elem,const VariableNodeReal3& node_coord,Cell cell)
+  //! Fills the node information of the mesh \a cell with the coordinates of \a node_coord.
+  static void setNodes(GeomShapeMutableView elem, const VariableNodeReal3& node_coord, Cell cell)
   {
     Integer nb_node = cell.nbNode();
-    for( Integer node_id=0; node_id<nb_node; ++node_id){
-      elem.setNode(node_id,node_coord[cell.node(node_id)]);
+    for (Integer node_id = 0; node_id < nb_node; ++node_id) {
+      elem.setNode(node_id, node_coord[cell.node(node_id)]);
     }
   }
 
  private:
 
   inline static void
-  _setFace3D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2,Integer id3,Integer id4)
+  _setFace3D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2, Integer id3, Integer id4)
   {
-    elem.setFace(fid, 0.25 * ( elem.node(id1) + elem.node(id2) + elem.node(id3) + elem.node(id4) ));
+    elem.setFace(fid, 0.25 * (elem.node(id1) + elem.node(id2) + elem.node(id3) + elem.node(id4)));
   }
 
   inline static void
-  _setFace3D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2,Integer id3)
+  _setFace3D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2, Integer id3)
   {
-    elem.setFace(fid, (1.0/3.0) * ( elem.node(id1) + elem.node(id2) + elem.node(id3) ));
+    elem.setFace(fid, (1.0 / 3.0) * (elem.node(id1) + elem.node(id2) + elem.node(id3)));
   }
 
   inline static void
-  _setFace2D(Integer fid,GeomShapeMutableView& elem,Integer id1,Integer id2)
+  _setFace2D(Integer fid, GeomShapeMutableView& elem, Integer id1, Integer id2)
   {
     elem.setFace(fid,
-                 Real3( 0.5 * ( elem.node(id1).x + elem.node(id2).x ),
-                        0.5 * ( elem.node(id1).y + elem.node(id2).y ),
-                        0.0));
+                 Real3(0.5 * (elem.node(id1).x + elem.node(id2).x),
+                       0.5 * (elem.node(id1).y + elem.node(id2).y),
+                       0.0));
   }
 };
 

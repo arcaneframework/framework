@@ -1,116 +1,127 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 #ifndef ITEMGROUPBUILDER_H
 #define ITEMGROUPBUILDER_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <set>
 #include <cstring>
 #include <cctype>
 
-#include <arcane/ArcaneVersion.h>
-#include <arcane/ItemGroup.h>
-#include <arcane/IMesh.h>
-#include <arcane/utils/String.h>
-#include <arcane/utils/StringBuilder.h>
-#include <arcane/IItemFamily.h>
-#include <arcane/ItemGroupRangeIterator.h>
+#include "arcane/utils/String.h"
+#include "arcane/utils/StringBuilder.h"
+
+#include "arcane/core/ArcaneVersion.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroupRangeIterator.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using namespace Arcane;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-//! Macro de construction d'un nom d'objet
-/*! Sert généralement à nommer des groupes pour ItemGroupBuilder */
-#define IMPLICIT_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__),false)
-#define IMPLICIT_UNIQ_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__),true)
+//! Macro for object name construction
+/*! Generally used to name groups for ItemGroupBuilder */
+#define IMPLICIT_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__), false)
+#define IMPLICIT_UNIQ_NAME ItemGroupBuilder_cleanString(__FILE__ "__" TOSTRING(__LINE__), true)
 
 /*
  * \internal
- * \brief Outil de construction assisté de groupe
+ * \brief Assisted group building tool
  *
- * L'unicité des éléments du groupe est garantie par construction. Il
- * est possible d'utiliser la macro IMPLICIT_NAME pour nommer nom de
- * groupe.
+ * The uniqueness of the group elements is guaranteed by construction. It
+ * is possible to use the IMPLICIT_NAME macro to name the group.
  */
-template<typename T>
+template <typename T>
 class ItemGroupBuilder
 {
  private:
+
   IMesh* m_mesh;
   std::set<Integer> m_ids;
   String m_group_name;
-  
- public:
-  //! Constructeur
-  ItemGroupBuilder(IMesh* mesh,const String& groupName)
-  : m_mesh(mesh), m_group_name(groupName) {}
 
-  //! Destructeur
+ public:
+
+  //! Constructor
+  ItemGroupBuilder(IMesh* mesh, const String& groupName)
+  : m_mesh(mesh)
+  , m_group_name(groupName)
+  {}
+
+  //! Destructor
   virtual ~ItemGroupBuilder() {}
 
  public:
-  //! Ajout d'un ensemble d'item fourni par un énumérateur
-  void add(ItemEnumeratorT<T> enumerator) 
-    { 
-      while(enumerator.hasNext()) 
-        {
-          m_ids.insert(enumerator.localId());
-          ++enumerator;
-        }
+
+  //! Add a set of items provided by an enumerator
+  void add(ItemEnumeratorT<T> enumerator)
+  {
+    while (enumerator.hasNext()) {
+      m_ids.insert(enumerator.localId());
+      ++enumerator;
+    }
+  }
+
+  //! Add a set of items provided by an enumerator
+  void add(ItemGroupRangeIteratorT<T> enumerator)
+  {
+    while (enumerator.hasNext()) {
+      m_ids.insert(enumerator.itemLocalId());
+      ++enumerator;
+    }
+  }
+
+  //! Add a unique item
+  void add(const T& item)
+  {
+    m_ids.insert(item.localId());
+  }
+
+  //! Constructor for the new group
+  ItemGroupT<T> buildGroup()
+  {
+    Int32UniqueArray localIds(m_ids.size());
+
+    std::set<Integer>::const_iterator is = m_ids.begin();
+    Integer i = 0;
+
+    while (is != m_ids.end()) {
+      localIds[i] = *is;
+      ++is;
+      ++i;
     }
 
-  //! Ajout d'un ensemble d'item fourni par un énumérateur
-  void add(ItemGroupRangeIteratorT<T> enumerator) 
-    { 
-      while(enumerator.hasNext())
-        {
-          m_ids.insert(enumerator.itemLocalId());
-          ++enumerator;
-        }
-    }
+    //       ItemGroup newGroup(new ItemGroupImpl(m_mesh->itemFamily(ItemTraitsT<T>::kind()),
+    //                                            m_group_name));
+    ItemGroup newGroup = m_mesh->itemFamily(ItemTraitsT<T>::kind())->findGroup(m_group_name, true);
+    // m_item_family->createGroup(own_name,ItemGroup(this));
 
-  //! Ajout d'un item unique
-  void add(const T & item) 
-    { 
-      m_ids.insert(item.localId());
-    }
+    newGroup.clear();
+    newGroup.setItems(localIds);
+    // newGroup.setLocalToSubDomain(true); // Forces the new group to be local: do not transfer in case of rebalancing
 
-  //! Constructeur du nouveau group
-  ItemGroupT<T> buildGroup() 
-    {
-      Int32UniqueArray localIds(m_ids.size());
+    return newGroup;
+  }
 
-      std::set<Integer>::const_iterator is = m_ids.begin();
-      Integer i = 0;
-
-      while(is != m_ids.end())
-        {
-          localIds[i] = *is;
-          ++is; ++i;
-        }
-    
-//       ItemGroup newGroup(new ItemGroupImpl(m_mesh->itemFamily(ItemTraitsT<T>::kind()),
-//                                            m_group_name));
-      ItemGroup newGroup = m_mesh->itemFamily(ItemTraitsT<T>::kind())->findGroup(m_group_name,true);
-// m_item_family->createGroup(own_name,ItemGroup(this));
-
-      newGroup.clear();
-      newGroup.setItems(localIds);
-      // newGroup.setLocalToSubDomain(true); // Force le nouveau a être local : non transférer en cas de rééquilibrage
-
-      return newGroup;
-    }
-
-  //! Nom du groupe
-  String getName() const 
-    { 
-      return m_group_name; 
-    }
+  //! Group name
+  String getName() const
+  {
+    return m_group_name;
+  }
 };
 
-#endif /* ITEMGROUPBUILDER_H */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

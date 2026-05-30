@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,28 +15,43 @@
 
 using namespace Arcane::Numerics;
 
-ARCANE_BEGIN_NAMESPACE
-NUMERICS_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Numerics
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Internal class implementation for TemisGeometryService and Euclidian3GeometryService
 class ItemGroupGeometryProperty
 {
-public:
-  /** Constructeur de la classe */
+ public:
+
+  /** Constructor of the class */
   ItemGroupGeometryProperty();
 
-  /** Destructeur de la classe */  
+  /** Destructor of the class */
   virtual ~ItemGroupGeometryProperty();
-public:
 
-  struct StorageInfo {
-    StorageInfo() : storageType(0), externStorage(0), ownStorage(0), usageVarCount(0), usageMapCount(0) { }
+ public:
+
+  struct StorageInfo
+  {
+    StorageInfo()
+    : storageType(0)
+    , externStorage(0)
+    , ownStorage(0)
+    , usageVarCount(0)
+    , usageMapCount(0)
+    {}
     Integer storageType;
     Integer externStorage;
     Integer ownStorage;
     UInt32 usageVarCount;
     UInt32 usageMapCount;
-    std::shared_ptr<IGeometryMng::RealVariable> realVar;    
+    std::shared_ptr<IGeometryMng::RealVariable> realVar;
     std::shared_ptr<IGeometryMng::Real3Variable> real3Var;
     //boost::shared_ptr<IGeometryMng::RealGroupMap> realMap;
     //boost::shared_ptr<IGeometryMng::Real3GroupMap> real3Map;
@@ -54,30 +69,35 @@ public:
   void resetFlags();
 };
 
+//! Generic (empty) model for accessing StorageInfo by storage type
+template <typename T>
+class ContainerAccessorT
+{};
 
-
-//! Modéle générique (vide) des accès de StorageInfo par type de stockage
-template<typename T>
-class ContainerAccessorT { };
-
-template<>
+template <>
 struct ContainerAccessorT<Real>
 {
   typedef IGeometryMng::RealVariable RealTVariable;
   //typedef IGeometryMng::RealGroupMap RealTGroupMap;
-  inline static std::shared_ptr<RealTVariable> & getVarContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.realVar; }
+  inline static std::shared_ptr<RealTVariable>& getVarContainer(ItemGroupGeometryProperty::StorageInfo& storage) { return storage.realVar; }
   //inline static boost::shared_ptr<RealTGroupMap> & getMapContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.realMap; }
 };
 
-template<>
-struct ContainerAccessorT<Real3> {
+template <>
+struct ContainerAccessorT<Real3>
+{
   typedef IGeometryMng::Real3Variable RealTVariable;
   //typedef IGeometryMng::Real3GroupMap RealTGroupMap;
-  inline static std::shared_ptr<RealTVariable> & getVarContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Var; }
-  //inline static boost::shared_ptr<RealTGroupMap> & getMapContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Map; }
+  inline static std::shared_ptr<RealTVariable>& getVarContainer(ItemGroupGeometryProperty::StorageInfo& storage) { return storage.real3Var; }
+  //inline static boost::shared_ptr<IGeometryMng::Real3GroupMap> & getMapContainer(ItemGroupGeometryProperty::StorageInfo & storage) { return storage.real3Map; }
 };
 
-NUMERICS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#endif /* ARCGEOSIM_GEOMETRY_IMPL_ITEMGROUPGEOMETRYPROPERTY_H */
+} // namespace Arcane::Numerics
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

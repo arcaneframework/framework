@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeMutableView.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Vue modifiable sur un GeomShape.                                          */
+/* Mutable view on a GeomShape.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMSHAPEMUTABLEVIEW_H
 #define ARCANE_GEOMETRIC_GEOMSHAPEMUTABLEVIEW_H
@@ -38,13 +38,13 @@ class GeomShapeConnectivity;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue modifiable sur un GeomShape.
+ * \brief Mutable view on a GeomShape.
  *
- * Une instance de cette classe permet de modifier les coordonnées
- * des noeuds, des faces et du centre d'un GeomShape.
+ * An instance of this class allows modification of the coordinates
+ * of nodes, faces, and the center of a GeomShape.
  *
- * Pour récupérer une instance de cet objet, il faut appeler
- * GeomShapeMng::mutableShapeView() ou GeomShape::toMutableView().
+ * To retrieve an instance of this object, you must call
+ * GeomShapeMng::mutableShapeView() or GeomShape::toMutableView().
  */
 class GeomShapeMutableView
 {
@@ -56,15 +56,21 @@ class GeomShapeMutableView
  public:
 
   GeomShapeMutableView()
-  : m_node_ptr(0), m_face_ptr(0), m_center_ptr(0){}
+  : m_node_ptr(0)
+  , m_face_ptr(0)
+  , m_center_ptr(0)
+  {}
 
  private:
 
-  GeomShapeMutableView(Real3* node_ptr,Real3* face_ptr,Real3* center_ptr)
-  : m_node_ptr(node_ptr), m_face_ptr(face_ptr), m_center_ptr(center_ptr){}
+  GeomShapeMutableView(Real3* node_ptr, Real3* face_ptr, Real3* center_ptr)
+  : m_node_ptr(node_ptr)
+  , m_face_ptr(face_ptr)
+  , m_center_ptr(center_ptr)
+  {}
 
  public:
-  
+
   inline const Real3 node(Integer id) const
   {
     return m_node_ptr[id];
@@ -80,12 +86,12 @@ class GeomShapeMutableView
     return *m_center_ptr;
   }
 
-  inline void setNode(Integer id,const Real3& v)
+  inline void setNode(Integer id, const Real3& v)
   {
     m_node_ptr[id] = v;
   }
 
-  inline void setFace(Integer id,const Real3& v)
+  inline void setFace(Integer id, const Real3& v)
   {
     m_face_ptr[id] = v;
   }
@@ -103,7 +109,7 @@ class GeomShapeMutableView
 
  private:
 
-  inline void _setArray(Real3* node_ptr,Real3* face_ptr,Real3* center_ptr)
+  inline void _setArray(Real3* node_ptr, Real3* face_ptr, Real3* center_ptr)
   {
     m_node_ptr = node_ptr;
     m_face_ptr = face_ptr;

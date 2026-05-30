@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricGlobal.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations globales pour la composante géométrique.                     */
+/* Global declarations for the geometric component.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMETRICGLOBAL_H
 #define ARCANE_GEOMETRIC_GEOMETRICGLOBAL_H
@@ -16,8 +16,10 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
-#define GEOMETRIC_BEGIN_NAMESPACE  namespace geometric {
-#define GEOMETRIC_END_NAMESPACE    }
+#define GEOMETRIC_BEGIN_NAMESPACE \
+  namespace geometric \
+  {
+#define GEOMETRIC_END_NAMESPACE }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,4 +96,4 @@ typedef Octaedron12Element Wedge8Element;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

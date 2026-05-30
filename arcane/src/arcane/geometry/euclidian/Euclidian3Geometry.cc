@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,155 +12,158 @@ using namespace Arcane;
 #include <arcane/utils/FatalErrorException.h>
 #include <arcane/utils/NotImplementedException.h>
 
-ARCANE_BEGIN_NAMESPACE
-NUMERICS_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-Real3
-Euclidian3Geometry::
-computeCenter(const ItemWithNodes & item)
+namespace Arcane::Numerics
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Real3 Euclidian3Geometry::
+computeCenter(const ItemWithNodes& item)
 {
   Real3 orientation, center;
   Real measure;
 
   switch (item.type()) {
   case IT_Line2:
-    ComputeLine2(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeLine2(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return center;
   case IT_Triangle3:
-    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return center;
   case IT_Quad4:
-    ComputeQuad4(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeQuad4(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return center;
   case IT_Pentagon5:
-    ComputePentagon5(this).computeOrientedMeasureAndCenter(item,orientation,center); 
+    ComputePentagon5(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return center;
   case IT_Hexagon6:
-    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return center;
   case IT_Tetraedron4:
-    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   case IT_Pyramid5:
-    ComputePyramid5(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputePyramid5(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   case IT_Pentaedron6:
-    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   case IT_Hexaedron8:
-    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   case IT_Heptaedron10:
-    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   case IT_Octaedron12:
-    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item, measure, center);
     return center;
   default:
-    throw FatalErrorException(A_FUNCINFO,"Not supported Item Type");
+    throw FatalErrorException(A_FUNCINFO, "Not supported Item Type");
   }
 }
 
-Real3
-Euclidian3Geometry::
-computeOrientedMeasure(const ItemWithNodes & item)
+Real3 Euclidian3Geometry::
+computeOrientedMeasure(const ItemWithNodes& item)
 {
   Real3 orientation, center;
   Real measure;
   switch (item.type()) {
   case IT_Line2:
-    ComputeLine2(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeLine2(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return orientation;
   case IT_Triangle3:
-    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return orientation;
   case IT_Quad4:
-    ComputeQuad4(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeQuad4(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return orientation;
   case IT_Pentagon5:
-    ComputePentagon5(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputePentagon5(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return orientation;
   case IT_Hexagon6:
-    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return orientation;
   case IT_Tetraedron4:
-    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   case IT_Pyramid5:
-    ComputePyramid5(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputePyramid5(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   case IT_Pentaedron6:
-    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   case IT_Hexaedron8:
-    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   case IT_Heptaedron10:
-    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   case IT_Octaedron12:
-    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return Real3(0,0,measure);
+    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return Real3(0, 0, measure);
   default:
-    throw FatalErrorException(A_FUNCINFO,"Not supported Item Type");
-  }
-}
-
-Real
-Euclidian3Geometry::
-computeMeasure(const ItemWithNodes & item)
-{
-  Real3 orientation, center;
-  Real measure;
-
-  switch (item.type()) {
-  case IT_Line2:
-    ComputeLine2(this).computeOrientedMeasureAndCenter(item,orientation,center);
-    return math::normeR3(orientation);
-  case IT_Triangle3:
-    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item,orientation,center);
-    return math::normeR3(orientation);
-  case IT_Quad4:
-    ComputeQuad4(this).computeOrientedMeasureAndCenter(item,orientation,center);
-    return math::normeR3(orientation);
-  case IT_Pentagon5:
-    ComputePentagon5(this).computeOrientedMeasureAndCenter(item,orientation,center);
-    return math::normeR3(orientation);
-  case IT_Hexagon6:
-    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item,orientation,center);
-    return math::normeR3(orientation);
-  case IT_Tetraedron4:
-    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  case IT_Pyramid5:
-    ComputePyramid5(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  case IT_Pentaedron6:
-    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  case IT_Hexaedron8:
-    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  case IT_Heptaedron10:
-    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  case IT_Octaedron12:
-    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item,measure,center);
-    return measure;
-  default:
-    ARCANE_THROW(NotSupportedException,"Not supported Item Type {0}",item.type());
+    throw FatalErrorException(A_FUNCINFO, "Not supported Item Type");
   }
 }
 
 Real Euclidian3Geometry::
-computeLength(const ItemWithNodes & item)
+computeMeasure(const ItemWithNodes& item)
+{
+  Real3 orientation, center;
+  Real measure;
+
+  switch (item.type()) {
+  case IT_Line2:
+    ComputeLine2(this).computeOrientedMeasureAndCenter(item, orientation, center);
+    return math::normeR3(orientation);
+  case IT_Triangle3:
+    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item, orientation, center);
+    return math::normeR3(orientation);
+  case IT_Quad4:
+    ComputeQuad4(this).computeOrientedMeasureAndCenter(item, orientation, center);
+    return math::normeR3(orientation);
+  case IT_Pentagon5:
+    ComputePentagon5(this).computeOrientedMeasureAndCenter(item, orientation, center);
+    return math::normeR3(orientation);
+  case IT_Hexagon6:
+    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item, orientation, center);
+    return math::normeR3(orientation);
+  case IT_Tetraedron4:
+    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  case IT_Pyramid5:
+    ComputePyramid5(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  case IT_Pentaedron6:
+    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  case IT_Hexaedron8:
+    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  case IT_Heptaedron10:
+    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  case IT_Octaedron12:
+    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item, measure, center);
+    return measure;
+  default:
+    ARCANE_THROW(NotSupportedException, "Not supported Item Type {0}", item.type());
+  }
+}
+
+Real Euclidian3Geometry::
+computeLength(const ItemWithNodes& item)
 {
   ARCANE_UNUSED(item);
-  ARCANE_THROW(NotImplementedException,"");
+  ARCANE_THROW(NotImplementedException, "");
 }
 
 Real Euclidian3Geometry::
-computeArea(const ItemWithNodes & item)
+computeArea(const ItemWithNodes& item)
 {
   Real3 orientation, center;
 
@@ -168,16 +171,16 @@ computeArea(const ItemWithNodes & item)
   case IT_Line2:
     return 0.;
   case IT_Triangle3:
-    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeTriangle3(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return math::normeR3(orientation);
   case IT_Quad4:
-    ComputeQuad4(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeQuad4(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return math::normeR3(orientation);
   case IT_Pentagon5:
-    ComputePentagon5(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputePentagon5(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return math::normeR3(orientation);
   case IT_Hexagon6:
-    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item,orientation,center);
+    ComputeHexagon6(this).computeOrientedMeasureAndCenter(item, orientation, center);
     return math::normeR3(orientation);
   case IT_Tetraedron4:
   case IT_Pyramid5:
@@ -193,13 +196,12 @@ computeArea(const ItemWithNodes & item)
   case IT_DiTetra5:
     return 0.;
   default:
-    throw FatalErrorException(A_FUNCINFO,"Not supported Item Type");
+    throw FatalErrorException(A_FUNCINFO, "Not supported Item Type");
   }
 }
 
-Real
-Euclidian3Geometry::
-computeVolume(const ItemWithNodes & item)
+Real Euclidian3Geometry::
+computeVolume(const ItemWithNodes& item)
 {
   Real3 center;
   Real measure;
@@ -214,183 +216,171 @@ computeVolume(const ItemWithNodes & item)
   case IT_Hexagon6:
     return 0.;
   case IT_Tetraedron4:
-    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeTetraedron4(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_Pyramid5:
-    ComputePyramid5(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputePyramid5(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_Pentaedron6:
-    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputePentaedron6(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_Hexaedron8:
-    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHexaedron8(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_Heptaedron10:
-    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHeptaedron10(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_Octaedron12:
-    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeOctaedron12(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_HemiHexa7:
-    ComputeHemiHexa7(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHemiHexa7(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_HemiHexa6:
-    ComputeHemiHexa6(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHemiHexa6(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_HemiHexa5:
-    ComputeHemiHexa5(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeHemiHexa5(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_AntiWedgeLeft6:
-    ComputeAntiWedgeLeft6(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeAntiWedgeLeft6(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_AntiWedgeRight6:
-    ComputeAntiWedgeRight6(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeAntiWedgeRight6(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   case IT_DiTetra5:
-    ComputeDiTetra5(this).computeOrientedMeasureAndCenter(item,measure,center);
+    ComputeDiTetra5(this).computeOrientedMeasureAndCenter(item, measure, center);
     return measure;
   default:
-    throw FatalErrorException(A_FUNCINFO,"Not supported Item Type");
+    throw FatalErrorException(A_FUNCINFO, "Not supported Item Type");
   }
 }
 
-Real3
-Euclidian3Geometry::
-computeSurfaceCenter(Integer n, const Real3 * coords)
+Real3 Euclidian3Geometry::
+computeSurfaceCenter(Integer n, const Real3* coords)
 {
   if (n == 3)
-    return computeTriangleCenter(coords[0],coords[1],coords[2]);
+    return computeTriangleCenter(coords[0], coords[1], coords[2]);
 
-  Real3 center(0,0,0);
+  Real3 center(0, 0, 0);
   Real area = 0;
-  for(Integer i=1;i<n-1;++i)
-    {
-      Real local_area = math::normeR3(computeTriangleNormal(coords[0],coords[i],coords[i+1]));
-      center += local_area * computeTriangleCenter(coords[0],coords[i],coords[i+1]);
-      area += local_area;
-    }
-  return center/area;
+  for (Integer i = 1; i < n - 1; ++i) {
+    Real local_area = math::normeR3(computeTriangleNormal(coords[0], coords[i], coords[i + 1]));
+    center += local_area * computeTriangleCenter(coords[0], coords[i], coords[i + 1]);
+    area += local_area;
+  }
+  return center / area;
 }
 
-Real3 
-Euclidian3Geometry::
-computeOrientedArea(Integer n, const Real3 * coords)
+Real3 Euclidian3Geometry::
+computeOrientedArea(Integer n, const Real3* coords)
 {
-  Real3 normal(0.,0.,0.);
-  for(Integer i=1;i<n-1;++i)
-    normal += computeTriangleNormal(coords[0],coords[i],coords[i+1]);
+  Real3 normal(0., 0., 0.);
+  for (Integer i = 1; i < n - 1; ++i)
+    normal += computeTriangleNormal(coords[0], coords[i], coords[i + 1]);
   return normal;
 }
 
-Real
-Euclidian3Geometry::
+Real Euclidian3Geometry::
 computeLength(const Real3& m, const Real3& n)
 {
-  const Real3 d = m-n ;
-  return math::sqrt(math::scaMul(d,d)) ;
+  const Real3 d = m - n;
+  return math::sqrt(math::scaMul(d, d));
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-Euclidian3Geometry::ComputeLine2::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real3 & orientation, Real3 & center)
-{  
+void Euclidian3Geometry::ComputeLine2::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real3& orientation, Real3& center)
+{
   orientation = m_coords[item.node(1)] - m_coords[item.node(0)];
   center = 0.5 * (m_coords[item.node(1)] + m_coords[item.node(0)]);
 }
 
-void
-Euclidian3Geometry::ComputeTriangle3::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real3 & orientation, Real3 & center)
+void Euclidian3Geometry::ComputeTriangle3::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real3& orientation, Real3& center)
 {
-  orientation = 
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(1)],
-                          m_coords[item.node(2)]);
-  
-  center = 
-    computeTriangleCenter(m_coords[item.node(0)],
-                          m_coords[item.node(1)],
-                          m_coords[item.node(2)]);
+  orientation =
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(1)],
+                        m_coords[item.node(2)]);
+
+  center =
+  computeTriangleCenter(m_coords[item.node(0)],
+                        m_coords[item.node(1)],
+                        m_coords[item.node(2)]);
 }
 
-void
-Euclidian3Geometry::ComputeQuad4::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real3 & orientation, Real3 & center)
+void Euclidian3Geometry::ComputeQuad4::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real3& orientation, Real3& center)
 {
-  orientation = 
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(1)],
-                          m_coords[item.node(2)]) + 
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(2)],
-                          m_coords[item.node(3)]);
-  
-    center = 
-      computeQuadrilateralCenter(m_coords[item.node(0)],
-                                 m_coords[item.node(1)],
-                                 m_coords[item.node(2)],
-                                 m_coords[item.node(3)]);
+  orientation =
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(1)],
+                        m_coords[item.node(2)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(2)],
+                        m_coords[item.node(3)]);
+
+  center =
+  computeQuadrilateralCenter(m_coords[item.node(0)],
+                             m_coords[item.node(1)],
+                             m_coords[item.node(2)],
+                             m_coords[item.node(3)]);
 }
 
-void
-Euclidian3Geometry::ComputePentagon5::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real3 & orientation, Real3 & center)
+void Euclidian3Geometry::ComputePentagon5::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real3& orientation, Real3& center)
 {
-  orientation = 
-    computeTriangleNormal(m_coords[item.node(0)],
+  orientation =
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(1)],
+                        m_coords[item.node(2)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(2)],
+                        m_coords[item.node(3)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(3)],
+                        m_coords[item.node(4)]);
+
+  center =
+  computePentagonalCenter(m_coords[item.node(0)],
                           m_coords[item.node(1)],
-                          m_coords[item.node(2)]) + 
-    computeTriangleNormal(m_coords[item.node(0)],
                           m_coords[item.node(2)],
-                          m_coords[item.node(3)]) +
-    computeTriangleNormal(m_coords[item.node(0)],
                           m_coords[item.node(3)],
                           m_coords[item.node(4)]);
-  
-    center = 
-      computePentagonalCenter(m_coords[item.node(0)],
-                              m_coords[item.node(1)],
-                              m_coords[item.node(2)],
-                              m_coords[item.node(3)],
-                              m_coords[item.node(4)]);
 }
 
-
-void
-Euclidian3Geometry::ComputeHexagon6::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real3 & orientation, Real3 & center)
+void Euclidian3Geometry::ComputeHexagon6::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real3& orientation, Real3& center)
 {
-  orientation = 
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(1)],
-                          m_coords[item.node(2)]) + 
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(2)],
-                          m_coords[item.node(3)]) +
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(3)],
-                          m_coords[item.node(4)]) +
-    computeTriangleNormal(m_coords[item.node(0)],
-                          m_coords[item.node(4)],
-                          m_coords[item.node(5)]);
+  orientation =
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(1)],
+                        m_coords[item.node(2)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(2)],
+                        m_coords[item.node(3)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(3)],
+                        m_coords[item.node(4)]) +
+  computeTriangleNormal(m_coords[item.node(0)],
+                        m_coords[item.node(4)],
+                        m_coords[item.node(5)]);
 
-  center = 
-    computeHexagonalCenter(m_coords[item.node(0)],
-                           m_coords[item.node(1)],
-                           m_coords[item.node(2)],
-                           m_coords[item.node(3)],
-                           m_coords[item.node(4)],
-                           m_coords[item.node(5)]);
+  center =
+  computeHexagonalCenter(m_coords[item.node(0)],
+                         m_coords[item.node(1)],
+                         m_coords[item.node(2)],
+                         m_coords[item.node(3)],
+                         m_coords[item.node(4)],
+                         m_coords[item.node(5)]);
 }
 
-
-void
-Euclidian3Geometry::ComputeTetraedron4::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real3 & center)
+void Euclidian3Geometry::ComputeTetraedron4::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real& measure, Real3& center)
 {
-  ARCANE_ASSERT((item.type() == IT_Tetraedron4),("Bad item type: %d vs %d (Tetra4)",item.type(),IT_Tetraedron4));
+  ARCANE_ASSERT((item.type() == IT_Tetraedron4), ("Bad item type: %d vs %d (Tetra4)", item.type(), IT_Tetraedron4));
   measure = computeTetraedronVolume(m_coords[item.node(0)],
                                     m_coords[item.node(1)],
                                     m_coords[item.node(2)],
@@ -401,70 +391,62 @@ computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real
                                    m_coords[item.node(3)]);
 }
 
-void
-Euclidian3Geometry::ComputeTetraedron4::
-computeVolumeArea(const ItemWithNodes & item, Real & area)
+void Euclidian3Geometry::ComputeTetraedron4::
+computeVolumeArea(const ItemWithNodes& item, Real& area)
 {
-  ARCANE_ASSERT((item.type() == IT_Tetraedron4),("Bad item type: %d vs %d (Tetra4)",item.type(),IT_Tetraedron4));
+  ARCANE_ASSERT((item.type() == IT_Tetraedron4), ("Bad item type: %d vs %d (Tetra4)", item.type(), IT_Tetraedron4));
   const Cell cell = item.toCell();
-  for(Integer i=0;i<4;++i)
-    {
-      const Face face = cell.face(i);
-      area += math::abs(computeTriangleSurface(m_coords[face.node(0)],
-                                               m_coords[face.node(1)],
-                                               m_coords[face.node(2)]));
-    }
+  for (Integer i = 0; i < 4; ++i) {
+    const Face face = cell.face(i);
+    area += math::abs(computeTriangleSurface(m_coords[face.node(0)],
+                                             m_coords[face.node(1)],
+                                             m_coords[face.node(2)]));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 
-void 
-Euclidian3Geometry::ComputeGenericVolume::
-computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real3 & center)
+void Euclidian3Geometry::ComputeGenericVolume::
+computeOrientedMeasureAndCenter(const ItemWithNodes& item, Real& measure, Real3& center)
 {
-  // Choix d'un point arbitraire d'étoilement, mais "proche" du centre
-  Real3 vcenter(0,0,0);
-  for(Integer i=0;i<item.nbNode();++i) {
+  // Choice of an arbitrary star point, but "close" to the center
+  Real3 vcenter(0, 0, 0);
+  for (Integer i = 0; i < item.nbNode(); ++i) {
     vcenter += m_coords[item.node(i)];
   }
   vcenter /= item.nbNode();
 
   Real volume = 0;
-  center = Real3(0,0,0);
+  center = Real3(0, 0, 0);
 
-  // Etoilement des faces puis du volume en tétraèdres
-  const Cell cell = item.toCell();  
-  for(Integer i=0;i<cell.nbFace();++i)
-    {
-      const Face face = cell.face(i);
-      const Real orientation = (face.frontCell() == cell)?1:-1;
+  // Starring the faces and then the volume into tetrahedrons
+  const Cell cell = item.toCell();
+  for (Integer i = 0; i < cell.nbFace(); ++i) {
+    const Face face = cell.face(i);
+    const Real orientation = (face.frontCell() == cell) ? 1 : -1;
 
-      if (face.nbNode() == 3) {
-        Real v = orientation * computeTetraedronVolume(m_coords[face.node(0)],
-                                                       m_coords[face.node(1)],
-                                                       m_coords[face.node(2)],
-                                                       vcenter);
-        center += v * computeTetraedronCenter(m_coords[face.node(0)],
-                                              m_coords[face.node(1)],
-                                              m_coords[face.node(2)],
-                                              vcenter);
+    if (face.nbNode() == 3) {
+      Real v = orientation * computeTetraedronVolume(m_coords[face.node(0)], m_coords[face.node(1)], m_coords[face.node(2)], vcenter);
+      center += v * computeTetraedronCenter(m_coords[face.node(0)], m_coords[face.node(1)], m_coords[face.node(2)], vcenter);
+      volume += v;
+    }
+    else if (face.nbNode() == 4) {
+      // The array contains the modulo ...
+      const Real3 coords[5] = { m_coords[face.node(0)],
+                                m_coords[face.node(1)],
+                                m_coords[face.node(2)],
+                                m_coords[face.node(3)],
+                                m_coords[face.node(0)] };
+      const Real3 fcenter = computeQuadrilateralCenter(coords[0], coords[1], coords[2], coords[3]);
+      for (Integer j = 0; j < 4; ++j) {
+        const Real v = orientation * computeTetraedronVolume(coords[j], coords[j + 1], fcenter, vcenter);
+        center += v * computeTetraedronCenter(coords[j], coords[j + 1], fcenter, vcenter);
         volume += v;
-      } else if (face.nbNode() == 4) {
-        // Le tableau contient le modulo ...
-        const Real3 coords[5] = { m_coords[face.node(0)], 
-                                  m_coords[face.node(1)], 
-                                  m_coords[face.node(2)], 
-                                  m_coords[face.node(3)], 
-                                  m_coords[face.node(0)] }; 
-        const Real3 fcenter = computeQuadrilateralCenter(coords[0],coords[1],coords[2],coords[3]);
-        for(Integer j=0;j<4;++j) {
-          const Real v = orientation * computeTetraedronVolume(coords[j], coords[j+1], fcenter, vcenter);
-          center += v * computeTetraedronCenter(coords[j], coords[j+1], fcenter, vcenter);
-          volume += v;
-        }
-      } else {
-        throw NotImplementedException(A_FUNCINFO,"Not implemented for face with more than 4 nodes");
       }
+    }
+    else {
+      throw NotImplementedException(A_FUNCINFO, "Not implemented for face with more than 4 nodes");
+    }
   }
 
   center /= volume;
@@ -473,33 +455,35 @@ computeOrientedMeasureAndCenter(const ItemWithNodes & item, Real & measure, Real
 
 /*---------------------------------------------------------------------------*/
 
-void 
-Euclidian3Geometry::ComputeGenericVolume::
-computeVolumeArea(const ItemWithNodes & item, Real & area)
+void Euclidian3Geometry::ComputeGenericVolume::
+computeVolumeArea(const ItemWithNodes& item, Real& area)
 {
   const Cell cell = item.toCell();
-  for(Integer i=0;i<cell.nbFace();++i)
-    {
-      const Face face = cell.face(i);
-      if (face.nbNode() == 3) {
-        area += math::abs(computeTriangleSurface(m_coords[face.node(0)],
-                                                 m_coords[face.node(1)],
-                                                 m_coords[face.node(2)]));
-      } else if (face.nbNode() == 4) {
-        area += math::abs(computeTriangleSurface(m_coords[item.node(0)],
-                                                 m_coords[item.node(1)],
-                                                 m_coords[item.node(2)]))
-          + math::abs(computeTriangleSurface(m_coords[item.node(0)],
-                                             m_coords[item.node(3)],
-                                             m_coords[item.node(3)]));
-      } else {
-        throw NotImplementedException(A_FUNCINFO,"Not implemented for face with more than 4 nodes");
-      }
+  for (Integer i = 0; i < cell.nbFace(); ++i) {
+    const Face face = cell.face(i);
+    if (face.nbNode() == 3) {
+      area += math::abs(computeTriangleSurface(m_coords[face.node(0)],
+                                               m_coords[face.node(1)],
+                                               m_coords[face.node(2)]));
     }
+    else if (face.nbNode() == 4) {
+      area += math::abs(computeTriangleSurface(m_coords[item.node(0)],
+                                               m_coords[item.node(1)],
+                                               m_coords[item.node(2)])) +
+      math::abs(computeTriangleSurface(m_coords[item.node(0)],
+                                       m_coords[item.node(3)],
+                                       m_coords[item.node(3)]));
+    }
+    else {
+      throw NotImplementedException(A_FUNCINFO, "Not implemented for face with more than 4 nodes");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-NUMERICS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Numerics
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellConnectivity.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur la connectivité d'une maille.                            */
+/* Information on the connectivity of a mesh.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_CELLCONNECTIVITY_H
 #define ARCANE_GEOMETRIC_CELLCONNECTIVITY_H
@@ -32,13 +32,17 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Informations sur la connectivité d'une maille.
+ * \brief Information on the connectivity of a mesh.
  */
 class CellConnectivity
 {
  public:
-  CellConnectivity(Integer nb_node,Integer nb_edge,Integer nb_face,GeomType cell_type)
-  : m_nb_node(nb_node), m_nb_edge(nb_edge), m_nb_face(nb_face), m_cell_type(cell_type)
+
+  CellConnectivity(Integer nb_node, Integer nb_edge, Integer nb_face, GeomType cell_type)
+  : m_nb_node(nb_node)
+  , m_nb_edge(nb_edge)
+  , m_nb_face(nb_face)
+  , m_cell_type(cell_type)
   {
   }
 
@@ -48,23 +52,23 @@ class CellConnectivity
   Integer nbEdge() const { return m_nb_edge; }
   Integer nbFace() const { return m_nb_face; }
 
-  //! Nombre de sous volume de controle
+  //! Number of control sub-volumes
   Integer nbSubZone() const { return m_nb_sub_zone; }
-  //! Nombre de sous faces internes SVC
+  //! Number of internal SVC faces
   Integer nbSubZoneFace() const { return m_nb_svc_face; }
   const Integer* nodeAssociation() const { return m_node_association; }
   const NodeConnectic* nodeConnectic() const { return m_node_connectic; }
   const EdgeConnectic* edgeConnectic() const { return m_edge_connectic; }
   const FaceConnectic* faceConnectic() const { return m_face_connectic; }
   const SVCFaceConnectic* SCVFaceConnectic() const { return m_svc_face_connectic; }
-  //! Type de la maille (GeomType::Quad4, GeomType::Hexaedron8, ...)
+  //! Mesh type (GeomType::Quad4, GeomType::Hexaedron8, ...)
   GeomType cellType() const { return m_cell_type; }
 
  protected:
 
-  Integer m_nb_sub_zone = 0; //!< Nombre de sous volume de controle
-  Integer m_nb_svc_face = 0; //!< Nombre de sous faces internes SVC
-  //! Numero local du sommet associé au sous volume de controle
+  Integer m_nb_sub_zone = 0; //!< Number of control sub-volumes
+  Integer m_nb_svc_face = 0; //!< Number of internal SVC faces
+  //! Local number of the vertex associated with the control sub-volume
   const Integer* m_node_association = nullptr;
   const NodeConnectic* m_node_connectic = nullptr;
   const EdgeConnectic* m_edge_connectic = nullptr;
@@ -73,11 +77,11 @@ class CellConnectivity
 
  public:
 
-  //! Numéro locaux dans le sous-volumes de contrôle
+  //! Local numbers in the control sub-volumes
   Integer m_edge_node_sub_zone_id[3];
   Integer m_face_node_sub_zone_id[3];
-  //! Connectique pour les arêtes
-  Integer m_edge_direct_connectic[ItemStaticInfo::MAX_CELL_EDGE*2];
+  //! Connectic for edges
+  Integer m_edge_direct_connectic[ItemStaticInfo::MAX_CELL_EDGE * 2];
 
  protected:
 
@@ -97,21 +101,28 @@ class CellConnectivity
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Informations de connectivité pour les éléments géométriques de type IT_NullType.
+ * \brief Connectivity information for geometric elements of type IT_NullType.
  */
 class NullConnectivity
 : public CellConnectivity
 {
  public:
+
   NullConnectivity()
-  : CellConnectivity(0,0,0,GeomType::NullType)
-  { _init(); }
+  : CellConnectivity(0, 0, 0, GeomType::NullType)
+  {
+    _init();
+  }
+
  public:
+
   Integer nbNode() const { return 0; }
   Integer nbEdge() const { return 0; }
   Integer nbFace() const { return 0; }
+
  public:
  private:
+
   void _init();
 };
 

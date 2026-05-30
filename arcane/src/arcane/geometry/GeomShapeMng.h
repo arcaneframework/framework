@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShapeMng.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant les GeomShape d'un maillage.                                */
+/* Class managing the GeomShapes of a mesh.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMSHAPEMNG_H
 #define ARCANE_GEOMETRIC_GEOMSHAPEMNG_H
@@ -26,121 +26,118 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneGeometric
- * \brief Classe gérant les GeomShape des mailles d'un maillage.
+ * \brief Class managing the GeomShapes of a mesh.
  *
- * Cette classe stocke les informations des formes géométriques (GeomShape) associées
- * aux mailles du maillage. Pour une maille, la récupération d'une vue se fait
- * via la méthode initShape():
+ * This class stores the information of the geometric shapes (GeomShape) associated
+ * to the mesh cells. For a cell, retrieving a view is done
+ * via the initShape() method:
  \code
  GeomShapeMng shape_mng;
  Cell cell;
  GeomShapeView shape_view;
- // Initialise la vue \a shape_view sur la maille \a cell
+ // Initializes the view \a shape_view on the cell \a cell
  shape_mng.initShape(shape_view,cell);
  \endcode
  *
- * Une vue peut-être utilisée plusieurs fois. Par exemple, si on souhaite
- * itérer sur plusieurs mailles:
+ * A view can be used multiple times. For example, if you want
+ * to iterate over multiple cells:
  \code
  * GeomShapeMng shape_mng;
  * GeomShapeView shape_view;
  * ENUMERATE_CELL(icell,allCells()){
  *   Cell cell = *icell;
- *   // Initialise la vue \a shape_view sur la maille \a cell
+ *   // Initializes the view \a shape_view on the cell \a cell
  *   shape_mng.initShape(shape_view,cell);
  *   info() << "Node0=" << shape_view.node(0);
  * }
  \endcode
  
- * La vue récupérée par GeomShapeView est constante. Pour récupérer une
- * vue modifiable, il faut utiliser mutableShapeView(). La vue modifiable
- * sert uniquement à mettre à jour les différentes
- * coordonnées (noeuds, centre des faces, ...).
+ * The view retrieved by GeomShapeView is constant. To retrieve a
+ * mutable view, you must use mutableShapeView(). The mutable view
+ * is only used to update the different
+ * coordinates (nodes, face centers, ...).
  *
- * Avant de pouvoir utiliser une des méthodes initShape() ou mutableShapeView(),
- * il faut initialiser une des instance par l'appel à initialize().
- * L'initialisation effectue uniquement l'allocation mémoire mais ne met pas à jour
- * les coordonnées.
- * \warning La méthode initialize() doit aussi être appelée lorsque la topologie
- * du maillage change, par exemple après un ajout ou suppression de maille.
+ * Before being able to use one of the initShape() or mutableShapeView() methods,
+ * you must initialize one of the instances by calling initialize().
+ * Initialization only performs memory allocation but does not update
+ * the coordinates.
+ * \warning The initialize() method must also be called when the topology
+ * of the mesh changes, for example after adding or deleting a cell.
  *
- * Cette classe gère uniquement les données sur les formes géométriques et
- * ces dernières sont indépendantes des autres variables. Cela signifie
- * que si les coordonnées d'un noeud du maillage change, il faut explicitement
- * remettre à jour les informations de la forme géométrique. %Arcane fournit
- * la classe BarycentricGeomShapeComputer pour cela mais l'utilisateur
- * peut calculer ces informations d'une autre manière qu'en utilisant le barycentre. 
+ * This class only manages the data on the geometric shapes and
+ * these are independent of other variables. This means
+ * that if the coordinates of a mesh node change, you must explicitly
+ * update the geometric shape information. %Arcane provides
+ * the BarycentricGeomShapeComputer class for this, but the user
+ * can calculate this information in another way than using the barycenter. 
  *
- * Toutes les instances de cette classe dont le nom name() est identique
- * sont implicitement partagées et donc fournissent les mêmes GeomShapeView.
- * Par exemple:
+ * All instances of this class whose name name() is identical
+ * are implicitly shared and therefore provide the same GeomShapeView.
+ * For example:
  \code
  IMesh* mesh;
  GeomShapeMng shape_mng(mesh,"GenericElement");
  GeomShapeMng shape_mng2(shape_mng);
- // shape_mng et shape_mng2 partagent les mêmes GeomShapeView
+ // shape_mng and shape_mng2 share the same GeomShapeView
 
  GeomShapeMng shape_mng3(mesh,"AleGenericElement");
- // shape_mng et shape_mng3 utilisent des valeurs différentes.
+ // shape_mng and shape_mng3 use different values.
  \endcode
  *
  */
 class ARCANE_GEOMETRY_EXPORT GeomShapeMng
 {
   // NOTE:
-  // Comme cette classe peut-être utilisée par copie ou créée directement
-  // via des noms de variable, elle ne doit pas contenir de champs
-  // autres que des variables Arcane pour qu'il n'y ait pas d'incohérences
-  // entre les différentes instances.
+  // Since this class can be used by copy or created directly
+  // via variable names, it should not contain fields
+  // other than Arcane variables so that there are no inconsistencies
+  // between the different instances.
 
  public:
-  
-  //! Initialise pour le maillage \a mesh avec le nom \a name
-  GeomShapeMng(IMesh* mesh,const String& name);
-  //! Initialise pour le maillage \a mesh avec le nom par défaut \a GenericElement
+
+  //! Initializes for the mesh \a mesh with the name \a name
+  GeomShapeMng(IMesh* mesh, const String& name);
+  //! Initializes for the mesh \a mesh with the default name \a GenericElement
   GeomShapeMng(IMesh* mesh);
-  //! Constructeur de recopie.
+  //! Copy constructor.
   GeomShapeMng(const GeomShapeMng& rhs);
 
  public:
 
-  //! Indique si l'instance est initialisée.
-  bool isInitialized() const { return m_cell_shape_nodes.arraySize()!=0; }
+  //! Indicates if the instance is initialized.
+  bool isInitialized() const { return m_cell_shape_nodes.arraySize() != 0; }
 
   /*!
-   * \brief Initialise l'instance.
+   * \brief Initializes the instance.
    *
-   * Il n'y a besoin d'initialiser qu'une seule fois les instances qui
-   * ont le même nom.
+   * Only instances with the same name need to be initialized once.
    */
   void initialize();
 
-  //! Initialise la vue \a ge avec les informations de la maille \a cell
-  void initShape(GeomShapeView& ge,Cell cell) const
+  //! Initializes the view \a ge with the information of the cell \a cell
+  void initShape(GeomShapeView& ge, Cell cell) const
   {
-    ge._setArray(m_cell_shape_nodes[cell].data(),m_cell_shape_faces[cell].data(),&m_cell_shape_centers[cell]);
+    ge._setArray(m_cell_shape_nodes[cell].data(), m_cell_shape_faces[cell].data(), &m_cell_shape_centers[cell]);
     ge._setItem(cell);
   }
 
-  //! Retourne une vue modifiable sur la GeomShape de la maille \a cell
+  //! Returns a mutable view on the GeomShape of the cell \a cell
   GeomShapeMutableView mutableShapeView(Cell cell)
   {
-    return GeomShapeMutableView(m_cell_shape_nodes[cell].data(),m_cell_shape_faces[cell].data(),&m_cell_shape_centers[cell]);
+    return GeomShapeMutableView(m_cell_shape_nodes[cell].data(), m_cell_shape_faces[cell].data(), &m_cell_shape_centers[cell]);
   }
 
-  //! Nom du gestionnaire.
+  //! Manager name.
   const String& name() const { return m_name; }
 
  private:
 
   String m_name;
-  VariableCellArrayReal3 m_cell_shape_nodes; //!< Elements génériques noeuds
-  VariableCellArrayReal3 m_cell_shape_faces; //!< Elements génériques face
-  VariableCellReal3 m_cell_shape_centers; //!< Elements génériques centre
+  VariableCellArrayReal3 m_cell_shape_nodes; //!< Generic elements nodes
+  VariableCellArrayReal3 m_cell_shape_faces; //!< Generic elements face
+  VariableCellReal3 m_cell_shape_centers; //!< Generic elements center
 };
 
 /*---------------------------------------------------------------------------*/

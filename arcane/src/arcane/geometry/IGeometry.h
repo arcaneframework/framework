@@ -1,79 +1,90 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 #ifndef ARCGEOSIM_GEOMETRY_IGEOMETRY_H
 #define ARCGEOSIM_GEOMETRY_IGEOMETRY_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Real3.h"
-#include "arcane/Item.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/MathUtils.h"
 
-namespace Arcane
-{
-namespace Numerics
-{
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
+namespace Arcane::Numerics
+{
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de calculs géométriques.
+ * \brief Geometric calculation interface.
  */
 class ARCANE_GEOMETRY_EXPORT IGeometry
 {
-public:
-  /** Constructeur de la classe */
+ public:
+
+  /** Class constructor */
   IGeometry()
-    {
-      ;
-    }
+  {
+    ;
+  }
 
-  /** Destructeur de la classe */
-  virtual ~IGeometry() { }
+  /** Class destructor */
+  virtual ~IGeometry() {}
 
-public:
-  //! Calcul du centre de masse
-  virtual Real3 computeCenter(const ItemWithNodes & item) = 0;
+ public:
 
-  //! Calcul de la mesure orientée
-  /*! Dans le cas d'un élément plan, ceci correspond à
-   *  la normale moyenne unitaire * mesure de l'élément
-   *  et dans le cas d'un simple élément volumique nous obtenons
-   *  volume * z (ou z=(0,0,1))
+  //! Calculation of the center of mass
+  virtual Real3 computeCenter(const ItemWithNodes& item) = 0;
+
+  //! Calculation of the oriented measure
+  /*! In the case of a planar element, this corresponds to
+   *  the unit average normal * element measure
+   *  and in the case of a simple volumetric element we obtain
+   *  volume * z (or z=(0,0,1))
    */
-  virtual Real3 computeOrientedMeasure(const ItemWithNodes & item) = 0;
+  virtual Real3 computeOrientedMeasure(const ItemWithNodes& item) = 0;
 
-  //! Calcul de la mesure (sans orientation)
-  virtual Real  computeMeasure(const ItemWithNodes & item) = 0;
+  //! Calculation of the measure (without orientation)
+  virtual Real computeMeasure(const ItemWithNodes& item) = 0;
 
-  //! Calcul de la longueyr
-  /*! Uniquement pour les Items linéïques */
-  virtual Real  computeLength(const ItemWithNodes & item) = 0;
+  //! Calculation of the length
+  /*! Only for linear Items */
+  virtual Real computeLength(const ItemWithNodes& item) = 0;
 
-  //! Calcul de l'aire
-  /*! Uniquement pour les Items surfaciques */
-  virtual Real  computeArea(const ItemWithNodes & item) = 0;
+  //! Calculation of the area
+  /*! Only for surface Items */
+  virtual Real computeArea(const ItemWithNodes& item) = 0;
 
-  //! Calcul du volume
-  /*! Uniquement pour les Items volumiques */
-  virtual Real  computeVolume(const ItemWithNodes & item) = 0;
+  //! Calculation of the volume
+  /*! Only for volumetric Items */
+  virtual Real computeVolume(const ItemWithNodes& item) = 0;
 
-  //! Calcul du centre
-  /*! Uniquement pour les Items surfaciques */
-  virtual Real3 computeSurfaceCenter(Integer n, const Real3 * coords) = 0;
+  //! Calculation of the center
+  /*! Only for surface Items */
+  virtual Real3 computeSurfaceCenter(Integer n, const Real3* coords) = 0;
 
-  //! Calcul de l'aire orientée (ie normale)
-  /*! Uniquement pour les Items surfaciques */
-  virtual Real3 computeOrientedArea(Integer n, const Real3 * coords) = 0;
+  //! Calculation of the oriented area (i.e., normal)
+  /*! Only for surface Items */
+  virtual Real3 computeOrientedArea(Integer n, const Real3* coords) = 0;
 
-  //! Calcul de longueur d'un segment défini par deux points
+  //! Calculation of the length of a segment defined by two points
   virtual Real computeLength(const Real3& m, const Real3& n) = 0;
 };
 
-} // End namespace Arcane
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-} // End namespace Numerics
+} // namespace Arcane::Numerics
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif

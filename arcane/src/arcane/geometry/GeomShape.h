@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeomShape.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Forme géométrique.                                                        */
+/* Geometric shape.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_GEOMSHAPE_H
 #define ARCANE_GEOMETRIC_GEOMSHAPE_H
@@ -21,60 +21,59 @@
 
 namespace Arcane::geometric
 {
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneGeometric
- * \brief Forme géométrique.
+ * \brief Geometric shape.
  *
- * Cette classe ne s'utilise que pour créer une forme géométrique temporaire.
- * Pour une forme géométrique issue d'une maille, il faut passer par le
+ * This class is only used to create a temporary geometric shape.
+ * For a geometric shape derived from a mesh, you must go through the
  * GeomShapeMng.
  *
- * Une instance de cette classe permet de conserver les informations
- * nécessaires pour une forme géométrique.
+ * An instance of this class allows storing the information
+ * necessary for a geometric shape.
  *
- * Il est possible d'initialiser directement
- * une forme géométrique à partir d'un hexaèdre (initFromHexaedron8())
- * ou d'un quadrangle (initFromQuad4()). Ces méthodes initialisent la forme
- * et retournent une vue dessus.
+ * It is possible to directly initialize
+ * a geometric shape from a hexahedron (initFromHexaedron8())
+ * or a quadrangle (initFromQuad4()). These methods initialize the shape
+ * and return a view of it.
  * \code
  * GeomShape shape;
  * HexaElement hexa;
  * GeomShapeView shape_view = shape.initFromHexaedron8(hexa);
  * \endcode
  *
- * \todo mettre en place une initialisation spécifique. Pour cela, il faudra
- * utiliser le toMutableView() mais il faut aussi pouvoir spécifier le geomType().
+ * \todo set up a specific initialization. For this, it will be necessary
+ * to use toMutableView() but it is also necessary to be able to specify the geomType().
  */
 class ARCANE_GEOMETRY_EXPORT GeomShape
 {
-  // TEMPORAIRE: a supprimer quand les initFromHexa() et initFromQuad()
-  // de GeomShapeView seront supprimés
+  // TEMPORARY: to be deleted when the initFromHexa() and initFromQuad()
+  // of GeomShapeView are deleted
   friend class GeomShapeView;
 
  public:
-  
-  //! Vue modifiable sur cet instance.
+
+  //! Modifiable view of this instance.
   GeomShapeMutableView toMutableView()
   {
-    return GeomShapeMutableView((Real3*)m_node_ptr,(Real3*)m_face_ptr,(Real3*)&m_center);
+    return GeomShapeMutableView((Real3*)m_node_ptr, (Real3*)m_face_ptr, (Real3*)&m_center);
   }
 
-  //! Initialise la forme avec un hexaèdre \a hexa et retourne une vue dessus.
+  //! Initializes the shape with a hexahedron \a hexa and returns a view of it.
   Hexaedron8ShapeView initFromHexaedron8(Hexaedron8ElementConstView hexa);
 
-  //! Initialise la forme avec un quadrangle \a quad et retourne une vue dessus.
+  //! Initializes the shape with a quadrangle \a quad and returns a view of it.
   Quad4ShapeView initFromQuad4(Quad4ElementConstView quad);
 
  protected:
 
   void _setArray(GeomShapeView& shape)
   {
-    shape._setArray((Real3*)m_node_ptr,(Real3*)m_face_ptr,(Real3*)&m_center);
+    shape._setArray((Real3*)m_node_ptr, (Real3*)m_face_ptr, (Real3*)&m_center);
   }
 
  private:

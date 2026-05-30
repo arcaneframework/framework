@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+﻿<?xml version="1.0" ?>
 <service name="Euclidian3Geometry" version="1.0" type="caseoption">
 	<description>Service Euclidian3Geometry</description>
 	<interface name="Arcane::Numerics::IGeometryMng" inherited="false"/>
 
-  <!-- Eviter l'utilisation de variable gloable dans un service -->
+  <!-- Avoid using global variables in a service -->
   <variables/>
 
 	<options>
